@@ -316,6 +316,8 @@ test('Potree bounds, URL layouts, loader options, and mesh normalization cover a
   expect(mesh.attributes.colors).toBe(mesh.attributes.COLOR_0);
 
   const table = source.getPointCloudTileTable(mesh);
+  expect(table.schema.metadata.get('topology')).toBe('point-list');
+  expect(table.schema.metadata.has('mode')).toBe(false);
   expect(table.numRows).toBe(1);
   expect(table.getChild('COLOR_0')).toBeTruthy();
   expect(table.getChild('NORMAL')).toBeTruthy();

@@ -27,7 +27,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import type {DataType, Field, Mesh, MeshArrowTable, Schema} from '@loaders.gl/core/schema';
-import {ArrowTableBuilder, convertMeshToArrowTable} from '@loaders.gl/core/schema-utils';
+import {ArrowTableBuilder, makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {
   POTreeNode,
@@ -1069,20 +1069,7 @@ export class PotreeNodesSource
       attributes.NORMAL = mesh.attributes.normals;
     }
 
-    return convertMeshToArrowTable({
-      topology: 'point-list',
-      mode: 0,
-      header: {
-        vertexCount:
-          mesh.header?.vertexCount ||
-          mesh.attributes.positions.value.length / mesh.attributes.positions.size
-      },
-      schema: {
-        fields: [],
-        metadata: {}
-      },
-      attributes
-    });
+    return makeMeshArrowTable(attributes, {topology: 'point-list'});
   }
 
   /**

@@ -8,7 +8,7 @@ import type {
   ProgressiveQueryOptions,
   ProgressiveQuerySnapshot
 } from './query-progressive';
-import type {SQLQuery} from '@math.gl/expressions/sql';
+import type {SQLQuery} from '@math.gl/sql/parser';
 import type {TableBatch, Schema} from '@loaders.gl/core/schema';
 import {
   normalizeTableQuery,
@@ -588,7 +588,7 @@ function isUnsupportedQueryExpression(value: unknown): boolean {
   );
 }
 
-export {parseSQLQuery, parseSQLSelect, type SQLSelectParserOptions} from '@math.gl/expressions/sql';
+export {parseSQLQuery, parseSQLSelect, type SQLSelectParserOptions} from '@math.gl/sql/parser';
 
 export {createSQLCatalog} from './sql-catalog';
 export type {SQLCatalog, SQLCatalogQuery, SQLCatalogSource, SQLCatalogTable} from './sql-catalog';

@@ -147,7 +147,7 @@ sources. Catalogs and commands never close caller-owned sources.
 
 ## Optional SQL parsers
 
-Import `parseSQLQuery` from `@math.gl/expressions/sql` or `@loaders.gl/core/query/query` and pass it as
+Import `parseSQLQuery` from `@math.gl/sql/parser` or `@loaders.gl/core/query/query` and pass it as
 `sqlParser`. It supports SELECT, WHERE, FROM, LIMIT, OFFSET, and catalog commands. Use `parseSQLSelect`
 for SELECT parsing with an optional caller-supplied WHERE parser. Both preserve case and double-quoted identifiers.
 
@@ -157,7 +157,10 @@ row limit and output projection. For example, `SELECT value + 1 AS next WHERE va
 filters source rows before computing `next`. Use `ARRAY[x, y, z]::REAL[3] AS position` for a packed
 Float32 column. Without an explicit type, math.gl infers component precision from the inputs.
 A null component makes the whole tuple null. The query executor supports SQL OFFSET and LIMIT.
-Table aliases, qualified column references, ordering, grouping, and joins are outside this query API.
+Use dotted access such as `location.score` to read an Arrow struct field in
+an expression. Use double quotes around a literal column name containing a dot,
+such as `"location.score"`. Table aliases, ordering, grouping, and joins are
+outside this query API.
 
 ## Results and execution
 

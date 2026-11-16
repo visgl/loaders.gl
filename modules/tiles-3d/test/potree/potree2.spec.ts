@@ -189,6 +189,8 @@ test('modern source incrementally reads one hierarchy and each requested point r
     const [child] = await source.getChildren(root);
     expect(child).toMatchObject({id: 'r7', level: 1});
     const content = await source.loadTileContent({...child, pointCount: 999});
+    expect(content!.data.schema.metadata.get('topology')).toBe('point-list');
+    expect(content!.data.schema.metadata.has('mode')).toBe(false);
     expect(content?.pointCount).toBe(1);
     expect(content?.coordinateSystem).toBe('cartesian');
     expect(Array.from(convertTableToMesh(content!.data).attributes.POSITION.value)).toEqual([

@@ -55,8 +55,6 @@ import {Geoid} from '@math.gl/earth';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
 import {flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {GL} from '@math.gl/geometry';
-
 /*
   At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/core'.
   So the following import is replaced with the local import
@@ -67,6 +65,9 @@ import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 
 import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/scene/gltf';
+
+/** Primitive modes in the glTF file format. */
+const GLTF_PRIMITIVE_MODE = {TRIANGLES: 4, TRIANGLE_STRIP: 5, TRIANGLE_FAN: 6} as const;
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -607,12 +608,12 @@ function convertMeshToTable({
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
     // Per the spec https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
-    // GL.TRIANGLES is default. So in case `mode` is `undefined`, it is 'TRIANGLES'
+    // An omitted glTF primitive mode defaults to triangles.
     assert(
       primitive.mode === undefined ||
-        primitive.mode === GL.TRIANGLES ||
-        primitive.mode === GL.TRIANGLE_STRIP ||
-        primitive.mode === GL.TRIANGLE_FAN,
+        primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLES ||
+        primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_STRIP ||
+        primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_FAN,
       `Primitive - unsupported mode ${primitive.mode}`
     );
     const attributes = primitive.attributes;
@@ -677,18 +678,21 @@ function normalizeIndices(primitive: ConversionPrimitive): TypedArray {
   const source = primitive.indices?.value;
   const vertexCount = primitive.attributes.POSITION.value.length / VALUES_PER_VERTEX;
   const count = source?.length ?? vertexCount;
-  if (primitive.mode !== GL.TRIANGLE_STRIP && primitive.mode !== GL.TRIANGLE_FAN) {
+  if (
+    primitive.mode !== GLTF_PRIMITIVE_MODE.TRIANGLE_STRIP &&
+    primitive.mode !== GLTF_PRIMITIVE_MODE.TRIANGLE_FAN
+  ) {
     return source || generateSyntheticIndices(vertexCount);
   }
   const indices = new Uint32Array(Math.max(0, count - 2) * 3);
   for (let triangleIndex = 0; triangleIndex + 2 < count; triangleIndex++) {
-    const first = primitive.mode === GL.TRIANGLE_FAN ? 0 : triangleIndex;
+    const first = primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_FAN ? 0 : triangleIndex;
     const second =
-      primitive.mode === GL.TRIANGLE_FAN
+      primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_FAN
         ? triangleIndex + 1
         : triangleIndex + 1 + (triangleIndex % 2);
     const third =
-      primitive.mode === GL.TRIANGLE_FAN
+      primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_FAN
         ? triangleIndex + 2
         : triangleIndex + 2 - (triangleIndex % 2);
     indices.set(

@@ -29,7 +29,7 @@ import {
 } from '../../types';
 import {getUrlWithSearchParams, getUrlWithToken} from '../utils/url-utils';
 
-import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
+import {getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 import {I3SLoaderOptions} from '../../i3s-loader';
 
 const scratchVector = new Vector3([0, 0, 0]);
@@ -717,7 +717,6 @@ function normalizeAttributes(
 
         attributes[attribute] = {
           value,
-          type: GL_TYPE_MAP[valueType],
           size: valuesPerElement
         };
 

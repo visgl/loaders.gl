@@ -4,21 +4,20 @@
 
 import {expect, test} from 'vitest';
 import {Tile3DFeatureTable} from '@loaders.gl/tiles-3d/3d-tiles';
-import {GL} from '@math.gl/geometry';
 test('Tile3DFeatureTable#loads from JSON', () => {
   // @ts-expect-error
   const featureTable = new Tile3DFeatureTable({
     TEST: [0, 1, 2, 3, 4, 5]
   });
   featureTable.featuresLength = 3;
-  const all = featureTable.getGlobalProperty('TEST', GL.UNSIGNED_BYTE);
+  const all = featureTable.getGlobalProperty('TEST', Uint8Array);
   expect(all, 'getGlobalProperty(TEST)').toEqual([0, 1, 2, 3, 4, 5]);
-  const feature = featureTable.getProperty('TEST', GL.UNSIGNED_BYTE, 2, 1, new Array(2));
+  const feature = featureTable.getProperty('TEST', Uint8Array, 2, 1, new Array(2));
   expect(feature, 'getProperty(TEST)').toEqual([2, 3]);
-  const properties = featureTable.getPropertyArray('TEST', GL.UNSIGNED_BYTE, 2);
+  const properties = featureTable.getPropertyArray('TEST', Uint8Array, 2);
   expect(Array.from(properties), 'getPropertyArray(TEST)').toEqual([0, 1, 2, 3, 4, 5]);
 });
-test('Tile3DFeatureTable#loads from binary', () => {
+test.each([Uint8Array, 5121])('Tile3DFeatureTable#loads from binary with %s', componentType => {
   const featureTable = new Tile3DFeatureTable(
     {
       TEST: {
@@ -28,10 +27,10 @@ test('Tile3DFeatureTable#loads from binary', () => {
     new Uint8Array([0, 0, 0, 0, 0, 1, 2, 3, 4, 5])
   );
   featureTable.featuresLength = 3;
-  const all = featureTable.getGlobalProperty('TEST', GL.UNSIGNED_BYTE, 6);
+  const all = featureTable.getGlobalProperty('TEST', componentType, 6);
   expect(Array.from(all)).toEqual([0, 1, 2, 3, 4, 5]);
-  const feature = featureTable.getProperty('TEST', GL.UNSIGNED_BYTE, 2, 1, new Array(2));
+  const feature = featureTable.getProperty('TEST', componentType, 2, 1, new Array(2));
   expect(feature).toEqual([2, 3]);
-  const properties = featureTable.getPropertyArray('TEST', GL.UNSIGNED_BYTE, 2);
+  const properties = featureTable.getPropertyArray('TEST', componentType, 2);
   expect(Array.from(properties)).toEqual([0, 1, 2, 3, 4, 5]);
 });

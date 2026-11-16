@@ -1036,7 +1036,6 @@ export type I3SMeshAttributes = {
   [key: string]: I3SMeshAttribute;
 };
 export interface I3SMeshAttribute extends MeshAttribute {
-  type?: number;
   metadata?: any;
 }
 /** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/heightModelInfo.cmn.md */

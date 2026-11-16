@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/scan';
-import {parseSQLQuery} from '@math.gl/expressions/sql';
+import {parseSQLQuery} from '@math.gl/sql/parser';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/core/schema';

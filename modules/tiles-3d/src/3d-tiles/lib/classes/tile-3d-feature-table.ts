@@ -5,7 +5,8 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {GL, GLType} from '@math.gl/geometry';
+import type {TypedArrayConstructor} from '@math.gl/core';
+import {getTileComponentArrayType} from './helpers/tile-component-types';
 
 // Reference:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/1de96d087f0b17575eb1a3f736407b348c765d59/Source/Scene/Cesium3DTileFeatureTable.js
@@ -28,7 +29,12 @@ export default class Tile3DFeatureTable {
     return Boolean(this.json[propertyName]);
   }
 
-  getGlobalProperty(propertyName, componentType: number = GL.UNSIGNED_INT, componentLength = 1) {
+  /** Reads a global property, using the component type for binary storage. */
+  getGlobalProperty(
+    propertyName,
+    componentType: TypedArrayConstructor | number = Uint32Array,
+    componentLength = 1
+  ) {
     const jsonValue = this.json[propertyName];
 
     if (jsonValue && Number.isFinite(jsonValue.byteOffset)) {
@@ -44,12 +50,13 @@ export default class Tile3DFeatureTable {
     return jsonValue;
   }
 
-  getPropertyArray(propertyName, componentType, componentLength) {
+  /** Reads a property for all features as a typed array. */
+  getPropertyArray(propertyName, componentType: TypedArrayConstructor | number, componentLength) {
     const jsonValue = this.json[propertyName];
 
     if (jsonValue && Number.isFinite(jsonValue.byteOffset)) {
       if ('componentType' in jsonValue) {
-        componentType = GLType.fromName(jsonValue.componentType);
+        componentType = getTileComponentArrayType(jsonValue.componentType);
       }
       return this._getTypedArrayFromBinary(
         propertyName,
@@ -63,7 +70,14 @@ export default class Tile3DFeatureTable {
     return this._getTypedArrayFromArray(propertyName, componentType, jsonValue);
   }
 
-  getProperty(propertyName, componentType, componentLength, featureId, result) {
+  /** Reads a single feature property, writing vector components to result. */
+  getProperty(
+    propertyName,
+    componentType: TypedArrayConstructor | number,
+    componentLength,
+    featureId,
+    result
+  ) {
     const jsonValue = this.json[propertyName];
     if (!jsonValue) {
       return jsonValue;
@@ -84,12 +98,21 @@ export default class Tile3DFeatureTable {
 
   // HELPERS
 
-  _getTypedArrayFromBinary(propertyName, componentType, componentLength, count, byteOffset) {
+  _getTypedArrayFromBinary(
+    propertyName,
+    componentType: TypedArrayConstructor | number,
+    componentLength,
+    count,
+    byteOffset
+  ) {
     const cachedTypedArrays = this._cachedTypedArrays;
     let typedArray = cachedTypedArrays[propertyName];
     if (!typedArray) {
-      typedArray = GLType.createTypedArray(
-        componentType,
+      const ArrayType =
+        typeof componentType === 'number'
+          ? getTileComponentArrayType(componentType)
+          : componentType;
+      typedArray = new ArrayType(
         this.buffer.buffer,
         this.buffer.byteOffset + byteOffset,
         count * componentLength
@@ -99,19 +122,20 @@ export default class Tile3DFeatureTable {
     return typedArray;
   }
 
-  _getTypedArrayFromArray(propertyName, componentType, array) {
+  _getTypedArrayFromArray(propertyName, componentType: TypedArrayConstructor | number, array) {
     const cachedTypedArrays = this._cachedTypedArrays;
     let typedArray = cachedTypedArrays[propertyName];
     if (!typedArray) {
+      const ArrayType =
+        typeof componentType === 'number'
+          ? getTileComponentArrayType(componentType)
+          : componentType;
       if (ArrayBuffer.isView(array)) {
         const byteOffset = array.byteOffset;
         const byteLength = array.byteLength;
-        const elementCount = byteLength / GLType.getByteSize(componentType);
-        typedArray = GLType.createTypedArray(componentType, array.buffer, byteOffset, elementCount);
-      } else if (array instanceof ArrayBuffer) {
-        typedArray = GLType.createTypedArray(componentType, array);
+        const elementCount = byteLength / ArrayType.BYTES_PER_ELEMENT;
+        typedArray = new ArrayType(array.buffer as ArrayBuffer, byteOffset, elementCount);
       } else {
-        const ArrayType = GLType.getArrayType(componentType);
         typedArray = new ArrayType(array);
       }
       cachedTypedArrays[propertyName] = typedArray;

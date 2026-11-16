@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {Tile3DBatchTable} from '@loaders.gl/tiles-3d/3d-tiles';
-import {decodeRGB565, GL} from '@math.gl/geometry';
+import {decodeRGB565} from '@math.gl/geometry';
 import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
 import {Tiles3DTileContent} from '../../../types';
 
@@ -14,7 +14,6 @@ export function normalize3DTileColorAttribute(
   batchTable?: Tile3DBatchTable,
   colorFormat: 'uint8norm' | 'float16' | 'float32' = 'uint8norm'
 ): {
-  type: number;
   value: Uint8ClampedArray | Float16Array | Uint16Array | Float32Array;
   size: number;
   normalized: boolean;
@@ -73,7 +72,6 @@ function makeColorAttribute(
 ) {
   if (colorFormat === 'float16') {
     return {
-      type: 5131,
       value: convertColorArrayToFloat16(colors, 255),
       size,
       normalized: false,
@@ -82,12 +80,11 @@ function makeColorAttribute(
   }
   if (colorFormat === 'float32') {
     return {
-      type: GL.FLOAT,
       value: Float32Array.from(colors, color => color / 255),
       size,
       normalized: false
     };
   }
-  return {type: GL.UNSIGNED_BYTE, value: colors, size, normalized: true};
+  return {value: colors, size, normalized: true};
 }
 /* eslint-enable complexity*/
