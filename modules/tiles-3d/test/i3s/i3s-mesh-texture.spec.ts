@@ -15,7 +15,7 @@ import {
   type I3SMeshTexture
 } from '@loaders.gl/tiles-3d/i3s';
 import {prepareI3SMeshTexture} from '../../src/i3s/i3s-mesh-texture';
-import {I3SSceneLayerSchema} from '@loaders.gl/tiles-3d/i3s/i3s-zod-schema';
+import {I3SSceneLayerSchema} from '@loaders.gl/tiles-3d/i3s-zod-schema';
 import type {MeshGeometry} from '@loaders.gl/core/schema';
 
 let png: Uint8Array;

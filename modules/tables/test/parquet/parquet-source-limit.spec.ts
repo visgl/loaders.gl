@@ -5,7 +5,7 @@
 import {beforeAll, expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
@@ -29,7 +29,7 @@ beforeAll(async () => {
         {id: 4, value: 'four'}
       ]
     } satisfies ObjectRowTable,
-    ParquetJSWriter
+    ParquetWriter
   );
   fixture = new Blob([data]);
 });

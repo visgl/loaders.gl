@@ -6,9 +6,9 @@ import type {MeshAttributes} from '@loaders.gl/core/schema';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import {Las} from 'copc';
-import type {LASLoaderOptions} from '../../las-loader-types';
-import {getLASSchema} from '../get-las-schema';
-import type {LASHeader, LASMesh} from '../las-types';
+import type {LASLoaderOptions} from '../../../../../../modules/pointclouds/src/las/las-loader-types';
+import {getLASSchema} from '../../../../../../modules/pointclouds/src/las/lib/get-las-schema';
+import type {LASHeader, LASMesh} from '../../../../../../modules/pointclouds/src/las/lib/las-types';
 
 const DEFAULT_BATCH_SIZE = 1000 * 100;
 

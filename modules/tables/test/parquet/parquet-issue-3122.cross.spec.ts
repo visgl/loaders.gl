@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {encode, load} from '@loaders.gl/core';
-import {ParquetJSWriter, ParquetLoader} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter, ParquetLoader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -17,7 +17,7 @@ test('ParquetLoader decodes UTF8 BYTE_ARRAY values as strings (#3122)', async ()
     data: [{h3: '8828d5476bfffff'}, {h3: '8928308280fffff'}]
   };
 
-  const parquetBuffer = await encode(input, ParquetJSWriter, {worker: false});
+  const parquetBuffer = await encode(input, ParquetWriter, {worker: false});
   const output = await load(parquetBuffer, ParquetLoader, {
     core: {worker: false},
     parquet: {shape: 'object-row-table'}

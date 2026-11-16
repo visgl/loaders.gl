@@ -70,15 +70,14 @@ export {
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
 
-export {ParquetWriter} from './parquet-writer';
 export type {
-  ParquetJSWriterEncoding,
-  ParquetJSWriterOptions,
+  ParquetWriterEncoding,
+  ParquetWriterOptions,
   ParquetSortingColumnOption,
   ParquetWriterEncryptionOptions,
   ParquetWriterFooterSignatureOptions
-} from './parquet-js-writer';
-export {ParquetJSWriter} from './parquet-js-writer';
+} from './parquet-writer';
+export {ParquetWriter} from './parquet-writer';
 
 export {
   decodeParquetColumnIndex,

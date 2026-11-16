@@ -5,11 +5,11 @@
 import * as arrow from 'apache-arrow';
 import type {TableQuery} from '@loaders.gl/core/scan';
 import {query, queryInBatches} from '@loaders.gl/core/scan';
-import {CSVTableSource} from '@loaders.gl/tables/csv/index';
-import {NDJSONTableSource} from '@loaders.gl/tables/json/index';
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
+import {CSVTableSource} from '@loaders.gl/tables/csv';
+import {NDJSONTableSource} from '@loaders.gl/tables/json';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 
 /** Adds hermetic cross-format query benchmarks with identical logical input. */
@@ -37,7 +37,7 @@ export default async function queryBench(suite) {
       new arrow.Utf8()
     )
   });
-  const parquet = await ParquetJSWriter.encode(
+  const parquet = await ParquetWriter.encode(
     {shape: 'object-row-table', schema: convertArrowToSchema(table.schema), data: rows},
     {parquet: {rowGroupSize: 256, writeStatistics: true}}
   );

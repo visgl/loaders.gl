@@ -7,7 +7,7 @@ import { expect, test } from "vitest";
 import { validateLoader } from 'test/common/conformance';
 import * as arrow from 'apache-arrow';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {ParquetLoader} from '@loaders.gl/tables/parquet/index';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import { ParquetJSLoaderWithParser } from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import { ParquetLoaderWithParser } from '@loaders.gl/tables/parquet-loader';
 import {load, preload, setLoaderOptions, isBrowser} from '@loaders.gl/core';

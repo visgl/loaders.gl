@@ -22,7 +22,7 @@ import {AvroLoader} from '../src/avro/avro-loader-types';
 import {ORCLoader} from '../src/orc/orc-loader-types';
 import {encodeAvro} from '../src/avro/lib/encoders/encode-avro';
 import {encodeORC} from '../src/orc/lib/encoders/encode-orc';
-import {ParquetJSWriter} from '../src/parquet/parquet-js-writer';
+import {ParquetWriter} from '../src/parquet/parquet-writer';
 
 const encoder = new TextEncoder();
 const original = tableFromArrays({id: new Int32Array([1, 2]), label: ['first', 'second']});
@@ -45,7 +45,7 @@ beforeAll(async () => {
         ]
       }
     },
-    ParquetJSWriter,
+    ParquetWriter,
     {
       core: {worker: false},
       parquet: {compression: 'UNCOMPRESSED'}

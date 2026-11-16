@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GPXLoader, KMLLoader, TCXLoader} from '@loaders.gl/geospatial/kml/index';
+import {GPXLoader, KMLLoader, TCXLoader} from '@loaders.gl/geospatial/kml';
 
 const KML_URL = '@loaders.gl/geospatial/kml/test/data/kml/KML_Samples.kml';
 const GPX_URL = '@loaders.gl/geospatial/kml/test/data/gpx/trek.gpx';

@@ -4,7 +4,7 @@ import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
-import {ParquetJSWriter} from '../../src/parquet/parquet-js-writer';
+import {ParquetWriter} from '../../src/parquet/parquet-writer';
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 
 const TABLE: ObjectRowTable = {
@@ -23,8 +23,8 @@ const TABLE: ObjectRowTable = {
   ]
 };
 
-test('ParquetJSWriter emits optional SizeStatistics metadata', async () => {
-  const parquetBuffer = await encode(TABLE, ParquetJSWriter, {
+test('ParquetWriter emits optional SizeStatistics metadata', async () => {
+  const parquetBuffer = await encode(TABLE, ParquetWriter, {
     worker: false,
     parquet: {writeSizeStatistics: true, writeStatistics: true}
   });
@@ -52,8 +52,8 @@ test('ParquetJSWriter emits optional SizeStatistics metadata', async () => {
   ]);
 });
 
-test('ParquetJSWriter supports per-column standard statistics', async () => {
-  const parquetBuffer = await encode(TABLE, ParquetJSWriter, {
+test('ParquetWriter supports per-column standard statistics', async () => {
+  const parquetBuffer = await encode(TABLE, ParquetWriter, {
     worker: false,
     parquet: {writeStatistics: {label: true}}
   });
@@ -64,7 +64,7 @@ test('ParquetJSWriter supports per-column standard statistics', async () => {
   expect(value.statistics).toBeUndefined();
 });
 
-test('ParquetJSWriter records zero byte-array totals for empty values', async () => {
+test('ParquetWriter records zero byte-array totals for empty values', async () => {
   const emptyLabelTable: ObjectRowTable = {
     ...TABLE,
     data: [
@@ -72,7 +72,7 @@ test('ParquetJSWriter records zero byte-array totals for empty values', async ()
       {label: null, value: 2}
     ]
   };
-  const parquetBuffer = await encode(emptyLabelTable, ParquetJSWriter, {
+  const parquetBuffer = await encode(emptyLabelTable, ParquetWriter, {
     worker: false,
     parquet: {writeSizeStatistics: true}
   });
@@ -82,8 +82,8 @@ test('ParquetJSWriter records zero byte-array totals for empty values', async ()
   expect(label.size_statistics?.unencoded_byte_array_data_bytes?.toNumber()).toBe(0);
 });
 
-test('ParquetJSWriter records declared row-group sorting columns', async () => {
-  const parquetBuffer = await encode(TABLE, ParquetJSWriter, {
+test('ParquetWriter records declared row-group sorting columns', async () => {
+  const parquetBuffer = await encode(TABLE, ParquetWriter, {
     worker: false,
     parquet: {sortingColumns: [{column: 'label'}, {column: 'value', descending: true, nullsFirst: true}]}
   });
@@ -98,7 +98,7 @@ test('ParquetJSWriter records declared row-group sorting columns', async () => {
   ]);
 });
 
-test('ParquetJSWriter rejects ambiguous bare nested sorting names', async () => {
+test('ParquetWriter rejects ambiguous bare nested sorting names', async () => {
   const nestedTable: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -112,16 +112,16 @@ test('ParquetJSWriter rejects ambiguous bare nested sorting names', async () => 
   };
 
   await expect(
-    encode(nestedTable, ParquetJSWriter, {
+    encode(nestedTable, ParquetWriter, {
       worker: false,
       parquet: {sortingColumns: [{column: 'id'}]}
     })
   ).rejects.toThrow('Unknown Parquet sorting column id');
 });
 
-test('ParquetJSWriter emits page statistics for V1 and V2 data pages', async () => {
+test('ParquetWriter emits page statistics for V1 and V2 data pages', async () => {
   for (const useDataPageV2 of [false, true]) {
-    const parquetBuffer = await encode(TABLE, ParquetJSWriter, {
+    const parquetBuffer = await encode(TABLE, ParquetWriter, {
       worker: false,
       parquet: {pageSize: 1, writeStatistics: true, useDataPageV2}
     });
@@ -138,14 +138,14 @@ test('ParquetJSWriter emits page statistics for V1 and V2 data pages', async () 
   }
 });
 
-test('ParquetJSWriter omits unsafe page indexes for unsigned logical values', async () => {
+test('ParquetWriter omits unsafe page indexes for unsigned logical values', async () => {
   const parquetBuffer = await encode(
     {
       shape: 'object-row-table',
       schema: {fields: [{name: 'value', type: 'uint64', nullable: false}], metadata: {}},
       data: [{value: 1n}, {value: 18_446_744_073_709_551_615n}]
     } satisfies ObjectRowTable,
-    ParquetJSWriter,
+    ParquetWriter,
     {worker: false, parquet: {pageIndex: true}}
   );
   const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
@@ -155,8 +155,8 @@ test('ParquetJSWriter omits unsafe page indexes for unsigned logical values', as
   expect(column.offset_index_offset).toBeDefined();
 });
 
-test('ParquetJSWriter omits SizeStatistics by default', async () => {
-  const parquetBuffer = await encode(TABLE, ParquetJSWriter, {worker: false});
+test('ParquetWriter omits SizeStatistics by default', async () => {
+  const parquetBuffer = await encode(TABLE, ParquetWriter, {worker: false});
   const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
   expect(metadata.row_groups[0].columns[0].meta_data?.size_statistics).toBeUndefined();
 });

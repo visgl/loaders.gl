@@ -249,8 +249,7 @@ const PARQUET_SOURCE_DEFAULT_OPTIONS = {
     verifyPageChecksums: false,
     verifyFooterSignature: true,
     onTelemetry: undefined!,
-    workerUrl: undefined!,
-    wasmUrl: undefined!
+    workerUrl: undefined!
   },
   rangeRequests: {
     batchDelayMs: 0,
@@ -295,11 +294,7 @@ export class ParquetSource
 
   /** Creates a Parquet source backed by strict URL ranges or Blob slices. */
   constructor(data: string | Blob, options: ParquetSourceLoaderOptions, coreApi?: CoreAPI) {
-    const wasmUrl = options.parquet?.wasmUrl;
     super(data, options, PARQUET_SOURCE_DEFAULT_OPTIONS, coreApi);
-    if (wasmUrl !== undefined) {
-      this.options.parquet.wasmUrl = wasmUrl;
-    }
   }
 
   /** Returns the cached logical schema decoded from the Parquet footer. */

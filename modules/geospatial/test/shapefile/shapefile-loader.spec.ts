@@ -10,7 +10,7 @@ import {
   loadInBatches,
   selectLoader
 } from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 import {projectionEngine} from '@math.gl/geospatial/projection';
 
 const SHAPEFILE_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';

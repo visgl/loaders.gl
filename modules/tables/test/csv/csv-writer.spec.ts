@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {CSVLoader, CSVWriterOptions, CSVWriter} from '@loaders.gl/tables/csv/index';
+import {CSVLoader, CSVWriterOptions, CSVWriter} from '@loaders.gl/tables/csv';
 import {encodeTableAsText, parse, preload} from '@loaders.gl/core';
 import {Table} from '@loaders.gl/core/schema';
 import {convertTableToArrow} from '@loaders.gl/core/schema-utils';

@@ -27,8 +27,6 @@ export type ParquetSourceCapabilities = Readonly<{
   supportsBatchProvenance: boolean;
   /** Read cancellation is propagated cooperatively through the active stream. */
   supportsCooperativeReadCancellation: boolean;
-  /** The package includes a local parquet-wasm binary for self-hosted delivery. */
-  supportsLocalWasmAsset: boolean;
   /** Column min/max/null statistics are exposed in public metadata. */
   supportsColumnStatistics: boolean;
   /** Serializable predicates can prune impossible row groups using column statistics. */
@@ -59,7 +57,6 @@ export const PARQUET_SOURCE_CAPABILITIES: ParquetSourceCapabilities = Object.fre
   supportsColumnProjection: true,
   supportsBatchProvenance: true,
   supportsCooperativeReadCancellation: true,
-  supportsLocalWasmAsset: true,
   supportsColumnStatistics: true,
   supportsPredicatePushdown: true,
   supportsPageIndexPruning: true,

@@ -8,7 +8,7 @@ import type {
   ParquetDatasetFileQuery,
   ParquetRowGroupMetadata,
   ParquetTelemetry
-} from '@loaders.gl/tables/parquet/index';
+} from '@loaders.gl/tables/parquet';
 
 /** FSQ Places snapshot republished by Fused on Source Cooperative. */
 export const FSQ_RELEASE = '2024-11-19';

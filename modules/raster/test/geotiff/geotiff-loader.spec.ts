@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
-import {GeoTIFFLoader} from '@loaders.gl/raster/geotiff/index';
+import {GeoTIFFLoader} from '@loaders.gl/raster/geotiff';
 import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';
 const TIFF_URL = '@loaders.gl/raster/test/geotiff/data/gfw-azores.tif';
 test('GeoTIFFLoader.', async () => {

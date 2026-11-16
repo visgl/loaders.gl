@@ -10,7 +10,7 @@ import {
   ParquetLoader,
   createParquetModuleAad,
   verifyParquetFooterSignature
-} from '@loaders.gl/tables/parquet/index';
+} from '@loaders.gl/tables/parquet';
 import type {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import {createWorkerKeyRetriever} from '../../src/parquet/lib/parquet-source-worker-decoder';
 import {expect, test} from 'vitest';

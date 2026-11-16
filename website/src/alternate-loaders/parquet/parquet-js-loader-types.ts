@@ -14,7 +14,7 @@ import type {ParquetLoaderOptions} from '../../../../modules/tables/src/parquet/
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Default option bag for the experimental TypeScript-backed Parquet loader. */
-const DEFAULT_PARQUET_JS_OPTIONS = {
+const DEFAULT_PARQUET_WRITER_OPTIONS = {
   columns: undefined,
   preserveBinary: false,
   verifyFooterSignature: true,
@@ -41,7 +41,7 @@ export const ParquetJSLoader = {
   version: VERSION,
   worker: false,
   options: {
-    parquet: DEFAULT_PARQUET_JS_OPTIONS
+    parquet: DEFAULT_PARQUET_WRITER_OPTIONS
   },
   preload: preloadParquetJSLoader
 } as const satisfies Loader<

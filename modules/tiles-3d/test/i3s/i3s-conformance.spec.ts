@@ -16,7 +16,7 @@ import {
   I3SPointCloudSceneLayerSchema,
   I3SPointSceneLayerSchema,
   I3SSceneLayerSchema
-} from '@loaders.gl/tiles-3d/i3s/i3s-zod-schema';
+} from '@loaders.gl/tiles-3d/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {parseSLPKArchive} from '../../src/i3s/lib/parsers/parse-slpk/parse-slpk';
 import {parseI3STileAttribute} from '../../src/i3s/lib/parsers/parse-i3s-attribute';

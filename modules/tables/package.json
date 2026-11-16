@@ -39,15 +39,15 @@
       "types": "./dist/csv/bundled.d.ts",
       "import": "./dist/csv/bundled.js"
     },
-    "./csv/csv-arrow-table-parser": {
+    "./csv-arrow-table-parser": {
       "types": "./dist/csv/csv-arrow-table-parser.d.ts",
       "import": "./dist/csv/csv-arrow-table-parser.js"
     },
-    "./csv/csv-format": {
+    "./csv-format": {
       "types": "./dist/csv/csv-format.d.ts",
       "import": "./dist/csv/csv-format.js"
     },
-    "./csv/csv-loader-options": {
+    "./csv-loader-options": {
       "types": "./dist/csv/csv-loader-options.d.ts",
       "import": "./dist/csv/csv-loader-options.js"
     },
@@ -67,7 +67,7 @@
       "types": "./dist/csv-writer.d.ts",
       "import": "./dist/csv-writer.js"
     },
-    "./csv/index": {
+    "./csv": {
       "types": "./dist/csv/index.d.ts",
       "import": "./dist/csv/index.js",
       "require": "./dist/csv/index.cjs"
@@ -82,11 +82,11 @@
     "./csv-worker-node.js": {
       "import": "./dist/csv-worker-node.js"
     },
-    "./avro/avro-compression": {
+    "./avro-compression": {
       "types": "./dist/avro/avro-compression.d.ts",
       "import": "./dist/avro/avro-compression.js"
     },
-    "./avro/avro-format": {
+    "./avro-format": {
       "types": "./dist/avro/avro-format.d.ts",
       "import": "./dist/avro/avro-format.js"
     },
@@ -98,11 +98,11 @@
       "types": "./dist/avro-loader.d.ts",
       "import": "./dist/avro-loader.js"
     },
-    "./avro/avro-ocf": {
+    "./avro-ocf": {
       "types": "./dist/avro/avro-ocf.d.ts",
       "import": "./dist/avro/avro-ocf.js"
     },
-    "./avro/avro-parser": {
+    "./avro-parser": {
       "types": "./dist/avro/avro-parser.d.ts",
       "import": "./dist/avro/avro-parser.js"
     },
@@ -114,23 +114,13 @@
       "types": "./dist/avro-schema-loader.d.ts",
       "import": "./dist/avro-schema-loader.js"
     },
-    "./avro/avro-stream": {
+    "./avro-stream": {
       "types": "./dist/avro/avro-stream.d.ts",
       "import": "./dist/avro/avro-stream.js"
     },
     "./avro-writer": {
       "types": "./dist/avro-writer.d.ts",
       "import": "./dist/avro-writer.js"
-    },
-    "./avro/index": {
-      "types": "./dist/avro/index.d.ts",
-      "import": "./dist/avro/index.js",
-      "require": "./dist/avro/index.cjs"
-    },
-    "./csv": {
-      "types": "./dist/csv/index.d.ts",
-      "import": "./dist/csv/index.js",
-      "require": "./dist/csv/index.cjs"
     },
     "./avro": {
       "types": "./dist/avro/index.d.ts",
@@ -182,7 +172,7 @@
       "types": "./dist/arrow/unbundled.d.ts",
       "import": "./dist/arrow/unbundled.js"
     },
-    "./arrow/index": {
+    "./arrow": {
       "types": "./dist/arrow/index.d.ts",
       "import": "./dist/arrow/index.js",
       "require": "./dist/arrow/index.cjs"
@@ -262,11 +252,11 @@
       "types": "./dist/json/unbundled.d.ts",
       "import": "./dist/json/unbundled.js"
     },
-    "./json/json-format": {
+    "./json-format": {
       "types": "./dist/json/json-format.d.ts",
       "import": "./dist/json/json-format.js"
     },
-    "./json/index": {
+    "./json": {
       "types": "./dist/json/index.d.ts",
       "import": "./dist/json/index.js",
       "require": "./dist/json/index.cjs"
@@ -289,7 +279,7 @@
     "./geojson-worker.js": {
       "import": "./dist/geojson-worker.js"
     },
-    "./lance/lance-file": {
+    "./lance-file": {
       "types": "./dist/lance/lance-file.d.ts",
       "import": "./dist/lance/lance-file.js"
     },
@@ -297,7 +287,7 @@
       "types": "./dist/lance-loader.d.ts",
       "import": "./dist/lance-loader.js"
     },
-    "./lance/lance-errors": {
+    "./lance-errors": {
       "types": "./dist/lance/lance-errors.d.ts",
       "import": "./dist/lance/lance-errors.js"
     },
@@ -305,19 +295,19 @@
       "types": "./dist/lance-loader-types.d.ts",
       "import": "./dist/lance-loader-types.js"
     },
-    "./lance/lance-manifest": {
+    "./lance-manifest": {
       "types": "./dist/lance/lance-manifest.d.ts",
       "import": "./dist/lance/lance-manifest.js"
     },
-    "./lance/lance-source-capabilities": {
+    "./lance-source-capabilities": {
       "types": "./dist/lance/lance-source-capabilities.d.ts",
       "import": "./dist/lance/lance-source-capabilities.js"
     },
-    "./lance/lance-decoder": {
+    "./lance-decoder": {
       "types": "./dist/lance/lance-decoder.d.ts",
       "import": "./dist/lance/lance-decoder.js"
     },
-    "./lance/lance-arrow": {
+    "./lance-arrow": {
       "types": "./dist/lance/lance-arrow.d.ts",
       "import": "./dist/lance/lance-arrow.js"
     },
@@ -325,12 +315,12 @@
       "types": "./dist/lance/unbundled.d.ts",
       "import": "./dist/lance/unbundled.js"
     },
-    "./lance/index": {
+    "./lance": {
       "types": "./dist/lance/index.d.ts",
       "import": "./dist/lance/index.js",
       "require": "./dist/lance/index.cjs"
     },
-    "./lance/lance-format": {
+    "./lance-format": {
       "types": "./dist/lance/lance-format.d.ts",
       "import": "./dist/lance/lance-format.js"
     },
@@ -362,22 +352,18 @@
       "types": "./dist/orc/unbundled.d.ts",
       "import": "./dist/orc/unbundled.js"
     },
-    "./orc/index": {
+    "./orc": {
       "types": "./dist/orc/index.d.ts",
       "import": "./dist/orc/index.js",
       "require": "./dist/orc/index.cjs"
     },
-    "./orc/orc-format": {
+    "./orc-format": {
       "types": "./dist/orc/orc-format.d.ts",
       "import": "./dist/orc/orc-format.js"
     },
-    "./parquet/parquet-loader-options": {
+    "./parquet-loader-options": {
       "types": "./dist/parquet/parquet-loader-options.d.ts",
       "import": "./dist/parquet/parquet-loader-options.js"
-    },
-    "./parquet-js-writer": {
-      "types": "./dist/parquet-js-writer.d.ts",
-      "import": "./dist/parquet-js-writer.js"
     },
     "./parquet-writer": {
       "types": "./dist/parquet-writer.d.ts",
@@ -395,7 +381,7 @@
       "types": "./dist/parquet/iceberg-rest-catalog.d.ts",
       "import": "./dist/parquet/iceberg-rest-catalog.js"
     },
-    "./parquet/parquet-encoded-page-types": {
+    "./parquet-encoded-page-types": {
       "types": "./dist/parquet/parquet-encoded-page-types.d.ts",
       "import": "./dist/parquet/parquet-encoded-page-types.js"
     },
@@ -412,10 +398,6 @@
       "types": "./dist/parquet/iceberg-types.d.ts",
       "import": "./dist/parquet/iceberg-types.js"
     },
-    "./parquet/wasm": {
-      "types": "./dist/parquet/wasm.d.ts",
-      "import": "./dist/parquet/wasm.js"
-    },
     "./geoparquet-loader-types": {
       "types": "./dist/geoparquet-loader-types.d.ts",
       "import": "./dist/geoparquet-loader-types.js"
@@ -424,7 +406,7 @@
       "types": "./dist/parquet/delta-format.d.ts",
       "import": "./dist/parquet/delta-format.js"
     },
-    "./parquet/parquet-source-worker-factory": {
+    "./parquet-source-worker-factory": {
       "types": "./dist/parquet/parquet-source-worker-factory.d.ts",
       "import": "./dist/parquet/parquet-source-worker-factory.js"
     },
@@ -448,11 +430,11 @@
       "types": "./dist/parquet-loader-types.d.ts",
       "import": "./dist/parquet-loader-types.js"
     },
-    "./parquet/parquet-loader-base": {
+    "./parquet-loader-base": {
       "types": "./dist/parquet/parquet-loader-base.d.ts",
       "import": "./dist/parquet/parquet-loader-base.js"
     },
-    "./parquet/parquet-source-capabilities": {
+    "./parquet-source-capabilities": {
       "types": "./dist/parquet/parquet-source-capabilities.d.ts",
       "import": "./dist/parquet/parquet-source-capabilities.js"
     },
@@ -465,7 +447,7 @@
       "types": "./dist/parquet/unbundled.d.ts",
       "import": "./dist/parquet/unbundled.js"
     },
-    "./parquet/index": {
+    "./parquet": {
       "types": "./dist/parquet/index.d.ts",
       "import": "./dist/parquet/index.js",
       "require": "./dist/parquet/index.cjs"
@@ -475,15 +457,15 @@
       "import": "./dist/parquet-source-loader.js",
       "require": "./dist/parquet-source-loader.cjs"
     },
-    "./parquet/parquet-source-worker-url": {
+    "./parquet-source-worker-url": {
       "types": "./dist/parquet/parquet-source-worker-url.d.ts",
       "import": "./dist/parquet/parquet-source-worker-url.js"
     },
-    "./parquet/parquet-format": {
+    "./parquet-format": {
       "types": "./dist/parquet/parquet-format.d.ts",
       "import": "./dist/parquet/parquet-format.js"
     },
-    "./parquet/parquet-worker-url": {
+    "./parquet-worker-url": {
       "types": "./dist/parquet/parquet-worker-url.d.ts",
       "import": "./dist/parquet/parquet-worker-url.js"
     },
@@ -501,7 +483,6 @@
     "./parquet/parquet-source-worker.js": {
       "import": "./dist/parquet-source-worker.js"
     },
-    "./parquet/parquet_wasm_bg.wasm": "./dist/parquet/parquet_wasm_bg.wasm",
     "./parquet-worker.js": {
       "import": "./dist/parquet-worker.js"
     },
@@ -511,32 +492,6 @@
     },
     "./parquet-source-worker.js": {
       "import": "./dist/parquet-source-worker.js"
-    },
-    "./parquet_wasm_bg.wasm": "./dist/parquet/parquet_wasm_bg.wasm",
-    "./arrow": {
-      "types": "./dist/arrow/index.d.ts",
-      "import": "./dist/arrow/index.js",
-      "require": "./dist/arrow/index.cjs"
-    },
-    "./json": {
-      "types": "./dist/json/index.d.ts",
-      "import": "./dist/json/index.js",
-      "require": "./dist/json/index.cjs"
-    },
-    "./lance": {
-      "types": "./dist/lance/index.d.ts",
-      "import": "./dist/lance/index.js",
-      "require": "./dist/lance/index.cjs"
-    },
-    "./orc": {
-      "types": "./dist/orc/index.d.ts",
-      "import": "./dist/orc/index.js",
-      "require": "./dist/orc/index.cjs"
-    },
-    "./parquet": {
-      "types": "./dist/parquet/index.d.ts",
-      "import": "./dist/parquet/index.js",
-      "require": "./dist/parquet/index.cjs"
     },
     "./triangulation-worker.js": {
       "import": "./dist/triangulation-worker.js"
@@ -570,14 +525,13 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run copy-wasm && npm run build-worker-csv && npm run build-worker-node-csv && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet && npm run build-worker-json-tables && npm run build-worker-node-json-tables && npm run build-worker-geoarrow && npm run build-worker-node-arrow && npm run build-worker-node-geoarrow",
+    "pre-build": "npm run build-worker-csv && npm run build-worker-node-csv && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet && npm run build-worker-json-tables && npm run build-worker-node-json-tables && npm run build-worker-geoarrow && npm run build-worker-node-arrow && npm run build-worker-node-geoarrow",
     "build-worker-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-triangulation-worker-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-triangulation-worker-node-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/triangulation-worker-node.ts --bundle --outfile=dist/triangulation-worker-node.js --platform=node --target=node16 --format=esm --tree-shaking=false --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-json": "node ../../scripts/build-codec-worker.mjs src/json/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "copy-wasm": "mkdir -p dist/parquet && cp ../../node_modules/parquet-wasm/esm/parquet_wasm_bg.wasm dist/parquet/parquet_wasm_bg.wasm",
     "build-worker-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/parquet/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-worker.ts --outfile=dist/parquet-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --tree-shaking=false --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-source-worker-parquet": "node ../../scripts/build-codec-worker.mjs src/parquet/workers/parquet-source-worker.ts --outfile=dist/parquet-source-worker.js --target=esnext --platform=browser --bundle --sourcemap --inject:src/parquet/polyfills/process.ts --banner:js=var\\ global=globalThis\\; --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -597,9 +551,6 @@
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
-  },
-  "optionalDependencies": {
-    "parquet-wasm": "0.7.2"
   },
   "browser": {
     "child_process": false,

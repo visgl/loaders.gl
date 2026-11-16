@@ -5,31 +5,27 @@
 // LASER (LAS) FILE FORMAT
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, RecordBatch} from 'apache-arrow';
-import {getLASRecordBatches, toPublicLASResult} from './las-loader';
+import {getLASRecordBatches, toPublicLASResult} from '../../../../modules/pointclouds/src/las/las-loader';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
   formatLASMeshColors,
   getLASShape,
   LAS_LOADER_METADATA,
   type LASLoaderOptions
-} from './las-loader-shared';
-import type {LASMesh} from './lib/las-types';
-import {parseLAS, parseLASInBatches} from './lib/laz-perf/parse-las';
+} from '../../../../modules/pointclouds/src/las/las-loader-shared';
+import type {LASMesh} from '../../../../modules/pointclouds/src/las/lib/las-types';
+import {parseCOPCLAS, parseCOPCLASInBatches} from './lib/copc/parse-las';
 
 /**
- * Loader for the LAS (LASer) point cloud format
- * @note Does not support LAS v1.4
+ * LAS/LAZ loader variant using the laz-perf decoder from the COPC package.
  */
-export const LAZPerfLoaderWithParser = {
+export const LASCOPCLoaderWithParser = {
   ...LAS_LOADER_METADATA,
-  name: 'LAS (laz-perf)',
+  name: 'LAS (COPC)',
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    convertLASMesh(parseLAS(arrayBuffer, options), options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    convertLASMesh(parseLAS(arrayBuffer, options), options),
-  parseInBatches: async function* (arrayBufferIterator, options?: LASLoaderOptions) {
-    yield* convertLASMeshBatches(parseLASInBatches(arrayBufferIterator, options), options);
-  }
+    convertLASMesh(await parseCOPCLAS(arrayBuffer, options), options),
+  parseInBatches: (arrayBufferIterator, options?: LASLoaderOptions) =>
+    convertLASMeshBatches(parseCOPCLASInBatches(arrayBufferIterator, options), options)
 } as const satisfies LoaderWithParser<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;
 
 function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | Table {

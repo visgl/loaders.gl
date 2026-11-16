@@ -8,7 +8,7 @@ import {Binary, Table} from 'apache-arrow';
 import {makeArrowTableFromBatches} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
+import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
 import {setLoaderOptions, load, loadInBatches} from '@loaders.gl/core';
 import {convertGeoArrowToTable, getGeoMetadata} from '@loaders.gl/core/geoarrow';
 const FLATGEOBUF_COUNTRIES_DATA_URL = '@loaders.gl/geospatial/flatgeobuf/test/data/countries.fgb';

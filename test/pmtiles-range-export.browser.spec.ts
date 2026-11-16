@@ -4,7 +4,7 @@
 
 import {afterEach, expect, test, vi} from 'vitest';
 import {PMTiles, type Source} from 'pmtiles';
-import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/index';
+import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff';
 import {createTiffFixture} from '../modules/raster/test/geotiff/lib/tiff/tiff-fixture';
 import {createPMTilesExampleArchive} from '../examples/website/tiles/create-pmtiles';
 import {createPMTilesArchiveInWorker} from '../examples/website/tiles/pmtiles-worker-client';

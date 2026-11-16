@@ -6,8 +6,8 @@ import {expect, test} from 'vitest';
 import {MemoryLog} from 'probe.gl/log';
 import {parse, load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import type {Schema} from '@loaders.gl/core/schema';
-import {JSONLoader, JSONTableLoader, GeoJSONLoader} from '@loaders.gl/tables/json/index';
-import type {JSONLoaderOptions, JSONTableLoaderOptions} from '@loaders.gl/tables/json/index';
+import {JSONLoader, JSONTableLoader, GeoJSONLoader} from '@loaders.gl/tables/json';
+import type {JSONLoaderOptions, JSONTableLoaderOptions} from '@loaders.gl/tables/json';
 import {
   JSONLoader as BundledJSONLoader,
   JSONTableLoader as BundledJSONTableLoader,
@@ -15,7 +15,7 @@ import {
   GeoJSONLoader as BundledGeoJSONLoader
 } from '@loaders.gl/tables/json/bundled';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import * as jsonModule from '@loaders.gl/tables/json/index';
+import * as jsonModule from '@loaders.gl/tables/json';
 import * as arrow from 'apache-arrow';
 const GEOJSON_PATH = '@loaders.gl/tables/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH =

@@ -93,7 +93,8 @@ function convertArrowToColumnarTable(arrowTable: arrow.Table): ColumnarTable {
   for (const field of arrowTable.schema.fields) {
     // This (is intended to) coalesce all record batches into a single typed array
     const arrowColumn = arrowTable.getChild(field.name);
-    const values = arrowColumn?.toArray();
+    // Typed value buffers omit the validity bitmap; materialize nullable columns through Arrow.
+    const values = arrowColumn?.nullCount ? Array.from(arrowColumn) : arrowColumn?.toArray();
     columns[field.name] = values;
   }
 

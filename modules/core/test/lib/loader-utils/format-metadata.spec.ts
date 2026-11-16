@@ -6,13 +6,13 @@ import {expect, test} from 'vitest';
 import {NPYFormat} from '@loaders.gl/scientific';
 
 import {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from '@loaders.gl/tiles-3d/3d-tiles';
-import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
-import {ArrowFormat} from '@loaders.gl/tables/arrow/index';
+import {ArrowLoader} from '@loaders.gl/tables/arrow';
+import {ArrowFormat} from '@loaders.gl/tables/arrow';
 import {BSONFormat} from '@loaders.gl/documents';
 import {COPCFormat} from '@loaders.gl/tiles-3d/copc';
-import {CSVFormat} from '@loaders.gl/tables/csv/index';
+import {CSVFormat} from '@loaders.gl/tables/csv';
 import {DracoFormat} from '@loaders.gl/scene';
-import {GeoPackageFormat} from '@loaders.gl/geospatial/geopackage/index';
+import {GeoPackageFormat} from '@loaders.gl/geospatial/geopackage';
 import {GeoTIFFFormat, OMETiffFormat} from '@loaders.gl/raster';
 import {GLBFormat, GLTFFormat} from '@loaders.gl/scene/gltf';
 import {
@@ -25,20 +25,15 @@ import {
   SLPKFormat
 } from '@loaders.gl/tiles-3d/i3s';
 import {ImageBitmapFormat, ImageFormat} from '@loaders.gl/images';
-import {
-  GeoJSONFormat,
-  JSONFormat,
-  NDGeoJSONFormat,
-  NDJSONFormat
-} from '@loaders.gl/tables/json/index';
-import {GPXFormat, KMLFormat, KMZFormat, TCXFormat} from '@loaders.gl/geospatial/kml/index';
+import {GeoJSONFormat, JSONFormat, NDGeoJSONFormat, NDJSONFormat} from '@loaders.gl/tables/json';
+import {GPXFormat, KMLFormat, KMZFormat, TCXFormat} from '@loaders.gl/geospatial/kml';
 import {LASFormat} from '@loaders.gl/pointclouds/las';
 import {LERCFormat} from '@loaders.gl/raster';
 import {MLTFormat} from '@loaders.gl/tiles/mlt';
 import {MapStyleFormat, MVTFormat, TileJSONFormat} from '@loaders.gl/tiles/mvt';
 import {NetCDFFormat} from '@loaders.gl/scientific/netcdf';
 import {MTLFormat, OBJFormat} from '@loaders.gl/scene/obj';
-import {ParquetFormat} from '@loaders.gl/tables/parquet/index';
+import {ParquetFormat} from '@loaders.gl/tables/parquet';
 import {PCDFormat} from '@loaders.gl/pointclouds/pcd';
 import {PMTilesFormat} from '@loaders.gl/tiles/pmtiles';
 import {
@@ -46,7 +41,7 @@ import {
   PotreeFormat,
   PotreeHierarchyChunkFormat
 } from '@loaders.gl/tiles-3d/potree';
-import {DBFFormat, SHPFormat, ShapefileFormat} from '@loaders.gl/geospatial/shapefile/index';
+import {DBFFormat, SHPFormat, ShapefileFormat} from '@loaders.gl/geospatial/shapefile';
 import {QuantizedMeshFormat, TerrainFormat} from '@loaders.gl/raster';
 import {
   BasisTextureFormat,
@@ -78,8 +73,8 @@ import {
 } from '@loaders.gl/ogc/wms';
 import {HTMLFormat, XMLFormat} from '@loaders.gl/documents';
 import {ZipFormat} from '@loaders.gl/archives/zip';
-import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
-import {FlatGeobufFormat} from '@loaders.gl/geospatial/flatgeobuf/index';
+import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
+import {FlatGeobufFormat} from '@loaders.gl/geospatial/flatgeobuf';
 import {MVTLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import {PLYFormat} from '@loaders.gl/pointclouds/ply';

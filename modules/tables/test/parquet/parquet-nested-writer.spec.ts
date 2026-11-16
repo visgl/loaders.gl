@@ -5,14 +5,14 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {encode, load} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 import {expect, test} from 'vitest';
 
-test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {
+test('ParquetWriter writes standard nested LIST and MAP fields', async () => {
   const input: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -84,7 +84,7 @@ test('ParquetJSWriter writes standard nested LIST and MAP fields', async () => {
     ]
   };
 
-  const parquetBuffer = await encode(input, ParquetJSWriter, {
+  const parquetBuffer = await encode(input, ParquetWriter, {
     worker: false,
     parquet: {pageIndex: true, pageSize: 1}
   });

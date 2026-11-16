@@ -8,7 +8,7 @@
   MIT License
 */
 // laslaz.js - treat as compiled code
-import type {LASHeader} from '../las-types';
+import type {LASHeader} from '../../../../../../modules/pointclouds/src/las/lib/las-types';
 import getModule from '../../libs/laz-perf/laz-perf';
 
 let Module: any = null;

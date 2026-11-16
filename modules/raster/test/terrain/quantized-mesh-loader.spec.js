@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {QuantizedMeshLoader} from '@loaders.gl/raster/terrain/index';
+import {QuantizedMeshLoader} from '@loaders.gl/raster/terrain';
 import {setLoaderOptions, load} from '@loaders.gl/core';
 const TILE_WITH_EXTENSIONS_URL =
   '@loaders.gl/raster/test/terrain/data/tile-with-extensions.terrain';

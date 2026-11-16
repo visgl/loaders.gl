@@ -4,7 +4,7 @@ import {LanceLoaderWithParser} from '@loaders.gl/tables/lance-loader';
 import {
   readLanceRemoteCoordinatesToArrow,
   readLanceRemoteFileToArrow
-} from '@loaders.gl/tables/lance/lance-arrow';
+} from '@loaders.gl/tables/lance-arrow';
 
 type LanceColumn = {index: number; name: string; type: 'double' | 'int64'};
 type LanceCoordinateColumn = {index: number; xName: string; yName: string};

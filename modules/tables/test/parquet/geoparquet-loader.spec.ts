@@ -4,7 +4,7 @@
 
 import { expect, test } from "vitest";
 // import {validateLoader} from 'test/common/conformance';
-import { GeoParquetLoader, ParquetLoader, ParquetWriter } from '@loaders.gl/tables/parquet/index';
+import { GeoParquetLoader, ParquetLoader, ParquetWriter } from '@loaders.gl/tables/parquet';
 import { load, encode, setLoaderOptions } from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 const PARQUET_DIR = '@loaders.gl/tables/parquet/test/data/geoparquet';

@@ -49,11 +49,6 @@
       "import": "./dist/obj/bundled.js",
       "require": "./dist/obj/bundled.cjs"
     },
-    "./obj/index": {
-      "types": "./dist/obj/index.d.ts",
-      "import": "./dist/obj/index.js",
-      "require": "./dist/obj/index.cjs"
-    },
     "./obj/mtl-format": {
       "types": "./dist/obj/mtl-format.d.ts",
       "import": "./dist/obj/mtl-format.js",
@@ -69,7 +64,7 @@
       "import": "./dist/mtl-loader.js",
       "require": "./dist/mtl-loader.cjs"
     },
-    "./obj/obj-format": {
+    "./obj-format": {
       "types": "./dist/obj/obj-format.d.ts",
       "import": "./dist/obj/obj-format.js",
       "require": "./dist/obj/obj-format.cjs"
@@ -119,7 +114,7 @@
       "import": "./dist/glb-writer.js",
       "require": "./dist/glb-writer.cjs"
     },
-    "./gltf/gltf-format": {
+    "./gltf-format": {
       "types": "./dist/gltf/gltf-format.d.ts",
       "import": "./dist/gltf/gltf-format.js",
       "require": "./dist/gltf/gltf-format.cjs"
@@ -143,11 +138,6 @@
       "types": "./dist/gltf-writer.d.ts",
       "import": "./dist/gltf-writer.js",
       "require": "./dist/gltf-writer.cjs"
-    },
-    "./gltf/index": {
-      "types": "./dist/gltf/index.d.ts",
-      "import": "./dist/gltf/index.js",
-      "require": "./dist/gltf/index.cjs"
     },
     "./gltf/mesh-arrow": {
       "types": "./dist/gltf/mesh-arrow.d.ts",
@@ -175,11 +165,6 @@
     },
     "./obj-worker.js": {
       "import": "./dist/obj-worker.js"
-    },
-    "./usd/index": {
-      "types": "./dist/usd/index.d.ts",
-      "import": "./dist/usd/index.js",
-      "require": "./dist/usd/index.cjs"
     },
     "./usd-loader-types": {
       "types": "./dist/usd-loader-types.d.ts",

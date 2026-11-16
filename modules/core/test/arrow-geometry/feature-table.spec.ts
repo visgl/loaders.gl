@@ -7,7 +7,7 @@ import * as arrow from 'apache-arrow';
 import {GEOARROW_TEST_CASES} from '@loaders.gl/tables/arrow/test/data/geoarrow/test-cases';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {Feature, FeatureCollection} from '@loaders.gl/core/schema';
-import {GeoArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {GeoArrowLoader} from '@loaders.gl/tables/arrow';
 import {convertFeaturesToWKBArrowTable} from '../../src/arrow-geometry/feature-collection-to-arrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {

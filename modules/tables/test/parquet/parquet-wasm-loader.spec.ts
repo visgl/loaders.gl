@@ -5,14 +5,14 @@
 import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {ParquetWasmLoaderWithParser} from '../../../../website/src/alternate-loaders/parquet/parquet-wasm-loader';
 
 /** Tiny generated fixture shared by the optional WASM reader conformance cases. */
 let fixture: ArrayBuffer;
 
 beforeAll(async () => {
-  fixture = await encode({shape: 'object-row-table', data: [{id: 1}, {id: 2}]}, ParquetJSWriter);
+  fixture = await encode({shape: 'object-row-table', data: [{id: 1}, {id: 2}]}, ParquetWriter);
 });
 
 test('Explicit Parquet WASM reader preserves file parsing shapes and row selection', async () => {

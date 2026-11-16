@@ -67,7 +67,7 @@
       "import": "./dist/potree-loader.js",
       "require": "./dist/potree-loader.cjs"
     },
-    "./potree/potree-metadata-schema": {
+    "./potree-metadata-schema": {
       "types": "./dist/potree/potree-metadata-schema.d.ts",
       "import": "./dist/potree/potree-metadata-schema.js",
       "require": "./dist/potree/potree-metadata-schema.cjs"
@@ -118,7 +118,7 @@
       "import": "./dist/i3s/index.js",
       "require": "./dist/i3s/index.cjs"
     },
-    "./i3s/i3s-zod-schema": {
+    "./i3s-zod-schema": {
       "types": "./dist/i3s/i3s-zod-schema.d.ts",
       "import": "./dist/i3s/i3s-zod-schema.js",
       "require": "./dist/i3s/i3s-zod-schema.cjs"

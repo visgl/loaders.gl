@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import * as jsonModule from '@loaders.gl/tables/json/index';
+import * as jsonModule from '@loaders.gl/tables/json';
 import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
 
 test('JSON root retains primary loaders without the fast backend', () => {

@@ -4,9 +4,6 @@
 
 export type {LASLoaderOptions} from './las-loader-types';
 export {LASLoaderWithParser as LASLoader} from './las-loader';
-export {LASCOPCLoaderWithParser as LASCOPCLoader} from './las-copc-loader';
-export {LAZPerfLoaderWithParser as LAZPerfLoader} from './lazperf-loader';
-export {LAZRsLoaderWithParser as LAZRsLoader} from './laz-rs-loader';
 export {decodeLAZFileInBatches} from './lib/typescript/parse-las';
 export {
   decodeLASWaveformSamples,

@@ -12,7 +12,7 @@ import {
   convertKMLDocumentToFeatureCollection,
   openKMZArchive,
   parseKMLDocument
-} from '@loaders.gl/geospatial/kml/index';
+} from '@loaders.gl/geospatial/kml';
 import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz-loader';
 import {parseGPXTextToFeatureCollection} from '../../src/kml/gpx-loader';
 import {parseTCXTextToFeatureCollection} from '../../src/kml/tcx-loader';

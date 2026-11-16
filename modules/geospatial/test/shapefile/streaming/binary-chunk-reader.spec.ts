@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {_BinaryChunkReader as BinaryChunkReader} from '@loaders.gl/geospatial/shapefile/index';
+import {_BinaryChunkReader as BinaryChunkReader} from '@loaders.gl/geospatial/shapefile';
 const buf1 = new Uint8Array([1, 2, 3]).buffer;
 const buf2 = new Uint8Array([4, 5, 6]).buffer;
 const buf3 = new Uint8Array([7, 8, 9]).buffer;

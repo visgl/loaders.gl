@@ -10,7 +10,7 @@ import {
 } from '@loaders.gl/core/geoarrow';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {load} from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {ArrowLoader} from '@loaders.gl/tables/arrow';
 import {
   GEOARROW_POINT_FILE,
   GEOARROW_MULTIPOINT_FILE,

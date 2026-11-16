@@ -5,8 +5,8 @@
 import {expect, test} from 'vitest';
 import {RecordBatch, Table} from 'apache-arrow';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {NDJSONLoader} from '@loaders.gl/tables/json/index';
-import * as json from '@loaders.gl/tables/json/index';
+import {NDJSONLoader} from '@loaders.gl/tables/json';
+import * as json from '@loaders.gl/tables/json';
 import * as bundledJson from '@loaders.gl/tables/json/bundled';
 import * as unbundledJson from '@loaders.gl/tables/json/unbundled';
 const NDJSON_PATH = '@loaders.gl/tables/json/test/data/ndjson.ndjson';

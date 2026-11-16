@@ -119,14 +119,14 @@ export const ZarrArrayLoader = {
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/zarr-array-loader')).ZarrArrayLoaderWithParser,
+    (await import('@loaders.gl/scientific/zarr-array-loader')).ZarrArrayLoaderWithParser,
   createDataSourceSync(
     _data: string,
     _options: ZarrArrayLoaderOptions,
     _coreApi?: CoreAPI
   ): ZarrArraySource {
     throw new Error(
-      'ZarrArrayLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr/zarr-array-loader import'
+      'ZarrArrayLoader requires async createDataSource() or an explicit @loaders.gl/scientific/zarr-array-loader import'
     );
   }
 } as const satisfies SourceLoader<ZarrArraySource>;

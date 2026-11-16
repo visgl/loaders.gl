@@ -8,8 +8,8 @@ import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {encode, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {LASLoader, LASWriter} from '../../src/las/index';
-import {LAZRsLoaderWithParser} from '../../src/las/laz-rs-loader';
-import {LAZPerfLoaderWithParser} from '../../src/las/lazperf-loader';
+import {LAZRsLoaderWithParser} from '../../../../website/src/alternate-loaders/las/laz-rs-loader';
+import {LAZPerfLoaderWithParser} from '../../../../website/src/alternate-loaders/las/lazperf-loader';
 
 afterEach(() => destroyWorkerTasks());
 

@@ -3,13 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {Table, Int32, vectorFromArray} from 'apache-arrow';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 import {
   makeTableFromData,
   convert,
   type Converter,
   TableConverter
 } from '@loaders.gl/core/schema-utils';
-import {ArrowConverter} from '@loaders.gl/tables/arrow/index';
+import {ArrowConverter} from '@loaders.gl/tables/arrow';
 test('convert() selects direct converter over longer path', async () => {
   const calls: string[] = [];
   const directConverter: Converter<'start' | 'middle' | 'target'> = {
@@ -149,4 +151,21 @@ test('convert() performs a real arrow roundtrip with explicit converters', async
     {name: 'alpha', value: 1},
     {name: 'beta', value: 2}
   ]);
+});
+
+test('Arrow row conversion preserves nulls and columnar conversion retains dense typed buffers', () => {
+  const table = new Table({
+    nullable: vectorFromArray([7, null, -4], new Int32()),
+    dense: vectorFromArray([1, 2, 3], new Int32())
+  });
+  const rows = convertArrowToTable(table, 'object-row-table');
+  expect(rows.data).toEqual([
+    {nullable: 7, dense: 1},
+    {nullable: null, dense: 2},
+    {nullable: -4, dense: 3}
+  ]);
+  const columns = convertArrowToTable(table, 'columnar-table');
+  expect(columns.data.nullable).toEqual([7, null, -4]);
+  expect(columns.data.dense).toBeInstanceOf(Int32Array);
+  expect(convertArrowToTable(table.slice(1), 'object-row-table').data).toEqual(rows.data.slice(1));
 });

@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
-import {DBFLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {DBFLoader} from '@loaders.gl/geospatial/shapefile';
 setLoaderOptions({core: {_workerType: 'test'}});
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = [

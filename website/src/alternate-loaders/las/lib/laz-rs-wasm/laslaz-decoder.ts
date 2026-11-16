@@ -8,8 +8,8 @@
   MIT License
 */
 // laslaz.js - treat as compiled code
-import type {LASHeader} from '../las-types';
-import {WasmLasZipDecompressor} from '../../libs/laz-rs-wasm/laz_rs_wasm';
+import type {LASHeader} from '../../../../../../modules/pointclouds/src/las/lib/las-types';
+import {WasmLasZipDecompressor} from '../../libs/laz-rs-wasm/laz_rs_wasm.js';
 
 type LASPoint = {
   position: [number, number, number];

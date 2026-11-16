@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {concatenateArrayBuffers} from '@loaders.gl/core/loader-utils';
 import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
-import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {SHPLoader} from '@loaders.gl/geospatial/shapefile';
 import {CRC32CHash} from '@loaders.gl/crypto';
 const SHAPEFILE_URL =
   '@loaders.gl/geospatial/shapefile/test/data/shapefile-js/boolean-property.shp';

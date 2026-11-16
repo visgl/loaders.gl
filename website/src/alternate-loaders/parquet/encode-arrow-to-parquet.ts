@@ -3,16 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {loadWasm} from '../utils/load-wasm';
+import {loadWasm} from './load-wasm';
 
-import type {ParquetWriterOptions} from '../../parquet-writer';
+import type {ParquetWasmWriterOptions} from './parquet-wasm-writer';
 
 /**
  * Encode Arrow arrow.Table to Parquet buffer
  */
 export async function encodeArrowToParquet(
   table: arrow.Table,
-  options: ParquetWriterOptions
+  options: ParquetWasmWriterOptions
 ): Promise<ArrayBuffer> {
   const wasmUrl = options.parquet?.wasmUrl;
   const wasm = await loadWasm(wasmUrl);

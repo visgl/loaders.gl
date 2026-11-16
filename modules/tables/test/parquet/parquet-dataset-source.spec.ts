@@ -5,7 +5,7 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {
   ParquetDatasetSource,
   type ParquetDatasetFileQuery
@@ -446,7 +446,7 @@ async function createFixture(
       },
       data: rows
     } satisfies ObjectRowTable,
-    ParquetJSWriter
+    ParquetWriter
   );
   return new Blob([arrayBuffer]);
 }

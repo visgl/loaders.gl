@@ -5,10 +5,10 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {
   GeoParquetLoader,
-  ParquetJSWriter,
+  ParquetWriter,
   ParquetLoader,
-  type ParquetJSWriterOptions
-} from '@loaders.gl/tables/parquet/index';
+  type ParquetWriterOptions
+} from '@loaders.gl/tables/parquet';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
@@ -61,7 +61,7 @@ type ParquetWriterBenchmarkScenario = {
   /** Scale-oriented input table prepared outside the timed callback. */
   table: ObjectRowTable;
   /** TypeScript writer options used by the timed callback. */
-  options: ParquetJSWriterOptions;
+  options: ParquetWriterOptions;
 };
 
 export async function parquetBench(suite) {
@@ -295,7 +295,7 @@ async function createWideScaleParquetFixture(): Promise<ArrayBuffer> {
     })
   };
 
-  return await encode(table, ParquetJSWriter, {
+  return await encode(table, ParquetWriter, {
     worker: false,
     parquet: {dictionary: 'auto', pageSize: 64 * 1024, rowGroupSize: 25_000}
   });
@@ -320,7 +320,7 @@ async function addParquetSourceBenchmarks(suite) {
       payload: index * 0.5
     }))
   };
-  const parquet = await encode(table, ParquetJSWriter, {
+  const parquet = await encode(table, ParquetWriter, {
     worker: false,
     parquet: {rowGroupSize: 10_000, dictionary: 'auto'}
   });
@@ -409,18 +409,18 @@ async function addParquetWriterBenchmarks(suite) {
     }
   ];
 
-  suite = suite.groupSorted('ParquetJSWriter scale');
+  suite = suite.groupSorted('ParquetWriter scale');
   for (const scenario of writerScenarios) {
-    const sample = await encode(scenario.table, ParquetJSWriter, {
+    const sample = await encode(scenario.table, ParquetWriter, {
       ...scenario.options,
       worker: false
     });
     const bytesPerRow = sample.byteLength / rowCount;
     suite.addAsync(
-      `ParquetJSWriter - ${scenario.name} (${bytesPerRow.toFixed(2)} B/row)`,
+      `ParquetWriter - ${scenario.name} (${bytesPerRow.toFixed(2)} B/row)`,
       {...BENCHMARK_OPTIONS, multiplier: rowCount},
       async () => {
-        const parquet = await encode(scenario.table, ParquetJSWriter, {
+        const parquet = await encode(scenario.table, ParquetWriter, {
           ...scenario.options,
           worker: false
         });

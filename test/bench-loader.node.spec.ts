@@ -15,7 +15,7 @@ test('bench-loader resolves workspace benchmark entries from test sources', asyn
   expect(resolution.shortCircuit, 'benchmark entry short-circuits Node resolution').toBeTruthy();
 });
 test('bench-loader resolves workspace package roots from src', async () => {
-  const resolution = await resolveBenchmarkSpecifier('@loaders.gl/tables/json/index', {}, () => {
+  const resolution = await resolveBenchmarkSpecifier('@loaders.gl/tables/json', {}, () => {
     throw new Error('nextResolve should not be called for workspace package roots');
   });
   expect(resolution.url).toContain('/modules/tables/src/json/index.ts');

@@ -4,7 +4,7 @@
 
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {createDataSourceSync, encode, load} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
@@ -33,9 +33,9 @@ const FILE_UNIQUE = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
 const COLUMN_KEY_METADATA = new TextEncoder().encode('writer-label-key-v2');
 
 test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
-  'ParquetJSWriter emits a decryptable encrypted footer with %s',
+  'ParquetWriter emits a decryptable encrypted footer with %s',
   async algorithm => {
-    const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+    const parquetBuffer = await encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         encryption: {
@@ -63,8 +63,8 @@ test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
   }
 );
 
-test('ParquetJSWriter supports per-column encryption keys for key rotation', async () => {
-  const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+test('ParquetWriter supports per-column encryption keys for key rotation', async () => {
+  const parquetBuffer = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       pageSize: 1,
@@ -99,8 +99,8 @@ test('ParquetJSWriter supports per-column encryption keys for key rotation', asy
   expect(output).toMatchObject({shape: 'object-row-table', data: INPUT.data});
 });
 
-test('ParquetJSWriter emits a verifiable plaintext-footer signature', async () => {
-  const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+test('ParquetWriter emits a verifiable plaintext-footer signature', async () => {
+  const parquetBuffer = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       footerSignature: {
@@ -129,8 +129,8 @@ test('ParquetJSWriter emits a verifiable plaintext-footer signature', async () =
   expect(new TextDecoder().decode(new Uint8Array(parquetBuffer).slice(-4))).toBe('PAR1');
 });
 
-test('ParquetJSWriter combines a signed plaintext footer with encrypted columns', async () => {
-  const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+test('ParquetWriter combines a signed plaintext footer with encrypted columns', async () => {
+  const parquetBuffer = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       encryption: {
@@ -169,9 +169,9 @@ test('ParquetJSWriter combines a signed plaintext footer with encrypted columns'
   expect(new TextDecoder().decode(new Uint8Array(parquetBuffer).slice(0, 4))).toBe('PAR1');
 });
 
-test('ParquetJSWriter rejects unknown column encryption metadata', async () => {
+test('ParquetWriter rejects unknown column encryption metadata', async () => {
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         encryption: {
@@ -185,9 +185,9 @@ test('ParquetJSWriter rejects unknown column encryption metadata', async () => {
 });
 
 test.each(['AES_GCM_V1', 'AES_GCM_CTR_V1'] as const)(
-  'ParquetJSWriter encrypts column pages, Bloom filters, and page indexes with %s',
+  'ParquetWriter encrypts column pages, Bloom filters, and page indexes with %s',
   async algorithm => {
-    const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+    const parquetBuffer = await encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         pageSize: 1,

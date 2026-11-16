@@ -4,12 +4,12 @@
 
 // ported and es6-ified from https://github.com/verma/plasio/
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
-import type {LASLoaderOptions} from '../../las-loader-types';
-import type {LASMesh, LASHeader} from '../las-types';
+import type {LASLoaderOptions} from '../../../../../../modules/pointclouds/src/las/las-loader-types';
+import type {LASMesh, LASHeader} from '../../../../../../modules/pointclouds/src/las/lib/las-types';
 import type {MeshAttributes} from '@loaders.gl/core/schema';
 import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
-import {getLASSchema} from '../get-las-schema';
+import {getLASSchema} from '../../../../../../modules/pointclouds/src/las/lib/get-las-schema';
 import {LASFile} from './laslaz-decoder';
 
 type LASChunk = {

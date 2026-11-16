@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {JSONWriter} from '@loaders.gl/tables/json/index';
+import {JSONWriter} from '@loaders.gl/tables/json';
 import {GeoJSONLoader as BundledGeoJSONLoader} from '@loaders.gl/tables/json/bundled';
 import {encodeTableAsText} from '@loaders.gl/core';
 import {convertTableToArrow} from '@loaders.gl/core/schema-utils';

@@ -44,9 +44,7 @@ export {ORCWriter, type ORCWriterOptions} from './orc/orc-writer';
 export {ParquetFormat} from './parquet/parquet-format';
 export type {ParquetLoaderOptions} from './parquet/parquet-loader-options';
 export {ParquetWriter} from './parquet/parquet-writer';
-export {ParquetJSWriter} from './parquet/parquet-js-writer';
 
 export type {LanceSourceLoaderOptions} from './lance/lance-source-loader';
 export type {GeoArrowLoaderOptions} from './arrow/geoarrow-loader-types';
 export type {ParquetWriterOptions} from './parquet/parquet-writer';
-export type {ParquetJSWriterOptions} from './parquet/parquet-js-writer';

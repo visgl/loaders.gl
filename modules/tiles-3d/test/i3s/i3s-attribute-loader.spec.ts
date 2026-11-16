@@ -3,17 +3,17 @@ import {load} from '@loaders.gl/core';
 import {I3SAttributeLoader} from '@loaders.gl/tiles-3d/i3s';
 // @ts-expect-error
 import {loadFeatureAttributes} from '../../src/i3s/i3s-attribute-loader';
-const objectIdsUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_0/0/index.bin';
-const namesUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_1/0/index.bin';
-const heightRoofUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_2/0/index.bin';
+const objectIdsUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_0/0.bin';
+const namesUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_1/0.bin';
+const heightRoofUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_2/0.bin';
 const wrongNamesUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_1/0/wrong.bin';
 const wrongBufferNamesUrl = '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_1/0/wrong-buffer.bin';
 const objectIdsWithCodeValuesUrl =
-  '@loaders.gl/tiles-3d/i3s/test/data/BuildingSceneLayer/attributes/f_0/0/index.bin';
+  '@loaders.gl/tiles-3d/i3s/test/data/BuildingSceneLayer/attributes/f_0/0.bin';
 const attributesWithCodeValuesUrl =
-  '@loaders.gl/tiles-3d/i3s/test/data/BuildingSceneLayer/attributes/f_27/0/index.bin';
+  '@loaders.gl/tiles-3d/i3s/test/data/BuildingSceneLayer/attributes/f_27/0.bin';
 const shortInt16AttributesUrl =
-  '@loaders.gl/tiles-3d/i3s/test/data/BuildingSceneLayer/attributes/f_7/0/index.bin';
+  '@loaders.gl/tiles-3d/i3s/test/data/BuildingSceneLayer/attributes/f_7/0.bin';
 const name602 = 'West End Building\0';
 const objecId0 = 979297;
 const heightRoof0 = 32.18;

@@ -6,7 +6,7 @@ test('terrain browser consumers use the upstream meshing backends', async () => 
   const result = await build({
     stdin: {
       contents:
-        "import {TerrainLoader} from '@loaders.gl/raster/terrain/index'; export const loader = await TerrainLoader.preload();",
+        "import {TerrainLoader} from '@loaders.gl/raster/terrain'; export const loader = await TerrainLoader.preload();",
       resolveDir: process.cwd()
     },
     tsconfigRaw: {compilerOptions: {}},

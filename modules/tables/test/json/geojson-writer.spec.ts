@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GeoJSONWriter} from '@loaders.gl/tables/json/index';
+import {GeoJSONWriter} from '@loaders.gl/tables/json';
 import {encodeTableAsText, encodeTableInBatches} from '@loaders.gl/core';
 import {tableWithNullGeometryColumn} from '@loaders.gl/core/schema-utils/test/shared-utils';
 const EXPECTED_GEOJSON = `\

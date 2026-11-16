@@ -5,7 +5,7 @@
 import {Table as NativeArrowTable} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {createDataSourceSync, fetchFile, resolvePath} from '@loaders.gl/core';
-import {FlatGeobufVectorSource} from '@loaders.gl/geospatial/flatgeobuf/index';
+import {FlatGeobufVectorSource} from '@loaders.gl/geospatial/flatgeobuf';
 import {FlatGeobufLoaderWithParser} from '@loaders.gl/geospatial/flatgeobuf-loader';
 import {convertBinaryFeatureCollectionToGeojson} from '@loaders.gl/core/geoarrow';
 import {convertGeoArrowToTable} from '@loaders.gl/core/geoarrow';

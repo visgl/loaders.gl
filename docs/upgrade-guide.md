@@ -261,17 +261,17 @@ segment from implementation imports:
 
 | Previous import | Replacement |
 | --- | --- |
-| `@loaders.gl/tables/parquet/parquet-loader` | `@loaders.gl/tables/parquet-loader` |
-| `@loaders.gl/geospatial/shapefile/shapefile-loader` | `@loaders.gl/geospatial/shapefile-loader` |
-| `@loaders.gl/pointclouds/las/las-loader` | `@loaders.gl/pointclouds/las-loader` |
-| `@loaders.gl/scene/gltf/gltf-loader` | `@loaders.gl/scene/gltf-loader` |
-| `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
+| `@loaders.gl/tables/parquet-loader` | `@loaders.gl/tables/parquet-loader` |
+| `@loaders.gl/geospatial/shapefile-loader` | `@loaders.gl/geospatial/shapefile-loader` |
+| `@loaders.gl/pointclouds/las-loader` | `@loaders.gl/pointclouds/las-loader` |
+| `@loaders.gl/scene/gltf-loader` | `@loaders.gl/scene/gltf-loader` |
+| `@loaders.gl/raster/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
 | `@loaders.gl/ogc/wms/wmts-capabilities-loader-with-parser` | `@loaders.gl/ogc/wmts-capabilities-loader-with-parser` |
 | `@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser` | `@loaders.gl/tiles-3d/cesium-ion-loader-with-parser` |
-| `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-loader` |
-| `@loaders.gl/archives/zip/zip-loader` | `@loaders.gl/archives/zip-loader` |
+| `@loaders.gl/ogc/stac-source` | `@loaders.gl/ogc/stac-loader` |
+| `@loaders.gl/archives/zip-loader` | `@loaders.gl/archives/zip-loader` |
 | `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` | `@loaders.gl/tiles/arrow-table-tile-loader` |
-| `@loaders.gl/tiles-3d/i3s/i3s-mesh-writer` | `@loaders.gl/tiles-3d/i3s-mesh-writer` |
+| `@loaders.gl/tiles-3d/i3s-mesh-writer` | `@loaders.gl/tiles-3d/i3s-mesh-writer` |
 | `@loaders.gl/core/scan/vector-table-scan-source` | `@loaders.gl/core/vector-table-scan-source` |
 
 Metadata roots and format-level facades keep their existing paths. Deep implementation helpers
@@ -419,9 +419,9 @@ Package roots expose the primary loader for each format. Alternate backend loade
 are available through implementation subpaths instead of root exports:
 
 ```typescript
-import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las-copc-loader';
-import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/lazperf-loader';
-import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/laz-rs-loader';
+import {LASCOPCLoaderWithParser} from '../website/src/alternate-loaders/las/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '../website/src/alternate-loaders/las/lazperf-loader';
+import {LAZRsLoaderWithParser} from '../website/src/alternate-loaders/las/laz-rs-loader';
 import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
 ```
 
@@ -932,10 +932,10 @@ native Arrow Table at `graph.tables[index].table`. Existing code that reads
 
 #### Parquet backends and exact integers
 
-- `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoaderWithParser`, or `ParquetJSWriter` instead depending on the backend you want.
-- `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. For the experimental parquetjs backend, import `ParquetJSLoaderWithParser` from `@loaders.gl/tables/parquet-js-loader` and `ParquetJSWriter` from `@loaders.gl/tables/parquet-js-writer`.
+- `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader` and `ParquetWriter` from `@loaders.gl/tables/parquet`.
+- Import the canonical TypeScript `ParquetLoader` and `ParquetWriter` from `@loaders.gl/tables/parquet`.
 - `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or the parser-bearing `ParquetJSLoaderWithParser` for the TypeScript parquetjs implementation.
-- Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetJSWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
+- Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
 
 #### MLT output defaults
 
@@ -1091,7 +1091,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 - `@loaders.gl/parquet/buffer`, `BufferPolyfill`, and `installBufferPolyfill()` were removed. The JavaScript Parquet parser and writer now use `Uint8Array` internally instead of installing a global `Buffer`.
 - `ParquetLoader` and the experimental parquetjs APIs now return unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` values as `Uint8Array` instead of `Buffer`. Logical values such as `UTF8` and `JSON` are still decoded to JavaScript strings/objects according to the Parquet schema.
-- `ParquetLoader` and `ParquetWriter` are now wasm-only. Use `ParquetJSLoader` and `ParquetJSWriter` for the experimental parquetjs plain-row/plain-table backend.
+- `ParquetLoader` and `ParquetWriter` use the native TypeScript implementation; alternative backends are unpublished website comparison support.
 
 ## Upgrading to v4.3
 
@@ -1521,3 +1521,17 @@ APIs.
 SQL data sources and custom SQL adapters now return native tables from
 `queryArrow()` and `executeArrow()`. Pass a native table to
 `DuckDBSQLDataSource.insertArrowTable()`.
+
+### Canonical format imports and TypeScript Parquet writer
+
+Import metadata loaders and writers from the clean format entry point:
+
+```typescript
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+```
+
+Public `/index` suffixes and repeated format paths have been removed. Use the format entry point for metadata loaders and writers, or a flat parser entry point such as `@loaders.gl/tables/parquet-loader` when a parser-bearing loader is required.
+
+`ParquetJSWriter` is now `ParquetWriter`; its options and encoding types are named `ParquetWriterOptions` and `ParquetWriterEncoding`. The former WASM-backed writer is no longer published. Remove `parquet.wasmUrl`; production Parquet readers and writers use TypeScript. The source capability `supportsLocalWasmAsset` and packaged Parquet WASM assets have also been removed.
+
+`LASCOPCLoader`, `LAZPerfLoader`, and `LAZRsLoader` are no longer public loaders. Use `LASLoader` from `@loaders.gl/pointclouds/las`. Alternate implementations remain in website benchmark support for comparisons and interoperability tests. The separate COPC source in tiles-3d is unchanged.

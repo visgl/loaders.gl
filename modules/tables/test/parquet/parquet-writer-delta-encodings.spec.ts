@@ -5,7 +5,7 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {encode, load} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter, ParquetReader} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter, ParquetReader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -31,9 +31,9 @@ const INPUT: ObjectRowTable = {
 };
 
 test.each([false, true])(
-  'ParquetJSWriter emits stable delta encodings with Data Page V2=%s',
+  'ParquetWriter emits stable delta encodings with Data Page V2=%s',
   async useDataPageV2 => {
-    const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+    const parquetBuffer = await encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         pageSize: 4,
@@ -65,9 +65,9 @@ test.each([false, true])(
   }
 );
 
-test('ParquetJSWriter rejects delta encodings on unsupported columns', async () => {
+test('ParquetWriter rejects delta encodings on unsupported columns', async () => {
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {columnEncodings: {label: 'DELTA_BINARY_PACKED'}}
     })

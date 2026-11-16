@@ -18,7 +18,7 @@ import {
   ParquetDatasetSource,
   type ParquetDatasetTelemetry
 } from '@loaders.gl/tables/parquet-dataset-source';
-import type {ParquetPredicate} from '@loaders.gl/tables/parquet/index';
+import type {ParquetPredicate} from '@loaders.gl/tables/parquet';
 import type {Table as ArrowTable} from 'apache-arrow';
 import * as maplibregl from 'maplibre-gl';
 import {Map} from 'react-map-gl/maplibre';

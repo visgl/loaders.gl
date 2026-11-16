@@ -5,7 +5,7 @@
 import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {ParquetSource} from '../../src/parquet/parquet-source-loader';
 import type {ParquetSourceExplain} from '../../src/parquet/parquet-source-types';
@@ -91,7 +91,7 @@ let encryptedFixture: ArrayBuffer;
 let signedFixture: ArrayBuffer;
 
 beforeAll(async () => {
-  plainFixture = await encode(INPUT, ParquetJSWriter, {
+  plainFixture = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       rowGroupSize: 2,
@@ -101,7 +101,7 @@ beforeAll(async () => {
       writeSizeStatistics: true
     }
   });
-  encryptedFixture = await encode(INPUT, ParquetJSWriter, {
+  encryptedFixture = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       pageSize: 1,
@@ -119,7 +119,7 @@ beforeAll(async () => {
       }
     }
   });
-  signedFixture = await encode(INPUT, ParquetJSWriter, {
+  signedFixture = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       footerSignature: {
@@ -302,7 +302,7 @@ test('signed footers demand keys and encryption rejects conflicting file identif
   );
   reader.close();
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         encryption: {fileUnique: FILE_UNIQUE, keyRetriever: () => KEY},
@@ -315,7 +315,7 @@ test('signed footers demand keys and encryption rejects conflicting file identif
     })
   ).rejects.toThrow('file_unique values must match');
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         encryption: {fileUnique: new Uint8Array(7), keyRetriever: () => KEY}

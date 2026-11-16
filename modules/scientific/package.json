@@ -86,6 +86,14 @@
       "types": "./dist/nrrd-loader.d.ts",
       "import": "./dist/nrrd-loader.js",
       "require": "./dist/nrrd-loader.cjs"
+    },
+    "./netcdf-loader-with-parser": {
+      "types": "./dist/netcdf/netcdf-loader-with-parser.d.ts",
+      "import": "./dist/netcdf/netcdf-loader-with-parser.js"
+    },
+    "./zarr-array-loader": {
+      "types": "./dist/zarr/zarr-array-loader.d.ts",
+      "import": "./dist/zarr/zarr-array-loader.js"
     }
   },
   "sideEffects": false,

@@ -5,7 +5,7 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {beforeAll, expect, test} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 let fixture: ArrayBuffer;
@@ -42,7 +42,7 @@ beforeAll(async () => {
     shape: 'object-row-table', data: values,
     schema: {fields: fields.map(field => ({...field, nullable: true})), metadata: {}}
   };
-  fixture = await encode(input, ParquetJSWriter, {
+  fixture = await encode(input, ParquetWriter, {
     worker: false,
     parquet: {dictionary: false, compression: 'UNCOMPRESSED', rowGroupSize: 4}
   });

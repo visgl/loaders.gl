@@ -6,7 +6,7 @@
 export class LanceDecoderUnavailableError extends Error {
   /** Creates a descriptive unavailable-decoder error. */
   constructor() {
-    super('Lance decoding is not implemented yet in @loaders.gl/tables/lance/index');
+    super('Lance decoding is not implemented yet in @loaders.gl/tables/lance');
     this.name = 'LanceDecoderUnavailableError';
   }
 }

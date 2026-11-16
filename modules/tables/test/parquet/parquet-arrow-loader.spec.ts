@@ -10,7 +10,7 @@ import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import { getGeometryColumnsFromSchema } from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import { GeoParquetLoader, ParquetJSWriter, ParquetLoader, ParquetWriter } from '@loaders.gl/tables/parquet/index';
+import { GeoParquetLoader, ParquetWriter, ParquetLoader} from '@loaders.gl/tables/parquet';
 import { ParquetLoader as BundledParquetLoader } from '@loaders.gl/tables/parquet/bundled';
 import * as arrow from 'apache-arrow';
 import { WASM_SUPPORTED_FILES } from './data/files';
@@ -225,7 +225,7 @@ test('ParquetWriter#encodes plain JS tables through Arrow wasm adapter', async (
         expect(newTable.data).toEqual(table.data);
     }
 });
-test('ParquetJSWriter#encodes plain JS tables through parquetjs adapter', async () => {
+test('ParquetWriter#encodes plain JS tables through parquetjs adapter', async () => {
     const table: ObjectRowTable = {
         shape: 'object-row-table',
         data: [
@@ -233,7 +233,7 @@ test('ParquetJSWriter#encodes plain JS tables through parquetjs adapter', async 
             { city: 'New York', count: 5 }
         ]
     };
-    const parquetBuffer = await encode(table, ParquetJSWriter, {
+    const parquetBuffer = await encode(table, ParquetWriter, {
         worker: false
     });
     const newTable = await load(parquetBuffer, ParquetJSLoader, {

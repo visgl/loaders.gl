@@ -14,7 +14,7 @@ import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/scene';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
+import {KMLLoader} from '@loaders.gl/geospatial/kml';
 import {JSONTableLoader} from '@loaders.gl/tables/json';
 import {getRegisteredLoaders} from '../../../src/lib/api/register-loaders';
 import {getLoaderContext} from '../../../src/lib/loader-utils/loader-context';

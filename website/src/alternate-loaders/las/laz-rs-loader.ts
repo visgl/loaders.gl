@@ -5,17 +5,17 @@
 // LASER (LAS) FILE FORMAT
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, RecordBatch} from 'apache-arrow';
-import {getLASRecordBatches, toPublicLASResult} from './las-loader';
+import {getLASRecordBatches, toPublicLASResult} from '../../../../modules/pointclouds/src/las/las-loader';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {
   formatLASMeshColors,
   getLASShape,
   LAS_LOADER_METADATA,
   type LASLoaderOptions
-} from './las-loader-shared';
-import type {LASMesh} from './lib/las-types';
+} from '../../../../modules/pointclouds/src/las/las-loader-shared';
+import type {LASMesh} from '../../../../modules/pointclouds/src/las/lib/las-types';
 import {parseLAS, parseLASInBatches} from './lib/laz-rs-wasm/parse-las';
-import initLazRsWasm from './libs/laz-rs-wasm/laz_rs_wasm';
+import initLazRsWasm from './libs/laz-rs-wasm/laz_rs_wasm.js';
 
 /**
  * Loader for the LAS (LASer) point cloud format

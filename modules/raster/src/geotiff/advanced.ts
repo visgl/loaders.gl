@@ -32,3 +32,5 @@ export {discoverGeoTIFF, isTIFFHeader} from './discover-geotiff';
 export type {DiscoverGeoTIFFOptions} from './discover-geotiff';
 
 export {GeoTIFFLoaderWithParser} from './geotiff-loader';
+
+export {GeoTIFFRasterLoaderWithParser} from './geotiff-raster-loader';

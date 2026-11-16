@@ -1,6 +1,6 @@
 import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter, ParquetReader} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter, ParquetReader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -73,7 +73,7 @@ test('INT96 encoder rejects timestamps outside the signed 64-bit range', () => {
   ).toThrow('outside the signed 64-bit range');
 });
 
-test('ParquetJSWriter maps timestamp-nanosecond fields to canonical INT96', async () => {
+test('ParquetWriter maps timestamp-nanosecond fields to canonical INT96', async () => {
   const table: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -83,7 +83,7 @@ test('ParquetJSWriter maps timestamp-nanosecond fields to canonical INT96', asyn
     data: [{event_time: -1n}, {event_time: 0n}]
   };
 
-  const parquetBuffer = await encode(table, ParquetJSWriter, {
+  const parquetBuffer = await encode(table, ParquetWriter, {
     worker: false,
     parquet: {int96AsTimestamp: true}
   });

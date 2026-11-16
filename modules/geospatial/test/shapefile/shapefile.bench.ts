@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const SHAPEFILE_URL = `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`;

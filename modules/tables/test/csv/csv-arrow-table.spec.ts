@@ -13,10 +13,10 @@ import {
   isIterator,
   isAsyncIterable
 } from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 import {CSVLoader as BundledCSVLoader} from '@loaders.gl/tables/csv/bundled';
 import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv/unbundled';
-import * as csv from '@loaders.gl/tables/csv/index';
+import * as csv from '@loaders.gl/tables/csv';
 import * as arrow from 'apache-arrow';
 import {
   deserializeCSVWorkerResult,

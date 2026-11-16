@@ -32,12 +32,12 @@
       "types": "./dist/gpx-loader-types.d.ts",
       "import": "./dist/gpx-loader-types.js"
     },
-    "./kml/index": {
+    "./kml": {
       "types": "./dist/kml/index.d.ts",
       "import": "./dist/kml/index.js",
       "require": "./dist/kml/index.cjs"
     },
-    "./kml/kml-format": {
+    "./kml-format": {
       "types": "./dist/kml/kml-format.d.ts",
       "import": "./dist/kml/kml-format.js"
     },
@@ -49,7 +49,7 @@
       "types": "./dist/kml-loader-types.d.ts",
       "import": "./dist/kml-loader-types.js"
     },
-    "./kml/kml-parser": {
+    "./kml-parser": {
       "types": "./dist/kml/kml-parser.d.ts",
       "import": "./dist/kml/kml-parser.js"
     },
@@ -105,7 +105,7 @@
       "types": "./dist/dbf-loader-types.d.ts",
       "import": "./dist/dbf-loader-types.js"
     },
-    "./shapefile/index": {
+    "./shapefile": {
       "types": "./dist/shapefile/index.d.ts",
       "import": "./dist/shapefile/index.js",
       "require": "./dist/shapefile/index.cjs"
@@ -138,11 +138,6 @@
       "types": "./dist/shapefile/unbundled.d.ts",
       "import": "./dist/shapefile/unbundled.js"
     },
-    "./kml": {
-      "types": "./dist/kml/index.d.ts",
-      "import": "./dist/kml/index.js",
-      "require": "./dist/kml/index.cjs"
-    },
     "./gpx": {
       "types": "./dist/gpx.d.ts",
       "import": "./dist/gpx.js"
@@ -154,11 +149,6 @@
     "./kmz": {
       "types": "./dist/kmz.d.ts",
       "import": "./dist/kmz.js"
-    },
-    "./shapefile": {
-      "types": "./dist/shapefile/index.d.ts",
-      "import": "./dist/shapefile/index.js",
-      "require": "./dist/shapefile/index.cjs"
     },
     "./shp": {
       "types": "./dist/shp.d.ts",
@@ -188,25 +178,20 @@
       "types": "./dist/flatgeobuf/unbundled.d.ts",
       "import": "./dist/flatgeobuf/unbundled.js"
     },
-    "./flatgeobuf/index": {
-      "types": "./dist/flatgeobuf/index.d.ts",
-      "import": "./dist/flatgeobuf/index.js",
-      "require": "./dist/flatgeobuf/index.cjs"
-    },
-    "./flatgeobuf/flatgeobuf-table-query-capabilities": {
-      "types": "./dist/flatgeobuf/flatgeobuf-table-query-capabilities.d.ts",
-      "import": "./dist/flatgeobuf/flatgeobuf-table-query-capabilities.js"
-    },
-    "./flatgeobuf/flatgeobuf-format": {
-      "types": "./dist/flatgeobuf/flatgeobuf-format.d.ts",
-      "import": "./dist/flatgeobuf/flatgeobuf-format.js"
-    },
     "./flatgeobuf": {
       "types": "./dist/flatgeobuf/index.d.ts",
       "import": "./dist/flatgeobuf/index.js",
       "require": "./dist/flatgeobuf/index.cjs"
     },
-    "./geopackage/geopackage-format": {
+    "./flatgeobuf-table-query-capabilities": {
+      "types": "./dist/flatgeobuf/flatgeobuf-table-query-capabilities.d.ts",
+      "import": "./dist/flatgeobuf/flatgeobuf-table-query-capabilities.js"
+    },
+    "./flatgeobuf-format": {
+      "types": "./dist/flatgeobuf/flatgeobuf-format.d.ts",
+      "import": "./dist/flatgeobuf/flatgeobuf-format.js"
+    },
+    "./geopackage-format": {
       "types": "./dist/geopackage/geopackage-format.d.ts",
       "import": "./dist/geopackage/geopackage-format.js"
     },
@@ -222,7 +207,7 @@
       "types": "./dist/geopackage/unbundled.d.ts",
       "import": "./dist/geopackage/unbundled.js"
     },
-    "./geopackage/index": {
+    "./geopackage": {
       "types": "./dist/geopackage/index.d.ts",
       "import": "./dist/geopackage/index.js",
       "require": "./dist/geopackage/index.cjs"
@@ -235,12 +220,7 @@
       "types": "./dist/geopackage-loader-types.d.ts",
       "import": "./dist/geopackage-loader-types.js"
     },
-    "./geopackage": {
-      "types": "./dist/geopackage/index.d.ts",
-      "import": "./dist/geopackage/index.js",
-      "require": "./dist/geopackage/index.cjs"
-    },
-    "./geopackage/geopackage-loader-options": {
+    "./geopackage-loader-options": {
       "types": "./dist/geopackage/geopackage-loader-options.d.ts",
       "import": "./dist/geopackage/geopackage-loader-options.js"
     },
@@ -263,11 +243,6 @@
       "types": "./dist/hex-wkb-loader.d.ts",
       "import": "./dist/hex-wkb-loader.js",
       "require": "./dist/hex-wkb-loader.cjs"
-    },
-    "./wkt/index": {
-      "types": "./dist/wkt/index.d.ts",
-      "import": "./dist/wkt/index.js",
-      "require": "./dist/wkt/index.cjs"
     },
     "./twkb-loader-types": {
       "types": "./dist/twkb-loader-types.d.ts",
@@ -319,7 +294,7 @@
       "import": "./dist/wkt-crs-writer.js",
       "require": "./dist/wkt-crs-writer.cjs"
     },
-    "./wkt/wkt-format": {
+    "./wkt-format": {
       "types": "./dist/wkt/wkt-format.d.ts",
       "import": "./dist/wkt/wkt-format.js",
       "require": "./dist/wkt/wkt-format.cjs"

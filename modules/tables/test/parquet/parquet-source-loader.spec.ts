@@ -9,7 +9,7 @@ import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrows
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {query, queryInBatches} from '@loaders.gl/core/query';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetJSWriter, ParquetLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet/index';
+import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetWriter, ParquetLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
 
@@ -123,14 +123,6 @@ test('ParquetSource#getQueryMetadata exposes panel-ready schema and statistics',
   await source.close();
 });
 
-test('ParquetSource#preserves opaque WASM inputs by identity', async () => {
-  const wasmUrl = Promise.resolve(new URL('https://example.com/parquet_wasm_bg.wasm'));
-  const source = new ParquetSource(new Blob(), {parquet: {wasmUrl}});
-
-  expect(source.options.parquet.wasmUrl).toBe(wasmUrl);
-
-  await source.close();
-  });
 
 test('ParquetSource#routes the public worker URL to the selective worker descriptor', async () => {
   const workerUrl = 'https://example.com/parquet-source-worker.js';
@@ -271,7 +263,7 @@ test('ParquetSource#getScanPlan shares logical and physical pruning decisions', 
   await source.close();
   });
 
-test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', async () => {
+test('ParquetWriter emits opt-in Bloom filters consumed by source planning', async () => {
   const parquetBuffer = await encode(
     {
       shape: 'object-row-table',
@@ -281,7 +273,7 @@ test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', a
       },
       data: [{id: 'a'}, {id: 'z'}, {id: 'a'}, {id: 'z'}]
     } satisfies ObjectRowTable,
-    ParquetJSWriter,
+    ParquetWriter,
     {worker: false, parquet: {rowGroupSize: 2, bloomFilter: {id: true}}}
   );
   const source = createDataSourceSync(new Blob([parquetBuffer]), [ParquetLoaderWithParser], {
@@ -297,7 +289,7 @@ test('ParquetJSWriter emits opt-in Bloom filters consumed by source planning', a
   await source.close();
   });
 
-test('ParquetJSWriter emits page indexes consumed by selective page planning', async () => {
+test('ParquetWriter emits page indexes consumed by selective page planning', async () => {
   const parquetBuffer = await encode(
     {
       shape: 'object-row-table',
@@ -315,7 +307,7 @@ test('ParquetJSWriter emits page indexes consumed by selective page planning', a
         {x: 101, payload: 'hundred-one'}
       ]
     } satisfies ObjectRowTable,
-    ParquetJSWriter,
+    ParquetWriter,
     {worker: false, parquet: {pageSize: 2, pageIndex: {x: true}}}
   );
   const source = createDataSourceSync(new Blob([parquetBuffer]), [ParquetLoaderWithParser], {
@@ -795,7 +787,7 @@ async function createSelectiveFixture(): Promise<ArrayBuffer> {
         ignored_payload: String(index).repeat(16_384)
       }))
     } satisfies ObjectRowTable,
-    ParquetJSWriter,
+    ParquetWriter,
     {parquet: {rowGroupSize: 2}}
   );
   return await selectiveFixturePromise;

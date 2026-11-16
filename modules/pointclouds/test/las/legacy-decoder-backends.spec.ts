@@ -7,13 +7,13 @@ import {expect, test, vi} from 'vitest';
 import {
   parseLAS as parseLASWithLazPerf,
   parseLASInBatches as parseLASInBatchesWithLazPerf
-} from '../../src/las/lib/laz-perf/parse-las';
-import {LASFile as LazPerfLASFile} from '../../src/las/lib/laz-perf/laslaz-decoder';
+} from '../../../../website/src/alternate-loaders/las/lib/laz-perf/parse-las';
+import {LASFile as LazPerfLASFile} from '../../../../website/src/alternate-loaders/las/lib/laz-perf/laslaz-decoder';
 import {
   parseLAS as parseLASWithLazRs,
   parseLASInBatches as parseLASInBatchesWithLazRs
-} from '../../src/las/lib/laz-rs-wasm/parse-las';
-import {LASFile as LazRsLASFile} from '../../src/las/lib/laz-rs-wasm/laslaz-decoder';
+} from '../../../../website/src/alternate-loaders/las/lib/laz-rs-wasm/parse-las';
+import {LASFile as LazRsLASFile} from '../../../../website/src/alternate-loaders/las/lib/laz-rs-wasm/laslaz-decoder';
 
 const POINT_FORMAT_LENGTHS = [20, 28, 26, 34];
 
