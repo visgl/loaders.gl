@@ -17,6 +17,7 @@ export function normalize3DTileNormalAttribute(
   }
 
   if (tile.isOctEncoded16P) {
+    /** Each octahedral component pair decodes to one XYZ normal. */
     const pointCount = normals.length / 2;
     const decodedArray = new Float32Array(pointCount * 3);
     for (let i = 0; i < pointCount; i++) {
