@@ -18,6 +18,20 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Canonical format imports and TypeScript Parquet writer
+
+Import metadata loaders and writers from the clean format entry point:
+
+```typescript
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+```
+
+Public `/index` suffixes and repeated format paths have been removed. Use the format entry point for metadata loaders and writers, or a flat parser entry point such as `@loaders.gl/tables/parquet-loader` when a parser-bearing loader is required.
+
+`ParquetJSWriter` is now `ParquetWriter`; its options and encoding types are named `ParquetWriterOptions` and `ParquetWriterEncoding`. The former WASM-backed writer is no longer published. Remove `parquet.wasmUrl`; production Parquet readers and writers use TypeScript. The source capability `supportsLocalWasmAsset` and packaged Parquet WASM assets have also been removed.
+
+`LASCOPCLoader`, `LAZPerfLoader`, and `LAZRsLoader` are no longer public loaders. Use `LASLoader` from `@loaders.gl/pointclouds/las`. Alternate implementations remain in website benchmark support for comparisons and interoperability tests. The separate COPC source in tiles-3d is unchanged.
+
 ### Decoded tile attributes
 
 Decoded 3D Tiles point clouds expose `topology: 'point-list'`. I3S tile
@@ -261,17 +275,17 @@ segment from implementation imports:
 
 | Previous import | Replacement |
 | --- | --- |
-| `@loaders.gl/tables/parquet-loader` | `@loaders.gl/tables/parquet-loader` |
-| `@loaders.gl/geospatial/shapefile-loader` | `@loaders.gl/geospatial/shapefile-loader` |
-| `@loaders.gl/pointclouds/las-loader` | `@loaders.gl/pointclouds/las-loader` |
-| `@loaders.gl/scene/gltf-loader` | `@loaders.gl/scene/gltf-loader` |
-| `@loaders.gl/raster/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
+| `@loaders.gl/tables/parquet/parquet-loader` | `@loaders.gl/tables/parquet-loader` |
+| `@loaders.gl/geospatial/shapefile/shapefile-loader` | `@loaders.gl/geospatial/shapefile-loader` |
+| `@loaders.gl/pointclouds/las/las-loader` | `@loaders.gl/pointclouds/las-loader` |
+| `@loaders.gl/scene/gltf/gltf-loader` | `@loaders.gl/scene/gltf-loader` |
+| `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
 | `@loaders.gl/ogc/wms/wmts-capabilities-loader-with-parser` | `@loaders.gl/ogc/wmts-capabilities-loader-with-parser` |
 | `@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser` | `@loaders.gl/tiles-3d/cesium-ion-loader-with-parser` |
-| `@loaders.gl/ogc/stac-source` | `@loaders.gl/ogc/stac-loader` |
-| `@loaders.gl/archives/zip-loader` | `@loaders.gl/archives/zip-loader` |
+| `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-loader` |
+| `@loaders.gl/archives/zip/zip-loader` | `@loaders.gl/archives/zip-loader` |
 | `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` | `@loaders.gl/tiles/arrow-table-tile-loader` |
-| `@loaders.gl/tiles-3d/i3s-mesh-writer` | `@loaders.gl/tiles-3d/i3s-mesh-writer` |
+| `@loaders.gl/tiles-3d/i3s/i3s-mesh-writer` | `@loaders.gl/tiles-3d/i3s-mesh-writer` |
 | `@loaders.gl/core/scan/vector-table-scan-source` | `@loaders.gl/core/vector-table-scan-source` |
 
 Metadata roots and format-level facades keep their existing paths. Deep implementation helpers
@@ -415,20 +429,19 @@ or `/bundled` and `/unbundled` entry points in documents.
 
 #### Alternate loader imports
 
-Package roots expose the primary loader for each format. Alternate backend loaders
-are available through implementation subpaths instead of root exports:
+Package roots expose the primary loader for each format. The alternate LAS backends
+`LASCOPCLoader`, `LAZPerfLoader`, and `LAZRsLoader` are no longer published. Use
+`LASLoader` from `@loaders.gl/pointclouds/las`; comparison implementations live in
+the website benchmark directory.
+
+Replace the former `_FastJSONLoader` root export with its implementation subpath:
 
 ```typescript
-import {LASCOPCLoaderWithParser} from '../website/src/alternate-loaders/las/las-copc-loader';
-import {LAZPerfLoaderWithParser} from '../website/src/alternate-loaders/las/lazperf-loader';
-import {LAZRsLoaderWithParser} from '../website/src/alternate-loaders/las/laz-rs-loader';
 import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
 ```
 
-These replace the root exports `LASCOPCLoader`, `LAZPerfLoader`, `LAZRsLoader`,
-and `_FastJSONLoader`. Implementation subpaths load the parser
-eagerly and support direct parsing. Primary metadata loaders continue to preload
-their implementations for asynchronous core APIs.
+Primary metadata loaders continue to preload their implementations for asynchronous
+core APIs. Parser-bearing implementation subpaths support direct parsing.
 
 The explicit `@loaders.gl/tables/arrow/types` facade exposes Apache Arrow names available
 in the supported minimum release, Arrow 17. Import version-specific names such
@@ -1521,17 +1534,3 @@ APIs.
 SQL data sources and custom SQL adapters now return native tables from
 `queryArrow()` and `executeArrow()`. Pass a native table to
 `DuckDBSQLDataSource.insertArrowTable()`.
-
-### Canonical format imports and TypeScript Parquet writer
-
-Import metadata loaders and writers from the clean format entry point:
-
-```typescript
-import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
-```
-
-Public `/index` suffixes and repeated format paths have been removed. Use the format entry point for metadata loaders and writers, or a flat parser entry point such as `@loaders.gl/tables/parquet-loader` when a parser-bearing loader is required.
-
-`ParquetJSWriter` is now `ParquetWriter`; its options and encoding types are named `ParquetWriterOptions` and `ParquetWriterEncoding`. The former WASM-backed writer is no longer published. Remove `parquet.wasmUrl`; production Parquet readers and writers use TypeScript. The source capability `supportsLocalWasmAsset` and packaged Parquet WASM assets have also been removed.
-
-`LASCOPCLoader`, `LAZPerfLoader`, and `LAZRsLoader` are no longer public loaders. Use `LASLoader` from `@loaders.gl/pointclouds/las`. Alternate implementations remain in website benchmark support for comparisons and interoperability tests. The separate COPC source in tiles-3d is unchanged.
