@@ -87,9 +87,9 @@ The support tables use these symbols:
 | ⚠️ | Partially supported, metadata-only, legacy, or dependent on an injected codec |
 | ❌ | Not currently supported |
 
-`ParquetLoader` and `ParquetWriter` use the separately maintained `parquet-wasm` implementation;
-their coverage can differ from the TypeScript `ParquetLoader`, and
-`ParquetWriter` described in the matrices below.
+`ParquetLoader` and `ParquetWriter` use the TypeScript implementation described in the matrices
+below. The separately maintained `parquet-wasm` implementation is used only by unpublished
+website comparisons and interoperability tests.
 
 ## Scan support
 

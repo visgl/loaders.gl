@@ -934,7 +934,7 @@ native Arrow Table at `graph.tables[index].table`. Existing code that reads
 
 - `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader` and `ParquetWriter` from `@loaders.gl/tables/parquet`.
 - Import the canonical TypeScript `ParquetLoader` and `ParquetWriter` from `@loaders.gl/tables/parquet`.
-- `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or the parser-bearing `ParquetJSLoaderWithParser` for the TypeScript parquetjs implementation.
+- `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Use the canonical TypeScript `ParquetLoader`; alternate readers are unpublished website comparison support.
 - Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
 
 #### MLT output defaults
