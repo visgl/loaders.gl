@@ -238,3 +238,15 @@ Domains resolve over the returned rows, including the effect of any row limit
 or offset. Each scale exposes its evaluator through `sample(value)` and its
 JSON-safe configuration through `descriptor`. This entry point materializes
 the query result before resolving its domains.
+
+Use `queryScalesInBatches()` for fixed domains. It appends row-aligned
+results in source order and reuses the same resolved scale across batches.
+
+Use `queryScalesProgressive()` for data-derived domains. It reads the
+query once and emits complete replacement snapshots as domains evolve.
+Each snapshot includes all rows read so far and the scales used for
+its vectors. The final snapshot has `final: true`. Configure
+`emitEveryBatches` and `maxRetainedRows` to control recoloring frequency
+and retained rows. Percentile endpoints use the upstream bounded sketch.
+Use `queryScales()` for exact quantile classes while progressive
+quantile classification awaits the upstream binder.
