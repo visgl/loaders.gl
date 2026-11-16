@@ -124,3 +124,11 @@ export function formatLASMeshColors(
 
   return {...mesh, attributes};
 }
+
+/** Source selection metadata shared by the lightweight and parser-bearing LAS loaders. */
+export const LAS_SOURCE_METADATA = {
+  type: 'las-source',
+  fromUrl: true,
+  fromBlob: true,
+  testURL: (url: string) => /\.(?:las|laz)(?:$|[?#])/i.test(url)
+} as const;

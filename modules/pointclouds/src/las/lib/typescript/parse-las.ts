@@ -503,8 +503,12 @@ export async function* parseLASInBatches(
 }
 
 /** Creates the declared point schema and original header metadata for a zero-point stream. */
-function makeEmptyLASBatch(header: LASHeader, options: LASLoaderOptions): LASArrowTable {
-  const table = parseLASArrowTableBatch(new ArrayBuffer(0), {...header, pointsOffset: 0}, options);
+export function makeEmptyLASBatch(header: LASHeader, options: LASLoaderOptions): LASArrowTable {
+  const table = parseLASArrowTableBatch(
+    new ArrayBuffer(0),
+    {...header, pointsCount: 0, pointsOffset: 0},
+    options
+  );
   return updateLASArrowMetadata({...table, loaderData: header}, makeMetadataFromLasHeader(header));
 }
 
@@ -1818,7 +1822,7 @@ function makeLASArrowTableFromAttributes(
   if (extraBytes) {
     attributes.EXTRA_BYTES = {
       value: extraBytes,
-      size: extraBytes.length / Math.max(lasHeader.pointsCount, 1)
+      size: lasHeader.pointsStructSize - getLAZPointDataRecordBaseLength(lasHeader.pointsFormatId)
     };
   }
   if (typedExtraBytes) {

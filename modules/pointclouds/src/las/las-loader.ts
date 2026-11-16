@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {
+  paceBatchIterator,
+  type CoreAPI,
+  type LoaderWithParser
+} from '@loaders.gl/core/loader-utils';
+import {LASSource, type LASSourceOptions} from './las-source';
 import type {Table, RecordBatch} from 'apache-arrow';
 import {
   convertMeshToArrowTable,
@@ -14,6 +19,7 @@ import {
   formatLASMeshColors,
   getLASShape,
   LAS_LOADER_METADATA,
+  LAS_SOURCE_METADATA,
   type LASLoaderOptions
 } from './las-loader-shared';
 import {
@@ -24,6 +30,8 @@ import type {LASMesh} from './lib/las-types';
 import {
   decodeLAZChunkToArrowTable,
   parseLAS,
+  parseLASHeader,
+  makeEmptyLASBatch,
   parseLASInBatches,
   type LASArrowTable,
   type LAZChunkArrowTableMetadata
@@ -144,6 +152,10 @@ const {
 /** Exposes native Arrow while retaining the column worker and mesh compatibility paths. */
 export const LASLoaderWithParser = {
   ...LASColumnLoaderForCaller,
+  ...LAS_SOURCE_METADATA,
+  /** Creates a sequential query source using the same LAS decoder. */
+  createDataSourceSync: (data: string | Blob, options: LASSourceOptions, coreApi?: CoreAPI) =>
+    new LASSource(data, options, coreApi),
   dataType: LAS_LOADER_METADATA.dataType,
   batchType: LAS_LOADER_METADATA.batchType,
   parse: async (input: ArrayBuffer, options?: LASLoaderOptions) =>
@@ -162,7 +174,12 @@ export const LASLoaderWithParser = {
     const decoded = deserializeLASWorkerTable(result, options);
     return 'attributes' in decoded ? decoded : getLASRecordBatches(toPublicLASResult(decoded))[0];
   }
-} as const satisfies LoaderWithParser<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  LASMesh | Table,
+  LASMesh | RecordBatch,
+  LASLoaderOptions,
+  LASSource
+>;
 
 /** Unwraps the Arrow table with its complete file header. */
 export function toPublicLASResult(result: LASArrowTable): Table;
@@ -187,4 +204,13 @@ export function toPublicLASResult(result: LASMesh | LASArrowTable): LASMesh | Ta
 /** Unwraps the record batches, retaining schema on empty LAS results. */
 export function getLASRecordBatches(table: Table): RecordBatch[] {
   return table.batches.length ? table.batches : [makeArrowMetadataBatch(table.schema)];
+}
+
+/** Builds a schema-only table from complete header bytes without decoding any points. */
+export function parseLASMetadata(bytes: ArrayBuffer, options: LASLoaderOptions): Table {
+  const header = parseLASHeader(bytes);
+  const empty = makeEmptyLASBatch(header, options);
+  return toPublicLASResult(
+    convertLASMesh(empty, {...options, las: {...options.las, shape: 'arrow'}})
+  ) as Table;
 }
