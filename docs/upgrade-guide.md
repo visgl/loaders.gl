@@ -34,8 +34,8 @@ octahedral pairs.
 
 If you read binary feature tables directly with `Tile3DFeatureTable`, pass
 typed array constructors such as `Float32Array` in place of numeric component
-constants. Embedded glTF and binary table descriptors use their file format
-identifiers.
+constants. Existing numeric inputs to the feature table reader still work.
+Embedded glTF and binary table descriptors use their file format identifiers.
 
 ### Source-only loader imports
 

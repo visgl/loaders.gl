@@ -84,10 +84,23 @@ test.each([
   'SELECT a WHERE a = 1 /* comment */',
   'SELECT "unterminated',
   `SELECT a WHERE a = 'unterminated`,
-  'SELECT a WHERE a IS "NULL"',
-  'SELECT a WHERE table.a = 1'
+  'SELECT a WHERE a IS "NULL"'
 ])('unsupported or malformed SELECT is rejected: %s', sql => {
   expect(() => parseSQLQuery(sql)).toThrow();
+});
+
+test('WHERE expressions resolve nested Arrow struct fields', async () => {
+  const locationType = new arrow.Struct([new arrow.Field('score', new arrow.Int32())]);
+  const source = new arrow.Table({
+    name: arrow.vectorFromArray(['match', 'skip'], new arrow.Utf8()),
+    location: arrow.vectorFromArray([{score: 1}, {score: 2}], locationType)
+  });
+
+  const result = await query('SELECT name WHERE location.score = 1', {
+    source,
+    sqlParser: parseSQLQuery
+  });
+  expect(Array.from(result.getChild('name')!)).toEqual(['match']);
 });
 
 test('parser bounds input, projection tokens and nesting before execution', () => {

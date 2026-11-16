@@ -29,9 +29,10 @@ export default class Tile3DFeatureTable {
     return Boolean(this.json[propertyName]);
   }
 
+  /** Reads a global property, using the component type for binary storage. */
   getGlobalProperty(
     propertyName,
-    ArrayType: TypedArrayConstructor = Uint32Array,
+    componentType: TypedArrayConstructor | number = Uint32Array,
     componentLength = 1
   ) {
     const jsonValue = this.json[propertyName];
@@ -39,7 +40,7 @@ export default class Tile3DFeatureTable {
     if (jsonValue && Number.isFinite(jsonValue.byteOffset)) {
       return this._getTypedArrayFromBinary(
         propertyName,
-        ArrayType,
+        componentType,
         componentLength,
         1,
         jsonValue.byteOffset
@@ -49,32 +50,40 @@ export default class Tile3DFeatureTable {
     return jsonValue;
   }
 
-  getPropertyArray(propertyName, ArrayType: TypedArrayConstructor, componentLength) {
+  /** Reads a property for all features as a typed array. */
+  getPropertyArray(propertyName, componentType: TypedArrayConstructor | number, componentLength) {
     const jsonValue = this.json[propertyName];
 
     if (jsonValue && Number.isFinite(jsonValue.byteOffset)) {
       if ('componentType' in jsonValue) {
-        ArrayType = getTileComponentArrayType(jsonValue.componentType);
+        componentType = getTileComponentArrayType(jsonValue.componentType);
       }
       return this._getTypedArrayFromBinary(
         propertyName,
-        ArrayType,
+        componentType,
         componentLength,
         this.featuresLength,
         jsonValue.byteOffset
       );
     }
 
-    return this._getTypedArrayFromArray(propertyName, ArrayType, jsonValue);
+    return this._getTypedArrayFromArray(propertyName, componentType, jsonValue);
   }
 
-  getProperty(propertyName, ArrayType: TypedArrayConstructor, componentLength, featureId, result) {
+  /** Reads a single feature property, writing vector components to result. */
+  getProperty(
+    propertyName,
+    componentType: TypedArrayConstructor | number,
+    componentLength,
+    featureId,
+    result
+  ) {
     const jsonValue = this.json[propertyName];
     if (!jsonValue) {
       return jsonValue;
     }
 
-    const typedArray = this.getPropertyArray(propertyName, ArrayType, componentLength);
+    const typedArray = this.getPropertyArray(propertyName, componentType, componentLength);
 
     if (componentLength === 1) {
       return typedArray[featureId];
@@ -89,10 +98,20 @@ export default class Tile3DFeatureTable {
 
   // HELPERS
 
-  _getTypedArrayFromBinary(propertyName, ArrayType, componentLength, count, byteOffset) {
+  _getTypedArrayFromBinary(
+    propertyName,
+    componentType: TypedArrayConstructor | number,
+    componentLength,
+    count,
+    byteOffset
+  ) {
     const cachedTypedArrays = this._cachedTypedArrays;
     let typedArray = cachedTypedArrays[propertyName];
     if (!typedArray) {
+      const ArrayType =
+        typeof componentType === 'number'
+          ? getTileComponentArrayType(componentType)
+          : componentType;
       typedArray = new ArrayType(
         this.buffer.buffer,
         this.buffer.byteOffset + byteOffset,
@@ -103,10 +122,14 @@ export default class Tile3DFeatureTable {
     return typedArray;
   }
 
-  _getTypedArrayFromArray(propertyName, ArrayType, array) {
+  _getTypedArrayFromArray(propertyName, componentType: TypedArrayConstructor | number, array) {
     const cachedTypedArrays = this._cachedTypedArrays;
     let typedArray = cachedTypedArrays[propertyName];
     if (!typedArray) {
+      const ArrayType =
+        typeof componentType === 'number'
+          ? getTileComponentArrayType(componentType)
+          : componentType;
       if (ArrayBuffer.isView(array)) {
         const byteOffset = array.byteOffset;
         const byteLength = array.byteLength;

@@ -287,7 +287,7 @@ typed array to identify scalar storage.
 | Field | Contents |
 | --- | --- |
 | `attributes.positions` | XYZ typed array or a `{value, size, normalized}` descriptor for quantized positions. |
-| `attributes.normals` | XYZ values in a `{value, size}` descriptor. |
+| `attributes.normals` | XYZ typed array or a `{value, size}` descriptor. |
 | `attributes.colors` | RGB or RGBA `{value, size, normalized}` descriptor, with `componentType: 'float16'` for half-float colors. |
 
 PointCloud Fields
