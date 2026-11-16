@@ -561,6 +561,9 @@
       "@loaders.gl/core/scan": [
         "modules/core/src/scan/index.ts"
       ],
+      "@loaders.gl/core/scan-scales": [
+        "modules/core/src/scan/query-scales.ts"
+      ],
       "@loaders.gl/core/scan/*": [
         "modules/core/src/scan/*"
       ],
