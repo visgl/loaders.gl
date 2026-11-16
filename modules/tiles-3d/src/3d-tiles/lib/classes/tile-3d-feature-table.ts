@@ -134,7 +134,7 @@ export default class Tile3DFeatureTable {
         const byteOffset = array.byteOffset;
         const byteLength = array.byteLength;
         const elementCount = byteLength / ArrayType.BYTES_PER_ELEMENT;
-        typedArray = new ArrayType(array.buffer, byteOffset, elementCount);
+        typedArray = new ArrayType(array.buffer as ArrayBuffer, byteOffset, elementCount);
       } else {
         typedArray = new ArrayType(array);
       }
