@@ -289,7 +289,14 @@ const vitestConfiguration = getVitestConfig({
 if (Array.isArray(vitestConfiguration.resolve?.alias)) {
   vitestConfiguration.resolve.alias = vitestConfiguration.resolve.alias.filter(
     alias => !alias.replacement.endsWith('.d.ts')
-  );
+  ).map(alias => {
+    // A file alias cannot resolve child paths; leave directory and wildcard aliases intact.
+    if (typeof alias.find === 'string' && /\.[cm]?[jt]sx?$/.test(alias.replacement)) {
+      const escapedSpecifier = alias.find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return {...alias, find: new RegExp(`^${escapedSpecifier}$`)};
+    }
+    return alias;
+  });
 }
 
 export default vitestConfiguration;

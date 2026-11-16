@@ -421,8 +421,8 @@ test.each([
   ],
   [{type: 'decimal', bitWidth: 256, precision: 100, scale: 0}, 'exceeds 32 bytes'],
   [
-    {type: 'fixed-size-list', listSize: 1, children: [{name: 'element', type: 'int32'}]},
-    'Unsupported field'
+    {type: 'fixed-size-list', listSize: 1, children: []},
+    'has no value child'
   ]
 ] as const)('writer rejects schema boundary %# without silently selecting a different physical type', async (type, message) => {
   const field: Field = {name: 'value', type: type as DataType, nullable: true};

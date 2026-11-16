@@ -63,8 +63,12 @@ describe('I3S authentication', () => {
   });
 
   test('applies core credentials to feature attribute requests', async () => {
-    const objectIds = await readFixture('@loaders.gl/tiles-3d/i3s/test/data/attributes/f_0/0.bin');
-    const names = await readFixture('@loaders.gl/tiles-3d/i3s/test/data/attributes/f_1/0.bin');
+    const objectIds = await readFixture(
+      '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_0/0/index.bin'
+    );
+    const names = await readFixture(
+      '@loaders.gl/tiles-3d/i3s/test/data/attributes/f_1/0/index.bin'
+    );
     const requestedUrls: string[] = [];
     vi.stubGlobal(
       'fetch',

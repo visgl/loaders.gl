@@ -500,8 +500,7 @@ function getTsconfigAliases(tsconfigProjects) {
         aliasEntries.push({
           key: aliasPattern,
           alias: {
-            // TypeScript paths without a wildcard match only the complete specifier.
-            find: new RegExp(`^${escapeRegExp(aliasPattern)}$`),
+            find: aliasPattern,
             replacement: path.resolve(configDirectory, baseUrl, firstTarget).replace(/\\/g, '/')
           }
         });
