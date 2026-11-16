@@ -94,6 +94,13 @@ the viewport changes; the selected set can continue to change as requested tile 
 `Tileset3D.update(viewport)` remains available as a fire-and-forget compatibility wrapper when the
 application does not need to await the traversal promise.
 
+Traversal also needs a zero-pitch copy of the viewport to measure the projected size of I3S tiles.
+By default it calls the viewport constructor with `longitude`, `latitude`, `zoom`, `bearing`,
+`position`, `width`, `height` and `pitch: 0`. A viewport that cannot be rebuilt from these
+options, such as a viewport in a projected CRS, can supply `getTopDownViewport()`, which returns
+the same camera with zero pitch in the same projection. When the viewport has no `longitude` and
+`latitude`, `maximumTilesSelected` measures tile distances from the unprojected viewport `center`.
+
 ## Constructor
 
 ```typescript

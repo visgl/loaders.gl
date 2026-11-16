@@ -137,19 +137,7 @@ export function getFrameState(
 
   commonSpacePlanesToWGS84(viewport);
 
-  const ViewportClass = viewport.constructor;
-  const {longitude, latitude, width, bearing, zoom, position} = viewport;
-  // @ts-ignore
-  const topDownViewport = new ViewportClass({
-    longitude,
-    latitude,
-    height,
-    width,
-    bearing,
-    zoom,
-    position,
-    pitch: 0
-  });
+  const topDownViewport = getTopDownViewport(viewport);
 
   const verticalFieldOfView =
     Number.isFinite(viewport.fovy) && Number(viewport.fovy) > 0 && Number(viewport.fovy) < 180
@@ -230,7 +218,8 @@ export function updateCameraMotionState(
 /**
  * Limit `tiles` array length with `maximumTilesSelected` number.
  * The criteria for this filtering is distance of a tile center
- * to the `frameState.viewport`'s longitude and latitude
+ * to the `frameState.viewport`'s longitude and latitude, or to its unprojected center
+ * when the viewport has no longitude and latitude
  * @param tiles - tiles array to filter
  * @param frameState - frameState to calculate distances
  * @param maximumTilesSelected - maximal amount of tiles in the output array
@@ -246,7 +235,7 @@ export function limitSelectedTiles(
   }
   // Accumulate distances in couples array: [tileIndex: number, distanceToViewport: number]
   const tuples: [number, number][] = [];
-  const {longitude: viewportLongitude, latitude: viewportLatitude} = frameState.viewport;
+  const [viewportLongitude, viewportLatitude] = getViewportLongitudeLatitude(frameState.viewport);
   for (const [index, tile] of tiles.entries()) {
     const [longitude, latitude] = tile.header.mbs;
     const deltaLon = Math.abs(viewportLongitude - longitude);
@@ -265,6 +254,45 @@ export function limitSelectedTiles(
   }
 
   return [selectedTiles, unselectedTiles];
+}
+
+/**
+ * Returns the zero-pitch viewport used to calculate the projected radius of a tile.
+ * @param viewport - Viewport of the current traversal.
+ * @returns The viewport's own top-down viewport, or a new instance of its class with zero pitch.
+ */
+function getTopDownViewport(viewport: GeospatialViewport): GeospatialViewport {
+  if (viewport.getTopDownViewport) {
+    return viewport.getTopDownViewport();
+  }
+  const ViewportClass = viewport.constructor;
+  const {longitude, latitude, height, width, bearing, zoom, position} = viewport;
+  // @ts-ignore
+  return new ViewportClass({
+    longitude,
+    latitude,
+    height,
+    width,
+    bearing,
+    zoom,
+    position,
+    pitch: 0
+  });
+}
+
+/**
+ * Returns the longitude and latitude of the viewport's camera target.
+ * @param viewport - Viewport of the current traversal.
+ * @returns `[longitude, latitude]` in degrees, from the viewport fields when both are finite, or
+ * else from the unprojected viewport center.
+ */
+function getViewportLongitudeLatitude(viewport: GeospatialViewport): [number, number] {
+  const {longitude, latitude} = viewport;
+  if (Number.isFinite(longitude) && Number.isFinite(latitude)) {
+    return [longitude, latitude];
+  }
+  const [centerLongitude, centerLatitude] = viewport.unprojectPosition(viewport.center);
+  return [centerLongitude, centerLatitude];
 }
 
 function commonSpacePlanesToWGS84(viewport) {

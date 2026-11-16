@@ -48,7 +48,22 @@ export type GeospatialViewport = Viewport & {
   cameraUp: [number, number, number];
   /** Camera target offset in meters from longitude/latitude, including elevation. */
   position?: number[];
+  /**
+   * Camera target longitude in degrees. Viewports in a projected CRS can leave it undefined;
+   * traversal then unprojects `center`.
+   */
   longitude: number;
+  /**
+   * Camera target latitude in degrees. Viewports in a projected CRS can leave it undefined;
+   * traversal then unprojects `center`.
+   */
   latitude: number;
   bearing: number;
+  /**
+   * Returns a viewport with the same camera target, zoom, bearing, size and projection as this
+   * viewport, but with zero pitch. Traversal uses it to measure the projected size of I3S tiles.
+   * Viewports that cannot be rebuilt from `longitude`, `latitude` and `zoom`, such as a viewport in
+   * a projected CRS, must supply it. Without it, traversal calls the viewport constructor.
+   */
+  getTopDownViewport?: () => GeospatialViewport;
 };
