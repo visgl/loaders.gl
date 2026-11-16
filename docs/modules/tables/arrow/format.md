@@ -69,7 +69,7 @@ import apacheLogo from '../../../images/logos/apache-logo.png';
     <span className="docs-api-card__kind">Loader</span>
     <strong>ArrowLoader</strong>
     <span>Loads Apache Arrow IPC files and streams as loaders.gl tables.</span>
-    <span className="docs-api-card__meta">Output: ArrowTable, table shapes</span>
+    <span className="docs-api-card__meta">Output: Apache Arrow table, table shapes</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync, parseInBatches</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/tables/arrow/api-reference/geoarrow-loader">

@@ -485,7 +485,11 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
       NonNullable<StrictLoaderOptions['core']>,
       'worker' | 'maxConcurrency' | 'maxMobileConcurrency' | 'reuseWorkers' | '_workerType'
     >;
-  parquet?: ParquetSourceReadOptions & {
+  parquet?: Omit<ParquetSourceReadOptions, 'offset' | 'limit'> & {
+    /** @deprecated Pass the offset to `read()` or put it in a logical query. */
+    offset?: number;
+    /** @deprecated Pass the limit to `read()` or put it in a logical query. */
+    limit?: number;
     /** HTTP headers forwarded to every remote Parquet request. */
     headers?: HeadersInit;
     /** Preserve binary values when the TypeScript decoder is used for later reads. */

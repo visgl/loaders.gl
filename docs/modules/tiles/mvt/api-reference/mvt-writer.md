@@ -83,7 +83,7 @@ const arrayBuffer = await encode(geojson, MVTWriter, {
 
 ## GeoArrow WKB tiles (from v5.0)
 
-`MVTWriter` also accepts a loaders.gl ArrowTable or Apache Arrow Table with a GeoArrow WKB
+`MVTWriter` also accepts an Apache Arrow table with a GeoArrow WKB
 geometry column. Attributes are read directly from Arrow vectors at the protobuf boundary, including
 sliced and multi-batch tables and dictionaries. It does not construct GeoJSON property rows.
 

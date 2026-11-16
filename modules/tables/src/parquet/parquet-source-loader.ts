@@ -334,7 +334,9 @@ export class ParquetSource
       schema,
       capabilities: {table: this.tableQueryCapabilities},
       columnRoles: getParquetColumnRoles(schema.fields.map(field => field.name)),
-      statistics: {rowCount: metadata.rowCount, byteLength: metadata.fileByteLength}
+      statistics: {rowCount: metadata.rowCount, byteLength: metadata.fileByteLength},
+      hasDefaultRowWindow:
+        this.options.parquet?.offset !== undefined || this.options.parquet?.limit !== undefined
     });
   }
 

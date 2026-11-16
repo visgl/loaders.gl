@@ -7,8 +7,9 @@ import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Shared row-level options supported by both Parquet backends. */
 type ParquetCommonLoaderOptions = {
-  /** @deprecated Use `_scan.limit` instead. */
+  /** @deprecated Put the limit in a logical query or pass it to `ParquetSource.read()`. */
   limit?: number;
+  /** @deprecated Put the offset in a logical query or pass it to `ParquetSource.read()`. */
   offset?: number;
   batchSize?: number;
   /** @deprecated Use `_scan.columns` instead for logical projection. */

@@ -5,7 +5,7 @@
 import type {Converter} from '../../../converters/converters';
 import type {Table} from '@loaders.gl/core/schema';
 import type * as arrow from 'apache-arrow';
-import {isNativeArrowTable} from '../../../../../lib/loader-utils/native-arrow';
+import {isArrowTable} from '../../../../../lib/loader-utils/native-arrow';
 import {convertTables} from './convert-tables';
 
 /**
@@ -24,7 +24,7 @@ export const TableConverter: Converter<TableShape> = {
     return sourceShape !== targetShape;
   },
   detectInputShape(input) {
-    if (isNativeArrowTable(input)) return 'arrow';
+    if (isArrowTable(input)) return 'arrow';
     if (
       typeof input === 'object' &&
       input !== null &&

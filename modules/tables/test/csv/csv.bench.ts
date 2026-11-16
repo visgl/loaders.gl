@@ -5,7 +5,8 @@
 import {encodeTableAsText, fetchFile, parse, preload} from '@loaders.gl/core';
 import {CSVLoader, CSVWriter} from '@loaders.gl/tables/csv/index';
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, Table} from '@loaders.gl/core/schema';
+import type * as arrow from 'apache-arrow';
+import type {Table} from '@loaders.gl/core/schema';
 import {preloadWorker} from '@loaders.gl/core/worker-utils';
 import PapaParseNPM from 'papaparse';
 import {inferSchema, initParser} from 'udsv';
@@ -385,8 +386,8 @@ type BenchmarkScenario = {
   d3TypedRows?: any[];
   untypedCSVTable?: Table;
   typedCSVTable?: Table;
-  untypedArrowTable?: ArrowTable;
-  typedArrowTable?: ArrowTable;
+  untypedArrowTable?: arrow.Table;
+  typedArrowTable?: arrow.Table;
 };
 
 function createBenchmarkScenarios(sample: string): BenchmarkScenario[] {

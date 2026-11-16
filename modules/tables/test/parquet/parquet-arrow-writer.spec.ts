@@ -5,7 +5,7 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import { expect, test } from "vitest";
 import { encode, load } from '@loaders.gl/core';
-import type { ArrowTable, ObjectRowTable } from '@loaders.gl/core/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import * as parquet from '@loaders.gl/tables/parquet/index';
 import * as bundledParquet from '@loaders.gl/tables/parquet/bundled';
 import * as parquetSource from '@loaders.gl/tables/parquet-source-loader';
@@ -76,7 +76,7 @@ test('ParquetWriter#encodes plain JS tables through Arrow adapter', async () => 
         expect(newTable.data).toEqual(table.data);
     }
 });
-function createArrowTable(): ArrowTable {
+function createArrowTable(): arrow.Table {
     const utf8Vector = arrow.vectorFromArray(['a', 'b', 'c', 'd'], new arrow.Utf8());
     const boolVector = arrow.vectorFromArray([true, true, false, false], new arrow.Bool());
     const uint8Vector = arrow.vectorFromArray([1, 2, 3, 4], new arrow.Uint8());

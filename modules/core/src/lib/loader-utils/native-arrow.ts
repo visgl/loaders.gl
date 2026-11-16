@@ -48,9 +48,9 @@ export async function* normalizeNativeArrowBatches(
     ) {
       continue;
     }
-    if (isNativeArrowRecordBatch(batch)) {
+    if (isArrowRecordBatch(batch)) {
       yield batch;
-    } else if (isNativeArrowTable(batch)) {
+    } else if (isArrowTable(batch)) {
       yield* batch.batches;
     } else {
       throw new Error('shape: "arrow" requires a native Arrow table or record batch');
@@ -59,7 +59,7 @@ export async function* normalizeNativeArrowBatches(
 }
 
 /** Identifies native Arrow tables without loading Arrow in the core entry point. */
-export function isNativeArrowTable(value: unknown): value is arrow.Table {
+export function isArrowTable(value: unknown): value is arrow.Table {
   return Boolean(
     value &&
       typeof value === 'object' &&
@@ -74,7 +74,7 @@ export function isNativeArrowTable(value: unknown): value is arrow.Table {
 }
 
 /** Identifies native record batches across Arrow package instances. */
-export function isNativeArrowRecordBatch(value: unknown): value is arrow.RecordBatch {
+export function isArrowRecordBatch(value: unknown): value is arrow.RecordBatch {
   return Boolean(
     value &&
       typeof value === 'object' &&

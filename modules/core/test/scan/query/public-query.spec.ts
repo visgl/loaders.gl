@@ -4,15 +4,15 @@
 
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {query, queryInBatches} from '@loaders.gl/core/scan';
+import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/scan';
 import {parseSQLQuery} from '@math.gl/expressions/sql';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, TableBatch} from '@loaders.gl/core/schema';
+import type {TableBatch} from '@loaders.gl/core/schema';
 import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loader-utils';
 
 /** Creates a small source table with a predicate-only column. */
-function makeTable(): ArrowTable {
+function makeTable(): arrow.Table {
   const data = new arrow.Table({
     name: arrow.vectorFromArray(['a', 'b', 'c'], new arrow.Utf8()),
     value: arrow.vectorFromArray([1, 2, 3], new arrow.Int32())
@@ -43,6 +43,20 @@ test('collected and streamed queries agree and report one completion', async () 
   const projected = await query({select: [{column: 'name', as: 'label'}]}, {source});
   expect(projected.getChild('label')!.data[0].values.buffer).toBe(
     source.getChild('name')!.data[0].values.buffer
+  );
+});
+
+test.each([
+  {offset: 1},
+  {limit: 0},
+  {_scan: {offset: 1}},
+  {_scan: {limit: 0}}
+])('rejects row windows outside the logical query: %j', async window => {
+  const onQueryComplete = vi.fn();
+  const options = {source: makeTable(), onQueryComplete, ...window} as unknown as QueryOptions;
+  await expect(query({}, options)).rejects.toThrow('Put offset and limit in the logical query');
+  expect(onQueryComplete).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({status: 'failed', sourcesRead: 0})
   );
 });
 
@@ -239,7 +253,7 @@ test('unsupported inputs and changed output types fail with one completion summa
   await expect(
     query(
       {},
-      {source: 'https://example.invalid' as unknown as ArrowTable, onQueryComplete: complete}
+      {source: 'https://example.invalid' as unknown as arrow.Table, onQueryComplete: complete}
     )
   ).rejects.toThrow('explicit URL-capable source loaders');
   expect(complete).toHaveBeenCalledTimes(1);

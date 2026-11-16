@@ -78,7 +78,7 @@ const legacy = await load(url, ShapefileLoader, {shapefile: {shape: 'v3'}});
 
 ## Output
 
-The default `ShapefileLoader` output is an `ArrowTable` whose property columns
+The default `ShapefileLoader` output is an Apache Arrow `Table` whose property columns
 come from DBF and whose `geometry` column uses WKB or typed GeoArrow encoding.
 The table schema carries geospatial metadata and preserves the projection used
 for reprojection. When `shapefile.shape: 'v3'` is selected, the legacy output

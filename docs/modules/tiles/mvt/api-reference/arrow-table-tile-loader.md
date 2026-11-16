@@ -15,7 +15,7 @@ input and output stay in Arrow, and attributes do not pass through GeoJSON objec
 ```typescript
 import {ArrowTableTileLoaderWithParser} from '@loaders.gl/tiles/arrow-table-tile-loader';
 
-// table is a loaders.gl ArrowTable or an Apache Arrow Table (or a promise of either).
+// table is an Apache Arrow Table or a promise of one.
 const source = ArrowTableTileLoaderWithParser.createDataSourceSync(table, {
   table: {coordinates: 'wgs84'}
 });
@@ -86,10 +86,10 @@ The loader creates an `ArrowTableVectorTileSource` with these methods:
 
 | Method | Result |
 | --- | --- |
-| `getVectorTile({x, y, z})` | `Promise<ArrowTable \| null>` |
+| `getVectorTile({x, y, z})` | `Promise<arrow.Table \| null>` |
 | `getTile({x, y, z})` | Same as `getVectorTile` |
 | `getTileData({index: {x, y, z}})` | Same Arrow result for rendering integrations |
-| `getTileSync({x, y, z})` | `ArrowTable \| null`; first await `source.ready` |
+| `getTileSync({x, y, z})` | `arrow.Table \| null`; first await `source.ready` |
 | `getSchema()` | Promise of the output loaders.gl schema |
 | `getMetadata()` | Promise of `{schema, minZoom: 0, maxZoom}` |
 

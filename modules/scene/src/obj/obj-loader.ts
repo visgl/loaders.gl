@@ -20,7 +20,7 @@ import {
 import {
   convertMeshToArrowTable,
   convertTableToMesh,
-  isNativeArrowTable,
+  isArrowTable,
   getMeshBoundingBox
 } from '@loaders.gl/core/schema-utils';
 import {getOBJSchema} from './lib/get-obj-schema';
@@ -154,14 +154,14 @@ function convertOBJBatchToMesh(table: Table): OBJMeshBatch {
 /** Hydrates a native worker table before optional mesh reconstruction. */
 function deserializeOBJWorkerResult(result: unknown, options?: OBJLoaderOptions): Mesh | Table {
   const table = deserializeNativeArrowWorkerResult(result);
-  if (!isNativeArrowTable(table)) throw new Error('OBJ worker requires an Arrow table');
+  if (!isArrowTable(table)) throw new Error('OBJ worker requires an Arrow table');
   return options?.obj?.shape === 'mesh' ? convertTableToMesh(table) : table;
 }
 
 /** Hydrates a worker batch and reconstructs the mesh envelope when requested. */
 function deserializeOBJWorkerBatch(result: unknown, options?: OBJLoaderOptions): OBJParsedBatch {
   const chunk = deserializeNativeArrowWorkerResult(result);
-  const batch = isNativeArrowTable(chunk)
+  const batch = isArrowTable(chunk)
     ? (chunk.batches[0] ?? makeArrowMetadataBatch(chunk.schema))
     : chunk;
   return options?.obj?.shape === 'mesh'

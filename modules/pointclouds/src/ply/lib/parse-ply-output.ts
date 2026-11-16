@@ -8,7 +8,7 @@ import {
   convertMeshToArrowTable,
   convertTableToMesh,
   deduceMeshSchema,
-  isNativeArrowTable,
+  isArrowTable,
   makeArrowMetadataBatch,
   refineArrowTableBatches
 } from '@loaders.gl/core/schema-utils';
@@ -82,7 +82,7 @@ export async function* parsePLYNativeBatches(
   };
   async function* readTables() {
     for await (const value of parsePLYInBatches(input, parserOptions)) {
-      yield isNativeArrowTable(value)
+      yield isArrowTable(value)
         ? formatPLYTableColors(value, options)
         : attachPLYHeader(
             formatPLYTableColors(convertMeshToArrowTable(value), options),

@@ -835,6 +835,13 @@ Pass native Apache Arrow tables directly to `GeoArrowLayer`, `MeshArrowPointClou
 and `SplatLayer`. For streaming point clouds and splats, pass an async iterable of Arrow
 `RecordBatch` values.
 
+#### Native Arrow types and guards
+
+Import `Table` and `RecordBatch` from `apache-arrow` in place of the removed
+`ArrowTable` and `ArrowTableBatch` exports from `@loaders.gl/core/schema`.
+Use `isArrowTable` and `isArrowRecordBatch` from `@loaders.gl/core/schema-utils`
+in place of `isNativeArrowTable` and `isNativeArrowRecordBatch`.
+
 #### Table and batch conversions use native Arrow
 
 Use `'arrow'` as the target for table converters, mesh conversion, and batch conversion. Table conversion returns an Apache Arrow `Table`. Batch conversion produces `RecordBatch` values, with schema metadata available on each batch. Use `convertBatches(batches, 'arrow')` for portable row and column batches, and `makeArrowTableFromBatches` to collect a native stream. Use `makeArrowRecordBatchIterator` in place of `makeArrowTableBatchIterator`.
@@ -858,6 +865,14 @@ yield native batches. Use `batch.numRows` and access Arrow columns directly.
 objects. The in-memory Arrow, GeoPackage, ORC, and addressed vector sources also
 yield native batches from `read()` (and `scan()` on addressed vector sources).
 Use `batch.numRows` and read columns directly from the batch.
+
+#### Row windows belong to logical queries
+
+Move Parquet construction options `parquet.offset` and `parquet.limit` to the logical request
+passed to `query()` or `queryInBatches()`. For example, use
+`query({offset: 100, limit: 50}, {source})` with a source created without window defaults.
+For direct selective I/O, pass `{offset, limit}` to `ParquetSource.read()`.
+Direct parsing and direct source reads still accept the legacy settings during migration.
 
 #### Query APIs return native Arrow
 

@@ -20,7 +20,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   ]}
 />
 
-`encodeGeoArrowPMTiles` accepts a loaders.gl `ArrowTable` or Apache Arrow `Table` and an explicit
+`encodeGeoArrowPMTiles` accepts an Apache Arrow `Table` and an explicit
 finite selection of XYZ tile addresses. It uses the existing `ArrowTableVectorTileSource` for
 indexing, clipping, simplification and geometry collection expansion. The tiler returns GeoArrow WKB
 with normalized tile-local coordinates; `MVTWriter` or `MLTWriter` reads those geometries and scalar attributes

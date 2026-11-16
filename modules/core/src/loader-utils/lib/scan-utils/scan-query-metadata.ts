@@ -148,6 +148,8 @@ export type ScanQueryMetadata = Readonly<{
   statistics?: ScanSourceStatistics;
   /** Optional multiscale raster levels. */
   levels?: readonly ScanRasterLevel[];
+  /** The source or a child applies a configured row window to direct reads by default. */
+  hasDefaultRowWindow?: boolean;
 }>;
 
 /** Options accepted by query metadata discovery methods. */
@@ -341,6 +343,8 @@ export type CreateScanQueryMetadataOptions = Readonly<{
   statistics?: ScanSourceStatistics;
   /** Optional multiscale raster levels. */
   levels?: readonly ScanRasterLevel[];
+  /** The source or a child applies a configured row window to direct reads by default. */
+  hasDefaultRowWindow?: boolean;
 }>;
 
 /**
@@ -381,6 +385,7 @@ export function createScanQueryMetadata(options: CreateScanQueryMetadataOptions)
     columns: Object.freeze(columns),
     capabilities: queryCapabilities,
     queryCapabilities,
+    ...(options.hasDefaultRowWindow ? {hasDefaultRowWindow: true} : {}),
     spatial: options.spatial
       ? Object.freeze({
           ...options.spatial,
