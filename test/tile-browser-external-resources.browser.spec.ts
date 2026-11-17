@@ -121,7 +121,14 @@ test.each([
   } else {
     const archive = await parseSLPKArchive(file);
     try {
-      const texture = await archive.getFile('nodes/2/textures/0', 'http');
+      const page = JSON.parse(
+        new TextDecoder().decode(await archive.getFile('nodepages/0', 'http'))
+      );
+      const owner = page.nodes[2].mesh.material.resource;
+      expect(owner).toBe(page.nodes[1].mesh.material.resource);
+      expect(page.nodes[1].mesh.geometry.resource).toBe(1);
+      expect(page.nodes[2].mesh.geometry.resource).toBe(2);
+      const texture = await archive.getFile(`nodes/${owner}/textures/0`, 'http');
       expect(new Uint8Array(texture)).toEqual(png);
       const layer = JSON.parse(new TextDecoder().decode(await archive.getFile('', 'http')));
       expect(layer.textureSetDefinitions).toHaveLength(2);

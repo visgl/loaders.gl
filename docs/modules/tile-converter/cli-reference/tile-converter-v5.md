@@ -219,3 +219,7 @@ numeric coercion is inferred. This mapping does not add support for multiple pro
 classes or texture/implicit feature IDs. The JSON configuration has its own 64 KiB read
 limit and does not count as dataset bytes. See the [feature profiles](../api-reference/v5-conversion.md#declared-gltf-feature-schemas)
 for the source/destination semantic checks.
+
+SLPK collections share byte-identical encoded texture sets with compatible texture
+profiles across mesh nodes. Geometry, UVs and material definitions remain per mesh.
+Both node pages and legacy node indices reference the shared texture owner.
