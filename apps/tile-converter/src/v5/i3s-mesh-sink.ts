@@ -260,7 +260,12 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
             href: entry.href.replace('./textures/', `../${owner.index}/textures/`)
           }));
         } else {
-          textureOwners.push({index, definition, fingerprint, files: textureFiles});
+          textureOwners.push({
+            index,
+            definition,
+            fingerprint,
+            files: textureFiles.map(([name, bytes]) => [name, bytes.slice(0)])
+          });
         }
       }
       node.index = index;
