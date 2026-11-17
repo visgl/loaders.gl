@@ -783,7 +783,7 @@ export default class I3SConverter {
     }
     if (resources.textureOwnerId !== undefined && nodeInPage.mesh) {
       nodeInPage.mesh.material.resource = resources.textureOwnerId;
-      this.nodePages.saveNode(nodeInPage);
+      await this.nodePages.saveNode(nodeInPage);
     }
 
     const nodeData = await NodeIndexDocument.createNodeIndexDocument(

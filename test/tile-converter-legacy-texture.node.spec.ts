@@ -75,3 +75,37 @@ test('legacy duplicate nodes skip image writes and redirect shared material imag
     '../textures/0'
   ]);
 });
+
+test('legacy node pages and resumed metadata retain the same texture owner', async () => {
+  const {default: I3SConverter} = await import(
+    '../apps/tile-converter/src/v4/i3s-converter/i3s-converter'
+  );
+  const converter = new I3SConverter();
+  const savedOwners: number[] = [];
+  let index = 0;
+  Object.assign(converter, {
+    _updateNodeInNodePages: async () => ({index: ++index, mesh: {material: {resource: index}}})
+  });
+  Object.assign(converter.nodePages, {
+    push: async () => {},
+    saveNode: async (node: any) => {
+      savedOwners.push(node.mesh.material.resource);
+    }
+  });
+  const parent = {id: 'root', inPageId: 0, load: async () => ({version: '1', level: 0, ...bounds})};
+  const generate = (
+    converter as unknown as {_generateNodeIndexDocument: (...parameters: any[]) => Promise<any>}
+  )._generateNodeIndexDocument.bind(converter);
+  for (const dumped of [false, false, true]) {
+    const resources = dumped
+      ? {textureOwnerId: 1, texelCountHint: 4}
+      : {texture: {mimeType: 'image/png', bufferView: {data: new Uint8Array([1, 2, 3])}}};
+    const result = await generate(bounds, resources, parent, {boundingVolume: {}}, dumped);
+    expect(result.nodeInPage.mesh.material.resource).toBe(1);
+    expect(resources).toHaveProperty('textureOwnerId', 1);
+    expect(result.nodeData.textureData[0].href).toBe(
+      index === 1 ? './textures/0' : '../1/textures/0'
+    );
+  }
+  expect(savedOwners).toEqual([1, 1, 1]);
+});
