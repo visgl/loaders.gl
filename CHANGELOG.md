@@ -13,6 +13,7 @@
 - Preserve merged tile geometry during bound generation and cover reflected source bounding boxes (#4547, #4549).
 - Share identical textures across I3S collection nodes, including unchanged legacy PNG and JPEG textures (#4550, #4551).
 - Run Node and Chromium slow tests in separate release processes (#4541).
+- Log the tile-converter package version and selected implementation at startup (#4548).
 
 ### v5.0.0-beta.11
 
