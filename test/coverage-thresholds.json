@@ -1443,6 +1443,7 @@
       "owner": "@loaders.gl/documents",
       "path": "modules/documents/src",
       "sourcePaths": [
+        "modules/documents/src/json.ts",
         "modules/documents/src/json-format.ts",
         "modules/documents/src/json-loader-types.ts",
         "modules/documents/src/json-loader.ts"

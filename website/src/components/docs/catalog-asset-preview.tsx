@@ -222,7 +222,7 @@ export async function hasCatalogMapData(asset: CatalogPreviewAsset, signal: Abor
 
 /** Decodes a bounded Arrow preview from a URL or an already downloaded Blob. */
 async function readParquetTable(data: string | Blob, signal: AbortSignal, limit: number): Promise<AssetPreview> {
-  const {ParquetSource} = await import('@loaders.gl/tables/parquet-source-loader');
+  const {ParquetSource} = await import('@loaders.gl/tables/parquet-source');
   signal.throwIfAborted();
   const source = new ParquetSource(data, {core: {worker: false}});
   try {

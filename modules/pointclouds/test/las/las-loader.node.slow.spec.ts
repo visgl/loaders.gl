@@ -17,7 +17,7 @@ import {
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import * as las from '@loaders.gl/pointclouds/las';
 import * as bundledLas from '@loaders.gl/pointclouds/las/bundled';
-import * as unbundledLas from '@loaders.gl/pointclouds/las/unbundled';
+import * as unbundledLas from '@loaders.gl/pointclouds/las';
 import type {LASLoaderOptions} from '@loaders.gl/pointclouds/las';
 import {
   setLoaderOptions,

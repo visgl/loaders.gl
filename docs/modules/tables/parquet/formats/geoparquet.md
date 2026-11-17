@@ -30,7 +30,7 @@ import {ClientExample} from '@site/src/components';
 | Type | API |
 | --- | --- |
 | Loader | [`GeoParquetLoader`](../api-reference/geoparquet-loader.md) |
-| Source loader | [`ParquetLoader`](../api-reference/parquet-source-loader.md) |
+| Source loader | [`ParquetLoader`](../api-reference/parquet-source.md) |
 | Writer | [`ParquetWriter`](../api-reference/parquet-writer.md) |
 
 <DocLiveExample label="GeoParquet table map example" height="420px">
@@ -131,3 +131,7 @@ the complete unique set of ISO WKB type codes found in each row group.
 
 GeoParquet is the persistent Parquet representation; GeoArrow defines in-memory Arrow extension
 layouts and metadata. loaders.gl preserves both layers and maps between their compatible semantics.
+
+When GeoArrow WKB fields select native `GEOMETRY` or `GEOGRAPHY` annotations, the
+TypeScript writer synthesizes GeoParquet 2.0 footer metadata. Explicit GeoParquet
+1.1 metadata keeps WKB columns as unannotated binary values.

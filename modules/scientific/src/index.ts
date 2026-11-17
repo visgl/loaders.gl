@@ -6,7 +6,7 @@ export {NetCDFFormat} from './netcdf/netcdf-format';
 export {NetCDFLoader} from './netcdf/netcdf-loader';
 export type {NetCDF, NetCDFLoaderOptions} from './netcdf/netcdf-loader';
 
-export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf/netcdf-source-loader';
+export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf/netcdf-source';
 export {
   OMEZarrLoader,
   GeoZarrLoader,

@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Delta Lake', 'Snapshot replay', 'Parquet and Arrow']}
   links={[
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
-    {label: 'Parquet source', to: '/docs/modules/tables/parquet/api-reference/parquet-source-loader'}
+    {label: 'Parquet source', to: '/docs/modules/tables/parquet/api-reference/parquet-source'}
   ]}
 />
 

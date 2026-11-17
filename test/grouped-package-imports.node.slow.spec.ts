@@ -113,7 +113,7 @@ test.each([
   ['tables', 'arrow-source', 'ArrowTableSource'],
   ['tables', 'arrow/geometry', 'WKBBuilder'],
   ['tables', 'ndjson-source', 'NDJSONTableSource'],
-  ['tables', 'lance-source-loader', 'LanceSource'],
+  ['tables', 'lance-source', 'LanceSource'],
   ['tables', 'orc-loader', 'ORCLoaderWithParser'],
   ['tables', 'parquet-loader', 'ParquetLoaderWithParser'],
   ['tables', 'parquet-dataset-source', 'ParquetDatasetSource'],

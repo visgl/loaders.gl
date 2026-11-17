@@ -10,7 +10,7 @@ import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geo
 import {TCXLoader} from '@loaders.gl/geospatial/kml';
 import * as kml from '@loaders.gl/geospatial/kml';
 import * as bundledKml from '@loaders.gl/geospatial/kml/bundled';
-import * as unbundledKml from '@loaders.gl/geospatial/kml/unbundled';
+import * as unbundledKml from '@loaders.gl/geospatial/kml';
 import type {Feature, Geometry} from '@loaders.gl/core/schema';
 const TCX_URL = '@loaders.gl/geospatial/kml/test/data/tcx/tcx_sample.tcx';
 test('TCXLoader#loader conformance', () => {

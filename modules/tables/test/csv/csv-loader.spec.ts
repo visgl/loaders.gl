@@ -11,7 +11,7 @@ import {
 } from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 import {CSVLoader as BundledCSVLoader} from '@loaders.gl/tables/csv/bundled';
-import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv/unbundled';
+import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv';
 import * as csv from '@loaders.gl/tables/csv';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {getTableLength} from '@loaders.gl/core/schema-utils';

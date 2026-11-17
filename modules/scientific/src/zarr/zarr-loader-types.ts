@@ -34,9 +34,10 @@ export const OMEZarrLoader = {
     omezarr: {interleaved: false, defaultChannels: undefined!}
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
-  preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/ome-zarr-loader'))
-      .OMEZarrLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('@loaders.gl/scientific/zarr/ome-zarr-loader');
+    return loaderModule.OMEZarrLoaderWithParser;
+  },
   createDataSourceSync(
     _data: string,
     _options: ZarrLoaderOptions,
@@ -82,9 +83,10 @@ export const GeoZarrLoader = {
     }
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
-  preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/geo-zarr-loader'))
-      .GeoZarrLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('@loaders.gl/scientific/zarr/geo-zarr-loader');
+    return loaderModule.GeoZarrLoaderWithParser;
+  },
   createDataSourceSync(
     _data: string,
     _options: GeoZarrLoaderOptions,
@@ -118,8 +120,10 @@ export const ZarrArrayLoader = {
     zarrArray: {path: undefined!, dimensions: undefined!}
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
-  preload: async () =>
-    (await import('@loaders.gl/scientific/zarr-array-loader')).ZarrArrayLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('@loaders.gl/scientific/zarr-array-loader');
+    return loaderModule.ZarrArrayLoaderWithParser;
+  },
   createDataSourceSync(
     _data: string,
     _options: ZarrArrayLoaderOptions,
@@ -151,9 +155,10 @@ export const SpatialDataLoader = {
     zarr: {metadataPath: 'auto', path: null, labels: undefined!, requireConsolidatedMetadata: true}
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
-  preload: async () =>
-    (await import('@loaders.gl/scientific/zarr/spatial-data-loader'))
-      .SpatialDataLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('@loaders.gl/scientific/zarr/spatial-data-loader');
+    return loaderModule.SpatialDataLoaderWithParser;
+  },
   createDataSourceSync(
     _data: string,
     _options: SpatialDataLoaderOptions,

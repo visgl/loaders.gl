@@ -10,7 +10,7 @@ import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geo
 import {GPXLoader} from '@loaders.gl/geospatial/kml';
 import * as kml from '@loaders.gl/geospatial/kml';
 import * as bundledKml from '@loaders.gl/geospatial/kml/bundled';
-import * as unbundledKml from '@loaders.gl/geospatial/kml/unbundled';
+import * as unbundledKml from '@loaders.gl/geospatial/kml';
 const GPX_URL = '@loaders.gl/geospatial/kml/test/data/gpx/trek';
 test('GPXLoader#loader conformance', () => {
   validateLoader(GPXLoader, 'GPXLoader');

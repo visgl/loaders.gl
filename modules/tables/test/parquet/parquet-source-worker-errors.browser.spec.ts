@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '../../src/parquet/parquet-source-loader';
+import {ParquetSource} from '../../src/parquet/parquet-source';
 
 test('ParquetSource propagates worker failure without an aborted caller signal', async () => {
   const fixture = await encode(

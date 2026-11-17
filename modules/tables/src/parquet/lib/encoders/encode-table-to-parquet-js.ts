@@ -4,6 +4,7 @@
 
 import {
   getGeoMetadata,
+  setGeoMetadata,
   type DataType,
   type Field,
   type GeoArrowEdgeType,
@@ -26,9 +27,8 @@ export async function encodeTableToParquetJs(
   objectRowTable: ObjectRowTable,
   options: ParquetWriterOptions
 ): Promise<ArrayBuffer> {
-  const parquetSchema = new ParquetSchema(
-    convertSchemaToParquetSchema(table.schema!, objectRowTable, options)
-  );
+  const schemaDefinition = convertSchemaToParquetSchema(table.schema!, objectRowTable, options);
+  const parquetSchema = new ParquetSchema(schemaDefinition);
   const chunks: Uint8Array[] = [];
   const outputStream = {
     write(chunk: Uint8Array, callback: (error?: Error) => void) {
@@ -46,11 +46,18 @@ export async function encodeTableToParquetJs(
     options.parquet
   );
 
-  // Select physical types before synthesizing compatibility metadata from GeoArrow fields.
+  // Native geometry annotations require GeoParquet 2.0 footer metadata.
   const metadataSchema = ensureGeoParquetMetadata({
     ...table.schema!,
     metadata: {...table.schema?.metadata}
   });
+  const geoMetadata = getGeoMetadata(metadataSchema.metadata);
+  const hasNativeGeometry = Object.values(schemaDefinition).some(
+    field => field.type === 'GEOMETRY' || field.type === 'GEOGRAPHY'
+  );
+  if (geoMetadata && hasNativeGeometry && !geoMetadata.version?.startsWith('2.')) {
+    setGeoMetadata(metadataSchema.metadata!, {...geoMetadata, version: '2.0.0'});
+  }
   for (const [key, value] of Object.entries(metadataSchema.metadata || {})) {
     encoder.setMetadata(key, value);
   }

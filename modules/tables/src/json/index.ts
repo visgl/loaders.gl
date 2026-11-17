@@ -26,25 +26,17 @@ export type {
 export type {JSONWriterOptions} from './json-writer';
 export {JSONWriter} from './json-writer';
 
-export type {GeoJSONLoaderOptions} from './geojson-loader-types';
-import {GeoJSONLoader as GeoJSONLoaderMetadata} from './geojson-loader-types';
-import {
-  deserializeGeoJSONWorkerResult,
-  serializeGeoJSONWorkerResult
-} from './lib/geojson-worker-transport';
-
-/** Compatibility metadata retains Arrow worker transport hooks. */
-export const GeoJSONLoader = {
-  ...GeoJSONLoaderMetadata,
-  serializeWorkerResult: serializeGeoJSONWorkerResult,
-  deserializeWorkerResult: deserializeGeoJSONWorkerResult
-} as const;
-
-export type {GeoJSONWriterOptions} from './geojson-writer';
-export {GeoJSONWriter} from './geojson-writer';
+export {
+  GeoJSONLoader,
+  type GeoJSONLoaderOptions,
+  GeoJSONWriter,
+  type GeoJSONWriterOptions
+} from '../geojson';
 
 export {default as _JSONPath} from './lib/jsonpath/jsonpath';
 export {default as _ClarinetParser} from './lib/clarinet/clarinet';
 export {default as _FastStreamingJSONParser} from './lib/json-parser/fast-streaming-json-parser';
 
 export {rebuildJsonObject as _rebuildJsonObject} from './lib/parsers/parse-json-in-batches';
+
+export {type MetadataBatch, type JSONBatch} from './json-loader-types';

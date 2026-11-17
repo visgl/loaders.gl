@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {TCXLoaderWithParser} from './kml/tcx-loader';
+export {TCXLoader, type TCXLoaderOptions} from './kml/tcx-loader-types';

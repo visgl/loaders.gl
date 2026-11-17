@@ -6,7 +6,7 @@ import * as arrow from 'apache-arrow';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {CSVTableSource} from '@loaders.gl/tables/csv';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
 
 /** Builds equivalent in-memory Arrow, CSV, and Parquet sources with configurable chunk sizes. */

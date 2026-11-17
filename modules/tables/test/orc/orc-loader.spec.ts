@@ -7,7 +7,7 @@ import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
 import {SnappyCompressor} from '@loaders.gl/compression/snappy-compressor';
 import {ORCLoaderWithParser} from '../../src/orc/orc-loader';
-import {createORCSchema, getORCDataType, ORCSource} from '../../src/orc/orc-source-loader';
+import {createORCSchema, getORCDataType, ORCSource} from '../../src/orc/orc-source';
 import {ORCTypeKind} from '../../src/orc/lib/parsers/parse-orc';
 import {ORCWriter} from '../../src/orc/orc-writer';
 import {encodeORC} from '../../src/orc/lib/encoders/encode-orc';

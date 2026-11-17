@@ -5,7 +5,7 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {createDataSourceSync, encode, load} from '@loaders.gl/core';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';

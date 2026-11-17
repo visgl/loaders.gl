@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createLanceSource} from './lance-source-loader';
+import {createLanceSource} from './lance-source';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table, RecordBatch} from 'apache-arrow';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';

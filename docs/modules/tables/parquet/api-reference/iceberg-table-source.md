@@ -19,7 +19,7 @@ import apacheLogo from '../../../../images/logos/apache-logo.png';
   meta={['Apache Iceberg', 'Manifest planning', 'Arrow batches']}
   links={[
     {label: 'Scan architecture', to: '/docs/developer-guide/common-scan-architecture'},
-    {label: 'Parquet source', to: '/docs/modules/tables/parquet/api-reference/parquet-source-loader'}
+    {label: 'Parquet source', to: '/docs/modules/tables/parquet/api-reference/parquet-source'}
   ]}
 />
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createFlatGeobufSource} from './flatgeobuf-source-loader';
+import {createFlatGeobufSource} from './flatgeobuf-source';
 import type {Table, RecordBatch} from 'apache-arrow';
 import type {GeoJSONTable, ColumnarTable, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';

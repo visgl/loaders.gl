@@ -10,3 +10,5 @@ export type {CSVWriterOptions} from './csv-writer';
 export {CSVWriter} from './csv-writer';
 export {CSVTableSource} from './csv-source';
 export type {CSVSourceOptions} from './csv-source';
+
+export {CSV_LOADER_VERSION, DEFAULT_CSV_SHAPE, CSV_LOADER_OPTIONS} from './csv-loader-options';

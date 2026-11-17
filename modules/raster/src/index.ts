@@ -36,7 +36,7 @@ export type {
 } from './terrain/lib/terrain-contracts';
 
 export {OMETiffLoader} from './geotiff/ometiff-loader-types';
-export type {GeoTIFFSourceLoaderOptions} from './geotiff/geotiff-source-loader';
+export type {GeoTIFFSourceLoaderOptions} from './geotiff/geotiff-source';
 export type {OMETiffLoaderOptions} from './geotiff/ometiff-loader';
 export type {
   GetOMETiffParameters,

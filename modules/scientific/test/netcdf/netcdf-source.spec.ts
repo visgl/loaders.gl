@@ -1,6 +1,6 @@
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {expect, test} from 'vitest';
-import {NetCDFSource} from '../../src/netcdf/netcdf-source-loader';
+import {NetCDFSource} from '../../src/netcdf/netcdf-source';
 import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
 
 const NETCDF_FIXTURE = '@loaders.gl/scientific/test/netcdf/data/madis-sao.nc';

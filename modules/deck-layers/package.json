@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@deck.gl/core": "10.0.0-alpha.1",
-    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch",
+    "@deck.gl/geo-layers": "10.0.0-alpha.1",
     "@deck.gl/layers": "10.0.0-alpha.1",
     "@loaders.gl/archives": "5.0.0-beta.11",
     "@loaders.gl/compression": "5.0.0-beta.11",

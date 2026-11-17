@@ -129,15 +129,14 @@
       "import": "./dist/json-loader.js",
       "require": "./dist/json-loader.cjs"
     },
-    "./json-loader-types": {
-      "types": "./dist/json-loader-types.d.ts",
-      "import": "./dist/json-loader-types.js",
-      "require": "./dist/json-loader-types.cjs"
-    },
     "./xml-options": {
       "types": "./dist/xml-options.d.ts",
       "import": "./dist/xml-options.js",
       "require": "./dist/xml-options.cjs"
+    },
+    "./json": {
+      "types": "./dist/json.d.ts",
+      "import": "./dist/json.js"
     }
   },
   "sideEffects": false,

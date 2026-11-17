@@ -17,3 +17,5 @@ export {HexWKBLoader} from './hex-wkb-loader-types';
 
 export {TWKBLoader} from './twkb-loader-types';
 export {TWKBWriter} from './twkb-writer';
+
+export {type WKTLoaderOptions} from './wkt-loader-types';

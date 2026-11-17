@@ -124,3 +124,7 @@ export {
   getParquetBloomFilterProbes,
   type ParquetBloomFilterProbe
 } from './lib/parquet-bloom-filter-planner';
+
+export {type ParquetDecodedBatch} from './parquet-source-types';
+
+export {PARQUET_LOADER_DEFAULT_OPTIONS} from './parquet-loader-options';

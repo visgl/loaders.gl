@@ -14,7 +14,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   tone="violet"
   badges={[<span key="version" className="badge badge--info">From v5.0</span>]}
   links={[
-    {label: 'GeoTIFF source', to: '/docs/modules/raster/geotiff/api-reference/geotiff-source-loader'},
+    {label: 'GeoTIFF source', to: '/docs/modules/raster/geotiff/api-reference/geotiff-source'},
     {label: 'PMTiles writer', to: '/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer'},
     {label: 'Vector authoring', to: '/docs/modules/tiles/pmtiles/api-reference/geoarrow-pmtiles'}
   ]}
@@ -33,7 +33,7 @@ Try the [browser PMTiles export example](/examples/tiles/pmtiles-authoring) with
 ## Usage
 
 ```typescript
-import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff-source-loader';
+import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff-source';
 import {encodeRasterPMTiles} from '@loaders.gl/tiles/pmtiles/raster';
 
 // A byte-valued grayscale, RGB or RGBA GeoTIFF/COG in a supported source CRS.

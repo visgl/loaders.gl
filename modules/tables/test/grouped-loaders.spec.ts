@@ -123,8 +123,8 @@ test('format GeoJSON metadata keeps transport hooks outside grouped metadata', a
 });
 
 test('core asynchronously constructs grouped Lance and ORC sources from metadata', async () => {
-  const {LanceSource} = await import('@loaders.gl/tables/lance-source-loader');
-  const {ORCSource} = await import('@loaders.gl/tables/orc-source-loader');
+  const {LanceSource} = await import('@loaders.gl/tables/lance-source');
+  const {ORCSource} = await import('@loaders.gl/tables/orc-source');
   expect(await createDataSource(new Blob(), LanceLoader)).toBeInstanceOf(LanceSource);
   expect(await createDataSource(new Blob(), ORCLoader)).toBeInstanceOf(ORCSource);
 });

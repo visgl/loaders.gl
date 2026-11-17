@@ -64,16 +64,6 @@
       "import": "./dist/mtl-loader.js",
       "require": "./dist/mtl-loader.cjs"
     },
-    "./obj-format": {
-      "types": "./dist/obj/obj-format.d.ts",
-      "import": "./dist/obj/obj-format.js",
-      "require": "./dist/obj/obj-format.cjs"
-    },
-    "./obj-loader-types": {
-      "types": "./dist/obj-loader-types.d.ts",
-      "import": "./dist/obj-loader-types.js",
-      "require": "./dist/obj-loader-types.cjs"
-    },
     "./obj-loader": {
       "types": "./dist/obj-loader.d.ts",
       "import": "./dist/obj-loader.js",
@@ -83,11 +73,6 @@
       "types": "./dist/obj-writer.d.ts",
       "import": "./dist/obj-writer.js",
       "require": "./dist/obj-writer.cjs"
-    },
-    "./obj/unbundled": {
-      "types": "./dist/obj/unbundled.d.ts",
-      "import": "./dist/obj/unbundled.js",
-      "require": "./dist/obj/unbundled.cjs"
     },
     "./gltf": {
       "types": "./dist/gltf/index.d.ts",
@@ -114,16 +99,6 @@
       "import": "./dist/glb-writer.js",
       "require": "./dist/glb-writer.cjs"
     },
-    "./gltf-format": {
-      "types": "./dist/gltf/gltf-format.d.ts",
-      "import": "./dist/gltf/gltf-format.js",
-      "require": "./dist/gltf/gltf-format.cjs"
-    },
-    "./gltf-loader-types": {
-      "types": "./dist/gltf-loader-types.d.ts",
-      "import": "./dist/gltf-loader-types.js",
-      "require": "./dist/gltf-loader-types.cjs"
-    },
     "./gltf-loader": {
       "types": "./dist/gltf-loader.d.ts",
       "import": "./dist/gltf-loader.js",
@@ -147,11 +122,6 @@
       "types": "./dist/gltf/schema.d.ts",
       "import": "./dist/gltf/schema.js"
     },
-    "./gltf/unbundled": {
-      "types": "./dist/gltf/unbundled.d.ts",
-      "import": "./dist/gltf/unbundled.js",
-      "require": "./dist/gltf/unbundled.cjs"
-    },
     "./gltf/gltf.schema.json": "./dist/gltf/gltf.schema.json",
     "./gltf/gltf-1.schema.json": "./dist/gltf/gltf-1.schema.json",
     "./gltf/gltf-2.schema.json": "./dist/gltf/gltf-2.schema.json",
@@ -165,11 +135,6 @@
     },
     "./obj-worker.js": {
       "import": "./dist/obj-worker.js"
-    },
-    "./usd-loader-types": {
-      "types": "./dist/usd-loader-types.d.ts",
-      "import": "./dist/usd-loader-types.js",
-      "require": "./dist/usd-loader-types.cjs"
     },
     "./draco-worker.js": {
       "import": "./dist/draco-worker.js"

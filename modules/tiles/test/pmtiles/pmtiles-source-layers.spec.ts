@@ -12,10 +12,7 @@ import {PMTilesLoaderWithParser} from '../../src/pmtiles/pmtiles-loader-with-par
 import {MLTLoader} from '@loaders.gl/tiles/mlt';
 import type {MVTLoaderOptions} from '@loaders.gl/tiles/mvt';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
-import {
-  PMTilesTileSource,
-  type PMTilesSourceLoaderOptions
-} from '../../src/pmtiles/pmtiles-source-loader';
+import {PMTilesTileSource, type PMTilesSourceLoaderOptions} from '../../src/pmtiles/pmtiles-source';
 
 /** Creates a valid compact PMTiles header for source metadata tests. */
 function createHeader(tileType = 1): Header {

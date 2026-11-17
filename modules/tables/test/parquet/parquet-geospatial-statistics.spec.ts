@@ -12,7 +12,7 @@ import {
   ParquetLoader,
   type ParquetSourceMetadata
 } from '@loaders.gl/tables/parquet';
-import type {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import type {ParquetSource} from '@loaders.gl/tables/parquet-source';
 
 import {
   BoundingBox,
@@ -190,6 +190,7 @@ test('ParquetWriter emits native Parquet geo types directly from GeoArrow WKB me
     schemaElement => schemaElement.name === 'geometry'
   );
 
+  expect(JSON.parse(metadata.keyValueMetadata.geo).version).toBe('2.0.0');
   expect(geometrySchemaElement?.logicalType?.GEOGRAPHY?.algorithm).toBe(1);
   expect(geometrySchemaElement?.logicalType?.GEOGRAPHY?.crs).toBe('srid:0');
   expect(metadata.rowGroups[0].columns[0].geospatialStatistics).toEqual({
@@ -212,6 +213,7 @@ test('ParquetWriter ignores nulls and omits bounds for empty native geometries',
     schemaElement => schemaElement.name === 'geometry'
   );
 
+  expect(JSON.parse(metadata.keyValueMetadata.geo).version).toBe('2.0.0');
   expect(geometrySchemaElement?.logicalType?.GEOMETRY?.crs).toBe('srid:0');
   expect(metadata.rowGroups[0].columns[0].geospatialStatistics).toEqual({
     bbox: undefined,
@@ -274,3 +276,29 @@ function createGeoArrowWKBTable(
     data: geometryValues.map(geometry => ({geometry}))
   };
 }
+
+
+test('ParquetWriter keeps explicit GeoParquet 1.1 geometry as unannotated WKB', async () => {
+  const table = createGeoArrowWKBTable('{}', [
+    encodeWKBGeometryValue({type: 'Point', coordinates: [1, 2]})!
+  ]);
+  table.schema!.metadata = {
+    geo: JSON.stringify({
+      version: '1.1.0',
+      primary_column: 'geometry',
+      columns: {geometry: {encoding: 'WKB', geometry_types: ['Point']}}
+    })
+  };
+  const parquetBuffer = await encode(table, ParquetWriter, {worker: false});
+  const source = await createDataSource(new Blob([parquetBuffer]), ParquetLoader, {
+    core: {worker: false}
+  }) as ParquetSource;
+  const metadata = await source.getMetadata({formatSpecificMetadata: true});
+  const geometrySchemaElement = metadata.formatSpecificMetadata?.schema.find(
+    schemaElement => schemaElement.name === 'geometry'
+  );
+  expect(JSON.parse(metadata.keyValueMetadata.geo).version).toBe('1.1.0');
+  expect(geometrySchemaElement?.logicalType?.GEOMETRY).toBeUndefined();
+  expect(geometrySchemaElement?.logicalType?.GEOGRAPHY).toBeUndefined();
+  expect(geometrySchemaElement?.type).toBe(6);
+});

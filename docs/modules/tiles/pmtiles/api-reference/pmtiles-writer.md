@@ -15,7 +15,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   meta={['From v5.0', 'PMTiles v3', 'Browser and Node.js']}
   links={[
     {label: 'PMTiles format', to: '/docs/modules/tiles/pmtiles/formats/pmtiles'},
-    {label: 'PMTiles source', to: '/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader'},
+    {label: 'PMTiles source', to: '/docs/modules/tiles/pmtiles/api-reference/pmtiles-source'},
     {label: 'PMTiles module', to: '/docs/modules/tiles/pmtiles'}
   ]}
 />

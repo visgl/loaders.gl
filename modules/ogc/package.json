@@ -42,11 +42,6 @@
       "import": "./dist/wms/index.js",
       "require": "./dist/wms/index.cjs"
     },
-    "./wms/unbundled": {
-      "types": "./dist/wms/unbundled.d.ts",
-      "import": "./dist/wms/unbundled.js",
-      "require": "./dist/wms/unbundled.cjs"
-    },
     "./wms/bundled": {
       "types": "./dist/wms/bundled.d.ts",
       "import": "./dist/wms/bundled.js",

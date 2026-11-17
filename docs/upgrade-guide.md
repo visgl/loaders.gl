@@ -26,11 +26,38 @@ Import metadata loaders and writers from the clean format entry point:
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 ```
 
-Public `/index` suffixes and repeated format paths have been removed. Use the format entry point for metadata loaders and writers, or a flat parser entry point such as `@loaders.gl/tables/parquet-loader` when a parser-bearing loader is required.
+Public `/index` suffixes and repeated format paths have been removed, except for the temporary `@loaders.gl/raster/terrain/index` compatibility alias used by deck.gl 10 alpha. Use the format entry point for metadata loaders and writers, or a flat parser entry point such as `@loaders.gl/tables/parquet-loader` when a parser-bearing loader is required.
 
 `ParquetJSWriter` is now `ParquetWriter`; its options and encoding types are named `ParquetWriterOptions` and `ParquetWriterEncoding`. The former WASM-backed writer is no longer published. Remove `parquet.wasmUrl`; production Parquet readers and writers use TypeScript. The source capability `supportsLocalWasmAsset` and packaged Parquet WASM assets have also been removed.
 
 `LASCOPCLoader`, `LAZPerfLoader`, and `LAZRsLoader` are no longer public loaders. Use `LASLoader` from `@loaders.gl/pointclouds/las`. Alternate implementations remain in website benchmark support for comparisons and interoperability tests. The separate COPC source in tiles-3d is unchanged.
+
+### Format entry points
+
+Import loaders and their public options from the format entry point:
+
+```typescript
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
+import {JSONLoader} from '@loaders.gl/documents/json';
+import {GPXLoader} from '@loaders.gl/geospatial/gpx';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf-source';
+```
+
+`/unbundled` aliases have been removed; use the default format entry point. Format
+metadata, loader options, source types and capabilities are exported by their format
+entry points instead of separate micro-endpoints. For example, import
+`FlatGeobufFormat` and `FLATGEOBUF_TABLE_QUERY_CAPABILITIES` from
+`@loaders.gl/geospatial/flatgeobuf`, `GeoPackageFormat`, `GeoPackageLoaderOptions`
+and `DEFAULT_SQLJS_CDN` from `@loaders.gl/geospatial/geopackage`, and `WKTFormat`
+from `@loaders.gl/geospatial/wkt`. KML parser helpers remain available through
+`@loaders.gl/geospatial/kml`; the separate `/kml-parser` export is removed.
+
+Parser-bearing loaders retain explicit `*-loader` entry points for lazy loading.
+Source classes use `*-source` filenames and entry points instead of `*-source-loader`
+(for example, `@loaders.gl/tables/parquet-source` and
+`@loaders.gl/raster/geotiff-source`).
 
 ### Decoded tile attributes
 
@@ -279,7 +306,7 @@ segment from implementation imports:
 | `@loaders.gl/geospatial/shapefile/shapefile-loader` | `@loaders.gl/geospatial/shapefile-loader` |
 | `@loaders.gl/pointclouds/las/las-loader` | `@loaders.gl/pointclouds/las-loader` |
 | `@loaders.gl/scene/gltf/gltf-loader` | `@loaders.gl/scene/gltf-loader` |
-| `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
+| `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source` |
 | `@loaders.gl/ogc/wms/wmts-capabilities-loader-with-parser` | `@loaders.gl/ogc/wmts-capabilities-loader-with-parser` |
 | `@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser` | `@loaders.gl/tiles-3d/cesium-ion-loader-with-parser` |
 | `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-loader` |
@@ -886,7 +913,7 @@ When federation removes rows, original physical metadata is available through
 `sourceMetadata` and describes the input batch.
 Parquet, dataset, and lakehouse readers store file and row provenance as JSON
 in Arrow batch metadata. Read it with `getParquetBatchProvenance(batch)` from
-`@loaders.gl/tables/parquet-source-loader`, which restores BigInt and binary values.
+`@loaders.gl/tables/parquet-source`, which restores BigInt and binary values.
 
 Arrow IPC, JSONTable, FlatGeobuf, Lance, DuckDB, COPC, and Potree physical readers also
 yield native batches. Use `batch.numRows` and access Arrow columns directly.

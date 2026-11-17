@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createGeoPackageSource} from './geopackage-source-loader';
+import {createGeoPackageSource} from './geopackage-source';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
 import type {GeoJSONTable} from '@loaders.gl/core/schema';

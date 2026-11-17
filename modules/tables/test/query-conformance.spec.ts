@@ -13,7 +13,7 @@ import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv';
 import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source';
 import {ParquetLoader} from '@loaders.gl/tables';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
 

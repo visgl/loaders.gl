@@ -184,3 +184,9 @@ test.each(['tables', 'pointclouds'])('%s does not publish comparison backends', 
     expect(subpath).not.toMatch(/\/index$|parquet-js-writer|parquet.*wasm|laz-rs|lazperf|las-copc/);
   }
 });
+
+test('terrain retains only its temporary index compatibility alias', () => {
+  expect(requirePackage('@loaders.gl/raster/' + 'terrain/index').TerrainLoader).toBe(
+    requirePackage('@loaders.gl/raster/terrain').TerrainLoader
+  );
+});

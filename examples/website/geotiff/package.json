@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "geotiff-source-loader-example",
+  "name": "geotiff-source-example",
   "description": "Explore GeoTIFF raster sources with deck.gl",
   "version": "0.0.0",
   "license": "MIT",

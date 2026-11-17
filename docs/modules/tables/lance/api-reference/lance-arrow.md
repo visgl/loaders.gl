@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Remote range reads', 'Selected columns', 'Arrow output']}
   links={[
     {label: 'Lance module', to: '/docs/modules/tables/lance'},
-    {label: 'Lance source', to: '/docs/modules/tables/lance/api-reference/lance-source-loader'},
+    {label: 'Lance source', to: '/docs/modules/tables/lance/api-reference/lance-source'},
     {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'}
   ]}
 />

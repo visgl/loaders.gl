@@ -8,7 +8,7 @@ import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {DataType, Field, ObjectRowTable} from '@loaders.gl/core/schema';
 import {encodeTableToParquetJs} from '../../src/parquet/lib/encoders/encode-table-to-parquet-js';
 import {parseParquetFileToArrowWithJs} from '../../src/parquet/lib/parsers/parse-parquet-to-arrow-js';
-import {ParquetSource} from '../../src/parquet/parquet-source-loader';
+import {ParquetSource} from '../../src/parquet/parquet-source';
 import {EdgeInterpolationAlgorithm} from '../../src/parquet/parquetjs/parquet-thrift';
 
 const inferredValues = {

@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {createQueryParameterCredential} from '@loaders.gl/core/loader-utils';
 import type {MVTLoaderOptions} from '../../src/mvt/mvt-loader';
-import {MVTTileSource} from '../../src/mvt/mvt-source-loader';
+import {MVTTileSource} from '../../src/mvt/mvt-source';
 
 test('MVTTileSource#getTile forwards cancellation to the tile request', async () => {
   const controller = new AbortController();

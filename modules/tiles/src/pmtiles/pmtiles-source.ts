@@ -128,10 +128,8 @@ export class PMTilesTileSource
   }
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
-    const resolved = resolveXYZTileParameters(
-      (await waitForPromiseWithSignal(this.metadata, tileParams.signal)).tileGrid,
-      tileParams
-    );
+    const metadata = await waitForPromiseWithSignal(this.metadata, tileParams.signal);
+    const resolved = resolveXYZTileParameters(metadata.tileGrid, tileParams);
     if (!resolved) return null;
     const {x, y, z} = resolved;
     let rangeResponse;

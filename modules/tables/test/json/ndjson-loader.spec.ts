@@ -8,7 +8,7 @@ import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core
 import {NDJSONLoader} from '@loaders.gl/tables/json';
 import * as json from '@loaders.gl/tables/json';
 import * as bundledJson from '@loaders.gl/tables/json/bundled';
-import * as unbundledJson from '@loaders.gl/tables/json/unbundled';
+import * as unbundledJson from '@loaders.gl/tables/json';
 const NDJSON_PATH = '@loaders.gl/tables/json/test/data/ndjson.ndjson';
 const NDJSON_EMPTY_OBJECTS_PATH = '@loaders.gl/tables/json/test/data/ndjson-empty-objects.ndjson';
 const NDJSON_INVALID_PATH = '@loaders.gl/tables/json/test/data/ndjson-invalid.ndjson';

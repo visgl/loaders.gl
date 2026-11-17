@@ -6,7 +6,7 @@ schemas, create Arrow tables, or stream batches.
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {JSONLoader} from '@loaders.gl/documents';
+import {JSONLoader} from '@loaders.gl/documents/json';
 
 const value = await parse('{"settings":{"enabled":true}}', JSONLoader);
 ```

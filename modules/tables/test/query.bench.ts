@@ -8,7 +8,7 @@ import {query, queryInBatches} from '@loaders.gl/core/scan';
 import {CSVTableSource} from '@loaders.gl/tables/csv';
 import {NDJSONTableSource} from '@loaders.gl/tables/json';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 

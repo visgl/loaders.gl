@@ -50,10 +50,6 @@
       "import": "./dist/mlt/index.js",
       "require": "./dist/mlt/index.cjs"
     },
-    "./mlt/unbundled": {
-      "types": "./dist/mlt/unbundled.d.ts",
-      "import": "./dist/mlt/unbundled.js"
-    },
     "./mlt/bundled": {
       "types": "./dist/mlt/bundled.d.ts",
       "import": "./dist/mlt/bundled.js"
@@ -73,10 +69,6 @@
       "import": "./dist/mvt/tilejson-zod-schema.js",
       "require": "./dist/mvt/tilejson-zod-schema.cjs"
     },
-    "./mvt/unbundled": {
-      "types": "./dist/mvt/unbundled.d.ts",
-      "import": "./dist/mvt/unbundled.js"
-    },
     "./mvt-geojson-loader": {
       "types": "./dist/mvt-geojson-loader.d.ts",
       "import": "./dist/mvt-geojson-loader.js",
@@ -94,10 +86,6 @@
       "types": "./dist/pmtiles/index.d.ts",
       "import": "./dist/pmtiles/index.js",
       "require": "./dist/pmtiles/index.cjs"
-    },
-    "./pmtiles/unbundled": {
-      "types": "./dist/pmtiles/unbundled.d.ts",
-      "import": "./dist/pmtiles/unbundled.js"
     },
     "./pmtiles/bundled": {
       "types": "./dist/pmtiles/bundled.d.ts",

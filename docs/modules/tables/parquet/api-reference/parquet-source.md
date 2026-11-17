@@ -211,7 +211,7 @@ order. `columns` prevents unselected column chunks from being requested or decod
 are validated against the cached footer before row data is read.
 
 Read provenance with `getParquetBatchProvenance(batch)` from
-`@loaders.gl/tables/parquet-source-loader`. It restores BigInt and byte arrays in catalog metadata:
+`@loaders.gl/tables/parquet-source`. It restores BigInt and byte arrays in catalog metadata:
 
 | Property | Description |
 | --- | --- |

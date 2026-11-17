@@ -25,7 +25,9 @@ export function auditPublicImports() {
       const manifest = JSON.parse(fs.readFileSync(filename, 'utf8'));
       for (const subpath of Object.keys(manifest.exports || {})) {
         if (
-          /\/index$/.test(subpath) ||
+          (/\/index$/.test(subpath) &&
+            !(manifest.name === '@loaders.gl/raster' && subpath === './terrain/index')) ||
+          /\/unbundled$/.test(subpath) ||
           (manifest.name !== '@loaders.gl/core' &&
             !path.extname(subpath) &&
             /^\.\/([^/]+)\/\1(?:-|$)/.test(subpath))

@@ -4,7 +4,7 @@
 
 import type {TypedArray, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
-import type {GeoTIFFSourceLoaderOptions} from './geotiff-source-loader';
+import type {GeoTIFFSourceLoaderOptions} from './geotiff-source';
 import {GeoTIFFFormat} from './geotiff-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline

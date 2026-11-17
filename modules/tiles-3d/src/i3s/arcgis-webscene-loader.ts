@@ -26,8 +26,10 @@ export const ArcGISWebSceneLoader = {
   version: VERSION,
   mimeTypes: ['application/json'],
   /** Loads the parser-bearing ArcGIS WebScene loader implementation. */
-  preload: async () =>
-    (await import('./arcgis-webscene-loader-with-parser')).ArcGISWebSceneLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./arcgis-webscene-loader-with-parser');
+    return loaderModule.ArcGISWebSceneLoaderWithParser;
+  },
   extensions: ['json'],
   options: {}
 } as const satisfies Loader<ArcGISWebSceneData, never, ArcGISWebSceneLoaderOptions>;

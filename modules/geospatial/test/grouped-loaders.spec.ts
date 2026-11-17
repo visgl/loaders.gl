@@ -17,8 +17,8 @@ import {
 } from '@loaders.gl/geospatial';
 import {KMLLoaderWithParser} from '@loaders.gl/geospatial/kml-loader';
 import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
-import {GPXLoaderWithParser} from '@loaders.gl/geospatial/gpx';
-import {TCXLoaderWithParser} from '@loaders.gl/geospatial/tcx';
+import {GPXLoaderWithParser} from '@loaders.gl/geospatial/gpx-loader';
+import {TCXLoaderWithParser} from '@loaders.gl/geospatial/tcx-loader';
 import {ShapefileLoaderWithParser} from '@loaders.gl/geospatial/shapefile-loader';
 import {SHPLoaderWithParser} from '@loaders.gl/geospatial/shp';
 import {DBFLoaderWithParser} from '@loaders.gl/geospatial/dbf';
@@ -75,9 +75,9 @@ test('format geopackage metadata shares its grouped owner', () => {
 
 test('grouped source entry points preserve format source APIs', async () => {
   const [flatgeobuf, formatFlatgeobuf, geopackage, formatGeopackage] = await Promise.all([
-    import('@loaders.gl/geospatial/flatgeobuf-source-loader'),
+    import('@loaders.gl/geospatial/flatgeobuf-source'),
     import('@loaders.gl/geospatial/flatgeobuf'),
-    import('@loaders.gl/geospatial/geopackage-source-loader'),
+    import('@loaders.gl/geospatial/geopackage-source'),
     import('@loaders.gl/geospatial/geopackage')
   ]);
   expect(flatgeobuf.FlatGeobufVectorSource).toBe(formatFlatgeobuf.FlatGeobufVectorSource);

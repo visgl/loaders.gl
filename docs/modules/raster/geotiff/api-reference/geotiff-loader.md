@@ -51,7 +51,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 `GeoTIFFLoader` parses a complete GeoTIFF from an `ArrayBuffer` and reads the first image in
 the file. It is the straightforward path for local files or applications that already have
 the complete file in memory. For remote windows, overviews, or band-selective reads, use
-[`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader).
+[`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source).
 
 | Property | Value |
 | --- | --- |

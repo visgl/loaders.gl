@@ -33,8 +33,8 @@ import {DocOrientation} from '@site/src/components/docs/designed-doc';
 | --- | --- |
 | Loader | [`ParquetLoader`](../api-reference/parquet-loader.md) |
 | Writer | [`ParquetWriter`](../api-reference/parquet-writer.md) |
-| Source loader | [`ParquetLoader`](../api-reference/parquet-source-loader.md) |
-| Source | [`ParquetDatasetSource`](../api-reference/parquet-source-loader.md) |
+| Source loader | [`ParquetLoader`](../api-reference/parquet-source.md) |
+| Source | [`ParquetDatasetSource`](../api-reference/parquet-source.md) |
 
 ## Try a range-aware read
 

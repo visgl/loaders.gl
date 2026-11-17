@@ -6,7 +6,7 @@ import {beforeAll, expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet-source';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 let fixture: Blob;

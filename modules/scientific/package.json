@@ -94,6 +94,10 @@
     "./zarr-array-loader": {
       "types": "./dist/zarr/zarr-array-loader.d.ts",
       "import": "./dist/zarr/zarr-array-loader.js"
+    },
+    "./netcdf-source": {
+      "types": "./dist/netcdf-source.d.ts",
+      "import": "./dist/netcdf-source.js"
     }
   },
   "sideEffects": false,

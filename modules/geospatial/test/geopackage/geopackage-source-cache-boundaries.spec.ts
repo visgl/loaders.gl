@@ -30,7 +30,7 @@ vi.mock('../../src/geopackage/lib/geopackage-tile-metadata', () => ({
   listGeoPackageTileTables: () => []
 }));
 
-import {GeoPackageDataSource} from '../../src/geopackage/geopackage-source-loader';
+import {GeoPackageDataSource} from '../../src/geopackage/geopackage-source';
 
 beforeEach(() => {
   vi.clearAllMocks();

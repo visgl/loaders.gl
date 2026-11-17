@@ -8,7 +8,7 @@ import type {Feature} from '@loaders.gl/core/schema';
 
 import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt-loader';
 import {MLTLoaderWithParser as MLTLoader} from '../../src/mlt/mlt-loader-with-parser';
-import {getURLFromTemplate} from '../../src/mlt/mlt-source-loader';
+import {getURLFromTemplate} from '../../src/mlt/mlt-source';
 
 test('MLTLoaderWithParser#testURL', () => {
   expect(MLTLoaderWithParser.testURL('https://server/{z}/{x}/{y}.mlt')).toBe(true);

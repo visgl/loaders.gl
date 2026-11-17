@@ -9,7 +9,7 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {sampleRaster} from '@loaders.gl/core/loader-utils';
-import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source-loader';
+import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source';
 import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';
 import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-loader';
 

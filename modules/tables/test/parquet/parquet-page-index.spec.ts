@@ -11,7 +11,7 @@ import type {ParquetSourceLoaderOptions} from '@loaders.gl/tables/parquet';
 import {
   ParquetSource,
 
-} from '@loaders.gl/tables/parquet-source-loader';
+} from '@loaders.gl/tables/parquet-source';
 import * as arrow from 'apache-arrow';
 
 import {

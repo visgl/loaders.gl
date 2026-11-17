@@ -9,7 +9,7 @@ const requirePackage = createRequire(import.meta.url);
 
 const COMMONJS_EXPORTS = [
   ['@loaders.gl/ogc/wms', 'WMSLoader'],
-  ['@loaders.gl/ogc/wms/unbundled', 'WMSCapabilitiesLoader'],
+  ['@loaders.gl/ogc/wms', 'WMSCapabilitiesLoader'],
   ['@loaders.gl/ogc/wms/bundled', 'WMSCapabilitiesLoader'],
   ['@loaders.gl/ogc/gml-loader', 'GMLLoaderWithParser'],
   ['@loaders.gl/ogc/wmts-capabilities-loader-with-parser', 'WMTSCapabilitiesLoaderWithParser'],

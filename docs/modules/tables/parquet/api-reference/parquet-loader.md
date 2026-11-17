@@ -18,7 +18,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="Start with a familiar load call, then opt into Arrow output, batches, or the selective source API as the dataset grows."
   links={[
     {label: 'Parquet format', to: '/docs/modules/tables/parquet/formats/parquet'},
-    {label: 'Parquet source', to: '/docs/modules/tables/parquet/api-reference/parquet-source-loader'}
+    {label: 'Parquet source', to: '/docs/modules/tables/parquet/api-reference/parquet-source'}
   ]}
 />
 
@@ -58,7 +58,7 @@ which [Parquet format features](/docs/modules/tables/parquet/formats/parquet) ar
 />
 
 Use `createDataSource(url, ParquetLoader)` for reusable metadata and selective range reads.
-See the [Parquet source API](./parquet-source-loader) for query options.
+See the [Parquet source API](./parquet-source) for query options.
 
 | Property | Value |
 | --- | --- |

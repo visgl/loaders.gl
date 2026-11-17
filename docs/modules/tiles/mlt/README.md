@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'MLT APIs', to: '/docs/modules/tiles/mlt/api-reference/mlt-loader'},
     {label: 'MLT format', to: '/docs/modules/tiles/mlt/formats/mlt'},
-    {label: 'MLT source', to: '/docs/modules/tiles/mlt/api-reference/mlt-source-loader'}
+    {label: 'MLT source', to: '/docs/modules/tiles/mlt/api-reference/mlt-source'}
   ]}
 />
 
@@ -59,7 +59,7 @@ npm install @loaders.gl/core
 | --------------- | ----------- |
 | [`MLTWriter`](/docs/modules/tiles/mlt/api-reference/mlt-writer) | Encodes tile-local GeoArrow WKB and scalar columns as MLT v1. From v5.0. |
 | [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader) | Loads MapLibre Tile vector tiles. |
-| [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) | Loads MapLibre Tile data as a tile source. |
+| [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-source) | Loads MapLibre Tile data as a tile source. |
 
 ## Examples
 
