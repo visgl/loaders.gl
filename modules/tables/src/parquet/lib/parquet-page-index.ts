@@ -16,7 +16,7 @@ import {
   OffsetIndex,
   type ColumnChunk,
   type RowGroup
-} from '../parquetjs/parquet-thrift/index';
+} from '../parquetjs/parquet-thrift';
 import type {ParquetField} from '../parquetjs/schema/declare';
 import type {ParquetSchema} from '../parquetjs/schema/schema';
 import * as Types from '../parquetjs/schema/types';

@@ -5,4 +5,4 @@
 export type {GeoPackageLoaderOptions} from './geopackage-loader';
 export {GeoPackageLoaderWithParser as GeoPackageLoader} from './geopackage-loader';
 
-export * from './index';
+export * from '.';

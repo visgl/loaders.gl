@@ -90,7 +90,8 @@ CSV file and encode the resulting table as Arrow IPC:
 
 ```typescript
 import {encode, load} from '@loaders.gl/core';
-import {ArrowWriter, CSVLoader} from '@loaders.gl/tables';
+import {CSVLoader} from '@loaders.gl/tables';
+import {ArrowWriter} from '@loaders.gl/tables/arrow';
 
 const table = await load('data.csv', CSVLoader);
 const bytes = await encode(table, ArrowWriter);

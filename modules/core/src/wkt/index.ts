@@ -8,4 +8,4 @@ export {
   convertWKBToGeometry,
   convertWKTToGeometry
 } from '../arrow-geometry/geometry-codecs';
-export {isTWKB, convertTWKBToGeometry, convertGeometryToTWKB} from './twkb/index';
+export {isTWKB, convertTWKBToGeometry, convertGeometryToTWKB} from './twkb';

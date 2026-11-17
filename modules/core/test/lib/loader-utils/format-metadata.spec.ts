@@ -25,7 +25,8 @@ import {
   SLPKFormat
 } from '@loaders.gl/tiles-3d/i3s';
 import {ImageBitmapFormat, ImageFormat} from '@loaders.gl/images';
-import {GeoJSONFormat, JSONFormat, NDGeoJSONFormat, NDJSONFormat} from '@loaders.gl/tables/json';
+import {GeoJSONFormat, NDGeoJSONFormat} from '@loaders.gl/tables/geojson';
+import {JSONFormat, NDJSONFormat} from '@loaders.gl/tables/json';
 import {KMLFormat, KMZFormat} from '@loaders.gl/geospatial/kml';
 import {GPXFormat} from '@loaders.gl/geospatial/gpx';
 import {TCXFormat} from '@loaders.gl/geospatial/tcx';

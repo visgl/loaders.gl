@@ -30,7 +30,7 @@ import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import type {Table, GeoJSON, Schema} from '@loaders.gl/core/schema';
 import type {Table as ArrowTable} from 'apache-arrow';
 import {load, LoaderOptions} from '@loaders.gl/core';
-import {GeoArrowLoader} from '@loaders.gl/tables/arrow';
+import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
 import {
   convertGeoArrowToTable,
   getGeometryColumnsFromSchema,
@@ -45,7 +45,7 @@ import {KMLLoader} from '@loaders.gl/geospatial/kml';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 import {CSVLoader} from '@loaders.gl/tables/csv';
-import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/geoarrow';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertArrowToSchema, convertTable, getTableLength, isArrowTable} from '@loaders.gl/core/schema-utils';

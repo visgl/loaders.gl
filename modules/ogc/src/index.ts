@@ -44,4 +44,4 @@ export {
   type STACSearchQuery,
   type STACSourceMetadata,
   type STACTraversalOptions
-} from './stac/index';
+} from './stac';

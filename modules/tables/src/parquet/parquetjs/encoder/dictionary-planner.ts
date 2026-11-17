@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {PARQUET_CODECS} from '../codecs/index';
+import {PARQUET_CODECS} from '../codecs';
 import type {ParquetField} from '../schema/declare';
 
 /** Dictionary selection policy for one Parquet column chunk. */

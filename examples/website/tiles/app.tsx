@@ -12,7 +12,7 @@ import {PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
 import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt-loader';
 import {ArrowTableTileLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
 import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
-import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';

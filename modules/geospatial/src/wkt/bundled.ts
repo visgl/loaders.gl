@@ -9,4 +9,4 @@ export {
   WKTWorkerLoaderWithParser as WKTWorkerLoader
 } from './wkt-loader';
 
-export * from './index';
+export * from '.';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Deflate, Zlib, deflateSync, zlibSync, type DeflateOptions} from './lib/fflate/index';
+import {Deflate, Zlib, deflateSync, zlibSync, type DeflateOptions} from './lib/fflate';
 import {Compressor, type CompressionOptions} from './lib/compression';
 import {transformFflateBatches} from './lib/fflate-stream';
 

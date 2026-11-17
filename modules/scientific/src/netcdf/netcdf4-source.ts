@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import {HDF5Source, type HDF5Backend} from '../hdf5/index';
+import {HDF5Source, type HDF5Backend} from '../hdf5';
 import {parseCFVariableMetadata, decodeCFNumericValues} from './cf-conventions';
 import type {
   ScientificArray,

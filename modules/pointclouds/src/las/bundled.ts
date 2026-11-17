@@ -34,4 +34,4 @@ export type {
   LAZChunkMetadata
 } from '@loaders.gl/core/loader-utils';
 
-export * from './index';
+export * from '.';

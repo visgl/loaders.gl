@@ -22,7 +22,7 @@ import type {
   ColumnarPredicateValue
 } from '@loaders.gl/core/loader-utils';
 import type {TableQueryExplain} from '@loaders.gl/core/loader-utils';
-import type {FileMetaData} from './parquetjs/parquet-thrift/index';
+import type {FileMetaData} from './parquetjs/parquet-thrift';
 import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Version validators captured from an HTTP Parquet object. */

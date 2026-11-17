@@ -115,7 +115,7 @@ test('grouped JSON metadata supports synchronous and asynchronous entrypoints', 
 });
 
 test('format GeoJSON metadata keeps transport hooks outside grouped metadata', async () => {
-  const {GeoJSONLoader: format} = await import('@loaders.gl/tables/json');
+  const {GeoJSONLoader: format} = await import('@loaders.gl/tables/geojson');
   expect(format).toMatchObject(GeoJSONLoader);
   expect(format.serializeWorkerResult).toBe(GeoJSONLoaderWithParser.serializeWorkerResult);
   expect(format.deserializeWorkerResult).toBe(GeoJSONLoaderWithParser.deserializeWorkerResult);

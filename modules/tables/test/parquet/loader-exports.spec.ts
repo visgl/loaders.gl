@@ -32,7 +32,7 @@ test('Alternate WASM reader stays outside the published tables roots', () => {
 });
 
 test('Parquet format exposes one canonical TypeScript writer', () => {
-  expect(parquetModule.ParquetWriter).toBe(tablesModule.ParquetWriter);
+  expect(tablesModule).not.toHaveProperty('ParquetWriter');
   expect(parquetModule.ParquetWriter.id).toBe('parquet');
   expect(parquetModule.ParquetWriter.encode).toBeTypeOf('function');
   expect(parquetModule).not.toHaveProperty('ParquetJSWriter');

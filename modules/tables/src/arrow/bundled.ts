@@ -7,4 +7,4 @@ export {ArrowLoaderWithParser as ArrowLoader} from './arrow-loader';
 
 export {GeoArrowLoaderWithParser as GeoArrowLoader} from './geoarrow-loader';
 
-export * from './index';
+export * from '.';

@@ -30,7 +30,7 @@ export type {
   parseGeoArrowOnWorker,
   triangulateWKBGeometryColumn,
   TriangulatedWKBGeometryColumns
-} from './index';
+} from '.';
 // Keep the upstream surface compatible with the minimum supported Apache Arrow release.
 export type {
   TypeMap,

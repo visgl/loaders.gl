@@ -12,4 +12,4 @@ export {
   MTLLoaderWithParser as MTLLoader
 } from './mtl-loader';
 
-export * from './index';
+export * from '.';

@@ -5,4 +5,4 @@
 export type {PCDLoaderOptions} from './pcd-loader-types';
 export {PCDLoaderWithParser as PCDLoader} from './pcd-loader';
 
-export * from './index';
+export * from '.';

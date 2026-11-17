@@ -7,7 +7,7 @@ import {RecordBatch, Table} from 'apache-arrow';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {encode, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
-import {LASLoader, LASWriter} from '../../src/las/index';
+import {LASLoader, LASWriter} from '../../src/las';
 import {LAZRsLoaderWithParser} from '../../../../website/src/alternate-loaders/las/laz-rs-loader';
 import {LAZPerfLoaderWithParser} from '../../../../website/src/alternate-loaders/las/lazperf-loader';
 

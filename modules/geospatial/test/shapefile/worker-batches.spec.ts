@@ -8,7 +8,7 @@ import {fetchFile, load, loadInBatches, parse, parseInBatches} from '@loaders.gl
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {parseShapefileToArrowInBatches} from '../../src/shapefile/shapefile-arrow-loader';
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
-import {DBFLoader, SHPLoader, ShapefileLoader} from '../../src/shapefile/index';
+import {DBFLoader, SHPLoader, ShapefileLoader} from '../../src/shapefile';
 import {
   serializeShapefileWorkerResult,
   deserializeShapefileWorkerResult

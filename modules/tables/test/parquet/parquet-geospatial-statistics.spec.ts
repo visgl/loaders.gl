@@ -21,7 +21,7 @@ import {
   Encoding,
   GeospatialStatistics,
   Type
-} from '../../src/parquet/parquetjs/parquet-thrift/index';
+} from '../../src/parquet/parquetjs/parquet-thrift';
 import {serializeThrift} from '../../src/parquet/parquetjs/utils/read-utils';
 import {Uint8ArrayCompactProtocol} from '../../src/parquet/parquetjs/utils/uint8-array-compact-protocol';
 import {Uint8ArrayTransport} from '../../src/parquet/parquetjs/utils/uint8-array-transport';

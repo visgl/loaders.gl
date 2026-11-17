@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './avro/index';
+export * from './avro';
 export {
   AvroLoaderWithParser as AvroLoader,
   AvroSchemaLoaderWithParser as AvroSchemaLoader
-} from './avro/index';
+} from './avro';

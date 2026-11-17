@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {waitForPromiseWithSignal} from '@loaders.gl/core/loader-utils';
+import type {Table} from 'apache-arrow';
 import type {PMTilesTile} from '@loaders.gl/tiles/pmtiles';
 
 /** In-memory export ceilings; actual allocations depend on the browser and available memory. */
@@ -279,21 +280,23 @@ export async function createPMTilesExampleArchive(
     signal.throwIfAborted();
     const {parse} = await waitForPromiseWithSignal(import('@loaders.gl/core'), signal);
     signal.throwIfAborted();
-    const table =
-      options.format === 'arrow'
-        ? await parse(
-            bytes,
-            (await waitForPromiseWithSignal(import('@loaders.gl/tables/arrow'), signal)).ArrowLoader,
-            {core: {worker: false}, arrow: {shape: 'arrow'}}
-          )
-        : await parse(
-            bytes,
-            (await waitForPromiseWithSignal(import('@loaders.gl/tables/json'), signal)).GeoJSONLoader,
-            {
-              core: {worker: false},
-              geojson: {shape: 'arrow'}
-            }
-          );
+    let table: Table;
+    if (options.format === 'arrow') {
+      const {ArrowLoader} = await waitForPromiseWithSignal(
+        import('@loaders.gl/tables/arrow'),
+        signal
+      );
+      table = await parse(bytes, ArrowLoader, {core: {worker: false}, arrow: {shape: 'arrow'}});
+    } else {
+      const {GeoJSONLoader} = await waitForPromiseWithSignal(
+        import('@loaders.gl/tables/geojson'),
+        signal
+      );
+      table = await parse(bytes, GeoJSONLoader, {
+        core: {worker: false},
+        geojson: {shape: 'arrow'}
+      });
+    }
     signal.throwIfAborted();
     const {encodeGeoArrowPMTiles} = await waitForPromiseWithSignal(
       import('@loaders.gl/tiles/pmtiles/geoarrow'),

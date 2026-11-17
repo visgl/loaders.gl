@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './lut/index';
+export * from './lut';
 export {
   CubeLUTLoaderWithParser as CubeLUTLoader,
   ThreeDLLUTLoaderWithParser as ThreeDLLUTLoader,
   ImageLUTLoaderWithParser as ImageLUTLoader
-} from './lut/index';
+} from './lut';

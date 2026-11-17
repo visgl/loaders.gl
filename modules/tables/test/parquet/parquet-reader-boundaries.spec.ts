@@ -10,7 +10,7 @@ import {
   CompressionCodec,
   FieldRepetitionType,
   Type
-} from '../../src/parquet/parquetjs/parquet-thrift/index';
+} from '../../src/parquet/parquetjs/parquet-thrift';
 
 /** Minimal random-access file used to exercise reader control flow without fixture I/O. */
 class MemoryFile implements ReadableFile {

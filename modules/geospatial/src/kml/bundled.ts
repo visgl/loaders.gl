@@ -14,4 +14,4 @@ export {KMZVectorSource} from './kmz-source';
 export type {KMLWriterData, KMLWriterOptions, KMZWriterOptions} from './kml-writer';
 export {KMLWriter, KMZWriter, encodeKMLText} from './kml-writer';
 
-export * from './index';
+export * from '.';

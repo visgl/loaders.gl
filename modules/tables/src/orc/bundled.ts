@@ -6,4 +6,4 @@ export type {ORCLoaderOptions} from './orc-loader-types';
 export {ORCLoaderWithParser as ORCLoader} from './orc-loader';
 export {ORCWriter} from './orc-writer';
 
-export * from './index';
+export * from '.';

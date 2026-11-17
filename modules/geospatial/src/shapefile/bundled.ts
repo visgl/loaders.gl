@@ -17,4 +17,4 @@ export {
   SHPWorkerLoaderWithParser as SHPWorkerLoader
 } from './shp-loader';
 
-export * from './index';
+export * from '.';

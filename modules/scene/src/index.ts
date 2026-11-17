@@ -12,8 +12,8 @@ export type {USDScenePath} from './usd/lib/usd-types';
 export type {USDStage} from './usd/lib/usd-types';
 export type {USDValue} from './usd/lib/usd-types';
 export type {USDVariant} from './usd/lib/usd-types';
-export type * from './gltf/index';
-export type * from './obj/index';
+export type * from './gltf';
+export type * from './obj';
 export {OBJLoader} from './obj/obj-loader-types';
 export {MTLLoader} from './obj/mtl-loader-types';
 export {OBJFormat} from './obj/obj-format';
@@ -28,7 +28,7 @@ export {GLBFormat} from './gltf/gltf-format';
 
 export {DracoLoader} from './draco/draco-loader-types';
 export {DracoFormat} from './draco/draco-format';
-export type * from './draco/index';
+export type * from './draco/api';
 export {DRACO_EXTERNAL_LIBRARIES} from './draco/draco-libraries';
 export {DRACO_EXTERNAL_LIBRARY_URLS} from './draco/draco-libraries';
 

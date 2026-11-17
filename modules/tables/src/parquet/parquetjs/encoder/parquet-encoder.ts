@@ -10,7 +10,7 @@ import {
   getWKBGeometryStatistics,
   type WKBGeometryBoundingBox
 } from '@loaders.gl/core/arrow-geometry/wkb-statistics';
-import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
+import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs';
 import * as Compression from '../compression';
 import type {
   ParquetRowGroup,
@@ -73,7 +73,7 @@ import {
   UUIDType,
   VariantType,
   OffsetIndex
-} from '../parquet-thrift/index';
+} from '../parquet-thrift';
 import {osopen, oswrite, osclose} from '../utils/file-utils';
 import {getBitWidth, serializeThrift} from '../utils/read-utils';
 import {concatUint8Arrays, encodeUtf8, writeUInt32LE} from '../utils/binary-utils';

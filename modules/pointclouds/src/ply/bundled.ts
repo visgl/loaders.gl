@@ -5,4 +5,4 @@
 export type {PLYLoaderOptions} from './ply-loader-types';
 export {PLYLoaderWithParser as PLYLoader} from './ply-loader';
 
-export * from './index';
+export * from '.';

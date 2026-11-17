@@ -41,4 +41,4 @@ export {
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
 
-export * from './index';
+export * from '.';

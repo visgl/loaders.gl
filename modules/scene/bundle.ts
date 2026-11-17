@@ -97,4 +97,4 @@ export type {
   USDVariant
 } from '@loaders.gl/scene';
 
-export * from './src/index';
+export * from './src';

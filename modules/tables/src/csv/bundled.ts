@@ -6,4 +6,4 @@ export type {CSVLoaderOptions} from './csv-loader';
 
 export {CSVLoaderWithParser as CSVLoader} from './csv-loader';
 
-export * from './index';
+export * from '.';

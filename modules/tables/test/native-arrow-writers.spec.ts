@@ -5,17 +5,13 @@
 import {expect, test} from 'vitest';
 import {Int32, tableFromArrays, tableFromIPC, vectorFromArray} from 'apache-arrow';
 import {encode, encodeInBatches, encodeSync, fetchFile, parse} from '@loaders.gl/core';
-import {
-  ArrowWriter,
-  AvroWriter,
-  CSVWriter,
-  GeoJSONLoader,
-  GeoJSONWriter,
-  JSONWriter,
-  ORCWriter,
-  ParquetLoader,
-  ParquetWriter
-} from '@loaders.gl/tables';
+import {GeoJSONLoader, ParquetLoader} from '@loaders.gl/tables';
+import {ArrowWriter} from '@loaders.gl/tables/arrow';
+import {AvroWriter} from '@loaders.gl/tables/avro';
+import {CSVWriter} from '@loaders.gl/tables/csv';
+import {GeoJSONWriter, JSONWriter} from '@loaders.gl/tables/json';
+import {ORCWriter} from '@loaders.gl/tables/orc';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {GeoArrowWriter} from '../src/arrow/geoarrow-writer';
 
 const table = tableFromArrays({id: new Int32Array([1, 2]), label: ['one', null]});

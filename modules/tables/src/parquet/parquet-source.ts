@@ -110,7 +110,7 @@ import {
   type GeospatialStatistics as ParquetThriftGeospatialStatistics,
   type RowGroup,
   type Statistics as ParquetThriftStatistics
-} from './parquetjs/parquet-thrift/index';
+} from './parquetjs/parquet-thrift';
 import {ParquetReader} from './parquetjs/parser/parquet-reader';
 import type {ParquetField} from './parquetjs/schema/declare';
 import type {ParquetSchema} from './parquetjs/schema/schema';

@@ -8,7 +8,7 @@ import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-l
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
 import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
-import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 import {resolveVisualSource} from '../src/source-layer-utils';
 
 test.each([

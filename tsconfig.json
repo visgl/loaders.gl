@@ -1074,14 +1074,14 @@
         "transform": "@vis.gl/ts-plugins/ts-transform-version-inline"
       },
       {
-        "transform": "@vis.gl/ts-plugins/ts-transform-append-extension",
+        "transform": "../../scripts/ts-transform-resolve-imports.cjs",
         "extensions": [
           ".js"
         ],
         "after": true
       },
       {
-        "transform": "@vis.gl/ts-plugins/ts-transform-append-extension",
+        "transform": "../../scripts/ts-transform-resolve-imports.cjs",
         "extensions": [
           ".js"
         ],

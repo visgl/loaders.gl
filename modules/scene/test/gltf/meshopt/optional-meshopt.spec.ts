@@ -6,7 +6,7 @@ vi.mock('../../../src/gltf/meshopt/meshopt-module-loader', () => ({
 }));
 
 test('glTF root and parser imports work before the meshopt decoder loads', async () => {
-  const {GLTFLoader} = await import('../../../src/gltf/index');
+  const {GLTFLoader} = await import('../../../src/gltf');
   expect(GLTFLoader.id).toBe('gltf');
   const {GLTFLoaderWithParser} = await import('../../../src/gltf/gltf-loader');
   const result = await GLTFLoaderWithParser.parse!(

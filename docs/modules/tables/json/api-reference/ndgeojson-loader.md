@@ -61,7 +61,7 @@ Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL)
 
 ```typescript
 import {load, parseInBatches} from '@loaders.gl/core';
-import {NDGeoJSONLoader} from '@loaders.gl/tables/json';
+import {NDGeoJSONLoader} from '@loaders.gl/tables/geojson';
 
 const table = await load('features.ndgeojson', NDGeoJSONLoader);
 console.log(table.numRows);

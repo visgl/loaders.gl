@@ -1575,3 +1575,7 @@ APIs.
 SQL data sources and custom SQL adapters now return native tables from
 `queryArrow()` and `executeArrow()`. Pass a native table to
 `DuckDBSQLDataSource.insertArrowTable()`.
+
+### Tables writer imports
+
+Import table writers through their format subpaths, such as `@loaders.gl/tables/parquet` and `@loaders.gl/tables/arrow`. The tables package root exports loader metadata and shared types. Keeping writers on format subpaths prevents parser dependencies from entering the initial metadata bundle.
