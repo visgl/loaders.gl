@@ -89,6 +89,7 @@ const TILESET_TYPE = {
 // eslint-disable-next-line max-statements
 async function main() {
   const [, , ...args] = process.argv;
+  /** Package and implementation identity shown in legacy conversion logs. */
   const identity = `@loaders.gl/tile-converter ${__VERSION__} (implementation: legacy-v4)\n`;
   if (args.length === 1 && args[0] === '--version') {
     process.stdout.write(identity);
