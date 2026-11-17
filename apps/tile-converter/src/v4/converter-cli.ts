@@ -16,6 +16,9 @@ import {NodeFile} from '@loaders.gl/core/loader-utils';
 // @ts-ignore
 import {copyFile} from 'node:fs/promises';
 
+/** Package version injected when building the standalone converter bundle. */
+declare const __VERSION__: string;
+
 type TileConversionOptions = {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
   inputType?: string;
@@ -86,6 +89,12 @@ const TILESET_TYPE = {
 // eslint-disable-next-line max-statements
 async function main() {
   const [, , ...args] = process.argv;
+  const identity = `@loaders.gl/tile-converter ${__VERSION__} (implementation: legacy-v4)\n`;
+  if (args.length === 1 && args[0] === '--version') {
+    process.stdout.write(identity);
+    return;
+  }
+  process.stderr.write(identity);
 
   if (args.length === 0) {
     printHelp();

@@ -8,6 +8,5 @@ export function printConverterVersion(implementation) {
     process.stdout.write(identity);
     return true;
   }
-  if (implementation === 'legacy-v4') process.stderr.write(identity);
   return false;
 }
