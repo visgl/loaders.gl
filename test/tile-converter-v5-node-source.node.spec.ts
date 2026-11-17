@@ -271,7 +271,14 @@ test('installed Node entrypoint and binary inspect a hermetic archive', () => {
   );
   expect(invalid.status).toBe(1);
   expect(invalid.stdout).toBe('');
-  expect(JSON.parse(invalid.stderr).code).toBe('ENOENT');
+  expect(JSON.parse(invalid.stderr)).toMatchObject({
+    code: 'ENOENT',
+    converter: {
+      package: '@loaders.gl/tile-converter',
+      implementation: 'v5',
+      version: expect.any(String)
+    }
+  });
 });
 
 test('bad archive indexes and invalid JSON release every opened file handle', async () => {
