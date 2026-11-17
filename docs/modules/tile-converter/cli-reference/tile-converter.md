@@ -206,3 +206,7 @@ To build your own tile-converter docker image:
 ```
 
 - Push docker image to your docker hub
+
+Use `tile-converter --version` to print the installed package version and
+implementation (`legacy-v4`). Conversion invocations also print this identity to
+stderr so captured logs identify the converter that produced the output.
