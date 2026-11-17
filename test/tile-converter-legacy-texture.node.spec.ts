@@ -108,4 +108,12 @@ test('legacy node pages and resumed metadata retain the same texture owner', asy
     );
   }
   expect(savedOwners).toEqual([1, 1, 1]);
+  Object.assign(converter.nodePages, {
+    saveNode: async () => {
+      throw new Error('Owner persistence failed');
+    }
+  });
+  await expect(
+    generate(bounds, {textureOwnerId: 1, texelCountHint: 4}, parent, {boundingVolume: {}}, false)
+  ).rejects.toThrow('Owner persistence failed');
 });

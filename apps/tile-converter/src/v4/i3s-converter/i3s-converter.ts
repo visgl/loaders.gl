@@ -1094,7 +1094,7 @@ export default class I3SConverter {
       NodePages.updateFeatureCountByNodeId(node, featureCount);
     }
 
-    this.nodePages.saveNode(node);
+    await this.nodePages.saveNode(node);
 
     return node;
   }
