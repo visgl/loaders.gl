@@ -47,7 +47,7 @@
     "test": "yarn test-modules",
     "test-modules": "ocular-test",
     "test-apps": "node ./scripts/run-app-commands.mjs test",
-    "test-node": "ocular-test node",
+    "test-node": "ocular-test node && vitest run --config vitest.converter.config.ts",
     "test-cover": "ocular-test cover",
     "test-website": "cd website && yarn && yarn build && cd ..",
     "test-fast": "ocular-test fast",

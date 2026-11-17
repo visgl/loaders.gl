@@ -63,7 +63,7 @@ export function createBoundingVolumes(
  * @param geoidHeightModel
  */
 export function createBoundingVolumesFromGeometry(
-  cartesianPositions: Float32Array,
+  cartesianPositions: Float32Array | Float64Array,
   geoidHeightModel: Geoid | null
 ): {mbs: Mbs; obb: Obb} {
   const positionVectors = convertPositionsToVectors(cartesianPositions);
@@ -94,7 +94,7 @@ export function createBoundingVolumesFromGeometry(
  * @param {array} positions
  * @returns {Vector3[]}
  */
-export function convertPositionsToVectors(positions: Float32Array): Vector3[] {
+export function convertPositionsToVectors(positions: Float32Array | Float64Array): Vector3[] {
   const result: Vector3[] = [];
 
   for (let i = 0; i < positions.length; i += 3) {

@@ -66,7 +66,7 @@
     "@loaders.gl/schema-utils": "4.5.4",
     "@loaders.gl/wkt": "4.5.4",
     "@loaders.gl/worker-utils": "4.5.4",
-    "@math.gl/polygon": "^4.1.0",
+    "@math.gl/polygon": "^4.1.1",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
