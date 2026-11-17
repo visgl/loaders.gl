@@ -117,6 +117,12 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
   const decompressor = new GZipDecompressor({useNative: false});
   const leaves: {node: MeshNode; legacy: Record<string, unknown>}[] = [];
   const identifiers = new Set<string>();
+  const textureOwners: {
+    /** First node owning this complete encoded texture set. */ index: number;
+    /** Serialized texture-set definition. */ definition: string;
+    /** Fast content fingerprint; matches are verified byte for byte. */ fingerprint: string;
+    /** Encoded texture files, ordered by relative path. */ files: [string, ArrayBuffer][];
+  }[] = [];
   const objectIdRanges: [number, number][] = [];
   let layer: MeshLayer | undefined;
   let schemaKey: string | undefined;
@@ -218,10 +224,44 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       }
       const material = structuredClone(authored.materialDefinitions[0]);
       const texture = material.pbrMetallicRoughness?.baseColorTexture;
+      let sharedTexture = false;
       if (texture) {
         texture.textureSetDefinitionId = layer.textureSetDefinitions!.length;
         layer.textureSetDefinitions!.push(authored.textureSetDefinitions![0]);
-        node.mesh.material.resource = index;
+        const definition = JSON.stringify(authored.textureSetDefinitions);
+        const textureFiles = Object.entries(resource.files)
+          .filter(([name]) => name.startsWith('nodes/1/textures/'))
+          .sort(([first], [second]) => first.localeCompare(second));
+        const fingerprint = textureFiles
+          .map(([name, bytes]) => {
+            let hash = 2166136261;
+            for (const value of new Uint8Array(bytes)) hash = Math.imul(hash ^ value, 16777619);
+            return `${name}:${bytes.byteLength}:${hash >>> 0}`;
+          })
+          .join('|');
+        const owner = textureOwners.find(
+          candidate =>
+            candidate.definition === definition &&
+            candidate.fingerprint === fingerprint &&
+            candidate.files.length === textureFiles.length &&
+            candidate.files.every(([name, bytes], position) => {
+              const [otherName, otherBytes] = textureFiles[position];
+              if (name !== otherName || bytes.byteLength !== otherBytes.byteLength) return false;
+              const other = new Uint8Array(otherBytes);
+              return new Uint8Array(bytes).every((value, offset) => value === other[offset]);
+            })
+        );
+        // A fingerprint narrows candidates; exact comparisons prevent hash collisions.
+        node.mesh.material.resource = owner?.index ?? index;
+        sharedTexture = Boolean(owner);
+        if (owner) {
+          legacy.textureData = (legacy.textureData as {href: string}[]).map(entry => ({
+            ...entry,
+            href: entry.href.replace('./textures/', `../${owner.index}/textures/`)
+          }));
+        } else {
+          textureOwners.push({index, definition, fingerprint, files: textureFiles});
+        }
       }
       node.index = index;
       node.parentIndex = 0;
@@ -240,7 +280,11 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
           : Math.max(value, authored.store.extent[axis])
       );
       for (const [name, bytes] of Object.entries(resource.files)) {
-        if (name.startsWith('nodes/1/') && !name.endsWith('3dNodeIndexDocument.json.gz'))
+        if (
+          name.startsWith('nodes/1/') &&
+          !name.endsWith('3dNodeIndexDocument.json.gz') &&
+          !(sharedTexture && name.startsWith('nodes/1/textures/'))
+        )
           await memory.write(
             {
               resourceId: name.replace('nodes/1/', `nodes/${index}/`),
@@ -336,6 +380,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       await memory.finalize(report);
       state = 'closed';
       completed = true;
+      textureOwners.length = 0;
     },
     /** Discards binary resources and index metadata after any failure. */
     async abort(error) {
@@ -343,6 +388,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       state = 'closed';
       leaves.length = 0;
       identifiers.clear();
+      textureOwners.length = 0;
       objectIdRanges.length = 0;
       layer = undefined;
       await memory.abort(error);
