@@ -265,3 +265,8 @@ To build your own tile-converter docker image:
 ```
 
 - Push docker image to your docker hub
+
+The legacy converter shares unchanged byte-identical PNG/JPEG textures across
+nodes when alternative texture generation is disabled. Matching retains at most
+16 MiB of encoded images; further unique textures retain per-node storage. Shared
+texture owners are preserved in conversion dumps for resumed output.

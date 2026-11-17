@@ -1,3 +1,4 @@
+import {TextureOwners} from './helpers/texture-owners';
 import type {ConversionImage} from './helpers/conversion-gltf';
 // loaders.gl
 // SPDX-License-Identifier: MIT
@@ -163,6 +164,9 @@ export default class I3SConverter {
   progresses: Record<string, Progress> = {};
   conversionDump: ConversionDump;
 
+  /** Unchanged encoded texture owners for this conversion. */
+  private readonly textureOwners = new TextureOwners();
+
   constructor() {
     this.attributeMetadataInfo = new AttributeMetadataInfo();
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE, this);
@@ -204,6 +208,7 @@ export default class I3SConverter {
    */
   // eslint-disable-next-line max-statements, complexity
   async convert(options: ConverterProps): Promise<string> {
+    this.textureOwners.clear();
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE); // eslint-disable-line no-console
       return BROWSER_ERROR_MESSAGE;
@@ -765,6 +770,22 @@ export default class I3SConverter {
       resources
     );
 
+    if ('texture' in resources && resources.texture && !this.generateTextures) {
+      const format = resources.texture.mimeType;
+      const data = resources.texture.bufferView?.data;
+      if (data && (format === 'image/png' || format === 'image/jpeg')) {
+        resources.textureOwnerId = this.textureOwners.findOrAddOwner(
+          format,
+          data,
+          nodeInPage.index
+        );
+      }
+    }
+    if (resources.textureOwnerId !== undefined && nodeInPage.mesh) {
+      nodeInPage.mesh.material.resource = resources.textureOwnerId;
+      await this.nodePages.saveNode(nodeInPage);
+    }
+
     const nodeData = await NodeIndexDocument.createNodeIndexDocument(
       parentNode,
       boundingVolumes,
@@ -884,7 +905,8 @@ export default class I3SConverter {
       vertexCount: null,
       attributes: null,
       featureCount: null,
-      boundingVolumes: null
+      boundingVolumes: null,
+      textureOwnerId: undefined
     };
 
     for (const resources of resourcesData || [emptyResources]) {
@@ -908,6 +930,7 @@ export default class I3SConverter {
             hasUvRegions: resources.hasUvRegions,
             materialId: nodeInPage.mesh.material.definition,
             texelCountHint: nodeInPage.mesh.material.texelCountHint,
+            textureOwnerId: resources.textureOwnerId,
             vertexCount: resources.vertexCount
           };
           this.conversionDump.setMaterialsDefinitions(this.materialDefinitions);
@@ -1071,7 +1094,7 @@ export default class I3SConverter {
       NodePages.updateFeatureCountByNodeId(node, featureCount);
     }
 
-    this.nodePages.saveNode(node);
+    await this.nodePages.saveNode(node);
 
     return node;
   }
@@ -1111,21 +1134,38 @@ export default class I3SConverter {
       sourceId: sourceTile.id || '',
       nodeId: parseInt(nodePath)
     });
+    const textureOwnerId = resources.textureOwnerId;
+    const sharedTextureResources =
+      textureOwnerId !== undefined && textureOwnerId !== parseInt(nodePath) && sharedResources
+        ? {
+            ...sharedResources,
+            textureDefinitionInfos: sharedResources.textureDefinitionInfos?.map(definition => ({
+              ...definition,
+              images: definition.images.map(image => ({
+                ...image,
+                href: (image.href || ['../textures/0']).map(href =>
+                  href.replace('../textures/', `../../${textureOwnerId}/textures/`)
+                )
+              }))
+            }))
+          }
+        : sharedResources;
     await this._writeShared({
-      sharedResources,
+      sharedResources: sharedTextureResources,
       childPath,
       slpkChildPath,
       nodePath,
       sourceId: sourceTile.id || '',
       nodeId: parseInt(nodePath)
     });
-    await this._writeTexture(
-      texture,
-      childPath,
-      slpkChildPath,
-      sourceTile.id || '',
-      parseInt(nodePath)
-    );
+    if (resources.textureOwnerId === undefined || resources.textureOwnerId === parseInt(nodePath))
+      await this._writeTexture(
+        texture,
+        childPath,
+        slpkChildPath,
+        sourceTile.id || '',
+        parseInt(nodePath)
+      );
     await this._writeAttributes(
       attributes,
       childPath,

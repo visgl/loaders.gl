@@ -9,6 +9,8 @@ import {Matrix4, Vector3} from '@math.gl/core';
 
 /** Converted resources for specific node */
 export type I3SConvertedResources = {
+  /** Node owning an unchanged encoded texture, including this node for first use. */
+  textureOwnerId?: number;
   /**
    * Node id
    */

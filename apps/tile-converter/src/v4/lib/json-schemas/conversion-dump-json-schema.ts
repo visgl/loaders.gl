@@ -80,6 +80,7 @@ export const dumpJsonSchema = {
                       hasUvRegions: {type: 'boolean'},
                       materialId: {type: 'number'},
                       texelCountHint: {type: 'number'},
+                      textureOwnerId: {type: 'integer', minimum: 0},
                       vertexCount: {type: 'number'}
                     },
                     required: [

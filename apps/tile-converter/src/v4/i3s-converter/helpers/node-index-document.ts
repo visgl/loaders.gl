@@ -317,7 +317,11 @@ export class NodeIndexDocument {
         ('texture' in resources && resources.texture) ||
         ('texelCountHint' in resources && resources.texelCountHint)
       ) {
-        node.textureData = [{href: './textures/0'}, {href: './textures/1'}];
+        const texturePath =
+          resources.textureOwnerId !== undefined && resources.textureOwnerId !== nodeId
+            ? `../${resources.textureOwnerId}/textures`
+            : './textures';
+        node.textureData = [{href: `${texturePath}/0`}, {href: `${texturePath}/1`}];
       }
 
       if (
