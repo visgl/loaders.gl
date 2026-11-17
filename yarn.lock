@@ -17367,9 +17367,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"geotiff-source-loader-example@workspace:examples/website/geotiff":
+"geotiff-source-example@workspace:examples/website/geotiff":
   version: 0.0.0-use.local
-  resolution: "geotiff-source-loader-example@workspace:examples/website/geotiff"
+  resolution: "geotiff-source-example@workspace:examples/website/geotiff"
   dependencies:
     "@deck.gl/core": "npm:10.0.0-alpha.1"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
