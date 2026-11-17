@@ -31,6 +31,8 @@ test.each([
     assert.equal(metadata.ImageLoaderWithParser, undefined);
     assert.equal(typeof parser.ImageLoaderWithParser.parse, 'function');
     assert.equal(parser.ImageLoader.parse, undefined);
+    assert.equal(typeof parser.GIFBuilder, 'function');
+
     const implementation = await metadata.ImageLoader.preload();
     assert.equal(typeof implementation.parse, 'function');
     console.log('Image package boundaries verified');
