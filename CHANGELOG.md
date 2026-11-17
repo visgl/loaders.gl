@@ -2,6 +2,12 @@
 
 ## v4.5
 
+### v4.5.5
+
+- fix(tile-converter): preserve geometry placement when generating I3S bounds for merged materials, and retain Float64 precision until applying local offsets (#4552)
+- fix(tile-converter): use math.gl 4.1.1 to preserve reflected oriented bounding boxes in I3S output (#4552)
+- feat(tile-converter): report the installed version and converter implementation in logs and through `--version` (#4553)
+
 ### v4.5.4
 
 - fix(textures): upgrade bundled Basis encoder and transcoder to v2.50 and handle initialization failures (#4194)
