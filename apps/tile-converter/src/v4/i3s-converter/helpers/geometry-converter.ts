@@ -212,13 +212,14 @@ function _generateBoundingVolumesFromGeometry(
   convertedAttributesMap: Map<string, ConvertedAttributes>,
   geoidHeightModel: Geoid | null
 ) {
-  for (const attributes of convertedAttributesMap.values()) {
+  for (const attributes of new Set(convertedAttributesMap.values())) {
     const boundingVolumes = createBoundingVolumesFromGeometry(
       attributes.positions,
       geoidHeightModel
     );
 
     attributes.boundingVolumes = boundingVolumes;
+    const geographicPositions = new Float32Array(attributes.positions.length);
     const cartographicOrigin = boundingVolumes.obb.center;
 
     for (let index = 0; index < attributes.positions.length; index += VALUES_PER_VERTEX) {
@@ -229,8 +230,9 @@ function _generateBoundingVolumesFromGeometry(
           scratchVector[2] - geoidHeightModel.getHeight(scratchVector[1], scratchVector[0]);
       }
       scratchVector = scratchVector.subtract(cartographicOrigin);
-      attributes.positions.set(scratchVector, index);
+      geographicPositions.set(scratchVector, index);
     }
+    attributes.positions = geographicPositions;
   }
 }
 
@@ -376,7 +378,7 @@ export async function convertAttributes(
 
   for (const materialAndTexture of materialAndTextureList) {
     const attributes = {
-      positions: new Float32Array(0),
+      positions: useCartesianPositions ? new Float64Array(0) : new Float32Array(0),
       normals: new Float32Array(0),
       texCoords: new Float32Array(0),
       colors: new Uint8Array(0),
@@ -723,9 +725,10 @@ function transformVertexArray(args: {
   indices: TypedArray;
   attributeSpecificTransformation: Function;
   useCartesianPositions: boolean;
-}): Float32Array {
+}): Float32Array | Float64Array {
   const {vertices, indices, attributeSpecificTransformation} = args;
-  const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
+  const PositionsArray = args.useCartesianPositions ? Float64Array : Float32Array;
+  const newVertices = new PositionsArray(indices.length * VALUES_PER_VERTEX);
   if (!vertices) {
     return newVertices;
   }
