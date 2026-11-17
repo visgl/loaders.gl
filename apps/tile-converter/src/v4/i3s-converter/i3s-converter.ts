@@ -1136,7 +1136,7 @@ export default class I3SConverter {
     });
     const textureOwnerId = resources.textureOwnerId;
     const sharedTextureResources =
-      textureOwnerId !== undefined && textureOwnerId !== parseInt(nodePath)
+      textureOwnerId !== undefined && textureOwnerId !== parseInt(nodePath) && sharedResources
         ? {
             ...sharedResources,
             textureDefinitionInfos: sharedResources.textureDefinitionInfos?.map(definition => ({

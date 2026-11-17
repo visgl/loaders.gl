@@ -20,7 +20,7 @@ export class TextureOwners {
     );
     if (owner) return owner.nodeId;
     if (this.retainedBytes + data.byteLength <= this.maximumBytes) {
-      this.owners.push({format, data: data.slice(), nodeId});
+      this.owners.push({format, data: Uint8Array.from(data), nodeId});
       this.retainedBytes += data.byteLength;
     }
     return nodeId;

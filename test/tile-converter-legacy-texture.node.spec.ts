@@ -9,7 +9,7 @@ const bounds = {
 
 test('legacy textures share exact bytes and format while preserving ownership snapshots', () => {
   const owners = new TextureOwners();
-  const bytes = new Uint8Array([1, 2, 3]);
+  const bytes = Buffer.from([1, 2, 3]);
   expect(owners.findOrAddOwner('image/png', bytes, 1)).toBe(1);
   bytes[0] = 9;
   expect(owners.findOrAddOwner('image/png', new Uint8Array([1, 2, 3]), 2)).toBe(1);
