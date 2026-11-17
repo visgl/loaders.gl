@@ -16,7 +16,7 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import {validateTileGridLimits} from '@loaders.gl/core/loader-utils/tile-grid';
+import {getTileGridValidation, resolveTileGridTile} from '@loaders.gl/core/loader-utils/tile-grid';
 import {parseXMLTextSync} from './lib/parsers/xml/parse-xml-text';
 import type {
   WMTSCapabilities,
@@ -24,10 +24,7 @@ import type {
   WMTSTileMatrix,
   WMTSLayer
 } from './lib/parsers/wmts/parse-wmts-capabilities';
-import {
-  parseWMTSCapabilities,
-  validateTileMatrixLimits
-} from './lib/parsers/wmts/parse-wmts-capabilities';
+import {parseWMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
 import {areServiceCRSEquivalent, getServiceCRSAxisOrder, type ServiceCRS} from './crs-utils';
 import {
   createTileGrid,
@@ -111,22 +108,7 @@ export class WMTSImageTileSource
     const capabilities = await this._loadCapabilities();
     const layer = this._getLayer(capabilities);
     const wmts = this.options.wmts || {};
-    const matrixSet = this._getTileMatrixSet(layer);
-    const grid = toTileGrid(matrixSet, wmts.metersPerUnit);
-    const limits = layer?.tileMatrixSetLinks.find(
-      link => link.tileMatrixSet === matrixSet?.identifier
-    )?.limits;
-    if (grid && limits !== undefined) {
-      validateTileMatrixLimits(limits);
-      grid.limits = limits.map(limit => ({
-        tileMatrix: limit.tileMatrix,
-        minTileColumn: limit.minimumTileColumn,
-        maxTileColumn: limit.maximumTileColumn,
-        minTileRow: limit.minimumTileRow,
-        maxTileRow: limit.maximumTileRow
-      }));
-      validateTileGridLimits(grid);
-    }
+    const grid = this._getTileGrid(layer);
     return {
       format: wmts.format || layer?.formats[0] || 'image/png',
       name: wmts.layer || layer?.identifier || '',
@@ -149,8 +131,9 @@ export class WMTSImageTileSource
     await this._loadCapabilities();
     if (!this.isTileAvailable(parameters)) return null;
     const requestSignal = signal || parameters.signal;
+    // Coverage is checked above, so the URL is built without validating the grid again.
     const response = await this.fetch(
-      this.getTileURL(parameters),
+      this._getRequestURL(parameters),
       requestSignal ? {signal: requestSignal} : undefined
     );
     if (!response.ok) {
@@ -179,39 +162,44 @@ export class WMTSImageTileSource
   isTileAvailable(parameters: GetTileParameters): boolean {
     validateTileIndices(parameters);
     const layerName = parameters.layers ? String(parameters.layers) : this.options.wmts?.layer;
-    const layer = this._getLayer(this._capabilities, layerName);
-    const tileMatrixSet = this._getTileMatrixSet(layer);
-    if (!tileMatrixSet) return true;
-    const matrix = getTileMatrix(tileMatrixSet, parameters);
-    if (!matrix) return false;
-    for (const size of [matrix.matrixWidth, matrix.matrixHeight]) {
-      if (size !== undefined && (!Number.isSafeInteger(size) || size < 1))
-        throw new Error('WMTS matrix dimensions require positive safe integers');
-    }
+    const grid = this._getTileGrid(this._getLayer(this._capabilities, layerName));
+    // Requests also reject malformed level geometry, which metadata reports without throwing.
+    return !grid || resolveTileGridTile(grid, parameters) !== null;
+  }
+
+  /**
+   * Converts the selected matrix set and its layer limits to the shared grid. Ambiguous matrix
+   * IDs and malformed limits throw, as for OGC TileMatrixSet documents; malformed level values
+   * are kept for inspection and `getTileGridValidation()` reports them as invalid. Recomputed on
+   * each call, so that capabilities changed in place never give a stale grid.
+   */
+  private _getTileGrid(layer: WMTSLayer | undefined): TileGrid | undefined {
+    const matrixSet = this._getTileMatrixSet(layer);
+    const grid = toTileGrid(matrixSet, this.options.wmts?.metersPerUnit);
+    if (!grid) return undefined;
     const limits = layer?.tileMatrixSetLinks.find(
-      link => link.tileMatrixSet === tileMatrixSet.identifier
+      link => link.tileMatrixSet === matrixSet?.identifier
     )?.limits;
     if (limits !== undefined) {
-      validateTileMatrixLimits(limits);
-      const limit = limits.find(candidate => candidate.tileMatrix === matrix.identifier);
-      if (!limit) return false;
-      if (
-        (matrix.matrixWidth !== undefined && limit.maximumTileColumn >= matrix.matrixWidth) ||
-        (matrix.matrixHeight !== undefined && limit.maximumTileRow >= matrix.matrixHeight)
-      )
-        throw new Error('WMTS tile matrix limits exceed matrix dimensions');
-      if (
-        parameters.x < limit.minimumTileColumn ||
-        parameters.x > limit.maximumTileColumn ||
-        parameters.y < limit.minimumTileRow ||
-        parameters.y > limit.maximumTileRow
-      )
-        return false;
+      grid.limits = limits.map(limit => ({
+        tileMatrix: limit.tileMatrix,
+        minTileColumn: limit.minimumTileColumn,
+        maxTileColumn: limit.maximumTileColumn,
+        minTileRow: limit.minimumTileRow,
+        maxTileRow: limit.maximumTileRow
+      }));
     }
-    return (
-      (matrix.matrixWidth === undefined || parameters.x < matrix.matrixWidth) &&
-      (matrix.matrixHeight === undefined || parameters.y < matrix.matrixHeight)
-    );
+    const {issues} = getTileGridValidation(grid);
+    if (
+      issues.some(issue => issue.code === 'duplicate-matrix-id' || issue.code === 'invalid-limits')
+    )
+      throw new RangeError(
+        `WMTS ${issues
+          .filter(issue => issue.code !== 'missing-crs' && issue.code !== 'missing-geometry')
+          .map(issue => issue.message)
+          .join(' ')}`
+      );
+    return grid;
   }
 
   /** Builds a REST or KVP URL with dimension defaults; throws outside advertised tile coverage. */

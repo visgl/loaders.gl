@@ -148,10 +148,13 @@ loaders, flat implementation imports, and explicit codec installation.
 <span id="regular-grid-tilematrix-frame-selection" />
 <span id="tile-matrix-source-adapters" />
 <span id="tile-matrix-coverage" />
+<span id="consistent-tile-grid-validation" />
 
 [Tile matrix support](./developer-guide/tile-matrices.md) preserves native identifiers, coordinate
 systems, and coverage limits across OGC and ArcGIS services. Applications can select tiles in an
 explicit native frame without treating every grid as Web Mercator; renderer support remains separate.
+WMTS, OGC TileMatrixSet 2.0 and OGC API Tiles sources now reject duplicate matrix IDs and malformed
+limits in the same way, and limit errors name their reason.
 
 ### Build tile archives and 3D content
 

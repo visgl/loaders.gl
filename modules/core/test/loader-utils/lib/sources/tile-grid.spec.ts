@@ -205,3 +205,66 @@ test('invalid authoritative sets cannot borrow missing geometry or CRS from lega
   };
   expect(() => validateTileGrid(missingCoordinateReferenceSystem)).toThrow('CRS');
 });
+
+test.each([
+  {limits: {}, message: 'require an array'},
+  {limits: [null], message: 'unique nonempty matrix identifiers'},
+  {limits: [{tileMatrix: ''}], message: 'unique nonempty matrix identifiers'},
+  {limits: 'twice', message: 'unique nonempty matrix identifiers'},
+  {limits: [{minTileColumn: -1}], message: 'nonnegative safe integers'},
+  {limits: [{maxTileRow: 0.5}], message: 'nonnegative safe integers'},
+  {limits: [{minTileColumn: 1, maxTileColumn: 0}], message: 'reversed bounds'},
+  {limits: [{minTileRow: 1, maxTileRow: 0}], message: 'reversed bounds'},
+  {limits: [{tileMatrix: 'missing'}], message: 'unknown matrix'},
+  {limits: [{maxTileColumn: 3}], message: 'exceed matrix dimensions'},
+  {limits: [{maxTileRow: 2}], message: 'exceed matrix dimensions'}
+])('limit diagnostics name the reason: $message ($limits)', ({limits, message}) => {
+  const limit = {
+    tileMatrix: 'coarse',
+    minTileColumn: 0,
+    maxTileColumn: 0,
+    minTileRow: 0,
+    maxTileRow: 0
+  };
+  const supplied =
+    limits === 'twice'
+      ? [limit, limit]
+      : Array.isArray(limits)
+        ? limits.map(change => (change ? {...limit, ...change} : change))
+        : limits;
+  // The same reason for partial metadata and for complete geometry.
+  for (const grid of [
+    createTileGrid(undefined, [{id: 'coarse', matrixSize: [3, 2]}]),
+    createTileGrid('native', [createTileGridMatrix(FIELDS)])
+  ]) {
+    const candidate = {...grid, limits: supplied as any};
+    expect(() => validateTileGridLimits(candidate)).toThrow(RangeError);
+    expect(() => validateTileGridLimits(candidate)).toThrow(message);
+    expect(getTileGridValidation(candidate).issues).toEqual([
+      ...(grid.tileMatrixSet
+        ? []
+        : [
+            {code: 'missing-crs', message: 'Tile grid requires a CRS for complete geometry.'},
+            {code: 'missing-geometry', message: 'Tile grid has no complete tile matrix set.'},
+            {
+              code: 'missing-geometry',
+              tileMatrix: 'coarse',
+              message: 'Incomplete tile matrix geometry: missing resolution, origin, tileSize.'
+            }
+          ]),
+      {code: 'invalid-limits', message: expect.stringContaining(message)}
+    ]);
+  }
+});
+
+test('complete geometry also passes the math.gl matrix-set contract', () => {
+  const grid = createTileGrid('native', [createTileGridMatrix(FIELDS)]);
+  expect(getTileGridValidation(grid)).toEqual({status: 'complete', issues: []});
+  // A blank CRS passes the loaders.gl presence check but not math.gl's set validation.
+  const blank = {...grid, tileMatrixSet: {...grid.tileMatrixSet!, crs: ' '}};
+  expect(getTileGridValidation(blank)).toEqual({
+    status: 'invalid',
+    issues: [{code: 'invalid-matrix', message: 'Invalid tile matrix set'}]
+  });
+  expect(() => resolveTileGridTile(blank, {x: 0, y: 0, z: 0})).toThrow('Invalid tile matrix set');
+});

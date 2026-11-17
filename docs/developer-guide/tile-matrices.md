@@ -156,6 +156,19 @@ geometry or coverage, with diagnostics. `validateTileGrid` rejects invalid input
 partial metadata; `resolveTileGridTile` applies shared matrix identity and coverage rules.
 See [grid utilities](/docs/modules/core/loader-utils/api-reference/tile-grid).
 
+WMTS, OGC TileMatrixSet 2.0 and OGC API Tiles sources apply these rules in the same way:
+
+| Advertised metadata | `getMetadata()` | `getTile()` |
+| --- | --- | --- |
+| Duplicate matrix IDs, or malformed limits | Rejects | Rejects without a tile request |
+| Unknown explicit `tileMatrix` | Not applicable | Rejects with `RangeError` |
+| Malformed level value, such as a zero tile width | Keeps it; validation status `invalid` | Rejects without a tile request |
+| Missing resolution or dimensions | Keeps partial levels; status `partial` | Uses native IDs and limits |
+| Empty limits list | Valid; status `complete` when geometry is complete | `null` without a tile request |
+| Tile outside limits or matrix, or no matrix for `z` | Not applicable | `null` without a tile request |
+
+Matrix dimensions always come from the matrix set, never from a layer or tileset content extent.
+
 OGC API Tiles preserves `variableMatrixWidths` in native row numbering, regardless of coordinate
 axis normalization. Fixed-frame selection enumerates canonical columns only. OGC URLs and the
 explicit image adapter use the same coalesced footprint/coverage semantics, including a canonical
