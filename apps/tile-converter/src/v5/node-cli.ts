@@ -3,6 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {parseArgs} from 'node:util';
+import {readFileSync} from 'node:fs';
+
+/** Installed package identity included in structured CLI results and failures. */
+const CONVERTER_IDENTITY = {
+  package: '@loaders.gl/tile-converter',
+  version: JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'))
+    .version as string,
+  implementation: 'v5'
+};
 import {readFeatureSchema} from './node-feature-schema.js';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {createNodeTilesetConversionSource, NODE_TILESET_LIMITS} from './node-source.js';
@@ -71,7 +80,9 @@ export async function runTileConverterCLI(
       }
     });
     if (values.help || !argumentsList.length) {
-      output.stdout(HELP);
+      output.stdout(
+        `@loaders.gl/tile-converter ${CONVERTER_IDENTITY.version} (implementation: v5)\n${HELP}`
+      );
       return 0;
     }
     if (
@@ -137,7 +148,7 @@ export async function runTileConverterCLI(
         integratedMeshPolicy: values['integrated-mesh-policy'] as 'as-3d-object' | undefined
       });
       output.stdout(
-        `${JSON.stringify({operation, input: positionals[1], inputFormat: format, outputFormat: values['output-format'], ...(values.output ? {output: values.output} : {}), report}, null, 2)}\n`
+        `${JSON.stringify({converter: CONVERTER_IDENTITY, operation, input: positionals[1], inputFormat: format, outputFormat: values['output-format'], ...(values.output ? {output: values.output} : {}), report}, null, 2)}\n`
       );
       return 0;
     }
@@ -165,12 +176,13 @@ export async function runTileConverterCLI(
         : await createNodeTilesetConversionSource({...sourceOptions, format});
     const inspection = await source.inspect(signal).finally(() => source.close());
     output.stdout(
-      `${JSON.stringify({operation: 'inspect', input: positionals[1], inputFormat: format, ...inspection}, null, 2)}\n`
+      `${JSON.stringify({converter: CONVERTER_IDENTITY, operation: 'inspect', input: positionals[1], inputFormat: format, ...inspection}, null, 2)}\n`
     );
     return 0;
   } catch (error) {
     output.stderr(
       `${JSON.stringify({
+        converter: CONVERTER_IDENTITY,
         code: error instanceof Error && 'code' in error ? error.code : 'CONVERSION_FAILED',
         message: error instanceof Error ? error.message : String(error),
         diagnostics: error instanceof TileConversionError ? error.diagnostics : []

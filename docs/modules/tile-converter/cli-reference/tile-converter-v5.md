@@ -225,6 +225,6 @@ profiles across mesh nodes. Geometry, UVs and material definitions remain per me
 Both node pages and legacy node indices reference the shared texture owner.
 
 Both converter commands accept `--version`, which prints the installed package
-version and converter implementation. Normal invocations print this identity to
-stderr so logs identify the implementation while v5 stdout remains JSON.
+version and converter implementation. Legacy invocations print this identity to stderr. V5 includes a `converter`
+identity object in JSON results and errors so both output streams stay parseable.
 `tile-converter` selects `legacy-v4`; `tile-converter-v5` selects `v5`.
