@@ -227,8 +227,13 @@ The source uses the selected layer's `TileMatrixSetLink` limits for both KVP and
 Row and column bounds are inclusive. If a limits list is present, a matrix without an entry is
 unavailable; an explicitly empty list permits no tiles. Without layer limits, full matrix sizes
 constrain each level independently. Incomplete matrix size metadata is not extrapolated.
-Malformed limits (missing/duplicate identifiers, negative or noninteger indices, reversed bounds,
-or limits exceeding the selected matrix's dimensions) fail explicitly.
+Malformed limits (missing/duplicate identifiers, an unknown matrix, negative or noninteger
+indices, reversed bounds, or limits exceeding the selected matrix's dimensions) fail explicitly.
+Duplicate matrix identifiers also fail, because a request could not name one level. Metadata and
+tile requests apply the shared [grid validation](/docs/modules/core/loader-utils/api-reference/tile-grid)
+rules, so these cases behave as they do for OGC TileMatrixSet 2.0 and OGC API Tiles sources.
+A malformed level value, such as a zero tile width, stays in `tileGrid.matrices` for inspection
+and `getTileGridValidation()` reports it as invalid; every tile request for that set then rejects.
 
 ```ts
 import {WMTSImageTileSource} from '@loaders.gl/ogc/wms';
