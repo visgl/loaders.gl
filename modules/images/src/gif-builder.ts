@@ -6,6 +6,7 @@
 // @ts-nocheck
 import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {assert} from './lib/utils/assert';
+import gifshot from './lib/gifshot/gifshot'; // TODO - load dynamically to avoid bloating
 
 // These are gifshot module options
 const GIF_BUILDER_OPTIONS = {
@@ -84,15 +85,12 @@ export default class GIFBuilder {
     this.files = [];
 
     // Expose the gifshot module so that the full gifshot API is available to apps (Experimental)
-    this.gifshot = null;
+    this.gifshot = gifshot;
   }
 
-  /** Loads the browser GIF encoder when the builder is first used. */
-  async initialize(): Promise<void> {
-    if (!this.gifshot) {
-      const gifshotModule = await import('./lib/gifshot/gifshot');
-      this.gifshot = gifshotModule.default;
-    }
+  async initialize(options): Promise<void> {
+    // Expose the gifshot module so that the full gifshot API is available to apps (Experimental)
+    // this.gifshot = await loadGifshotModule(options);
   }
 
   async add(file): void {

@@ -13,7 +13,6 @@ afterEach(() => {
 test('GIFBuilder exposes metadata and accepts image files', async () => {
   expect(GIFBuilder.properties).toMatchObject({id: 'gif', extensions: ['gif']});
   const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 300});
-  await gifBuilder.initialize();
   const createGIF = vi
     .spyOn(gifBuilder.gifshot, 'createGIF')
     .mockImplementation((options, callback) => {
@@ -28,7 +27,6 @@ test('GIFBuilder exposes metadata and accepts image files', async () => {
 
 test('GIFBuilder supports video and webcam sources', async () => {
   const videoBuilder = new GIFBuilder({source: 'video', width: 10, height: 20});
-  await videoBuilder.initialize();
   vi.spyOn(videoBuilder.gifshot, 'createGIF').mockImplementation((options, callback) => {
     expect(options).toMatchObject({video: ['video-file'], gifWidth: 10, gifHeight: 20});
     callback({error: false, image: 'video-gif'});
@@ -37,7 +35,6 @@ test('GIFBuilder supports video and webcam sources', async () => {
   await expect(videoBuilder.build()).resolves.toBe('video-gif');
 
   const webcamBuilder = new GIFBuilder({source: 'webcam'});
-  await webcamBuilder.initialize();
   vi.spyOn(webcamBuilder.gifshot, 'createGIF').mockImplementation((_options, callback) => {
     callback({error: false, image: 'webcam-gif'});
   });
@@ -46,16 +43,13 @@ test('GIFBuilder supports video and webcam sources', async () => {
 
 test('GIFBuilder rejects invalid sources, files, and gifshot errors', async () => {
   const invalidBuilder = new GIFBuilder({source: 'invalid'});
-  await invalidBuilder.initialize();
   await expect(invalidBuilder.build()).rejects.toThrow('GIFBuilder: invalid source');
 
   const webcamBuilder = new GIFBuilder({source: 'webcam'});
-  await webcamBuilder.initialize();
   await webcamBuilder.add('unexpected-file');
   await expect(webcamBuilder.build()).rejects.toThrow();
 
   const errorBuilder = new GIFBuilder({source: 'images'});
-  await errorBuilder.initialize();
   vi.spyOn(errorBuilder.gifshot, 'createGIF').mockImplementation((_options, callback) => {
     callback({error: true, errorMsg: 'gifshot failed'});
   });
