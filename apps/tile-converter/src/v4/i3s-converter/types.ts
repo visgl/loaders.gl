@@ -61,7 +61,7 @@ export type I3SConvertedResources = {
  */
 export type ConvertedAttributes = {
   /** POSITION attribute value */
-  positions: Float32Array;
+  positions: Float32Array | Float64Array;
   /** NORMAL attribute value */
   normals: Float32Array;
   /** TEXCOORD_0 attribute value */

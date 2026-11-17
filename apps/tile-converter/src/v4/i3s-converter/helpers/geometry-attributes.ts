@@ -15,7 +15,8 @@ const POSITIONS_AND_NORMALS_PER_TRIANGLE = 9;
  * @returns attirbutes with featureCount, featureIds and changed faceRange.
  */
 export function generateAttributes(attributes: ConvertedAttributes): GeometryAttributes {
-  const {positions, normals, texCoords, colors, uvRegions, featureIndices} = attributes;
+  const {normals, texCoords, colors, uvRegions, featureIndices} = attributes;
+  const positions = new Float32Array(attributes.positions);
   const triangleCount = positions.length / POSITIONS_AND_NORMALS_PER_TRIANGLE;
 
   if (!featureIndices.length) {
