@@ -4,17 +4,18 @@
 
 import {Table, type RecordBatch, type Vector} from 'apache-arrow';
 import {
-  compileArrowScale,
+  bindArrowScale,
   compileArrowScales,
+  compileArrowScaleExpression,
   createStreamingDomainAccumulator,
-  type CompiledArrowScale
-} from '@math.gl/sql/arrow-scales';
-import {
+  type CompiledArrowScale,
   parseSQLScaleExpression,
   type ParsedSQLScale,
   type ResolvedScale
 } from '@math.gl/sql/scales';
 import {makeArrowTableFromBatches} from '@loaders.gl/core/schema-utils';
+import {compileArrowExpression, type CompiledArrowExpression} from '@math.gl/sql/arrow';
+import type {Expression} from '@math.gl/sql/expressions';
 import {query, queryInBatches, type Query, type QueryOptions} from './query';
 
 /** Named row-preserving scale expressions applied to an input query result. */
@@ -39,7 +40,9 @@ export async function queryScales<Name extends string>(
   options: QueryOptions
 ): Promise<ScaleQueryResult<Name>> {
   options.signal?.throwIfAborted();
+  /** Scale calls validated before reading the source. */
   const parsed = parseScaleProjections(projections);
+  /** Selected rows that define all data-derived domains. */
   const table = await query(input, options);
   options.signal?.throwIfAborted();
   return evaluateScaleProjections(table, compileArrowScales(table, parsed), options.signal);
@@ -82,6 +85,7 @@ export async function* queryScalesInBatches<Name extends string>(
   options: QueryOptions
 ): AsyncIterable<ScaleQueryResult<Name>> {
   options.signal?.throwIfAborted();
+  /** Scale calls validated before reading the source. */
   const parsed = parseScaleProjections(projections);
   if (Object.values<ParsedSQLScale>(parsed).some(({scale}) => scale.domain.type !== 'fixed')) {
     throw new Error('Append-only scale projections require fixed domains.');
@@ -129,46 +133,69 @@ export async function* queryScalesProgressive<Name extends string>(
   ) {
     throw new Error('Scale snapshot interval and row limit must be positive integers.');
   }
+  /** Scale calls validated before reading the source. */
   const parsed = parseScaleProjections(projections);
+  /** Projection order shared by domain results and output descriptors. */
   const entries = Object.entries<ParsedSQLScale>(parsed) as [Name, ParsedSQLScale][];
-  if (entries.some(([, {scale}]) => scale.type === 'quantile')) {
-    throw new Error('Progressive quantile classification requires a resolved Arrow scale binder.');
-  }
-  const accumulator = createStreamingDomainAccumulator(
-    entries.map(([, {scale}]) => scale.domain),
-    {quantileCapacity}
+  /** Expressions evaluated once per incoming batch for computed domain statistics. */
+  const domainExpressions = new Map<string, CompiledArrowExpression>();
+  /** Domain dependencies use private column names for computed values. */
+  const domains = entries.map(([, {scale}], index) =>
+    scale.domain.type === 'expression-extent'
+      ? {type: 'extent' as const, column: `expression:${index}`}
+      : {
+          ...scale.domain,
+          ...(scale.domain.type === 'fixed' ? {} : {column: `column:${scale.domain.column}`})
+        }
   );
+  /** Columns whose sketches supply classification breaks. */
+  const quantileColumns = entries.flatMap(([, {scale}], index) =>
+    scale.type === 'quantile' && scale.domain.type !== 'fixed'
+      ? [
+          scale.domain.type === 'expression-extent'
+            ? `expression:${index}`
+            : `column:${scale.domain.column}`
+        ]
+      : []
+  );
+  /** Shared domain accumulator over projected scalar values. */
+  const accumulator = createStreamingDomainAccumulator(domains, {
+    quantileCapacity,
+    quantileColumns
+  });
   const batches: RecordBatch[] = [];
   let retainedRows = 0;
   let batchesSinceEmission = 0;
   let last: ScaleQueryResult<Name> | undefined;
 
   /** Binds the current statistics and evaluates the selected snapshot. */
-  async function snapshot(final = false): Promise<ScaleQueryResult<Name> | undefined> {
+  async function snapshot(): Promise<ScaleQueryResult<Name> | undefined> {
+    /** Current domain values in projection order. */
     const domains = accumulator.result();
     if (domains.some(domain => domain.length === 0)) return undefined;
-    // math.gl beta.11 cannot bind repeated quantize breaks. Defer publication
-    // until the extent grows, while still surfacing final domain errors.
-    if (
-      !final &&
-      entries.some(
-        ([, {scale}], index) =>
-          scale.type === 'quantize' &&
-          scale.range.type === 'palette' &&
-          (scale.range.count ?? 0) > 2 &&
-          domains[index][0] === domains[index][1]
-      )
-    )
-      return undefined;
-
     const table = await makeArrowTableFromBatches(batches);
     signal?.throwIfAborted();
     if (!table) return undefined;
-    const schemaOnly = new Table(table.schema);
     const compiled = Object.fromEntries(
       entries.map(([name, expression], index) => [
         name,
-        compileArrowScale(schemaOnly, expression, domains[index])
+        bindArrowScale(table.schema, expression, {
+          domain: domains[index],
+          ...(expression.scale.type === 'quantile'
+            ? {
+                quantileBreaks: accumulator.quantileBreaks(
+                  expression.scale.domain.type === 'expression-extent'
+                    ? `expression:${index}`
+                    : expression.scale.domain.type !== 'fixed'
+                      ? `column:${expression.scale.domain.column}`
+                      : String(index),
+                  expression.scale.range.type === 'palette'
+                    ? expression.scale.range.count!
+                    : expression.scale.range.values.length
+                )
+              }
+            : {})
+        })
       ])
     ) as Record<Name, CompiledArrowScale>;
     return evaluateScaleProjections(table, compiled, signal);
@@ -184,7 +211,35 @@ export async function* queryScalesProgressive<Name extends string>(
     }
     batches.push(batch);
     if (batch.numRows === 0) continue;
-    accumulator.update(batch);
+    /** Scalar columns visited by the shared accumulator. */
+    const domainColumns: Record<string, Vector> = {};
+    entries.forEach(([, {scale}], index) => {
+      if (scale.domain.type === 'fixed') return;
+      /** Namespaced accumulator column, independent of source column spelling. */
+      const name =
+        scale.domain.type === 'expression-extent'
+          ? `expression:${index}`
+          : `column:${scale.domain.column}`;
+      if (scale.domain.type === 'expression-extent') {
+        /** Reusable evaluator for the domain value expression. */
+        let compiled = domainExpressions.get(name);
+        if (!compiled) {
+          compiled = compileArrowExpression(scale.domain.expression as Expression, {
+            inputSchema: batch.schema
+          });
+          domainExpressions.set(name, compiled);
+        }
+        domainColumns[name] = compiled.evaluate(batch, {signal});
+      } else {
+        /** Source vector reused without copying. */
+        const column = batch.getChild(scale.domain.column);
+        if (!column) throw new Error(`Missing scale column: ${scale.domain.column}`);
+        domainColumns[name] = column;
+      }
+    });
+    if (Object.keys(domainColumns).length) {
+      for (const domainBatch of new Table(domainColumns).batches) accumulator.update(domainBatch);
+    }
     if (++batchesSinceEmission < emitEveryBatches) continue;
     last = await snapshot();
     if (last) {
@@ -193,7 +248,52 @@ export async function* queryScalesProgressive<Name extends string>(
     }
   }
   signal?.throwIfAborted();
-  const final = last && batchesSinceEmission === 0 ? last : await snapshot(true);
+  const final = last && batchesSinceEmission === 0 ? last : await snapshot();
   if (!final) throw new Error('Progressive scale query could not resolve its domain.');
   yield {...final, final: true};
+}
+
+/** Row-preserving expression output and the resolved scales used by each expression. */
+export type ScaleExpressionQueryResult<Name extends string = string> = Readonly<{
+  /** Rows selected by the input table query. */
+  table: Table;
+  /** Computed Arrow vectors in the selected row order. */
+  columns: Readonly<Record<Name, Vector>>;
+  /** Resolved samplers in expression traversal order, including conditional branches. */
+  scales: Readonly<Record<Name, readonly ResolvedScale[]>>;
+}>;
+
+/** Evaluates scale calls inside CASE, COALESCE, and nested expressions over selected rows. */
+export async function queryScaleExpressions<Name extends string>(
+  input: Query | string,
+  expressions: Readonly<Record<Name, string | Expression>>,
+  options: QueryOptions
+): Promise<ScaleExpressionQueryResult<Name>> {
+  options.signal?.throwIfAborted();
+  /** Selected rows that define all data-derived domains. */
+  const table = await query(input, options);
+  /** Named expression outputs and their matching resolved scales. */
+  const results = (Object.entries(expressions) as [Name, string | Expression][]).map(
+    ([name, expression]) => {
+      options.signal?.throwIfAborted();
+      /** Upstream expression evaluator with resolved scale samplers. */
+      const compiled = compileArrowScaleExpression(table, expression);
+      return {
+        name,
+        column: compiled.evaluateTable(table, {signal: options.signal}),
+        scales: compiled.scales
+      };
+    }
+  );
+  return {
+    table,
+    columns: Object.fromEntries(results.map(result => [result.name, result.column])) as Record<
+      Name,
+      Vector
+    >,
+    scales: Object.fromEntries(results.map(result => [result.name, result.scales])) as Record<
+      Name,
+      readonly ResolvedScale[]
+    >
+  };
 }

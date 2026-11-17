@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {TypedArray} from '@math.gl/core';
-import {isFixedSizeListArrowType} from '@math.gl/arrow';
+import {isFixedSizeListArrowType} from '@math.gl/core/arrow';
 import * as arrow from 'apache-arrow';
 import {getDataTypeFromArray, deserializeArrowType} from '@loaders.gl/core/schema-utils';
 

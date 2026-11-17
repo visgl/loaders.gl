@@ -248,9 +248,16 @@ Each snapshot includes all rows read so far and the scales used for
 its vectors. The final snapshot has `final: true`. Configure
 `emitEveryBatches` and `maxRetainedRows` to control recoloring frequency
 and retained rows. Percentile endpoints use the upstream bounded sketch.
-Use `queryScales()` for exact quantile classes while progressive
-quantile classification awaits the upstream binder. With math.gl beta.11,
-multi-class quantize snapshots wait for a nonconstant extent.
+Quantile classification uses exact breaks in `queryScales()` and bounded
+sketches in `queryScalesProgressive()`. Both expose their actual class breaks
+through the resolved descriptor. Quantize scales can publish constant extents.
+
+Computed quantile inputs such as `SCALE_QUANTILE(value * 2, 5, PALETTE('Blues'))`
+work in materialized and progressive queries. Fixed ordinal mappings and threshold
+scales can use explicit colors. Use `queryScaleExpressions()` for scale calls
+inside `CASE`, `COALESCE`, or nested expressions. Its `scales` map contains
+an ordered array of resolved samplers for every expression, matching the scale
+calls that produced the output.
 
 Run `yarn bench scale-query` to compare fixed-domain streaming, exact
 percentile collection, and approximate percentile snapshots over equivalent

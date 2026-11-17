@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {scanWKB} from '@math.gl/arrow/wkb';
-import {makeGeoArrowColumnFromArrowVector} from '@math.gl/arrow/geoarrow';
+import {scanWKB} from '@math.gl/core/arrow';
+import {makeGeoArrowColumnFromArrowVector} from '@math.gl/core/arrow';
 import type {BinaryPolygonGeometry, GeoArrowEncoding} from '@loaders.gl/core/schema';
-import {getGeoArrowRowBounds as getMathGeoArrowRowBounds} from '@math.gl/arrow/geoarrow-utils';
+import {getGeoArrowRowBounds as getMathGeoArrowRowBounds} from '@math.gl/core/arrow';
 import {makeGeoArrowColumnFromBinaryPolygon} from './binary-polygon-to-geoarrow';
 import type {BinaryPolygonToGeoArrowOptions} from './binary-polygon-to-geoarrow';
 

@@ -15,8 +15,8 @@ import {
   type LegacyGeoJSONCRS
 } from '../../src/arrow-geometry/feature-table';
 import {convertWKTToGeometry} from '../../src/arrow-geometry/geometry-codecs';
-import {makeGeoArrowColumnFromArrowVector} from '@math.gl/arrow/geoarrow';
-import {materializeGeoArrowRows} from '@math.gl/arrow/geoarrow-utils';
+import {makeGeoArrowColumnFromArrowVector} from '@math.gl/core/arrow';
+import {materializeGeoArrowRows} from '@math.gl/core/arrow';
 
 test.each([
   ['POINT M (1 2 3)', 'xym', 'Point M'],

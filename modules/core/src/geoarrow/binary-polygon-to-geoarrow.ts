@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {BinaryPolygonGeometry} from '@loaders.gl/core/schema';
-import type {GeoArrowColumn, GeoArrowDimension} from '@math.gl/arrow/geoarrow-utils';
-import {getGeoArrowDimensionSize} from '@math.gl/arrow/geoarrow-utils';
+import type {GeoArrowColumn, GeoArrowDimension} from '@math.gl/core/arrow';
+import {getGeoArrowDimensionSize} from '@math.gl/core/arrow';
 
 /** Semantic information absent from the legacy binary polygon representation. */
 export type BinaryPolygonToGeoArrowOptions = {

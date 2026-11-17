@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Upgrade math.gl to beta.12 and adopt its consolidated Arrow, UTF-8, Web Mercator, and scale entry points.
+- Support progressive quantile classification, computed scale domains, constant quantize extents, explicit threshold and ordinal color mappings, and composed scale expressions.
+
 - Add an experimental shared terrain source and same-level seam reconciliation backed by math.gl.
 
 ## v5.0

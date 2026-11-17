@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrayRowTable, ObjectRowTable, Schema, TableBatch} from '@loaders.gl/core/schema';
-import {parseUTF8Boolean, parseUTF8Number} from '@math.gl/arrow/utf8';
+import {parseUTF8Boolean, parseUTF8Number} from '@math.gl/core/utf8';
 import {
   ArrowTableBuilder,
   serializeArrowField,

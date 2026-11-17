@@ -58,7 +58,7 @@ Use the dedicated subpath when passing Arrow tables across a worker boundary:
 
 ```typescript
 import {tableFromArrays} from 'apache-arrow';
-import {dehydrateArrowTable, hydrateArrowTable, splitArrowBuffers} from '@math.gl/arrow';
+import {dehydrateArrowTable, hydrateArrowTable, splitArrowBuffers} from '@math.gl/core/arrow';
 
 const table = tableFromArrays({value: [1, 2]});
 const transferableTable = splitArrowBuffers(table, {copy: 'sliced'});
@@ -76,11 +76,11 @@ are not encoded into full-table IPC.
 from `@loaders.gl/core/arrow-worker-transport` provide loaders.gl worker hooks. Import IPC serialization
 helpers and transport types directly from math.gl.
 
-Import transport utilities directly from `@math.gl/arrow`; loaders.gl no longer exposes a
+Import transport utilities directly from `@math.gl/core/arrow`; loaders.gl no longer exposes a
 parallel transport utility subpath.
 
 Indexed/mapped Arrow tables, column renaming, and schema validation are also available from
-`@math.gl/arrow`; UTF-8 comparison and parsing live in `@math.gl/arrow/utf8`.
+`@math.gl/core/arrow`; UTF-8 comparison and parsing live in `@math.gl/core/utf8`.
 
 ## Incremental Arrow metadata
 

@@ -134,15 +134,3 @@ test.each([
   },
   35_000
 );
-
-test('published Arrow transport compatibility uses the shared lower-level owner', () => {
-  const source = `import {dehydrateArrowTable as legacy, splitArrowBuffers as legacySplit} from '@math.gl/arrow';
-  import {dehydrateArrowTable, splitArrowBuffers} from '@math.gl/arrow';
-  if (legacy !== dehydrateArrowTable || legacySplit !== splitArrowBuffers) process.exit(1);`;
-  expect(() =>
-    execFileSync(process.execPath, ['--input-type=module', '-e', source], {
-      cwd: REPOSITORY_ROOT,
-      timeout: 30000
-    })
-  ).not.toThrow();
-}, 35_000);

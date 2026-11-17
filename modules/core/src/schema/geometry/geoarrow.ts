@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoArrowEncoding} from '@math.gl/arrow/geoarrow-utils';
+import type {GeoArrowEncoding} from '@math.gl/core/arrow';
 
 /** Canonical geometry encodings are shared with math.gl. */
 export type {
   GeoArrowEncoding,
   GeoArrowDimension,
   GeoArrowCoordinateLayout
-} from '@math.gl/arrow/geoarrow-utils';
+} from '@math.gl/core/arrow';
 
 /** Preferred output policy for loader-facing GeoArrow conversions. */
 export type GeoArrowEncodingPreference = 'geoarrow.wkb' | 'geoarrow.geometry' | 'optimized';

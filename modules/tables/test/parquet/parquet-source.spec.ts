@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {hydrateArrowTable} from '@math.gl/arrow';
+import {hydrateArrowTable} from '@math.gl/core/arrow';
 import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {query, queryInBatches} from '@loaders.gl/core/query';
