@@ -54,7 +54,7 @@
     "@loaders.gl/gis": "4.5.4",
     "@loaders.gl/loader-utils": "4.5.4",
     "@loaders.gl/schema": "4.5.4",
-    "@math.gl/proj4": "^4.1.0"
+    "@math.gl/proj4": "^4.1.1"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~4.5.0"

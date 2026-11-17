@@ -53,7 +53,7 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@math.gl/polygon": "^4.1.0",
+    "@math.gl/polygon": "^4.1.1",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {

@@ -55,9 +55,9 @@
     "@loaders.gl/math": "4.5.4",
     "@loaders.gl/tiles": "4.5.4",
     "@loaders.gl/zip": "4.5.4",
-    "@math.gl/core": "^4.1.0",
-    "@math.gl/culling": "^4.1.0",
-    "@math.gl/geospatial": "^4.1.0",
+    "@math.gl/core": "^4.1.1",
+    "@math.gl/culling": "^4.1.1",
+    "@math.gl/geospatial": "^4.1.1",
     "@probe.gl/log": "^4.1.1",
     "long": "^5.2.1"
   },
