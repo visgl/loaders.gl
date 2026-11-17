@@ -22,131 +22,68 @@
     },
     "./kml/bundled": {
       "types": "./dist/kml/bundled.d.ts",
-      "import": "./dist/kml/bundled.js"
-    },
-    "./gpx-loader": {
-      "types": "./dist/gpx-loader.d.ts",
-      "import": "./dist/gpx-loader.js"
+      "import": "./dist/kml/bundled.js",
+      "require": "./dist/kml/bundled.cjs"
     },
     "./kml": {
       "types": "./dist/kml/index.d.ts",
       "import": "./dist/kml/index.js",
       "require": "./dist/kml/index.cjs"
     },
-    "./kml-loader": {
-      "types": "./dist/kml-loader.d.ts",
-      "import": "./dist/kml-loader.js"
-    },
-    "./kml-writer": {
-      "types": "./dist/kml-writer.d.ts",
-      "import": "./dist/kml-writer.js"
-    },
-    "./kml/kmz-archive": {
-      "types": "./dist/kml/kmz-archive.d.ts",
-      "import": "./dist/kml/kmz-archive.js"
-    },
-    "./kmz-loader": {
-      "types": "./dist/kmz-loader.d.ts",
-      "import": "./dist/kmz-loader.js"
-    },
-    "./kmz-source": {
-      "types": "./dist/kmz-source.d.ts",
-      "import": "./dist/kmz-source.js"
-    },
-    "./kml/sports-track-parser": {
-      "types": "./dist/kml/sports-track-parser.d.ts",
-      "import": "./dist/kml/sports-track-parser.js"
-    },
-    "./tcx-loader": {
-      "types": "./dist/tcx-loader.d.ts",
-      "import": "./dist/tcx-loader.js"
-    },
     "./shapefile/bundled": {
       "types": "./dist/shapefile/bundled.d.ts",
-      "import": "./dist/shapefile/bundled.js"
-    },
-    "./shapefile/dbf-format": {
-      "types": "./dist/shapefile/dbf-format.d.ts",
-      "import": "./dist/shapefile/dbf-format.js"
-    },
-    "./dbf-loader": {
-      "types": "./dist/dbf-loader.d.ts",
-      "import": "./dist/dbf-loader.js"
+      "import": "./dist/shapefile/bundled.js",
+      "require": "./dist/shapefile/bundled.cjs"
     },
     "./shapefile": {
       "types": "./dist/shapefile/index.d.ts",
       "import": "./dist/shapefile/index.js",
       "require": "./dist/shapefile/index.cjs"
     },
-    "./shapefile-arrow-loader": {
-      "types": "./dist/shapefile-arrow-loader.d.ts",
-      "import": "./dist/shapefile-arrow-loader.js"
-    },
-    "./shapefile-loader": {
-      "types": "./dist/shapefile-loader.d.ts",
-      "import": "./dist/shapefile-loader.js"
-    },
-    "./shapefile/shp-format": {
-      "types": "./dist/shapefile/shp-format.d.ts",
-      "import": "./dist/shapefile/shp-format.js"
-    },
-    "./shp-loader": {
-      "types": "./dist/shp-loader.d.ts",
-      "import": "./dist/shp-loader.js"
-    },
     "./gpx": {
       "types": "./dist/gpx.d.ts",
-      "import": "./dist/gpx.js"
+      "import": "./dist/gpx.js",
+      "require": "./dist/gpx.cjs"
     },
     "./tcx": {
       "types": "./dist/tcx.d.ts",
-      "import": "./dist/tcx.js"
+      "import": "./dist/tcx.js",
+      "require": "./dist/tcx.cjs"
     },
     "./kmz": {
       "types": "./dist/kmz.d.ts",
-      "import": "./dist/kmz.js"
+      "import": "./dist/kmz.js",
+      "require": "./dist/kmz.cjs"
     },
     "./shp": {
       "types": "./dist/shp.d.ts",
-      "import": "./dist/shp.js"
+      "import": "./dist/shp.js",
+      "require": "./dist/shp.cjs"
     },
     "./dbf": {
       "types": "./dist/dbf.d.ts",
-      "import": "./dist/dbf.js"
-    },
-    "./flatgeobuf-loader": {
-      "types": "./dist/flatgeobuf-loader.d.ts",
-      "import": "./dist/flatgeobuf-loader.js"
-    },
-    "./flatgeobuf-source": {
-      "types": "./dist/flatgeobuf-source.d.ts",
-      "import": "./dist/flatgeobuf-source.js"
+      "import": "./dist/dbf.js",
+      "require": "./dist/dbf.cjs"
     },
     "./flatgeobuf/bundled": {
       "types": "./dist/flatgeobuf/bundled.d.ts",
-      "import": "./dist/flatgeobuf/bundled.js"
+      "import": "./dist/flatgeobuf/bundled.js",
+      "require": "./dist/flatgeobuf/bundled.cjs"
     },
     "./flatgeobuf": {
       "types": "./dist/flatgeobuf/index.d.ts",
       "import": "./dist/flatgeobuf/index.js",
       "require": "./dist/flatgeobuf/index.cjs"
     },
-    "./geopackage-source": {
-      "types": "./dist/geopackage-source.d.ts",
-      "import": "./dist/geopackage-source.js"
-    },
     "./geopackage/bundled": {
       "types": "./dist/geopackage/bundled.d.ts",
-      "import": "./dist/geopackage/bundled.js"
+      "import": "./dist/geopackage/bundled.js",
+      "require": "./dist/geopackage/bundled.cjs"
     },
     "./geopackage": {
       "types": "./dist/geopackage/index.d.ts",
       "import": "./dist/geopackage/index.js",
       "require": "./dist/geopackage/index.cjs"
-    },
-    "./geopackage-loader": {
-      "types": "./dist/geopackage-loader.d.ts",
-      "import": "./dist/geopackage-loader.js"
     },
     "./wkt": {
       "types": "./dist/wkt/index.d.ts",
@@ -158,71 +95,46 @@
       "import": "./dist/wkt/bundled.js",
       "require": "./dist/wkt/bundled.cjs"
     },
-    "./hex-wkb-loader-types": {
-      "types": "./dist/hex-wkb-loader-types.d.ts",
-      "import": "./dist/hex-wkb-loader-types.js",
-      "require": "./dist/hex-wkb-loader-types.cjs"
-    },
-    "./hex-wkb-loader": {
-      "types": "./dist/hex-wkb-loader.d.ts",
-      "import": "./dist/hex-wkb-loader.js",
-      "require": "./dist/hex-wkb-loader.cjs"
-    },
-    "./twkb-loader": {
-      "types": "./dist/twkb-loader.d.ts",
-      "import": "./dist/twkb-loader.js",
-      "require": "./dist/twkb-loader.cjs"
-    },
-    "./twkb-writer": {
-      "types": "./dist/twkb-writer.d.ts",
-      "import": "./dist/twkb-writer.js",
-      "require": "./dist/twkb-writer.cjs"
-    },
-    "./wkb-loader": {
-      "types": "./dist/wkb-loader.d.ts",
-      "import": "./dist/wkb-loader.js",
-      "require": "./dist/wkb-loader.cjs"
-    },
-    "./wkb-writer": {
-      "types": "./dist/wkb-writer.d.ts",
-      "import": "./dist/wkb-writer.js",
-      "require": "./dist/wkb-writer.cjs"
-    },
-    "./wkt-crs-loader": {
-      "types": "./dist/wkt-crs-loader.d.ts",
-      "import": "./dist/wkt-crs-loader.js",
-      "require": "./dist/wkt-crs-loader.cjs"
-    },
-    "./wkt-crs-writer": {
-      "types": "./dist/wkt-crs-writer.d.ts",
-      "import": "./dist/wkt-crs-writer.js",
-      "require": "./dist/wkt-crs-writer.cjs"
-    },
-    "./wkt-loader": {
-      "types": "./dist/wkt-loader.d.ts",
-      "import": "./dist/wkt-loader.js",
-      "require": "./dist/wkt-loader.cjs"
-    },
-    "./wkt-writer": {
-      "types": "./dist/wkt-writer.d.ts",
-      "import": "./dist/wkt-writer.js",
-      "require": "./dist/wkt-writer.cjs"
-    },
     "./wkb": {
       "types": "./dist/wkb.d.ts",
       "import": "./dist/wkb.js",
       "require": "./dist/wkb.cjs"
-    },
-    "./twkb": {
-      "types": "./dist/twkb.d.ts",
-      "import": "./dist/twkb.js",
-      "require": "./dist/twkb.cjs"
     },
     "./wkt-worker.js": {
       "import": "./dist/wkt-worker.js"
     },
     "./shapefile-worker.js": {
       "import": "./dist/shapefile-worker.js"
+    },
+    "./gpx/bundled": {
+      "types": "./dist/gpx-bundled.d.ts",
+      "import": "./dist/gpx-bundled.js",
+      "require": "./dist/gpx-bundled.cjs"
+    },
+    "./tcx/bundled": {
+      "types": "./dist/tcx-bundled.d.ts",
+      "import": "./dist/tcx-bundled.js",
+      "require": "./dist/tcx-bundled.cjs"
+    },
+    "./kmz/bundled": {
+      "types": "./dist/kmz-bundled.d.ts",
+      "import": "./dist/kmz-bundled.js",
+      "require": "./dist/kmz-bundled.cjs"
+    },
+    "./shp/bundled": {
+      "types": "./dist/shp-bundled.d.ts",
+      "import": "./dist/shp-bundled.js",
+      "require": "./dist/shp-bundled.cjs"
+    },
+    "./dbf/bundled": {
+      "types": "./dist/dbf-bundled.d.ts",
+      "import": "./dist/dbf-bundled.js",
+      "require": "./dist/dbf-bundled.cjs"
+    },
+    "./wkb/bundled": {
+      "types": "./dist/wkb-bundled.d.ts",
+      "import": "./dist/wkb-bundled.js",
+      "require": "./dist/wkb-bundled.cjs"
     }
   },
   "sideEffects": false,

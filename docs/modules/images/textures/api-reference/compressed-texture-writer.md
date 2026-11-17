@@ -76,7 +76,7 @@ The package is resolved as an optional peer dependency and called directly. The 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only if using under Node
 import {encodeURLtoURL} from '@loaders.gl/core';
-import {CompressedTextureWriter} from '@loaders.gl/images/compressed-texture-writer';
+import {CompressedTextureWriter} from '@loaders.gl/images/texture';
 
 export const IMAGE_URL = 'image.png';
 

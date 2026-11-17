@@ -8,3 +8,5 @@ export {
   type QuantizedMeshLoaderOptions,
   QuantizedMeshLoader
 } from './terrain/quantized-mesh-loader-types';
+
+export {type QuantizedMeshWriterOptions, QuantizedMeshWriter} from './quantized-mesh-writer';

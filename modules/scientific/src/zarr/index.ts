@@ -58,3 +58,9 @@ export type {
   GeoZarrSourceMetadata,
   GetGeoZarrParameters
 } from './geo-zarr-loader';
+
+export {ZarrArrayLoaderWithParser} from './zarr-array-loader';
+
+export {OMEZarrLoaderWithParser} from './ome-zarr-loader';
+export {GeoZarrLoaderWithParser} from './geo-zarr-loader';
+export {SpatialDataLoaderWithParser} from './spatial-data-loader';

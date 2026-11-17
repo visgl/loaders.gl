@@ -28,6 +28,8 @@ export function auditPublicImports() {
           (/\/index$/.test(subpath) &&
             !(manifest.name === '@loaders.gl/raster' && subpath === './terrain/index')) ||
           /\/unbundled$/.test(subpath) ||
+          (/^@loaders\.gl\/(?:tables|geospatial|pointclouds|raster|scene|scientific|documents|images)$/.test(manifest.name) &&
+            /^\.\/[^/]*-(?:loader|writer|source)(?:-(?:types|options|shared|base|with-parser))?$/.test(subpath)) ||
           (manifest.name !== '@loaders.gl/core' &&
             !path.extname(subpath) &&
             /^\.\/([^/]+)\/\1(?:-|$)/.test(subpath))

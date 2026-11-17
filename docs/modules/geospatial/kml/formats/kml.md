@@ -85,7 +85,7 @@ KML is an [Open Geospatial Consortium standard][kml_ogc_standard].
 | Model | ✅ Supported | Location, orientation, scale, and resource reference metadata are retained |
 | `gx:Track` and `gx:MultiTrack` | ✅ Supported | Converted to line geometry with timestamp metadata |
 | KMZ `doc.kml` selection | ✅ Supported | Falls back to a root or first KML entry when needed |
-| KMZ relative resources | ✅ Supported | Lazy archive access through `openKMZArchive` and `KMZVectorSource` |
+| KMZ relative resources | ✅ Supported | Lazy archive access through `_openKMZArchive` and `KMZVectorSource` |
 | KML/KMZ writing | ✅ Supported | `KMLWriter` and `KMZWriter` cover common feature geometries and properties |
 | Arbitrary CRS transformation | ❌ Not implemented | KML/KMZ coordinates are interpreted as WGS84 longitude/latitude |
 | External NetworkLink fetching | ❌ Not implemented | Applications decide whether and how to fetch linked documents |

@@ -6,3 +6,5 @@ export type {VTKDataset, VTKDataArray} from './vtk';
 
 export {parseVTKXML} from './vtk-xml';
 export type {VTKXMLDataset, VTKXMLPiece, VTKXMLArray, VTKXMLNumericArray} from './vtk-xml';
+
+export {VTKLoaderWithParser} from '../vtk-loader';

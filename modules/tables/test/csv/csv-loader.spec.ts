@@ -11,8 +11,8 @@ import {
 } from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 import {CSVLoader as BundledCSVLoader} from '@loaders.gl/tables/csv/bundled';
-import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv';
-import * as csv from '@loaders.gl/tables/csv';
+import {CSVLoader as MetadataCSVLoader} from '@loaders.gl/tables/csv';
+import * as csv from '@loaders.gl/tables';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {getTableLength} from '@loaders.gl/core/schema-utils';
 // Small CSV Sample Files
@@ -44,32 +44,32 @@ test('CSV bundled loaders expose parser methods', () => {
     'function'
   );
 });
-test('CSV unbundled metadata loaders expose preload', async () => {
-  expect(preloadSync(UnbundledCSVLoader), 'unbundled CSVLoader is not preloaded initially').toBe(
+test('CSV default format metadata loaders expose preload', async () => {
+  expect(preloadSync(MetadataCSVLoader), 'metadata CSVLoader is not preloaded initially').toBe(
     null
   );
-  expect(typeof UnbundledCSVLoader.preload, 'unbundled CSVLoader exposes preload').toBe('function');
-  expect('parse' in UnbundledCSVLoader, 'unbundled CSVLoader does not expose parse').toBeFalsy();
+  expect(typeof MetadataCSVLoader.preload, 'metadata CSVLoader exposes preload').toBe('function');
+  expect('parse' in MetadataCSVLoader, 'metadata CSVLoader does not expose parse').toBeFalsy();
   expect(
-    'parseSync' in UnbundledCSVLoader,
-    'unbundled CSVLoader does not expose parseSync'
+    'parseSync' in MetadataCSVLoader,
+    'metadata CSVLoader does not expose parseSync'
   ).toBeFalsy();
   expect(
-    'parseInBatches' in UnbundledCSVLoader,
-    'unbundled CSVLoader does not expose parseInBatches'
+    'parseInBatches' in MetadataCSVLoader,
+    'metadata CSVLoader does not expose parseInBatches'
   ).toBeFalsy();
-  const parsedTable = await parse('city,population\nParis,2148000', UnbundledCSVLoader, {
+  const parsedTable = await parse('city,population\nParis,2148000', MetadataCSVLoader, {
     csv: {header: true, shape: 'object-row-table'}
   });
-  expect(parsedTable.shape, 'parse works with unbundled CSVLoader').toBe('object-row-table');
+  expect(parsedTable.shape, 'parse works with metadata CSVLoader').toBe('object-row-table');
   if (parsedTable.shape === 'object-row-table') {
     expect(parsedTable.data[0]).toEqual({city: 'Paris', population: 2148000});
   }
-  const preloadedLoader = await preload(UnbundledCSVLoader);
+  const preloadedLoader = await preload(MetadataCSVLoader);
   expect(typeof preloadedLoader.parse, 'preload returns parser-bearing CSV loader').toBe(
     'function'
   );
-  expect(preloadSync(UnbundledCSVLoader), 'preloadSync returns cached CSV loader').toBe(
+  expect(preloadSync(MetadataCSVLoader), 'preloadSync returns cached CSV loader').toBe(
     preloadedLoader
   );
 });

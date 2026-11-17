@@ -4,3 +4,5 @@
 
 export {JSONLoader, type JSONLoaderOptions} from './json-loader-types';
 export {JSONFormat} from './json-format';
+
+export {JSONLoaderWithParser} from './json-loader';

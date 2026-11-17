@@ -273,3 +273,7 @@ export {
 export type {GLTFAccessorReference} from './lib/api/gltf-accessors';
 
 export {type GLTFLoaderOptions} from './gltf-loader-types';
+
+export {GLTFLoaderWithParser, parse} from '../gltf-loader';
+
+export {type GLTFWriterOptions} from '../gltf-writer';

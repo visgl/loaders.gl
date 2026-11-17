@@ -13,7 +13,7 @@ export type ThreeDLLUTLoaderOptions = LoaderOptions & {
 };
 /** Loads the parser-bearing LUT implementation. */
 async function preload() {
-  const {ThreeDLLUTLoaderWithParser} = await import('@loaders.gl/images/3dl-lut-loader');
+  const {ThreeDLLUTLoaderWithParser} = await import('@loaders.gl/images/color-lut');
   return ThreeDLLUTLoaderWithParser;
 }
 /** Metadata-only 3dl color lookup table loader. */

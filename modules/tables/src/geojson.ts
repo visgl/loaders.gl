@@ -21,3 +21,7 @@ export {GeoJSONWriter} from './json/geojson-writer';
 
 export {GeoJSONFormat, NDGeoJSONFormat} from './json/json-format';
 export {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './json/ndgeojson-loader-types';
+
+export {GeoJSONWorkerLoaderWithParser, GeoJSONLoaderWithParser} from './geojson-loader';
+
+export {NDGeoJSONLoaderWithParser} from './ndgeojson-loader';

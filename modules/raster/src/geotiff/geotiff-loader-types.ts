@@ -29,7 +29,7 @@ export type GeoTIFFLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing GeoTIFF loader implementation. */
 async function preload() {
-  const {GeoTIFFLoaderWithParser} = await import('@loaders.gl/raster/geotiff-loader');
+  const {GeoTIFFLoaderWithParser} = await import('@loaders.gl/raster/geotiff');
   return GeoTIFFLoaderWithParser;
 }
 

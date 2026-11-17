@@ -41,7 +41,7 @@ export type JSONTableLoaderOptions = LoaderOptions & {
  * @returns The parser-bearing `JSONTableLoaderWithParser` implementation.
  */
 async function preload() {
-  const {JSONTableLoaderWithParser} = await import('@loaders.gl/tables/json-table-loader');
+  const {JSONTableLoaderWithParser} = await import('@loaders.gl/tables/json');
   return JSONTableLoaderWithParser;
 }
 

@@ -10,10 +10,10 @@ import {
   KMZVectorSource,
   KMZWriter,
   convertKMLDocumentToFeatureCollection,
-  openKMZArchive,
-  parseKMLDocument
+  _openKMZArchive,
+  _parseKMLDocument
 } from '@loaders.gl/geospatial/kml';
-import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz-loader';
+import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
 import {parseGPXTextToFeatureCollection} from '../../src/kml/gpx-loader';
 import {parseTCXTextToFeatureCollection} from '../../src/kml/tcx-loader';
 
@@ -49,7 +49,7 @@ const EDGE_KML = `<kml xmlns="http://www.opengis.net/kml/2.2"><Document>
 </Document></kml>`;
 
 test('KML parser covers document metadata, geometry variants, and optional elements', () => {
-  const document = parseKMLDocument(EDGE_KML);
+  const document = _parseKMLDocument(EDGE_KML);
 
   expect(document.name).toBe('Edge cases');
   expect(document.features).toHaveLength(7);
@@ -277,7 +277,7 @@ test('KML writers cover table inputs, geometry families, escaping, and options',
   const kmz = await encode(featureCollection, KMZWriter, {
     kmz: {kmlFileName: 'maps/main.kml', files: {'data.bin': subarray}}
   });
-  const archive = await openKMZArchive(kmz);
+  const archive = await _openKMZArchive(kmz);
   expect(archive.kmlFileName).toBe('maps/main.kml');
   expect(new Uint8Array(await archive.getResource('../data.bin'))).toEqual(new Uint8Array([1, 2]));
   await archive.close();
@@ -291,12 +291,12 @@ test('KMZ archive and source cover KML fallback selection and output formats', a
     },
     ZipWriter
   );
-  const archive = await openKMZArchive(nested);
+  const archive = await _openKMZArchive(nested);
   expect(archive.kmlFileName).toBe('nested/main.kml');
   await archive.close();
 
   const noKML = await encode({'readme.txt': 'no kml'}, ZipWriter);
-  await expect(openKMZArchive(noKML)).rejects.toThrow('does not contain a KML document');
+  await expect(_openKMZArchive(noKML)).rejects.toThrow('does not contain a KML document');
 
   const sourceArchive = await encode(
     {'doc.kml': '<kml><Document><Placemark><name>Empty</name></Placemark></Document></kml>'},

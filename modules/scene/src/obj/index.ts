@@ -17,3 +17,5 @@ export type {MTLLoaderOptions} from './mtl-loader-types';
 export {MTLLoader} from './mtl-loader-types';
 
 export {type OBJMeshBatch, type OBJParsedBatch} from './obj-loader-types';
+
+export {OBJLoaderWithParser} from '../obj-loader';

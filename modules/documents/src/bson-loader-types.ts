@@ -19,7 +19,7 @@ export type BSONLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing BSON loader implementation. */
 async function preload() {
-  const {BSONLoaderWithParser} = await import('@loaders.gl/documents/bson-loader');
+  const {BSONLoaderWithParser} = await import('@loaders.gl/documents/bson');
   return BSONLoaderWithParser;
 }
 

@@ -6,7 +6,7 @@ import type {Table, RecordBatch} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {parse, parseInBatches, parseSync} from '@loaders.gl/core';
 import {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from '@loaders.gl/tables/json';
-import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/ndgeojson-loader';
+import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson';
 import type {Feature, Geometry, ObjectRowTable} from '@loaders.gl/core/schema';
 
 const features: Feature<Geometry | null>[] = [

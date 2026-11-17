@@ -9,7 +9,7 @@ import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {
   ParquetDatasetSource,
   type ParquetDatasetFileQuery
-} from '@loaders.gl/tables/parquet-dataset-source';
+} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 let westernFile: Blob;

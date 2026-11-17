@@ -16,3 +16,5 @@ export {openNetCDF4Source} from './open-netcdf4-source';
 
 export {parseCFVariableMetadata, decodeCFNumericValues} from './cf-conventions';
 export type {CFVariableMetadata} from './cf-conventions';
+
+export {createNetCDFSource} from '../netcdf-source';

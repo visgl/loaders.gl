@@ -51,10 +51,10 @@ import {CSVLoader} from '@loaders.gl/tables/csv';
 const table = await load(url, CSVLoader);
 ```
 
-Use the explicit parser entry point when a synchronous API needs a parser-bearing loader:
+Import the explicit parser-bearing export from the format entry point when a synchronous API needs it:
 
 ```typescript
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv';
 ```
 
 The metadata loader has the same loader id, extensions, MIME types, and option shape as the bundled loader. The difference is that parser methods such as `parse`, `parseSync`, and `parseInBatches` are not present on the imported object. Instead, the loader exposes a `preload` function that core can use to dynamically import the parser-bearing implementation.

@@ -41,7 +41,9 @@ import {GeoParquetLoader, ParquetLoader, preloadCompressions} from '@loaders.gl/
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
 import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
-import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/geospatial/kml';
+import {KMLLoader} from '@loaders.gl/geospatial/kml';
+import {GPXLoader} from '@loaders.gl/geospatial/gpx';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 import {GeoJSONLoader} from '@loaders.gl/tables/json';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/geoarrow';

@@ -53,3 +53,7 @@ export {
   triangulateWKBGeometryColumn,
   type TriangulatedWKBGeometryColumns
 } from './triangulate-wkb-geometry-column';
+
+export {ArrowLoaderWithParser} from '../arrow-loader';
+
+export {createArrowSource} from '../arrow-source';

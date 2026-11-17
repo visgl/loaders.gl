@@ -12,8 +12,8 @@ import type {Schema} from '@loaders.gl/core/schema';
 import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv';
 import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 import {ParquetLoader} from '@loaders.gl/tables';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
 

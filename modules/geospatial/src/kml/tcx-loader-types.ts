@@ -27,7 +27,7 @@ export type TCXLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing TCX loader implementation. */
 async function preloadTCXLoader() {
-  const {TCXLoaderWithParser} = await import('@loaders.gl/geospatial/tcx-loader');
+  const {TCXLoaderWithParser} = await import('@loaders.gl/geospatial/tcx');
   return TCXLoaderWithParser;
 }
 

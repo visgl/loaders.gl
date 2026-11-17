@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {GeoTIFF as GeoTIFFDataset} from 'geotiff';
-import {fromBlob, fromUrl} from 'geotiff';
 
 import type {
   SourceLoader,
@@ -285,6 +284,7 @@ export class OMETiffImageSource
 
   /** Opens the backing OME-TIFF from a URL or Blob input. */
   private async _openTiff(): Promise<GeoTIFFDataset> {
+    const {fromBlob, fromUrl} = await import('geotiff');
     if (typeof this.data === 'string') {
       return await fromUrl(this.url, this.options.ometiff?.headers as Record<string, unknown>);
     }

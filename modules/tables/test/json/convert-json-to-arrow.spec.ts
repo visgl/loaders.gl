@@ -8,7 +8,7 @@ import {
   convertJSONToArrow,
   JSONTableLoaderWithParser,
   type ConvertJSONToArrowOptions
-} from '@loaders.gl/tables/json-table-loader';
+} from '@loaders.gl/tables/json';
 import type {Schema as LoadersSchema} from '@loaders.gl/core/schema';
 
 const ROWS = [

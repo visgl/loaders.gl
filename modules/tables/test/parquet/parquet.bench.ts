@@ -9,7 +9,7 @@ import {
   ParquetLoader,
   type ParquetWriterOptions
 } from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';

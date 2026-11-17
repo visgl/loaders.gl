@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 test('published VTK ESM parser and metadata preload resolve without source bundling', () => {
   const program = `
     import {VTKLoader} from '@loaders.gl/scientific';
-    import {VTKLoaderWithParser} from '@loaders.gl/scientific/vtk-loader';
+    import {VTKLoaderWithParser} from '@loaders.gl/scientific/vtk';
     const preloaded = await VTKLoader.preload();
     console.log(JSON.stringify({
       id: VTKLoaderWithParser.id,

@@ -26,7 +26,9 @@ import {
 } from '@loaders.gl/tiles-3d/i3s';
 import {ImageBitmapFormat, ImageFormat} from '@loaders.gl/images';
 import {GeoJSONFormat, JSONFormat, NDGeoJSONFormat, NDJSONFormat} from '@loaders.gl/tables/json';
-import {GPXFormat, KMLFormat, KMZFormat, TCXFormat} from '@loaders.gl/geospatial/kml';
+import {KMLFormat, KMZFormat} from '@loaders.gl/geospatial/kml';
+import {GPXFormat} from '@loaders.gl/geospatial/gpx';
+import {TCXFormat} from '@loaders.gl/geospatial/tcx';
 import {LASFormat} from '@loaders.gl/pointclouds/las';
 import {LERCFormat} from '@loaders.gl/raster';
 import {MLTFormat} from '@loaders.gl/tiles/mlt';
@@ -51,13 +53,8 @@ import {
   KTX2BasisTextureFormat,
   RadianceHDRFormat
 } from '@loaders.gl/images';
-import {
-  HexWKBFormat,
-  TWKBFormat,
-  WKBFormat,
-  WKTCRSFormat,
-  WKTFormat
-} from '@loaders.gl/geospatial/wkt';
+import {WKTCRSFormat, WKTFormat} from '@loaders.gl/geospatial/wkt';
+import {HexWKBFormat, TWKBFormat, WKBFormat} from '@loaders.gl/geospatial/wkb';
 import {
   CSWCapabilitiesFormat,
   CSWDomainFormat,

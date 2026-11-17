@@ -36,7 +36,7 @@ export const TerrainLoader = {
   worker: true,
   /** Loads the parser-bearing terrain loader implementation. */
   preload: async () => {
-    const loaderModule = await import('@loaders.gl/raster/terrain-loader');
+    const loaderModule = await import('@loaders.gl/raster/terrain');
     return loaderModule.TerrainLoaderWithParser;
   },
   options: {

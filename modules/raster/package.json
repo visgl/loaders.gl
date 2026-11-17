@@ -22,32 +22,17 @@
     },
     "./geotiff/bundled": {
       "types": "./dist/geotiff/bundled.d.ts",
-      "import": "./dist/geotiff/bundled.js"
+      "import": "./dist/geotiff/bundled.js",
+      "require": "./dist/geotiff/bundled.cjs"
     },
     "./geotiff/discover-geotiff": {
       "types": "./dist/geotiff/discover-geotiff.d.ts",
       "import": "./dist/geotiff/discover-geotiff.js"
     },
-    "./geotiff-loader": {
-      "types": "./dist/geotiff-loader.d.ts",
-      "import": "./dist/geotiff-loader.js"
-    },
-    "./geotiff-raster-loader": {
-      "types": "./dist/geotiff-raster-loader.d.ts",
-      "import": "./dist/geotiff-raster-loader.js"
-    },
-    "./geotiff-raster-types": {
-      "types": "./dist/geotiff/geotiff-raster-types.d.ts",
-      "import": "./dist/geotiff/geotiff-raster-types.js"
-    },
-    "./geotiff-source": {
-      "types": "./dist/geotiff-source.d.ts",
-      "import": "./dist/geotiff-source.js"
-    },
     "./geotiff": {
-      "types": "./dist/geotiff/advanced.d.ts",
-      "import": "./dist/geotiff/advanced.js",
-      "require": "./dist/geotiff/advanced.cjs"
+      "types": "./dist/geotiff/index.d.ts",
+      "import": "./dist/geotiff/index.js",
+      "require": "./dist/geotiff/index.cjs"
     },
     "./geotiff/lib/load-geotiff": {
       "types": "./dist/geotiff/lib/load-geotiff.d.ts",
@@ -125,29 +110,24 @@
       "types": "./dist/geotiff/loaders.d.ts",
       "import": "./dist/geotiff/loaders.js"
     },
-    "./ometiff-loader": {
-      "types": "./dist/ometiff-loader.d.ts",
-      "import": "./dist/ometiff-loader.js"
-    },
     "./geotiff/types": {
       "types": "./dist/geotiff/types.d.ts",
       "import": "./dist/geotiff/types.js"
     },
     "./lerc/bundled": {
       "types": "./dist/lerc/bundled.d.ts",
-      "import": "./dist/lerc/bundled.js"
+      "import": "./dist/lerc/bundled.js",
+      "require": "./dist/lerc/bundled.cjs"
     },
     "./lerc": {
       "types": "./dist/lerc/index.d.ts",
-      "import": "./dist/lerc/index.js"
-    },
-    "./lerc-loader": {
-      "types": "./dist/lerc-loader.d.ts",
-      "import": "./dist/lerc-loader.js"
+      "import": "./dist/lerc/index.js",
+      "require": "./dist/lerc/index.cjs"
     },
     "./lerc-wasm-url": {
       "types": "./dist/lerc/lerc-wasm-url.d.ts",
-      "import": "./dist/lerc/lerc-wasm-url.js"
+      "import": "./dist/lerc/lerc-wasm-url.js",
+      "require": "./dist/lerc/lerc-wasm-url.cjs"
     },
     "./lerc/lib/parsers/lerc/lerc-types": {
       "types": "./dist/lerc/lib/parsers/lerc/lerc-types.d.ts",
@@ -155,11 +135,13 @@
     },
     "./quantized-mesh": {
       "types": "./dist/quantized-mesh.d.ts",
-      "import": "./dist/quantized-mesh.js"
+      "import": "./dist/quantized-mesh.js",
+      "require": "./dist/quantized-mesh.cjs"
     },
     "./terrain/bundled": {
       "types": "./dist/terrain/bundled.d.ts",
-      "import": "./dist/terrain/bundled.js"
+      "import": "./dist/terrain/bundled.js",
+      "require": "./dist/terrain/bundled.cjs"
     },
     "./terrain/heightmap": {
       "types": "./dist/terrain/heightmap.d.ts",
@@ -207,18 +189,6 @@
       "types": "./dist/terrain/lib/utils/version.d.ts",
       "import": "./dist/terrain/lib/utils/version.js"
     },
-    "./quantized-mesh-loader": {
-      "types": "./dist/quantized-mesh-loader.d.ts",
-      "import": "./dist/quantized-mesh-loader.js"
-    },
-    "./quantized-mesh-writer": {
-      "types": "./dist/quantized-mesh-writer.d.ts",
-      "import": "./dist/quantized-mesh-writer.js"
-    },
-    "./terrain-loader": {
-      "types": "./dist/terrain-loader.d.ts",
-      "import": "./dist/terrain-loader.js"
-    },
     "./terrain-worker.js": {
       "import": "./dist/terrain-worker.js"
     },
@@ -226,14 +196,15 @@
       "import": "./dist/quantized-mesh-worker.js"
     },
     "./lerc/lerc-wasm.wasm": "./dist/lerc/libs/lerc/lerc-wasm.wasm",
-    "./ometiff-loader-types": {
-      "types": "./dist/ometiff-loader-types.d.ts",
-      "import": "./dist/ometiff-loader-types.js"
-    },
     "./terrain/index": {
       "types": "./dist/terrain/index.d.ts",
       "import": "./dist/terrain/index.js",
       "require": "./dist/terrain/index.cjs"
+    },
+    "./quantized-mesh/bundled": {
+      "types": "./dist/quantized-mesh-bundled.d.ts",
+      "import": "./dist/quantized-mesh-bundled.js",
+      "require": "./dist/quantized-mesh-bundled.cjs"
     }
   },
   "sideEffects": false,

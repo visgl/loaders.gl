@@ -12,7 +12,7 @@ import {
   ParquetLoader,
   type ParquetSourceMetadata
 } from '@loaders.gl/tables/parquet';
-import type {ParquetSource} from '@loaders.gl/tables/parquet-source';
+import type {ParquetSource} from '@loaders.gl/tables/parquet';
 
 import {
   BoundingBox,

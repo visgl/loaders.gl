@@ -7,7 +7,7 @@ import {validateLoader} from 'test/common/conformance';
 import {load} from '@loaders.gl/core';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
-import {TCXLoader} from '@loaders.gl/geospatial/kml';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 import * as kml from '@loaders.gl/geospatial/kml';
 import * as bundledKml from '@loaders.gl/geospatial/kml/bundled';
 import * as unbundledKml from '@loaders.gl/geospatial/kml';

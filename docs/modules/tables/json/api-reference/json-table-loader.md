@@ -63,7 +63,7 @@ Use [`convertJSONToArrow`](./convert-json-to-arrow.md) to convert rows directly,
 stringify/parse round trip. It shares this loader's schema inference and conversion policies.
 
 ```typescript
-import {convertJSONToArrow} from '@loaders.gl/tables/json-table-loader';
+import {convertJSONToArrow} from '@loaders.gl/tables/json';
 
 const rows = [{name: 'Oslo', population: 717710}];
 const table = convertJSONToArrow(rows);

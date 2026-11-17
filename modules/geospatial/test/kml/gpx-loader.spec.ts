@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load} from '@loaders.gl/core';
-import {GPXLoader} from '@loaders.gl/geospatial/kml';
+import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 const GPX_URL = '@loaders.gl/geospatial/kml/test/data/gpx/trek';
 test('GPXLoader#loader conformance', () => {
   validateLoader(GPXLoader, 'GPXLoader');

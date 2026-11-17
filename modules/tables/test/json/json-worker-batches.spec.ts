@@ -8,9 +8,9 @@ import {parse, parseInBatches} from '@loaders.gl/core';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {destroyWorkerTasks, getWorkerURL} from '@loaders.gl/core/worker-utils';
 import {JSONLoader, JSONTableLoader, NDJSONLoader} from '@loaders.gl/tables/json';
-import {JSONLoaderWithParser} from '@loaders.gl/tables/json-loader';
-import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json-table-loader';
-import {NDJSONLoaderWithParser} from '@loaders.gl/tables/ndjson-loader';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json';
+import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json';
 
 const encoder = new TextEncoder();
 afterEach(() => destroyWorkerTasks());

@@ -15,7 +15,7 @@ import {
 } from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 import {CSVLoader as BundledCSVLoader} from '@loaders.gl/tables/csv/bundled';
-import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv';
+import {CSVLoader as MetadataCSVLoader} from '@loaders.gl/tables/csv';
 import * as csv from '@loaders.gl/tables/csv';
 import * as arrow from 'apache-arrow';
 import {
@@ -33,11 +33,11 @@ const CSV_SAMPLE_URL_EMPTY_LINES = '@loaders.gl/tables/csv/test/data/sample-empt
 const CSV_NO_HEADER_URL = '@loaders.gl/tables/csv/test/data/numbers-100-no-header.csv';
 const TSV_BRAZIL = '@loaders.gl/tables/csv/test/data/tsv/brazil.tsv';
 
-test('CSVLoader#root export includes metadata loader', () => {
+test('CSVLoader#format exports metadata and an explicit parser variant', () => {
   expect(typeof CSVLoader.preload).toBe('function');
   expect('parse' in CSVLoader).toBe(false);
   expect('parseInBatches' in CSVLoader).toBe(false);
-  expect('CSVLoaderWithParser' in csv).toBe(false);
+  expect(csv.CSVLoaderWithParser).toBe(BundledCSVLoader);
   expect('CSVArrowLoader' in csv).toBe(false);
   expect('CSVArrowWriter' in csv).toBe(false);
 });
@@ -72,13 +72,13 @@ test('CSVLoader direct parser methods honor the Arrow default', async () => {
 });
 
 test('CSVLoader#unbundled export preloads parser implementation', async () => {
-  expect(preloadSync(UnbundledCSVLoader)).toBe(null);
-  expect(typeof UnbundledCSVLoader.preload).toBe('function');
-  expect('parse' in UnbundledCSVLoader).toBe(false);
-  expect('parseSync' in UnbundledCSVLoader).toBe(false);
-  expect('parseInBatches' in UnbundledCSVLoader).toBe(false);
+  expect(preloadSync(MetadataCSVLoader)).toBe(null);
+  expect(typeof MetadataCSVLoader.preload).toBe('function');
+  expect('parse' in MetadataCSVLoader).toBe(false);
+  expect('parseSync' in MetadataCSVLoader).toBe(false);
+  expect('parseInBatches' in MetadataCSVLoader).toBe(false);
 
-  const table = await parse('city,population\nParis,2148000', UnbundledCSVLoader, {
+  const table = await parse('city,population\nParis,2148000', MetadataCSVLoader, {
     core: {worker: false},
     csv: {shape: 'arrow', header: true}
   });
@@ -86,9 +86,9 @@ test('CSVLoader#unbundled export preloads parser implementation', async () => {
   expect(table.numRows).toBe(1);
   expect(table.getChild('city')?.get(0)).toBe('Paris');
 
-  const parserLoader = await preload(UnbundledCSVLoader);
+  const parserLoader = await preload(MetadataCSVLoader);
   expect(typeof parserLoader.parse).toBe('function');
-  expect(preloadSync(UnbundledCSVLoader)).toBe(parserLoader);
+  expect(preloadSync(MetadataCSVLoader)).toBe(parserLoader);
 });
 
 test('CSVLoader#loadInBatches(numbers-100.csv)', async () => {

@@ -105,11 +105,11 @@
 - Use `modules/tables/src/csv` as the reference shape for loader modules that want a lightweight root import and an implementation subpath.
 - The package root `src/index.ts` should export metadata-only loaders, deprecated `*WorkerLoader` aliases if needed for compatibility, writers, and shared public types/options. It should not export `*WithParser` loaders.
 - Each public metadata loader should live in its own `*-loader-types.ts` file. That file should contain the loader metadata, options, default values, and an optional `preload()` function, but no `parse`, `parseSync`, `parseText`, or `parseInBatches` methods.
-- `preload()` should use a static package-subpath import such as `await import('@loaders.gl/tables/csv-loader')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers.
+- `preload()` should use a static package-subpath import such as `await import('@loaders.gl/tables/csv')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers.
 - Each parser-bearing loader should live in its own `*-loader.ts` file and export only the `*WithParser` loader. Keep parser logic out of the metadata file.
 - Move shared constants, option defaults, and types needed by both metadata and parser files into neutral shared files to avoid cycles.
-- Keep writer entry points unchanged unless the package is intentionally splitting them as well.
-- In `package.json`, keep explicit subpath exports for parser entry points such as `./csv-loader` and `./csv-arrow-loader`. Root exports stay metadata-only; direct parser access happens through the subpath.
+- Export format loaders, parser-bearing `*WithParser` loaders, writers, sources, options, and public helpers through the same format entry point.
+- In consolidated format packages, expose one subpath per format, such as `./csv`, plus `./csv/bundled` for parser-bearing loaders under their ordinary names. Do not add individual `*-loader`, `*-writer`, or `*-source` exports. Package roots stay metadata-only.
 - Core async APIs may accept metadata loaders and upgrade them through `preload()`. Sync parsing paths should continue to require a parser-bearing loader.
 
 ## Core utility subpaths
@@ -124,4 +124,4 @@
 
 - Texture and video implementations belong in `@loaders.gl/images`. Keep its root loaders metadata-only and expose parsers, texture writers, schemas, and helpers through direct subpaths. Do not restore standalone texture/video compatibility packages.
 
-- Basic XML, HTML, YAML, TOML, BSON, and Markdown loaders belong in `@loaders.gl/documents`. Keep its root metadata-only and parser imports flat (`/xml-loader`, `/bson-loader`, `/markdown-loader`); BSON codecs and writers use `/bson-codec` and `/bson-writer`. Do not restore XML/config packages or tables BSON forwarding exports. Parquet uses the documents BSON codec.
+- Basic XML, HTML, YAML, TOML, BSON, and Markdown loaders belong in `@loaders.gl/documents`. Keep its root metadata-only and expose loaders and writers through format subpaths (`/xml`, `/bson`, `/markdown`); the independent BSON codec remains available through `/bson-codec`. Do not restore XML/config packages or tables BSON forwarding exports. Parquet uses the documents BSON codec.

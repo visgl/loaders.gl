@@ -4,7 +4,7 @@
 
 import {load, fetchFile, parse, encode} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/scene';
-import {DracoWriter} from '@loaders.gl/scene/draco-writer';
+import {DracoWriter} from '@loaders.gl/scene/draco';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 
 import {getModel, drawModelInViewport} from '../test-utils/get-model';

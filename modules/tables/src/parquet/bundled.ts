@@ -40,3 +40,5 @@ export {
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
+
+export * from './index';

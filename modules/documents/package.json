@@ -29,36 +29,6 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./xml-loader": {
-      "types": "./dist/xml-loader.d.ts",
-      "import": "./dist/xml-loader.js",
-      "require": "./dist/xml-loader.cjs"
-    },
-    "./html-loader": {
-      "types": "./dist/html-loader.d.ts",
-      "import": "./dist/html-loader.js",
-      "require": "./dist/html-loader.cjs"
-    },
-    "./yaml-loader": {
-      "types": "./dist/yaml-loader.d.ts",
-      "import": "./dist/yaml-loader.js",
-      "require": "./dist/yaml-loader.cjs"
-    },
-    "./toml-loader": {
-      "types": "./dist/toml-loader.d.ts",
-      "import": "./dist/toml-loader.js",
-      "require": "./dist/toml-loader.cjs"
-    },
-    "./bson-loader": {
-      "types": "./dist/bson-loader.d.ts",
-      "import": "./dist/bson-loader.js",
-      "require": "./dist/bson-loader.cjs"
-    },
-    "./markdown-loader": {
-      "types": "./dist/markdown-loader.d.ts",
-      "import": "./dist/markdown-loader.js",
-      "require": "./dist/markdown-loader.cjs"
-    },
     "./xml-parser": {
       "types": "./dist/xml-parser.d.ts",
       "import": "./dist/xml-parser.js",
@@ -79,64 +49,75 @@
       "import": "./dist/bson-codec.js",
       "require": "./dist/bson-codec.cjs"
     },
-    "./bson-types": {
-      "types": "./dist/bson-types.d.ts",
-      "import": "./dist/bson-types.js",
-      "require": "./dist/bson-types.cjs"
-    },
-    "./bson-writer": {
-      "types": "./dist/bson-writer.d.ts",
-      "import": "./dist/bson-writer.js",
-      "require": "./dist/bson-writer.cjs"
-    },
-    "./markdown-types": {
-      "types": "./dist/markdown-types.d.ts",
-      "import": "./dist/markdown-types.js",
-      "require": "./dist/markdown-types.cjs"
-    },
-    "./xml-loader-types": {
-      "types": "./dist/xml-loader-types.d.ts",
-      "import": "./dist/xml-loader-types.js",
-      "require": "./dist/xml-loader-types.cjs"
-    },
-    "./html-loader-types": {
-      "types": "./dist/html-loader-types.d.ts",
-      "import": "./dist/html-loader-types.js",
-      "require": "./dist/html-loader-types.cjs"
-    },
-    "./yaml-loader-types": {
-      "types": "./dist/yaml-loader-types.d.ts",
-      "import": "./dist/yaml-loader-types.js",
-      "require": "./dist/yaml-loader-types.cjs"
-    },
-    "./toml-loader-types": {
-      "types": "./dist/toml-loader-types.d.ts",
-      "import": "./dist/toml-loader-types.js",
-      "require": "./dist/toml-loader-types.cjs"
-    },
-    "./bson-loader-types": {
-      "types": "./dist/bson-loader-types.d.ts",
-      "import": "./dist/bson-loader-types.js",
-      "require": "./dist/bson-loader-types.cjs"
-    },
-    "./markdown-loader-types": {
-      "types": "./dist/markdown-loader-types.d.ts",
-      "import": "./dist/markdown-loader-types.js",
-      "require": "./dist/markdown-loader-types.cjs"
-    },
-    "./json-loader": {
-      "types": "./dist/json-loader.d.ts",
-      "import": "./dist/json-loader.js",
-      "require": "./dist/json-loader.cjs"
-    },
-    "./xml-options": {
-      "types": "./dist/xml-options.d.ts",
-      "import": "./dist/xml-options.js",
-      "require": "./dist/xml-options.cjs"
-    },
     "./json": {
       "types": "./dist/json.d.ts",
-      "import": "./dist/json.js"
+      "import": "./dist/json.js",
+      "require": "./dist/json.cjs"
+    },
+    "./xml": {
+      "types": "./dist/xml.d.ts",
+      "import": "./dist/xml.js",
+      "require": "./dist/xml.cjs"
+    },
+    "./html": {
+      "types": "./dist/html.d.ts",
+      "import": "./dist/html.js",
+      "require": "./dist/html.cjs"
+    },
+    "./yaml": {
+      "types": "./dist/yaml.d.ts",
+      "import": "./dist/yaml.js",
+      "require": "./dist/yaml.cjs"
+    },
+    "./toml": {
+      "types": "./dist/toml.d.ts",
+      "import": "./dist/toml.js",
+      "require": "./dist/toml.cjs"
+    },
+    "./bson": {
+      "types": "./dist/bson.d.ts",
+      "import": "./dist/bson.js",
+      "require": "./dist/bson.cjs"
+    },
+    "./markdown": {
+      "types": "./dist/markdown.d.ts",
+      "import": "./dist/markdown.js",
+      "require": "./dist/markdown.cjs"
+    },
+    "./json/bundled": {
+      "types": "./dist/json-bundled.d.ts",
+      "import": "./dist/json-bundled.js",
+      "require": "./dist/json-bundled.cjs"
+    },
+    "./xml/bundled": {
+      "types": "./dist/xml-bundled.d.ts",
+      "import": "./dist/xml-bundled.js",
+      "require": "./dist/xml-bundled.cjs"
+    },
+    "./html/bundled": {
+      "types": "./dist/html-bundled.d.ts",
+      "import": "./dist/html-bundled.js",
+      "require": "./dist/html-bundled.cjs"
+    },
+    "./yaml/bundled": {
+      "types": "./dist/yaml-bundled.d.ts",
+      "import": "./dist/yaml-bundled.js",
+      "require": "./dist/yaml-bundled.cjs"
+    },
+    "./toml/bundled": {
+      "types": "./dist/toml-bundled.d.ts",
+      "import": "./dist/toml-bundled.js",
+      "require": "./dist/toml-bundled.cjs"
+    },
+    "./bson/bundled": {
+      "types": "./dist/bson-bundled.d.ts",
+      "import": "./dist/bson-bundled.js",
+      "require": "./dist/bson-bundled.cjs"
+    },
+    "./markdown/bundled": {
+      "types": "./dist/markdown-bundled.d.ts",
+      "import": "./dist/markdown-bundled.js",
+      "require": "./dist/markdown-bundled.cjs"
     }
   },
   "sideEffects": false,

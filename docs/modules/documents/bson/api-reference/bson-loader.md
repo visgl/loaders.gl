@@ -89,4 +89,4 @@ properties and never modify object prototypes. Stored code and regex patterns ar
 See the [native BSON value contract](/docs/modules/documents/bson#native-value-representations).
 
 For synchronous parsing, import `BSONLoaderWithParser` from
-`@loaders.gl/documents/bson-loader` and pass it to `parseSync`.
+`@loaders.gl/documents/bson` and pass it to `parseSync`.

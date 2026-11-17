@@ -40,3 +40,17 @@ export {default as _FastStreamingJSONParser} from './lib/json-parser/fast-stream
 export {rebuildJsonObject as _rebuildJsonObject} from './lib/parsers/parse-json-in-batches';
 
 export {type MetadataBatch, type JSONBatch} from './json-loader-types';
+
+export {FastJSONLoader} from '../fast-json-loader';
+
+export {JSONLoaderWithParser} from '../json-loader';
+
+export {type NDJSONShape} from '../ndjson-loader-types';
+
+export {
+  JSONTableLoaderWithParser,
+  convertJSONToArrow,
+  type ConvertJSONToArrowOptions
+} from '../json-table-loader';
+
+export {NDJSONLoaderWithParser} from '../ndjson-loader';

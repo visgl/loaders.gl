@@ -97,7 +97,7 @@ Applications that need synchronous `createDataSourceSync()` can import the runti
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
 
 const source = createDataSourceSync(url, [ParquetLoaderWithParser], {});
 ```
@@ -113,7 +113,7 @@ file. The provider may be backed by STAC, a database, an application manifest, o
 the Parquet module does not depend on any catalog protocol.
 
 ```ts
-import {ParquetDatasetSource} from '@loaders.gl/tables/parquet-dataset-source';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet';
 import {STACSource} from '@loaders.gl/ogc/stac-loader';
 
 const catalog = new STACSource('https://stac.overturemaps.org/catalog.json', {});
@@ -211,7 +211,7 @@ order. `columns` prevents unselected column chunks from being requested or decod
 are validated against the cached footer before row data is read.
 
 Read provenance with `getParquetBatchProvenance(batch)` from
-`@loaders.gl/tables/parquet-source`. It restores BigInt and byte arrays in catalog metadata:
+`@loaders.gl/tables/parquet`. It restores BigInt and byte arrays in catalog metadata:
 
 | Property | Description |
 | --- | --- |

@@ -58,7 +58,7 @@ test.each([
   'TOML',
   'BSON',
   'Markdown'
-])('published %s metadata preloads a flat parser entry', async format => {
+])('published %s metadata preloads its format parser', async format => {
   const documents = requireModule('@loaders.gl/documents');
   const loader = documents[format + 'Loader'];
   expect(loader.module).toBe('documents');
@@ -67,7 +67,7 @@ test.each([
   const parser = await loader.preload();
   expect(parser.id).toBe(loader.id);
   expect(parser.parse).toBeTypeOf('function');
-  const direct = requireModule('@loaders.gl/documents/' + format.toLowerCase() + '-loader');
+  const direct = requireModule('@loaders.gl/documents/' + format.toLowerCase());
   expect(direct[format + 'LoaderWithParser'].id).toBe(loader.id);
 });
 

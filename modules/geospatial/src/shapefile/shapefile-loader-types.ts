@@ -39,7 +39,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
 
 /** Preloads the parser-bearing Shapefile loader implementation. */
 async function preloadShapefileLoader() {
-  const {ShapefileLoaderWithParser} = await import('@loaders.gl/geospatial/shapefile-loader');
+  const {ShapefileLoaderWithParser} = await import('@loaders.gl/geospatial/shapefile');
   return ShapefileLoaderWithParser;
 }
 

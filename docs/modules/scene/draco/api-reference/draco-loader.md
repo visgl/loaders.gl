@@ -109,7 +109,7 @@ for glTF-compatible mesh bitstreams. The glTF loader selects `'gltf'` by default
 `KHR_draco_mesh_compression`; callers can explicitly select `'full'` to share one runtime.
 
 Draco libraries load from a CDN by default. Browser applications can bundle the vendored
-runtimes with `getDracoLibraryOptions` from the existing `@loaders.gl/scene/draco-library-options` entrypoint.
+runtimes with `getDracoLibraryOptions` from the existing `@loaders.gl/scene/draco` entrypoint.
 
 ## Bundled Library Options
 
@@ -123,7 +123,7 @@ the metadata-only root import.
 ```typescript
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/scene';
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
 
 const libraries = getDracoLibraryOptions({decoderProfile: 'gltf'});
 const mesh = await parse(bytes, DracoLoader, {

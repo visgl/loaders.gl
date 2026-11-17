@@ -41,7 +41,7 @@ export type OBJParsedBatch = OBJMeshBatch | RecordBatch;
  * Preloads the parser-bearing OBJ loader implementation.
  */
 async function preload() {
-  const {OBJLoaderWithParser} = await import('@loaders.gl/scene/obj-loader');
+  const {OBJLoaderWithParser} = await import('@loaders.gl/scene/obj');
   return OBJLoaderWithParser;
 }
 

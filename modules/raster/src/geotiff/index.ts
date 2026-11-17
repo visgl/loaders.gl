@@ -1,6 +1,46 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
+// SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
+
+export {GeoTIFFLoader} from './geotiff-loader-types';
+export {GeoTIFFFormat, OMETiffFormat} from './geotiff-format';
+export type {GeoTIFFSourceLoaderOptions} from './geotiff-source';
+export {GeoTIFFRasterSource} from './geotiff-source';
+export type {
+  GetOMETiffParameters,
+  OMETiffChannelMetadata,
+  OMETiffLevelMetadata,
+  OMETiffSourceLoaderMetadata,
+  OMETiffLoaderOptions
+} from './ometiff-loader';
+export {
+  OMETiffLoader,
+  OMETiffImageSource
+} from './ometiff-loader';
+
+export {loadGeoTiff} from './lib/load-geotiff';
+export {TiffPixelSource} from './lib/tiff-pixel-source';
+
+export {GeoTIFFRasterLoader} from './geotiff-raster-loader-types';
+export type {
+  GeoTIFFRasterData,
+  GeoTIFFRasterImage,
+  GeoTIFFRasterBand,
+  GeoTIFFRasterLoaderOptions
+} from './geotiff-raster-types';
+export {discoverGeoTIFF, isTIFFHeader} from './discover-geotiff';
+export type {DiscoverGeoTIFFOptions} from './discover-geotiff';
 
 export {GeoTIFFLoaderWithParser} from './geotiff-loader';
+
 export {GeoTIFFRasterLoaderWithParser} from './geotiff-raster-loader';
+
+export {type GeoTIFFLoaderOptions} from './geotiff-loader-types';
+
+export {isTiff} from '../geotiff-loader';
+
+export {
+  GEOTIFF_RASTER_QUERY_CAPABILITIES,
+  createGeoTIFFSource,
+  getImageTileGrid
+} from '../geotiff-source';

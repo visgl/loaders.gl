@@ -22,7 +22,7 @@ export type ORCLoaderOptions = {
 
 /** Preloads the parser-bearing ORC loader implementation. */
 async function preloadORCLoader() {
-  const {ORCLoaderWithParser} = await import('@loaders.gl/tables/orc-loader');
+  const {ORCLoaderWithParser} = await import('@loaders.gl/tables/orc');
   return ORCLoaderWithParser;
 }
 

@@ -4,3 +4,5 @@
 
 export type {LERCLoaderOptions} from './lerc-loader';
 export {LERCLoaderWithParser as LERCLoader} from './lerc-loader';
+
+export * from './index';

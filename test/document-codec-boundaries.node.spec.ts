@@ -32,7 +32,7 @@ test.each([
     assert.equal(scientific.NPYLoader.parse, undefined);
     assert.equal(scientific.NPYLoaderWithParser, undefined);
     assert.equal(typeof (await scientific.NPYLoader.preload()).parseSync, 'function');
-    assert.equal(typeof require('@loaders.gl/scientific/npy-loader').NPYLoaderWithParser.parseSync, 'function');
+    assert.equal(typeof require('@loaders.gl/scientific/npy').NPYLoaderWithParser.parseSync, 'function');
     assert.equal(require('@loaders.gl/images').NPYLoader, undefined);
     console.log('verified');
   `

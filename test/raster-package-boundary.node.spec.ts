@@ -12,7 +12,7 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
     format === 'esm'
       ? `import {sampleRaster} from '@loaders.gl/core/loader-utils';
        import {discoverGeoTIFF} from '@loaders.gl/raster/geotiff';
-import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff-loader';`
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';`
       : `const {sampleRaster} = require('@loaders.gl/core/loader-utils');
        const {GeoTIFFLoaderWithParser, discoverGeoTIFF} = require('@loaders.gl/raster/geotiff');`;
   const result = spawnSync(

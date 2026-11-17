@@ -26,7 +26,7 @@ Import metadata loaders and writers from the clean format entry point:
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 ```
 
-Public `/index` suffixes and repeated format paths have been removed, except for the temporary `@loaders.gl/raster/terrain/index` compatibility alias used by deck.gl 10 alpha. Use the format entry point for metadata loaders and writers, or a flat parser entry point such as `@loaders.gl/tables/parquet-loader` when a parser-bearing loader is required.
+Public `/index` suffixes and repeated format paths have been removed, except for the temporary `@loaders.gl/raster/terrain/index` compatibility alias used by deck.gl 10 alpha. Use one format entry point for loaders, writers, sources, options, and public helpers. Separate `*-loader`, `*-writer`, and `*-source` entry points have been removed from the format packages.
 
 `ParquetJSWriter` is now `ParquetWriter`; its options and encoding types are named `ParquetWriterOptions` and `ParquetWriterEncoding`. The former WASM-backed writer is no longer published. Remove `parquet.wasmUrl`; production Parquet readers and writers use TypeScript. The source capability `supportsLocalWasmAsset` and packaged Parquet WASM assets have also been removed.
 
@@ -42,7 +42,7 @@ import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
 import {JSONLoader} from '@loaders.gl/documents/json';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
-import {NetCDFSource} from '@loaders.gl/scientific/netcdf-source';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf';
 ```
 
 `/unbundled` aliases have been removed; use the default format entry point. Format
@@ -54,10 +54,24 @@ and `DEFAULT_SQLJS_CDN` from `@loaders.gl/geospatial/geopackage`, and `WKTFormat
 from `@loaders.gl/geospatial/wkt`. KML parser helpers remain available through
 `@loaders.gl/geospatial/kml`; the separate `/kml-parser` export is removed.
 
-Parser-bearing loaders retain explicit `*-loader` entry points for lazy loading.
-Source classes use `*-source` filenames and entry points instead of `*-source-loader`
-(for example, `@loaders.gl/tables/parquet-source` and
-`@loaders.gl/raster/geotiff-source`).
+KML no longer re-exports GPX or TCX loaders and options; use their own format
+entry points. The low-level KML helpers are exported as `_openKMZArchive`,
+`_parseKMLDocument`, and `_resolveKMZResourcePath`.
+
+Import parser-bearing `*WithParser` loaders from the same format entry point, or
+use `/bundled` to import parser-bearing loaders under their ordinary names:
+
+```typescript
+import {KMLLoaderWithParser, KMLWriter} from '@loaders.gl/geospatial/kml';
+import {KMLLoader} from '@loaders.gl/geospatial/kml/bundled';
+import {WKBLoader, HexWKBLoader, TWKBLoader, WKBWriter} from '@loaders.gl/geospatial/wkb';
+```
+
+WKB, HexWKB, and TWKB now share `/wkb`; `/wkt` contains text WKT APIs.
+Source classes retain descriptive `*-source` filenames but are imported from
+their format, such as `@loaders.gl/tables/parquet` or
+`@loaders.gl/raster/geotiff`. Internal shared files such as `las-loader-shared`
+are no longer package exports; public LAS types are available from `/las`.
 
 ### Decoded tile attributes
 
@@ -442,8 +456,8 @@ Parquet BSON reading and writing continue to work automatically.
 
 ```typescript
 import {XMLLoader, HTMLLoader, YAMLLoader, TOMLLoader, BSONLoader} from '@loaders.gl/documents';
-import {XMLLoaderWithParser} from '@loaders.gl/documents/xml-loader';
-import {BSONWriter} from '@loaders.gl/documents/bson-writer';
+import {XMLLoaderWithParser} from '@loaders.gl/documents/xml';
+import {BSONWriter} from '@loaders.gl/documents/bson';
 import {encodeBSONSync, parseBSONSync, BSONObjectId, createBSONValue} from '@loaders.gl/documents/bson-codec';
 import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
 import {SAXParser} from '@loaders.gl/documents/sax-parser';
@@ -464,7 +478,7 @@ the website benchmark directory.
 Replace the former `_FastJSONLoader` root export with its implementation subpath:
 
 ```typescript
-import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
+import {FastJSONLoader} from '@loaders.gl/tables/json';
 ```
 
 Primary metadata loaders continue to preload their implementations for asynchronous

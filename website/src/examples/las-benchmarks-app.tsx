@@ -7,7 +7,7 @@ import React, {useEffect, useState} from 'react';
 import {Bench, type BenchProps, type LogEntry, type LogFunction} from 'probe.gl/bench';
 import {BenchResults} from '../components/bench-results';
 import {parse, parseInBatches} from '@loaders.gl/core';
-import {LASLoaderWithParser as LASLoader} from '@loaders.gl/pointclouds/las-loader';
+import {LASLoaderWithParser as LASLoader} from '@loaders.gl/pointclouds/las';
 import {LAZPerfLoaderWithParser as LAZPerfLoader} from '../alternate-loaders/las/lazperf-loader';
 import {LAZRsLoaderWithParser as LAZRsLoader} from '../alternate-loaders/las/laz-rs-loader';
 import type {Table} from 'apache-arrow';

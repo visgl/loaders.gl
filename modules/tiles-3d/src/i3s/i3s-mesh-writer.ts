@@ -140,7 +140,7 @@ export async function encodeI3SMeshLayerWithDraco(
   const {modules, useLocalLibraries, CDN: contentDeliveryNetwork} = libraryOptions;
   const runtimeOptions = {modules, core: {useLocalLibraries, CDN: contentDeliveryNetwork}};
   const {DracoLoader} = await import('@loaders.gl/scene');
-  const {encodeDraco} = await import('@loaders.gl/scene/draco-writer');
+  const {encodeDraco} = await import('@loaders.gl/scene/draco');
   const encoded = await encodeDraco(
     {attributes, indices},
     {

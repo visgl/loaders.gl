@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {fromUrl, fromBlob, GeoTIFF} from 'geotiff';
+import type {GeoTIFF} from 'geotiff';
 
 // import {
 //   // createPoolProxy,
@@ -44,10 +44,11 @@ export async function loadGeoTiff(
   opts: GeoTIFFOptions = {}
 ): Promise<GeoTIFFData> {
   const {headers, offsets} = opts;
+  const {fromUrl, fromBlob} = await import('geotiff');
 
   // Create tiff source
   let tiff: GeoTIFF;
-  if (source instanceof GeoTIFF) {
+  if (typeof source === 'object' && 'getImage' in source) {
     tiff = source;
   } else if (typeof source === 'string') {
     tiff = await fromUrl(source, headers);

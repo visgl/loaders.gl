@@ -9,7 +9,7 @@ import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema'
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
 
 const rows = [
   {id: 1n, label: 'repeat', bytes: new Uint8Array([1]), unused: 10, tags: ['first']},

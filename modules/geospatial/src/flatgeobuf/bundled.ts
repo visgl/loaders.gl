@@ -7,3 +7,5 @@ export {
   FlatGeobufLoaderWithParser as FlatGeobufLoader,
   FlatGeobufWorkerLoaderWithParser as FlatGeobufWorkerLoader
 } from './flatgeobuf-loader';
+
+export * from './index';

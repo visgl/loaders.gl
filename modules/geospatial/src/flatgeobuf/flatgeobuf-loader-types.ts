@@ -34,7 +34,7 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing FlatGeobuf loader implementation. */
 async function preload() {
-  const {FlatGeobufLoaderWithParser} = await import('@loaders.gl/geospatial/flatgeobuf-loader');
+  const {FlatGeobufLoaderWithParser} = await import('@loaders.gl/geospatial/flatgeobuf');
   return FlatGeobufLoaderWithParser;
 }
 

@@ -572,7 +572,7 @@ async function createParquetBenchmarkImplementations(): Promise<
     hyparquet,
     hyparquetCompressors
   ] = await Promise.all([
-    import('@loaders.gl/tables/parquet-loader'),
+    import('@loaders.gl/tables/parquet'),
     import('../alternate-loaders/parquet/parquet-js-loader'),
     import('../alternate-loaders/parquet/parquet-wasm-loader'),
     import('../alternate-loaders/parquet/load-wasm'),

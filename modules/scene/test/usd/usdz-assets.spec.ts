@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {USDLoaderWithParser} from '@loaders.gl/scene/usd-loader';
+import {USDLoaderWithParser} from '@loaders.gl/scene/usd';
 import type {USDAssetPath, USDEmbeddedAsset, USDStage} from '@loaders.gl/scene';
 
 // Original MIT fixtures: one-pixel PNG and its JPEG conversion (macOS sips), plus USDA sources.

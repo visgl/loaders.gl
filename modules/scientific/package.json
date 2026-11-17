@@ -25,19 +25,10 @@
       "import": "./dist/netcdf/index.js",
       "require": "./dist/netcdf/index.cjs"
     },
-    "./netcdf/*": {
-      "types": "./dist/netcdf/*.d.ts",
-      "import": "./dist/netcdf/*.js",
-      "require": "./dist/netcdf/*.cjs"
-    },
     "./zarr": {
       "types": "./dist/zarr/index.d.ts",
       "import": "./dist/zarr/index.js",
       "require": "./dist/zarr/index.cjs"
-    },
-    "./zarr/*": {
-      "types": "./dist/zarr/*.d.ts",
-      "import": "./dist/zarr/*.js"
     },
     "./grib2": {
       "types": "./dist/grib2/index.d.ts",
@@ -67,37 +58,40 @@
     "./npy-worker.js": {
       "import": "./dist/npy-worker.js"
     },
-    "./npy-loader": {
-      "types": "./dist/npy-loader.d.ts",
-      "import": "./dist/npy-loader.js",
-      "require": "./dist/npy-loader.cjs"
+    "./npy": {
+      "types": "./dist/npy.d.ts",
+      "import": "./dist/npy.js",
+      "require": "./dist/npy.cjs"
     },
-    "./npy-loader-types": {
-      "types": "./dist/npy-loader-types.d.ts",
-      "import": "./dist/npy-loader-types.js",
-      "require": "./dist/npy-loader-types.cjs"
+    "./nrrd": {
+      "types": "./dist/nrrd.d.ts",
+      "import": "./dist/nrrd.js",
+      "require": "./dist/nrrd.cjs"
     },
-    "./vtk-loader": {
-      "types": "./dist/vtk-loader.d.ts",
-      "import": "./dist/vtk-loader.js",
-      "require": "./dist/vtk-loader.cjs"
+    "./netcdf/bundled": {
+      "types": "./dist/netcdf-bundled.d.ts",
+      "import": "./dist/netcdf-bundled.js",
+      "require": "./dist/netcdf-bundled.cjs"
     },
-    "./nrrd-loader": {
-      "types": "./dist/nrrd-loader.d.ts",
-      "import": "./dist/nrrd-loader.js",
-      "require": "./dist/nrrd-loader.cjs"
+    "./zarr/bundled": {
+      "types": "./dist/zarr-bundled.d.ts",
+      "import": "./dist/zarr-bundled.js",
+      "require": "./dist/zarr-bundled.cjs"
     },
-    "./netcdf-loader-with-parser": {
-      "types": "./dist/netcdf/netcdf-loader-with-parser.d.ts",
-      "import": "./dist/netcdf/netcdf-loader-with-parser.js"
+    "./vtk/bundled": {
+      "types": "./dist/vtk-bundled.d.ts",
+      "import": "./dist/vtk-bundled.js",
+      "require": "./dist/vtk-bundled.cjs"
     },
-    "./zarr-array-loader": {
-      "types": "./dist/zarr/zarr-array-loader.d.ts",
-      "import": "./dist/zarr/zarr-array-loader.js"
+    "./npy/bundled": {
+      "types": "./dist/npy-bundled.d.ts",
+      "import": "./dist/npy-bundled.js",
+      "require": "./dist/npy-bundled.cjs"
     },
-    "./netcdf-source": {
-      "types": "./dist/netcdf-source.d.ts",
-      "import": "./dist/netcdf-source.js"
+    "./nrrd/bundled": {
+      "types": "./dist/nrrd-bundled.d.ts",
+      "import": "./dist/nrrd-bundled.js",
+      "require": "./dist/nrrd-bundled.cjs"
     }
   },
   "sideEffects": false,

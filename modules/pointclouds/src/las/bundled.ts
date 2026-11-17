@@ -33,3 +33,5 @@ export type {
   LAZChunkDecoderOptions,
   LAZChunkMetadata
 } from '@loaders.gl/core/loader-utils';
+
+export * from './index';

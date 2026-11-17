@@ -12,7 +12,7 @@ import {DataSourceManager, type TableQueryExecutionSummary} from '@loaders.gl/co
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {DeltaTableSource} from '@loaders.gl/tables/delta';
 import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/core/scan';
 

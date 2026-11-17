@@ -10,3 +10,5 @@ export type {
   DeltaScanOptions,
   DeltaSourceOptions
 } from '../parquet/delta-types';
+
+export {DeltaFormat} from '../parquet/delta-format';

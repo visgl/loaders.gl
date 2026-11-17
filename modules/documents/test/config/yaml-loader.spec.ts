@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
-import {YAMLLoaderWithParser as BundledYAMLLoader} from '@loaders.gl/documents/yaml-loader';
+import {YAMLLoaderWithParser as BundledYAMLLoader} from '@loaders.gl/documents/yaml';
 import {YAMLLoader as UnbundledYAMLLoader} from '@loaders.gl/documents';
 import {YAMLFormat, YAMLLoader} from '@loaders.gl/documents';
 

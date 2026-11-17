@@ -28,31 +28,28 @@
         "modules/tables/src"
       ],
       "@loaders.gl/tables/csv": [
-        "modules/tables/src/csv"
+        "modules/tables/src/csv/index.ts"
       ],
       "@loaders.gl/tables/avro": [
-        "modules/tables/src/avro"
-      ],
-      "@loaders.gl/tables/avro-schema": [
-        "modules/tables/src/avro-schema"
+        "modules/tables/src/avro/index.ts"
       ],
       "@loaders.gl/tables/excel": [
         "modules/tables/src/excel"
       ],
       "@loaders.gl/tables/arrow": [
-        "modules/tables/src/arrow"
+        "modules/tables/src/arrow/index.ts"
       ],
       "@loaders.gl/tables/json": [
-        "modules/tables/src/json"
+        "modules/tables/src/json/index.ts"
       ],
       "@loaders.gl/tables/lance": [
-        "modules/tables/src/lance"
+        "modules/tables/src/lance/index.ts"
       ],
       "@loaders.gl/tables/orc": [
-        "modules/tables/src/orc"
+        "modules/tables/src/orc/index.ts"
       ],
       "@loaders.gl/tables/parquet": [
-        "modules/tables/src/parquet"
+        "modules/tables/src/parquet/index.ts"
       ],
       "@loaders.gl/tables/*": [
         "modules/tables/src/*"
@@ -210,11 +207,8 @@
       "@loaders.gl/scene/draco/test": [
         "modules/scene/test/draco"
       ],
-      "@loaders.gl/raster/geotiff-raster-loader": [
-        "modules/raster/src/geotiff/geotiff-raster-loader"
-      ],
       "@loaders.gl/raster/geotiff": [
-        "modules/raster/src/geotiff/advanced.ts"
+        "modules/raster/src/geotiff/index.ts"
       ],
       "@loaders.gl/raster/test/geotiff": [
         "modules/raster/test/geotiff"
@@ -392,9 +386,6 @@
       ],
       "@loaders.gl/geospatial/wkt": [
         "modules/geospatial/src/wkt/index.ts"
-      ],
-      "@loaders.gl/geospatial/wkt-crs-loader": [
-        "modules/geospatial/src/wkt/wkt-crs-loader.ts"
       ],
       "@loaders.gl/geospatial/wkt/*": [
         "modules/geospatial/src/wkt/*"
@@ -606,74 +597,17 @@
       "@loaders.gl/pointclouds/las/bundled": [
         "modules/pointclouds/src/las/bundled.ts"
       ],
-      "@loaders.gl/pointclouds/las-loader-shared": [
-        "modules/pointclouds/src/las/las-loader-shared.ts"
-      ],
-      "@loaders.gl/pointclouds/las-loader": [
-        "modules/pointclouds/src/las/las-loader.ts"
-      ],
-      "@loaders.gl/pointclouds/las-writer": [
-        "modules/pointclouds/src/las/las-writer.ts"
-      ],
       "@loaders.gl/pointclouds/pcd/bundled": [
         "modules/pointclouds/src/pcd/bundled.ts"
-      ],
-      "@loaders.gl/pointclouds/pcd-loader": [
-        "modules/pointclouds/src/pcd/pcd-loader.ts"
-      ],
-      "@loaders.gl/pointclouds/pcd-writer": [
-        "modules/pointclouds/src/pcd/pcd-writer.ts"
       ],
       "@loaders.gl/pointclouds/ply/bundled": [
         "modules/pointclouds/src/ply/bundled.ts"
       ],
-      "@loaders.gl/pointclouds/ply-loader": [
-        "modules/pointclouds/src/ply/ply-loader.ts"
-      ],
-      "@loaders.gl/pointclouds/ply-writer": [
-        "modules/pointclouds/src/ply/ply-writer.ts"
-      ],
-      "@loaders.gl/scene/usd-loader": [
-        "modules/scene/src/usd/usd-loader.ts"
-      ],
       "@loaders.gl/scene/obj/bundled": [
         "modules/scene/src/obj/bundled.ts"
       ],
-      "@loaders.gl/scene/obj/mtl-format": [
-        "modules/scene/src/obj/mtl-format.ts"
-      ],
-      "@loaders.gl/scene/mtl-loader-types": [
-        "modules/scene/src/obj/mtl-loader-types.ts"
-      ],
-      "@loaders.gl/scene/mtl-loader": [
-        "modules/scene/src/obj/mtl-loader.ts"
-      ],
-      "@loaders.gl/scene/obj-loader": [
-        "modules/scene/src/obj/obj-loader.ts"
-      ],
-      "@loaders.gl/scene/obj-writer": [
-        "modules/scene/src/obj/obj-writer.ts"
-      ],
       "@loaders.gl/scene/gltf/bundled": [
         "modules/scene/src/gltf/bundled.ts"
-      ],
-      "@loaders.gl/scene/glb-loader-types": [
-        "modules/scene/src/gltf/glb-loader-types.ts"
-      ],
-      "@loaders.gl/scene/glb-loader": [
-        "modules/scene/src/gltf/glb-loader.ts"
-      ],
-      "@loaders.gl/scene/glb-writer": [
-        "modules/scene/src/gltf/glb-writer.ts"
-      ],
-      "@loaders.gl/scene/gltf-loader": [
-        "modules/scene/src/gltf/gltf-loader.ts"
-      ],
-      "@loaders.gl/scene/gltf-source": [
-        "modules/scene/src/gltf/gltf-source.ts"
-      ],
-      "@loaders.gl/scene/gltf-writer": [
-        "modules/scene/src/gltf/gltf-writer.ts"
       ],
       "@loaders.gl/scene/gltf/mesh-arrow": [
         "modules/scene/src/gltf/mesh-arrow.ts"
@@ -687,104 +621,20 @@
       "@loaders.gl/geospatial/kml/bundled": [
         "modules/geospatial/src/kml/bundled.ts"
       ],
-      "@loaders.gl/geospatial/gpx-loader": [
-        "modules/geospatial/src/kml/gpx-loader.ts"
-      ],
-      "@loaders.gl/geospatial/kml-loader": [
-        "modules/geospatial/src/kml/kml-loader.ts"
-      ],
-      "@loaders.gl/geospatial/kml-writer": [
-        "modules/geospatial/src/kml/kml-writer.ts"
-      ],
-      "@loaders.gl/geospatial/kml/kmz-archive": [
-        "modules/geospatial/src/kml/kmz-archive.ts"
-      ],
-      "@loaders.gl/geospatial/kmz-loader": [
-        "modules/geospatial/src/kml/kmz-loader.ts"
-      ],
-      "@loaders.gl/geospatial/kmz-source": [
-        "modules/geospatial/src/kml/kmz-source.ts"
-      ],
-      "@loaders.gl/geospatial/kml/sports-track-parser": [
-        "modules/geospatial/src/kml/sports-track-parser.ts"
-      ],
-      "@loaders.gl/geospatial/tcx-loader": [
-        "modules/geospatial/src/kml/tcx-loader.ts"
-      ],
       "@loaders.gl/geospatial/shapefile/bundled": [
         "modules/geospatial/src/shapefile/bundled.ts"
-      ],
-      "@loaders.gl/geospatial/shapefile/dbf-format": [
-        "modules/geospatial/src/shapefile/dbf-format.ts"
-      ],
-      "@loaders.gl/geospatial/dbf-loader": [
-        "modules/geospatial/src/shapefile/dbf-loader.ts"
-      ],
-      "@loaders.gl/geospatial/shapefile-arrow-loader": [
-        "modules/geospatial/src/shapefile/shapefile-arrow-loader.ts"
-      ],
-      "@loaders.gl/geospatial/shapefile-loader": [
-        "modules/geospatial/src/shapefile/shapefile-loader.ts"
-      ],
-      "@loaders.gl/geospatial/shapefile/shp-format": [
-        "modules/geospatial/src/shapefile/shp-format.ts"
-      ],
-      "@loaders.gl/geospatial/shp-loader": [
-        "modules/geospatial/src/shapefile/shp-loader.ts"
-      ],
-      "@loaders.gl/geospatial/flatgeobuf-loader": [
-        "modules/geospatial/src/flatgeobuf/flatgeobuf-loader.ts"
-      ],
-      "@loaders.gl/geospatial/flatgeobuf-source": [
-        "modules/geospatial/src/flatgeobuf/flatgeobuf-source.ts"
       ],
       "@loaders.gl/geospatial/flatgeobuf/bundled": [
         "modules/geospatial/src/flatgeobuf/bundled.ts"
       ],
-      "@loaders.gl/geospatial/geopackage-source": [
-        "modules/geospatial/src/geopackage/geopackage-source.ts"
-      ],
       "@loaders.gl/geospatial/geopackage/bundled": [
         "modules/geospatial/src/geopackage/bundled.ts"
-      ],
-      "@loaders.gl/geospatial/geopackage-loader": [
-        "modules/geospatial/src/geopackage/geopackage-loader.ts"
       ],
       "@loaders.gl/geospatial/wkt/bundled": [
         "modules/geospatial/src/wkt/bundled.ts"
       ],
-      "@loaders.gl/geospatial/hex-wkb-loader-types": [
-        "modules/geospatial/src/wkt/hex-wkb-loader-types.ts"
-      ],
-      "@loaders.gl/geospatial/hex-wkb-loader": [
-        "modules/geospatial/src/wkt/hex-wkb-loader.ts"
-      ],
-      "@loaders.gl/geospatial/twkb-loader": [
-        "modules/geospatial/src/wkt/twkb-loader.ts"
-      ],
-      "@loaders.gl/geospatial/twkb-writer": [
-        "modules/geospatial/src/wkt/twkb-writer.ts"
-      ],
-      "@loaders.gl/geospatial/wkb-loader": [
-        "modules/geospatial/src/wkt/wkb-loader.ts"
-      ],
-      "@loaders.gl/geospatial/wkb-writer": [
-        "modules/geospatial/src/wkt/wkb-writer.ts"
-      ],
-      "@loaders.gl/geospatial/wkt-crs-writer": [
-        "modules/geospatial/src/wkt/wkt-crs-writer.ts"
-      ],
-      "@loaders.gl/geospatial/wkt-loader": [
-        "modules/geospatial/src/wkt/wkt-loader.ts"
-      ],
-      "@loaders.gl/geospatial/wkt-writer": [
-        "modules/geospatial/src/wkt/wkt-writer.ts"
-      ],
       "@loaders.gl/geospatial/wkb": [
         "modules/geospatial/src/wkb.ts"
-      ],
-      "@loaders.gl/geospatial/twkb": [
-        "modules/geospatial/src/twkb.ts"
       ],
       "@loaders.gl/pointclouds/pcd/*": [
         "modules/pointclouds/src/pcd/*"
@@ -819,27 +669,6 @@
       "@loaders.gl/scene": [
         "modules/scene/src"
       ],
-      "@loaders.gl/scene/draco-loader": [
-        "modules/scene/src/draco-loader.ts"
-      ],
-      "@loaders.gl/scene/draco-loader-types": [
-        "modules/scene/src/draco-loader-types.ts"
-      ],
-      "@loaders.gl/scene/draco-wasm-loader": [
-        "modules/scene/src/draco-wasm-loader.ts"
-      ],
-      "@loaders.gl/scene/draco-javascript-loader": [
-        "modules/scene/src/draco-javascript-loader.ts"
-      ],
-      "@loaders.gl/scene/draco3d-loader": [
-        "modules/scene/src/draco3d-loader.ts"
-      ],
-      "@loaders.gl/scene/draco-writer": [
-        "modules/scene/src/draco-writer.ts"
-      ],
-      "@loaders.gl/scene/draco-library-options": [
-        "modules/scene/src/draco-library-options.ts"
-      ],
       "@loaders.gl/core/arrow-worker-transport": [
         "modules/core/src/arrow-worker-transport"
       ],
@@ -855,65 +684,14 @@
       "@loaders.gl/tiles-3d/i3s-zod-schema": [
         "modules/tiles-3d/src/i3s/i3s-zod-schema.ts"
       ],
-      "@loaders.gl/tables/csv-arrow-table-parser": [
-        "modules/tables/src/csv/csv-arrow-table-parser.ts"
-      ],
-      "@loaders.gl/tables/avro-compression": [
-        "modules/tables/src/avro/avro-compression.ts"
-      ],
-      "@loaders.gl/tables/avro-ocf": [
-        "modules/tables/src/avro/avro-ocf.ts"
-      ],
-      "@loaders.gl/tables/avro-parser": [
-        "modules/tables/src/avro/avro-parser.ts"
-      ],
-      "@loaders.gl/tables/avro-stream": [
-        "modules/tables/src/avro/avro-stream.ts"
-      ],
-      "@loaders.gl/tables/lance-file": [
-        "modules/tables/src/lance/lance-file.ts"
-      ],
-      "@loaders.gl/tables/lance-errors": [
-        "modules/tables/src/lance/lance-errors.ts"
-      ],
-      "@loaders.gl/tables/lance-manifest": [
-        "modules/tables/src/lance/lance-manifest.ts"
-      ],
-      "@loaders.gl/tables/lance-decoder": [
-        "modules/tables/src/lance/lance-decoder.ts"
-      ],
-      "@loaders.gl/tables/lance-arrow": [
-        "modules/tables/src/lance/lance-arrow.ts"
-      ],
-      "@loaders.gl/tables/parquet-source-worker-factory": [
-        "modules/tables/src/parquet/parquet-source-worker-factory.ts"
-      ],
-      "@loaders.gl/tables/parquet-loader-base": [
-        "modules/tables/src/parquet/parquet-loader-base.ts"
-      ],
-      "@loaders.gl/tables/parquet-source-worker-url": [
-        "modules/tables/src/parquet/parquet-source-worker-url.ts"
-      ],
-      "@loaders.gl/tables/parquet-worker-url": [
-        "modules/tables/src/parquet/parquet-worker-url.ts"
-      ],
       "@loaders.gl/archives/zip-encode": [
         "modules/archives/src/zip/zip-encode.ts"
-      ],
-      "@loaders.gl/raster/geotiff-raster-types": [
-        "modules/raster/src/geotiff/geotiff-raster-types.ts"
       ],
       "@loaders.gl/raster/lerc-wasm-url": [
         "modules/raster/src/lerc/lerc-wasm-url.ts"
       ],
       "@loaders.gl/raster/terrain/lib/delatin": [
         "modules/raster/src/terrain/lib/delatin/index.ts"
-      ],
-      "@loaders.gl/scientific/netcdf-loader-with-parser": [
-        "modules/scientific/src/netcdf/netcdf-loader-with-parser.ts"
-      ],
-      "@loaders.gl/scientific/zarr-array-loader": [
-        "modules/scientific/src/zarr/zarr-array-loader.ts"
       ],
       "@loaders.gl/tables/geoarrow": [
         "modules/tables/src/geoarrow.ts"
@@ -927,8 +705,368 @@
       "@loaders.gl/raster/terrain/index": [
         "modules/raster/src/terrain/index.ts"
       ],
-      "@loaders.gl/scientific/netcdf-source": [
-        "modules/scientific/src/netcdf-source.ts"
+      "@loaders.gl/tables/iceberg": [
+        "modules/tables/src/iceberg/index.ts"
+      ],
+      "@loaders.gl/tables/delta": [
+        "modules/tables/src/delta/index.ts"
+      ],
+      "@loaders.gl/tables/hudi": [
+        "modules/tables/src/hudi/index.ts"
+      ],
+      "@loaders.gl/tables/csv/bundled": [
+        "modules/tables/src/csv/bundled.ts"
+      ],
+      "@loaders.gl/tables/arrow/triangulate-on-worker": [
+        "modules/tables/src/arrow/triangulate-on-worker.ts"
+      ],
+      "@loaders.gl/tables/arrow/triangulate-wkb-geometry-column": [
+        "modules/tables/src/arrow/triangulate-wkb-geometry-column.ts"
+      ],
+      "@loaders.gl/tables/arrow/types": [
+        "modules/tables/src/arrow/types.ts"
+      ],
+      "@loaders.gl/tables/arrow/bundled": [
+        "modules/tables/src/arrow/bundled.ts"
+      ],
+      "@loaders.gl/tables/arrow/geometry": [
+        "modules/tables/src/arrow/geometry/index.ts"
+      ],
+      "@loaders.gl/tables/json/bundled": [
+        "modules/tables/src/json/bundled.ts"
+      ],
+      "@loaders.gl/tables/orc/bundled": [
+        "modules/tables/src/orc/bundled.ts"
+      ],
+      "@loaders.gl/tables/parquet/bundled": [
+        "modules/tables/src/parquet/bundled.ts"
+      ],
+      "@loaders.gl/tables/delta/bundled": [
+        "modules/tables/src/delta-bundled.ts"
+      ],
+      "@loaders.gl/tables/avro/bundled": [
+        "modules/tables/src/avro-bundled.ts"
+      ],
+      "@loaders.gl/tables/lance/bundled": [
+        "modules/tables/src/lance-bundled.ts"
+      ],
+      "@loaders.gl/tables/geojson/bundled": [
+        "modules/tables/src/geojson-bundled.ts"
+      ],
+      "@loaders.gl/tables/geoarrow/bundled": [
+        "modules/tables/src/geoarrow-bundled.ts"
+      ],
+      "@loaders.gl/geospatial/gpx/bundled": [
+        "modules/geospatial/src/gpx-bundled.ts"
+      ],
+      "@loaders.gl/geospatial/tcx/bundled": [
+        "modules/geospatial/src/tcx-bundled.ts"
+      ],
+      "@loaders.gl/geospatial/kmz/bundled": [
+        "modules/geospatial/src/kmz-bundled.ts"
+      ],
+      "@loaders.gl/geospatial/shp/bundled": [
+        "modules/geospatial/src/shp-bundled.ts"
+      ],
+      "@loaders.gl/geospatial/dbf/bundled": [
+        "modules/geospatial/src/dbf-bundled.ts"
+      ],
+      "@loaders.gl/geospatial/wkb/bundled": [
+        "modules/geospatial/src/wkb-bundled.ts"
+      ],
+      "@loaders.gl/raster/geotiff/bundled": [
+        "modules/raster/src/geotiff/bundled.ts"
+      ],
+      "@loaders.gl/raster/geotiff/discover-geotiff": [
+        "modules/raster/src/geotiff/discover-geotiff.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/load-geotiff": [
+        "modules/raster/src/geotiff/lib/load-geotiff.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/ome/load-ome-tiff": [
+        "modules/raster/src/geotiff/lib/ome/load-ome-tiff.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/ome/ome-indexers": [
+        "modules/raster/src/geotiff/lib/ome/ome-indexers.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/ome/ome-utils": [
+        "modules/raster/src/geotiff/lib/ome/ome-utils.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/ome/omexml": [
+        "modules/raster/src/geotiff/lib/ome/omexml.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/ome/utils": [
+        "modules/raster/src/geotiff/lib/ome/utils.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/decode-tiff-samples": [
+        "modules/raster/src/geotiff/lib/tiff/decode-tiff-samples.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/geotiff-decoder-adapter": [
+        "modules/raster/src/geotiff/lib/tiff/geotiff-decoder-adapter.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/geotiff-source-adapter": [
+        "modules/raster/src/geotiff/lib/tiff/geotiff-source-adapter.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/plan-tiff-blocks": [
+        "modules/raster/src/geotiff/lib/tiff/plan-tiff-blocks.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/read-tiff-directory": [
+        "modules/raster/src/geotiff/lib/tiff/read-tiff-directory.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/tiff-gdal-metadata": [
+        "modules/raster/src/geotiff/lib/tiff/tiff-gdal-metadata.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/tiff-metadata": [
+        "modules/raster/src/geotiff/lib/tiff/tiff-metadata.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/tiff-numeric-decoder": [
+        "modules/raster/src/geotiff/lib/tiff/tiff-numeric-decoder.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/tiff-source-decoder": [
+        "modules/raster/src/geotiff/lib/tiff/tiff-source-decoder.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff/tiff-types": [
+        "modules/raster/src/geotiff/lib/tiff/tiff-types.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/tiff-pixel-source": [
+        "modules/raster/src/geotiff/lib/tiff-pixel-source.ts"
+      ],
+      "@loaders.gl/raster/geotiff/lib/utils/tiff-utils": [
+        "modules/raster/src/geotiff/lib/utils/tiff-utils.ts"
+      ],
+      "@loaders.gl/raster/geotiff/loaders": [
+        "modules/raster/src/geotiff/loaders.ts"
+      ],
+      "@loaders.gl/raster/geotiff/types": [
+        "modules/raster/src/geotiff/types.ts"
+      ],
+      "@loaders.gl/raster/lerc/bundled": [
+        "modules/raster/src/lerc/bundled.ts"
+      ],
+      "@loaders.gl/raster/lerc/lib/parsers/lerc/lerc-types": [
+        "modules/raster/src/lerc/lib/parsers/lerc/lerc-types.ts"
+      ],
+      "@loaders.gl/raster/quantized-mesh": [
+        "modules/raster/src/quantized-mesh.ts"
+      ],
+      "@loaders.gl/raster/terrain/bundled": [
+        "modules/raster/src/terrain/bundled.ts"
+      ],
+      "@loaders.gl/raster/terrain/heightmap": [
+        "modules/raster/src/terrain/heightmap.ts"
+      ],
+      "@loaders.gl/raster/terrain/lib/decode-quantized-mesh": [
+        "modules/raster/src/terrain/lib/decode-quantized-mesh.ts"
+      ],
+      "@loaders.gl/raster/terrain/lib/decode-terrain-heightmap": [
+        "modules/raster/src/terrain/lib/decode-terrain-heightmap.ts"
+      ],
+      "@loaders.gl/raster/terrain/lib/helpers/skirt": [
+        "modules/raster/src/terrain/lib/helpers/skirt.ts"
+      ],
+      "@loaders.gl/raster/terrain/lib/parse-quantized-mesh": [
+        "modules/raster/src/terrain/lib/parse-quantized-mesh.ts"
+      ],
+      "@loaders.gl/raster/terrain/lib/parse-terrain": [
+        "modules/raster/src/terrain/lib/parse-terrain.ts"
+      ],
+      "@loaders.gl/raster/terrain/lib/terrain-contracts": [
+        "modules/raster/src/terrain/lib/terrain-contracts.ts"
+      ],
+      "@loaders.gl/raster/terrain/lib/terrain-heightmap-types": [
+        "modules/raster/src/terrain/lib/terrain-heightmap-types.ts"
+      ],
+      "@loaders.gl/raster/terrain/lib/utils/version": [
+        "modules/raster/src/terrain/lib/utils/version.ts"
+      ],
+      "@loaders.gl/raster/quantized-mesh/bundled": [
+        "modules/raster/src/quantized-mesh-bundled.ts"
+      ],
+      "@loaders.gl/scene/mtl": [
+        "modules/scene/src/mtl.ts"
+      ],
+      "@loaders.gl/scene/glb": [
+        "modules/scene/src/glb.ts"
+      ],
+      "@loaders.gl/scene/draco": [
+        "modules/scene/src/draco.ts"
+      ],
+      "@loaders.gl/scene/materialx": [
+        "modules/scene/src/materialx.ts"
+      ],
+      "@loaders.gl/scene/stl": [
+        "modules/scene/src/stl.ts"
+      ],
+      "@loaders.gl/scene/usd/bundled": [
+        "modules/scene/src/usd-bundled.ts"
+      ],
+      "@loaders.gl/scene/mtl/bundled": [
+        "modules/scene/src/mtl-bundled.ts"
+      ],
+      "@loaders.gl/scene/glb/bundled": [
+        "modules/scene/src/glb-bundled.ts"
+      ],
+      "@loaders.gl/scene/draco/bundled": [
+        "modules/scene/src/draco-bundled.ts"
+      ],
+      "@loaders.gl/scene/materialx/bundled": [
+        "modules/scene/src/materialx-bundled.ts"
+      ],
+      "@loaders.gl/scene/stl/bundled": [
+        "modules/scene/src/stl-bundled.ts"
+      ],
+      "@loaders.gl/scientific/netcdf": [
+        "modules/scientific/src/netcdf/index.ts"
+      ],
+      "@loaders.gl/scientific/zarr": [
+        "modules/scientific/src/zarr/index.ts"
+      ],
+      "@loaders.gl/scientific/grib2": [
+        "modules/scientific/src/grib2/index.ts"
+      ],
+      "@loaders.gl/scientific/scientific-array": [
+        "modules/scientific/src/scientific-array.ts"
+      ],
+      "@loaders.gl/scientific/hdf5": [
+        "modules/scientific/src/hdf5/index.ts"
+      ],
+      "@loaders.gl/scientific/vtk": [
+        "modules/scientific/src/vtk/index.ts"
+      ],
+      "@loaders.gl/scientific/vector-field": [
+        "modules/scientific/src/vector-field/index.ts"
+      ],
+      "@loaders.gl/scientific/npy": [
+        "modules/scientific/src/npy.ts"
+      ],
+      "@loaders.gl/scientific/nrrd": [
+        "modules/scientific/src/nrrd.ts"
+      ],
+      "@loaders.gl/scientific/netcdf/bundled": [
+        "modules/scientific/src/netcdf-bundled.ts"
+      ],
+      "@loaders.gl/scientific/zarr/bundled": [
+        "modules/scientific/src/zarr-bundled.ts"
+      ],
+      "@loaders.gl/scientific/vtk/bundled": [
+        "modules/scientific/src/vtk-bundled.ts"
+      ],
+      "@loaders.gl/scientific/npy/bundled": [
+        "modules/scientific/src/npy-bundled.ts"
+      ],
+      "@loaders.gl/scientific/nrrd/bundled": [
+        "modules/scientific/src/nrrd-bundled.ts"
+      ],
+      "@loaders.gl/documents/xml-parser": [
+        "modules/documents/src/xml-parser.ts"
+      ],
+      "@loaders.gl/documents/xml-utils": [
+        "modules/documents/src/xml-utils.ts"
+      ],
+      "@loaders.gl/documents/sax-parser": [
+        "modules/documents/src/sax-parser.ts"
+      ],
+      "@loaders.gl/documents/bson-codec": [
+        "modules/documents/src/bson-codec.ts"
+      ],
+      "@loaders.gl/documents/xml": [
+        "modules/documents/src/xml.ts"
+      ],
+      "@loaders.gl/documents/html": [
+        "modules/documents/src/html.ts"
+      ],
+      "@loaders.gl/documents/yaml": [
+        "modules/documents/src/yaml.ts"
+      ],
+      "@loaders.gl/documents/toml": [
+        "modules/documents/src/toml.ts"
+      ],
+      "@loaders.gl/documents/bson": [
+        "modules/documents/src/bson.ts"
+      ],
+      "@loaders.gl/documents/markdown": [
+        "modules/documents/src/markdown.ts"
+      ],
+      "@loaders.gl/documents/json/bundled": [
+        "modules/documents/src/json-bundled.ts"
+      ],
+      "@loaders.gl/documents/xml/bundled": [
+        "modules/documents/src/xml-bundled.ts"
+      ],
+      "@loaders.gl/documents/html/bundled": [
+        "modules/documents/src/html-bundled.ts"
+      ],
+      "@loaders.gl/documents/yaml/bundled": [
+        "modules/documents/src/yaml-bundled.ts"
+      ],
+      "@loaders.gl/documents/toml/bundled": [
+        "modules/documents/src/toml-bundled.ts"
+      ],
+      "@loaders.gl/documents/bson/bundled": [
+        "modules/documents/src/bson-bundled.ts"
+      ],
+      "@loaders.gl/documents/markdown/bundled": [
+        "modules/documents/src/markdown-bundled.ts"
+      ],
+      "@loaders.gl/images/bundled": [
+        "modules/images/src/bundled.ts"
+      ],
+      "@loaders.gl/images/gl-extensions": [
+        "modules/images/src/gl-extensions.ts"
+      ],
+      "@loaders.gl/images/types": [
+        "modules/images/src/types.ts"
+      ],
+      "@loaders.gl/images/color-lut": [
+        "./modules/images/src/color-lut.ts"
+      ],
+      "@loaders.gl/images/texture": [
+        "modules/images/src/texture.ts"
+      ],
+      "@loaders.gl/images/basis": [
+        "modules/images/src/basis.ts"
+      ],
+      "@loaders.gl/images/image": [
+        "modules/images/src/image.ts"
+      ],
+      "@loaders.gl/images/video": [
+        "modules/images/src/video.ts"
+      ],
+      "@loaders.gl/images/radiance-hdr": [
+        "modules/images/src/radiance-hdr.ts"
+      ],
+      "@loaders.gl/images/crunch": [
+        "modules/images/src/crunch.ts"
+      ],
+      "@loaders.gl/images/ies": [
+        "modules/images/src/ies.ts"
+      ],
+      "@loaders.gl/images/exr": [
+        "modules/images/src/exr.ts"
+      ],
+      "@loaders.gl/images/color-lut/bundled": [
+        "modules/images/src/color-lut-bundled.ts"
+      ],
+      "@loaders.gl/images/texture/bundled": [
+        "modules/images/src/texture-bundled.ts"
+      ],
+      "@loaders.gl/images/basis/bundled": [
+        "modules/images/src/basis-bundled.ts"
+      ],
+      "@loaders.gl/images/image/bundled": [
+        "modules/images/src/image-bundled.ts"
+      ],
+      "@loaders.gl/images/video/bundled": [
+        "modules/images/src/video-bundled.ts"
+      ],
+      "@loaders.gl/images/radiance-hdr/bundled": [
+        "modules/images/src/radiance-hdr-bundled.ts"
+      ],
+      "@loaders.gl/images/ies/bundled": [
+        "modules/images/src/ies-bundled.ts"
+      ],
+      "@loaders.gl/images/exr/bundled": [
+        "modules/images/src/exr-bundled.ts"
       ]
     },
     "plugins": [

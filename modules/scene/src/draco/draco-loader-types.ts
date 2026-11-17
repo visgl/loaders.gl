@@ -27,19 +27,17 @@ async function preload(
   const dracoLoaderOptions = options as DracoLoaderOptions | undefined;
   switch (getDracoBackend(dracoLoaderOptions)) {
     case 'wasm': {
-      const {DracoWASMLoaderWithParser} = await import('@loaders.gl/scene/draco-wasm-loader');
+      const {DracoWASMLoaderWithParser} = await import('@loaders.gl/scene/draco');
       return DracoWASMLoaderWithParser;
     }
 
     case 'javascript': {
-      const {DracoJavaScriptLoaderWithParser} = await import(
-        '@loaders.gl/scene/draco-javascript-loader'
-      );
+      const {DracoJavaScriptLoaderWithParser} = await import('@loaders.gl/scene/draco');
       return DracoJavaScriptLoaderWithParser;
     }
 
     case 'draco3d': {
-      const {Draco3DLoaderWithParser} = await import('@loaders.gl/scene/draco3d-loader');
+      const {Draco3DLoaderWithParser} = await import('@loaders.gl/scene/draco');
       return Draco3DLoaderWithParser;
     }
 

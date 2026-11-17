@@ -42,21 +42,6 @@
       "import": "./dist/las/bundled.js",
       "require": "./dist/las/bundled.cjs"
     },
-    "./las-loader-shared": {
-      "types": "./dist/las/las-loader-shared.d.ts",
-      "import": "./dist/las/las-loader-shared.js",
-      "require": "./dist/las/las-loader-shared.cjs"
-    },
-    "./las-loader": {
-      "types": "./dist/las-loader.d.ts",
-      "import": "./dist/las-loader.js",
-      "require": "./dist/las-loader.cjs"
-    },
-    "./las-writer": {
-      "types": "./dist/las-writer.d.ts",
-      "import": "./dist/las-writer.js",
-      "require": "./dist/las-writer.cjs"
-    },
     "./pcd": {
       "types": "./dist/pcd/index.d.ts",
       "import": "./dist/pcd/index.js",
@@ -67,16 +52,6 @@
       "import": "./dist/pcd/bundled.js",
       "require": "./dist/pcd/bundled.cjs"
     },
-    "./pcd-loader": {
-      "types": "./dist/pcd-loader.d.ts",
-      "import": "./dist/pcd-loader.js",
-      "require": "./dist/pcd-loader.cjs"
-    },
-    "./pcd-writer": {
-      "types": "./dist/pcd-writer.d.ts",
-      "import": "./dist/pcd-writer.js",
-      "require": "./dist/pcd-writer.cjs"
-    },
     "./ply": {
       "types": "./dist/ply/index.d.ts",
       "import": "./dist/ply/index.js",
@@ -86,16 +61,6 @@
       "types": "./dist/ply/bundled.d.ts",
       "import": "./dist/ply/bundled.js",
       "require": "./dist/ply/bundled.cjs"
-    },
-    "./ply-loader": {
-      "types": "./dist/ply-loader.d.ts",
-      "import": "./dist/ply-loader.js",
-      "require": "./dist/ply-loader.cjs"
-    },
-    "./ply-writer": {
-      "types": "./dist/ply-writer.d.ts",
-      "import": "./dist/ply-writer.js",
-      "require": "./dist/ply-writer.cjs"
     },
     "./las-worker.js": {
       "import": "./dist/las-worker.js"
