@@ -18,7 +18,7 @@ import {
 import {
   createRecordBatchWithMetadata,
   hydrateArrowTable as hydrateMathArrowTable
-} from '@math.gl/arrow';
+} from '@math.gl/core/arrow';
 import {
   deserializeNativeArrowWorkerResult,
   serializeNativeArrowWorkerResult,

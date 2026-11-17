@@ -126,8 +126,9 @@ function listSourceFiles(directory: string): string[] {
 }
 
 test.each([
-  // The upstream structural parser includes SQL OFFSET, source-located diagnostics and explicit casts.
-  ['parseSQLSelect', 14 * 1024],
+  // The upstream structural parser includes named/binary parameters and parameter snapshots.
+  // beta.12 measures 17,587 minified bytes without Arrow execution.
+  ['parseSQLSelect', 18 * 1024],
   ['parseSQLQuery', 40 * 1024]
 ] as const)('%s imports shake out Arrow and stay within the parser budget', async (parser, maximumBytes) => {
   const result = await build({

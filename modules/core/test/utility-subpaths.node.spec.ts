@@ -37,7 +37,7 @@ test('ordinary core entry points do not initialize math.gl Arrow utilities', () 
       '-e',
       `import {createRequire, registerHooks} from 'node:module';
        registerHooks({resolve(specifier, context, nextResolve) {
-         if (specifier === '@math.gl/arrow' || specifier.startsWith('@math.gl/arrow/')) {
+         if (specifier === '@math.gl/core/arrow' || specifier.startsWith('@math.gl/core/arrow/')) {
            throw new Error('Ordinary core imports must not initialize math.gl Arrow');
          }
          return nextResolve(specifier, context);

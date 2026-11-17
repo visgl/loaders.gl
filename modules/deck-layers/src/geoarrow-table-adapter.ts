@@ -8,7 +8,7 @@ import {
   hydrateArrowTable,
   type DehydratedArrowTable,
   type SerializedArrowTableIPC
-} from '@math.gl/arrow';
+} from '@math.gl/core/arrow';
 import {
   convertGeometryValuesToBinaryFeatureCollection,
   type GeometryColumnBinaryFeatureCollectionScratch

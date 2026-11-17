@@ -5,8 +5,8 @@
 import type {RecordBatch, Table} from 'apache-arrow';
 import {streamNativeParquetBatches} from './lib/native-parquet-batches';
 export {getParquetBatchProvenance} from './lib/native-parquet-batches';
-import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/arrow';
-import {IndexedArrowTable} from '@math.gl/arrow';
+import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/core/arrow';
+import {IndexedArrowTable} from '@math.gl/core/arrow';
 import type {CoreAPI, ReadableFile} from '@loaders.gl/core/loader-utils';
 import {
   BlobFile,

@@ -89,7 +89,7 @@ class instances, import their runtime values from `apache-arrow` or `@loaders.gl
 
 `@loaders.gl/tables/arrow` also provides utilities for working with Apache Arrow JS tables after loading
 or when integrating Arrow-backed data sources. Arrow worker transport helpers are available from
-`@math.gl/arrow` directly.
+`@math.gl/core/arrow` directly.
 
 | Utility                                                                          | Description                                                            |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |

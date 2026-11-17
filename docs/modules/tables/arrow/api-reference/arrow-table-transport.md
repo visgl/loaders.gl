@@ -34,7 +34,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-`@math.gl/arrow` provides focused Arrow table transport helpers for worker
+`@math.gl/core/arrow` provides focused Arrow table transport helpers for worker
 boundaries. The same helpers are also available from the `@loaders.gl/tables/arrow` root export for
 compatibility, but worker-aware modules should prefer the transport subpath.
 
@@ -61,7 +61,7 @@ isolated buffers before creating the payload:
 - Typed arrays that already span their full backing `ArrayBuffer` are reused.
 - Typed arrays that are slices/views into a larger `ArrayBuffer` are copied into fresh standalone
   buffers.
-- Schema and type metadata are encoded by `@math.gl/arrow` into a schema-only IPC message,
+- Schema and type metadata are encoded by `@math.gl/core/arrow` into a schema-only IPC message,
   preserving Arrow JS types without relying on class prototypes or a parallel schema serializer.
 
 `hydrateArrowTable(payload)` rebuilds a real Apache Arrow JS `Table` from that payload. The hydrated
@@ -70,7 +70,7 @@ columns, retaining columns independently, or transferring the table again withou
 memory.
 
 ```ts
-import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/arrow';
+import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/core/arrow';
 
 const payload = dehydrateArrowTable(table);
 worker.postMessage(payload, transferList);
@@ -103,7 +103,7 @@ type DehydratedArrowTable = {
 };
 ```
 
-`@math.gl/arrow` owns this payload and its buffer handling. The table values remain separate
+`@math.gl/core/arrow` owns this payload and its buffer handling. The table values remain separate
 column buffers; only the schema is IPC-encoded. Loader worker result hooks in `@loaders.gl/core/arrow-worker-transport` add the outer `shape`
 discriminator. Payloads are version-coupled worker messages, not a persisted file format.
 
@@ -149,7 +149,7 @@ ownership or unrelated bytes, keep the default `copy: 'sliced'`.
 import {
   serializeArrowTableToIPC,
   deserializeArrowTableFromIPC
-} from '@math.gl/arrow';
+} from '@math.gl/core/arrow';
 
 const payload = serializeArrowTableToIPC(table);
 worker.postMessage(payload, [payload.data.buffer]);

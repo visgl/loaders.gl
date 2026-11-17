@@ -4,8 +4,8 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/arrow';
-import {writeWKB} from '@math.gl/arrow/wkb';
+import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/core/arrow';
+import {writeWKB} from '@math.gl/core/arrow';
 import {ArrowConverter, convertArrow} from '../../src/arrow/arrow-converter/arrow-converter';
 import {GeoArrowWriter} from '../../src/arrow/geoarrow-writer';
 import {VECTOR_TYPES} from '../../src/arrow/lib/types';

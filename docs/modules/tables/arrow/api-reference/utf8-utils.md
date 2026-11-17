@@ -51,7 +51,7 @@ values directly from `data.values` and `data.valueOffsets`.
 
 ```typescript
 import * as arrow from 'apache-arrow';
-import {compareUTF8, parseUTF8Number} from '@math.gl/arrow/utf8';
+import {compareUTF8, parseUTF8Number} from '@math.gl/core/utf8';
 
 const column = table.getChild('score_text') as arrow.Vector<arrow.Utf8>;
 const data = column.data[0];

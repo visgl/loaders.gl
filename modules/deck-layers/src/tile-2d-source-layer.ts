@@ -25,7 +25,7 @@ import type {
 import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {Tile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
-import {isArrowTable} from '@math.gl/arrow';
+import {isArrowTable} from '@math.gl/core/arrow';
 import {Matrix4, type NumericArray} from '@math.gl/core';
 import {sharedTile2DDeckAdapter} from './shared-tile-2d/deck-tileset-adapter';
 import {SharedTile2DView} from './shared-tile-2d/shared-tile-2d-view';

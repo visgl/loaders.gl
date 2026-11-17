@@ -18,6 +18,15 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Math.gl beta.12 imports
+
+Arrow transport, table utilities, WKB, and GeoArrow helpers now use
+`@math.gl/core/arrow`, and UTF-8 utilities use `@math.gl/core/utf8`.
+Replace `@math.gl/web-mercator` with `@math.gl/geospatial/web-mercator`
+and `@math.gl/sql/arrow-scales` with `@math.gl/sql/scales`.
+Update package dependencies to `@math.gl/core` and `@math.gl/geospatial`
+when removing the consolidated Arrow and Web Mercator packages.
+
 ### Canonical format imports and TypeScript Parquet writer
 
 Import metadata loaders and writers from the clean format entry point:
@@ -171,7 +180,7 @@ The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` pa
 **Schema packages move into core subpaths**
 
 - Replace imports from `@loaders.gl/schema` with `@loaders.gl/core/schema`, and imports from `@loaders.gl/schema-utils` with `@loaders.gl/core/schema-utils`.
-- Use `@math.gl/arrow` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
+- Use `@math.gl/core/arrow` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
 - Install `@loaders.gl/core` as the package. Published loaders use it as a peer dependency so applications can provide one compatible core version.
 
 #### Point-cloud, scene and geometry package consolidation
@@ -400,7 +409,7 @@ The `@loaders.gl/polyfills` package has moved to the independent `@loaders.gl/co
 
 math.gl alpha.19 removes the standalone leaf packages. Applications importing their APIs or types
 alongside loaders.gl should install the grouped package and use the following public imports
-for math.gl `5.0.0-beta.1`:
+for current math.gl 5.0 prereleases:
 
 | Removed package | Replacement import |
 | --- | --- |
@@ -410,8 +419,8 @@ for math.gl `5.0.0-beta.1`:
 | `@math.gl/polygon` | `@math.gl/geometry` |
 | `@math.gl/crs` | `@math.gl/geospatial/crs` |
 | `@math.gl/projection` | `@math.gl/geospatial/projection` |
-| `@math.gl/wkb` | `@math.gl/geospatial` |
-| `@math.gl/geoarrow` | `@math.gl/arrow/geoarrow-utils` |
+| `@math.gl/wkb` | `@math.gl/core/arrow` |
+| `@math.gl/geoarrow` | `@math.gl/core/arrow` |
 | `@math.gl/geoid` | `@math.gl/earth` |
 
 Install the package name before the subpath, such as `@math.gl/geospatial`. Nested entry points move
@@ -1546,8 +1555,8 @@ First official release of loaders.gl.
 ### Arrow and task utilities in math.gl beta.5
 
 Import Arrow transport, indexed/mapped tables, column renaming, and schema validation from
-`@math.gl/arrow`, UTF-8 helpers from `@math.gl/arrow/utf8`, and Arrow/GeoArrow adapters from
-`@math.gl/arrow/geoarrow`. The v5 forwarding exports in tables and core/arrow-geometry,
+`@math.gl/core/arrow`, UTF-8 helpers from `@math.gl/core/utf8`, and Arrow/GeoArrow adapters from
+`@math.gl/core/arrow`. The v5 forwarding exports in tables and core/arrow-geometry,
 `core/schema-utils/arrow-transport`, and `tables/arrow/transport` are removed.
 Loader worker result hooks live in `@loaders.gl/core/arrow-worker-transport`.
 

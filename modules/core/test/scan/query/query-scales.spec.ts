@@ -7,6 +7,7 @@ import {Float64, tableFromArrays, vectorFromArray} from 'apache-arrow';
 import {
   queryScales,
   queryScalesInBatches,
+  queryScaleExpressions,
   queryScalesProgressive
 } from '@loaders.gl/core/scan-scales';
 import {createScanQueryMetadata, type TableScanSource} from '@loaders.gl/core/loader-utils';
@@ -126,7 +127,7 @@ test('progressive percentile endpoints are applied without rescanning the source
   expect(source.read).toHaveBeenCalledTimes(1);
 });
 
-test('progressive quantize waits for a distinct extent on beta.11', async () => {
+test('progressive quantize publishes constant extents', async () => {
   const source = createScaleSource([5, 5], [15]);
   const snapshots = await Array.fromAsync(
     queryScalesProgressive(
@@ -135,9 +136,10 @@ test('progressive quantize waits for a distinct extent on beta.11', async () => 
       {source, emitEveryBatches: 1}
     )
   );
-  expect(snapshots.map(snapshot => snapshot.final)).toEqual([false, true]);
-  expect(snapshots[0].scales.color.descriptor.thresholds).toEqual([7, 9, 11, 13]);
-  expect(snapshots[1].columns.color.length).toBe(3);
+  expect(snapshots.map(snapshot => snapshot.final)).toEqual([false, false, true]);
+  expect(snapshots[0].scales.color.descriptor.thresholds).toEqual([5]);
+  expect(snapshots[1].scales.color.descriptor.thresholds).toEqual([7, 9, 11, 13]);
+  expect(snapshots[2].columns.color.length).toBe(3);
 });
 
 test('streaming validates its mode and resource limits', async () => {
@@ -151,11 +153,6 @@ test('streaming validates its mode and resource limits', async () => {
       )
     )
   ).rejects.toThrow('require fixed domains');
-  await expect(
-    Array.fromAsync(
-      queryScalesProgressive({}, {color: "SCALE_QUANTILE(value, 3, PALETTE('Blues'))"}, {source})
-    )
-  ).rejects.toThrow('resolved Arrow scale binder');
   await expect(
     Array.fromAsync(queryScalesProgressive({}, {}, {source, emitEveryBatches: 0}))
   ).rejects.toThrow('positive integers');
@@ -172,4 +169,79 @@ test('streaming validates its mode and resource limits', async () => {
       )
     )
   ).rejects.toThrow('could not resolve');
+});
+
+test.each([
+  'value',
+  'value * 2'
+])('progressive quantile classifies %s using accumulated breaks', async expression => {
+  const source = createScaleSource([0, 10, 20], [30, 40]);
+  const snapshots = await Array.fromAsync(
+    queryScalesProgressive(
+      {},
+      {color: `SCALE_QUANTILE(${expression}, 5, PALETTE('Blues'))`},
+      {source, emitEveryBatches: 1}
+    )
+  );
+  const final = snapshots.at(-1)!;
+  expect(final.final).toBe(true);
+  expect(final.scales.color.descriptor.thresholds).toEqual(
+    expression === 'value' ? [8, 16, 24, 32] : [16, 32, 48, 64]
+  );
+  expect(final.columns.color.length).toBe(5);
+  expect(source.read).toHaveBeenCalledTimes(1);
+});
+
+test('scale expressions compose CASE branches', async () => {
+  const source = tableFromArrays({value: [0, 10], label: ['a', 'b']});
+  const result = await queryScaleExpressions(
+    {},
+    {
+      color:
+        "CASE WHEN value = 0 THEN SCALE_COLOR(value, DOMAIN(0, 10), PALETTE('viridis')) ELSE SCALE_COLOR(value, DOMAIN(0, 10), PALETTE('Blues')) END"
+    },
+    {source}
+  );
+  expect(result.columns.color.length).toBe(2);
+  expect(result.scales.color).toHaveLength(2);
+  for (let row = 0; row < 2; row++) {
+    const color = result.scales.color[row].sample(row * 10) as readonly number[];
+    expect(result.columns.color.get(row)?.toArray()).toEqual(
+      Uint8Array.from(color, channel => Math.round(channel * 255))
+    );
+  }
+});
+
+test('fixed ordinal and threshold mappings stream with explicit colors', async () => {
+  const source = tableFromArrays({value: [0, 5, 10], category: ['low', 'high', 'unknown']});
+  const results = await Array.fromAsync(
+    queryScalesInBatches(
+      {},
+      {
+        risk: "SCALE_THRESHOLD(value, ARRAY[5], PALETTE('#ffffff', '#000000'))",
+        label: "SCALE_ORDINAL(category, CATEGORIES('low', 'high'), PALETTE('#ff0000', '#00ff00'))"
+      },
+      {source}
+    )
+  );
+  expect(results).toHaveLength(1);
+  const result = results[0];
+  expect(result.scales.risk.descriptor.thresholds).toEqual([5]);
+  expect(result.columns.risk.get(0)?.toArray()).toEqual(new Uint8Array([255, 255, 255, 255]));
+  expect(result.columns.risk.get(1)?.toArray()).toEqual(new Uint8Array([0, 0, 0, 255]));
+  expect(result.columns.label.get(0)?.toArray()).toEqual(new Uint8Array([255, 0, 0, 255]));
+  expect(result.columns.label.get(2)).toBeNull();
+});
+
+test('parameterized scale input queries preserve upstream binding semantics', async () => {
+  const source = tableFromArrays({value: [1, 2, 3]});
+  const result = await queryScales(
+    'SELECT value WHERE value >= :minimum',
+    {
+      size: 'SCALE_LINEAR(value, DOMAIN(value), RANGE(0, 1))'
+    },
+    {source, sqlParser: sql => parseSQLQuery(sql, {parameters: {minimum: 2}})}
+  );
+  expect(Array.from(result.columns.size)).toEqual([0, 1]);
+  expect(result.scales.size.descriptor.domain).toEqual([2, 3]);
 });

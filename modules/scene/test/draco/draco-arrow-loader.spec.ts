@@ -4,7 +4,7 @@ import {DracoLoader} from '@loaders.gl/scene';
 import * as draco from '@loaders.gl/scene';
 import * as dracoParser from '@loaders.gl/scene/draco';
 import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
-import {validateArrowTableSchema} from '@math.gl/arrow';
+import {validateArrowTableSchema} from '@math.gl/core/arrow';
 import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/core/schema';
 import draco3d from 'draco3d';
 const BUNNY_DRC_URL = '@loaders.gl/scene/draco/test/data/bunny.drc';

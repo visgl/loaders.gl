@@ -79,7 +79,7 @@ export async function getVitestConfig(options = {}) {
         '@math.gl/geospatial',
         '@math.gl/geometry',
         '@math.gl/geospatial/projection',
-        '@math.gl/web-mercator',
+        '@math.gl/geospatial/web-mercator',
         'probe.gl/env',
         'probe.gl/log',
         'probe.gl/stats',

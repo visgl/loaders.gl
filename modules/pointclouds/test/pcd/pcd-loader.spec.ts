@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {validateArrowTableSchema} from '@math.gl/arrow';
+import {validateArrowTableSchema} from '@math.gl/core/arrow';
 import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {canParseWithWorker} from '@loaders.gl/core/loader-utils';
 import {PCDLoader} from '@loaders.gl/pointclouds/pcd';

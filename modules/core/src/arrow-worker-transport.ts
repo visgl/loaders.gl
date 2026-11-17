@@ -12,7 +12,7 @@ import {
   hydrateArrowRecordBatch,
   type DehydratedArrowTable,
   type SplitArrowBuffersOptions
-} from '@math.gl/arrow';
+} from '@math.gl/core/arrow';
 /** Per-batch metadata transferred alongside math.gl's column payload. */
 type BatchMetadata = {
   schema: Uint8Array;

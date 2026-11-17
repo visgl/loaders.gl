@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type * as arrow from 'apache-arrow';
-import {isArrowTable} from '@math.gl/arrow';
+import {isArrowTable} from '@math.gl/core/arrow';
 import type {
   BinaryFeatureCollection,
   BinaryPointFeature,
@@ -1468,7 +1468,10 @@ function triangulatePolygons(polygons: BinaryPolygonFeature): Uint32Array | null
       const polygonTriangles = earcut(
         polygonPositions,
         holeIndices.length > 0 ? holeIndices : undefined,
-        polygons.positions.size
+        polygons.positions.size,
+        undefined,
+        'xy',
+        {triangulation: 'balanced'}
       );
       if (polygonTriangles.length === 0) {
         throw new Error('earcut failed e.g. invalid polygon');
