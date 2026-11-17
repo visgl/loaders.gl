@@ -214,7 +214,16 @@ test.each([
   };
   await convertTileset({
     source,
-    sink,
+    sink: {
+      ...sink,
+      /** Recycles borrowed codec buffers after the sink has accepted each resource. */
+      async write(resource, signal) {
+        await sink.write(resource, signal);
+        for (const [name, bytes] of Object.entries(resource.files)) {
+          if (name.includes('/textures/')) new Uint8Array(bytes).fill(0);
+        }
+      }
+    },
     measureInputBytes: () => 1,
     measureOutputBytes: () => 1,
     codec: createI3SMeshConversionCodec({
