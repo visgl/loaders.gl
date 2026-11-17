@@ -2,6 +2,11 @@ name: release
 
 on:
   workflow_dispatch:
+    inputs:
+      retry_version:
+        description: Existing stable release version to finish publishing (for example 4.5.5)
+        required: true
+        type: string
   push:
     tags:
       - 'v*'
@@ -170,6 +175,7 @@ jobs:
 
       # ocular-publish creates the GitHub Release before publishing the tagged packages to npm.
       - name: Post GitHub release and publish to NPM
+        if: github.event_name == 'push'
         env:
           NPM_CONFIG_LOGLEVEL: verbose
           # npm uses the configured GitHub Actions trusted publisher via OIDC.
@@ -178,3 +184,51 @@ jobs:
           npm config delete //registry.npmjs.org/:_authToken
           unset NODE_AUTH_TOKEN
           npx ocular-publish from-git
+
+      - name: Finish trusted publishing for an existing release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          RELEASE_VERSION: ${{ inputs.retry_version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == refs/heads/4.5-release ]]
+          [[ "$RELEASE_VERSION" =~ ^4\.5\.[0-9]+$ ]]
+          [[ "$(node -p "require('./lerna.json').version")" == "$RELEASE_VERSION" ]]
+          git fetch origin "refs/tags/v$RELEASE_VERSION:refs/tags/v$RELEASE_VERSION"
+          git merge-base --is-ancestor "refs/tags/v$RELEASE_VERSION" HEAD
+          git diff --exit-code "refs/tags/v$RELEASE_VERSION" HEAD -- . ':!.github/workflows/release.yml'
+          gh release view "v$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null
+
+          npm config delete //registry.npmjs.org/:_authToken
+          unset NODE_AUTH_TOKEN
+          npx --no-install lerna list --all --json > "$RUNNER_TEMP/release-packages.json"
+          node --input-type=module <<'JS'
+          import {execFileSync} from 'node:child_process';
+          import {readFileSync} from 'node:fs';
+          import {join} from 'node:path';
+
+          const releaseVersion = process.env.RELEASE_VERSION;
+          const packages = JSON.parse(
+            readFileSync(join(process.env.RUNNER_TEMP, 'release-packages.json'), 'utf8')
+          ).filter(packageInfo => !packageInfo.private);
+          if (!packages.length || packages.some(packageInfo => packageInfo.version !== releaseVersion)) {
+            throw new Error('The public workspace versions must match the requested release');
+          }
+          for (const {name, location} of packages) {
+            const response = await fetch(
+              `https://registry.npmjs.org/${encodeURIComponent(name)}/${releaseVersion}`
+            );
+            if (response.ok) {
+              console.log(`${name}@${releaseVersion} is already published`);
+              continue;
+            }
+            if (response.status !== 404) {
+              throw new Error(`Unable to verify ${name}@${releaseVersion}: HTTP ${response.status}`);
+            }
+            execFileSync('npm', ['publish', '--provenance', '--access', 'public', '--tag', 'latest'], {
+              cwd: location,
+              stdio: 'inherit'
+            });
+          }
+          JS
