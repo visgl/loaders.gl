@@ -36,13 +36,6 @@ export function createBoundingVolumes(
   }
 
   if (sourceBoundingVolume instanceof OrientedBoundingBox) {
-    // A reflection cannot be encoded as a quaternion. Reversing one half-axis
-    // preserves all box corners and leaves the source tileset volume untouched.
-    if (sourceBoundingVolume.halfAxes.determinant() < 0) {
-      const halfAxes = new Matrix3(sourceBoundingVolume.halfAxes);
-      for (let row = 0; row < 3; row++) halfAxes[6 + row] *= -1;
-      sourceBoundingVolume = new OrientedBoundingBox(sourceBoundingVolume.center, halfAxes);
-    }
     halfSize = sourceBoundingVolume.halfSize;
     radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
     quaternion = sourceBoundingVolume.quaternion;
