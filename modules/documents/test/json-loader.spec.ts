@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import {JSONLoader, JSONFormat} from '@loaders.gl/documents';
-import {JSONLoaderWithParser} from '@loaders.gl/documents/json-loader';
+import {JSONLoaderWithParser} from '@loaders.gl/documents/json';
 
 test.each([
   'null',

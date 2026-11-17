@@ -19,7 +19,7 @@ import {
   ParquetLoader,
   type ArrowLoaderOptions
 } from '@loaders.gl/tables';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
 
 const bytes = new ArrayBuffer(0);
 declare const file: ReadableFile;

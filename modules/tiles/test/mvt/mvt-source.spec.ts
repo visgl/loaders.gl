@@ -7,7 +7,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {TILESETS} from './data/tilesets';
 import {MVTTileSource} from '@loaders.gl/tiles/mvt';
 import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
-import {isURLTemplate, getURLFromTemplate} from '../../src/mvt/mvt-source-loader';
+import {isURLTemplate, getURLFromTemplate} from '../../src/mvt/mvt-source';
 test('MVTLoaderWithParser#urls', async () => {
   if (!isBrowser) {
     console.log('MVTLoaderWithParser currently only supported in browser');

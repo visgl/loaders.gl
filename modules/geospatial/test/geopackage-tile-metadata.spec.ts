@@ -5,7 +5,7 @@
 import {beforeAll, expect, test} from 'vitest';
 import initSqlJs from 'sql.js';
 import type {SqlJsStatic, Database} from 'sql.js';
-import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage-loader';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
 import {getTileBounds} from '@math.gl/geospatial';
 import {listGeoPackageTileTables} from '../src/geopackage/lib/geopackage-tile-metadata';
 

@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'FlatGeobuf module', to: '/docs/modules/geospatial/flatgeobuf'},
     {label: 'FlatGeobufLoader', to: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader'},
-    {label: 'Remote source', to: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader'}
+    {label: 'Remote source', to: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source'}
   ]}
 />
 
@@ -66,7 +66,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__meta">Output: GeoJSONTable, Apache Arrow table, ColumnarTable, BinaryFeatureCollection</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync, parseInBatches</span>
   </a>
-  <a className="docs-api-card" href="/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader">
+  <a className="docs-api-card" href="/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source">
     <span className="docs-api-card__kind">Source</span>
     <strong>FlatGeobufLoader</strong>
     <span>Creates an indexed vector source for remote FlatGeobuf datasets.</span>

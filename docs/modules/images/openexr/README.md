@@ -25,7 +25,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Read OpenEXR as data."
   description="Unit channel sampling; no color or display conversion"
   tone="pink"
-  items={[{"label":"Input","value":"Version 2 single-part scanlines; NONE/RLE/ZIPS/ZIP"},{"label":"Output","value":"EXRImage with Uint32 or Float32 channel planes"},{"label":"Loader","value":"EXRLoader · @loaders.gl/images"},{"label":"Parser","value":"@loaders.gl/images/exr-loader"}]}
+  items={[{"label":"Input","value":"Version 2 single-part scanlines; NONE/RLE/ZIPS/ZIP"},{"label":"Output","value":"EXRImage with Uint32 or Float32 channel planes"},{"label":"Loader","value":"EXRLoader · @loaders.gl/images"},{"label":"Parser","value":"@loaders.gl/images/exr"}]}
 />
 
 :::note Availability
@@ -87,6 +87,6 @@ Decoded planes are limited to 256 MiB. Missing, duplicate, truncated, and out-of
 
 ## Loader API and runtime
 
-Use the metadata loader with async core APIs. Direct parsing uses `EXRLoaderWithParser` from `@loaders.gl/images/exr-loader`; parsing is asynchronous even for uncompressed inputs. There are no format-specific options. ZIP/ZIPS use the runtime's native `DecompressionStream` zlib support. No new package codec or renderer dependency is added.
+Use the metadata loader with async core APIs. Direct parsing uses `EXRLoaderWithParser` from `@loaders.gl/images/exr`; parsing is asynchronous even for uncompressed inputs. There are no format-specific options. ZIP/ZIPS use the runtime's native `DecompressionStream` zlib support. No new package codec or renderer dependency is added.
 
 For a simpler RGB environment-map format, compare [Radiance HDR](../textures/formats/hdr.md). OpenEXR's named planes and windows require a more explicit application mapping than a bitmap image.

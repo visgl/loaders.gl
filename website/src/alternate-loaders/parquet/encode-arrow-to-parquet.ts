@@ -1,0 +1,61 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import * as arrow from 'apache-arrow';
+import {loadWasm} from './load-wasm';
+
+import type {ParquetWasmWriterOptions} from './parquet-wasm-writer';
+
+/**
+ * Encode Arrow arrow.Table to Parquet buffer
+ */
+export async function encodeArrowToParquet(
+  table: arrow.Table,
+  options: ParquetWasmWriterOptions
+): Promise<ArrayBuffer> {
+  const wasmUrl = options.parquet?.wasmUrl;
+  const wasm = await loadWasm(wasmUrl);
+
+  // Serialize the table to the IPC format.
+  const ipcStream = arrow.tableToIPC(table);
+
+  // Pass the IPC stream to the Parquet writer.
+  const wasmTable = wasm.Table.fromIPCStream(ipcStream);
+  const wasmProperties = new wasm.WriterPropertiesBuilder().build();
+  const parquetBytes = wasm.writeParquet(wasmTable, wasmProperties);
+  const bytes = new Uint8Array(
+    parquetBytes.buffer,
+    parquetBytes.byteOffset,
+    parquetBytes.byteLength
+  );
+  return bytes.slice().buffer;
+}
+
+// type WriteOptions = {
+//   compression?: number;
+//   dictionaryEnabled?: boolean;
+//   encoding?: number;
+//   maxRowGroupSize?: number;
+//   maxStatisticsSize?: number;
+//   statisticsEnabled?: boolean;
+//   writeBatchSize?: number;
+//   dataPageSizeLimit?: number;
+//   dictionaryPageSizeLimit?: number;
+// };
+
+// columnCompression: Record<string, number>;
+// columnDictionaryEnabled: Record<string, boolean>;
+// columnEncoding: Record<string, number>;
+// columnMaxStatisticsSize
+// compression:Record<string, number>;
+// setCreatedBy
+// setDataPageSizeLimit
+// setDictionaryEnabled
+// setDictionaryPageSizeLimit
+// setEncoding
+// setMaxRowGroupSize
+// setMaxStatisticsSize
+// setStatisticsEnabled
+// setWriteBatchSize
+// setWriterVersion

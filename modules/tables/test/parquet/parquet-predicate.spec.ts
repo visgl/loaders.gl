@@ -7,12 +7,12 @@ import {expect, test} from 'vitest';
 import {createDataSource, encode, load, isBrowser} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {
-  ParquetJSWriter,
+  ParquetWriter,
   type ParquetPredicate,
   ParquetLoader,
   type ParquetRowGroupMetadata
-} from '@loaders.gl/tables/parquet/index';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 
 import {
   canParquetRowGroupMatch,
@@ -343,7 +343,7 @@ async function createPredicateFixture(): Promise<ArrayBuffer> {
         binary: new Uint8Array([index % 4])
       }))
     } satisfies ObjectRowTable,
-    ParquetJSWriter,
+    ParquetWriter,
     {parquet: {rowGroupSize: 4}}
   );
 }

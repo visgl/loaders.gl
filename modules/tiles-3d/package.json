@@ -54,10 +54,6 @@
       "import": "./dist/potree/index.js",
       "require": "./dist/potree/index.cjs"
     },
-    "./potree/unbundled": {
-      "types": "./dist/potree/unbundled.d.ts",
-      "import": "./dist/potree/unbundled.js"
-    },
     "./potree/bundled": {
       "types": "./dist/potree/bundled.d.ts",
       "import": "./dist/potree/bundled.js"
@@ -67,7 +63,7 @@
       "import": "./dist/potree-loader.js",
       "require": "./dist/potree-loader.cjs"
     },
-    "./potree/potree-metadata-schema": {
+    "./potree-metadata-schema": {
       "types": "./dist/potree/potree-metadata-schema.d.ts",
       "import": "./dist/potree/potree-metadata-schema.js",
       "require": "./dist/potree/potree-metadata-schema.cjs"
@@ -102,10 +98,6 @@
       "types": "./dist/3d-tiles/bundled.d.ts",
       "import": "./dist/3d-tiles/bundled.js"
     },
-    "./3d-tiles/unbundled": {
-      "types": "./dist/3d-tiles/unbundled.d.ts",
-      "import": "./dist/3d-tiles/unbundled.js"
-    },
     "./3d-tiles/tileset.schema.json": "./dist/3d-tiles/tileset.schema.json",
     "./3d-tiles/subtree.schema.json": "./dist/3d-tiles/subtree.schema.json",
     "./3d-tiles-archive-writer": {
@@ -118,7 +110,7 @@
       "import": "./dist/i3s/index.js",
       "require": "./dist/i3s/index.cjs"
     },
-    "./i3s/i3s-zod-schema": {
+    "./i3s-zod-schema": {
       "types": "./dist/i3s/i3s-zod-schema.d.ts",
       "import": "./dist/i3s/i3s-zod-schema.js",
       "require": "./dist/i3s/i3s-zod-schema.cjs"
@@ -126,10 +118,6 @@
     "./i3s/bundled": {
       "types": "./dist/i3s/bundled.d.ts",
       "import": "./dist/i3s/bundled.js"
-    },
-    "./i3s/unbundled": {
-      "types": "./dist/i3s/unbundled.d.ts",
-      "import": "./dist/i3s/unbundled.js"
     },
     "./i3s-lepcc-loader": {
       "types": "./dist/i3s-lepcc-loader.d.ts",

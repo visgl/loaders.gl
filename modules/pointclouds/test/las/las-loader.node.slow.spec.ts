@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 /* eslint-disable max-len */
 
-import {LASCOPCLoader} from '../../src/las/las-copc-loader-types';
-import {LAZPerfLoader} from '../../src/las/lazperf-loader-types';
-import {LAZRsLoader} from '../../src/las/laz-rs-loader-types';
+import {LASCOPCLoader} from '../../../../website/src/alternate-loaders/las/las-copc-loader-types';
+import {LAZPerfLoader} from '../../../../website/src/alternate-loaders/las/lazperf-loader-types';
+import {LAZRsLoader} from '../../../../website/src/alternate-loaders/las/laz-rs-loader-types';
 import '@loaders.gl/core/polyfills';
 import {Buffer} from 'node:buffer';
 import {expect, test} from 'vitest';
@@ -17,7 +17,7 @@ import {
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import * as las from '@loaders.gl/pointclouds/las';
 import * as bundledLas from '@loaders.gl/pointclouds/las/bundled';
-import * as unbundledLas from '@loaders.gl/pointclouds/las/unbundled';
+import * as unbundledLas from '@loaders.gl/pointclouds/las';
 import type {LASLoaderOptions} from '@loaders.gl/pointclouds/las';
 import {
   setLoaderOptions,
@@ -43,11 +43,11 @@ import {
   decodeLAZChunkTable,
   getLAZChunkByteLength
 } from '@loaders.gl/core/loader-utils';
-import {LASCOPCLoaderWithParser} from '../../src/las/las-copc-loader';
-import {LAZPerfLoaderWithParser} from '../../src/las/lazperf-loader';
-import {LAZRsLoaderWithParser} from '../../src/las/laz-rs-loader';
+import {LASCOPCLoaderWithParser} from '../../../../website/src/alternate-loaders/las/las-copc-loader';
+import {LAZPerfLoaderWithParser} from '../../../../website/src/alternate-loaders/las/lazperf-loader';
+import {LAZRsLoaderWithParser} from '../../../../website/src/alternate-loaders/las/laz-rs-loader';
 import {LASLoaderWithParser} from '../../src/las/las-loader';
-// import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+// import {ArrowLoader} from '@loaders.gl/tables/arrow';
 const LAS_BINARY_URL = '@loaders.gl/pointclouds/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/pointclouds/las/test/data/extrabytes.laz';
 const LAS_POINT_COUNT = 808042;

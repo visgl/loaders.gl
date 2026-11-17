@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as arrow from 'apache-arrow';
 import lz4js from 'lz4js';
 import {ZstdCodec} from 'zstd-codec';
-import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {ArrowLoader} from '@loaders.gl/tables/arrow';
 import {registerArrowCompressionCodecs} from '../../src/arrow/lib/parsers/arrow-compression';
 import {
   makeIterator,

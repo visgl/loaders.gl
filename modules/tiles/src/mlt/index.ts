@@ -8,7 +8,7 @@ export {MLTFormat} from './mlt-format';
 export {MLTLoader} from './mlt-loader';
 export type {MLTLoaderOptions} from './mlt-loader';
 
-export type {MLTSourceLoaderOptions} from './mlt-source-loader';
+export type {MLTSourceLoaderOptions} from './mlt-source';
 
 export {MLTWriter} from './mlt-writer';
 export type {MLTWriterOptions} from './mlt-writer';

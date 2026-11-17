@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createNetCDFSource} from './netcdf-source-loader';
+import {createNetCDFSource} from './netcdf-source';
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {NetCDFHeader} from './netcdfjs/netcdf-types';
 import {NetCDFReader} from './netcdfjs/netcdf-reader';

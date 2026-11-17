@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source-loader';
+import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source';
 
 test('GeoTIFFRasterSource exposes normalized scan metadata', async () => {
   const source = new GeoTIFFRasterSource(new Blob([]), {});

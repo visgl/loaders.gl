@@ -64,3 +64,11 @@ export type {
 } from '@loaders.gl/core/loader-utils';
 
 export type {LASCompatibilityLayout} from './lib/las-compatibility';
+
+export {
+  LASColumnLoader,
+  LASLoaderWithParser,
+  toPublicLASResult,
+  getLASRecordBatches,
+  parseLASMetadata
+} from '../las-loader';

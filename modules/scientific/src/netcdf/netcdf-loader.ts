@@ -24,9 +24,7 @@ export type NetCDFLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing NetCDF loader implementation. */
 async function preload() {
-  const {NetCDFLoaderWithParser} = await import(
-    '@loaders.gl/scientific/netcdf/netcdf-loader-with-parser'
-  );
+  const {NetCDFLoaderWithParser} = await import('@loaders.gl/scientific/netcdf');
   return NetCDFLoaderWithParser;
 }
 

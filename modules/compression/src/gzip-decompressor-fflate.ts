@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Gunzip, gunzipSync} from './lib/fflate/index';
+import {Gunzip, gunzipSync} from './lib/fflate';
 import {Decompressor, type CompressionOptions} from './lib/compression';
 import {transformFflateBatches} from './lib/fflate-stream';
 

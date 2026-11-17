@@ -12,7 +12,7 @@ The package root exports lightweight loader metadata. Async loaders can preload 
 
 ```ts
 import {NPYLoader, NetCDFLoader, NetCDFSourceLoader, OMEZarrLoader} from '@loaders.gl/scientific';
-import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy-loader';
+import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy';
 import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
 import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
 ```

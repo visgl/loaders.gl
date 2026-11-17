@@ -4,7 +4,7 @@
 // Copyright (c) 2017 ironSource Ltd.
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
-import {PARQUET_CODECS} from '../codecs/index';
+import {PARQUET_CODECS} from '../codecs';
 import {isByteStreamSplitType} from '../codecs/byte-stream-split';
 import {isDeltaEncodingType} from '../codecs/delta';
 import {PARQUET_COMPRESSION_METHODS} from '../compression';

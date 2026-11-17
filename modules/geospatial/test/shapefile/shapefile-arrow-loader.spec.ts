@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {validateLoader} from 'test/common/conformance';
 import {setLoaderOptions, fetchFile, load, loadInBatches} from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/wkb-table';
 import {convertGeoArrowVectorCellToGeoJSON, getGeoMetadata} from '@loaders.gl/core/geoarrow';
 setLoaderOptions({core: {_workerType: 'test', worker: false}});

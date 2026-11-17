@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Parquet overview', to: '/docs/modules/tables/parquet/formats/parquet'},
     {label: 'ParquetLoader', to: '/docs/modules/tables/parquet/api-reference/parquet-loader'},
-    {label: 'Selective reads', to: '/docs/modules/tables/parquet/api-reference/parquet-source-loader'}
+    {label: 'Selective reads', to: '/docs/modules/tables/parquet/api-reference/parquet-source'}
   ]}
 />
 
@@ -74,7 +74,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__meta">Output: GeoJSONTable, Apache Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseInBatches</span>
   </a>
-  <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/parquet-source-loader">
+  <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/parquet-source">
     <span className="docs-api-card__kind">Source</span>
     <strong>ParquetLoader</strong>
     <span>Reuses cached schema and footer metadata for selective Arrow reads.</span>

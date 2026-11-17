@@ -8,7 +8,7 @@ import {convertTable} from '@loaders.gl/core/schema-utils';
 
 import {preloadCompressions} from '../parquetjs/compression';
 import {filterParquetRowIndices, gatherParquetColumns} from './parquet-predicate';
-import type {RowGroup} from '../parquetjs/parquet-thrift/index';
+import type {RowGroup} from '../parquetjs/parquet-thrift';
 import {ParquetReader} from '../parquetjs/parser/parquet-reader';
 import {ParquetSchema} from '../parquetjs/schema/schema';
 import {ParquetSourceWorkerFile} from './parquet-source-worker-file';

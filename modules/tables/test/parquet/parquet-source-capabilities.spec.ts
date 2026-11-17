@@ -18,7 +18,6 @@ test('ParquetSourceCapabilities#advertises implemented and deferred features', (
         supportsColumnProjection: true,
         supportsBatchProvenance: true,
         supportsCooperativeReadCancellation: true,
-        supportsLocalWasmAsset: true,
         supportsColumnStatistics: true,
         supportsPredicatePushdown: true,
         supportsPageIndexPruning: true,

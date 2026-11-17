@@ -18,7 +18,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="Start with a familiar load call, then opt into Arrow output, batches, or the selective source API as the dataset grows."
   links={[
     {label: 'Parquet format', to: '/docs/modules/tables/parquet/formats/parquet'},
-    {label: 'Parquet source', to: '/docs/modules/tables/parquet/api-reference/parquet-source-loader'}
+    {label: 'Parquet source', to: '/docs/modules/tables/parquet/api-reference/parquet-source'}
   ]}
 />
 
@@ -58,7 +58,7 @@ which [Parquet format features](/docs/modules/tables/parquet/formats/parquet) ar
 />
 
 Use `createDataSource(url, ParquetLoader)` for reusable metadata and selective range reads.
-See the [Parquet source API](./parquet-source-loader) for query options.
+See the [Parquet source API](./parquet-source) for query options.
 
 | Property | Value |
 | --- | --- |
@@ -78,7 +78,7 @@ const rows = await load(url, ParquetLoader, loaderOptions);
 
 Applications normally import metadata loaders from the package root. Code that needs a
 parser-bearing loader directly can import `ParquetLoaderWithParser` from
-`@loaders.gl/tables/parquet-loader`.
+`@loaders.gl/tables/parquet`.
 
 Load a Parquet file as Arrow using the primary loader.
 
@@ -232,7 +232,6 @@ Supports table category options such as `batchType` and `batchSize`.
 | `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for the explicit WASM reader; accepted but unused by the sequential TypeScript loader. |
 | `parquet.signal` | `AbortSignal` | `undefined` | Cancels worker-backed parsing by terminating its active worker. |
 | `parquet.workerUrl` | `string` | package-local asset | Overrides the packaged worker URL. |
-| `parquet.wasmUrl` | `string` | package-local asset | Overrides the `parquet-wasm` binary URL for the explicit WASM reader. |
 | `parquet.keyRetriever` | `ParquetKeyRetriever` | `undefined` | Resolves keys for modular-encrypted files. |
 | `parquet.aadPrefix` | `Uint8Array` | `undefined` | Supplies the AAD prefix for encrypted files that omit it from their crypto metadata. |
 | `parquet.int96AsTimestamp` | `boolean` | `false` for object rows, `true` for TypeScript Arrow output | Decodes legacy INT96 physical values as signed epoch-nanosecond timestamps. |
@@ -253,9 +252,8 @@ explicitly.
 
 ## Worker Execution
 
-The primary `ParquetLoader` can decode on a worker when workers are enabled. The Parquet bytes are transferred into the worker, and all decoded data returns as directly transferable Arrow column buffers; requested object rows are materialized on the caller after hydration. Arrow output is rehydrated into Apache Arrow class instances on the caller. Aborting `parquet.signal` terminates the active worker rather than waiting for a non-cancellable WASM call to finish.
+The primary `ParquetLoader` can decode on a worker when workers are enabled. The Parquet bytes are transferred into the worker, and all decoded data returns as directly transferable Arrow column buffers; requested object rows are materialized on the caller after hydration. Arrow output is rehydrated into Apache Arrow class instances on the caller. Aborting `parquet.signal` terminates the active worker without waiting for the current decode to finish.
 
-The package publishes `parquet-worker.js` and `parquet_wasm_bg.wasm` beside its JavaScript output. The metadata loader resolves the worker with a module-relative `new URL(..., import.meta.url)`, while the worker resolves the WASM file beside itself. This lets compatible bundlers copy and fingerprint both assets without an implicit CDN request. Use `parquet.workerUrl` or `parquet.wasmUrl` when an application serves assets from a custom location.
 
 Set `core.worker: false` to decode on the calling thread. Node worker threads for `ParquetLoader` remain opt-in through `core._nodeWorkers`.
 
@@ -297,3 +295,5 @@ website’s alternate ParquetJS and WASM readers, and hyparquet.
 ## Remarks
 
 - The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
+
+The package publishes `parquet-worker.js` for TypeScript decoding. Set `parquet.workerUrl` when serving the worker from a custom location. Alternative WASM readers live in unpublished website benchmark support.

@@ -4,10 +4,10 @@
 
 import * as arrow from 'apache-arrow';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {CSVTableSource} from '@loaders.gl/tables/csv/index';
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {CSVTableSource} from '@loaders.gl/tables/csv';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 
 /** Builds equivalent in-memory Arrow, CSV, and Parquet sources with configurable chunk sizes. */
 export async function createScaleQuerySources(rowCount: number, batchSize: number) {
@@ -39,7 +39,7 @@ export async function createScaleQuerySources(rowCount: number, batchSize: numbe
     'id,value,label\n',
     ...rows.map(row => `${row.id},${row.value ?? ''},${row.label}\n`)
   ];
-  const parquet = await ParquetJSWriter.encode(
+  const parquet = await ParquetWriter.encode(
     {shape: 'object-row-table', schema: convertArrowToSchema(table.schema), data: rows},
     {parquet: {rowGroupSize: batchSize, writeStatistics: true}}
   );

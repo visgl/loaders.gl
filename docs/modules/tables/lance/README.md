@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="cyan"
   meta={['Lance datasets', 'Selected columns', 'Arrow output']}
   links={[
-    {label: 'Lance APIs', to: '/docs/modules/tables/lance/api-reference/lance-source-loader'},
+    {label: 'Lance APIs', to: '/docs/modules/tables/lance/api-reference/lance-source'},
     {label: 'Arrow data plane', to: '/docs/developer-guide/apache-arrow'},
     {label: 'Lance example', to: 'https://github.com/visgl/loaders.gl/tree/master/examples/lance/browser'}
   ]}
@@ -64,10 +64,10 @@ encodings, predicate pushdown, and writes are not yet supported.
 
 ## APIs
 
-- [`LanceLoader`](/docs/modules/tables/lance/api-reference/lance-source-loader)
+- [`LanceLoader`](/docs/modules/tables/lance/api-reference/lance-source)
   reads dataset metadata and local or remote Arrow batches.
 - The parser helpers are available from the
-  [`@loaders.gl/tables/lance/lance-arrow`](/docs/modules/tables/lance/api-reference/lance-arrow)
+  [`@loaders.gl/tables/lance`](/docs/modules/tables/lance/api-reference/lance-arrow)
   subpath. They read selected primitive or two-dimensional coordinate columns
   with HTTP ranges.
 

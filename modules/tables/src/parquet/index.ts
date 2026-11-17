@@ -70,15 +70,14 @@ export {
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
 
-export {ParquetWriter} from './parquet-writer';
 export type {
-  ParquetJSWriterEncoding,
-  ParquetJSWriterOptions,
+  ParquetWriterEncoding,
+  ParquetWriterOptions,
   ParquetSortingColumnOption,
   ParquetWriterEncryptionOptions,
   ParquetWriterFooterSignatureOptions
-} from './parquet-js-writer';
-export {ParquetJSWriter} from './parquet-js-writer';
+} from './parquet-writer';
+export {ParquetWriter} from './parquet-writer';
 
 export {
   decodeParquetColumnIndex,
@@ -125,3 +124,23 @@ export {
   getParquetBloomFilterProbes,
   type ParquetBloomFilterProbe
 } from './lib/parquet-bloom-filter-planner';
+
+export {type ParquetDecodedBatch} from './parquet-source-types';
+
+export {PARQUET_LOADER_DEFAULT_OPTIONS} from './parquet-loader-options';
+
+export {getParquetOptions, ParquetLoaderWithParser} from '../parquet-loader';
+
+export {type GeoParquetLoaderOptions, GeoParquetLoaderWithParser} from '../geoparquet-loader';
+
+export {getParquetBatchProvenance, createParquetSource, ParquetSource} from '../parquet-source';
+
+export * from '../parquet-dataset';
+
+export {PARQUET_LOADER_BASE} from './parquet-loader-base';
+
+export {PARQUET_SOURCE_WORKER_LOAD_WORKER} from './parquet-source-worker-factory';
+
+export {PARQUET_SOURCE_WORKER_URL} from './parquet-source-worker-url';
+
+export {PARQUET_WORKER_URL} from './parquet-worker-url';

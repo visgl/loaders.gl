@@ -29,19 +29,19 @@ const document = await load('README.md', MarkdownLoader);
 
 | Logo | Format | Metadata loader | Parser import | Output |
 | --- | --- | --- | --- | --- |
-| — | [XML](/docs/modules/documents/xml/formats/xml) | `XMLLoader` | `@loaders.gl/documents/xml-loader` | JavaScript object |
-| — | [HTML](/docs/modules/documents/xml/formats/html) | `HTMLLoader` | `@loaders.gl/documents/html-loader` | XML-style object |
-| <FormatLogo slug="json" /> | [JSON](/docs/modules/documents/api-reference/json-loader) | `JSONLoader` | `@loaders.gl/documents/json-loader` | Any JSON value, without table extraction |
-| <FormatLogo slug="yaml" /> | [YAML](/docs/modules/documents/config/formats/yaml) | `YAMLLoader` | `@loaders.gl/documents/yaml-loader` | Objects, arrays, scalars |
-| <FormatLogo slug="toml" /> | [TOML](/docs/modules/documents/config/formats/toml) | `TOMLLoader` | `@loaders.gl/documents/toml-loader` | JavaScript object |
-| <FormatLogo slug="bson" /> | [BSON](/docs/modules/documents/bson/formats/bson) | `BSONLoader` | `@loaders.gl/documents/bson-loader` | JavaScript object |
-| — | [Markdown](/docs/modules/documents/formats/markdown) | `MarkdownLoader` | `@loaders.gl/documents/markdown-loader` | `MarkdownDocument` syntax tree |
+| — | [XML](/docs/modules/documents/xml/formats/xml) | `XMLLoader` | `@loaders.gl/documents/xml` | JavaScript object |
+| — | [HTML](/docs/modules/documents/xml/formats/html) | `HTMLLoader` | `@loaders.gl/documents/html` | XML-style object |
+| <FormatLogo slug="json" /> | [JSON](/docs/modules/documents/api-reference/json-loader) | `JSONLoader` | `@loaders.gl/documents/json` | Any JSON value, without table extraction |
+| <FormatLogo slug="yaml" /> | [YAML](/docs/modules/documents/config/formats/yaml) | `YAMLLoader` | `@loaders.gl/documents/yaml` | Objects, arrays, scalars |
+| <FormatLogo slug="toml" /> | [TOML](/docs/modules/documents/config/formats/toml) | `TOMLLoader` | `@loaders.gl/documents/toml` | JavaScript object |
+| <FormatLogo slug="bson" /> | [BSON](/docs/modules/documents/bson/formats/bson) | `BSONLoader` | `@loaders.gl/documents/bson` | JavaScript object |
+| — | [Markdown](/docs/modules/documents/formats/markdown) | `MarkdownLoader` | `@loaders.gl/documents/markdown` | `MarkdownDocument` syntax tree |
 
 Each parser subpath exports the corresponding `*LoaderWithParser`. Use it for sync parsing:
 
 ```typescript
 import {parseSync} from '@loaders.gl/core';
-import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown-loader';
+import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown';
 
 const document = parseSync('# Hello', MarkdownLoaderWithParser);
 ```
@@ -49,7 +49,7 @@ const document = parseSync('# Hello', MarkdownLoaderWithParser);
 ## BSON and Parquet
 
 `@loaders.gl/documents/bson-codec` exports `encodeBSONSync`, `parseBSONSync`, `BSONObjectId`,
-and `createBSONValue`. Import `BSONWriter` from `@loaders.gl/documents/bson-writer`.
+and `createBSONValue`. Import `BSONWriter` from `@loaders.gl/documents/bson`.
 The codec preserves the existing BSON wire behavior and Parquet BSON logical-type read/write
 support. It does not install the MongoDB `bson` package. See the [BSON reference](/docs/modules/documents/bson).
 

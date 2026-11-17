@@ -3,3 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 export {QuantizedMeshLoaderWithParser} from './terrain/quantized-mesh-loader';
+
+export {
+  type QuantizedMeshLoaderOptions,
+  QuantizedMeshLoader
+} from './terrain/quantized-mesh-loader-types';
+
+export {type QuantizedMeshWriterOptions, QuantizedMeshWriter} from './quantized-mesh-writer';

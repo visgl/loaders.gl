@@ -1,9 +1,9 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
-import {TerrainLoader, QuantizedMeshLoader} from '@loaders.gl/raster/terrain/index';
-import * as terrain from '@loaders.gl/raster/terrain/index';
+import {TerrainLoader, QuantizedMeshLoader} from '@loaders.gl/raster/terrain';
+import * as terrain from '@loaders.gl/raster/terrain';
 import * as bundledTerrain from '@loaders.gl/raster/terrain/bundled';
-import * as unbundledTerrain from '@loaders.gl/raster/terrain/unbundled';
+import * as unbundledTerrain from '@loaders.gl/raster/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {validateArrowTableSchema} from '@math.gl/arrow';

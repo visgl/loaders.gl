@@ -27,8 +27,10 @@ export const Tiles3DArchiveFileLoader = {
   name: '3tz',
   version: VERSION,
   /** Loads the parser-bearing 3tz archive loader implementation. */
-  preload: async () =>
-    (await import('./3d-tiles-archive-loader-with-parser')).Tiles3DArchiveFileLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./3d-tiles-archive-loader-with-parser');
+    return loaderModule.Tiles3DArchiveFileLoaderWithParser;
+  },
   extensions: ['3tz'],
   options: {}
 } satisfies Loader<ArrayBuffer, never, Tiles3DArchiveFileLoaderOptions>;

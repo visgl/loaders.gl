@@ -13,7 +13,7 @@ export type AvroSchemaLoaderOptions = Record<string, never>;
 
 /** Preloads the parser-bearing Avro schema loader. */
 async function preloadAvroSchemaLoader() {
-  const {AvroSchemaLoaderWithParser} = await import('@loaders.gl/tables/avro-schema');
+  const {AvroSchemaLoaderWithParser} = await import('../avro-schema');
   return AvroSchemaLoaderWithParser;
 }
 

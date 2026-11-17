@@ -34,11 +34,6 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./usd-loader": {
-      "types": "./dist/usd-loader.d.ts",
-      "import": "./dist/usd-loader.js",
-      "require": "./dist/usd-loader.cjs"
-    },
     "./obj": {
       "types": "./dist/obj/index.d.ts",
       "import": "./dist/obj/index.js",
@@ -48,51 +43,6 @@
       "types": "./dist/obj/bundled.d.ts",
       "import": "./dist/obj/bundled.js",
       "require": "./dist/obj/bundled.cjs"
-    },
-    "./obj/index": {
-      "types": "./dist/obj/index.d.ts",
-      "import": "./dist/obj/index.js",
-      "require": "./dist/obj/index.cjs"
-    },
-    "./obj/mtl-format": {
-      "types": "./dist/obj/mtl-format.d.ts",
-      "import": "./dist/obj/mtl-format.js",
-      "require": "./dist/obj/mtl-format.cjs"
-    },
-    "./mtl-loader-types": {
-      "types": "./dist/mtl-loader-types.d.ts",
-      "import": "./dist/mtl-loader-types.js",
-      "require": "./dist/mtl-loader-types.cjs"
-    },
-    "./mtl-loader": {
-      "types": "./dist/mtl-loader.d.ts",
-      "import": "./dist/mtl-loader.js",
-      "require": "./dist/mtl-loader.cjs"
-    },
-    "./obj/obj-format": {
-      "types": "./dist/obj/obj-format.d.ts",
-      "import": "./dist/obj/obj-format.js",
-      "require": "./dist/obj/obj-format.cjs"
-    },
-    "./obj-loader-types": {
-      "types": "./dist/obj-loader-types.d.ts",
-      "import": "./dist/obj-loader-types.js",
-      "require": "./dist/obj-loader-types.cjs"
-    },
-    "./obj-loader": {
-      "types": "./dist/obj-loader.d.ts",
-      "import": "./dist/obj-loader.js",
-      "require": "./dist/obj-loader.cjs"
-    },
-    "./obj-writer": {
-      "types": "./dist/obj-writer.d.ts",
-      "import": "./dist/obj-writer.js",
-      "require": "./dist/obj-writer.cjs"
-    },
-    "./obj/unbundled": {
-      "types": "./dist/obj/unbundled.d.ts",
-      "import": "./dist/obj/unbundled.js",
-      "require": "./dist/obj/unbundled.cjs"
     },
     "./gltf": {
       "types": "./dist/gltf/index.d.ts",
@@ -104,51 +54,6 @@
       "import": "./dist/gltf/bundled.js",
       "require": "./dist/gltf/bundled.cjs"
     },
-    "./glb-loader-types": {
-      "types": "./dist/glb-loader-types.d.ts",
-      "import": "./dist/glb-loader-types.js",
-      "require": "./dist/glb-loader-types.cjs"
-    },
-    "./glb-loader": {
-      "types": "./dist/glb-loader.d.ts",
-      "import": "./dist/glb-loader.js",
-      "require": "./dist/glb-loader.cjs"
-    },
-    "./glb-writer": {
-      "types": "./dist/glb-writer.d.ts",
-      "import": "./dist/glb-writer.js",
-      "require": "./dist/glb-writer.cjs"
-    },
-    "./gltf/gltf-format": {
-      "types": "./dist/gltf/gltf-format.d.ts",
-      "import": "./dist/gltf/gltf-format.js",
-      "require": "./dist/gltf/gltf-format.cjs"
-    },
-    "./gltf-loader-types": {
-      "types": "./dist/gltf-loader-types.d.ts",
-      "import": "./dist/gltf-loader-types.js",
-      "require": "./dist/gltf-loader-types.cjs"
-    },
-    "./gltf-loader": {
-      "types": "./dist/gltf-loader.d.ts",
-      "import": "./dist/gltf-loader.js",
-      "require": "./dist/gltf-loader.cjs"
-    },
-    "./gltf-source": {
-      "types": "./dist/gltf-source.d.ts",
-      "import": "./dist/gltf-source.js",
-      "require": "./dist/gltf-source.cjs"
-    },
-    "./gltf-writer": {
-      "types": "./dist/gltf-writer.d.ts",
-      "import": "./dist/gltf-writer.js",
-      "require": "./dist/gltf-writer.cjs"
-    },
-    "./gltf/index": {
-      "types": "./dist/gltf/index.d.ts",
-      "import": "./dist/gltf/index.js",
-      "require": "./dist/gltf/index.cjs"
-    },
     "./gltf/mesh-arrow": {
       "types": "./dist/gltf/mesh-arrow.d.ts",
       "import": "./dist/gltf/mesh-arrow.js"
@@ -156,11 +61,6 @@
     "./gltf/schema": {
       "types": "./dist/gltf/schema.d.ts",
       "import": "./dist/gltf/schema.js"
-    },
-    "./gltf/unbundled": {
-      "types": "./dist/gltf/unbundled.d.ts",
-      "import": "./dist/gltf/unbundled.js",
-      "require": "./dist/gltf/unbundled.cjs"
     },
     "./gltf/gltf.schema.json": "./dist/gltf/gltf.schema.json",
     "./gltf/gltf-1.schema.json": "./dist/gltf/gltf-1.schema.json",
@@ -175,16 +75,6 @@
     },
     "./obj-worker.js": {
       "import": "./dist/obj-worker.js"
-    },
-    "./usd/index": {
-      "types": "./dist/usd/index.d.ts",
-      "import": "./dist/usd/index.js",
-      "require": "./dist/usd/index.cjs"
-    },
-    "./usd-loader-types": {
-      "types": "./dist/usd-loader-types.d.ts",
-      "import": "./dist/usd-loader-types.js",
-      "require": "./dist/usd-loader-types.cjs"
     },
     "./draco-worker.js": {
       "import": "./dist/draco-worker.js"
@@ -203,49 +93,60 @@
       "require": "./dist/draco-writer-worker-node.cjs",
       "default": "./dist/draco-writer-worker-node.cjs"
     },
-    "./draco-loader": {
-      "types": "./dist/draco-loader.d.ts",
-      "import": "./dist/draco-loader.js",
-      "require": "./dist/draco-loader.cjs"
+    "./mtl": {
+      "types": "./dist/mtl.d.ts",
+      "import": "./dist/mtl.js",
+      "require": "./dist/mtl.cjs"
     },
-    "./draco-loader-types": {
-      "types": "./dist/draco-loader-types.d.ts",
-      "import": "./dist/draco-loader-types.js",
-      "require": "./dist/draco-loader-types.cjs"
+    "./glb": {
+      "types": "./dist/glb.d.ts",
+      "import": "./dist/glb.js",
+      "require": "./dist/glb.cjs"
     },
-    "./draco-wasm-loader": {
-      "types": "./dist/draco-wasm-loader.d.ts",
-      "import": "./dist/draco-wasm-loader.js",
-      "require": "./dist/draco-wasm-loader.cjs"
+    "./draco": {
+      "types": "./dist/draco.d.ts",
+      "import": "./dist/draco.js",
+      "require": "./dist/draco.cjs"
     },
-    "./draco-javascript-loader": {
-      "types": "./dist/draco-javascript-loader.d.ts",
-      "import": "./dist/draco-javascript-loader.js",
-      "require": "./dist/draco-javascript-loader.cjs"
+    "./materialx": {
+      "types": "./dist/materialx.d.ts",
+      "import": "./dist/materialx.js",
+      "require": "./dist/materialx.cjs"
     },
-    "./draco3d-loader": {
-      "types": "./dist/draco3d-loader.d.ts",
-      "import": "./dist/draco3d-loader.js",
-      "require": "./dist/draco3d-loader.cjs"
+    "./stl": {
+      "types": "./dist/stl.d.ts",
+      "import": "./dist/stl.js",
+      "require": "./dist/stl.cjs"
     },
-    "./draco-writer": {
-      "types": "./dist/draco-writer.d.ts",
-      "import": "./dist/draco-writer.js",
-      "require": "./dist/draco-writer.cjs"
+    "./usd/bundled": {
+      "types": "./dist/usd-bundled.d.ts",
+      "import": "./dist/usd-bundled.js",
+      "require": "./dist/usd-bundled.cjs"
     },
-    "./draco-library-options": {
-      "types": "./dist/draco-library-options.d.ts",
-      "import": "./dist/draco-library-options.js"
+    "./mtl/bundled": {
+      "types": "./dist/mtl-bundled.d.ts",
+      "import": "./dist/mtl-bundled.js",
+      "require": "./dist/mtl-bundled.cjs"
     },
-    "./materialx-loader": {
-      "types": "./dist/materialx-loader.d.ts",
-      "import": "./dist/materialx-loader.js",
-      "require": "./dist/materialx-loader.cjs"
+    "./glb/bundled": {
+      "types": "./dist/glb-bundled.d.ts",
+      "import": "./dist/glb-bundled.js",
+      "require": "./dist/glb-bundled.cjs"
     },
-    "./stl-loader": {
-      "types": "./dist/stl-loader.d.ts",
-      "import": "./dist/stl-loader.js",
-      "require": "./dist/stl-loader.cjs"
+    "./draco/bundled": {
+      "types": "./dist/draco-bundled.d.ts",
+      "import": "./dist/draco-bundled.js",
+      "require": "./dist/draco-bundled.cjs"
+    },
+    "./materialx/bundled": {
+      "types": "./dist/materialx-bundled.d.ts",
+      "import": "./dist/materialx-bundled.js",
+      "require": "./dist/materialx-bundled.cjs"
+    },
+    "./stl/bundled": {
+      "types": "./dist/stl-bundled.d.ts",
+      "import": "./dist/stl-bundled.js",
+      "require": "./dist/stl-bundled.cjs"
     }
   },
   "sideEffects": false,

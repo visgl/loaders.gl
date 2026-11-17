@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['From v4.0', 'TileJSON', 'Metadata only']}
   links={[
     {label: 'TileJSON format', to: '/docs/modules/tiles/mvt/formats/tilejson'},
-    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source-loader'},
+    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source'},
     {label: 'MVT module', to: '/docs/modules/tiles/mvt'}
   ]}
 />

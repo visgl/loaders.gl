@@ -25,8 +25,10 @@ export const I3SNodePageLoader = {
   version: VERSION,
   mimeTypes: ['application/json'],
   /** Loads the parser-bearing I3S node page loader implementation. */
-  preload: async () =>
-    (await import('./i3s-node-page-loader-with-parser')).I3SNodePageLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./i3s-node-page-loader-with-parser');
+    return loaderModule.I3SNodePageLoaderWithParser;
+  },
   extensions: ['json'],
   options: {
     i3s: {}

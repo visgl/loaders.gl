@@ -84,6 +84,13 @@ function getWorkspaceSourcePath(specifier) {
     return null;
   }
 
+  const manifest = JSON.parse(fs.readFileSync(path.join(moduleDirectory, 'package.json'), 'utf8'));
+  const exportPath = rest.length ? `./${rest.join('/')}` : '.';
+  const exported = manifest.exports?.[exportPath];
+  const declaration = typeof exported === 'object' ? exported.types : undefined;
+  if (declaration?.startsWith('./dist/') && declaration.endsWith('.d.ts')) {
+    return path.join(moduleDirectory, declaration.replace('./dist/', 'src/').replace(/\.d\.ts$/, '.ts'));
+  }
   return path.join(moduleDirectory, 'src', ...rest);
 }
 

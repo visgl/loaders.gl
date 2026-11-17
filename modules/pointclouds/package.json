@@ -42,71 +42,6 @@
       "import": "./dist/las/bundled.js",
       "require": "./dist/las/bundled.cjs"
     },
-    "./las/index": {
-      "types": "./dist/las/index.d.ts",
-      "import": "./dist/las/index.js",
-      "require": "./dist/las/index.cjs"
-    },
-    "./las-copc-loader-types": {
-      "types": "./dist/las-copc-loader-types.d.ts",
-      "import": "./dist/las-copc-loader-types.js",
-      "require": "./dist/las-copc-loader-types.cjs"
-    },
-    "./las-copc-loader": {
-      "types": "./dist/las-copc-loader.d.ts",
-      "import": "./dist/las-copc-loader.js",
-      "require": "./dist/las-copc-loader.cjs"
-    },
-    "./las/las-format": {
-      "types": "./dist/las/las-format.d.ts",
-      "import": "./dist/las/las-format.js",
-      "require": "./dist/las/las-format.cjs"
-    },
-    "./las/las-loader-shared": {
-      "types": "./dist/las/las-loader-shared.d.ts",
-      "import": "./dist/las/las-loader-shared.js",
-      "require": "./dist/las/las-loader-shared.cjs"
-    },
-    "./las-loader-types": {
-      "types": "./dist/las-loader-types.d.ts",
-      "import": "./dist/las-loader-types.js",
-      "require": "./dist/las-loader-types.cjs"
-    },
-    "./las-loader": {
-      "types": "./dist/las-loader.d.ts",
-      "import": "./dist/las-loader.js",
-      "require": "./dist/las-loader.cjs"
-    },
-    "./las-writer": {
-      "types": "./dist/las-writer.d.ts",
-      "import": "./dist/las-writer.js",
-      "require": "./dist/las-writer.cjs"
-    },
-    "./laz-rs-loader-types": {
-      "types": "./dist/laz-rs-loader-types.d.ts",
-      "import": "./dist/laz-rs-loader-types.js",
-      "require": "./dist/laz-rs-loader-types.cjs"
-    },
-    "./laz-rs-loader": {
-      "types": "./dist/laz-rs-loader.d.ts",
-      "import": "./dist/laz-rs-loader.js",
-      "require": "./dist/laz-rs-loader.cjs"
-    },
-    "./lazperf-loader-types": {
-      "types": "./dist/lazperf-loader-types.d.ts",
-      "import": "./dist/lazperf-loader-types.js",
-      "require": "./dist/lazperf-loader-types.cjs"
-    },
-    "./lazperf-loader": {
-      "types": "./dist/lazperf-loader.d.ts",
-      "import": "./dist/lazperf-loader.js",
-      "require": "./dist/lazperf-loader.cjs"
-    },
-    "./las/unbundled": {
-      "types": "./dist/las/unbundled.d.ts",
-      "import": "./dist/las/unbundled.js",
-      "require": "./dist/las/unbundled.cjs"
-    },
     "./pcd": {
       "types": "./dist/pcd/index.d.ts",
       "import": "./dist/pcd/index.js",
@@ -117,36 +52,6 @@
       "import": "./dist/pcd/bundled.js",
       "require": "./dist/pcd/bundled.cjs"
     },
-    "./pcd/index": {
-      "types": "./dist/pcd/index.d.ts",
-      "import": "./dist/pcd/index.js",
-      "require": "./dist/pcd/index.cjs"
-    },
-    "./pcd/pcd-format": {
-      "types": "./dist/pcd/pcd-format.d.ts",
-      "import": "./dist/pcd/pcd-format.js",
-      "require": "./dist/pcd/pcd-format.cjs"
-    },
-    "./pcd-loader-types": {
-      "types": "./dist/pcd-loader-types.d.ts",
-      "import": "./dist/pcd-loader-types.js",
-      "require": "./dist/pcd-loader-types.cjs"
-    },
-    "./pcd-loader": {
-      "types": "./dist/pcd-loader.d.ts",
-      "import": "./dist/pcd-loader.js",
-      "require": "./dist/pcd-loader.cjs"
-    },
-    "./pcd-writer": {
-      "types": "./dist/pcd-writer.d.ts",
-      "import": "./dist/pcd-writer.js",
-      "require": "./dist/pcd-writer.cjs"
-    },
-    "./pcd/unbundled": {
-      "types": "./dist/pcd/unbundled.d.ts",
-      "import": "./dist/pcd/unbundled.js",
-      "require": "./dist/pcd/unbundled.cjs"
-    },
     "./ply": {
       "types": "./dist/ply/index.d.ts",
       "import": "./dist/ply/index.js",
@@ -156,36 +61,6 @@
       "types": "./dist/ply/bundled.d.ts",
       "import": "./dist/ply/bundled.js",
       "require": "./dist/ply/bundled.cjs"
-    },
-    "./ply/index": {
-      "types": "./dist/ply/index.d.ts",
-      "import": "./dist/ply/index.js",
-      "require": "./dist/ply/index.cjs"
-    },
-    "./ply/ply-format": {
-      "types": "./dist/ply/ply-format.d.ts",
-      "import": "./dist/ply/ply-format.js",
-      "require": "./dist/ply/ply-format.cjs"
-    },
-    "./ply-loader-types": {
-      "types": "./dist/ply-loader-types.d.ts",
-      "import": "./dist/ply-loader-types.js",
-      "require": "./dist/ply-loader-types.cjs"
-    },
-    "./ply-loader": {
-      "types": "./dist/ply-loader.d.ts",
-      "import": "./dist/ply-loader.js",
-      "require": "./dist/ply-loader.cjs"
-    },
-    "./ply-writer": {
-      "types": "./dist/ply-writer.d.ts",
-      "import": "./dist/ply-writer.js",
-      "require": "./dist/ply-writer.cjs"
-    },
-    "./ply/unbundled": {
-      "types": "./dist/ply/unbundled.d.ts",
-      "import": "./dist/ply/unbundled.js",
-      "require": "./dist/ply/unbundled.cjs"
     },
     "./las-worker.js": {
       "import": "./dist/las-worker.js"
@@ -216,12 +91,11 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "copy-wasm-files-las": "cp src/las/libs/laz-rs-wasm/*.wasm* dist/las/libs/laz-rs-wasm/",
     "build-worker-las": "esbuild src/las/workers/las-worker.ts --bundle --outfile=dist/las-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-pcd": "node ../../scripts/build-codec-worker.mjs src/pcd/workers/pcd-worker.ts --bundle --outfile=dist/pcd-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-ply": "node ../../scripts/build-codec-worker.mjs src/ply/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
-    "pre-build": "npm run copy-wasm-files-las && npm run build-worker-las && npm run build-worker-pcd && npm run build-worker-ply && npm run build-format-subpaths && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker-las && npm run build-worker-pcd && npm run build-worker-ply && npm run build-format-subpaths && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
@@ -231,9 +105,5 @@
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
-  },
-  "optionalDependencies": {
-    "copc": "0.0.8",
-    "laz-perf": "^0.0.7"
   }
 }

@@ -8,7 +8,7 @@ import {
   I3SNodePageSchema,
   I3SPointCloudSceneLayerSchema,
   I3SSceneLayerSchema
-} from '@loaders.gl/tiles-3d/i3s/i3s-zod-schema';
+} from '@loaders.gl/tiles-3d/i3s-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 

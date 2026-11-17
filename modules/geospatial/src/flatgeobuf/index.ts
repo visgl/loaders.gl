@@ -12,5 +12,9 @@ export type {
   FlatGeobufReadOptions,
   FlatGeobufSourceExplain,
   FlatGeobufSourceLoaderOptions
-} from './flatgeobuf-source-loader';
-export {FlatGeobufVectorSource} from './flatgeobuf-source-loader';
+} from './flatgeobuf-source';
+export {FlatGeobufVectorSource} from './flatgeobuf-source';
+
+export {FlatGeobufWorkerLoaderWithParser, FlatGeobufLoaderWithParser} from '../flatgeobuf-loader';
+
+export {createFlatGeobufSource} from '../flatgeobuf-source';

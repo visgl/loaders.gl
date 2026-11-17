@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load} from '@loaders.gl/core';
-import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
+import {KMLLoader} from '@loaders.gl/geospatial/kml';
 const KML_URL = '@loaders.gl/geospatial/kml/test/data/kml/KML_Samples.kml';
 const KML_LINESTRING_URL = '@loaders.gl/geospatial/kml/test/data/kml/linestring';
 const INVALID_KML = `\

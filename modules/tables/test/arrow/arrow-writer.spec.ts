@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {validateWriter} from 'test/common/conformance';
 import * as arrow from 'apache-arrow';
 import {parseSync, encode, encodeSync} from '@loaders.gl/core';
-import {ArrowWriter} from '@loaders.gl/tables/arrow/index';
+import {ArrowWriter} from '@loaders.gl/tables/arrow';
 import {ArrowLoader} from '@loaders.gl/tables/arrow/bundled';
 test('ArrowWriter#writer conformance', () => {
   validateWriter(ArrowWriter, 'ArrowWriter');

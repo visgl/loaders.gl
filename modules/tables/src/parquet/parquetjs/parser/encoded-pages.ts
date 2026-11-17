@@ -4,7 +4,7 @@
 
 import type {ParquetEncodedPage, ParquetEncodedPageSection} from '../../parquet-encoded-page-types';
 import type {ParquetCompression, ParquetField} from '../schema/declare';
-import {Encoding, PageType, type PageHeader} from '../parquet-thrift/index';
+import {Encoding, PageType, type PageHeader} from '../parquet-thrift';
 import {crc32} from '../utils/crc32';
 import {readUInt32LE} from '../utils/binary-utils';
 import {decodePageHeader, getBitWidth, getThriftEnum} from '../utils/read-utils';

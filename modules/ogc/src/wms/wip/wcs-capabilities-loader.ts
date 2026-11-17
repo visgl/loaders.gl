@@ -39,7 +39,10 @@ export const WCSCapabilitiesLoader = {
     wms: {}
   },
   /** Loads the parser-bearing WCS capabilities loader implementation. */
-  preload: async () => (await import('./wcs-capabilities-loader-with-parser')).WCSCapabilitiesLoaderWithParser
+  preload: async () => {
+    const loaderModule = await import('./wcs-capabilities-loader-with-parser');
+    return loaderModule.WCSCapabilitiesLoaderWithParser;
+  }
 } as const satisfies Loader<WCSCapabilities, never, WCSLoaderOptions>;
 
 function testXMLFile(text: string): boolean {

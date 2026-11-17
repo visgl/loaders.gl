@@ -28,7 +28,7 @@ import {
   PageType,
   RowGroup,
   Type
-} from '../parquet-thrift/index';
+} from '../parquet-thrift';
 import {
   ParquetRowGroup,
   ParquetCompression,

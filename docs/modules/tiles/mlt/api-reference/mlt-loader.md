@@ -18,7 +18,7 @@ import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
   links={[
     {label: 'MLT module', to: '/docs/modules/tiles/mlt'},
     {label: 'MLT format', to: '/docs/modules/tiles/mlt/formats/mlt'},
-    {label: 'MLT source', to: '/docs/modules/tiles/mlt/api-reference/mlt-source-loader'}
+    {label: 'MLT source', to: '/docs/modules/tiles/mlt/api-reference/mlt-source'}
   ]}
 />
 
@@ -139,7 +139,7 @@ To preserve the legacy GeoJSON default, set `mlt.shape: 'geojson-table'` explici
 ## Additional examples
 
 - [loaders.gl MLT website example](/examples/tiles/mlt).
-- [MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) for URL tile sets.
+- [MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-source) for URL tile sets.
 
 ## Attribution
 

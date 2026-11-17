@@ -32,7 +32,10 @@ export const PotreeBinLoader = {
   // Unfortunately binary potree files have no header bytes, no test possible
   // test: ['...'],
   /** Loads the parser-bearing potree binary attribute loader implementation. */
-  preload: async () => (await import('./potree-bin-loader-with-parser')).PotreeBinLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./potree-bin-loader-with-parser');
+    return loaderModule.PotreeBinLoaderWithParser;
+  },
   binary: true,
   options: {potree: {shape: 'arrow', colorFormat: 'uint8norm'}}
   // @ts-ignore

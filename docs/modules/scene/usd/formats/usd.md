@@ -119,7 +119,7 @@ Input is limited to 64 MiB. Logical collections are limited to four million entr
 
 ### Loader API and runtime
 
-The metadata export is `USDLoader` from `@loaders.gl/scene/usd`. For direct async parsing, import `USDLoaderWithParser` from `@loaders.gl/scene/usd-loader` and pass it to core `parse`. Do not use the metadata loader with `parseSync`.
+The metadata export is `USDLoader` from `@loaders.gl/scene/usd`. For direct async parsing, import `USDLoaderWithParser` from `@loaders.gl/scene/usd` and pass it to core `parse`. Do not use the metadata loader with `parseSync`.
 
 The renderer-free crate decoder is adapted from THREE.js r187 with retained MIT terms. It adds no THREE.js runtime import or package dependency. Applications receive the same USDStage contract used by the ASCII loader.
 

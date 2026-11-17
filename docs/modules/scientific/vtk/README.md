@@ -25,7 +25,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Read VTK as data."
   description="Extends existing scientific/vtk readers; no universal VTK coverage"
   tone="cyan"
-  items={[{"label":"Input","value":"Legacy ASCII; XML ASCII and uncompressed inline base64"},{"label":"Output","value":"Legacy VTKDataset or VTKXMLDataset pieces and arrays"},{"label":"Loader","value":"VTKLoader · @loaders.gl/scientific"},{"label":"Parser","value":"@loaders.gl/scientific/vtk-loader"}]}
+  items={[{"label":"Input","value":"Legacy ASCII; XML ASCII and uncompressed inline base64"},{"label":"Output","value":"Legacy VTKDataset or VTKXMLDataset pieces and arrays"},{"label":"Loader","value":"VTKLoader · @loaders.gl/scientific"},{"label":"Parser","value":"@loaders.gl/scientific/vtk"}]}
 />
 
 :::note Availability
@@ -87,7 +87,7 @@ The standard loader validates legacy connectivity and point/cell attribute count
 
 ```typescript
 import {parseSync} from '@loaders.gl/core';
-import {VTKLoaderWithParser} from '@loaders.gl/scientific/vtk-loader';
+import {VTKLoaderWithParser} from '@loaders.gl/scientific/vtk';
 import {parseVTKLegacy, parseVTKXML} from '@loaders.gl/scientific/vtk';
 
 const dataset = parseSync(text, VTKLoaderWithParser);

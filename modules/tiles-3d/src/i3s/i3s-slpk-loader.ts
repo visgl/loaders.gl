@@ -41,5 +41,8 @@ export const SLPKLoader = {
     }
   },
   /** Loads the parser-bearing SLPK loader implementation. */
-  preload: async () => (await import('./i3s-slpk-loader-with-parser')).SLPKLoaderWithParser
+  preload: async () => {
+    const loaderModule = await import('./i3s-slpk-loader-with-parser');
+    return loaderModule.SLPKLoaderWithParser;
+  }
 } as const satisfies Loader<ArrayBuffer, never, SLPKLoaderOptions>;

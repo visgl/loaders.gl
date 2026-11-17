@@ -5,14 +5,14 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
-import {CSVTableSource} from '@loaders.gl/tables/csv/index';
-import {NDJSONTableSource} from '@loaders.gl/tables/json/index';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
+import {CSVTableSource} from '@loaders.gl/tables/csv';
+import {NDJSONTableSource} from '@loaders.gl/tables/json';
 import {DataSourceManager, type TableQueryExecutionSummary} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {DeltaTableSource} from '@loaders.gl/tables/delta';
 import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/core/scan';
 
@@ -33,7 +33,7 @@ test('exposes table-format sources from their owning module', () => {
 });
 
 test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () => {
-  const parquetBytes = await ParquetJSWriter.encode({
+  const parquetBytes = await ParquetWriter.encode({
     shape: 'object-row-table',
     schema: OUTPUT_SCHEMA,
     data: [
@@ -137,7 +137,7 @@ test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () =>
 });
 
 test('federates an actual Delta snapshot with another table source', async () => {
-  const parquetBytes = await ParquetJSWriter.encode({
+  const parquetBytes = await ParquetWriter.encode({
     shape: 'object-row-table',
     schema: OUTPUT_SCHEMA,
     data: [

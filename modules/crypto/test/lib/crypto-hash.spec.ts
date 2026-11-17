@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/core/loader-utils';
 import {fetchFile, loadInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables/csv/index';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 import {CryptoHash} from '@loaders.gl/crypto';
 import CryptoJS from 'crypto-js';
 const CSV_URL = '@loaders.gl/tables/csv/test/data/sample-very-long.csv';

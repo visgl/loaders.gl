@@ -57,13 +57,6 @@ test.each(['tables'])('Parquet worker assets remain executable under %s', async 
   expect(table.getChild('id')?.get(0)).toBeTypeOf('number');
 });
 
-test('canonical Parquet WASM export resolves to an emitted binary', async () => {
-  const response = await fetch('/modules/tables/dist/parquet/parquet_wasm_bg.wasm');
-  expect(response.ok).toBe(true);
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  expect([...bytes.slice(0, 4)]).toEqual([0, 97, 115, 109]);
-});
-
 test('GeoJSON worker preserves binary geometry typed arrays', async () => {
   const input = JSON.stringify({
     type: 'FeatureCollection',

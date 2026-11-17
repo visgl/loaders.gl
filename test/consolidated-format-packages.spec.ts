@@ -11,7 +11,7 @@ import {OBJLoader} from '@loaders.gl/scene/obj';
 import {USDLoader} from '@loaders.gl/scene/usd';
 import {WKTLoader} from '@loaders.gl/geospatial/wkt';
 import {WKBLoader} from '@loaders.gl/geospatial/wkb';
-import {TWKBLoader} from '@loaders.gl/geospatial/twkb';
+import {TWKBLoader} from '@loaders.gl/geospatial/wkb';
 
 test.each([
   [LASLoader, 'pointclouds'],

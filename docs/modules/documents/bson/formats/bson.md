@@ -76,7 +76,7 @@ for explicit scalar construction and numeric promotion options.
 ## loaders.gl support
 
 Use `BSONLoader` from `@loaders.gl/documents` and `BSONWriter` from
-`@loaders.gl/documents/bson-writer`, or call
+`@loaders.gl/documents/bson`, or call
 `parseBSONSync()` and `encodeBSONSync()` directly. BSON-specific scalars use
 `BSONObjectId` or values constructed with `createBSONValue()`. Code and regular
 expressions are preserved as data and are never evaluated while decoding.

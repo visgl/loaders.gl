@@ -6,7 +6,7 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/
 import * as arrow from 'apache-arrow';
 import {encode, load} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter, ParquetReader} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter, ParquetReader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -53,7 +53,7 @@ test('ParquetJS logical types round-trip into exact Arrow vectors', async () => 
     ]
   };
 
-  const parquetBuffer = await encode(input, ParquetJSWriter, {worker: false});
+  const parquetBuffer = await encode(input, ParquetWriter, {worker: false});
   const output = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
     parquet: {shape: 'arrow'}

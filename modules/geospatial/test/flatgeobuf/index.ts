@@ -3,4 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 import './flatgeobuf-loader.spec';
-import './flatgeobuf-source-loader.spec';
+import './flatgeobuf-source.spec';

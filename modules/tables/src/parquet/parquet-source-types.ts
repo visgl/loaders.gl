@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {RecordBatch, Table} from 'apache-arrow';
-import type * as parquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
 
 import type {
   DataSourceOptions,
@@ -23,7 +22,7 @@ import type {
   ColumnarPredicateValue
 } from '@loaders.gl/core/loader-utils';
 import type {TableQueryExplain} from '@loaders.gl/core/loader-utils';
-import type {FileMetaData} from './parquetjs/parquet-thrift/index';
+import type {FileMetaData} from './parquetjs/parquet-thrift';
 import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Version validators captured from an HTTP Parquet object. */
@@ -508,8 +507,6 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
     onTelemetry?: (event: ParquetTelemetryEvent) => void;
     /** Overrides the package-local worker used for selective source decoding. */
     workerUrl?: string;
-    /** Retained for source API compatibility; the TypeScript backend does not initialize WASM. */
-    wasmUrl?: parquetWasm.InitInput | Promise<parquetWasm.InitInput>;
   };
   /** Byte-range scheduling and diagnostics configuration. */
   rangeRequests?: ParquetRangeRequestOptions;

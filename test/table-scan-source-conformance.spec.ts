@@ -5,11 +5,11 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
-import {CSVTableSource} from '@loaders.gl/tables/csv/index';
-import {NDJSONTableSource} from '@loaders.gl/tables/json/index';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
+import {CSVTableSource} from '@loaders.gl/tables/csv';
+import {NDJSONTableSource} from '@loaders.gl/tables/json';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 
 import {describeTableScanSourceConformance} from './common/table-scan-source-conformance';
 
@@ -53,7 +53,7 @@ describeTableScanSourceConformance({
 describeTableScanSourceConformance({
   name: CONFORMANCE_SOURCE_NAMES[3],
   createFixture: async () => {
-    const bytes = await ParquetJSWriter.encode({
+    const bytes = await ParquetWriter.encode({
       shape: 'object-row-table',
       schema: {
         fields: [

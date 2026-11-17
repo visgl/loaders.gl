@@ -1,4 +1,4 @@
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -6,19 +6,19 @@ import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
 import {beforeAll, describe, expect, test} from 'vitest';
 
 import {createDataSourceSync, isBrowser} from '@loaders.gl/core';
-import type {ParquetBatch, ParquetSourceMetadata} from '@loaders.gl/tables/parquet/index';
-import type {ParquetSourceLoaderOptions} from '@loaders.gl/tables/parquet/index';
+import type {ParquetBatch, ParquetSourceMetadata} from '@loaders.gl/tables/parquet';
+import type {ParquetSourceLoaderOptions} from '@loaders.gl/tables/parquet';
 import {
   ParquetSource,
 
-} from '@loaders.gl/tables/parquet-source-loader';
+} from '@loaders.gl/tables/parquet';
 import * as arrow from 'apache-arrow';
 
 import {
   decodeParquetPageStatisticsValue,
   getParquetIndexRange
 } from '../../src/parquet/lib/parquet-page-index';
-import {loadWasm} from '../../src/parquet/lib/utils/load-wasm';
+import {loadWasm} from '../../../../website/src/alternate-loaders/parquet/load-wasm';
 import type {ParquetField} from '../../src/parquet/parquetjs/schema/declare';
 
 const ROW_COUNT = 8192;

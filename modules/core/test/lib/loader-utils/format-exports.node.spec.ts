@@ -52,7 +52,9 @@ const FORMAT_EXPORTS = {
   ],
   images: ['ImageFormat', 'ImageBitmapFormat'],
   'tables/json': ['JSONFormat', 'GeoJSONFormat', 'NDJSONFormat', 'NDGeoJSONFormat'],
-  'geospatial/kml': ['KMLFormat', 'KMZFormat', 'GPXFormat', 'TCXFormat'],
+  'geospatial/kml': ['KMLFormat', 'KMZFormat'],
+  'geospatial/gpx': ['GPXFormat'],
+  'geospatial/tcx': ['TCXFormat'],
   'pointclouds/las': ['LASFormat'],
   'tiles/mlt': ['MLTFormat'],
   'tiles/mvt': ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
@@ -64,7 +66,7 @@ const FORMAT_EXPORTS = {
   'tiles/pmtiles': ['PMTilesFormat'],
   'tiles-3d/potree': ['PotreeFormat', 'PotreeHierarchyChunkFormat', 'PotreeBinFormat'],
   'geospatial/shapefile': ['ShapefileFormat', 'SHPFormat', 'DBFFormat'],
-  'images/texture-format': [
+  'images/texture': [
     'BasisTextureFormat',
     'CompressedTextureFormat',
     'CrunchTextureFormat',
@@ -72,8 +74,9 @@ const FORMAT_EXPORTS = {
     'DDSTextureFormat',
     'KTX2BasisTextureFormat'
   ],
-  'images/video-format': ['VideoFormat'],
-  'geospatial/wkt': ['WKTFormat', 'WKBFormat', 'HexWKBFormat', 'TWKBFormat', 'WKTCRSFormat'],
+  'images/video': ['VideoFormat'],
+  'geospatial/wkt': ['WKTFormat', 'WKTCRSFormat'],
+  'geospatial/wkb': ['WKBFormat', 'HexWKBFormat', 'TWKBFormat'],
   'ogc/wms': [
     'GMLFormat',
     'WMSCapabilitiesFormat',

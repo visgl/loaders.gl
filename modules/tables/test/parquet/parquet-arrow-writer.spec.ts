@@ -6,26 +6,22 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/
 import { expect, test } from "vitest";
 import { encode, load } from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import * as parquet from '@loaders.gl/tables/parquet/index';
+import * as parquet from '@loaders.gl/tables/parquet';
 import * as bundledParquet from '@loaders.gl/tables/parquet/bundled';
-import * as parquetSource from '@loaders.gl/tables/parquet-source-loader';
-import * as unbundledParquet from '@loaders.gl/tables/parquet/unbundled';
-import {ParquetJSWriter, ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet/index';
+import * as parquetSource from '@loaders.gl/tables/parquet';
+import {ParquetWriter, ParquetLoader} from '@loaders.gl/tables/parquet';
 import * as arrow from 'apache-arrow';
 test('ParquetWriter#writer objects', () => {
-    expect(ParquetWriter, 'ParquetWriter').toBeTruthy();
     expect(ParquetJSLoader, 'ParquetJSLoader').toBeTruthy();
-    expect(ParquetJSWriter, 'ParquetJSWriter').toBeTruthy();
+    expect(ParquetWriter, 'ParquetWriter').toBeTruthy();
 });
 test('ParquetSource#public exports', () => {
-    expect('ParquetSource' in parquet, 'root does not export runtime ParquetSource').toBeFalsy();
+    expect(parquet.ParquetSource, 'format exports runtime ParquetSource').toBeTruthy();
     expect(parquet.PARQUET_SOURCE_CAPABILITIES, 'root exports source capabilities').toBeTruthy();
     expect(parquetSource.ParquetSource, 'source subpath exports runtime source').toBeTruthy();
     expect(parquetSource.PARQUET_SOURCE_CAPABILITIES, 'source subpath exports capabilities').toBeTruthy();
     expect(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource').toBeTruthy();
     expect(bundledParquet.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities').toBeTruthy();
-    expect(unbundledParquet.ParquetSource, 'unbundled entry point exports ParquetSource').toBeTruthy();
-    expect(unbundledParquet.PARQUET_SOURCE_CAPABILITIES, 'unbundled exports source capabilities').toBeTruthy();
 });
 test('ParquetWriter#removed Arrow variant exports are absent', () => {
     expect('ParquetArrowLoader' in parquet, 'root does not export ParquetArrowLoader').toBeFalsy();
@@ -35,8 +31,6 @@ test('ParquetWriter#removed Arrow variant exports are absent', () => {
     expect('ParquetArrowWriterOptions' in parquet, 'root does not export ParquetArrowWriterOptions').toBeFalsy();
     expect('ParquetArrowLoader' in bundledParquet, 'bundled does not export ParquetArrowLoader').toBeFalsy();
     expect('ParquetArrowWorkerLoader' in bundledParquet, 'bundled does not export ParquetArrowWorkerLoader').toBeFalsy();
-    expect('ParquetArrowLoader' in unbundledParquet, 'unbundled does not export ParquetArrowLoader').toBeFalsy();
-    expect('ParquetArrowWorkerLoader' in unbundledParquet, 'unbundled does not export ParquetArrowWorkerLoader').toBeFalsy();
 });
 test('ParquetWriter#removed JSON aliases are absent', () => {
     expect('ParquetJSONLoader' in parquet, 'ParquetJSONLoader removed').toBeFalsy();

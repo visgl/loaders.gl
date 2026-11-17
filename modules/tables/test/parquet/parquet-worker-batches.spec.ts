@@ -8,8 +8,8 @@ import {encode, load, loadInBatches, parse, parseFile, parseInBatches} from '@lo
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
-import {ParquetLoader, ParquetJSWriter} from '@loaders.gl/tables/parquet';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
 
 const rows = [
   {id: 1n, label: 'repeat', bytes: new Uint8Array([1]), unused: 10, tags: ['first']},
@@ -38,7 +38,7 @@ const table: ObjectRowTable = {
 };
 let input: ArrayBuffer;
 beforeAll(async () => {
-  input = await encode(table, ParquetJSWriter, {
+  input = await encode(table, ParquetWriter, {
     core: {worker: false},
     parquet: {compression: 'UNCOMPRESSED', dictionary: true, rowGroupSize: 3}
   });
@@ -160,7 +160,7 @@ test('loadInBatches preserves core metadata and releases the worker on early ret
 
 test('encrypted Parquet batches retain their key callback on the caller', async () => {
   const keyRetriever = vi.fn(() => new Uint8Array(16).fill(7));
-  const encryptedInput = await encode(table, ParquetJSWriter, {
+  const encryptedInput = await encode(table, ParquetWriter, {
     core: {worker: false},
     parquet: {compression: 'UNCOMPRESSED', encryption: {keyRetriever}}
   });

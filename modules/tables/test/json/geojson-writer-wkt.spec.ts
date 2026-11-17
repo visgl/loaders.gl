@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 
 import {encodeTableAsText} from '@loaders.gl/core';
-import {GeoJSONWriter} from '@loaders.gl/tables/json/index';
+import {GeoJSONWriter} from '@loaders.gl/tables/geojson';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 test('GeoJSONWriter auto-detects and converts a WKT geometry column', async () => {

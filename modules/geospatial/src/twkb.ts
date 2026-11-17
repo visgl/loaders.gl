@@ -4,3 +4,5 @@
 
 export {TWKBLoader} from './wkt/twkb-loader-types';
 export {TWKBWriter} from './wkt/twkb-writer';
+
+export {type WKBLoaderOptions} from './wkt/twkb-loader-types';

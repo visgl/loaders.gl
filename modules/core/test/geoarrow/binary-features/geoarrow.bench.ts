@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {JSONLoader} from '@loaders.gl/tables/json/index';
+import {JSONLoader} from '@loaders.gl/tables/json';
 import {load} from '@loaders.gl/core';
 import {earcut} from '@math.gl/geometry';
 import {getGeoarrowVertexCount} from '@loaders.gl/core/geoarrow';

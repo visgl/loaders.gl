@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {parseLanceManifest} from '../../src/lance/lance-manifest';
-import {LanceLoaderWithParser} from '@loaders.gl/tables/lance-loader';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance';
 import {LanceDecoderUnavailableError} from '../../src/lance/lance-errors';
 
 /** Encodes an unsigned integer as protobuf varint bytes. */

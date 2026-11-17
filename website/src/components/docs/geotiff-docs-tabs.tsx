@@ -40,7 +40,7 @@ const GEOTIFF_DOCS_TABS: GeoTiffDocsTab[] = [
   {
     id: 'geotiffsource',
     label: 'GeoTIFFLoaderWithParser',
-    href: '/docs/modules/raster/geotiff/api-reference/geotiff-source-loader'
+    href: '/docs/modules/raster/geotiff/api-reference/geotiff-source'
   },
   {
     id: 'ometiffsource',

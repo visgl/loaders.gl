@@ -117,15 +117,15 @@ const imageBitmap = await load('image.png', ImageLoader);
 ```
 
 Direct parser access uses flat subpaths and `*WithParser` exports. For example,
-`BasisLoaderWithParser` is available from `@loaders.gl/images/basis-loader`.
-Texture writers use direct subpaths such as `@loaders.gl/images/ktx2-basis-writer`;
-manifest schemas use `@loaders.gl/images/texture-manifest-schema`.
+`BasisLoaderWithParser` is available from `@loaders.gl/images/basis`.
+Texture writers use direct subpaths such as `@loaders.gl/images/basis`;
+manifest schemas use `@loaders.gl/images/texture`.
 
 ### Direct parser and sync access
 
 Direct access does not make an asynchronous loader synchronous. `ImageLoaderWithParser`
 and `BasisLoaderWithParser` still decode asynchronously. NPY arrays now belong to [scientific](/docs/modules/scientific/api-reference/npy-loader).
-Import `NPYLoaderWithParser` from `@loaders.gl/scientific/npy-loader` for synchronous array parsing.
+Import `NPYLoaderWithParser` from `@loaders.gl/scientific/npy` for synchronous array parsing.
 
 ## Node image codecs
 

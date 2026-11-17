@@ -12,7 +12,7 @@ import type {
 import type {
   ParquetDatasetFile,
   ParquetDatasetFileQuery
-} from '@loaders.gl/tables/parquet-dataset-source';
+} from '@loaders.gl/tables/parquet';
 
 const OVERTURE_STAC_ROOT = 'https://stac.overturemaps.org/catalog.json';
 const PARQUET_MEDIA_TYPE = 'application/vnd.apache.parquet';

@@ -36,4 +36,4 @@ precedence. Explicit keys override merged values regardless of their position.
 values. A quoted `"<<"` is a literal key, not a merge directive.
 
 For synchronous parsing, import `YAMLLoaderWithParser` from
-`@loaders.gl/documents/yaml-loader` and pass it to `parseSync`.
+`@loaders.gl/documents/yaml` and pass it to `parseSync`.

@@ -134,13 +134,13 @@ test.each([
   expect(entry[loaderName].version).toBe(manifest.version);
 });
 
-test('emitted bundled and unbundled ESM entrypoints keep valid index references', () => {
+test('emitted bundled and default ESM entrypoints keep valid index references', () => {
   const result = execFileSync(
     process.execPath,
     [
       '--input-type=module',
       '--eval',
-      `await Promise.all(['@loaders.gl/services/bundled', '@loaders.gl/services/unbundled', '@loaders.gl/splats/bundled', '@loaders.gl/splats/unbundled'].map(specifier => import(specifier))); process.stdout.write('loaded');`
+      `await Promise.all(['@loaders.gl/services/bundled', '@loaders.gl/services', '@loaders.gl/splats/bundled', '@loaders.gl/splats'].map(specifier => import(specifier))); process.stdout.write('loaded');`
     ],
     {encoding: 'utf8'}
   );

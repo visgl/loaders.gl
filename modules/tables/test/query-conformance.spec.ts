@@ -9,13 +9,13 @@ import {query, queryInBatches} from '@loaders.gl/core/scan';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
-import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv/index';
-import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json/index';
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv';
+import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 import {ParquetLoader} from '@loaders.gl/tables';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 
 const rows = [
   {id: 1, label: 'a', value: null},
@@ -55,7 +55,7 @@ beforeAll(async () => {
   data.schema.metadata.set('fixture', 'query-conformance');
   data.schema.fields[1].metadata.set('label-metadata', 'preserved');
   ipcBytes = arrow.tableToIPC(data.slice(0, 2).concat(data.slice(2, 4), data.slice(4)), 'stream');
-  parquetBytes = await ParquetJSWriter.encode(
+  parquetBytes = await ParquetWriter.encode(
     {shape: 'object-row-table', schema, data: rows},
     {parquet: {rowGroupSize: 2, writeStatistics: true}}
   );

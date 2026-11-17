@@ -42,7 +42,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 `NPYLoader` and `NPYFormat` are metadata exports from the lightweight package root.
-For parser access use the flat `@loaders.gl/scientific/npy-loader` subpath.
+For parser access use the flat `@loaders.gl/scientific/npy` subpath.
 
 
 ## Format guides

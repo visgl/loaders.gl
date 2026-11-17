@@ -6,8 +6,8 @@ export {PMTilesLoaderWithParser} from './pmtiles-loader-with-parser';
 export {PMTilesFormat} from './pmtiles-format';
 
 export type {PMTilesMetadata} from './lib/parse-pmtiles';
-export type {PMTilesRangeRequestOptions, PMTilesSourceLoaderOptions} from './pmtiles-source-loader';
-export {PMTilesTileSource} from './pmtiles-source-loader';
+export type {PMTilesRangeRequestOptions, PMTilesSourceLoaderOptions} from './pmtiles-source';
+export {PMTilesTileSource} from './pmtiles-source';
 
 export {PMTilesLoader, PMTilesLoader as _PMTilesLoader} from './pmtiles-loader';
 export type {PMTilesLoaderOptions} from './pmtiles-loader';

@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {HexWKBLoader} from '@loaders.gl/geospatial/wkt';
+import {HexWKBLoader} from '@loaders.gl/geospatial/wkb';
 const isHexWKB = HexWKBLoader.testText;
 test('datasetUtils.isHexWKB', () => {
   expect(isHexWKB(''), 'empty string is not a valid hex wkb').toBeFalsy();

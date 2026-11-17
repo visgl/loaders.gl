@@ -10,7 +10,7 @@ import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-cod
 import type {Table} from 'apache-arrow';
 import type {GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 import {convert} from '@loaders.gl/core/schema-utils';
-import {ShapefileLoader, SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {ShapefileLoader, SHPLoader} from '@loaders.gl/geospatial/shapefile';
 
 const SHAPEFILE_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const POLYGON_FIXTURES = ['polygons', 'multipolygon_with_holes'] as const;

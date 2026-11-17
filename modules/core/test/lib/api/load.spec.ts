@@ -12,8 +12,8 @@ import {
   isBrowser,
   resolvePath
 } from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
-import {JSONLoader} from '@loaders.gl/tables/json/index';
+import {ArrowLoader} from '@loaders.gl/tables/arrow';
+import {JSONLoader} from '@loaders.gl/tables/json';
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
 const JSON_DATA = [{col1: 22, col2: 'abc'}];

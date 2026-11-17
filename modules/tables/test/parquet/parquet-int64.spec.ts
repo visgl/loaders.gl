@@ -5,7 +5,7 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import * as arrow from 'apache-arrow';
 import {encode, load} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -24,7 +24,7 @@ async function createExactInt64Fixture(): Promise<ArrayBuffer> {
     data: EXACT_INT64_VALUES.map(value => ({value}))
   };
 
-  return await encode(table, ParquetJSWriter, {worker: false});
+  return await encode(table, ParquetWriter, {worker: false});
 }
 
 test('ParquetJSLoader preserves physical INT64 values as exact bigint object rows', async () => {
@@ -65,7 +65,7 @@ test('Parquet INT64 statistics retain values beyond safe integers', () => {
   expect(readUInt64LE(unsignedBytes, 0)).toBe(18446744073709551615n);
 });
 
-test('ParquetJSWriter rejects unsafe number inputs instead of silently corrupting INT64 values', async () => {
+test('ParquetWriter rejects unsafe number inputs instead of silently corrupting INT64 values', async () => {
   const table: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -75,7 +75,7 @@ test('ParquetJSWriter rejects unsafe number inputs instead of silently corruptin
     data: [{value: Number.MAX_SAFE_INTEGER + 1}]
   };
 
-  await expect(encode(table, ParquetJSWriter, {worker: false})).rejects.toThrow(
+  await expect(encode(table, ParquetWriter, {worker: false})).rejects.toThrow(
     'invalid value for INT64'
   );
 });

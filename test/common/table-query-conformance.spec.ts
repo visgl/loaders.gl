@@ -6,8 +6,8 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
-import {ParquetDatasetSource} from '@loaders.gl/tables/parquet-dataset-source';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet';
 import {queryArrowTable} from '@loaders.gl/core/scan/arrow-query';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
@@ -63,7 +63,7 @@ async function encodeParquetRows(rows: Array<{name: string; score: number | null
       },
       data: rows
     } satisfies ObjectRowTable,
-    ParquetJSWriter
+    ParquetWriter
   );
   return new Blob([data]);
 }

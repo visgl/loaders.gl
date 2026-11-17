@@ -49,8 +49,8 @@ export type {MVTWriterOptions} from './lib/encode-mvt';
 
 // MVTSourceLoader
 
-export {MVTTileSource} from './mvt-source-loader';
-export type {MVTSourceLoaderOptions} from './mvt-source-loader';
+export {MVTTileSource} from './mvt-source';
+export type {MVTSourceLoaderOptions} from './mvt-source';
 
 // TableTileLoader (dynamically tiles a table)
 

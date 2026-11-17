@@ -25,7 +25,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Read IES as data."
   description="No normalization, symmetry expansion or external tilt fetches"
   tone="pink"
-  items={[{"label":"Input","value":"LM-63-1991/1995/2002; Type C; TILT=NONE"},{"label":"Output","value":"IESProfile with Float64 angles and raw candela samples"},{"label":"Loader","value":"IESLoader · @loaders.gl/images"},{"label":"Parser","value":"@loaders.gl/images/ies-loader"}]}
+  items={[{"label":"Input","value":"LM-63-1991/1995/2002; Type C; TILT=NONE"},{"label":"Output","value":"IESProfile with Float64 angles and raw candela samples"},{"label":"Loader","value":"IESLoader · @loaders.gl/images"},{"label":"Parser","value":"@loaders.gl/images/ies"}]}
 />
 
 :::note Availability
@@ -84,7 +84,7 @@ Numeric headers, angle ordering, dimensions, and exact sample counts are checked
 
 ```typescript
 import {parseSync} from '@loaders.gl/core';
-import {IESLoaderWithParser} from '@loaders.gl/images/ies-loader';
+import {IESLoaderWithParser} from '@loaders.gl/images/ies';
 
 const profile = parseSync(text, IESLoaderWithParser);
 ```

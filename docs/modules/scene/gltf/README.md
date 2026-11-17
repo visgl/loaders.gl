@@ -56,7 +56,7 @@ npm install @loaders.gl/scene
 npm install @loaders.gl/core
 ```
 
-Draco-compressed glTF geometry is supported by the scene package. Configure bundled runtime URLs through `@loaders.gl/scene/draco-library-options` when loading without CDN access.
+Draco-compressed glTF geometry is supported by the scene package. Configure bundled runtime URLs through `@loaders.gl/scene/draco` when loading without CDN access.
 
 ## GLTFIterator API
 

@@ -8,9 +8,5 @@ export {
   WKTLoaderWithParser as WKTLoader,
   WKTWorkerLoaderWithParser as WKTWorkerLoader
 } from './wkt-loader';
-export {
-  WKBLoaderWithParser as WKBLoader,
-  WKBWorkerLoaderWithParser as WKBWorkerLoader
-} from './wkb-loader';
-export {HexWKBLoaderWithParser as HexWKBLoader} from './hex-wkb-loader';
-export {TWKBLoaderWithParser as TWKBLoader} from './twkb-loader';
+
+export * from '.';

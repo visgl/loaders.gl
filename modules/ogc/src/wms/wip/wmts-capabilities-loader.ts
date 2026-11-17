@@ -41,7 +41,10 @@ export const WMTSCapabilitiesLoader = {
     wms: {}
   },
   /** Loads the parser-bearing WMTS capabilities loader implementation. */
-  preload: async () => (await import('./wmts-capabilities-loader-with-parser')).WMTSCapabilitiesLoaderWithParser
+  preload: async () => {
+    const loaderModule = await import('./wmts-capabilities-loader-with-parser');
+    return loaderModule.WMTSCapabilitiesLoaderWithParser;
+  }
 } as const satisfies Loader<WMTSCapabilities, never, WMTSCapabilitiesLoaderOptions>;
 
 function testXMLFile(text: string): boolean {

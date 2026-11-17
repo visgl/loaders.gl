@@ -54,7 +54,7 @@ synchronously.
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {DracoWriter} from '@loaders.gl/scene/draco-writer';
+import {DracoWriter} from '@loaders.gl/scene/draco';
 
 const arrayBuffer = await encode(meshData, DracoWriter);
 ```

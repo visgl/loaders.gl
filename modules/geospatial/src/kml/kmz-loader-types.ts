@@ -21,7 +21,8 @@ export type KMZLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing KMZ loader implementation. */
 async function preload() {
-  return (await import('@loaders.gl/geospatial/kmz')).KMZLoaderWithParser;
+  const loaderModule = await import('@loaders.gl/geospatial/kmz');
+  return loaderModule.KMZLoaderWithParser;
 }
 
 /** Metadata-only loader for KMZ archives containing KML documents. */

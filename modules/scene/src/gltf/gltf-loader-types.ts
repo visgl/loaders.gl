@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {DracoLoaderOptions} from '@loaders.gl/scene/draco-loader-types';
+import type {DracoLoaderOptions} from '../draco-loader-types';
 import {VERSION} from './lib/utils/version';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
 import type {BasisLoaderOptions, TextureLoaderOptions} from '@loaders.gl/images';
@@ -32,7 +32,7 @@ export type GLTFLoaderOptions = StrictLoaderOptions &
 
 /** Preloads the parser-bearing glTF loader implementation. */
 async function preload() {
-  const {GLTFLoaderWithParser} = await import('@loaders.gl/scene/gltf-loader');
+  const {GLTFLoaderWithParser} = await import('@loaders.gl/scene/gltf');
   return GLTFLoaderWithParser;
 }
 

@@ -92,8 +92,8 @@ test('geospatial does not transitively install table engines or SQL.js', () => {
   visitPackage('@loaders.gl/geospatial');
   for (const dependency of [
     '@loaders.gl/tables',
-    '@loaders.gl/tables/arrow/index',
-    '@loaders.gl/tables/json/index',
+    '@loaders.gl/tables/arrow',
+    '@loaders.gl/tables/json',
     'bson',
     'xlsx',
     'parquet-wasm',
@@ -166,4 +166,27 @@ test('tables does not include the removed Excel loader or xlsx dependency', asyn
   expect(manifest.exports['./excel']).toBeUndefined();
   const tables = await import('@loaders.gl/tables');
   expect(tables).not.toHaveProperty('ExcelLoader');
+});
+
+test.each(['tables', 'pointclouds'])('%s does not publish comparison backends', packageName => {
+  const manifest = JSON.parse(
+    fileSystem.readFileSync(
+      path.join(REPOSITORY_ROOT, 'modules', packageName, 'package.json'),
+      'utf8'
+    )
+  );
+  for (const dependency of ['parquet-wasm', 'laz-perf', 'copc']) {
+    expect({...manifest.dependencies, ...manifest.optionalDependencies}).not.toHaveProperty(
+      dependency
+    );
+  }
+  for (const subpath of Object.keys(manifest.exports)) {
+    expect(subpath).not.toMatch(/\/index$|parquet-js-writer|parquet.*wasm|laz-rs|lazperf|las-copc/);
+  }
+});
+
+test('terrain retains only its temporary index compatibility alias', () => {
+  expect(requirePackage('@loaders.gl/raster/' + 'terrain/index').TerrainLoader).toBe(
+    requirePackage('@loaders.gl/raster/terrain').TerrainLoader
+  );
 });

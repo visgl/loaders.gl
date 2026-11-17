@@ -169,7 +169,7 @@ Some sources expose several tables through `getTable(name)`. Keep the outer sour
 table name separate:
 
 ```ts
-import {GeoPackageSource} from '@loaders.gl/geospatial/geopackage-source-loader';
+import {GeoPackageSource} from '@loaders.gl/geospatial/geopackage';
 
 const warehouse = await load('world.gpkg', GeoPackageSource, {
   core: {name: 'warehouse'}

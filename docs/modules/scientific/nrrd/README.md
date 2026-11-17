@@ -25,7 +25,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Read NRRD as data."
   description="Axis zero varies fastest; no resampling or coordinate conversion"
   tone="cyan"
-  items={[{"label":"Input","value":"NRRD 1–5; attached raw, ASCII/text and gzip"},{"label":"Output","value":"NRRDData with native typed samples, shape and header metadata"},{"label":"Loader","value":"NRRDLoader · @loaders.gl/scientific"},{"label":"Parser","value":"@loaders.gl/scientific/nrrd-loader"}]}
+  items={[{"label":"Input","value":"NRRD 1–5; attached raw, ASCII/text and gzip"},{"label":"Output","value":"NRRDData with native typed samples, shape and header metadata"},{"label":"Loader","value":"NRRDLoader · @loaders.gl/scientific"},{"label":"Parser","value":"@loaders.gl/scientific/nrrd"}]}
 />
 
 :::note Availability
@@ -86,6 +86,6 @@ Multibyte binary samples require an endian field. ASCII values must be finite an
 
 ## Loader API and runtime
 
-`NRRDLoader` is metadata-only. Import `NRRDLoaderWithParser` from `@loaders.gl/scientific/nrrd-loader` for direct async core parsing. It is not a sync loader, including for raw files. There are no format-specific options. Gzip uses native `DecompressionStream` support without a new codec dependency.
+`NRRDLoader` is metadata-only. Import `NRRDLoaderWithParser` from `@loaders.gl/scientific/nrrd` for direct async core parsing. It is not a sync loader, including for raw files. There are no format-specific options. Gzip uses native `DecompressionStream` support without a new codec dependency.
 
 Choose [VTK](../vtk/README.md) when cells and point/cell fields are part of the dataset, or [NumPy NPY](../formats/npy.md) when the primary requirement is a NumPy array without NRRD's spatial header conventions.

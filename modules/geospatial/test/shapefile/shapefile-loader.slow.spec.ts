@@ -12,7 +12,7 @@ import {
   _BrowserFileSystem as BrowserFileSystem,
   isBrowser
 } from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 import {DBFLoaderWithParser as DBFLoader} from '../../src/shapefile/dbf-loader';
 import {projectionEngine} from '@math.gl/geospatial/projection';
 import {equals, withEpsilon} from '@math.gl/core';

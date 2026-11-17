@@ -8,7 +8,7 @@ import {writeFile} from '../lib/utils/file-utils';
 import {join, dirname} from 'path';
 import {ChildProcessProxy} from '@loaders.gl/core/worker-utils';
 import {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from '@loaders.gl/scene';
-import {BASIS_EXTERNAL_LIBRARIES} from '@loaders.gl/images/basis-module-loader';
+import {BASIS_EXTERNAL_LIBRARIES} from '@loaders.gl/images/basis';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';

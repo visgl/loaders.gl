@@ -76,7 +76,7 @@ For example, `GeoJSONLoader` can yield features from a large GeoJSON document in
 
 ```typescript title="Inspect streamed GeoJSON features"
 import {loadInBatches} from '@loaders.gl/core';
-import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 
 const batches = await loadInBatches('features.geojson', GeoJSONLoader, {
   geojson: {shape: 'geojson-table'}

@@ -2,7 +2,7 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {parseSQLPredicate} from '@loaders.gl/core/scan';
 import {ArrowTableSource} from '../../src/arrow/arrow-source';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
 
 test('ArrowTableSource discovers schema and applies projection and limit', async () => {
   const bytes = arrow.tableToIPC(arrow.tableFromArrays({name: ['a', 'b'], value: [1, 2]}));

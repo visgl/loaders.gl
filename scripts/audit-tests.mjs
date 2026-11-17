@@ -8,6 +8,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import {auditPublicImports} from './audit-public-imports.mjs';
 
 const repositoryRoot = process.cwd();
 const testRoots = ['modules', 'test'];
@@ -39,6 +40,7 @@ const remoteFetches = findRemoteFetches(fastTestFiles);
 const fixtureBranchViolations = findFixtureBranchViolations();
 const coverageExclusionViolations = auditCoverageExclusions();
 const violations = [
+  ...auditPublicImports(),
   ...tapeFiles.map(testFile => `Tape import is no longer supported: ${testFile}`),
   ...emptyTestFiles.map(testFile => `Empty test file: ${testFile}`),
   ...remoteFetches.map(remoteFetch => `Remote fetch in hermetic test: ${remoteFetch}`),
@@ -214,7 +216,8 @@ function findFixtureBranchViolations() {
     return [`Missing LOADERS_GL_FIXTURE_BRANCH in ${remoteFixturesPath}`];
   }
 
-  const violations = [];
+  const violations = [
+  ...auditPublicImports(),];
   // Merge groups supply an explicit base ref; PRs and pushes use the GitHub defaults.
   const targetBranch = (process.env.LOADERS_GL_TEST_BASE_REF || process.env.GITHUB_BASE_REF || process.env.GITHUB_REF_NAME)?.replace(/^refs\/heads\//, '');
   if (targetBranch && /^(?:master|\d+\.\d+-release)$/.test(targetBranch)) {

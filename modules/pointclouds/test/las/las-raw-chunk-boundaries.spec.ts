@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {LASWriter} from '@loaders.gl/pointclouds/las';
 import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
-import {LASFile as LazPerfLASFile} from '../../src/las/lib/laz-perf/laslaz-decoder';
+import {LASFile as LazPerfLASFile} from '../../../../website/src/alternate-loaders/las/lib/laz-perf/laslaz-decoder';
 import {
   decodeLAZFileInBatches,
   parseLASChunkedIterator,

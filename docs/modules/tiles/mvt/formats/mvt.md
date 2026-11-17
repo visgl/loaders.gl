@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Protocol Buffers', 'z/x/y tiles', 'Layered features']}
   links={[
     {label: 'MVT module', to: '/docs/modules/tiles/mvt'},
-    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source-loader'}
+    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source'}
   ]}
 />
 
@@ -26,7 +26,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Type | API |
 | --- | --- |
 | Loader | [`MVTLoader`](../api-reference/mvt-loader.md) |
-| Source loader | [`MVTLoader`](../api-reference/mvt-source-loader.md) |
+| Source loader | [`MVTLoader`](../api-reference/mvt-source.md) |
 | Writer | [`MVTWriter`](../api-reference/mvt-writer.md) |
 
 <TileDocsTabs active="mvt" />

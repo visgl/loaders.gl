@@ -125,7 +125,7 @@ var utils = {
   },
   isSupported: {
     canvas: function canvas() {
-      const el = document.createElement('canvas');
+      const el = document.createElement?.('canvas');
       return el && el.getContext && el.getContext('2d');
     },
     webworkers: function webworkers() {
@@ -141,7 +141,8 @@ var utils = {
       return globalThis.Uint32Array;
     },
     videoCodecs: (function () {
-      const testEl = document.createElement('video');
+      // Codec detection also runs when the public image API is imported in Node.
+      const testEl = document.createElement?.('video');
       const supportObj = {
         mp4: false,
         h264: false,

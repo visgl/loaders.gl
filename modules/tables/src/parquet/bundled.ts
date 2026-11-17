@@ -26,7 +26,7 @@ export {
   type ParquetGeospatialStatistics,
   type ParquetBatchMetadata,
   type ParquetSourceBatch
-} from './parquet-source-loader';
+} from './parquet-source';
 export {
   ParquetDatasetSource,
   type ParquetDatasetBatch,
@@ -40,3 +40,5 @@ export {
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
+
+export * from '.';

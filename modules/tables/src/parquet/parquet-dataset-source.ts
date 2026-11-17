@@ -17,7 +17,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
 
-import {ParquetSource} from './parquet-source-loader';
+import {ParquetSource} from './parquet-source';
 import {sliceParquetBatch} from './lib/slice-parquet-batch';
 import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {

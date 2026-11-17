@@ -69,7 +69,7 @@ npm install @loaders.gl/core
 ## Usage
 
 ```typescript
-import {TWKBLoader} from '@loaders.gl/geospatial/wkt/bundled';
+import {TWKBLoader} from '@loaders.gl/geospatial/wkb/bundled';
 import {parseSync} from '@loaders.gl/core';
 
 // Precision zero, Point (1, 2), zigzag-encoded coordinates.
@@ -79,7 +79,7 @@ const data = parseSync(buffer, TWKBLoader);
 ```
 
 ```typescript
-import {TWKBLoader} from '@loaders.gl/geospatial/wkt';
+import {TWKBLoader} from '@loaders.gl/geospatial/wkb';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, TWKBLoader);

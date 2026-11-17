@@ -12,7 +12,7 @@ import {
   normalizeArrowTableGeoMetadata,
   getParquetFileMetadataMap
 } from '../../../../modules/tables/src/parquet/lib/geo/geospatial-metadata';
-import {loadWasm} from '../../../../modules/tables/src/parquet/lib/utils/load-wasm';
+import {loadWasm} from './load-wasm';
 import {makeStreamIterator} from '../../../../modules/tables/src/parquet/lib/utils/make-stream-iterator';
 
 type ParquetWasmReaderOptions = parquetWasm.ReaderOptions & {wasmUrl?: string};

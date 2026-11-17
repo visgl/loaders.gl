@@ -28,7 +28,7 @@ const DEFAULT_IMAGE_BITMAP_LOADER_OPTIONS: ImageLoaderOptions = {
  * Metadata-only loader for images as `ImageBitmap`.
  */
 async function preload() {
-  const {ImageLoaderWithParser} = await import('@loaders.gl/images/image-loader');
+  const {ImageLoaderWithParser} = await import('@loaders.gl/images/image');
   return ImageLoaderWithParser;
 }
 

@@ -519,7 +519,7 @@ async function createParquetBenchmarkScenarios(): Promise<ParquetBenchmarkScenar
 async function createCompressedBenchmarkFixtures(
   arrayBuffer: ArrayBuffer
 ): Promise<{gzip: ArrayBuffer; zstd: ArrayBuffer}> {
-  const {loadWasm} = await import('../../../modules/tables/src/parquet/lib/utils/load-wasm');
+  const {loadWasm} = await import('../alternate-loaders/parquet/load-wasm');
   const parquetWasm = await loadWasm();
 
   const gzipTable = parquetWasm.readParquet(new Uint8Array(arrayBuffer));
@@ -572,10 +572,10 @@ async function createParquetBenchmarkImplementations(): Promise<
     hyparquet,
     hyparquetCompressors
   ] = await Promise.all([
-    import('@loaders.gl/tables/parquet-loader'),
+    import('@loaders.gl/tables/parquet'),
     import('../alternate-loaders/parquet/parquet-js-loader'),
     import('../alternate-loaders/parquet/parquet-wasm-loader'),
-    import('../../../modules/tables/src/parquet/lib/utils/load-wasm'),
+    import('../alternate-loaders/parquet/load-wasm'),
     import('@loaders.gl/core/schema-utils'),
     import('apache-arrow'),
     import('hyparquet'),

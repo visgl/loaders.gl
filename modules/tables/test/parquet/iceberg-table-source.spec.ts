@@ -1,4 +1,4 @@
-import {getParquetBatchProvenance} from '@loaders.gl/tables/parquet-source-loader';
+import {getParquetBatchProvenance} from '@loaders.gl/tables/parquet';
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';

@@ -9,17 +9,17 @@ import {expect, test} from 'vitest';
 const REPOSITORY_ROOT = process.cwd();
 
 test.each([
-  ['tables', 'ParquetLoader', 'parquet-loader', 'ParquetLoaderWithParser'],
-  ['tables', 'ORCLoader', 'orc-loader', 'ORCLoaderWithParser'],
-  ['tables', 'LanceLoader', 'lance-loader', 'LanceLoaderWithParser'],
-  ['tables', 'JSONLoader', 'json-loader', 'JSONLoaderWithParser'],
-  ['tables', 'ArrowLoader', 'arrow-loader', 'ArrowLoaderWithParser'],
-  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf-loader', 'FlatGeobufLoaderWithParser'],
-  ['geospatial', 'GeoPackageLoader', 'geopackage-loader', 'GeoPackageLoaderWithParser'],
-  ['tables', 'CSVLoader', 'csv-loader', 'CSVLoaderWithParser'],
-  ['geospatial', 'KMLLoader', 'kml-loader', 'KMLLoaderWithParser']
+  ['tables', 'ParquetLoader', 'parquet', 'ParquetLoaderWithParser'],
+  ['tables', 'ORCLoader', 'orc', 'ORCLoaderWithParser'],
+  ['tables', 'LanceLoader', 'lance', 'LanceLoaderWithParser'],
+  ['tables', 'JSONLoader', 'json', 'JSONLoaderWithParser'],
+  ['tables', 'ArrowLoader', 'arrow', 'ArrowLoaderWithParser'],
+  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoaderWithParser'],
+  ['geospatial', 'GeoPackageLoader', 'geopackage', 'GeoPackageLoaderWithParser'],
+  ['tables', 'CSVLoader', 'csv', 'CSVLoaderWithParser'],
+  ['geospatial', 'KMLLoader', 'kml', 'KMLLoaderWithParser']
 ])(
-  'published %s %s metadata preloads through its flat parser export',
+  'published %s %s metadata preloads through its format export',
   (group, metadata, parserEntry, parser) => {
     // A separate Node process bypasses Vitest source aliases and checks the published layout.
     const source = `import {${metadata}} from '@loaders.gl/${group}';
@@ -110,16 +110,16 @@ test.each([
 );
 
 test.each([
-  ['tables', 'arrow-source', 'ArrowTableSource'],
+  ['tables', 'arrow', 'ArrowTableSource'],
   ['tables', 'arrow/geometry', 'WKBBuilder'],
-  ['tables', 'ndjson-source', 'NDJSONTableSource'],
-  ['tables', 'lance-source-loader', 'LanceSource'],
-  ['tables', 'orc-loader', 'ORCLoaderWithParser'],
-  ['tables', 'parquet-loader', 'ParquetLoaderWithParser'],
-  ['tables', 'parquet-dataset-source', 'ParquetDatasetSource'],
-  ['tables', 'iceberg-table-source', 'IcebergTableSource'],
-  ['tables', 'parquet/iceberg-rest-catalog', 'IcebergRestCatalog'],
-  ['tables', 'delta-loader', 'DeltaLoaderWithParser']
+  ['tables', 'json', 'NDJSONTableSource'],
+  ['tables', 'lance', 'LanceSource'],
+  ['tables', 'orc', 'ORCLoaderWithParser'],
+  ['tables', 'parquet', 'ParquetLoaderWithParser'],
+  ['tables', 'parquet', 'ParquetDatasetSource'],
+  ['tables', 'iceberg', 'IcebergTableSource'],
+  ['tables', 'iceberg', 'IcebergRestCatalog'],
+  ['tables', 'delta', 'DeltaLoaderWithParser']
 ])(
   'published %s/%s exposes %s after forwarding removal',
   (group, subpath, exportName) => {

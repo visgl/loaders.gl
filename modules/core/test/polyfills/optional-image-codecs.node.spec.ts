@@ -5,7 +5,7 @@ vi.mock('sharp', () => {
 // SPDX-License-Identifier: MIT
 
 test('Node transports and native blob streams load without optional image codecs', async () => {
-  await import('../../src/polyfills/index');
+  await import('../../src/polyfills');
   expect(typeof globalThis.loaders.NodeFileSystem).toBe('function');
   const stream = new Blob(['native']).stream();
   expect(stream).toBeInstanceOf(ReadableStream);

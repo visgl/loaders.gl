@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export {LASLoader} from './las/las-loader-types';
-export type {LASLoaderOptions} from './las/las-loader-types';
+export type {LASLoaderOptions} from './las/las-loader-shared';
 export {LASWriter} from './las/las-writer';
 export type {LASWriterOptions} from './las/las-writer';
 export {LASFormat} from './las/las-format';

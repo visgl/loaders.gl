@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {RangeRequestScheduler, sampleRaster} from '@loaders.gl/core/loader-utils';
-import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source-loader';
+import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source';
 
 /** Builds a float TIFF with configurable pixel placement and an optional wider second band. */
 function createFloatTIFF(mixed = false, pixelOffset = 4096): Uint8Array {

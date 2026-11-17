@@ -5,13 +5,13 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import {encode} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
 import {FederatedTableScanSource, getFederatedTableBatchProvenance} from '@loaders.gl/core/scan';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';
-import {AvroWriter} from '@loaders.gl/tables/avro/index';
-import {ParquetJSWriter} from '../../src/parquet/parquet-js-writer';
+import {AvroWriter} from '@loaders.gl/tables/avro';
+import {ParquetWriter} from '../../src/parquet/parquet-writer';
 
 function createMetadataUrl(metadata: unknown): string {
   return `data:application/json,${encodeURIComponent(JSON.stringify(metadata))}`;
@@ -549,7 +549,7 @@ async function createParquetFixture(): Promise<ArrayBuffer> {
         {id: 3, value: 'three'}
       ]
     },
-    ParquetJSWriter
+    ParquetWriter
   );
 }
 

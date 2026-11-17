@@ -11,3 +11,5 @@ export {
   MTLWorkerLoaderWithParser as MTLWorkerLoader,
   MTLLoaderWithParser as MTLLoader
 } from './mtl-loader';
+
+export * from '.';

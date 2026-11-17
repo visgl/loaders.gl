@@ -10,7 +10,7 @@ visualization, column access, or registration with a query engine. There is no n
 rows and feed them back through a JSON parser.
 
 ```typescript
-import {convertJSONToArrow} from '@loaders.gl/tables/json-table-loader';
+import {convertJSONToArrow} from '@loaders.gl/tables/json';
 
 const rows = [
   {name: 'Oslo', population: 717710},
@@ -32,7 +32,7 @@ JSON. Both use the same row discovery, schema inference, and Arrow conversion po
 import {
   convertJSONToArrow,
   type ConvertJSONToArrowOptions
-} from '@loaders.gl/tables/json-table-loader';
+} from '@loaders.gl/tables/json';
 
 const table = convertJSONToArrow(data, options);
 ```

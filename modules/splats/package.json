@@ -57,10 +57,6 @@
       "import": "./dist/rad-zod-schema.js",
       "require": "./dist/rad-zod-schema.cjs"
     },
-    "./unbundled": {
-      "types": "./dist/unbundled.d.ts",
-      "import": "./dist/unbundled.js"
-    },
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {FlatGeobufSourceLoaderOptions} from './flatgeobuf-source-loader';
+import type {FlatGeobufSourceLoaderOptions} from './flatgeobuf-source';
 import type {Table, RecordBatch} from 'apache-arrow';
 import type {GeoJSONTable, ColumnarTable, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
@@ -34,7 +34,7 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing FlatGeobuf loader implementation. */
 async function preload() {
-  const {FlatGeobufLoaderWithParser} = await import('@loaders.gl/geospatial/flatgeobuf-loader');
+  const {FlatGeobufLoaderWithParser} = await import('@loaders.gl/geospatial/flatgeobuf');
   return FlatGeobufLoaderWithParser;
 }
 

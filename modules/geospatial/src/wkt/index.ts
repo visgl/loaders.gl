@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {WKTFormat, WKBFormat, HexWKBFormat, TWKBFormat, WKTCRSFormat} from './wkt-format';
+export {WKTFormat, WKTCRSFormat} from './wkt-format';
 
 export {WKTCRSLoader, type WKTCRSLoaderOptions} from './wkt-crs-loader-types';
 export {WKTCRSWriter, type WKTCRSWriterOptions} from './wkt-crs-writer';
@@ -10,10 +10,10 @@ export {WKTCRSWriter, type WKTCRSWriterOptions} from './wkt-crs-writer';
 export {WKTLoader} from './wkt-loader-types';
 export {WKTWriter} from './wkt-writer';
 
-export {WKBLoader} from './wkb-loader-types';
-export {WKBWriter} from './wkb-writer';
+export {type WKTLoaderOptions} from './wkt-loader-types';
 
-export {HexWKBLoader} from './hex-wkb-loader-types';
+export {WKTCRSLoaderWithParser} from '../wkt-crs-loader';
 
-export {TWKBLoader} from './twkb-loader-types';
-export {TWKBWriter} from './twkb-writer';
+export {WKTWorkerLoaderWithParser, WKTLoaderWithParser} from '../wkt-loader';
+
+export {type WKTWriterOptions} from '../wkt-writer';

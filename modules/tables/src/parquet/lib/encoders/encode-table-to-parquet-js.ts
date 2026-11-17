@@ -4,6 +4,7 @@
 
 import {
   getGeoMetadata,
+  setGeoMetadata,
   type DataType,
   type Field,
   type GeoArrowEdgeType,
@@ -13,21 +14,21 @@ import {
   type Schema,
   type Table
 } from '@loaders.gl/core/schema';
+import {ensureGeoParquetMetadata} from '../geo/geospatial-metadata';
 import {concatUint8Arrays} from '../../parquetjs/utils/binary-utils';
 import {ParquetEncoder} from '../../parquetjs/encoder/parquet-encoder';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
 import type {FieldDefinition, SchemaDefinition} from '../../parquetjs/schema/declare';
-import type {ParquetJSWriterOptions} from '../../parquet-js-writer';
+import type {ParquetWriterOptions} from '../../parquet-writer';
 
 /** Encode a plain loaders.gl table with the parquetjs implementation. */
 export async function encodeTableToParquetJs(
   table: Table,
   objectRowTable: ObjectRowTable,
-  options: ParquetJSWriterOptions
+  options: ParquetWriterOptions
 ): Promise<ArrayBuffer> {
-  const parquetSchema = new ParquetSchema(
-    convertSchemaToParquetSchema(table.schema!, objectRowTable, options)
-  );
+  const schemaDefinition = convertSchemaToParquetSchema(table.schema!, objectRowTable, options);
+  const parquetSchema = new ParquetSchema(schemaDefinition);
   const chunks: Uint8Array[] = [];
   const outputStream = {
     write(chunk: Uint8Array, callback: (error?: Error) => void) {
@@ -45,7 +46,19 @@ export async function encodeTableToParquetJs(
     options.parquet
   );
 
-  for (const [key, value] of Object.entries(table.schema?.metadata || {})) {
+  // Native geometry annotations require GeoParquet 2.0 footer metadata.
+  const metadataSchema = ensureGeoParquetMetadata({
+    ...table.schema!,
+    metadata: {...table.schema?.metadata}
+  });
+  const geoMetadata = getGeoMetadata(metadataSchema.metadata);
+  const hasNativeGeometry = Object.values(schemaDefinition).some(
+    field => field.type === 'GEOMETRY' || field.type === 'GEOGRAPHY'
+  );
+  if (geoMetadata && hasNativeGeometry && !geoMetadata.version?.startsWith('2.')) {
+    setGeoMetadata(metadataSchema.metadata!, {...geoMetadata, version: '2.0.0'});
+  }
+  for (const [key, value] of Object.entries(metadataSchema.metadata || {})) {
     encoder.setMetadata(key, value);
   }
 
@@ -67,7 +80,7 @@ export async function encodeTableToParquetJs(
 function convertSchemaToParquetSchema(
   schema: Schema,
   objectRowTable: ObjectRowTable,
-  options: ParquetJSWriterOptions
+  options: ParquetWriterOptions
 ): SchemaDefinition {
   const parquetFields: SchemaDefinition = {};
   const columnEncodings = options.parquet?.columnEncodings || {};
@@ -85,27 +98,27 @@ function convertSchemaToParquetSchema(
   const geoMetadata = getGeoMetadata(schema.metadata);
   for (const columnName of Object.keys(columnEncodings)) {
     if (!fieldNames.has(columnName)) {
-      throw new Error(`ParquetJSWriter: Unknown column encoding override "${columnName}"`);
+      throw new Error(`ParquetWriter: Unknown column encoding override "${columnName}"`);
     }
   }
   for (const columnName of Object.keys(columnDictionaries)) {
     if (!fieldNames.has(columnName)) {
-      throw new Error(`ParquetJSWriter: Unknown column dictionary override "${columnName}"`);
+      throw new Error(`ParquetWriter: Unknown column dictionary override "${columnName}"`);
     }
   }
   for (const columnName of Object.keys(bloomFilterColumns)) {
     if (!fieldNames.has(columnName)) {
-      throw new Error(`ParquetJSWriter: Unknown Bloom-filter column "${columnName}"`);
+      throw new Error(`ParquetWriter: Unknown Bloom-filter column "${columnName}"`);
     }
   }
   for (const columnName of Object.keys(pageIndexColumns)) {
     if (!fieldNames.has(columnName)) {
-      throw new Error(`ParquetJSWriter: Unknown page-index column "${columnName}"`);
+      throw new Error(`ParquetWriter: Unknown page-index column "${columnName}"`);
     }
   }
   for (const columnName of Object.keys(columnKeyMetadata)) {
     if (!fieldNames.has(columnName)) {
-      throw new Error(`ParquetJSWriter: Unknown encryption column key "${columnName}"`);
+      throw new Error(`ParquetWriter: Unknown encryption column key "${columnName}"`);
     }
   }
 
@@ -173,10 +186,11 @@ function convertFieldToParquetFieldDefinition(
             ])
           )
         };
+      case 'fixed-size-list':
       case 'list': {
         const child = dataType.children[0];
         if (!child) {
-          throw new Error(`ParquetJSWriter: List field "${field.name}" has no value child`);
+          throw new Error(`ParquetWriter: List field "${field.name}" has no value child`);
         }
         return {
           optional: nullable,
@@ -208,12 +222,10 @@ function convertFieldToParquetFieldDefinition(
             : dataType.children;
         const [keyField, valueField] = mapEntryChildren;
         if (!keyField || !valueField) {
-          throw new Error(
-            `ParquetJSWriter: Map field "${field.name}" needs key and value children`
-          );
+          throw new Error(`ParquetWriter: Map field "${field.name}" needs key and value children`);
         }
         if (keyField.nullable) {
-          throw new Error(`ParquetJSWriter: Map keys must be non-nullable ("${field.name}")`);
+          throw new Error(`ParquetWriter: Map keys must be non-nullable ("${field.name}")`);
         }
         return {
           optional: nullable,
@@ -373,7 +385,7 @@ function convertFieldToParquetFieldDefinition(
       }
 
       throw new Error(
-        `ParquetJSWriter: Unsupported field "${field.name}" with type ${formatDataType(dataType)}`
+        `ParquetWriter: Unsupported field "${field.name}" with type ${formatDataType(dataType)}`
       );
   }
 }
@@ -412,12 +424,12 @@ function getWKBGeoArrowMetadata(field: Field): GeoArrowMetadata | undefined {
   try {
     metadata = JSON.parse(serializedMetadata);
   } catch (error) {
-    throw new Error(`ParquetJSWriter: Invalid GeoArrow metadata on "${field.name}"`, {
+    throw new Error(`ParquetWriter: Invalid GeoArrow metadata on "${field.name}"`, {
       cause: error
     });
   }
   if (!metadata || typeof metadata !== 'object') {
-    throw new Error(`ParquetJSWriter: Invalid GeoArrow metadata on "${field.name}"`);
+    throw new Error(`ParquetWriter: Invalid GeoArrow metadata on "${field.name}"`);
   }
   const candidate = metadata as GeoArrowMetadata;
   if (
@@ -425,13 +437,13 @@ function getWKBGeoArrowMetadata(field: Field): GeoArrowMetadata | undefined {
     typeof candidate.crs !== 'string' &&
     (typeof candidate.crs !== 'object' || candidate.crs === null)
   ) {
-    throw new Error(`ParquetJSWriter: Invalid GeoArrow CRS on "${field.name}"`);
+    throw new Error(`ParquetWriter: Invalid GeoArrow CRS on "${field.name}"`);
   }
   if (
     candidate.edges !== undefined &&
     !['spherical', 'vincenty', 'thomas', 'andoyer', 'karney'].includes(candidate.edges)
   ) {
-    throw new Error(`ParquetJSWriter: Invalid GeoArrow edges on "${field.name}"`);
+    throw new Error(`ParquetWriter: Invalid GeoArrow edges on "${field.name}"`);
   }
   return candidate;
 }
@@ -448,7 +460,7 @@ function getDecimalByteWidth(precision: number): number {
     const maximumPrecision = Math.floor(Math.log10(2 ** (8 * byteWidth - 1) - 1));
     if (precision <= maximumPrecision) return byteWidth;
   }
-  throw new Error(`ParquetJSWriter: Decimal precision ${precision} exceeds 32 bytes`);
+  throw new Error(`ParquetWriter: Decimal precision ${precision} exceeds 32 bytes`);
 }
 
 /**
@@ -522,7 +534,7 @@ function getDataTypeFromValue(value: unknown): DataType {
     return 'binary';
   }
 
-  throw new Error('ParquetJSWriter: Unable to infer a Parquet type from the provided row data');
+  throw new Error('ParquetWriter: Unable to infer a Parquet type from the provided row data');
 }
 
 /**

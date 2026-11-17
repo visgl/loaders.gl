@@ -8,11 +8,11 @@ import {createDataSource, encode, load} from '@loaders.gl/core';
 import {encodeWKBGeometryValue} from '@loaders.gl/core/arrow-geometry/geometry-field';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {
-  ParquetJSWriter,
+  ParquetWriter,
   ParquetLoader,
   type ParquetSourceMetadata
-} from '@loaders.gl/tables/parquet/index';
-import type {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+} from '@loaders.gl/tables/parquet';
+import type {ParquetSource} from '@loaders.gl/tables/parquet';
 
 import {
   BoundingBox,
@@ -21,7 +21,7 @@ import {
   Encoding,
   GeospatialStatistics,
   Type
-} from '../../src/parquet/parquetjs/parquet-thrift/index';
+} from '../../src/parquet/parquetjs/parquet-thrift';
 import {serializeThrift} from '../../src/parquet/parquetjs/utils/read-utils';
 import {Uint8ArrayCompactProtocol} from '../../src/parquet/parquetjs/utils/uint8-array-compact-protocol';
 import {Uint8ArrayTransport} from '../../src/parquet/parquetjs/utils/uint8-array-transport';
@@ -91,7 +91,7 @@ test('ParquetLoader reads the canonical GeoParquet 2.0 interoperability fixture'
   });
 });
 
-test('ParquetJSWriter emits GeoParquet 2.0 logical types and row-group statistics', async () => {
+test('ParquetWriter emits GeoParquet 2.0 logical types and row-group statistics', async () => {
   const firstGeometry = encodeWKBGeometryValue({
     type: 'LineString',
     coordinates: [
@@ -128,7 +128,7 @@ test('ParquetJSWriter emits GeoParquet 2.0 logical types and row-group statistic
     },
     data: [{geometry: firstGeometry}, {geometry: secondGeometry}]
   };
-  const parquetBuffer = await encode(table, ParquetJSWriter, {
+  const parquetBuffer = await encode(table, ParquetWriter, {
     parquet: {rowGroupSize: 1},
     worker: false
   });
@@ -162,7 +162,7 @@ test('ParquetJSWriter emits GeoParquet 2.0 logical types and row-group statistic
   expect(source.getTelemetry().rowGroupsPrunedByStatistics).toBe(0);
 });
 
-test('ParquetJSWriter emits native Parquet geo types directly from GeoArrow WKB metadata', async () => {
+test('ParquetWriter emits native Parquet geo types directly from GeoArrow WKB metadata', async () => {
   const table: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -181,7 +181,7 @@ test('ParquetJSWriter emits native Parquet geo types directly from GeoArrow WKB 
     },
     data: [{geometry: encodeWKBGeometryValue({type: 'Point', coordinates: [1, 2]})!}]
   };
-  const parquetBuffer = await encode(table, ParquetJSWriter, {worker: false});
+  const parquetBuffer = await encode(table, ParquetWriter, {worker: false});
   const source = (await createDataSource(new Blob([parquetBuffer]), ParquetLoader, {
     core: {worker: false}
   })) as ParquetSource;
@@ -190,6 +190,7 @@ test('ParquetJSWriter emits native Parquet geo types directly from GeoArrow WKB 
     schemaElement => schemaElement.name === 'geometry'
   );
 
+  expect(JSON.parse(metadata.keyValueMetadata.geo).version).toBe('2.0.0');
   expect(geometrySchemaElement?.logicalType?.GEOGRAPHY?.algorithm).toBe(1);
   expect(geometrySchemaElement?.logicalType?.GEOGRAPHY?.crs).toBe('srid:0');
   expect(metadata.rowGroups[0].columns[0].geospatialStatistics).toEqual({
@@ -198,12 +199,12 @@ test('ParquetJSWriter emits native Parquet geo types directly from GeoArrow WKB 
   });
 });
 
-test('ParquetJSWriter ignores nulls and omits bounds for empty native geometries', async () => {
+test('ParquetWriter ignores nulls and omits bounds for empty native geometries', async () => {
   const table = createGeoArrowWKBTable(undefined, [
     null,
     encodeWKBGeometryValue({type: 'LineString', coordinates: []})!
   ]);
-  const parquetBuffer = await encode(table, ParquetJSWriter, {worker: false});
+  const parquetBuffer = await encode(table, ParquetWriter, {worker: false});
   const source = (await createDataSource(new Blob([parquetBuffer]), ParquetLoader, {
     core: {worker: false}
   })) as ParquetSource;
@@ -212,6 +213,7 @@ test('ParquetJSWriter ignores nulls and omits bounds for empty native geometries
     schemaElement => schemaElement.name === 'geometry'
   );
 
+  expect(JSON.parse(metadata.keyValueMetadata.geo).version).toBe('2.0.0');
   expect(geometrySchemaElement?.logicalType?.GEOMETRY?.crs).toBe('srid:0');
   expect(metadata.rowGroups[0].columns[0].geospatialStatistics).toEqual({
     bbox: undefined,
@@ -219,21 +221,21 @@ test('ParquetJSWriter ignores nulls and omits bounds for empty native geometries
   });
 });
 
-test('ParquetJSWriter rejects malformed GeoArrow WKB semantics', async () => {
+test('ParquetWriter rejects malformed GeoArrow WKB semantics', async () => {
   await expect(
-    encode(createGeoArrowWKBTable('{invalid json', []), ParquetJSWriter, {worker: false})
+    encode(createGeoArrowWKBTable('{invalid json', []), ParquetWriter, {worker: false})
   ).rejects.toThrow(/Invalid GeoArrow metadata/);
   await expect(
     encode(
       createGeoArrowWKBTable(JSON.stringify({crs: null}), []),
-      ParquetJSWriter,
+      ParquetWriter,
       {worker: false}
     )
   ).rejects.toThrow(/Invalid GeoArrow CRS/);
   await expect(
     encode(
       createGeoArrowWKBTable(JSON.stringify({edges: 'rhumb'}), []),
-      ParquetJSWriter,
+      ParquetWriter,
       {worker: false}
     )
   ).rejects.toThrow(/Invalid GeoArrow edges/);
@@ -274,3 +276,29 @@ function createGeoArrowWKBTable(
     data: geometryValues.map(geometry => ({geometry}))
   };
 }
+
+
+test('ParquetWriter keeps explicit GeoParquet 1.1 geometry as unannotated WKB', async () => {
+  const table = createGeoArrowWKBTable('{}', [
+    encodeWKBGeometryValue({type: 'Point', coordinates: [1, 2]})!
+  ]);
+  table.schema!.metadata = {
+    geo: JSON.stringify({
+      version: '1.1.0',
+      primary_column: 'geometry',
+      columns: {geometry: {encoding: 'WKB', geometry_types: ['Point']}}
+    })
+  };
+  const parquetBuffer = await encode(table, ParquetWriter, {worker: false});
+  const source = await createDataSource(new Blob([parquetBuffer]), ParquetLoader, {
+    core: {worker: false}
+  }) as ParquetSource;
+  const metadata = await source.getMetadata({formatSpecificMetadata: true});
+  const geometrySchemaElement = metadata.formatSpecificMetadata?.schema.find(
+    schemaElement => schemaElement.name === 'geometry'
+  );
+  expect(JSON.parse(metadata.keyValueMetadata.geo).version).toBe('1.1.0');
+  expect(geometrySchemaElement?.logicalType?.GEOMETRY).toBeUndefined();
+  expect(geometrySchemaElement?.logicalType?.GEOGRAPHY).toBeUndefined();
+  expect(geometrySchemaElement?.type).toBe(6);
+});

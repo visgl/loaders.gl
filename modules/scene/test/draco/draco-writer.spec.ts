@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {DracoLoader, DracoWriterOptions} from '@loaders.gl/scene';
-import {DracoWriter, DracoWriterWorker, encodeDracoBatch} from '@loaders.gl/scene/draco-writer';
+import {DracoWriter, DracoWriterWorker, encodeDracoBatch} from '@loaders.gl/scene/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
 import {convertMeshToArrowTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import draco3d from 'draco3d';

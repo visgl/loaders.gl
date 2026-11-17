@@ -36,7 +36,10 @@ export const OMETiffLoader = {
 
   testURL: (url: string): boolean => /\.ome\.tiff?(?:$|[?#])/i.test(url),
   /** Loads the implementation for asynchronous source construction. */
-  preload: async () => (await import('@loaders.gl/raster/ometiff-loader')).OMETiffLoader,
+  preload: async () => {
+    const loaderModule = await import('@loaders.gl/raster/geotiff');
+    return loaderModule.OMETiffLoader;
+  },
   /** Synchronous construction requires the source implementation subpath. */
   createDataSourceSync(_data: string | Blob, _options: OMETiffLoaderOptions): OMETiffImageSource {
     throw new Error(

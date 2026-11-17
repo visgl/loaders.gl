@@ -15,7 +15,7 @@ import {
   parseParquetFileToArrowInBatches
 } from './parse-parquet-to-arrow';
 import {convertParquetTableToRows} from '../../../../modules/tables/src/parquet/lib/parsers/parse-parquet-tables';
-import {loadWasm} from '../../../../modules/tables/src/parquet/lib/utils/load-wasm';
+import {loadWasm} from './load-wasm';
 import {tableFromIPC} from 'apache-arrow';
 import {normalizeParquetOptions} from '../../../../modules/tables/src/parquet/lib/utils/normalize-parquet-options';
 import {

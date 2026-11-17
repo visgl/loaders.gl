@@ -4,7 +4,7 @@
 
 import {load} from '@loaders.gl/core';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {SHPLoader} from '@loaders.gl/geospatial/shapefile';
 import {describe, expect, test} from 'vitest';
 
 const DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';

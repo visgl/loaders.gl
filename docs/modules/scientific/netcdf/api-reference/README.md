@@ -73,7 +73,7 @@ then reads selected numeric variables and applies named dimension slices.
 | Streaming or chunk pruning | ❌ Not implemented | Current classic-file execution materializes the source |
 
 ```ts
-import {NetCDFSource} from '@loaders.gl/scientific/netcdf/netcdf-source-loader';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf';
 
 const source = new NetCDFSource('weather.nc', {});
 const metadata = await source.getQueryMetadata();

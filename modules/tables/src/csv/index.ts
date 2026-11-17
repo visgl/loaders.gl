@@ -10,3 +10,17 @@ export type {CSVWriterOptions} from './csv-writer';
 export {CSVWriter} from './csv-writer';
 export {CSVTableSource} from './csv-source';
 export type {CSVSourceOptions} from './csv-source';
+
+export {CSV_LOADER_VERSION, DEFAULT_CSV_SHAPE, CSV_LOADER_OPTIONS} from './csv-loader-options';
+
+export {CSVLoaderWithParser} from '../csv-loader';
+
+export {
+  parseCSVArrayBufferAsArrow,
+  parseCSVTextAsArrow,
+  parseCSVInArrowBatches,
+  convertCSVRowTableToArrowTable,
+  calculateInitialTypedColumnCapacity,
+  type ArrowTableCSVOptions,
+  type ArrowTableCSVParseOptions
+} from './csv-arrow-table-parser';

@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {load, fetchFile} from '@loaders.gl/core';
 import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
-import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
+import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 import {
   getProjection,
   getSpatialReferenceSystemDefinition

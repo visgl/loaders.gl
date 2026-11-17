@@ -24,5 +24,8 @@ export const WMSFeatureInfoLoader = {
   format: 'wms-feature-info',
 
   /** Loads the parser-bearing WMS FeatureInfo loader implementation. */
-  preload: async () => (await import('./wms-feature-info-loader-with-parser')).WMSFeatureInfoLoaderWithParser
+  preload: async () => {
+    const loaderModule = await import('./wms-feature-info-loader-with-parser');
+    return loaderModule.WMSFeatureInfoLoaderWithParser;
+  }
 } as const satisfies Loader<WMSFeatureInfo, never, XMLLoaderOptions>;

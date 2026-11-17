@@ -43,7 +43,7 @@
       "import": "./dist/indexed-zip-writer.js",
       "require": "./dist/indexed-zip-writer.cjs"
     },
-    "./zip/zip-encode": {
+    "./zip-encode": {
       "types": "./dist/zip/zip-encode.d.ts",
       "import": "./dist/zip/zip-encode.js",
       "require": "./dist/zip/zip-encode.cjs"

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
+import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 
 const GPKG_RIVERS = '@loaders.gl/geospatial/geopackage/test/data/rivers_small.gpkg';
 const ROW_BENCHMARK_OPTIONS = {multiplier: 1, unit: 'rows'};

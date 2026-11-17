@@ -70,7 +70,7 @@ npm install @loaders.gl/core
 ## Usage
 
 ```typescript
-import {HexWKBLoader} from '@loaders.gl/geospatial/wkt/bundled';
+import {HexWKBLoader} from '@loaders.gl/geospatial/wkb/bundled';
 import {parseSync} from '@loaders.gl/core';
 
 const hexWkb = '0101000000000000000000f03f0000000000000040';
@@ -79,7 +79,7 @@ const data = parseSync(hexWkb, HexWKBLoader);
 ```
 
 ```typescript
-import {HexWKBLoader} from '@loaders.gl/geospatial/wkt';
+import {HexWKBLoader} from '@loaders.gl/geospatial/wkb';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, HexWKBLoader);

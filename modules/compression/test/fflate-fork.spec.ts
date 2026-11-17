@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import * as internal from '../src/lib/fflate/index';
+import * as internal from '../src/lib/fflate';
 import * as upstream from 'fflate';
 import {inflate, inflateRaw, ungzip} from 'pako';
 

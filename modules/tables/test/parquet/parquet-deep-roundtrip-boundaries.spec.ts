@@ -8,7 +8,7 @@ import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {DataType, Field, ObjectRowTable} from '@loaders.gl/core/schema';
 import {encodeTableToParquetJs} from '../../src/parquet/lib/encoders/encode-table-to-parquet-js';
 import {parseParquetFileToArrowWithJs} from '../../src/parquet/lib/parsers/parse-parquet-to-arrow-js';
-import {ParquetSource} from '../../src/parquet/parquet-source-loader';
+import {ParquetSource} from '../../src/parquet/parquet-source';
 import {EdgeInterpolationAlgorithm} from '../../src/parquet/parquetjs/parquet-thrift';
 
 const inferredValues = {
@@ -421,8 +421,8 @@ test.each([
   ],
   [{type: 'decimal', bitWidth: 256, precision: 100, scale: 0}, 'exceeds 32 bytes'],
   [
-    {type: 'fixed-size-list', listSize: 1, children: [{name: 'element', type: 'int32'}]},
-    'Unsupported field'
+    {type: 'fixed-size-list', listSize: 1, children: []},
+    'has no value child'
   ]
 ] as const)('writer rejects schema boundary %# without silently selecting a different physical type', async (type, message) => {
   const field: Field = {name: 'value', type: type as DataType, nullable: true};

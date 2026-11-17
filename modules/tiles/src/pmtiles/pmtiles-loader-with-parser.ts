@@ -6,11 +6,7 @@ import type {LoaderWithParser, LoaderOptions, ReadableFile} from '@loaders.gl/co
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 
 import {VectorSourceInfo, ImageSourceInfo} from './source-info';
-import {
-  createPMTilesSource,
-  PMTilesTileSource,
-  PMTilesSourceLoaderOptions
-} from './pmtiles-source-loader';
+import {createPMTilesSource, PMTilesTileSource, PMTilesSourceLoaderOptions} from './pmtiles-source';
 import {PMTilesLoader as PMTilesLoaderMetadata} from './pmtiles-loader';
 
 const {preload: _PMTilesLoaderPreload, ...PMTilesLoaderMetadataWithoutPreload} =

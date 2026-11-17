@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 // For streaming XML parsing
-// import './sax-ts/index';
 
 import './lib/pretty-print.spec';
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {SHPLoader} from '@loaders.gl/geospatial/shapefile';
 import {parse, parseInBatches, fetchFile} from '@loaders.gl/core';
 import {
   convertGeometryColumnToBinaryFeatureCollection,

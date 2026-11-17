@@ -34,7 +34,7 @@ await build({
       builder.onResolve({filter: /^\./}, arguments_ => {
         if (arguments_.kind === 'entry-point') return;
         const sourcePath = path.resolve(arguments_.resolveDir, arguments_.path);
-        const resolvedPath = [sourcePath, `${sourcePath}.ts`, path.join(sourcePath, 'index.ts')]
+        const resolvedPath = [sourcePath, sourcePath.replace(/\.js$/, '.ts'), `${sourcePath}.ts`, path.join(sourcePath, 'index.ts')]
           .find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
         if (!resolvedPath || !sourceDirectories.some(directory => resolvedPath.startsWith(`${directory}${path.sep}`))) return;
         const relativePath = path.relative(path.dirname(arguments_.importer), resolvedPath).replace(/\.ts$/, '.cjs').split(path.sep).join('/');

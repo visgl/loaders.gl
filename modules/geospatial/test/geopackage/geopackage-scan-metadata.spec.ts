@@ -1,7 +1,7 @@
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {GeoPackageDataSource} from '../../src/geopackage/geopackage-source-loader';
+import {GeoPackageDataSource} from '../../src/geopackage/geopackage-source';
 
 const GEOPACKAGE_FIXTURE = '@loaders.gl/geospatial/geopackage/test/data/rivers_multi.gpkg';
 

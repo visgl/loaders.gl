@@ -25,7 +25,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {createRequire} from 'node:module';
 /* @ts-expect-error TS2732: Cannot find module 'node:module' or its corresponding type declarations. */
 
-import {DracoWriterWorker} from '@loaders.gl/scene/draco-writer';
+import {DracoWriterWorker} from '@loaders.gl/scene/draco';
 import {encode, assert} from '@loaders.gl/core';
 import {
   concatenateArrayBuffers,

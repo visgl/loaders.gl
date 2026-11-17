@@ -143,7 +143,7 @@ function hasScriptInputs(packageDirectory, scriptCommand) {
  * @returns {Promise<void>}
  */
 async function prepareOutputDirectories(packageDirectory) {
-  await mkdir(join(packageDirectory, 'dist', 'libs', 'laz-rs-wasm'), {recursive: true});
+  await mkdir(join(packageDirectory, 'dist'), {recursive: true});
 }
 
 /**

@@ -4,7 +4,7 @@
 
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {encode, load} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -26,7 +26,7 @@ test('ParquetJSLoader builds nullable primitive Arrow vectors without losing nul
       {integer: null, measurement: null, counter: 4n}
     ]
   };
-  const parquet = await encode(input, ParquetJSWriter, {worker: false});
+  const parquet = await encode(input, ParquetWriter, {worker: false});
   const table = await load(parquet, ParquetJSLoader, {
     core: {worker: false},
     parquet: {shape: 'arrow'}

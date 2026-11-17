@@ -14,7 +14,7 @@ import {
   getGeometryColumnsFromSchema,
   convertGeoArrowGeometryToGeoJSON
 } from '@loaders.gl/core/geoarrow';
-import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {ArrowLoader} from '@loaders.gl/tables/arrow';
 test('ArrowUtils#convertGeoArrowGeometryToGeoJSON', async () => {
   for (const testCase of GEOARROW_TEST_CASES) {
     await testParseFromArrow(testCase[0], testCase[1]);

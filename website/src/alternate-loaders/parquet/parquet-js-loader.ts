@@ -20,7 +20,7 @@ const {preload: _ParquetJSLoaderPreload, ...ParquetJSLoaderMetadataWithoutPreloa
   ParquetJSLoaderMetadata;
 
 /** Default option bag for the experimental TypeScript-backed Parquet loader. */
-const DEFAULT_PARQUET_JS_OPTIONS = {
+const DEFAULT_PARQUET_WRITER_OPTIONS = {
   columns: undefined,
   preserveBinary: false,
   verifyFooterSignature: true,
@@ -78,7 +78,7 @@ export const ParquetJSLoaderWithParser = {
  * @returns normalized options with TypeScript defaults applied
  */
 function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions {
-  return normalizeParquetOptions(options, DEFAULT_PARQUET_JS_OPTIONS);
+  return normalizeParquetOptions(options, DEFAULT_PARQUET_WRITER_OPTIONS);
 }
 
 /** Exposes decoded Arrow record batches with their schema. */

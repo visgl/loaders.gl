@@ -69,7 +69,7 @@ const stage = await load('scene.usda', USDLoader);
 
 The format subpath exports a metadata-only loader. Async core APIs preload the parser automatically.
 Applications that need the parser-bearing object can import `USDLoaderWithParser` from
-`@loaders.gl/scene/usd-loader`.
+`@loaders.gl/scene/usd`.
 
 ## Options
 

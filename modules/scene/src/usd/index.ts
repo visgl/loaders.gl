@@ -14,3 +14,5 @@ export type {
   USDValue,
   USDVariant
 } from './lib/usd-types';
+
+export {USDLoaderWithParser} from '../usd-loader';

@@ -12,7 +12,7 @@ import {
   preloadSync,
   load
 } from '@loaders.gl/core';
-import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv/unbundled';
+import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/tables/csv';
 
 const CSV_TEXT = 'city,population\nParis,2148000\nBerlin,3769000';
 const CSV_ARRAY_BUFFER = new TextEncoder().encode(CSV_TEXT).buffer;

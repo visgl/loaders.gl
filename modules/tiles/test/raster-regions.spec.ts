@@ -8,7 +8,7 @@ import type {
   RasterRegionParameters,
   RasterRegionSource
 } from '@loaders.gl/core/loader-utils';
-import {createRegionExample} from '../../../examples/experimental/raster-regions/index';
+import {createRegionExample} from '../../../examples/experimental/raster-regions';
 
 /** Supplies a float region with raw and physical identify metadata. */
 function createPayload(region: RasterRegionParameters): NumericRasterData {

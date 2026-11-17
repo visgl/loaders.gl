@@ -5,12 +5,12 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {encode, parse, load} from '@loaders.gl/core';
-import {ParquetLoader, ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 /** Creates two tiny row groups without storing a binary fixture. */
 async function createRowGroups(): Promise<ArrayBuffer> {
-  return encode({shape: 'object-row-table', data: [{id: 0}, {id: 1}, {id: 2}, {id: 3}]}, ParquetJSWriter, {
+  return encode({shape: 'object-row-table', data: [{id: 0}, {id: 1}, {id: 2}, {id: 3}]}, ParquetWriter, {
     parquet: {rowGroupSize: 2}
   });
 }
@@ -66,7 +66,7 @@ test('ParquetLoader preserves footer metadata over embedded Arrow metadata and i
     const data = await encode({shape: 'object-row-table', data: [{id: 1}], schema: {
       fields: [{name: 'id', type: 'int32', nullable: false}],
       metadata: {source: 'footer', 'ARROW:schema': arrowSchema}
-    }}, ParquetJSWriter);
+    }}, ParquetWriter);
     const table = await parse(data, ParquetLoader, {
       core: {worker: false}, parquet: {shape: 'object-row-table'}
     }) as ObjectRowTable;

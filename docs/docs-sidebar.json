@@ -490,7 +490,7 @@
                   "modules/tables/parquet/api-reference/geoparquet-loader",
                   "modules/tables/parquet/api-reference/parquet-loader",
                   "modules/tables/parquet/api-reference/parquet-writer",
-                  "modules/tables/parquet/api-reference/parquet-source-loader",
+                  "modules/tables/parquet/api-reference/parquet-source",
                   "modules/tables/parquet/api-reference/iceberg-table-source",
                   "modules/tables/parquet/api-reference/delta-table-source"
                 ],
@@ -575,7 +575,7 @@
                 "label": "@loaders.gl/geospatial/flatgeobuf",
                 "items": [
                   "modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader",
-                  "modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader"
+                  "modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source"
                 ],
                 "link": {
                   "type": "doc",
@@ -954,7 +954,7 @@
                 "label": "@loaders.gl/tiles/mlt",
                 "items": [
                   "modules/tiles/mlt/api-reference/mlt-loader",
-                  "modules/tiles/mlt/api-reference/mlt-source-loader"
+                  "modules/tiles/mlt/api-reference/mlt-source"
                 ],
                 "link": {
                   "type": "doc",
@@ -969,7 +969,7 @@
                   "modules/tiles/mvt/api-reference/mvt-loader",
                   "modules/tiles/mvt/api-reference/tilejson-loader",
                   "modules/tiles/mvt/api-reference/mvt-writer",
-                  "modules/tiles/mvt/api-reference/mvt-source-loader",
+                  "modules/tiles/mvt/api-reference/mvt-source",
                   "modules/tiles/mvt/api-reference/table-tile-loader",
                   "modules/tiles/mvt/api-reference/arrow-table-tile-loader"
                 ],
@@ -985,7 +985,7 @@
                   "modules/tiles/pmtiles/api-reference/pmtiles-writer",
                   "modules/tiles/pmtiles/api-reference/geoarrow-pmtiles",
                   "modules/tiles/pmtiles/api-reference/raster-pmtiles",
-                  "modules/tiles/pmtiles/api-reference/pmtiles-source-loader"
+                  "modules/tiles/pmtiles/api-reference/pmtiles-source"
                 ],
                 "link": {
                   "type": "doc",
@@ -1228,7 +1228,7 @@
                     "type": "category",
                     "label": "Sources",
                     "items": [
-                      "modules/raster/geotiff/api-reference/geotiff-source-loader",
+                      "modules/raster/geotiff/api-reference/geotiff-source",
                       "modules/raster/geotiff/api-reference/ometiff-loader"
                     ],
                     "link": {

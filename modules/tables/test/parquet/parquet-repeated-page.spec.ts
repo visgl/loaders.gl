@@ -5,7 +5,7 @@
 import {encode} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {createParquetPagePruningPlan} from '../../src/parquet/lib/parquet-page-index';
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 import {expect, test} from 'vitest';
@@ -28,7 +28,7 @@ test('ParquetReader selectively reads repeated columns when page boundaries alig
         {id: [101], tags: ['hundred-one']}
       ]
     } satisfies ObjectRowTable,
-    ParquetJSWriter,
+    ParquetWriter,
     {worker: false, parquet: {pageSize: 2, pageIndex: {id: true, tags: true}}}
   );
   const file = new BlobFile(new Blob([parquetBuffer]));
@@ -77,7 +77,7 @@ test('Parquet page pruning falls back when a repeated row crosses a page boundar
         {id: [100, 101, 102], tags: ['hundred', 'hundred-one', 'hundred-two']}
       ]
     } satisfies ObjectRowTable,
-    ParquetJSWriter,
+    ParquetWriter,
     {worker: false, parquet: {pageSize: 2, pageIndex: {id: true, tags: true}}}
   );
   const file = new BlobFile(new Blob([parquetBuffer]));

@@ -50,7 +50,7 @@ The `TCXLoader` parses [TCX files][tcx_wikipedia] into loaders.gl geometry table
 ## Usage
 
 ```typescript
-import {TCXLoader} from '@loaders.gl/geospatial/kml';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, TCXLoader, options);

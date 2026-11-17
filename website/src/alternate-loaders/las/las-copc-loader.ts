@@ -1,0 +1,60 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+// LASER (LAS) FILE FORMAT
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {Table, RecordBatch} from 'apache-arrow';
+import {getLASRecordBatches, toPublicLASResult} from '../../../../modules/pointclouds/src/las/las-loader';
+import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import {
+  formatLASMeshColors,
+  getLASShape,
+  LAS_LOADER_METADATA,
+  type LASLoaderOptions
+} from '../../../../modules/pointclouds/src/las/las-loader-shared';
+import type {LASMesh} from '../../../../modules/pointclouds/src/las/lib/las-types';
+import {parseCOPCLAS, parseCOPCLASInBatches} from './lib/copc/parse-las';
+
+/**
+ * LAS/LAZ loader variant using the laz-perf decoder from the COPC package.
+ */
+export const LASCOPCLoaderWithParser = {
+  ...LAS_LOADER_METADATA,
+  name: 'LAS (COPC)',
+  parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
+    convertLASMesh(await parseCOPCLAS(arrayBuffer, options), options),
+  parseInBatches: (arrayBufferIterator, options?: LASLoaderOptions) =>
+    convertLASMeshBatches(parseCOPCLASInBatches(arrayBufferIterator, options), options)
+} as const satisfies LoaderWithParser<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions>;
+
+function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | Table {
+  const formattedMesh = formatLASMeshColors(mesh, options?.las?.colorFormat || 'uint8norm');
+  const table = convertMeshToArrowTable(formattedMesh);
+  if (getLASShape(options) === 'arrow') {
+    return toPublicLASResult({data: table, loader: 'las', loaderData: mesh.loaderData});
+  }
+  return {
+    ...(convertTableToMesh(table) as LASMesh),
+    loader: mesh.loader,
+    loaderData: mesh.loaderData,
+    progress: (mesh as LASMesh & {progress?: number}).progress
+  } as LASMesh & {progress?: number};
+}
+
+/**
+ * Convert LAS mesh batches to the requested output shape.
+ * @param meshBatches Decoded LAS mesh batches
+ * @param options LAS loader options
+ * @returns Converted LAS batches
+ */
+async function* convertLASMeshBatches(
+  meshBatches: AsyncIterable<LASMesh>,
+  options?: LASLoaderOptions
+): AsyncIterable<LASMesh | RecordBatch> {
+  for await (const mesh of meshBatches) {
+    const result = convertLASMesh(mesh, options);
+    if (!('attributes' in result)) yield* getLASRecordBatches(result);
+    else yield result;
+  }
+}

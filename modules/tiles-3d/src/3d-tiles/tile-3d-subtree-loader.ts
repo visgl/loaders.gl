@@ -16,7 +16,9 @@ export const Tile3DSubtreeLoader = {
   ...Tile3DSubtreeFormat,
   version: VERSION,
   /** Loads the parser-bearing 3D Tiles Subtree loader implementation. */
-  preload: async () =>
-    (await import('./tile-3d-subtree-loader-with-parser')).Tile3DSubtreeLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./tile-3d-subtree-loader-with-parser');
+    return loaderModule.Tile3DSubtreeLoaderWithParser;
+  },
   options: {}
 } as const satisfies Loader<Subtree, never, LoaderOptions>;

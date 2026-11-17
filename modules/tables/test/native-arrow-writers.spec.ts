@@ -5,18 +5,13 @@
 import {expect, test} from 'vitest';
 import {Int32, tableFromArrays, tableFromIPC, vectorFromArray} from 'apache-arrow';
 import {encode, encodeInBatches, encodeSync, fetchFile, parse} from '@loaders.gl/core';
-import {
-  ArrowWriter,
-  AvroWriter,
-  CSVWriter,
-  GeoJSONLoader,
-  GeoJSONWriter,
-  JSONWriter,
-  ORCWriter,
-  ParquetLoader,
-  ParquetJSWriter,
-  ParquetWriter
-} from '@loaders.gl/tables';
+import {GeoJSONLoader, ParquetLoader} from '@loaders.gl/tables';
+import {ArrowWriter} from '@loaders.gl/tables/arrow';
+import {AvroWriter} from '@loaders.gl/tables/avro';
+import {CSVWriter} from '@loaders.gl/tables/csv';
+import {GeoJSONWriter, JSONWriter} from '@loaders.gl/tables/json';
+import {ORCWriter} from '@loaders.gl/tables/orc';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {GeoArrowWriter} from '../src/arrow/geoarrow-writer';
 
 const table = tableFromArrays({id: new Int32Array([1, 2]), label: ['one', null]});
@@ -33,7 +28,7 @@ test.each([
   AvroWriter,
   ORCWriter,
   ParquetWriter,
-  ParquetJSWriter,
+  ParquetWriter,
   CSVWriter,
   JSONWriter
 ])('$id accepts native Arrow tables', async writer => {
@@ -43,9 +38,9 @@ test.each([
   await expect(encode(wrapped as never, writer)).rejects.toThrow();
 });
 
-test('ParquetJSWriter preserves nulls in native numeric columns', async () => {
+test('ParquetWriter preserves nulls in native numeric columns', async () => {
   const input = tableFromArrays({value: vectorFromArray([1, null], new Int32())});
-  const bytes = await encode(input, ParquetJSWriter);
+  const bytes = await encode(input, ParquetWriter);
   const result = await parse(bytes, ParquetLoader, {core: {worker: false}});
   expect(result.getChild('value')?.get(0)).toBe(1);
   expect(result.getChild('value')?.get(1)).toBeNull();

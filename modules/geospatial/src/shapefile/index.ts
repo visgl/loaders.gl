@@ -17,3 +17,11 @@ export {SHPLoader} from './shp-loader-types';
 export {BinaryReader as _BinaryReader} from './lib/streaming/binary-reader';
 export {BinaryChunkReader as _BinaryChunkReader} from './lib/streaming/binary-chunk-reader';
 export {zipBatchIterators as _zipBatchIterators} from './lib/streaming/zip-batch-iterators';
+
+export {
+  parseShapefileToArrow,
+  parseShapefileToArrowInBatches,
+  SHAPEFILE_HEADER_KEY
+} from '../shapefile-arrow-loader';
+
+export {ShapefileLoaderWithParser} from '../shapefile-loader';

@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {TerrainLoader} from '@loaders.gl/raster/terrain/index';
+import {TerrainLoader} from '@loaders.gl/raster/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 // Should be possible to remove this
 import {ImageLoader} from '@loaders.gl/images';
