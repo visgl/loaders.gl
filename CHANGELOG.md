@@ -1,13 +1,19 @@
 # CHANGELOG for loaders.gl
 
-## Unreleased
+## v5.0
+
+### v5.0.0-beta.12
 
 - Upgrade math.gl to beta.12 and adopt its consolidated Arrow, UTF-8, Web Mercator, and scale entry points.
 - Support progressive quantile classification, computed scale domains, constant quantize extents, explicit threshold and ordinal color mappings, and composed scale expressions.
 
 - Add an experimental shared terrain source and same-level seam reconciliation backed by math.gl.
-
-## v5.0
+- Consolidate TypeScript Parquet APIs and clean up format imports (#4540).
+- Apply consistent grid validation across WMTS and OGC tile sources (#4542).
+- Preserve merged tile geometry during bound generation and cover reflected source bounding boxes (#4547, #4549).
+- Share identical textures across I3S collection nodes, including unchanged legacy PNG and JPEG textures (#4550, #4551).
+- Run Node and Chromium slow tests in separate release processes (#4541).
+- Log the tile-converter package version and selected implementation at startup (#4548).
 
 ### v5.0.0-beta.11
 
