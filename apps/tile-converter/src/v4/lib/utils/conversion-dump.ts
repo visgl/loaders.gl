@@ -43,6 +43,8 @@ type TilesConverted = {
 };
 
 export type DumpMetadata = {
+  /** Texture owner persisted so resumed nodes retain shared references. */
+  textureOwnerId?: number;
   boundingVolumes: BoundingVolumes | null;
   attributesCount?: number;
   featureCount: number | null;
