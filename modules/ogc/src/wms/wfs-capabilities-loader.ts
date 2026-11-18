@@ -12,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type {WFSCapabilities};
 
-export type WFSLoaderOptions = LoaderOptions & {
+export type WFSCapabilitiesLoaderOptions = LoaderOptions & {
   wfs?: {};
 };
 
@@ -47,7 +47,7 @@ export const WFSCapabilitiesLoader = {
     wfs: {}
   },
   preload
-} as const satisfies Loader<WFSCapabilities, never, WFSLoaderOptions>;
+} as const satisfies Loader<WFSCapabilities, never, WFSCapabilitiesLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

@@ -24,9 +24,7 @@ export type NetCDFLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing NetCDF loader implementation. */
 async function preload() {
-  const {NetCDFLoaderWithParser} = await import(
-    '@loaders.gl/scientific/netcdf/netcdf-loader-with-parser'
-  );
+  const {NetCDFLoaderWithParser} = await import('@loaders.gl/scientific/netcdf');
   return NetCDFLoaderWithParser;
 }
 
@@ -34,6 +32,11 @@ async function preload() {
  * Metadata-only loader for NETCDF.
  */
 export const NetCDFLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.(?:cdf|nc)(?:$|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: true,
+  type: 'netcdf',
   ...NetCDFFormat,
   dataType: null as unknown as NetCDF,
   batchType: null as never,
@@ -57,6 +60,3 @@ export const NetCDFLoader = {
   },
   preload
 } as const satisfies Loader<NetCDF, never, NetCDFLoaderOptions>;
-
-/** @deprecated Use NetCDFLoader. */
-export const NetCDFWorkerLoader = NetCDFLoader;

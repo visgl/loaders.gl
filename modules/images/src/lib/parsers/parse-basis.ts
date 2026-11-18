@@ -276,7 +276,7 @@ export async function parseBasis(
 ): Promise<TextureLevel[][]> {
   return await withBasisTranscodingLock(async () => {
     const module = (await loadBasisTranscoderModule(
-      extractLoadLibraryOptions(options)
+      extractLoadLibraryOptions({core: options?.core, modules: options?.modules})
     )) as BasisTranscoderModule;
     const containerFormat = options.basis?.containerFormat || 'auto';
     const isKTX2 = containerFormat === 'ktx2' || (containerFormat === 'auto' && isKTX(data));

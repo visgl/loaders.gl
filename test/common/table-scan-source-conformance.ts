@@ -2,21 +2,22 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
 import {describe, expect, test} from 'vitest';
 
 import type {
-  ScanExecutionTelemetry,
+  TableQueryExecutionSummary,
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/core/schema';
-import {convertBatch} from '@loaders.gl/core/schema-utils';
+import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
 import {parseSQLPredicate, type SQLPredicate} from '@loaders.gl/core/scan';
 
 /** One independently disposable source used by the portable scan conformance kit. */
 export type TableScanConformanceFixture = Readonly<{
   /** Source under test. */
-  source: TableScanSource<TableBatch, SQLPredicate>;
+  source: TableScanSource<TableBatch | RecordBatch, SQLPredicate>;
   /** Releases source-owned resources after one case. */
   close?: () => void | Promise<void>;
 }>;
@@ -70,11 +71,11 @@ export function describeTableScanSourceConformance(options: TableScanConformance
 
     test('reports a serializable terminal telemetry snapshot', async () => {
       await withFixture(options, async ({source}) => {
-        let telemetry: ScanExecutionTelemetry | undefined;
+        let telemetry: TableQueryExecutionSummary | undefined;
         expect(
           await collectRows(source, {
             limit: 0,
-            onTelemetry: value => {
+            onQueryComplete: value => {
               telemetry = value;
             }
           })
@@ -94,7 +95,7 @@ export function describeTableScanSourceConformance(options: TableScanConformance
       await withFixture(options, async ({source}) => {
         await expect(
           collectRows(source, {
-            onTelemetry: () => {
+            onQueryComplete: () => {
               throw new Error('telemetry exporter unavailable');
             }
           })
@@ -131,13 +132,13 @@ async function withFixture(
 
 /** Materializes only the bounded rows produced by one conformance query. */
 async function collectRows(
-  source: TableScanSource<TableBatch, SQLPredicate>,
+  source: TableScanSource<TableBatch | RecordBatch, SQLPredicate>,
   options: TableScanReadOptions<SQLPredicate>
 ): Promise<Record<string, unknown>[]> {
   const rows: Record<string, unknown>[] = [];
   for await (const batch of source.read(options)) {
-    const arrowBatch = convertBatch(batch, 'arrow-table');
-    rows.push(...arrowBatch.data.toArray().map(row => row.toJSON()));
+    const arrowData = 'numRows' in batch ? batch : convertTableToArrow(batch);
+    rows.push(...arrowData.toArray().map(row => row.toJSON()));
   }
   return rows;
 }

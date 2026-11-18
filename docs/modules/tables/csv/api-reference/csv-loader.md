@@ -49,7 +49,7 @@ import {ClientExample} from '@site/src/components';
   tone="blue"
 />
 
-`CSVLoader` loads CSV and TSV data as loaders.gl `ArrowTable` objects by default. Set `csv.shape: 'object-row-table'`, `csv.shape: 'array-row-table'`, or `csv.shape: 'columnar-table'` to request a row or columnar table instead.
+`CSVLoader` loads CSV and TSV data as native Apache Arrow `Table` objects by default. Set `csv.shape: 'object-row-table'`, `csv.shape: 'array-row-table'`, or `csv.shape: 'columnar-table'` to request a row or columnar table instead.
 
 ## Usage
 
@@ -63,7 +63,7 @@ const table = await load(url, CSVLoader);
 The CSV format export is metadata-only and works with async core APIs such as `load`, `parse`, and `parseInBatches`, which preload the parser implementation when needed. Applications that need a parser-bearing loader object directly can import it from the explicit loader subpath:
 
 ```typescript
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv';
 ```
 
 The bare `@loaders.gl/tables/csv` entry point is the metadata-only import. Core async APIs call `preload()` and dynamically import the parser-bearing implementation when parsing starts.
@@ -93,7 +93,7 @@ const rows = await load(urlToCSVWithoutHeader, CSVLoader, {
 
 ### Apache Arrow
 
-When `csv.shape: 'arrow-table'` is selected, `CSVLoader` returns a loaders.gl `ArrowTable` object that wraps an Apache Arrow table.
+When `csv.shape: 'arrow'` is selected, `CSVLoader` returns a native Apache Arrow `Table`. Batched parsing yields native `RecordBatch` objects with Arrow schemas and metadata.
 
 ### Type Inference
 
@@ -104,10 +104,10 @@ import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const table = await load(url, CSVLoader, {
-  csv: {shape: 'arrow-table', dynamicTyping: false}
+  csv: {shape: 'arrow', dynamicTyping: false}
 });
 const typedTable = await load(url, CSVLoader, {
-  csv: {shape: 'arrow-table', dynamicTyping: true}
+  csv: {shape: 'arrow', dynamicTyping: true}
 });
 ```
 
@@ -121,16 +121,22 @@ Set `csv.viewTypes: 'prefer'` to emit `Utf8View` columns when the installed `apa
 
 ```typescript
 const table = await load(url, CSVLoader, {
-  csv: {shape: 'arrow-table', detectGeometryColumns: true},
+  csv: {shape: 'arrow', detectGeometryColumns: true},
   geoarrow: {encodingPreference: 'optimized'}
 });
 ```
+
+## Data sources
+
+Pass `CSVLoader` to [`createDataSource()`](/docs/modules/core/api-reference/create-data-source)
+to open a URL or Blob for table queries. Use `load()` to parse the input into a table.
+
 
 ## CSVLoader Options
 
 | Option                      | Type                                                                                       | Default                       | Description                                                                                                                  |
 | --------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `csv.shape`                 | `'object-row-table' \| 'array-row-table' \| 'columnar-table' \| 'arrow-table'`             | `arrow-table`                 | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
+| `csv.shape`                 | `'arrow' \| 'object-row-table' \| 'array-row-table' \| 'columnar-table'`             | `'arrow'` | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
 | `csv.optimizeMemoryUsage`   | `boolean`                                                                                  | `false`                       | Optimize memory usage at the cost of additional parsing time.                                                                |
 | `csv.header`                | `boolean \| 'auto'`                                                                        | `auto`                        | If `true`, treat the first row as field names. If `false`, treat the first row as data. `'auto'` attempts to detect headers. |
 | `csv.columnPrefix`          | `string`                                                                                   | `column`                      | Prefix used when generating column names for files without headers, for example `column1`, `column2`, ...                    |
@@ -146,5 +152,3 @@ const table = await load(url, CSVLoader, {
 | `csv.delimitersToGuess`     | `string[]`                                                                                 | `[',', '\t', '\|', ';']`      | Delimiters to try when no delimiter is specified.                                                                            |
 
 ## Remarks
-
-`CSVWorkerLoader` is a deprecated alias for `CSVLoader`.

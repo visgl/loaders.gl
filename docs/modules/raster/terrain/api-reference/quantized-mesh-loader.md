@@ -48,7 +48,7 @@ mesh][quantized_mesh] format. It returns a [Mesh Arrow table](/docs/specificatio
 | Shape         | Output             | Use when                           |
 | ------------- | ------------------ | ---------------------------------- |
 | `mesh`        | `Mesh`             | You want the legacy mesh object.   |
-| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| `arrow` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
@@ -75,7 +75,7 @@ const options = {
 const data = await load(url, QuantizedMeshLoader, options);
 const table = await load(url, QuantizedMeshLoader, {
   worker: false,
-  'quantized-mesh': {...options['quantized-mesh'], shape: 'arrow-table'}
+  'quantized-mesh': {...options['quantized-mesh'], shape: 'arrow'}
 });
 ```
 
@@ -84,7 +84,7 @@ const table = await load(url, QuantizedMeshLoader, {
 | Option                       | Type            | Default        | Description                                                                     |
 | ---------------------------- | --------------- | -------------- | ------------------------------------------------------------------------------- |
 | `quantized-mesh.bounds`      | `array<number>` | `[0, 0, 1, 1]` | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. |
-| `quantized-mesh.shape`       | `string`        | `arrow-table`  | Output shape: `'arrow-table'` or `'mesh'`.                                      |
+| `quantized-mesh.shape`       | `string`        | `arrow`  | Output shape: `'arrow'` or `'mesh'`.                                      |
 | `quantized-mesh.skirtHeight` | `number`        | `null`         | If set, create the skirt for the tile with particular height in meters          |
 
 ## Remarks

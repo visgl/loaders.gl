@@ -58,7 +58,7 @@ The `DracoWriter` encodes [Mesh](/docs/specifications/category-mesh) or [Mesh Ar
 ## Usage
 
 ```typescript
-import {DracoWriter} from '@loaders.gl/scene/draco-writer';
+import {DracoWriter} from '@loaders.gl/scene/draco';
 import {encode} from '@loaders.gl/core';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 

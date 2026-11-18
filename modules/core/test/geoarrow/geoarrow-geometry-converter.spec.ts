@@ -117,9 +117,7 @@ test('GeoArrow mixed WKB union preserves per-row Z and M dimensions', async () =
     });
 
   const sourceTypeCodes = getWKBTypeCodes(sourceColumn);
-  expect(getWKBTypeCodes(roundTripColumn)).toEqual(
-    sourceTypeCodes.map(typeCode => (typeCode === 7 ? 3007 : typeCode))
-  );
+  expect(getWKBTypeCodes(roundTripColumn)).toEqual(sourceTypeCodes);
 });
 
 /**
@@ -389,7 +387,7 @@ test.each([
 ] as const)('writes %s native rows to WKB without a GeoJSON bridge', (encoding, geometry) => {
   const feature: Feature = {type: 'Feature', properties: {}, geometry};
   const source = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable([feature], {geoarrow: {encoding: 'wkb'}}).data,
+    convertFeaturesToGeoArrowTable([feature], {geoarrow: {encoding: 'wkb'}}),
     'geoarrow.wkb'
   );
   const native = convertGeoArrowGeometry(source, encoding);
@@ -447,7 +445,7 @@ test('GeoArrow coordinate mapping limits sliced nested ranges', () => {
         ]
       }
     }
-  ]).data;
+  ]);
   const native = convertGeoArrowGeometry(source, 'geoarrow.linestring');
   const slicedVector = native.getChild('geometry')!.slice(1, 2);
 
@@ -487,7 +485,7 @@ test('GeoArrow coordinate mapping limits sliced dense-union ranges', () => {
         ]
       }
     }
-  ]).data;
+  ]);
   const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
   const slicedVector = union.getChild('geometry')!.slice(1, 2);
 
@@ -527,7 +525,7 @@ test('GeoArrow polygon rewinding canonicalizes exterior ring orientation', () =>
     }
   ];
   const source = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}).data,
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}),
     'geoarrow.wkb'
   );
   const converted = convertGeoArrowGeometry(source, 'geoarrow.polygon');
@@ -558,7 +556,7 @@ test('GeoArrow polygon rewinding supports separated coordinate buffers', () => {
       }
     ],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   const converted = convertGeoArrowGeometry(source, 'geoarrow.polygon', {
     coordinates: 'separated'
   });
@@ -604,7 +602,7 @@ test('GeoArrow polygon rewinding handles a sliced native vector', () => {
       }
     ],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   const converted = convertGeoArrowGeometry(source, 'geoarrow.polygon');
   const slicedGeometry = converted.getChild('geometry')?.slice(1, 2);
 
@@ -664,7 +662,7 @@ test('GeoArrow polygon rewinding traverses mixed dense unions and collections', 
         ]
       }
     }
-  ]).data;
+  ]);
   const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
   rewindGeoArrow(union.getChild('geometry')!, 'geoarrow.geometry');
   const result = convertGeoArrowToTable(union, 'geojson-table').features;
@@ -706,7 +704,7 @@ test('GeoArrow polygon rewinding leaves unreferenced sliced union children uncha
         ]
       }
     }
-  ]).data;
+  ]);
   const union = convertGeoArrowGeometry(source, 'geoarrow.geometry').getChild('geometry')!;
   const firstBefore = convertGeoArrowVectorCellToGeoJSON(union, 0, 'geoarrow.geometry');
 
@@ -828,7 +826,7 @@ const directWKBGeometryCases: readonly [GeoArrowGeometryTarget, Geometry][] = [
 test.each(directWKBGeometryCases)('directly decodes WKB into %s buffers', (target, geometry) => {
   const feature: Feature = {type: 'Feature', properties: {}, geometry};
   const source = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable([feature], {geoarrow: {encoding: 'wkb'}}).data,
+    convertFeaturesToGeoArrowTable([feature], {geoarrow: {encoding: 'wkb'}}),
     'geoarrow.wkb'
   );
   const converted = convertGeoArrowGeometry(source, target, {
@@ -861,7 +859,7 @@ test('direct WKB conversion supports separated coordinate buffers', () => {
   const source = setGeometryFieldEncoding(
     convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}], {
       geoarrow: {encoding: 'wkb'}
-    }).data,
+    }),
     'geoarrow.wkb'
   );
   const converted = convertGeoArrowGeometry(source, 'geoarrow.multipolygon', {
@@ -900,7 +898,7 @@ test.each([
   const source = setGeometryFieldEncoding(
     convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}], {
       geoarrow: {encoding: 'wkb'}
-    }).data,
+    }),
     'geoarrow.wkb'
   );
   const converted = convertGeoArrowGeometry(source, target);
@@ -1071,7 +1069,7 @@ test('GeoArrowGeometryConverter converts mixed WKB tables to geoarrow.geometry',
     }
   ];
   const table = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}).data,
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}),
     'geoarrow.wkb'
   );
   const convertedTable = convertGeoArrowGeometry(table, 'geoarrow.geometry');
@@ -1116,7 +1114,7 @@ test('GeoArrowGeometryConverter writes compact direct union children for mixed W
     {type: 'Feature', properties: {kind: 'null'}, geometry: null}
   ];
   const source = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}).data,
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}),
     'geoarrow.wkb'
   );
   const converted = convertGeoArrowGeometry(source, 'geoarrow.geometry', {
@@ -1162,7 +1160,7 @@ test('GeoArrowGeometryConverter promotes representable native union families wit
     {type: 'Feature', properties: {kind: 'null'}, geometry: null}
   ];
   const source = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}).data,
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}),
     'geoarrow.wkb'
   );
   const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
@@ -1215,7 +1213,7 @@ test('GeoArrowGeometryConverter converts geometry collections to geoarrow.geomet
     }
   ];
   const table = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkt'}}).data,
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkt'}}),
     'geoarrow.wkt'
   );
   const convertedTable = convertGeoArrowGeometry(table, 'geoarrow.geometrycollection');
@@ -1255,7 +1253,7 @@ test('GeoArrowGeometryConverter decodes WKB GeometryCollections without a GeoJSO
   };
   const source = convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}], {
     geoarrow: {encoding: 'wkb'}
-  }).data;
+  });
   const converted = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection');
 
   expect(
@@ -1293,7 +1291,7 @@ test('GeoArrowGeometryConverter supports recursive native GeometryCollections', 
   };
   const source = convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}], {
     geoarrow: {encoding: 'wkb'}
-  }).data;
+  });
 
   const collection = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection');
   const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
@@ -1348,7 +1346,7 @@ test('GeoArrowGeometryConverter bounds GeometryCollection recursion', () => {
       }
     ],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   expect(() =>
     convertGeoArrowGeometry(wkbSource, 'geoarrow.geometrycollection', {
       maxGeometryCollectionDepth: 1
@@ -1372,7 +1370,7 @@ test('GeoArrow vector validation rejects unknown dense-union type ids', () => {
     }
   ];
   const table = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}).data,
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}),
     'geoarrow.wkb'
   );
   const convertedTable = convertGeoArrowGeometry(table, 'geoarrow.geometry');
@@ -1462,7 +1460,7 @@ test('GeoArrowGeometryConverter round-trips every union geometry kind and null',
     }
   ];
   const source = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkt'}}).data,
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkt'}}),
     'geoarrow.wkt'
   );
   const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
@@ -1502,7 +1500,7 @@ test('GeoArrowGeometryConverter handles null and empty geometry collections', ()
     }
   ];
   const source = setGeometryFieldEncoding(
-    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkt'}}).data,
+    convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkt'}}),
     'geoarrow.wkt'
   );
   const collection = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection');
@@ -1721,7 +1719,7 @@ test('GeoArrowGeometryConverter selects concrete native encoding from GeoParquet
       }
     }
   ];
-  const source = convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}).data;
+  const source = convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}});
   const converted = convertGeoArrowGeometry(source, 'native');
   const convertedGeometry = converted.getChild('geometry');
 
@@ -1814,7 +1812,7 @@ test('GeoArrowGeometryConverter preserves record batch boundaries', () => {
     {type: 'Feature', properties: {id: 1}, geometry: {type: 'Point', coordinates: [1, 2]}},
     {type: 'Feature', properties: {id: 2}, geometry: {type: 'Point', coordinates: [3, 4]}}
   ];
-  const source = convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}).data;
+  const source = convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}});
   const sourceBatch = source.batches[0];
   const chunkedSource = new arrow.Table(source.schema, [
     sourceBatch.slice(0, 1),
@@ -1842,7 +1840,7 @@ test('GeoArrowGeometryConverter keeps mixed union schemas stable across record b
       }
     }
   ];
-  const source = convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}}).data;
+  const source = convertFeaturesToGeoArrowTable(features, {geoarrow: {encoding: 'wkb'}});
   const sourceBatch = source.batches[0];
   const chunkedSource = new arrow.Table(source.schema, [
     sourceBatch.slice(0, 1),
@@ -1876,7 +1874,7 @@ test('GeoArrowGeometryConverter honors explicit native physical layout requests'
   const source = convertFeaturesToGeoArrowTable(
     [{type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}}],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   const nativeSource = convertGeoArrowGeometry(source, 'geoarrow.point');
   const vector = nativeSource.getChild('geometry')!;
 
@@ -1903,7 +1901,7 @@ test('GeoArrowGeometryConverter uses Arrow buffers for native layout conversion'
       {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [3, 4]}}
     ],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   const nativeSource = convertGeoArrowGeometry(source, 'geoarrow.point');
   const vector = nativeSource.getChild('geometry')!;
   const getValue = vi.spyOn(vector, 'get').mockImplementation(() => {
@@ -1925,7 +1923,7 @@ test('GeoArrowGeometryConverter keeps sliced native conversions on the buffer ke
       {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [3, 4]}}
     ],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   const nativeSource = convertGeoArrowGeometry(source, 'geoarrow.point');
   const slicedVector = nativeSource.getChild('geometry')!.slice(1, 2);
   const getValue = vi.spyOn(slicedVector, 'get').mockImplementation(() => {
@@ -1968,7 +1966,7 @@ test('GeoArrowGeometryConverter normalizes offsets for sliced nested native conv
       }
     ],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   const nativeSource = convertGeoArrowGeometry(source, 'geoarrow.linestring');
   const slicedVector = nativeSource.getChild('geometry')!.slice(1, 2);
 
@@ -2062,7 +2060,7 @@ test('GeoArrowGeometryConverter promotes native geometry without GeoJSON materia
       {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [3, 4]}}
     ],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   const points = convertGeoArrowGeometry(source, 'geoarrow.point');
   const multipoints = convertGeoArrowGeometry(points, 'geoarrow.multipoint', {
     coordinates: 'separated',
@@ -2108,7 +2106,7 @@ test('GeoArrowGeometryConverter narrows representable native offsets without row
       }
     ],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
+  );
   const large = convertGeoArrowGeometry(source, 'geoarrow.linestring', {
     offsetType: 'int64'
   });
@@ -2186,11 +2184,10 @@ test('table conversion applies native options to an existing GeoArrow Arrow tabl
   const source = convertFeaturesToGeoArrowTable(
     [{type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}}],
     {geoarrow: {encoding: 'wkb'}}
-  ).data;
-  const converted = convertTableToGeoArrow(
-    {shape: 'arrow-table', data: source},
-    {geoarrow: {encoding: 'geoarrow.point', coordinates: 'separated'}}
   );
+  const converted = convertTableToGeoArrow(source, {
+    geoarrow: {encoding: 'geoarrow.point', coordinates: 'separated'}
+  });
 
   expect(converted.schema.fields.find(field => field.name === 'geometry')?.type.toString()).toBe(
     'Struct<{x:Float64, y:Float64}>'

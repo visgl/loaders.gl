@@ -24,8 +24,10 @@ export const I3SAttributeLoader = {
   version: VERSION,
   mimeTypes: ['application/binary'],
   /** Loads the parser-bearing I3S attribute loader implementation. */
-  preload: async () =>
-    (await import('./i3s-attribute-loader-with-parser')).I3SAttributeLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./i3s-attribute-loader-with-parser');
+    return loaderModule.I3SAttributeLoaderWithParser;
+  },
   extensions: ['bin'],
   options: {},
   binary: true

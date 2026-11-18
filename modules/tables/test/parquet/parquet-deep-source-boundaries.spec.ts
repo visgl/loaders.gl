@@ -5,10 +5,10 @@
 import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {ParquetSource} from '../../src/parquet/parquet-source-loader';
-import type {ParquetSourceBatch, ParquetSourceExplain} from '../../src/parquet/parquet-source-types';
+import {ParquetSource} from '../../src/parquet/parquet-source';
+import type {ParquetSourceExplain} from '../../src/parquet/parquet-source-types';
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 import {PARQUET_CODECS} from '../../src/parquet/parquetjs/codecs';
 import {FileMetaData, KeyValue, SizeStatistics, Statistics} from '../../src/parquet/parquetjs/parquet-thrift';
@@ -91,7 +91,7 @@ let encryptedFixture: ArrayBuffer;
 let signedFixture: ArrayBuffer;
 
 beforeAll(async () => {
-  plainFixture = await encode(INPUT, ParquetJSWriter, {
+  plainFixture = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       rowGroupSize: 2,
@@ -101,7 +101,7 @@ beforeAll(async () => {
       writeSizeStatistics: true
     }
   });
-  encryptedFixture = await encode(INPUT, ParquetJSWriter, {
+  encryptedFixture = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       pageSize: 1,
@@ -119,7 +119,7 @@ beforeAll(async () => {
       }
     }
   });
-  signedFixture = await encode(INPUT, ParquetJSWriter, {
+  signedFixture = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       footerSignature: {
@@ -224,19 +224,19 @@ test('executing a scan plan retains projection, exact filtering, limits and sour
       limit: 2
     });
     const batches = await collectBatches(source.executeScanPlan(plan));
-    expect(batches.flatMap((batch) => Array.from(batch.data.getChild('label')!))).toEqual([
+    expect(batches.flatMap((batch) => Array.from(batch.getChild('label')!))).toEqual([
       'one',
       'two'
     ]);
-    expect(batches.reduce((sum, batch) => sum + batch.length, 0)).toBe(2);
-    expect(batches.map((batch) => batch.data.schema.fields.map((field) => field.name))).toEqual([
+    expect(batches.reduce((sum, batch) => sum + batch.numRows, 0)).toBe(2);
+    expect(batches.map((batch) => batch.schema.fields.map((field) => field.name))).toEqual([
       ['label'],
       ['label']
     ]);
     const override = await collectBatches(
       source.executeScanPlan(plan, {columns: ['id'], limit: 1})
     );
-    expect(Array.from(override[0].data.getChild('id')!)).toEqual([1]);
+    expect(Array.from(override[0].getChild('id')!)).toEqual([1]);
     await expect(
       collectBatches(
         source.executeScanPlan({...plan, source: 'other'} as unknown as ParquetSourceExplain)
@@ -261,7 +261,7 @@ test('encrypted dictionary pages, indexes and Bloom filters preserve exact selec
     expect(plan.pages.selected).toBeGreaterThan(0);
     expect(plan.pages.selected).toBeLessThan(plan.pages.total);
     const batches = await collectBatches(source.executeScanPlan(plan));
-    expect(batches.flatMap((batch) => Array.from(batch.data.getChild('label')!))).toEqual([
+    expect(batches.flatMap((batch) => Array.from(batch.getChild('label')!))).toEqual([
       'two',
       'two'
     ]);
@@ -274,7 +274,7 @@ test('encrypted dictionary pages, indexes and Bloom filters preserve exact selec
     const decimal = await collectBatches(
       source.read({columns: ['id'], predicate: {op: '=', args: [{property: 'amount'}, 2.5]}})
     );
-    expect(decimal.flatMap((batch) => Array.from(batch.data.getChild('id')!))).toEqual([2]);
+    expect(decimal.flatMap((batch) => Array.from(batch.getChild('id')!))).toEqual([2]);
     const pages = [];
     for await (const batch of source.readPages({
       columns: ['id'],
@@ -302,7 +302,7 @@ test('signed footers demand keys and encryption rejects conflicting file identif
   );
   reader.close();
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         encryption: {fileUnique: FILE_UNIQUE, keyRetriever: () => KEY},
@@ -315,7 +315,7 @@ test('signed footers demand keys and encryption rejects conflicting file identif
     })
   ).rejects.toThrow('file_unique values must match');
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         encryption: {fileUnique: new Uint8Array(7), keyRetriever: () => KEY}
@@ -344,7 +344,7 @@ test.each([
 test('source close cancels a suspended iterator and preserves the caller abort reason', async () => {
   const source = new ParquetSource(new Blob([plainFixture]), {core: {worker: false}});
   const iterator = source.scan({columns: ['id'], batchSize: 1})[Symbol.asyncIterator]();
-  expect((await iterator.next()).value?.length).toBe(1);
+  expect((await iterator.next()).value?.numRows).toBe(1);
   await source.close();
   await expect(iterator.next()).rejects.toMatchObject({name: 'AbortError'});
   const otherSource = new ParquetSource(new Blob([plainFixture]), {core: {worker: false}});
@@ -366,9 +366,9 @@ test('worker reads stop at a partial batch limit and retain absolute source row 
       source.read({columns: ['id'], rowGroups: [1, 0], concurrency: 2, limit: 1})
     );
     expect(batches).toHaveLength(1);
-    expect(Array.from(batches[0].data.getChild('id')!)).toEqual([2]);
-    expect(batches[0]).toMatchObject({
-      length: 1,
+    expect(Array.from(batches[0].getChild('id')!)).toEqual([2]);
+    expect(batches[0].numRows).toBe(1);
+    expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!)).toMatchObject({
       rowCount: 1,
       rowGroupIndex: 1,
       rowOffset: 2,
@@ -404,9 +404,9 @@ test('physical scan ranges reject external chunks and unsafe offsets before read
 
 /** Collects only this tiny in-memory source's batches, keeping async failures awaited. */
 async function collectBatches(
-  iterable: AsyncIterable<ParquetSourceBatch>
-): Promise<ParquetSourceBatch[]> {
-  const batches: ParquetSourceBatch[] = [];
+  iterable: AsyncIterable<import('apache-arrow').RecordBatch>
+): Promise<import('apache-arrow').RecordBatch[]> {
+  const batches: import('apache-arrow').RecordBatch[] = [];
   for await (const batch of iterable) batches.push(batch);
   return batches;
 }

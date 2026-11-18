@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type * as arrow from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 import {
   CompositeLayer,
   type Color,
@@ -15,25 +15,23 @@ import {
 } from '@deck.gl/core';
 import {PointCloudLayer, type PointCloudLayerProps} from '@deck.gl/layers';
 import {getDeckBinaryDataFromArrowMesh} from '@loaders.gl/core/geoarrow';
-import type {ArrowTableBatch} from '@loaders.gl/core/schema';
+import {isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {
-  getArrowTable,
   getArrowTableRowProperties,
   getBatchIndexFromLayerId,
-  isArrowTableBatch,
   isAsyncIterable,
   type MeshArrowPointCloudData
 } from './mesh-arrow-point-cloud-layer-utils';
 
 type MeshArrowPointCloudLayerState = {
   /** Arrow table batches loaded so far from async data. */
-  arrowTableBatches: ArrowTableBatch[];
+  arrowTableBatches: arrow.Table[];
   /** Monotonic stream identifier used to ignore stale async data. */
   streamId: number;
   /** Error raised while consuming the current async data stream. */
   streamError: Error | null;
   /** Async iterable currently being consumed. */
-  streamingData: AsyncIterable<ArrowTableBatch> | null;
+  streamingData: AsyncIterable<arrow.RecordBatch> | null;
 };
 
 /** Row properties returned when a Mesh Arrow point is picked. */
@@ -46,7 +44,7 @@ export type MeshArrowPointCloudPickingObject = {
 
 /** Props for {@link MeshArrowPointCloudLayer}. */
 export type MeshArrowPointCloudLayerProps = CompositeLayerProps & {
-  /** loaders.gl Mesh Arrow table wrapper, raw Apache Arrow table, or loaders.gl Arrow table batches. */
+  /** Native Apache Arrow table or asynchronous record batches. */
   data: MeshArrowPointCloudData;
   /** Fallback point color used when the Arrow table does not contain a `COLOR_0` column. */
   defaultPointColor?: Color;
@@ -118,11 +116,11 @@ export class MeshArrowPointCloudLayer extends CompositeLayer<MeshArrowPointCloud
         throw streamError;
       }
       return arrowTableBatches.map((arrowTableBatch, batchIndex) =>
-        this.renderPointCloudLayer(arrowTableBatch.data, `points-${batchIndex}`)
+        this.renderPointCloudLayer(arrowTableBatch, `points-${batchIndex}`)
       );
     }
 
-    const arrowTable = getArrowTable(this.props.data);
+    const arrowTable = this.props.data;
     return this.renderPointCloudLayer(arrowTable, 'points');
   }
 
@@ -174,14 +172,14 @@ export class MeshArrowPointCloudLayer extends CompositeLayer<MeshArrowPointCloud
       const arrowTableBatch = (this.state as MeshArrowPointCloudLayerState).arrowTableBatches[
         batchIndex
       ];
-      return arrowTableBatch?.data || null;
+      return arrowTableBatch || null;
     }
 
-    return getArrowTable(this.props.data);
+    return this.props.data;
   }
 
   private async consumeArrowTableBatches(
-    arrowTableBatchIterator: AsyncIterable<ArrowTableBatch>,
+    arrowTableBatchIterator: AsyncIterable<arrow.RecordBatch>,
     streamId: number
   ): Promise<void> {
     try {
@@ -191,12 +189,15 @@ export class MeshArrowPointCloudLayer extends CompositeLayer<MeshArrowPointCloud
           return;
         }
 
-        if (!isArrowTableBatch(arrowTableBatch)) {
-          throw new Error('MeshArrowPointCloudLayer async data requires ArrowTableBatch values.');
+        if (!isArrowRecordBatch(arrowTableBatch)) {
+          throw new Error('MeshArrowPointCloudLayer async data requires Arrow RecordBatch values.');
         }
 
         this.setState({
-          arrowTableBatches: [...state.arrowTableBatches, arrowTableBatch]
+          arrowTableBatches: [
+            ...state.arrowTableBatches,
+            new arrow.Table(arrowTableBatch.schema, [arrowTableBatch])
+          ]
         } satisfies Partial<MeshArrowPointCloudLayerState>);
       }
     } catch (error) {

@@ -54,7 +54,7 @@ export interface ConvertedPointCloudPotree {
  * Gathered nodes are bounded separately from source buffers, indexes, encoded output and ZIP
  * temporaries. This is in-memory authoring, not streaming ingestion or a peak-heap guarantee.
  * The shared tiler's sample coverage bound is not a qualified viewer LOD/error contract.
- * @param input - One decoded point Mesh or MeshArrowTable, including loader output.
+ * @param input - One decoded point mesh or Arrow table, including native loader output.
  * @param options - Explicit native CRS, resource budgets and existing writer controls.
  * @returns A complete dataset and optional bundle after releasing the owned tiler.
  */

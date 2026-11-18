@@ -34,7 +34,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-`@loaders.gl/tables/arrow/transport` provides focused Arrow table transport helpers for worker
+`@math.gl/core/arrow` provides focused Arrow table transport helpers for worker
 boundaries. The same helpers are also available from the `@loaders.gl/tables/arrow` root export for
 compatibility, but worker-aware modules should prefer the transport subpath.
 
@@ -61,11 +61,8 @@ isolated buffers before creating the payload:
 - Typed arrays that already span their full backing `ArrayBuffer` are reused.
 - Typed arrays that are slices/views into a larger `ArrayBuffer` are copied into fresh standalone
   buffers.
-- Schema and type metadata are serialized into plain loaders.gl schema objects so structured clone
-  does not rely on preserving Arrow JS class prototypes.
-- Schema and type metadata use the loaders.gl schema utility helpers `serializeArrowSchema`,
-  `deserializeArrowSchema`, `serializeArrowType`, and `deserializeArrowType` from
-  `@loaders.gl/core/schema-utils`.
+- Schema and type metadata are encoded by `@math.gl/core/arrow` into a schema-only IPC message,
+  preserving Arrow JS types without relying on class prototypes or a parallel schema serializer.
 
 `hydrateArrowTable(payload)` rebuilds a real Apache Arrow JS `Table` from that payload. The hydrated
 table is useful for further Arrow JS work in the receiving thread, including slicing, dropping
@@ -73,7 +70,7 @@ columns, retaining columns independently, or transferring the table again withou
 memory.
 
 ```ts
-import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/tables/arrow/transport';
+import {dehydrateArrowTable, hydrateArrowTable} from '@math.gl/core/arrow';
 
 const payload = dehydrateArrowTable(table);
 worker.postMessage(payload, transferList);
@@ -98,12 +95,17 @@ Returns a structured-cloneable `DehydratedArrowTable`:
 
 ```ts
 type DehydratedArrowTable = {
-  shape: 'arrow-table';
   transport: 'arrow-js';
-  schema: Schema;
-  batches: DehydratedArrowRecordBatch[];
+  version: 1;
+  schema: Uint8Array; // Schema-only Arrow IPC message.
+  metadataVersion: MetadataVersion;
+  batches: DehydratedArrowData[];
 };
 ```
+
+`@math.gl/core/arrow` owns this payload and its buffer handling. The table values remain separate
+column buffers; only the schema is IPC-encoded. Loader worker result hooks in `@loaders.gl/core/arrow-worker-transport` add the outer `shape`
+discriminator. Payloads are version-coupled worker messages, not a persisted file format.
 
 ### `hydrateArrowTable`
 
@@ -147,7 +149,7 @@ ownership or unrelated bytes, keep the default `copy: 'sliced'`.
 import {
   serializeArrowTableToIPC,
   deserializeArrowTableFromIPC
-} from '@loaders.gl/tables/arrow/transport';
+} from '@math.gl/core/arrow';
 
 const payload = serializeArrowTableToIPC(table);
 worker.postMessage(payload, [payload.data.buffer]);
@@ -165,22 +167,14 @@ load different Apache Arrow JS versions.
 
 ## Owned worker column buffers
 
-`serializeArrowWorkerTable(result)` and `deserializeArrowWorkerTable(result)` from
-`@loaders.gl/core/schema-utils/arrow-transport` transfer Arrow table and batch columns directly.
-The serializer uses `dehydrateArrowTable(table, {copy: 'all'})`; the receiver uses
-`hydrateArrowTable`. The worker protocol does not encode or decode Arrow IPC.
+`serializeNativeArrowWorkerResult(value)` and `deserializeNativeArrowWorkerResult(payload)`
+from `@loaders.gl/core/arrow-worker-transport` transfer native Apache Arrow `Table` and
+`RecordBatch` values. Column buffers are transferred directly. The payload includes the table
+schema, each batch's own schema, and batch-local metadata.
 
-Every outgoing buffer is owned by the message, including dictionaries retained by a parser and
-separate mesh indices. Identical typed-array views referenced within one Arrow object reuse a
-single copy. This is a safe-copy transport, not a promise of zero-copy handoff from the parser.
-Small schema and batch descriptors accompany the transferable buffers.
+The native serializer copies all outgoing buffers by default, including dictionaries retained by
+a parser. Identical typed-array views within one message reuse a single copy. Applications
+that own the backing buffers can choose an explicit copy mode.
 
-Built-in CSV, Parquet, Arrow, GeoArrow, JSONTable/NDJSON Arrow output, OBJ, PLY, and PCD workers
-use this shared path for atomic results and batches. Requested rows, GeoJSON features, and legacy
-meshes are materialized on the caller. Non-Arrow JSON uses binary JSON transport and caller-side
-decoding. Worker deserializers reject IPC and raw decoded-object payloads; custom workers must
-use the current wire format.
-
-These owned worker serializers always copy retained storage, regardless of
-`core.workerTransferBufferCopy`. The lower-level splitter and generic transport helpers retain
-explicit copy modes for applications that can establish exclusive buffer ownership.
+Built-in workers use this column transport for Arrow results. Where a loader also supports row,
+GeoJSON, or mesh output, it can reconstruct those values after hydration.

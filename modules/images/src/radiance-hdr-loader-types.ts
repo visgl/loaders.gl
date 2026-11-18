@@ -14,7 +14,7 @@ export type RadianceHDRLoaderOptions = StrictLoaderOptions & {
 
 /** Preloads the parser-bearing Radiance HDR loader implementation. */
 async function preload() {
-  const {RadianceHDRLoaderWithParser} = await import('@loaders.gl/images/radiance-hdr-loader');
+  const {RadianceHDRLoaderWithParser} = await import('@loaders.gl/images/radiance-hdr');
   return RadianceHDRLoaderWithParser;
 }
 

@@ -56,7 +56,7 @@ test.each([
   const streamedSigned: bigint[] = [];
   for await (const batch of parseLASInBatches(splitInput(new Uint8Array(file)), {
     ...options,
-    batchSize: 2
+    core: {batchSize: 2}
   })) {
     streamedUnsigned.push(...batch.data.getChild('EXTRA_BYTES_unsigned')!.toArray());
     const vectors = batch.data.getChild('EXTRA_BYTES_signed')!;

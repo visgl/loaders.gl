@@ -10,15 +10,20 @@ import {
   DataSource,
   DataSourceManager,
   type DataSourceOptions,
-  type ScanExecutionTelemetry,
+  type TableQueryExecutionSummary,
   type ScanQueryMetadata,
   type TableScanReadOptions,
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch, DataType, Schema} from '@loaders.gl/core/schema';
+import type {TableBatch, DataType, Schema} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {queryArrowTable, type SQLPredicate} from '@loaders.gl/core/scan';
-import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {
+  FederatedTableScanSource,
+  getFederatedTableBatchProvenance,
+  parseSQLPredicate,
+  query
+} from '@loaders.gl/core/scan';
 
 const TEST_CAPABILITIES = Object.freeze({
   predicate: 'residual' as const,
@@ -58,6 +63,56 @@ describe('FederatedTableScanSource', () => {
     expect(physicalSource.readCount).toBe(0);
   });
 
+  test('reads native Arrow batches through federation and public queries', async () => {
+    const data = arrow.tableFromArrays({id: new Int32Array([1, 2])});
+    data.batches[0].metadata.set('partition', 'native');
+    const physical = new TestTableScanSource('native', [data]);
+    const source = Object.assign(physical, {
+      async *read() {
+        yield* data.batches;
+      }
+    });
+    const manager = new DataSourceManager();
+    manager.add({dataSourceId: 'native', dataSource: source});
+    const federated = new FederatedTableScanSource(manager, {
+      sources: [{dataSourceId: 'native'}]
+    });
+    expect((await query({}, {source})).getChild('id')?.toArray()).toEqual(new Int32Array([1, 2]));
+    const batches = await collectBatches(federated.read());
+    expect(batches[0].getChild('id')?.toArray()).toEqual(new Int32Array([1, 2]));
+    expect(batches[0].metadata.get('partition')).toBe('native');
+    expect(getFederatedTableBatchProvenance(batches[0]).sourceMetadata).toEqual({
+      partition: 'native'
+    });
+    const filtered = await collectBatches(
+      federated.read({predicate: {op: '>', args: [{property: 'id'}, 1]}})
+    );
+    expect(filtered[0].getChild('id')?.toArray()).toEqual(new Int32Array([2]));
+    expect(filtered[0].metadata.has('partition')).toBe(false);
+    expect(getFederatedTableBatchProvenance(filtered[0]).sourceMetadata).toEqual({
+      partition: 'native'
+    });
+    expect(data.batches[0].metadata.size).toBe(1);
+  });
+
+  test('reports default row windows from child sources to logical queries', async () => {
+    const source = new TestTableScanSource('physical', [makeArrowTable({id: [1, 2]})]);
+    const getQueryMetadata = source.getQueryMetadata.bind(source);
+    source.getQueryMetadata = async () => ({
+      ...(await getQueryMetadata()),
+      hasDefaultRowWindow: true
+    });
+    const manager = new DataSourceManager();
+    manager.add({dataSourceId: 'physical', dataSource: source});
+    const federated = new FederatedTableScanSource(manager, {
+      sources: [{dataSourceId: 'physical'}]
+    });
+
+    await expect(query({limit: 1}, {source: federated})).rejects.toThrow('default offset or limit');
+    expect(source.readCount).toBe(0);
+    expect(await collectBatches(federated.read({limit: 1}))).toHaveLength(1);
+  });
+
   test('resolves manager sources and appends ordered batches with global provenance', async () => {
     const dataSourceManager = new DataSourceManager();
     const firstSource = new TestTableScanSource('first', [
@@ -84,13 +139,13 @@ describe('FederatedTableScanSource', () => {
     });
     const batches = await collectBatches(source.read({columns: ['id', 'score'], limit: 2}));
 
-    expect(batches.map(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+    expect(batches.map(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([
       [{id: 2, score: 20}],
       [{id: 3, score: 30}]
     ]);
-    expect(batches.map(batch => batch.metadata)).toEqual([
-      {sourceId: 'first', sourceIndex: 0, sourceBatchIndex: 0, sourceMetadata: {partition: 0}},
-      {sourceId: 'second', sourceIndex: 1, sourceBatchIndex: 0, sourceMetadata: {partition: 0}}
+    expect(batches.map(getFederatedTableBatchProvenance)).toEqual([
+      {sourceId: 'first', sourceIndex: 0, sourceBatchIndex: 0, sourceMetadata: {partition: '0'}},
+      {sourceId: 'second', sourceIndex: 1, sourceBatchIndex: 0, sourceMetadata: {partition: '0'}}
     ]);
     expect(secondSource.readOptions[0]?.limit).toBe(1);
     expect(secondSource.readOptions[0]?.columns).toEqual(['id', 'score']);
@@ -101,7 +156,12 @@ describe('FederatedTableScanSource', () => {
     const filteredTable = makeArrowTable({id: [1], score: [10]});
     const selectedTable = makeArrowTable({id: [2], score: [20]});
     const finalTable = makeArrowTable({id: [3], score: [30]});
-    const metadata = createTestMetadata('arrow-ipc', filteredTable, filteredTable.schema!, 3);
+    const metadata = createTestMetadata(
+      'arrow-ipc',
+      filteredTable,
+      convertArrowToSchema(filteredTable.schema),
+      3
+    );
     const physicalSource = new TestTableScanSource(
       'arrow-ipc',
       [filteredTable, selectedTable, finalTable],
@@ -130,9 +190,7 @@ describe('FederatedTableScanSource', () => {
     });
 
     const batches = await collectBatches(source.read());
-    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
-      {id: 2}
-    ]);
+    expect(batches.flatMap(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([{id: 2}]);
     expect(physicalSource.readOptions[0]).toMatchObject({
       columns: ['id', 'score'],
       predicate: undefined,
@@ -174,7 +232,7 @@ describe('FederatedTableScanSource', () => {
         columns: ['id', 'elevation']
       })
     );
-    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+    expect(batches.flatMap(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([
       {id: 2, elevation: 20}
     ]);
   });
@@ -213,7 +271,7 @@ describe('FederatedTableScanSource', () => {
     const metadata = await source.getQueryMetadata();
     expect(metadata.schema).toMatchObject(outputSchema);
     const batches = await collectBatches(source.read());
-    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+    expect(batches.flatMap(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([
       {category: 'compact', id: 1},
       {category: 'floating', id: 2}
     ]);
@@ -410,9 +468,7 @@ describe('FederatedTableScanSource', () => {
     });
 
     const batches = await collectBatches(source.read({limit: 1}));
-    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
-      {id: 1}
-    ]);
+    expect(batches.flatMap(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([{id: 1}]);
     expect(firstSource.iteratorCloseCount).toBe(1);
     expect(secondSource.readCount).toBe(0);
   });
@@ -430,12 +486,12 @@ describe('FederatedTableScanSource', () => {
     const source = new FederatedTableScanSource(dataSourceManager, {
       sources: [{dataSourceId: 'first'}, {dataSourceId: 'second'}]
     });
-    let telemetry: ScanExecutionTelemetry | undefined;
+    let telemetry: TableQueryExecutionSummary | undefined;
     await collectBatches(
       source.read({
         predicate: parseSQLPredicate('score >= 20'),
         limit: 1,
-        onTelemetry: value => {
+        onQueryComplete: value => {
           telemetry = value;
         }
       })
@@ -481,7 +537,7 @@ describe('FederatedTableScanSource', () => {
     });
 
     const batches = await collectBatches(source.read({limit: 1}));
-    expect(batches.map(batch => batch.data.toArray()[0]?.toJSON())).toEqual([{id: 1}]);
+    expect(batches.map(batch => batch.toArray()[0]?.toJSON())).toEqual([{id: 1}]);
     expect(physicalSource.iteratorCloseCount).toBe(1);
   });
 
@@ -497,9 +553,7 @@ describe('FederatedTableScanSource', () => {
     });
 
     const batches = await collectBatches(source.read());
-    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
-      {id: 1}
-    ]);
+    expect(batches.flatMap(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([{id: 1}]);
   });
 
   test('reports failed child scans through aggregate telemetry', async () => {
@@ -511,9 +565,9 @@ describe('FederatedTableScanSource', () => {
     const source = new FederatedTableScanSource(dataSourceManager, {
       sources: [{dataSourceId: 'broken'}]
     });
-    let telemetry: ScanExecutionTelemetry | undefined;
+    let telemetry: TableQueryExecutionSummary | undefined;
     await expect(
-      collectBatches(source.read({onTelemetry: value => (telemetry = value)}))
+      collectBatches(source.read({onQueryComplete: value => (telemetry = value)}))
     ).rejects.toThrow('broken child');
     expect(telemetry).toMatchObject({status: 'failed', sources: [{status: 'failed'}]});
   });
@@ -549,7 +603,7 @@ describe('FederatedTableScanSource', () => {
     const batches = await collectBatches(
       source.read({predicate: parseSQLPredicate('value IS NOT NULL'), columns: ['value']})
     );
-    expect(batches.flatMap(batch => batch.data.toArray().map(row => row?.toJSON()))).toEqual([
+    expect(batches.flatMap(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([
       {value: 2}
     ]);
     expect(idSource.readOptions[0]?.columns).toEqual(['id']);
@@ -817,13 +871,13 @@ describe('FederatedTableScanSource', () => {
     dataSourceManager.add({
       dataSourceId: 'big',
       dataSource: new TestTableScanSource('big', [table], {
-        metadata: createTestMetadata('big', table, table.schema!, 2n)
+        metadata: createTestMetadata('big', table, convertArrowToSchema(table.schema), 2n)
       })
     });
     dataSourceManager.add({
       dataSourceId: 'small',
       dataSource: new TestTableScanSource('small', [table], {
-        metadata: createTestMetadata('small', table, table.schema!, 1)
+        metadata: createTestMetadata('small', table, convertArrowToSchema(table.schema), 1)
       })
     });
     const exactSource = new FederatedTableScanSource(dataSourceManager, {
@@ -894,7 +948,7 @@ describe('FederatedTableScanSource', () => {
     const controller = new AbortController();
     const iterator = source.read({signal: controller.signal})[Symbol.asyncIterator]();
 
-    expect((await iterator.next()).value?.data.toArray()[0]?.toJSON()).toEqual({id: 1});
+    expect((await iterator.next()).value?.toArray()[0]?.toJSON()).toEqual({id: 1});
     controller.abort(new Error('cancel federated scan'));
     await expect(iterator.next()).rejects.toThrow('cancel federated scan');
     expect(physicalSource.iteratorCloseCount).toBe(1);
@@ -998,7 +1052,7 @@ describe('FederatedTableScanSource', () => {
 /** Deterministic in-memory table source used by federation conformance tests. */
 class TestTableScanSource
   extends DataSource<string, DataSourceOptions>
-  implements TableScanSource<ArrowTableBatch, SQLPredicate>
+  implements TableScanSource<arrow.RecordBatch | TableBatch, SQLPredicate>
 {
   /** Source-local read options received by each operation. */
   readonly readOptions: TableScanReadOptions<SQLPredicate>[] = [];
@@ -1007,13 +1061,13 @@ class TestTableScanSource
   /** Number of physical iterators closed through completion or early return. */
   iteratorCloseCount = 0;
 
-  private readonly tables: readonly ArrowTable[];
+  private readonly tables: readonly arrow.Table[];
   private readonly testOptions: TestTableScanSourceOptions;
 
   /** Creates a deterministic source with one or more physical batches. */
   constructor(
     sourceType: string,
-    tables: readonly ArrowTable[],
+    tables: readonly arrow.Table[],
     testOptions: TestTableScanSourceOptions = {}
   ) {
     super(sourceType, {});
@@ -1028,8 +1082,8 @@ class TestTableScanSource
       createTestMetadata(
         this.data,
         this.tables[0],
-        this.tables[0].schema!,
-        this.tables.reduce((sum, table) => sum + table.data.numRows, 0)
+        convertArrowToSchema(this.tables[0].schema),
+        this.tables.reduce((sum, table) => sum + table.numRows, 0)
       )
     );
   }
@@ -1037,7 +1091,7 @@ class TestTableScanSource
   /** Applies the source-local query independently from the federated global query. */
   async *read(
     options: TableScanReadOptions<SQLPredicate> = {}
-  ): AsyncIterableIterator<ArrowTableBatch> {
+  ): AsyncIterableIterator<arrow.RecordBatch | TableBatch> {
     this.readCount++;
     this.readOptions.push(options);
     let remaining = this.testOptions.ignoreLimit
@@ -1046,23 +1100,10 @@ class TestTableScanSource
     try {
       if (this.testOptions.throwError) throw this.testOptions.throwError;
       if (this.testOptions.prependNonDataBatch) {
-        yield {
-          batchType: 'metadata',
-          shape: 'arrow-table',
-          length: 0,
-          metadata: {partition: -2}
-        } as unknown as ArrowTableBatch;
+        yield {batchType: 'metadata', shape: 'object-row-table', data: [], length: 0};
       }
       if (this.testOptions.prependEmptyBatch) {
-        const data = arrow.tableFromArrays({id: []});
-        yield {
-          batchType: 'data',
-          shape: 'arrow-table',
-          schema: convertArrowToSchema(data.schema),
-          data,
-          length: 0,
-          metadata: {partition: -1}
-        };
+        yield new arrow.RecordBatch(this.tables[0].schema, undefined);
       }
       for (let batchIndex = 0; batchIndex < this.tables.length && remaining > 0; batchIndex++) {
         if (options.signal?.aborted) throw options.signal.reason;
@@ -1074,16 +1115,21 @@ class TestTableScanSource
               ? remaining
               : undefined
         });
-        if (!result.data.numRows) continue;
-        remaining -= result.data.numRows;
-        yield {
-          batchType: 'data',
-          shape: 'arrow-table',
-          ...(this.testOptions.omitBatchSchema ? {} : {schema: result.schema}),
-          data: result.data,
-          length: result.data.numRows,
-          metadata: {partition: batchIndex}
-        };
+        if (!result.numRows) continue;
+        remaining -= result.numRows;
+        if (this.testOptions.omitBatchSchema) {
+          yield {
+            batchType: 'data',
+            shape: 'object-row-table',
+            data: result.toArray().map(row => row.toJSON()),
+            length: result.numRows
+          };
+        } else {
+          for (const batch of result.batches) {
+            batch.metadata.set('partition', String(batchIndex));
+            yield batch;
+          }
+        }
       }
     } finally {
       this.iteratorCloseCount++;
@@ -1107,24 +1153,24 @@ type TestTableScanSourceOptions = Readonly<{
   throwError?: Error;
 }>;
 
-/** Wraps simple columns in the loaders.gl Arrow table shape. */
-function makeArrowTable(columns: Record<string, readonly unknown[]>): ArrowTable {
+/** Builds a native Arrow table from simple columns. */
+function makeArrowTable(columns: Record<string, readonly unknown[]>): arrow.Table {
   const data = arrow.tableFromArrays(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+  return data;
 }
 
 /** Wraps pre-typed Arrow vectors without allowing Arrow to infer wider scalar types. */
-function makeTypedArrowTable(columns: Record<string, arrow.Vector>): ArrowTable {
+function makeTypedArrowTable(columns: Record<string, arrow.Vector>): arrow.Table {
   const data = new arrow.Table(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+  return data;
 }
 
 /** Creates supported table metadata with an optional schema and exact row count. */
 function createTestMetadata(
   sourceType: string,
-  table: ArrowTable,
-  schema: Schema = table.schema!,
-  rowCount: number | bigint = table.data.numRows
+  table: arrow.Table,
+  schema: Schema = convertArrowToSchema(table.schema),
+  rowCount: number | bigint = table.numRows
 ): ScanQueryMetadata {
   return createScanQueryMetadata({
     sourceType,
@@ -1137,8 +1183,10 @@ function createTestMetadata(
 }
 
 /** Collects all federated batches without materializing them into one table. */
-async function collectBatches(batches: AsyncIterable<ArrowTableBatch>): Promise<ArrowTableBatch[]> {
-  const result: ArrowTableBatch[] = [];
+async function collectBatches(
+  batches: AsyncIterable<arrow.RecordBatch>
+): Promise<arrow.RecordBatch[]> {
+  const result: arrow.RecordBatch[] = [];
   for await (const batch of batches) result.push(batch);
   return result;
 }

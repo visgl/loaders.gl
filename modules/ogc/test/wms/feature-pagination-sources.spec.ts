@@ -133,8 +133,7 @@ test('OGC API Features follows header/body cursor links, preserves endpoint para
     format: 'arrow',
     signal: controller.signal
   });
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') expect(result.data.numRows).toBe(2);
+  expect(result).toHaveProperty('numRows', 2);
   expect(requests[0].pathname).toBe('/api/collections/roads/items');
   expect(requests[0].searchParams.get('limit')).toBe('1');
   expect(requests[0].searchParams.get('token')).toBe('demo');

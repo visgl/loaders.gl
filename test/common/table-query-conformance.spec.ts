@@ -6,11 +6,10 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
-import {ParquetDatasetSource} from '@loaders.gl/tables/parquet-dataset-source';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet';
 import {queryArrowTable} from '@loaders.gl/core/scan/arrow-query';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 test('Arrow and Parquet execute one portable projection, predicate, and limit consistently', async () => {
   const rows = [
@@ -28,11 +27,6 @@ test('Arrow and Parquet execute one portable projection, predicate, and limit co
     name: rows.map(row => row.name),
     score: rows.map(row => row.score)
   });
-  const arrowTable: ArrowTable = {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(arrowData.schema),
-    data: arrowData
-  };
 
   const parquetSource = new ParquetDatasetSource(
     [
@@ -43,12 +37,12 @@ test('Arrow and Parquet execute one portable projection, predicate, and limit co
   );
   const parquetRows: Array<Record<string, unknown>> = [];
   for await (const batch of parquetSource.read(query)) {
-    parquetRows.push(...batch.data.toArray().map(row => row.toJSON()));
+    parquetRows.push(...batch.toArray().map(row => row.toJSON()));
   }
 
   expect(
-    queryArrowTable(arrowTable, query)
-      .data.toArray()
+    queryArrowTable(arrowData, query)
+      .toArray()
       .map(row => row.toJSON())
   ).toEqual(parquetRows);
   expect(parquetRows).toEqual([{name: 'three'}, {name: 'four'}]);
@@ -69,7 +63,7 @@ async function encodeParquetRows(rows: Array<{name: string; score: number | null
       },
       data: rows
     } satisfies ObjectRowTable,
-    ParquetJSWriter
+    ParquetWriter
   );
   return new Blob([data]);
 }

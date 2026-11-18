@@ -45,16 +45,15 @@ test('parsePCD#colorFormat float32 returns normalized colors', () => {
 test('PCDLoader#colorFormat float16 works for Arrow batches', async () => {
   const data = new TextEncoder().encode(PCD_WITH_COLORS).buffer;
   const batches = await parseInBatches([data], PCDLoader, {
-    batchSize: 1,
-    core: {worker: false},
-    pcd: {shape: 'arrow-table', colorFormat: 'float16'}
+    core: {worker: false, batchSize: 1},
+    pcd: {shape: 'arrow', colorFormat: 'float16'}
   });
   const batchValues: number[] = [];
   for await (const batch of batches) {
-    const colorColumn = batch.data.getChild('COLOR_0');
+    const colorColumn = batch.getChild('COLOR_0');
     batchValues.push(...Array.from(colorColumn.get(0)));
     expect(
-      batch.schema.fields.find(field => field.name === 'COLOR_0')!.metadata.componentType
+      batch.schema.fields.find(field => field.name === 'COLOR_0')!.metadata.get('componentType')
     ).toBe('float16');
   }
   expect(batchValues.length).toBe(6);

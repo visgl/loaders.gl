@@ -66,8 +66,8 @@ test('Chrome trace worker returns columns before caller JSON reconstruction', as
   expect(result).toEqual(chromeTrace);
   expect(mainParse).not.toHaveBeenCalled();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
 });
 
@@ -126,14 +126,17 @@ test.each([
       expectedTables[name].toArray().map(row => row.toJSON())
     );
   }
-  const rows: Record<string, any[]> = {};
-  const iterator = await parseInBatches(splitBytes(bytes), instrumentedLoader, {
-    ...workerOptions,
+  const batchOptions = {
     chromeTrace: {batchSize: 1},
     perfettoTrace: {batchSize: 1},
     otlpTrace: {batchSize: 1},
     jaegerTrace: {batchSize: 1},
     zipkinTrace: {batchSize: 1}
+  };
+  const rows: Record<string, any[]> = {};
+  const iterator = await parseInBatches(splitBytes(bytes), instrumentedLoader, {
+    ...workerOptions,
+    ...batchOptions
   });
   for await (const batch of iterator) {
     const name = format === 'chrome' ? 'events' : batch.table;
@@ -144,10 +147,25 @@ test.each([
   }
   for (const [name, table] of Object.entries(expectedTables))
     expect(rows[name] || []).toEqual(table.toArray().map(row => row.toJSON()));
+  // The direct parser also applies the row rate. Compare payloads to the worker
+  // path so pacing can't reorder or drop the related tables.
+  const directRows: Record<string, unknown[]> = {};
+  for await (const batch of parser.parseInBatches(splitBytes(bytes), {
+    ...batchOptions,
+    core: {batchMaxRowsPerSecond: 1_000_000}
+  })) {
+    const name = format === 'chrome' ? 'events' : batch.table;
+    const recordBatch = format === 'chrome' ? batch : batch.data;
+    directRows[name] ||= [];
+    directRows[name].push(...recordBatch.toArray().map((row: any) => row.toJSON()));
+  }
+  expect(directRows).toEqual(rows);
   expect(mainBatches).not.toHaveBeenCalled();
   expect(deserialize).toHaveBeenCalled();
   for (const [payload] of deserialize.mock.calls)
-    expect(payload).toMatchObject({columns: {shape: 'arrow-table', data: {transport: 'arrow-js'}}});
+    expect(payload).toMatchObject({
+      columns: {transport: 'arrow-record-batch', columns: {data: {transport: 'arrow-js'}}}
+    });
 });
 
 test('trace transport rejects decoded objects and IPC payloads', () => {
@@ -193,4 +211,32 @@ test.each([
     {...workerOptions, chromeTrace: {shape: 'json'}}
   );
   expect(result).toEqual(original);
+});
+
+test('Chrome worker delivers trailing metadata in a zero-row final Arrow batch', async () => {
+  const source = {
+    traceEvents: [{name: 'event', ph: 'i', pid: 1, tid: 1}],
+    metadata: {source: 'trailing'},
+    custom: 'retained'
+  };
+  const parser = await ChromeTraceLoader.preload();
+  const mainParser = vi.fn(parser.parseInBatches);
+  const iterator = await parseInBatches(
+    splitBytes(new TextEncoder().encode(JSON.stringify(source))),
+    {
+      ...ChromeTraceLoader,
+      preload: async () => ({...parser, parseInBatches: mainParser})
+    },
+    {...workerOptions, chromeTrace: {batchSize: 1}}
+  );
+  const batches: RecordBatch[] = [];
+  for await (const batch of iterator) batches.push(batch);
+  expect(mainParser).not.toHaveBeenCalled();
+  expect(batches.at(-1)!.numRows).toBe(0);
+  expect(batches.at(-1)!.schema.metadata.get('chromeTrace.metadataJson')).toBe(
+    '{"source":"trailing"}'
+  );
+  expect(batches.at(-1)!.schema.metadata.get('chromeTrace.containerJson')).toBe(
+    '{"custom":"retained"}'
+  );
 });

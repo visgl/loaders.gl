@@ -6,9 +6,9 @@ import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {Tile2DSourceLayer, type Tile2DSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
-import {ArrowTableTileSourceLoader, MVTSourceLoader} from '@loaders.gl/tiles/mvt';
-import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 import {resolveVisualSource} from '../src/source-layer-utils';
 
 test.each([
@@ -31,15 +31,15 @@ test.each([
       ],
       {type: 'application/geo+json'}
     ),
-    loaders: [MVTSourceLoader, ArrowTableTileSourceLoader, GeoJSONLoader],
+    loaders: [MVTLoaderWithParser, ArrowTableTileLoader, GeoJSONLoader],
     sourceOptions: {table: {coordinates}, core: {worker: false, type: 'table'}}
   });
   expect(resolved.sourceType).toBe('tile-2d');
-  const source = resolved.source as ReturnType<typeof ArrowTableTileSourceLoader.createDataSource>;
+  const source = resolved.source as ReturnType<typeof ArrowTableTileLoader.createDataSourceSync>;
   const index = {x: 0, y: 0, z: 0};
   const tile = await source.getTileData({index});
-  expect(tile?.shape).toBe('arrow-table');
-  const layer = createLayer({id: 'arrow-table-example', data: source, showTileBorders: false});
+  expect(tile?.numRows).toBe(1);
+  const layer = createLayer({id: 'native-arrow-example', data: source, showTileBorders: false});
   expect(layer._resolveData(layer.props)).toBe(source);
   expect(layer.sourceSupportsMVTLayer(source)).toBe(coordinates === 'local');
   if (coordinates === 'local') {
@@ -60,7 +60,7 @@ test.each([
     const [renderedLayer] = layer.props.renderSubLayers({
       ...layer.props,
       id: 'arrow-table-tile',
-      data: tile as ArrowTable,
+      data: tile,
       _offset: 0,
       tile: {index, bbox: {west: -180, south: -85, east: 180, north: 85}},
       tileSource: source
@@ -93,7 +93,7 @@ const TEST_SOURCE_FACTORY = {
   fromUrl: true,
   fromBlob: true,
   testURL: () => true,
-  createDataSource() {
+  createDataSourceSync() {
     return TEST_TILE_SOURCE as any;
   }
 };
@@ -101,11 +101,11 @@ const ARROW_TILE = createArrowTile();
 function createLayer(props: Tile2DSourceLayerProps = {id: 'test', data: TEST_TILE_SOURCE as any}) {
   return new Tile2DSourceLayer(props as any) as any;
 }
-test('Tile2DSourceLayer#resolves URL inputs with sources', () => {
+test('Tile2DSourceLayer#resolves URL inputs with source loaders', () => {
   const layer = createLayer({
     id: 'test',
     data: 'https://example.com/tiles',
-    sources: [TEST_SOURCE_FACTORY as any]
+    loaders: [TEST_SOURCE_FACTORY as any]
   });
   const resolvedData = layer._resolveData(layer.props);
   expect(resolvedData).toBe(TEST_TILE_SOURCE);
@@ -434,12 +434,12 @@ test('Tile2DSourceLayer finalizes owned sources and rejects incompatible source 
   const source = {...TEST_TILE_SOURCE, close};
   const sourceLoader = {
     ...TEST_SOURCE_FACTORY,
-    createDataSource: () => source
+    createDataSourceSync: () => source
   };
   const layer = createLayer({
     id: 'owned-tile-source',
     data: 'memory.test',
-    sources: [sourceLoader as any]
+    loaders: [sourceLoader as any]
   });
   layer.context = {device: createDevice()} as any;
   layer.initializeState();

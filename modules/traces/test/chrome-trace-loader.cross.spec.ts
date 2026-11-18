@@ -12,7 +12,7 @@ import {ChromeTraceLoader} from '../src';
 import type {ChromeTraceFileSchema} from '../src';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 /**
  * Builds a compact Chrome trace fixture that exercises Arrow encoding edge cases.
@@ -173,7 +173,7 @@ describe('ChromeTraceLoader', () => {
     const traceFile = createChromeTraceFixture();
     const parsed = await parse(encodeChromeTraceFixture(traceFile), ChromeTraceLoader, {
       chromeTrace: {
-        shape: 'arrow-table'
+        shape: 'arrow'
       }
     });
     const table = parsed as arrow.Table;
@@ -234,7 +234,7 @@ describe('ChromeTraceLoader', () => {
     const traceFile = createChromeTraceFixture();
     const parsed = await parse(encodeChromeTraceFixture(traceFile), ChromeTraceLoader, {
       chromeTrace: {
-        shape: 'arrow-table'
+        shape: 'arrow'
       }
     });
     const table = parsed as arrow.Table;
@@ -266,7 +266,7 @@ describe('ChromeTraceLoader', () => {
       ChromeTraceLoader,
       {
         chromeTrace: {
-          shape: 'arrow-table',
+          shape: 'arrow',
           batchSize: 2
         }
       }
@@ -277,7 +277,8 @@ describe('ChromeTraceLoader', () => {
       batches.push(batch as arrow.RecordBatch);
     }
 
-    expect(batches).toHaveLength(2);
+    expect(batches).toHaveLength(3);
+    expect(batches.at(-1)?.numRows).toBe(0);
 
     const combinedTable = new arrow.Table(batches[0].schema, batches);
     expect(combinedTable.numRows).toBe(4);
@@ -307,7 +308,7 @@ describe('ChromeTraceLoader', () => {
       custom_flag: true
     });
 
-    expect(batches[1].schema.metadata.get('chromeTrace.metadataJson')).toBe(
+    expect(batches.at(-1)!.schema.metadata.get('chromeTrace.metadataJson')).toBe(
       JSON.stringify(traceFile.metadata)
     );
   });
@@ -320,7 +321,7 @@ describe('ChromeTraceLoader', () => {
       ChromeTraceLoader,
       {
         chromeTrace: {
-          shape: 'arrow-table',
+          shape: 'arrow',
           batchSize: 1
         }
       }
@@ -351,7 +352,7 @@ describe('ChromeTraceLoader', () => {
       ChromeTraceLoader,
       {
         chromeTrace: {
-          shape: 'arrow-table',
+          shape: 'arrow',
           batchSize: 32
         }
       }

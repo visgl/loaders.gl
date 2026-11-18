@@ -4,12 +4,7 @@
 // Copyright (c) 2017 ironSource Ltd.
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
-import {
-  ColumnMetaData,
-  FileCryptoMetaData,
-  FileMetaData,
-  PageHeader
-} from '../parquet-thrift/index';
+import {ColumnMetaData, FileCryptoMetaData, FileMetaData, PageHeader} from '../parquet-thrift';
 import {Uint8ArrayCompactProtocol} from './uint8-array-compact-protocol';
 import {Uint8ArrayCompactProtocolWriter} from './uint8-array-compact-protocol-writer';
 import {Uint8ArrayTransport} from './uint8-array-transport';

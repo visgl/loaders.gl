@@ -11,7 +11,7 @@ import type {TilesetSpatialReference} from './spatial/spatial-types';
 export type PointCloudTileSourceInput = Mesh | MeshArrowTable;
 
 /** Options for native-coordinate, additive dynamic point tiling. */
-export type PointCloudTileSourceOptions = DataSourceOptions & {
+export type PointCloudTileLoaderOptions = DataSourceOptions & {
   /** Point indexing, output and lifetime controls. No CRS is inferred. */
   pointCloudTiler?: PointCloudTilerOptions & {
     /** Spatial metadata for the input coordinates; retained without reprojection. */

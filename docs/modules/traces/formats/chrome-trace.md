@@ -112,7 +112,7 @@ stream adapter restore them automatically. Writer options can override both valu
 
 ## Round-Trip Behavior
 
-`ChromeTraceLoader` with `shape: 'arrow-table'` and `ChromeTraceWriter` preserve:
+`ChromeTraceLoader` with `shape: 'arrow'` and `ChromeTraceWriter` preserve:
 
 - `args` objects through JSON text
 - unknown event fields through `extraJson`

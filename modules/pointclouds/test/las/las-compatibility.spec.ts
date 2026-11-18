@@ -32,7 +32,7 @@ beforeAll(async () => {
       source: files[0],
       plain: files[1],
       compressed: files[2],
-      expected: convertTableToMesh(parseLAS(files[0])).attributes
+      expected: convertTableToMesh(parseLAS(files[0]).data).attributes
     });
   }
 });
@@ -54,10 +54,10 @@ test.each(
     expect(parsed.loaderData.metadata?.compatibility?.pointDataRecordFormat).toBe(pointFormat);
     expect(parsed.loaderData.metadata?.compatibility?.version).toBe('1.4');
     expect(parsed.loaderData.pointsFormatId).toBeLessThan(6);
-    expect(convertTableToMesh(parsed).attributes).toEqual(expected);
+    expect(convertTableToMesh(parsed.data).attributes).toEqual(expected);
     const streamed: Record<string, number[]> = {};
-    for await (const batch of parseLASInBatches(splitInput(file), {batchSize: 13})) {
-      for (const [name, attribute] of Object.entries(convertTableToMesh(batch).attributes)) {
+    for await (const batch of parseLASInBatches(splitInput(file), {core: {batchSize: 13}})) {
+      for (const [name, attribute] of Object.entries(convertTableToMesh(batch.data).attributes)) {
         streamed[name] ??= [];
         streamed[name].push(...attribute.value);
       }
@@ -79,11 +79,11 @@ test('projects reconstructed fields without publishing the internal Extra Bytes 
       fixture.expected[name]
     ])
   );
-  expect(convertTableToMesh(parsed).attributes).toEqual(expected);
+  expect(convertTableToMesh(parsed.data).attributes).toEqual(expected);
   expect(parsed.data.getChild('EXTRA_BYTES')).toBeNull();
   for await (const batch of parseLASInBatches(splitInput(fixture.compressed), {
     ...options,
-    batchSize: 11
+    core: {batchSize: 11}
   })) {
     expect(batch.data.getChild('EXTRA_BYTES')).toBeNull();
     expect(batch.data.getChild('NIR')).not.toBeNull();
@@ -100,7 +100,9 @@ test('raw compatibility mode and raw decompression retain the physical legacy re
   const view = new DataView(fixture.plain);
   const expected = new Uint8Array(fixture.plain, view.getUint32(96, true));
   const actual: number[] = [];
-  for await (const batch of decodeLAZFileInBatches(splitInput(fixture.compressed), {batchSize: 11}))
+  for await (const batch of decodeLAZFileInBatches(splitInput(fixture.compressed), {
+    core: {batchSize: 11}
+  }))
     actual.push(...new Uint8Array(batch.arrayBuffer));
   expect(actual).toEqual([...expected]);
 });
@@ -112,7 +114,7 @@ test('public parsing and positions-only projection retain compatibility semantic
   for (const file of [fixture.plain, fixture.compressed]) {
     const positionsOnly = parseLAS(file, {las: {columns: ['POSITION']}});
     expect(positionsOnly.data.numCols).toBe(1);
-    expect(convertTableToMesh(positionsOnly).attributes.POSITION).toEqual(
+    expect(convertTableToMesh(positionsOnly.data).attributes.POSITION).toEqual(
       fixture.expected.POSITION
     );
   }

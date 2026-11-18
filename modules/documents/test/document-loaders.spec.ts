@@ -5,8 +5,8 @@
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import * as documents from '@loaders.gl/documents';
-import {BSONLoaderWithParser} from '@loaders.gl/documents/bson-loader';
-import {BSONWriter} from '@loaders.gl/documents/bson-writer';
+import {BSONLoaderWithParser} from '@loaders.gl/documents/bson';
+import {BSONWriter} from '@loaders.gl/documents/bson';
 import {BSONObjectId, createBSONValue} from '@loaders.gl/documents/bson-codec';
 
 test.each([

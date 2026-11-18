@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
-import {NDJSONSourceLoader, NDJSONTableSource} from '../../src/json/ndjson-source';
+import {createDataSourceSync, load, preload} from '@loaders.gl/core';
+import {NDJSONLoader, NDJSONTableSource} from '@loaders.gl/tables/json';
 
 test('NDJSONTableSource discovers schema and applies projection and limit', async () => {
   const source = new NDJSONTableSource(
@@ -60,12 +61,19 @@ test('NDJSONTableSource forwards cancellation and reports empty input', async ()
   ).rejects.toThrow();
 });
 
-test('NDJSONSourceLoader exposes URL matching and construction', () => {
-  expect(NDJSONSourceLoader.testURL('data.jsonl')).toBe(true);
-  expect(NDJSONSourceLoader.testURL('data.csv')).toBe(false);
-  expect(NDJSONSourceLoader.createDataSource(new Blob(['{"a":1}\n']), {})).toBeInstanceOf(
-    NDJSONTableSource
-  );
+test('NDJSONLoader parses data and creates a source after preload', async () => {
+  expect(NDJSONLoader.testURL('data.jsonl')).toBe(true);
+  expect(NDJSONLoader.testURL('data.csv')).toBe(false);
+  const data = new Blob(['{"a":1}\n']);
+  expect(() => createDataSourceSync(data, NDJSONLoader)).toThrow('preload');
+  await preload(NDJSONLoader);
+  const table = await load('https://example.test/data.ndjson', NDJSONLoader, {
+    core: {fetch: async () => new Response(data), worker: false}
+  });
+  expect(table.numRows).toBe(1);
+  const source = createDataSourceSync(data, NDJSONLoader);
+  expect(source).toBeInstanceOf(NDJSONTableSource);
+  expect((await source.getQueryMetadata()).columns).toHaveLength(1);
 });
 
 test('NDJSONTableSource rejects a source with no discoverable batch', async () => {

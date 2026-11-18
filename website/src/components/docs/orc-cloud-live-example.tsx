@@ -18,8 +18,8 @@ export function OrcCloudLiveExample(): JSX.Element {
     setError('');
     try {
       const table = await load(ORC_FILE, ORCLoader);
-      setRows(table.data.toArray().slice(0, 10));
-      setStatus(`Loaded ${table.data.numRows} rows into an Arrow table`);
+      setRows(table.toArray().slice(0, 10));
+      setStatus(`Loaded ${table.numRows} rows into an Arrow table`);
     } catch (loadError) {
       setStatus('Load failed');
       setError(loadError instanceof Error ? loadError.message : String(loadError));

@@ -31,7 +31,7 @@ export {readArrayBuffer} from './lib/fetch/read-array-buffer';
 // export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // CONFIGURATION
-export {setLoaderOptions, getLoaderOptions} from './lib/api/loader-options';
+export {setLoaderOptions, getLoaderOptions, compareLoaderOptions} from './lib/api/loader-options';
 export {registerLoaders} from './lib/api/register-loaders';
 export {selectLoader, selectLoaderSync} from './lib/api/select-loader';
 
@@ -52,7 +52,7 @@ export {encode, encodeSync, encodeInBatches, encodeURLtoURL} from './lib/api/enc
 export {encodeText, encodeTextSync} from './lib/api/encode';
 
 // SERVICES AND SOURCES
-export {createDataSource} from './lib/api/create-data-source';
+export {createDataSource, createDataSourceSync} from './lib/api/create-data-source';
 export {selectSource as _selectSource} from './lib/api/select-source';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
@@ -100,7 +100,3 @@ export {
   isReadableStream,
   isWritableStream
 } from '@loaders.gl/core/loader-utils';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use NullLoader. */
-export {NullWorkerLoader} from './null-loader';

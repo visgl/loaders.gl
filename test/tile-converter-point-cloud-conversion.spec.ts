@@ -131,7 +131,7 @@ test('convertPointCloudSource awaits writes, forwards encoder options, and repor
   });
   expect(sink.finalize).toHaveBeenCalledWith(report);
   expect(sink.abort).not.toHaveBeenCalled();
-  const parsed = await parse(written[0].pnts, Tiles3DLoader, {worker: false});
+  const parsed = await parse(written[0].pnts, Tiles3DLoader, {core: {worker: false}});
   expect(parsed.rtcCenter).toEqual([10, 20, 30]);
 });
 

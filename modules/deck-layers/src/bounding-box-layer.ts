@@ -4,7 +4,6 @@
 
 import {
   CompositeLayer,
-  COORDINATE_SYSTEM,
   type Color,
   type CompositeLayerProps,
   type DefaultProps,
@@ -74,7 +73,7 @@ export class BoundingBoxLayer<DataT = BoundingBoxLayerBox> extends CompositeLaye
       ...this.getSubLayerProps({id: 'edges'}),
       ...lineLayerProps,
       data: paths,
-      coordinateSystem: this.props.coordinateSystem ?? COORDINATE_SYSTEM.LNGLAT,
+      coordinateSystem: this.props.coordinateSystem ?? 'lnglat',
       getSourcePosition: edge => edge.sourcePosition,
       getTargetPosition: edge => edge.targetPosition,
       getColor: edge => getObjectColor(edge.object, this.props.getColor),

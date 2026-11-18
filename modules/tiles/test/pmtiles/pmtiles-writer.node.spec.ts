@@ -32,8 +32,8 @@ test('exported PMTiles option types work with direct and standard writer APIs', 
     const rasterOptions: RasterPMTilesOptions = {tiles: [{z: 0, x: 0, y: 0}], bands: [0]};
     void encodeRasterPMTiles(raster, rasterOptions);
     import type {GeoArrowPMTilesOptions} from '@loaders.gl/tiles/pmtiles';
-    import type {ArrowTable} from '@loaders.gl/core/schema';
-    declare const table: ArrowTable;
+    import type {Table} from 'apache-arrow';
+    declare const table: Table;
     const authoring: GeoArrowPMTilesOptions = {tiles: [{z: 0, x: 0, y: 0}], mvt: {propertyColumns: ['name']}};
     void encodeGeoArrowPMTiles(table, authoring);
     const tiles: PMTilesTile[] = [{z: 0, x: 0, y: 0, data: new Uint8Array([1])}];

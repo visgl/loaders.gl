@@ -3,14 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderOptions,
   LoaderContext,
   BatchableDataType,
-  LoaderBatchType,
-  LoaderOptionsType,
-  LoaderOptionsWithShape,
-  LoaderShapeType
+  LoaderBatchType
 } from '@loaders.gl/core/loader-utils';
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -26,18 +27,25 @@ type FileType = string | File | Blob | Response | (string | File | Blob | Respon
 /**
  * Parses `data` synchronously using a specified loader
  */
+export async function loadInBatches<LoaderT extends Loader>(
+  files: FileType,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+
 export async function loadInBatches<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   files: FileType,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+): Promise<AsyncIterable<LoaderBatchType<LoaderT, OptionsT>>>;
 
 /**
  * Parses `data` using a specified loader

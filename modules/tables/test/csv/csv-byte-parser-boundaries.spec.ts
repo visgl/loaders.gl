@@ -10,8 +10,8 @@ import {
 
 /** Returns one Arrow column as ordinary JavaScript values. */
 function getValues(table: any, columnName: string): unknown[] {
-  const column = table.data.getChild(columnName);
-  return Array.from({length: table.data.numRows}, (_, rowIndex) => column?.get(rowIndex));
+  const column = table.getChild(columnName);
+  return Array.from({length: table.numRows}, (_, rowIndex) => column?.get(rowIndex));
 }
 
 /** Encodes and parses one CSV string through the raw-byte path. */
@@ -32,7 +32,7 @@ test('raw-byte CSV parses direct quoted, escaped, trailing, and ragged fields', 
     {header: 'auto'}
   );
 
-  expect(table.data.numRows).toBe(4);
+  expect(table.numRows).toBe(4);
   expect(getValues(table, 'name')).toEqual(['alpha', 'beta', 'gamma', 'delta']);
   expect(getValues(table, 'note')).toEqual(['a,"b"', 'line one\nline two', 'plain', 'last']);
   expect(getValues(table, 'tail')).toEqual(['x', '', null, null]);
@@ -74,7 +74,7 @@ test('raw-byte CSV grows data, offsets, and null bitmaps without changing values
   }
   const table = parseBytes(rows.join('\n'));
 
-  expect(table.data.numRows).toBe(1100);
+  expect(table.numRows).toBe(1100);
   expect(getValues(table, 'value')[1099]).toBe('x'.repeat(16 + (1099 % 17)));
   expect(getValues(table, 'optional').slice(0, 5)).toEqual(['', '1', '2', '', '4']);
 });
@@ -159,10 +159,10 @@ test('raw CSV parsers conservatively reject unsupported option combinations', ()
 
 test('raw-byte CSV returns structurally valid empty and header-only tables', () => {
   const empty = parseBytes('', {header: false, columnPrefix: 'column'});
-  expect(empty.data.numRows).toBe(0);
-  expect(empty.data.numCols).toBe(0);
+  expect(empty.numRows).toBe(0);
+  expect(empty.numCols).toBe(0);
 
   const headerOnly = parseBytes('a,b\n');
-  expect(headerOnly.data.numRows).toBe(0);
+  expect(headerOnly.numRows).toBe(0);
   expect(headerOnly.schema.fields.map((field: any) => field.name)).toEqual(['a', 'b']);
 });

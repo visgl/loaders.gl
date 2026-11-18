@@ -1,0 +1,290 @@
+import {tableFromArrays} from 'apache-arrow';
+import {expect, test, vi} from 'vitest';
+import type {TableBatch} from '@loaders.gl/core/schema';
+import {
+  executeTableScanBatches,
+  filterTableBatch,
+  projectTableBatch,
+  truncateTableBatch
+} from '../../../../src/loader-utils/lib/scan-utils/table-scan-batch';
+
+const schema = {
+  fields: [
+    {name: 'id', type: 'int32', nullable: false},
+    {name: 'value', type: 'float64', nullable: true}
+  ]
+} as TableBatch['schema'];
+
+test('shared table executor filters, projects, limits, and reports bytes', async () => {
+  const telemetry: unknown[] = [];
+  const batch: TableBatch = {
+    shape: 'object-row-table',
+    schema,
+    data: [
+      {id: 1, value: 10},
+      {id: 2, value: 20},
+      {id: 3, value: 30}
+    ],
+    length: 3
+  };
+  async function* readBatches(
+    _signal?: AbortSignal,
+    onByteLength?: (byteLength: number) => void
+  ): AsyncIterable<TableBatch> {
+    onByteLength?.(12);
+    yield batch;
+  }
+  const result: TableBatch[] = [];
+  for await (const output of executeTableScanBatches(readBatches, {
+    predicate: {op: '>', args: [{property: 'value'}, 10]},
+    columns: ['id'],
+    limit: 1,
+    onQueryComplete: snapshot => telemetry.push(snapshot)
+  }))
+    result.push(output);
+  expect(result[0]?.data).toEqual([{id: 2}]);
+  expect(result[0]?.length).toBe(1);
+  expect(telemetry).toHaveLength(1);
+  expect(telemetry[0]).toMatchObject({status: 'early-terminated', rowsRead: 3, rowsReturned: 1});
+});
+
+test('shared batch helpers preserve columnar, array-row, and GeoJSON shapes', () => {
+  const columnar: TableBatch = {
+    shape: 'columnar-table',
+    schema,
+    data: {id: [1, 2], value: [10, 20]},
+    length: 2
+  };
+  expect(truncateTableBatch(columnar, 1)).toMatchObject({length: 1, data: {id: [1]}});
+  expect(projectTableBatch(columnar, ['value'])).toMatchObject({data: {value: [10, 20]}});
+
+  const arrayRows: TableBatch = {shape: 'array-row-table', data: [[1], [2]], length: 2};
+  expect(truncateTableBatch(arrayRows, 1)).toMatchObject({length: 1, data: [[1]]});
+
+  const geojson: TableBatch = {
+    shape: 'geojson-table',
+    type: 'FeatureCollection',
+    features: [],
+    length: 0
+  };
+  expect(truncateTableBatch(geojson, 0)).toMatchObject({length: 0, features: []});
+  expect(projectTableBatch(geojson, ['id'])).toBe(geojson);
+  expect(projectTableBatch({shape: 'object-row-table', data: [], length: 0}, ['id'])).toMatchObject(
+    {
+      length: 0,
+      data: []
+    }
+  );
+});
+
+test('shared table executor reports cancellation and consumer return', async () => {
+  const batch: TableBatch = {shape: 'object-row-table', data: [{id: 1}], length: 1};
+  const controller = new AbortController();
+  controller.abort();
+  const cancelled: unknown[] = [];
+  async function* readCancelled(signal?: AbortSignal): AsyncIterable<TableBatch> {
+    if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
+    yield batch;
+  }
+  await expect(
+    (async () => {
+      for await (const _batch of executeTableScanBatches(readCancelled, {
+        signal: controller.signal,
+        onQueryComplete: snapshot => cancelled.push(snapshot)
+      })) {
+        // expected to abort before yielding
+      }
+    })()
+  ).rejects.toThrow();
+  expect(cancelled).toHaveLength(1);
+  expect(cancelled[0]).toMatchObject({status: 'cancelled'});
+
+  const returned: unknown[] = [];
+  async function* readMany(): AsyncIterable<TableBatch> {
+    yield batch;
+    yield batch;
+  }
+  for await (const _batch of executeTableScanBatches(readMany, {
+    onQueryComplete: snapshot => returned.push(snapshot)
+  }))
+    break;
+  expect(returned).toHaveLength(1);
+  expect(returned[0]).toMatchObject({
+    status: 'early-terminated',
+    earlyTerminationReason: 'consumer-return'
+  });
+
+  const zeroLimit: unknown[] = [];
+  for await (const _batch of executeTableScanBatches(readMany, {
+    limit: 0,
+    onQueryComplete: snapshot => zeroLimit.push(snapshot)
+  })) {
+    // expected to stop before opening the reader
+  }
+  expect(zeroLimit[0]).toMatchObject({status: 'early-terminated', sourcesRead: 0});
+
+  const failed: unknown[] = [];
+  async function* readFailed(): AsyncIterable<TableBatch> {
+    throw new Error('reader failed');
+  }
+  await expect(
+    (async () => {
+      for await (const _batch of executeTableScanBatches(readFailed, {
+        onQueryComplete: snapshot => failed.push(snapshot)
+      })) {
+        // expected to throw before yielding
+      }
+    })()
+  ).rejects.toThrow('reader failed');
+  expect(failed).toHaveLength(1);
+  expect(failed[0]).toMatchObject({status: 'failed'});
+});
+
+test('filterTableBatch validates predicate columns', () => {
+  const batch: TableBatch = {
+    shape: 'object-row-table',
+    schema,
+    data: [{id: 1, value: 2}],
+    length: 1
+  };
+  expect(filterTableBatch(batch, undefined)).toBe(batch);
+  expect(
+    filterTableBatch(
+      {shape: 'array-row-table', data: [[1]], length: 1},
+      {
+        op: '=',
+        args: [1, 1]
+      }
+    )
+  ).toMatchObject({shape: 'array-row-table'});
+  expect(() => filterTableBatch(batch, {op: '=', args: [{property: 'missing'}, 1]})).toThrow(
+    'column not found'
+  );
+});
+
+test('query completion runs once and observer failures do not change results', async () => {
+  const batch: TableBatch = {shape: 'object-row-table', data: [{id: 1}], length: 1};
+  async function* readBatches(): AsyncIterable<TableBatch> {
+    yield batch;
+  }
+  const onQueryComplete = vi.fn(() => {
+    throw new Error('observer failed');
+  });
+  const outputs: TableBatch[] = [];
+  for await (const output of executeTableScanBatches(readBatches, {onQueryComplete})) {
+    outputs.push(output);
+  }
+  expect(outputs).toEqual([batch]);
+  expect(onQueryComplete).toHaveBeenCalledTimes(1);
+  expect(onQueryComplete).toHaveBeenCalledWith(
+    expect.objectContaining({
+      status: 'completed',
+      rowsReturned: 1
+    })
+  );
+});
+
+test('async filter kernels receive cancellation and preserve upstream backpressure', async () => {
+  const batch: TableBatch = {shape: 'object-row-table', data: [{id: 1}], length: 1};
+  const controller = new AbortController();
+  let pulls = 0;
+  let closed = false;
+  let release!: () => void;
+  const blocked = new Promise<void>(resolve => {
+    release = resolve;
+  });
+  let started!: () => void;
+  const entered = new Promise<void>(resolve => {
+    started = resolve;
+  });
+  async function* inputs() {
+    try {
+      pulls++;
+      yield batch;
+      pulls++;
+      yield batch;
+    } finally {
+      closed = true;
+    }
+  }
+  const iterator = executeTableScanBatches(
+    () => inputs(),
+    {signal: controller.signal},
+    {
+      filter: async (input, _predicate, signal) => {
+        expect(signal).toBe(controller.signal);
+        started();
+        await blocked;
+        signal?.throwIfAborted();
+        return input;
+      }
+    }
+  )[Symbol.asyncIterator]();
+  const first = iterator.next();
+  await entered;
+  expect(pulls).toBe(1);
+  controller.abort();
+  release();
+  await expect(first).rejects.toThrow();
+  expect(closed).toBe(true);
+  expect(pulls).toBe(1);
+});
+
+test.each([
+  1, 2
+])('limit completion wins over abort after yielding the last row from a %i-row batch', async length => {
+  const controller = new AbortController();
+  let pulls = 0;
+  let closed = false;
+  const summaries: unknown[] = [];
+  async function* inputs(): AsyncIterable<TableBatch> {
+    try {
+      pulls++;
+      yield {shape: 'object-row-table', data: Array.from({length}, (_, id) => ({id})), length};
+      pulls++;
+      throw new Error('must not pull beyond limit');
+    } finally {
+      closed = true;
+    }
+  }
+  const iterator = executeTableScanBatches(() => inputs(), {
+    limit: 1,
+    signal: controller.signal,
+    onQueryComplete: summary => summaries.push(summary)
+  })[Symbol.asyncIterator]();
+  expect((await iterator.next()).value!.length).toBe(1);
+  controller.abort();
+  expect((await iterator.next()).done).toBe(true);
+  expect(pulls).toBe(1);
+  expect(closed).toBe(true);
+  expect(summaries).toEqual([
+    expect.objectContaining({status: 'early-terminated', earlyTerminationReason: 'limit'})
+  ]);
+});
+
+test.each([
+  'table',
+  'record batch'
+] as const)('shared scan executor windows and projects a native Arrow %s', async layout => {
+  const table = tableFromArrays({id: new Int32Array([1, 2, 3]), value: ['a', 'b', 'c']});
+  const batch = layout === 'table' ? table : table.batches[0];
+  async function* readBatches() {
+    yield batch;
+  }
+
+  const result = await Array.fromAsync(
+    executeTableScanBatches(readBatches, {offset: 1, limit: 1, columns: ['value', 'id']})
+  );
+  expect(result).toHaveLength(1);
+  expect(result[0].schema.names).toEqual(['value', 'id']);
+  expect(truncateTableBatch(batch, 1).numRows).toBe(1);
+  expect(projectTableBatch(batch, ['value']).schema.names).toEqual(['value']);
+  expect(result[0].getChild('id')?.toArray()).toEqual(new Int32Array([2]));
+  await expect(
+    Array.fromAsync(
+      executeTableScanBatches(readBatches, {
+        predicate: {op: '=', args: [{property: 'id'}, 2]}
+      })
+    )
+  ).rejects.toThrow('require a filter kernel');
+});

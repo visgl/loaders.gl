@@ -38,7 +38,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   description="The default result is an Arrow table for typed columns and direct table interoperability. GeoJSON and binary shapes remain available when application code needs them."
   tone="cyan"
   items={[
-    {label: 'Default', value: 'ArrowTable with typed columns and WKB geometry'},
+    {label: 'Default', value: 'Apache Arrow table with typed columns and WKB geometry'},
     {label: 'GeoJSON', value: 'GeoJSONTable for application code'},
     {label: 'Index', value: 'Bounding-box filtering before decode'},
     {label: 'Streaming', value: 'Source APIs for incremental reads'}
@@ -52,6 +52,10 @@ Loader for the [FlatGeobuf](/docs/modules/geospatial/flatgeobuf/formats/flatgeob
   description="The sections below cover usage, result shapes, GeoJSON and Arrow output, reprojection, and option details."
   tone="cyan"
 />
+
+| Property | Value |
+| --- | --- |
+| Data source | `FlatGeobufVectorSource` |
 
 ## Usage
 
@@ -69,12 +73,12 @@ const geojsonTable = await load(url, FlatGeobufLoader, {
 
 ### Shapes
 
-`FlatGeobufLoader` returns loaders.gl `ArrowTable` objects by default. Set `flatgeobuf.shape` to select another representation.
+`FlatGeobufLoader` returns native Apache Arrow `Table` objects by default. Set `flatgeobuf.shape` to select another representation.
 
 | Shape              | Output                                |
 | ------------------ | ------------------------------------- |
 | `geojson-table`    | loaders.gl GeoJSON table              |
-| `arrow-table`      | loaders.gl `ArrowTable` with WKB geometry |
+| `arrow`      | Apache Arrow `Table` with WKB geometry |
 | `columnar-table`   | loaders.gl columnar table             |
 | `binary-geometry`  | loaders.gl binary feature collection  |
 
@@ -84,13 +88,13 @@ The parser will return an array of [GeoJSON `features`](https://tools.ietf.org/h
 
 ### Arrow
 
-By default, `FlatGeobufLoader` returns an Apache Arrow table that preserves FlatGeobuf property columns and appends a WKB `geometry` column annotated with geospatial schema metadata. Set `flatgeobuf.shape` to `'arrow-table'` explicitly when using another default or shared option bag. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+By default, `FlatGeobufLoader` returns an Apache Arrow table that preserves FlatGeobuf property columns and appends a WKB `geometry` column annotated with geospatial schema metadata. Set `flatgeobuf.shape` to `'arrow'` explicitly when using another default or shared option bag. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ## Options
 
 | Option             | Type                                                     | Default           | Description                                                       |
 | ------------------ | -------------------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
-| flatgeobuf.shape   | `string`                                                 | `'arrow-table'` | Output shape: `'geojson-table'`, `'arrow-table'`, `'columnar-table'`, or `'binary-geometry'`. |
+| flatgeobuf.shape   | `string`                                                 | `'arrow'` | Output shape: `'geojson-table'`, `'arrow'`, `'columnar-table'`, or `'binary-geometry'`. |
 | gis.reproject      | boolean                                                  | `false`           | Whether to transform input data into `gis.targetCrs` (WGS84 when omitted). |
 | gis.targetCrs      | `CRSDefinition`                                          | `'WGS84'` when reprojection is enabled | Output CRS for transformed coordinates. |
 

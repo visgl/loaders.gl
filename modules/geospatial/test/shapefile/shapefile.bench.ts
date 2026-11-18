@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const SHAPEFILE_URL = `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`;
@@ -20,12 +20,16 @@ export default async function shapefileLoaderBench(suite) {
   // Add the tests
   suite.group('ShapefileLoader');
 
-  suite.addAsync('ShapefileLoader load arrow-table geoarrow.wkb', rowBenchmarkOptions, async () => {
-    await load(arrayBuffer.slice(0), ShapefileLoader, {
-      core: {worker: false},
-      shapefile: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow.wkb'}
-    });
-  });
+  suite.addAsync(
+    'ShapefileLoader load native Arrow geoarrow.wkb',
+    rowBenchmarkOptions,
+    async () => {
+      await load(arrayBuffer.slice(0), ShapefileLoader, {
+        core: {worker: false},
+        shapefile: {shape: 'arrow', geoarrowEncoding: 'geoarrow.wkb'}
+      });
+    }
+  );
 
   suite.addAsync('ShapefileLoader load geojson-table', rowBenchmarkOptions, async () => {
     await load(arrayBuffer.slice(0), ShapefileLoader, {

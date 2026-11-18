@@ -98,10 +98,7 @@ test('TextureLoader#parse with core.baseUrl', async () => {
     image: '../../../../images/test/data/ibl/brdfLUT.png'
   });
   const texture = await parse(manifestText, TextureLoader, {
-    fetch,
-    core: {
-      baseUrl: IMAGE_TEXTURE_MANIFEST_URL
-    }
+    core: {baseUrl: IMAGE_TEXTURE_MANIFEST_URL, fetch}
   });
   expect(texture.type, 'resolves relative member URLs against core.baseUrl').toBe('2d');
   expect(
@@ -122,12 +119,7 @@ test('TextureLoader#parse with extensionless core.baseUrl', async () => {
       image: 'member.png'
     }),
     TextureLoader,
-    {
-      fetch,
-      core: {
-        baseUrl: 'https://example.com/manifests/texture-manifest'
-      }
-    }
+    {core: {baseUrl: 'https://example.com/manifests/texture-manifest', fetch}}
   );
   expect(texture.type, 'resolves against the source manifest directory').toBe('2d');
   expect(requestedUrls, 'extensionless manifest URLs still resolve sibling members').toEqual([
@@ -155,10 +147,7 @@ test('TextureLoader#template with auto mipLevels', async () => {
     template: '../../../../images/test/data/ibl/papermill/specular/specular_back_{lod}.jpg'
   });
   const texture = await parse(manifestText, TextureLoader, {
-    fetch,
-    core: {
-      baseUrl: IMAGE_TEXTURE_MIPMAP_MANIFEST_URL
-    }
+    core: {baseUrl: IMAGE_TEXTURE_MIPMAP_MANIFEST_URL, fetch}
   });
   expect(texture.type, 'returns a 2d texture').toBe('2d');
   expect(texture.data.length, 'template source expands the auto mip chain').toBe(10);
@@ -185,12 +174,7 @@ test('TextureLoader#template supports escaped braces', async () => {
       template: 'file\\{literal\\}.png'
     }),
     TextureLoader,
-    {
-      fetch,
-      core: {
-        baseUrl: 'https://example.com/manifest.json'
-      }
-    }
+    {core: {baseUrl: 'https://example.com/manifest.json', fetch}}
   );
   checkImageTextureLevel(texture.data[0], 'level 0');
   expect(decodeURIComponent(requestedUrls[0]), 'escaped braces are preserved').toBe(
@@ -206,12 +190,7 @@ test('TextureLoader#template reports invalid placeholders', async () => {
         template: 'texture-{unknown}.png'
       }),
       TextureLoader,
-      {
-        fetch: fetchFile,
-        core: {
-          baseUrl: 'https://example.com/manifest.json'
-        }
-      }
+      {core: {baseUrl: 'https://example.com/manifest.json', fetch: fetchFile}}
     ),
     'invalid placeholders fail with a clear error'
   ).rejects.toThrow(/unsupported placeholder/);
@@ -231,12 +210,7 @@ test('TextureArrayLoader#template supports index placeholder', async () => {
       ]
     }),
     TextureArrayLoader,
-    {
-      fetch,
-      core: {
-        baseUrl: 'https://example.com/manifest.json'
-      }
-    }
+    {core: {baseUrl: 'https://example.com/manifest.json', fetch}}
   );
   expect(texture.type, 'template array returns a 2d array texture').toBe('2d-array');
   expect(texture.data.length, 'template array expands every layer').toBe(2);
@@ -264,7 +238,7 @@ test('TextureLoader#uses the top-level fetch function for members', async () => 
     }
     throw new Error(`Unexpected URL ${url}`);
   };
-  const texture = await load(manifestUrl, TextureLoader, {fetch});
+  const texture = await load(manifestUrl, TextureLoader, {core: {fetch}});
   checkImageTextureLevel(texture.data[0], 'level 0');
   expect(requestedUrls, 'top-level fetch is reused for members').toEqual([manifestUrl, memberUrl]);
 });
@@ -302,7 +276,7 @@ test('TextureLoader#uses top-level loaders for members', async () => {
     }
     throw new Error(`Unexpected URL ${url}`);
   };
-  const texture = await load(manifestUrl, [TextureLoader, CustomMemberLoader], {fetch});
+  const texture = await load(manifestUrl, [TextureLoader, CustomMemberLoader], {core: {fetch}});
   expect(texture.type, 'member parsing still wraps into a 2d texture').toBe('2d');
   expect(texture.format, 'member parsing uses the custom loader result').toBe('bc1-rgba-unorm');
   expect(texture.data[0].compressed, 'member level remains compressed').toBe(true);
@@ -327,12 +301,7 @@ test('TextureCubeLoader#template supports cube placeholders', async () => {
       }
     }),
     TextureCubeLoader,
-    {
-      fetch,
-      core: {
-        baseUrl: 'https://example.com/manifest.json'
-      }
-    }
+    {core: {baseUrl: 'https://example.com/manifest.json', fetch}}
   );
   expect(texture.type, 'template cube returns a cube texture').toBe('cube');
   expect(texture.data.length, 'template cube expands every face').toBe(6);
@@ -378,12 +347,7 @@ test('TextureCubeArrayLoader#template supports layer index and face placeholders
       ]
     }),
     TextureCubeArrayLoader,
-    {
-      fetch,
-      core: {
-        baseUrl: 'https://example.com/manifest.json'
-      }
-    }
+    {core: {baseUrl: 'https://example.com/manifest.json', fetch}}
   );
   expect(texture.type, 'cube array returns a cube-array texture').toBe('cube-array');
   expect(texture.data.length, 'cube array returns one cubemap per layer').toBe(2);
@@ -437,7 +401,7 @@ test('Texture loaders#load selects by shape for JSON responses', async () => {
   const texture = await load(
     manifestUrl,
     [TextureLoader, TextureArrayLoader, TextureCubeLoader, TextureCubeArrayLoader],
-    {fetch}
+    {core: {fetch}}
   );
   expect(texture.type, 'shape discriminator selects the matching manifest loader').toBe('2d-array');
   expect(texture.data.length, 'loads the array layer through URL-based auto-selection').toBe(1);

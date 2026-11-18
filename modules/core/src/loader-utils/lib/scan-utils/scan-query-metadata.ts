@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {SQLQuery} from '@math.gl/sql/parser';
 import type {DataType, FieldMetadata, Schema} from '@loaders.gl/core/schema';
 import type {ColumnarPredicate, ColumnarPredicateProperty} from './columnar-predicate';
 import type {
   TableQueryCapabilities,
   TableQueryOperatorSupport,
-  TableQueryOptions
+  TableQueryOptions,
+  TableQueryExecutionOptions
 } from './table-query';
 import type {PointCloudQueryOptions} from './point-cloud-query';
 import type {RasterQueryCapabilities} from './raster-query';
@@ -138,12 +140,16 @@ export type ScanQueryMetadata = Readonly<{
   columns: readonly ScanColumnMetadata[];
   /** Portable and source-family-specific execution capabilities. */
   capabilities: ScanQueryCapabilities;
+  /** Effective source capabilities; preferred name during migration. */
+  queryCapabilities?: ScanQueryCapabilities;
   /** Optional spatial metadata used to populate bounds controls. */
   spatial?: ScanSpatialMetadata;
   /** Optional statistics obtained from source metadata. */
   statistics?: ScanSourceStatistics;
   /** Optional multiscale raster levels. */
   levels?: readonly ScanRasterLevel[];
+  /** The source or a child applies a configured row window to direct reads by default. */
+  hasDefaultRowWindow?: boolean;
 }>;
 
 /** Options accepted by query metadata discovery methods. */
@@ -153,14 +159,10 @@ export type ScanQueryMetadataOptions = Readonly<{
 }>;
 
 /** Terminal state of one observable scan execution. */
-export type ScanExecutionTelemetryStatus =
-  | 'completed'
-  | 'early-terminated'
-  | 'cancelled'
-  | 'failed';
+export type TableQueryExecutionStatus = 'completed' | 'early-terminated' | 'cancelled' | 'failed';
 
 /** Portable execution counters for one physical source in a federated scan. */
-export type ScanSourceExecutionTelemetry = Readonly<{
+export type TableQuerySourceExecutionSummary = Readonly<{
   /** Stable registry id when the source was resolved through a DataSourceManager. */
   sourceId?: string;
   /** Format or adapter type reported by scan metadata. */
@@ -168,7 +170,7 @@ export type ScanSourceExecutionTelemetry = Readonly<{
   /** Zero-based append position for a federated source. */
   sourceIndex?: number;
   /** Terminal state of this physical source iterator. */
-  status: ScanExecutionTelemetryStatus;
+  status: TableQueryExecutionStatus;
   /** Physical files opened by this source, when measurable. */
   filesOpened?: number;
   /** Independently scheduled physical tasks opened by this source, when measurable. */
@@ -196,9 +198,9 @@ export type ScanSourceExecutionTelemetry = Readonly<{
 }>;
 
 /** Portable execution counters reported when a table scan terminates. */
-export type ScanExecutionTelemetry = Readonly<{
+export type TableQueryExecutionSummary = Readonly<{
   /** Terminal state distinguishing completion, early return, cancellation, and failure. */
-  status: ScanExecutionTelemetryStatus;
+  status: TableQueryExecutionStatus;
   /** Number of physical sources included in the resolved plan. */
   sourcesPlanned: number;
   /** Number of physical source iterators that were opened. */
@@ -230,7 +232,7 @@ export type ScanExecutionTelemetry = Readonly<{
   /** Why a successfully shortened execution stopped before exhausting its plan. */
   earlyTerminationReason?: 'limit' | 'consumer-return';
   /** Per-source physical counters in deterministic append order. */
-  sources?: readonly ScanSourceExecutionTelemetry[];
+  sources?: readonly TableQuerySourceExecutionSummary[];
   /** Source-specific immutable counters retained for detailed diagnostics. */
   details?: Readonly<Record<string, unknown>>;
   /** Failure or cancellation reason when one terminated the scan. */
@@ -238,21 +240,21 @@ export type ScanExecutionTelemetry = Readonly<{
 }>;
 
 /** Receives the immutable final counters for one table scan execution. */
-export type ScanExecutionTelemetryCallback = (telemetry: ScanExecutionTelemetry) => void;
+export type TableQueryCompleteCallback = (summary: TableQueryExecutionSummary) => void;
 
 /**
- * Delivers a scan telemetry snapshot without allowing an observer failure to alter scan results.
- * Telemetry is best-effort by design: exporters and diagnostics must not become query failures.
+ * Delivers a terminal query summary without allowing an observer failure to alter scan results.
+ * Completion observers are best-effort and must not become query failures.
  */
-export function emitScanExecutionTelemetry(
-  callback: ScanExecutionTelemetryCallback | undefined,
-  telemetry: ScanExecutionTelemetry
+export function emitQueryComplete(
+  callback: TableQueryCompleteCallback | undefined,
+  summary: TableQueryExecutionSummary
 ): void {
   if (!callback) return;
   try {
-    callback(telemetry);
+    callback(summary);
   } catch {
-    // Telemetry observers must never change scan behavior.
+    // Completion observers must never change query behavior.
   }
 }
 
@@ -269,11 +271,10 @@ export type TableScanReadOptions<
     ColumnarPredicateProperty
   >
 > = TableQueryOptions<PredicateT> &
+  TableQueryExecutionOptions &
   Readonly<{
-    /** Cooperatively cancels source discovery and execution. */
-    signal?: AbortSignal;
-    /** Receives one terminal execution snapshot without changing query semantics. */
-    onTelemetry?: ScanExecutionTelemetryCallback;
+    /** Number of filtered rows skipped before the source limit. */
+    offset?: number;
   }>;
 
 /**
@@ -290,9 +291,18 @@ export type TableScanSource<
     ColumnarPredicateProperty
   >
 > = ScanQueryMetadataProvider & {
+  /** Accepts an entire query only with equivalent semantics. Planning must not read rows. */
+  planQueryPushdown?(
+    query: TableQueryPushdownRequest,
+    options?: ScanQueryMetadataOptions
+  ): Promise<TableQueryPushdownPlan | null>;
+  /** Identifies a computed SELECT item with exact native results and no row-dependent errors. Must not read rows. */
+  supportsQueryProjectionPushdown?(
+    selection: NonNullable<TableQueryPushdownRequest['select']>[number]
+  ): boolean;
   /** Explains the logical plan and physical support without decoding result rows. */
   explain?(options?: TableScanReadOptions<PredicateT>): Promise<TableQueryExplain<PredicateT>>;
-  /** Reads the query result as ordered batches without changing the logical query semantics. */
+  /** Reads ordered batches. Native Arrow sources may yield RecordBatch objects directly. */
   read(options?: TableScanReadOptions<PredicateT>): AsyncIterable<BatchT>;
 };
 
@@ -333,6 +343,8 @@ export type CreateScanQueryMetadataOptions = Readonly<{
   statistics?: ScanSourceStatistics;
   /** Optional multiscale raster levels. */
   levels?: readonly ScanRasterLevel[];
+  /** The source or a child applies a configured row window to direct reads by default. */
+  hasDefaultRowWindow?: boolean;
 }>;
 
 /**
@@ -340,9 +352,7 @@ export type CreateScanQueryMetadataOptions = Readonly<{
  *
  * Source adapters only need to supply semantic roles that cannot be inferred from Arrow types.
  */
-export function createScanQueryMetadata(
-  options: CreateScanQueryMetadataOptions
-): ScanQueryMetadata {
+export function createScanQueryMetadata(options: CreateScanQueryMetadataOptions): QueryMetadata {
   validateScanExecutionSupport(options.queryType, options.execution);
   const schema: Schema = Object.freeze({
     fields: Object.freeze(
@@ -364,6 +374,7 @@ export function createScanQueryMetadata(
     })
   );
 
+  const queryCapabilities = Object.freeze({...options.capabilities});
   return Object.freeze({
     sourceType: options.sourceType,
     queryType: options.queryType,
@@ -372,7 +383,9 @@ export function createScanQueryMetadata(
     description: options.description,
     schema,
     columns: Object.freeze(columns),
-    capabilities: Object.freeze({...options.capabilities}),
+    capabilities: queryCapabilities,
+    queryCapabilities,
+    ...(options.hasDefaultRowWindow ? {hasDefaultRowWindow: true} : {}),
     spatial: options.spatial
       ? Object.freeze({
           ...options.spatial,
@@ -436,4 +449,44 @@ function getNonEmptyMetadataValue(
 ): string | undefined {
   const value = metadata?.[key];
   return value || undefined;
+}
+
+/** Logical query offered for exact, all-or-nothing pushdown. FROM is already resolved. */
+export type TableQueryPushdownRequest = Omit<Exclude<SQLQuery, {command: unknown}>, 'from'>;
+
+/** Accepted plan; the source owns every operator, including casts, offset, and limit. */
+export type TableQueryPushdownPlan = Readonly<{
+  /** Exact output schema, including aliases, CAST types, and nullability. */
+  schema: Schema;
+  /** Executes on demand with equivalent order, error semantics, and cancellation. */
+  read: (options?: ScanQueryMetadataOptions) => AsyncIterable<import('apache-arrow').RecordBatch>;
+}>;
+
+/** Preferred name for source discovery metadata. */
+export type QueryMetadata = ScanQueryMetadata &
+  Readonly<{
+    /** Effective source capabilities, also exposed by the legacy capabilities alias. */
+    queryCapabilities: ScanQueryCapabilities;
+  }>;
+/** Preferred name for discovery controls. */
+export type QueryMetadataOptions = ScanQueryMetadataOptions;
+/** Preferred name for source-family execution capabilities. */
+export type QueryCapabilities = ScanQueryCapabilities;
+/** Preferred name for a table source; the physical read method is unchanged. */
+export type TableQuerySource<BatchT = unknown> = TableScanSource<BatchT>;
+/** Preferred name for physical table read controls. */
+export type TableQueryReadOptions = TableScanReadOptions;
+/** Inputs for the preferred metadata factory. */
+export type CreateQueryMetadataOptions = Omit<CreateScanQueryMetadataOptions, 'capabilities'> &
+  Readonly<{
+    /** Effective capabilities of this source instance. */
+    queryCapabilities: QueryCapabilities;
+  }>;
+/** Creates immutable metadata while retaining the legacy property. */
+export function createQueryMetadata(options: CreateQueryMetadataOptions): QueryMetadata {
+  const {queryCapabilities, ...metadataOptions} = options;
+  return createScanQueryMetadata({
+    ...metadataOptions,
+    capabilities: queryCapabilities
+  });
 }

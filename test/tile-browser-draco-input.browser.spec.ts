@@ -76,8 +76,7 @@ beforeAll(async () => {
     indices: {size: 1, value: new Uint16Array(indices)}
   });
   const decodedContainer = await parse(grid, GLTFLoader, {
-    worker: false,
-    core: {useLocalLibraries: true},
+    core: {useLocalLibraries: true, worker: false},
     gltf: {loadImages: false}
   });
   const decoded = getMeshAttributes(decodedContainer);
@@ -151,8 +150,7 @@ test.each([
   const archive = new Tiles3DArchive(new BlobFile(output.file));
   try {
     const gltf = await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
-      worker: false,
-      core: {useLocalLibraries: true},
+      core: {useLocalLibraries: true, worker: false},
       gltf: {loadImages: false, excludeExtensions: {KHR_texture_transform: false}}
     });
     const primitive = gltf.json.meshes![0].primitives[0];

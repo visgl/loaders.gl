@@ -5,12 +5,12 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {encode, parse, load} from '@loaders.gl/core';
-import {ParquetLoader, ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 /** Creates two tiny row groups without storing a binary fixture. */
 async function createRowGroups(): Promise<ArrayBuffer> {
-  return encode({shape: 'object-row-table', data: [{id: 0}, {id: 1}, {id: 2}, {id: 3}]}, ParquetJSWriter, {
+  return encode({shape: 'object-row-table', data: [{id: 0}, {id: 1}, {id: 2}, {id: 3}]}, ParquetWriter, {
     parquet: {rowGroupSize: 2}
   });
 }
@@ -43,13 +43,13 @@ test('ParquetLoader preserves an empty row-group selection and cancellation', as
 
 test.each(['nonnullable', 'nullable'])('ParquetLoader decodes legacy %s nested lists to Arrow', async name => {
   const table = await load(`@loaders.gl/tables/parquet/test/data/apache/good/${name}.impala.parquet`, ParquetLoader, {
-    core: {worker: false}, parquet: {shape: 'arrow-table'}
+    core: {worker: false}, parquet: {shape: 'arrow'}
   });
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape === 'arrow-table') {
-    expect(table.data.numRows).toBeGreaterThan(0);
-    expect(table.data.toArray().length).toBe(table.data.numRows);
-    const nested = JSON.parse(JSON.stringify(table.data.getChild(name === 'nonnullable' ? 'nested_Struct' : 'nested_struct')?.get(0)));
+  expect(table).toHaveProperty('numRows');
+  if ('numRows' in table) {
+    expect(table.numRows).toBeGreaterThan(0);
+    expect(table.toArray().length).toBe(table.numRows);
+    const nested = JSON.parse(JSON.stringify(table.getChild(name === 'nonnullable' ? 'nested_Struct' : 'nested_struct')?.get(0)));
     expect(nested[name === 'nonnullable' ? 'B' : 'b']).toEqual(name === 'nonnullable' ? [-1] : [1]);
     if (name === 'nonnullable') {
       expect(nested.G.map).toEqual([]);
@@ -66,7 +66,7 @@ test('ParquetLoader preserves footer metadata over embedded Arrow metadata and i
     const data = await encode({shape: 'object-row-table', data: [{id: 1}], schema: {
       fields: [{name: 'id', type: 'int32', nullable: false}],
       metadata: {source: 'footer', 'ARROW:schema': arrowSchema}
-    }}, ParquetJSWriter);
+    }}, ParquetWriter);
     const table = await parse(data, ParquetLoader, {
       core: {worker: false}, parquet: {shape: 'object-row-table'}
     }) as ObjectRowTable;

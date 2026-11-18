@@ -3,16 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {DuckDBSQLDataSource, DuckDBSQLSource} from '@loaders.gl/sql';
 test('DuckDBSQLSource#createDataSource selects DuckDB source from URL', () => {
-  const dataSource = createDataSource('duckdb:///:memory:', [DuckDBSQLSource], {
+  const dataSource = createDataSourceSync('duckdb:///:memory:', [DuckDBSQLSource], {
     duckdb: {}
   });
   expect(dataSource instanceof DuckDBSQLDataSource, 'returns DuckDBSQLDataSource').toBeTruthy();
 });
 test('DuckDBSQLSource executes queries and exposes metadata', async () => {
-  const dataSource = createDataSource('duckdb:///:memory:', [DuckDBSQLSource], {
+  const dataSource = createDataSourceSync('duckdb:///:memory:', [DuckDBSQLSource], {
     duckdb: {}
   }) as DuckDBSQLDataSource;
   await dataSource.queryRows(
@@ -28,8 +28,8 @@ test('DuckDBSQLSource executes queries and exposes metadata', async () => {
   });
   expect(plannedRows, 'compiles and executes a portable table query').toEqual([{value: 2}]);
   const arrowTable = await dataSource.queryArrow('SELECT * FROM numbers ORDER BY value');
-  expect(arrowTable.data.numRows, 'returns Arrow table rows').toBe(2);
-  expect(arrowTable.data.get(0)?.toJSON()?.value, 'returns Arrow table data').toBe(1);
+  expect(arrowTable.numRows, 'returns Arrow table rows').toBe(2);
+  expect(arrowTable.get(0)?.toJSON()?.value, 'returns Arrow table data').toBe(1);
   const tables = await dataSource.listTables();
   expect(
     tables.some(table => table.tableName === 'numbers'),
@@ -41,7 +41,7 @@ test('DuckDBSQLSource executes queries and exposes metadata', async () => {
 });
 
 test('DuckDBSQLSource exposes complete filtered metadata and lifecycle behavior', async () => {
-  const dataSource = createDataSource('duckdb:///:memory:', [DuckDBSQLSource], {
+  const dataSource = createDataSourceSync('duckdb:///:memory:', [DuckDBSQLSource], {
     duckdb: {accessMode: 'read_write'}
   }) as DuckDBSQLDataSource;
 
@@ -99,6 +99,103 @@ test('DuckDB Node adapter reports unsupported IPC uploads', async () => {
     await expect(source.insertArrowIPC(new Uint8Array(), {tableName: 'events'})).rejects.toThrow(
       'does not support Arrow IPC uploads'
     );
+  } finally {
+    await source.close();
+  }
+});
+
+test('common queries page DuckDB tables, widen integers natively, and fall back for rounding casts', async () => {
+  const source = new DuckDBSQLDataSource('duckdb:///:memory:', {core: {name: 'database'}});
+  try {
+    await source.queryRows('CREATE TABLE values_table (id INTEGER, value DOUBLE)');
+    await source.queryRows(
+      'INSERT INTO values_table VALUES (1, 1.9), (2, 2.9), (3, 3.9), (4, NULL)'
+    );
+    const table = await source.getTable('values_table');
+    const statements: string[] = [];
+    const queryRows = source.queryRows.bind(source);
+    source.queryRows = async (statement, options) => {
+      if (typeof statement === 'string') statements.push(statement);
+      return queryRows(statement, options);
+    };
+    const {query} = await import('@loaders.gl/core/query');
+    const {parseSQLQuery} = await import('@loaders.gl/core/query/query');
+    for (const offset of [0, 1]) {
+      const result = await query(
+        `SELECT CAST(id AS BIGINT) AS result WHERE CAST(id AS BIGINT) >= 2 LIMIT 1 OFFSET ${offset}`,
+        {source: table, sqlParser: parseSQLQuery}
+      );
+      expect(result.getChild('result')?.get(0)).toBe(BigInt(offset + 2));
+      expect(statements.at(-1)).toMatch(new RegExp(`CAST.*WHERE CAST.*LIMIT 1 OFFSET ${offset}$`));
+    }
+    const fallback = await query('SELECT CAST(value AS INTEGER) AS result LIMIT 1 OFFSET 1', {
+      source: table,
+      sqlParser: parseSQLQuery
+    });
+    expect(fallback.getChild('result')?.get(0)).toBe(2);
+    expect(statements.at(-1)).toMatch(/SELECT "value".*LIMIT 1 OFFSET 1$/);
+    const named = await query(
+      {from: {source: 'database', table: 'values_table'}, limit: 1},
+      {sources: [source]}
+    );
+    expect(named.getChild('id')?.get(0)).toBe(1);
+  } finally {
+    await source.close();
+  }
+});
+
+test('DuckDB physical and pushdown reads retain the schema of an empty result', async () => {
+  const source = new DuckDBSQLDataSource('duckdb:///:memory:', {});
+  try {
+    await source.queryRows('CREATE TABLE empty_table (id INTEGER, label VARCHAR)');
+    const table = await source.getTable('empty_table');
+    const plan = await table.planQueryPushdown?.({select: ['id']});
+    expect(plan).toBeTruthy();
+    for (const stream of [table.read({columns: ['id']}), plan!.read()]) {
+      const batches = [];
+      for await (const batch of stream) batches.push(batch);
+      expect(batches.map(batch => 'numRows' in batch && batch.numRows)).toEqual([0]);
+      expect(batches[0].schema?.fields.map(field => field.name)).toEqual(['id']);
+    }
+  } finally {
+    await source.close();
+  }
+});
+
+test('common queries combine native DuckDB casts and residual Arrow expressions', async () => {
+  const source = new DuckDBSQLDataSource('duckdb:///:memory:', {});
+  try {
+    await source.queryRows('CREATE TABLE mixed (id INTEGER, fraction DOUBLE)');
+    await source.queryRows('INSERT INTO mixed VALUES (1, 1e30), (2, 2.9), (NULL, 3.9)');
+    const table = await source.getTable('mixed');
+    const statements: string[] = [];
+    const queryRows = source.queryRows.bind(source);
+    source.queryRows = (statement, options) => {
+      if (typeof statement === 'string') statements.push(statement);
+      return queryRows(statement, options);
+    };
+    const {query} = await import('@loaders.gl/core/query');
+    const {parseSQLQuery} = await import('@loaders.gl/core/query/query');
+    const projection =
+      'SELECT CAST(id AS DOUBLE PRECISION) AS wide, CAST(fraction AS INTEGER) AS truncated';
+    const result = await query(projection + ' LIMIT 2 OFFSET 1', {
+      source: table,
+      sqlParser: parseSQLQuery
+    });
+    expect(result.toArray().map(row => row.toJSON())).toEqual([
+      {wide: 2, truncated: 2},
+      {wide: null, truncated: 3}
+    ]);
+    expect(statements.at(-1)).toMatch(/CAST\("id" AS DOUBLE\).*LIMIT 2 OFFSET 1$/);
+    expect(statements.at(-1)).not.toContain('AS INTEGER');
+    await expect(query(projection, {source: table, sqlParser: parseSQLQuery})).rejects.toThrow(
+      /overflow/i
+    );
+    const reads = statements.length;
+    const empty = await query(projection + ' LIMIT 0', {source: table, sqlParser: parseSQLQuery});
+    expect(empty.schema.names).toEqual(['wide', 'truncated']);
+    expect(empty.numRows).toBe(0);
+    expect(statements).toHaveLength(reads);
   } finally {
     await source.close();
   }

@@ -15,8 +15,8 @@ test('COPC package is publishable and installed ESM/CJS entrypoints expose its w
   for (const mode of ['module', 'commonjs']) {
     const script =
       mode === 'module'
-        ? "import {COPCWriter, COPCSourceLoader} from '@loaders.gl/tiles-3d/copc'; import {createCOPCConversionCodec} from '@loaders.gl/tile-converter/v5'; if (!COPCWriter.encodeSync || !createCOPCConversionCodec) throw Error('missing entrypoints'); process.stdout.write(COPCSourceLoader.version);"
-        : "const {COPCWriter, COPCSourceLoader} = require('@loaders.gl/tiles-3d/copc'); const {createCOPCConversionCodec} = require('@loaders.gl/tile-converter/v5'); if (!COPCWriter.encodeSync || !createCOPCConversionCodec) throw Error('missing entrypoints'); process.stdout.write(COPCSourceLoader.version);";
+        ? "import {COPCWriter, COPCLoader} from '@loaders.gl/tiles-3d/copc'; import {createCOPCConversionCodec} from '@loaders.gl/tile-converter/v5'; if (!COPCWriter.encodeSync || !createCOPCConversionCodec) throw Error('missing entrypoints'); process.stdout.write(COPCLoader.version);"
+        : "const {COPCWriter, COPCLoader} = require('@loaders.gl/tiles-3d/copc'); const {createCOPCConversionCodec} = require('@loaders.gl/tile-converter/v5'); if (!COPCWriter.encodeSync || !createCOPCConversionCodec) throw Error('missing entrypoints'); process.stdout.write(COPCLoader.version);";
     expect(
       execFileSync(process.execPath, [`--input-type=${mode}`, '--eval', script], {
         cwd: process.cwd(),

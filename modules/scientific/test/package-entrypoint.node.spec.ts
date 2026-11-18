@@ -17,23 +17,23 @@ test.each([
     [
       `--input-type=${moduleType}`,
       '-e',
-      `${load} console.log(JSON.stringify({keys: Object.keys(packageExports), hasParser: 'loadZarr' in packageExports, hasPreload: typeof packageExports.OMEZarrSourceLoader.preload}));`
+      `${load} console.log(JSON.stringify({keys: Object.keys(packageExports), hasParser: 'loadZarr' in packageExports, hasPreload: typeof packageExports.OMEZarrLoader.preload}));`
     ],
     {encoding: 'utf8'}
   );
   const packageInfo = JSON.parse(output);
   expect(packageInfo.keys).toContain('NetCDFLoader');
-  expect(packageInfo.keys).toContain('OMEZarrSourceLoader');
+  expect(packageInfo.keys).toContain('OMEZarrLoader');
   expect(packageInfo.hasParser).toBe(false);
   expect(packageInfo.hasPreload).toBe('function');
 });
 
 test('scientific metadata loaders preload their parser subpaths', async () => {
-  const {NetCDFLoader, OMEZarrSourceLoader} = await import('../src');
+  const {NetCDFLoader, OMEZarrLoader} = await import('../src');
   const netcdfParser = await NetCDFLoader.preload();
-  const zarrParser = await OMEZarrSourceLoader.preload();
+  const zarrParser = await OMEZarrLoader.preload();
   expect(netcdfParser.parse).toBeTypeOf('function');
-  expect(zarrParser.createDataSource).toBeTypeOf('function');
+  expect(zarrParser.createDataSourceSync).toBeTypeOf('function');
 });
 
 test('NetCDF parser subpaths expose their CommonJS implementations', () => {
@@ -41,9 +41,9 @@ test('NetCDF parser subpaths expose their CommonJS implementations', () => {
     process.execPath,
     [
       '-e',
-      "const {NetCDFSourceLoader} = require('@loaders.gl/scientific/netcdf'); const {NetCDFSourceLoaderWithParser} = require('@loaders.gl/scientific/netcdf/netcdf-source-loader'); console.log(JSON.stringify({sourceLoader: typeof NetCDFSourceLoader.createDataSource, implementation: typeof NetCDFSourceLoaderWithParser.createDataSource}));"
+      "const {NetCDFLoaderWithParser} = require('@loaders.gl/scientific/netcdf'); console.log(JSON.stringify({parser: typeof NetCDFLoaderWithParser.parse, implementation: typeof NetCDFLoaderWithParser.createDataSourceSync}));"
     ],
     {encoding: 'utf8'}
   );
-  expect(JSON.parse(output)).toEqual({sourceLoader: 'function', implementation: 'function'});
+  expect(JSON.parse(output)).toEqual({parser: 'function', implementation: 'function'});
 });

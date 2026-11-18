@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['FlatBuffers', 'Row-oriented', 'Optional spatial index']}
   links={[
     {label: 'FlatGeobuf module', to: '/docs/modules/geospatial/flatgeobuf'},
-    {label: 'FlatGeobuf source', to: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader'}
+    {label: 'FlatGeobuf source', to: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source'}
   ]}
 />
 
@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Type | API |
 | --- | --- |
 | Loader | [`FlatGeobufLoader`](../api-reference/flatgeobuf-loader.md) |
-| Source loader | [`FlatGeobufSourceLoader`](../api-reference/flatgeobuf-source-loader.md) |
+| Source loader | [`FlatGeobufLoader`](../api-reference/flatgeobuf-source.md) |
 
 <FlatGeobufDocsTabs active="overview" />
 

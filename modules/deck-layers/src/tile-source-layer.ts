@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {getTileGridLayerOptions} from './lib/tile-grid-options';
 
 import {CompositeLayer} from '@deck.gl/core';
@@ -137,13 +138,13 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
     }
 
     if (this.sourceSupportsMVTLayer()) {
-      // TODO - Currently only TileSource that supports CRS override is TableTileSourceLoader
+      // TODO - Currently only TileSource that supports CRS override is TableTileLoader
       tileSource.options.table = tileSource.options.table || {};
       tileSource.options.table.coordinates = 'local';
       return this.renderMVTLayer();
     }
 
-    // TODO - Currently only TileSource that supports CRS override is TableTileSourceLoader
+    // TODO - Currently only TileSource that supports CRS override is TableTileLoader
     tileSource.options.table = tileSource.options.table || {};
     tileSource.options.table.coordinates = 'wgs84';
     return this.renderTileLayer();
@@ -274,7 +275,7 @@ function renderSubLayers(props: any) {
       break;
 
     default:
-      console.error('Unknown tile mimeType', tileSource?.mimeType);
+      loaderLog.error('Unknown tile mimeType', tileSource?.mimeType)();
   }
 
   if (showTileBorders) {

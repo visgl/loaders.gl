@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Parquet overview', to: '/docs/modules/tables/parquet/formats/parquet'},
     {label: 'ParquetLoader', to: '/docs/modules/tables/parquet/api-reference/parquet-loader'},
-    {label: 'Selective reads', to: '/docs/modules/tables/parquet/api-reference/parquet-source-loader'}
+    {label: 'Selective reads', to: '/docs/modules/tables/parquet/api-reference/parquet-source'}
   ]}
 />
 
@@ -64,21 +64,21 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Loader</span>
     <strong>ParquetLoader</strong>
     <span>Loads Parquet files as object-row tables or Arrow tables.</span>
-    <span className="docs-api-card__meta">Output: ObjectRowTable, ArrowTable</span>
+    <span className="docs-api-card__meta">Output: ObjectRowTable, Apache Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseInBatches</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/geoparquet-loader">
     <span className="docs-api-card__kind">Loader</span>
     <strong>GeoParquetLoader</strong>
     <span>Loads GeoParquet files as GeoJSON tables or Arrow tables with geospatial metadata.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ArrowTable</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, Apache Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseInBatches</span>
   </a>
-  <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/parquet-source-loader">
+  <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/parquet-source">
     <span className="docs-api-card__kind">Source</span>
-    <strong>ParquetSourceLoader</strong>
+    <strong>ParquetLoader</strong>
     <span>Reuses cached schema and footer metadata for selective Arrow reads.</span>
-    <span className="docs-api-card__meta">Output: ArrowTableBatch</span>
+    <span className="docs-api-card__meta">Output: Arrow RecordBatch</span>
     <span className="docs-api-card__meta">APIs: createDataSource, getMetadata, getSchema, read</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/tables/parquet/api-reference/parquet-writer">

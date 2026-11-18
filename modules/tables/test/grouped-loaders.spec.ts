@@ -3,59 +3,55 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load, parse, parseSync} from '@loaders.gl/core';
+import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
 import {CSVLoader, AvroLoader, AvroSchemaLoader} from '@loaders.gl/tables';
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv-loader';
-import {AvroLoaderWithParser} from '@loaders.gl/tables/avro-loader';
-import {AvroSchemaLoaderWithParser} from '@loaders.gl/tables/avro-schema';
+import {CSVLoaderWithParser} from '@loaders.gl/tables/csv';
+import {AvroLoaderWithParser} from '@loaders.gl/tables/avro';
+import {AvroSchemaLoaderWithParser} from '@loaders.gl/tables/avro';
 import {CSVLoader as FormatCSVLoader} from '@loaders.gl/tables/csv';
 import {AvroLoader as FormatAvroLoader} from '@loaders.gl/tables/avro';
 
 import {ArrowLoader} from '@loaders.gl/tables';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow-loader';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
 import {ArrowLoader as FormatArrowLoader} from '@loaders.gl/tables/arrow';
 
 import {JSONLoader} from '@loaders.gl/tables';
-import {JSONLoaderWithParser} from '@loaders.gl/tables/json-loader';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json';
 import {JSONLoader as FormatJSONLoader} from '@loaders.gl/tables/json';
 
 import {LanceLoader} from '@loaders.gl/tables';
-import {LanceLoaderWithParser} from '@loaders.gl/tables/lance-loader';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance';
 import {LanceLoader as FormatLanceLoader} from '@loaders.gl/tables/lance';
 
 import {ORCLoader} from '@loaders.gl/tables';
-import {ORCLoaderWithParser} from '@loaders.gl/tables/orc-loader';
+import {ORCLoaderWithParser} from '@loaders.gl/tables/orc';
 import {ORCLoader as FormatORCLoader} from '@loaders.gl/tables/orc';
 
 import {ParquetLoader} from '@loaders.gl/tables';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet-loader';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
 import {ParquetLoader as FormatParquetLoader} from '@loaders.gl/tables/parquet';
 
 import {GeoArrowLoader} from '@loaders.gl/tables';
-import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/geoarrow-loader';
+import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/geoarrow';
 
 import {JSONTableLoader} from '@loaders.gl/tables';
-import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json-table-loader';
+import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json';
 
 import {NDJSONLoader} from '@loaders.gl/tables';
-import {NDJSONLoaderWithParser} from '@loaders.gl/tables/ndjson-loader';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json';
 
 import {GeoJSONLoader} from '@loaders.gl/tables';
-import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson-loader';
+import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson';
 
 import {NDGeoJSONLoader} from '@loaders.gl/tables';
-import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/ndgeojson-loader';
-
-import {ParquetJSLoader} from '@loaders.gl/tables';
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet-js-loader';
+import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson';
 
 import {GeoParquetLoader} from '@loaders.gl/tables';
-import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/geoparquet-loader';
+import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
 
 test.each(
   [
     [GeoParquetLoader, GeoParquetLoaderWithParser],
-    [ParquetJSLoader, ParquetJSLoaderWithParser],
     [NDGeoJSONLoader, NDGeoJSONLoaderWithParser],
     [GeoJSONLoader, GeoJSONLoaderWithParser],
     [NDJSONLoader, NDJSONLoaderWithParser],
@@ -114,24 +110,12 @@ test('format parquet metadata shares its grouped owner', () => {
 
 test('grouped JSON metadata supports synchronous and asynchronous entrypoints', async () => {
   const input = new TextEncoder().encode('{"value":7}').buffer;
-  expect(await parse(input, JSONLoader, {worker: false})).toEqual({value: 7});
+  expect(await parse(input, JSONLoader, {core: {worker: false}})).toEqual({value: 7});
   expect(parseSync(input, JSONLoaderWithParser)).toEqual({value: 7});
 });
 
-test('grouped Lance source metadata defers synchronous source construction', async () => {
-  const {LanceSourceLoader} = await import('@loaders.gl/tables');
-  const {LanceSourceLoader: implementation} = await import(
-    '@loaders.gl/tables/lance-source-loader'
-  );
-  expect(() => LanceSourceLoader.createDataSource(new Blob(), {})).toThrow('requires async load()');
-  expect(await LanceSourceLoader.preload()).toBe(implementation);
-  expect(LanceSourceLoader.options).toEqual(implementation.options);
-  expect(LanceSourceLoader.testURL('dataset.lance/')).toBe(true);
-  expect(LanceSourceLoader.testURL('dataset.csv')).toBe(false);
-});
-
 test('format GeoJSON metadata keeps transport hooks outside grouped metadata', async () => {
-  const {GeoJSONLoader: format} = await import('@loaders.gl/tables/json');
+  const {GeoJSONLoader: format} = await import('@loaders.gl/tables/geojson');
   expect(format).toMatchObject(GeoJSONLoader);
   expect(format.serializeWorkerResult).toBe(GeoJSONLoaderWithParser.serializeWorkerResult);
   expect(format.deserializeWorkerResult).toBe(GeoJSONLoaderWithParser.deserializeWorkerResult);
@@ -139,10 +123,18 @@ test('format GeoJSON metadata keeps transport hooks outside grouped metadata', a
 });
 
 test('core asynchronously constructs grouped Lance and ORC sources from metadata', async () => {
-  const {LanceSourceLoader, ORCSourceLoader} = await import('@loaders.gl/tables');
-  const {LanceSource} = await import('@loaders.gl/tables/lance-source-loader');
-  const {ORCSource} = await import('@loaders.gl/tables/orc-source-loader');
-  expect(await load(new Blob(), LanceSourceLoader)).toBeInstanceOf(LanceSource);
-  expect(await load(new Blob(), ORCSourceLoader)).toBeInstanceOf(ORCSource);
-  expect(() => ORCSourceLoader.createDataSource(new Blob(), {})).toThrow('requires async load()');
+  const {LanceSource} = await import('@loaders.gl/tables/lance');
+  const {ORCSource} = await import('@loaders.gl/tables/orc');
+  expect(await createDataSource(new Blob(), LanceLoader)).toBeInstanceOf(LanceSource);
+  expect(await createDataSource(new Blob(), ORCLoader)).toBeInstanceOf(ORCSource);
+});
+
+test.each([
+  ArrowLoader,
+  LanceLoader,
+  ORCLoader
+])('$name exposes a source factory through its parser implementation', async loader => {
+  const implementation = await loader.preload();
+  expect(implementation.createDataSourceSync).toBeTypeOf('function');
+  expect(implementation.parse).toBeTypeOf('function');
 });

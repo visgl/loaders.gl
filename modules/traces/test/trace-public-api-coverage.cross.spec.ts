@@ -35,7 +35,7 @@ import type {
 } from '../src';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 /** Encodes a JSON value for the public loader API. */
 function encodeJson(value: unknown): ArrayBuffer {
@@ -203,11 +203,11 @@ describe('traces public API edge coverage', () => {
       chromeTrace: {shape: 'json'}
     })) as ChromeTraceFileSchema;
     const legacyJson = (await parse(input, ChromeTraceLoader, {
-      shape: 'json'
+      core: {shape: 'json'}
     })) as ChromeTraceFileSchema;
     expect(legacyJson).toEqual(json);
     const arrowTable = (await parse(input, ChromeTraceLoader, {
-      shape: 'arrow-table'
+      core: {shape: 'arrow'}
     })) as ChromeTraceEventArrowTable;
 
     expect(json.traceEvents).toHaveLength(1);
@@ -373,7 +373,7 @@ describe('traces public API edge coverage', () => {
         traceEvents: [createSpan('span')]
       }),
       ChromeTraceLoader,
-      {chromeTrace: {shape: 'arrow-table'}}
+      {chromeTrace: {shape: 'arrow'}}
     )) as ChromeTraceEventArrowTable;
 
     const encoded = encodeSync(table, ChromeTraceWriter, {

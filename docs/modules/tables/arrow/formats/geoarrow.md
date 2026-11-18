@@ -175,11 +175,11 @@ Arrow-capable geospatial loaders accept a common encoding preference. The option
 `geoarrow.encodingPreference` alongside the loader-specific options:
 
 ```typescript
-import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 import {load} from '@loaders.gl/core';
 
 const table = await load('cities.geojson', GeoJSONLoader, {
-  geojson: {shape: 'arrow-table'},
+  geojson: {shape: 'arrow'},
   geoarrow: {encodingPreference: 'optimized'}
 });
 ```
@@ -235,9 +235,9 @@ encoding.
 
 | Loader or source | Arrow output | Preference location |
 | --- | --- | --- |
-| GeoJSON | `geojson.shape: 'arrow-table'` | `geoarrow.encodingPreference` |
-| CSV | `csv.shape: 'arrow-table'` and `csv.detectGeometryColumns: true` | `geoarrow.encodingPreference` |
-| Shapefile | `shp.shape: 'arrow-table'` or `shapefile.shape: 'arrow-table'` | `geoarrow.encodingPreference` (legacy `shp.geoarrowEncoding` is also supported) |
+| GeoJSON | `geojson.shape: 'arrow'` | `geoarrow.encodingPreference` |
+| CSV | `csv.shape: 'arrow'` and `csv.detectGeometryColumns: true` | `geoarrow.encodingPreference` |
+| Shapefile | `shp.shape: 'arrow'` or `shapefile.shape: 'arrow'` | `geoarrow.encodingPreference` (legacy `shp.geoarrowEncoding` is also supported) |
 | FlatGeobuf, GeoPackage | Loader-specific Arrow shape | `geoarrow.encodingPreference` |
 | KML, GPX, TCX | Loader-specific Arrow shape | `geoarrow.encodingPreference` |
 | MVT, MLT, PMTiles/TableTiler | Tile or source Arrow table | `geoarrow.encodingPreference` |
@@ -262,7 +262,7 @@ without a direct kernel retain the compatibility GeoJSON bridge by default. Set 
 to require a direct kernel in performance-sensitive code and fail instead of materializing objects.
 
 WKB/WKT scalar columns may use standard, large, or Arrow view storage (`Binary`, `LargeBinary`,
-`BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@loaders.gl/tables/arrow/transport` to isolate
+`BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@math.gl/core/arrow` to isolate
 sliced Arrow buffers and prepare tables for worker transfer.
 
 WKB remains the compact interchange and persistence representation. WKT columns use direct
@@ -283,8 +283,8 @@ returns and before native allocation, including when the requested target alread
 source. They are useful for service and worker boundaries that accept untrusted geometry; normal
 in-memory conversions remain unlimited unless a caller supplies a budget.
 
-For streaming Arrow batches, `convertGeoArrowBatches()` preserves record-batch boundaries and
-checks cancellation between batches. If a WKB/WKT stream has no trusted `geometry_types` metadata,
+For streaming Arrow data, `convertGeoArrowBatches()` accepts and yields native Arrow
+`RecordBatch` values. It preserves batch-local metadata and checks cancellation between batches. If a WKB/WKT stream has no trusted `geometry_types` metadata,
 `native` conversion selects a stable dense union seeded with all seven geometry families and all
 four dimensions. A later batch can therefore introduce a new family without changing the stream
 schema or forcing an earlier batch through a row-object bridge.

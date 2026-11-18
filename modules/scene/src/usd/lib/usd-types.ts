@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 
@@ -31,6 +31,8 @@ export type USDValue =
 
 /** Parsed OpenUSD attribute declaration. */
 export type USDAttribute = {
+  /** URL of the layer that authored this attribute, retained through composition. */
+  sourceUrl?: string;
   /** Attribute name. */
   name: string;
   /** Authored OpenUSD type name. */
@@ -73,10 +75,20 @@ export type USDPrim = {
   children: USDPrim[];
 };
 
+/** Encoded file extracted from a USDZ package, without image decoding or renderer objects. */
+export type USDEmbeddedAsset = {
+  /** Original archive-relative filename, including its directories. */
+  readonly path: string;
+  /** Exact stored bytes, owned by the returned stage rather than the input archive. */
+  readonly data: ArrayBuffer;
+  /** MIME type hint inferred from a PNG or JPEG filename; other formats omit this field. */
+  readonly mimeType?: string;
+};
+
 /** Parsed OpenUSD stage. */
 export type USDStage = {
   /** Container format used for the root layer. */
-  format: 'usda' | 'usdz';
+  format: 'usda' | 'usdc' | 'usdz';
   /** URL of the root layer when available. */
   url?: string;
   /** Root-layer metadata. */
@@ -85,6 +97,8 @@ export type USDStage = {
   rootPrims: USDPrim[];
   /** URLs of all layers used to compose the stage. */
   layers: string[];
+  /** USDZ files keyed by resolved package URL; absent for standalone layers. Includes layers and textures. */
+  assets?: Record<string, USDEmbeddedAsset>;
 };
 
 /** Options for {@link USDLoader}. */

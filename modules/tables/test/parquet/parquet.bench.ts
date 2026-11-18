@@ -2,18 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {
   GeoParquetLoader,
-  ParquetJSWriter,
+  ParquetWriter,
   ParquetLoader,
-  type ParquetJSWriterOptions,
-  type ParquetSourceBatch
-} from '@loaders.gl/tables/parquet/index';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+  type ParquetWriterOptions
+} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ObjectRowTable} from '@loaders.gl/core/schema';
+import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {convertTable, makeTableFromData} from '@loaders.gl/core/schema-utils';
 import {parquetRead, parquetReadObjects, type ColumnData} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';
@@ -40,7 +39,7 @@ type ParquetBenchmarkScenario = {
   /** Optional top-level Parquet columns decoded by every included implementation. */
   columns?: string[];
   /** Table shape materialized by every included implementation. */
-  shape: 'arrow-table' | 'object-row-table';
+  shape: 'arrow' | 'object-row-table';
   /** Implementations included when a backend cannot correctly execute the scenario. */
   implementationIds?: ParquetBenchmarkImplementationId[];
 };
@@ -62,7 +61,7 @@ type ParquetWriterBenchmarkScenario = {
   /** Scale-oriented input table prepared outside the timed callback. */
   table: ObjectRowTable;
   /** TypeScript writer options used by the timed callback. */
-  options: ParquetJSWriterOptions;
+  options: ParquetWriterOptions;
 };
 
 export async function parquetBench(suite) {
@@ -110,22 +109,22 @@ export async function parquetBench(suite) {
     {
       name: 'Wide nullable mixed 100K × 20 → Arrow',
       arrayBuffer: wideScaleArrayBuffer,
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     {
       name: 'Wide nullable mixed projection 100K × 5 → Arrow',
       arrayBuffer: wideScaleArrayBuffer,
       columns: ['id', 'count_0', 'metric_0', 'category_0', 'label_0'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       // parquet-wasm 0.7.2 fails to materialize this projected mixed schema.
       implementationIds: ['typescript', 'hyparquet']
     },
-    {name: 'GeoParquet → Arrow', arrayBuffer: geoArrayBuffer, shape: 'arrow-table'},
+    {name: 'GeoParquet → Arrow', arrayBuffer: geoArrayBuffer, shape: 'arrow'},
     {
       name: 'PLAIN nullable primitive projection → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['name', 'quantity', 'price', 'date', 'day', 'finger'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
       implementationIds: ['typescript', 'hyparquet']
     },
@@ -133,43 +132,43 @@ export async function parquetBench(suite) {
       name: 'PLAIN nested and repeated projection → Arrow',
       arrayBuffer: fruitsArrayBuffer,
       columns: ['stock', 'colour'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       // parquet-wasm 0.7.2 retains the unprojected INTERVAL field in its IPC schema.
       implementationIds: ['typescript', 'hyparquet']
     },
     {
       name: 'RLE_DICTIONARY mixed table → Arrow',
       arrayBuffer: dictionaryArrayBuffer,
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     {
       name: 'DELTA_BINARY_PACKED integer table → Arrow',
       arrayBuffer: deltaBinaryPackedArrayBuffer,
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     {
       name: 'LZ4_RAW full table → Arrow',
       arrayBuffer: lz4ArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
       name: 'Hadoop LZ4 full table → Arrow',
       arrayBuffer: hadoopLz4ArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
       name: 'DELTA_BYTE_ARRAY full table → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
-      shape: 'arrow-table',
+      shape: 'arrow',
       implementationIds: ['typescript', 'wasm', 'hyparquet']
     },
     {
       name: 'DELTA_BYTE_ARRAY projected columns → Arrow',
       arrayBuffer: deltaByteArrayBuffer,
       columns: ['c_customer_id', 'c_email_address'],
-      shape: 'arrow-table',
+      shape: 'arrow',
       // parquet-wasm 0.7.2 currently returns mismatched IPC schema/vector counts for this projection.
       implementationIds: ['typescript', 'hyparquet']
     },
@@ -212,12 +211,12 @@ export async function parquetBench(suite) {
   suite = suite.group('GeoParquetLoader');
 
   suite.addAsync(
-    'load arrow-table geoarrow.wkb',
+    'load arrow geoarrow.wkb',
     {multiplier: 40000, unit: 'rows'},
     async () => {
       await load(geoArrayBuffer.slice(0), GeoParquetLoader, {
         core: {worker: false},
-        parquet: {shape: 'arrow-table'}
+        parquet: {shape: 'arrow'}
       });
     }
   );
@@ -296,7 +295,7 @@ async function createWideScaleParquetFixture(): Promise<ArrayBuffer> {
     })
   };
 
-  return await encode(table, ParquetJSWriter, {
+  return await encode(table, ParquetWriter, {
     worker: false,
     parquet: {dictionary: 'auto', pageSize: 64 * 1024, rowGroupSize: 25_000}
   });
@@ -321,7 +320,7 @@ async function addParquetSourceBenchmarks(suite) {
       payload: index * 0.5
     }))
   };
-  const parquet = await encode(table, ParquetJSWriter, {
+  const parquet = await encode(table, ParquetWriter, {
     worker: false,
     parquet: {rowGroupSize: 10_000, dictionary: 'auto'}
   });
@@ -339,8 +338,8 @@ async function addParquetSourceBenchmarks(suite) {
           columns: ['payload'],
           predicate: {op: '=', args: [{property: 'category'}, 'category-3']}
         });
-        for await (const batch of batches as AsyncIterable<ParquetSourceBatch>) {
-          matchedRowCount += batch.length;
+        for await (const batch of batches ) {
+          matchedRowCount += batch.numRows;
         }
       } finally {
         await source.close();
@@ -410,18 +409,18 @@ async function addParquetWriterBenchmarks(suite) {
     }
   ];
 
-  suite = suite.groupSorted('ParquetJSWriter scale');
+  suite = suite.groupSorted('ParquetWriter scale');
   for (const scenario of writerScenarios) {
-    const sample = await encode(scenario.table, ParquetJSWriter, {
+    const sample = await encode(scenario.table, ParquetWriter, {
       ...scenario.options,
       worker: false
     });
     const bytesPerRow = sample.byteLength / rowCount;
     suite.addAsync(
-      `ParquetJSWriter - ${scenario.name} (${bytesPerRow.toFixed(2)} B/row)`,
+      `ParquetWriter - ${scenario.name} (${bytesPerRow.toFixed(2)} B/row)`,
       {...BENCHMARK_OPTIONS, multiplier: rowCount},
       async () => {
-        const parquet = await encode(scenario.table, ParquetJSWriter, {
+        const parquet = await encode(scenario.table, ParquetWriter, {
           ...scenario.options,
           worker: false
         });
@@ -447,7 +446,7 @@ function makeObjectRowTable(
   };
 }
 
-/** Creates equivalent Arrow-table decode cases for the maintained Parquet implementations. */
+/** Creates equivalent native Arrow decode cases for the maintained Parquet implementations. */
 function createParquetBenchmarkImplementations(
   typescriptLoader: LoaderWithParser,
   wasmLoader: LoaderWithParser
@@ -479,8 +478,8 @@ async function decodeWithLoadersGl(
   const table = (await parse(scenario.arrayBuffer, loader, {
     core: {worker: false},
     parquet: {columns: scenario.columns, shape: scenario.shape}
-  })) as ArrowTable | ObjectRowTable;
-  return table.shape === 'arrow-table' ? table.data.numRows : table.data.length;
+  })) as import('apache-arrow').Table | ObjectRowTable;
+  return 'numRows' in table ? table.numRows : table.data.length;
 }
 
 /** Decodes one scenario through the latest pinned hyparquet implementation. */
@@ -502,8 +501,8 @@ async function decodeWithHyparquet(scenario: ParquetBenchmarkScenario): Promise<
     compressors
   });
   const columnarTable = makeTableFromData(columns);
-  const arrowTable = convertTable(columnarTable, 'arrow-table');
-  return arrowTable.data.numRows;
+  const arrowTable = convertTable(columnarTable, 'arrow');
+  return arrowTable.numRows;
 }
 
 /** Copies one hyparquet output chunk into a contiguous top-level column. */

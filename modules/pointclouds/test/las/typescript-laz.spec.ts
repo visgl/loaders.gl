@@ -114,7 +114,7 @@ test('TypeScript LAZ raw streaming preserves PDRF 4-10 records', async () => {
 
     for await (const batch of decodeLAZFileInBatches(
       splitArrayBuffer(lazArrayBuffer, TEST_INPUT_CHUNK_SIZE),
-      {batchSize: TEST_BATCH_SIZE}
+      {core: {batchSize: TEST_BATCH_SIZE}}
     )) {
       decodedBatches.push(new Uint8Array(batch.arrayBuffer));
     }
@@ -136,7 +136,7 @@ test('TypeScript LAZ complete and split parsing preserve Arrow attributes', asyn
     const complete = collectTableAttributes(parseLAS(lazArrayBuffer));
     const streamed = await collectBatchAttributes(
       parseLASInBatches(splitArrayBuffer(lazArrayBuffer, TEST_INPUT_CHUNK_SIZE), {
-        batchSize: TEST_BATCH_SIZE
+        core: {batchSize: TEST_BATCH_SIZE}
       })
     );
 
@@ -378,7 +378,10 @@ test.each(
   const {compressed} = getFirstLAZChunk(lazArrayBuffer, fixture);
   const pointDataOffset = new DataView(lazArrayBuffer).getUint32(96, true);
   const firstChunkEnd = pointDataOffset + 8 + compressed.byteLength;
-  const options = {batchSize: TEST_BATCH_SIZE, las: {columns: ['POSITION', 'WAVEFORM'] as const}};
+  const options = {
+    core: {batchSize: TEST_BATCH_SIZE},
+    las: {columns: ['POSITION', 'WAVEFORM'] as const}
+  };
   const expected = parseLAS(lasArrayBuffer, options);
   let consumedByteLength = 0;
   const batches = parseLASInBatches(
@@ -522,8 +525,8 @@ test('LASLoader Arrow output stays on the main thread', async () => {
     core: {worker: true, reuseWorkers: false, _workerType: 'test'}
   });
 
-  expect(result.shape).toBe('arrow-table');
-  expect(result.data.getChild('POSITION')).toBeTruthy();
+  expect(result).toHaveProperty('numRows');
+  expect(result.getChild('POSITION')).toBeTruthy();
 });
 
 /** Load one local LAS/LAZ fixture. */
@@ -652,7 +655,7 @@ function getExpectedPointData(
 
 /** Collect represented attributes from one Arrow table. */
 function collectTableAttributes(table: LASArrowTable): CollectedAttributes {
-  const {attributes} = convertTableToMesh(table);
+  const {attributes} = convertTableToMesh(table.data);
   return {
     positions: Array.from(attributes.POSITION.value),
     intensities: Array.from(attributes.intensity.value),

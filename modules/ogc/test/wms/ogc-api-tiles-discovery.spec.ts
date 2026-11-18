@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {OGCAPISourceOptions, OGCTileMatrixSet} from '@loaders.gl/ogc/wms';
-import {OGCAPITilesSourceLoader} from '@loaders.gl/ogc/wms';
+import type {OGCAPILoaderOptions, OGCTileMatrixSet} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
 import DATASET_TILESET from './data/ogc-api-tiles/tileset-dataset.json';
 import COLLECTION_TILESET from './data/ogc-api-tiles/tileset-collection.json';
 import TILE_MATRIX_SETS from './data/ogc-api-tiles/tile-matrix-sets.json';
@@ -31,10 +31,10 @@ const NAMED_LEVELS: OGCTileMatrixSet = {
 type Route = unknown;
 
 /** Creates a source whose fetch answers from `routes` and records each request. */
-function createSource(routes: Record<string, Route>, options: OGCAPISourceOptions['ogc-api']) {
+function createSource(routes: Record<string, Route>, options: OGCAPILoaderOptions['ogc-api']) {
   const requestedUrls: string[] = [];
   const errors: Error[] = [];
-  const source = OGCAPITilesSourceLoader.createDataSource(LANDING_PAGE_URL, {
+  const source = OGCAPITilesLoader.createDataSourceSync(LANDING_PAGE_URL, {
     'ogc-api': options,
     core: {onError: error => errors.push(error)}
   });
@@ -317,7 +317,7 @@ test('OGCAPITilesSource discovers again when the tile template changes', async (
 });
 
 test('OGCAPITilesSource resolves path-relative metadata and content against the same API', async () => {
-  const source = OGCAPITilesSourceLoader.createDataSource('../api', {
+  const source = OGCAPITilesLoader.createDataSourceSync('../api', {
     'ogc-api': {tileTemplate: 'tiles/named/{tileMatrix}/{tileRow}/{tileCol}'}
   });
   const requests: string[] = [];

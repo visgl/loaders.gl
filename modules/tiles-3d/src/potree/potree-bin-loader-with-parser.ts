@@ -3,7 +3,8 @@
 // Copyright vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {parsePotreeBin, type PotreeBinLoaderOptions} from './parsers/parse-potree-bin';
 import {PotreeBinLoader as PotreeBinLoaderMetadata} from './potree-bin-loader';
 
@@ -18,11 +19,8 @@ export const PotreeBinLoaderWithParser = {
   parse: async (arrayBuffer: ArrayBuffer, options?: PotreeBinLoaderOptions) =>
     parsePotreeBin(arrayBuffer, 0, options),
   parseSync
-} as const satisfies LoaderWithParser<Mesh | MeshArrowTable, never, PotreeBinLoaderOptions>;
+} as const satisfies LoaderWithParser<Mesh | Table, never, PotreeBinLoaderOptions>;
 
-function parseSync(
-  arrayBuffer: ArrayBuffer,
-  options?: PotreeBinLoaderOptions
-): Mesh | MeshArrowTable {
+function parseSync(arrayBuffer: ArrayBuffer, options?: PotreeBinLoaderOptions): Mesh | Table {
   return parsePotreeBin(arrayBuffer, 0, options);
 }

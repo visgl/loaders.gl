@@ -7,18 +7,7 @@ import path from 'node:path';
 import {expect, test} from 'vitest';
 
 const REPOSITORY_ROOT = process.cwd();
-const MODULE_NAMES = [
-  'archives',
-  'core',
-  'geospatial',
-  'ogc',
-  'pointclouds',
-  'raster',
-  'scene',
-  'tables',
-  'tiles',
-  'tiles-3d'
-];
+const MODULE_NAMES = ['archives', 'core', 'ogc', 'tiles', 'tiles-3d'];
 const ENTRYPOINT_NAME = /(?:loader|writer|source)(?:-types)?$/;
 
 test.each(
@@ -60,6 +49,40 @@ test.each(
       if (conditions.require) {
         expect(conditions.require, moduleName + exportPath).toBe(`./dist/${entrypointName}.cjs`);
       }
+    }
+  }
+});
+
+// Format packages expose one API entrypoint and a bundled parser variant per format.
+test.each([
+  'geospatial',
+  'pointclouds',
+  'raster',
+  'scene',
+  'tables',
+  'documents',
+  'scientific',
+  'images'
+])('%s exposes formats instead of individual descriptors', moduleName => {
+  const directory = path.join(REPOSITORY_ROOT, 'modules', moduleName);
+  const manifest = JSON.parse(
+    fileSystem.readFileSync(path.join(directory, 'package.json'), 'utf8')
+  );
+  const entries = Object.entries(manifest.exports) as [string, string | Record<string, string>][];
+  expect(
+    entries.filter(([name]) => /^\.\/[^/]+-(loader|writer|source)(-types)?$/.test(name))
+  ).toEqual([]);
+  const bundled = entries.filter(([name]) => name.endsWith('/bundled'));
+  expect(bundled.length).toBeGreaterThan(0);
+  for (const [name, conditions] of bundled) {
+    expect(manifest.exports).toHaveProperty(name.slice(0, -'/bundled'.length));
+    for (const target of typeof conditions === 'string'
+      ? [conditions]
+      : Object.values(conditions)) {
+      expect(
+        fileSystem.existsSync(path.join(directory, target)),
+        `${moduleName}${name}: ${target}`
+      ).toBe(true);
     }
   }
 });

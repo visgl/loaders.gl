@@ -28,7 +28,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| Source loader | `WMTSSourceLoader` |
+| Source loader | `WMTSLoader` |
 | Loader | [`WMTSCapabilitiesLoader`](../api-reference/wmts-capability-loader.md) |
 
 <DocLiveExample label="WMTS tile service example" height="440px">
@@ -50,7 +50,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-WMTS serves map imagery on discrete, advertised tile matrix sets. `WMTSSourceLoader` implements a
+WMTS serves map imagery on discrete, advertised tile matrix sets. `WMTSLoader` implements a
 loaders.gl `TileSource` and negotiates the layer, style, format, and grid from capabilities.
 
 <ReferenceBoundary
@@ -109,10 +109,10 @@ metadata constraints explicit; **Not implemented** marks features that need addi
 ## Create a tile source
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {createDataSourceSync} from '@loaders.gl/core';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
   wmts: {
     layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
     tileMatrixSet: 'GoogleMapsCompatible_Level9',
@@ -148,7 +148,7 @@ rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
 ```ts
 import {getTileBounds} from '@math.gl/geospatial';
 
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
   // A UTM matrix set: one CRS unit is one meter.
   wmts: {layer: 'orthophoto', tileMatrixSet: 'utm18n', metersPerUnit: 1}
 });
@@ -168,12 +168,12 @@ legacy rule is kept for compatibility.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 
 const layer = new SourceLayer({
   id: 'satellite-imagery',
   data: wmtsUrl,
-  loaders: [WMTSSourceLoader],
+  loaders: [WMTSLoader],
   sourceOptions: {
     wmts: {layer: layerId, tileMatrixSet: matrixSetId}
   }
@@ -187,7 +187,7 @@ const layer = new SourceLayer({
 ## Configure from capabilities
 
 ```ts
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
   wmts: {
     capabilitiesUrl,
     layer: 'imagery',
@@ -227,8 +227,13 @@ The source uses the selected layer's `TileMatrixSetLink` limits for both KVP and
 Row and column bounds are inclusive. If a limits list is present, a matrix without an entry is
 unavailable; an explicitly empty list permits no tiles. Without layer limits, full matrix sizes
 constrain each level independently. Incomplete matrix size metadata is not extrapolated.
-Malformed limits (missing/duplicate identifiers, negative or noninteger indices, reversed bounds,
-or limits exceeding the selected matrix's dimensions) fail explicitly.
+Malformed limits (missing/duplicate identifiers, an unknown matrix, negative or noninteger
+indices, reversed bounds, or limits exceeding the selected matrix's dimensions) fail explicitly.
+Duplicate matrix identifiers also fail, because a request could not name one level. Metadata and
+tile requests apply the shared [grid validation](/docs/modules/core/loader-utils/api-reference/tile-grid)
+rules, so these cases behave as they do for OGC TileMatrixSet 2.0 and OGC API Tiles sources.
+A malformed level value, such as a zero tile width, stays in `tileGrid.matrices` for inspection
+and `getTileGridValidation()` reports it as invalid; every tile request for that set then rejects.
 
 ```ts
 import {WMTSImageTileSource} from '@loaders.gl/ogc/wms';

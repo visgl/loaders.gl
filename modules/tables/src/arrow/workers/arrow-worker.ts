@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {parseArrowSync} from '../lib/parsers/parse-arrow';
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
+import {preloadArrowCompressionDecoders} from '../lib/parsers/arrow-compression';
 import {ArrowLoaderWithParser} from '../arrow-loader';
 
 createLoaderWorker({
   ...ArrowLoaderWithParser,
-  /** Always decodes columnar data; requested row conversion belongs to the caller. */
-  parse(input, options) {
-    return ArrowLoaderWithParser.parse(input, {
-      ...options,
-      arrow: {...options?.arrow, shape: 'arrow-table'}
-    });
+  /** Decodes columns for caller-side conversion. */
+  async parse(input) {
+    await preloadArrowCompressionDecoders();
+    return parseArrowSync(input, {shape: 'arrow'});
   }
 });

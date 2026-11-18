@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import Tile3DBatchTable from '../../../../src/3d-tiles/lib/classes/tile-3d-batch-table';
 import {
@@ -94,7 +95,7 @@ test('hierarchy initialization handles absent, legacy, and binary index metadata
   expect(initializeHierarchy({getExtension: () => undefined}, {}, null)).toBeNull();
   expect(traverseHierarchy(null, 0, () => true)).toBeUndefined();
 
-  const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const warning = vi.spyOn(loaderLog, 'warn').mockReturnValue(() => {});
   const legacyJson = {HIERARCHY: SINGLE_PARENT_HIERARCHY};
   const legacy = initializeHierarchy({getExtension: () => undefined}, legacyJson, null);
   expect(legacy.classes).toHaveLength(3);

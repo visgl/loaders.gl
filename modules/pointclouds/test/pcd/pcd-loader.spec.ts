@@ -1,15 +1,13 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {validateArrowTableSchema} from '@loaders.gl/tables/arrow/index';
+import {validateArrowTableSchema} from '@math.gl/core/arrow';
 import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {canParseWithWorker} from '@loaders.gl/core/loader-utils';
-import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pointclouds/pcd';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
 import {setLoaderOptions, fetchFile, parse, load, parseInBatches} from '@loaders.gl/core';
 const PCD_ASCII_URL = '@loaders.gl/pointclouds/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pointclouds/pcd/test/data/Zaghetto.pcd';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 function createBinaryArrayBufferWithCountedField(): ArrayBuffer {
   const headerText = [
     '# .PCD v0.7 - Point Cloud Data file format',
@@ -52,7 +50,6 @@ function createBinaryArrayBufferWithCountedField(): ArrayBuffer {
 }
 test('PCDLoader#loader conformance', () => {
   validateLoader(PCDLoader, 'PCDLoader');
-  validateLoader(PCDWorkerLoader, 'PCDWorkerLoader');
 });
 test('PCDLoader#parse(text)', async () => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
@@ -86,25 +83,23 @@ test('PCDLoader#parse defaults to Arrow table', async () => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
     core: {worker: false}
   });
-  expect(arrowTable.shape).toBe('arrow-table');
-  validateArrowTableSchema(arrowTable.data, meshArrowSchema, {
+  expect(arrowTable).toHaveProperty('numRows');
+  validateArrowTableSchema(arrowTable, meshArrowSchema, {
     schemaName: 'PCDLoader default table'
   });
 });
 test('PCDLoader#Arrow output supports workers', () => {
-  expect(canParseWithWorker(PCDLoader, {core: {worker: true}, pcd: {shape: 'arrow-table'}})).toBe(
-    true
-  );
+  expect(canParseWithWorker(PCDLoader, {core: {worker: true}, pcd: {shape: 'arrow'}})).toBe(true);
 });
-test('PCDLoader#parse(shape: arrow-table)', async () => {
+test('PCDLoader#parse(shape: arrow)', async () => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
     core: {worker: false},
-    pcd: {shape: 'arrow-table'}
+    pcd: {shape: 'arrow'}
   });
-  validateArrowTableSchema(arrowTable.data, meshArrowSchema, {
+  validateArrowTableSchema(arrowTable, meshArrowSchema, {
     schemaName: 'PCDLoader Mesh table'
   });
-  const {data} = arrowTable;
+  const data = arrowTable;
   expect(data.schema.fields.length, 'schema field count is correct').toBe(2);
   expect(data.schema.metadata.get('topology'), 'schema metadata is correct').toBe('point-list');
   expect(data.schema.metadata.get('boundingBox'), 'schema metadata is correct').toBeTruthy();
@@ -113,26 +108,29 @@ test('PCDLoader#parse(shape: arrow-table)', async () => {
   // @ts-expect-error
   expect(positionField?.type?.listSize, 'position column size correct').toBe(3);
   // @ts-expect-error
-  expect(positionField?.type?.children[0]?.type, 'position column type correct').toBe('float32');
+  expect(positionField?.type?.children[0]?.type, 'position column type correct').toMatchObject({
+    precision: 1
+  });
   const colorField = arrowTable.schema?.fields.find(field => field.name === 'COLOR_0');
   // @ts-expect-error
   expect(colorField?.type?.listSize, 'color column size correct').toBe(3);
   // @ts-expect-error
-  expect(colorField?.type?.children[0]?.type, 'color column type correct').toBe('uint8');
+  expect(colorField?.type?.children[0]?.type, 'color column type correct').toMatchObject({
+    bitWidth: 8,
+    isSigned: false
+  });
 });
-test('PCDLoader#parseInBatches(ascii, arrow-table)', async () => {
+test('PCDLoader#parseInBatches(ascii, arrow)', async () => {
   const response = await fetchFile(PCD_ASCII_URL);
   const batches = await parseInBatches(response, PCDLoader, {
-    batchSize: 100,
-    core: {worker: false},
-    pcd: {shape: 'arrow-table'}
+    core: {worker: false, batchSize: 100},
+    pcd: {shape: 'arrow'}
   });
   const batchRowCounts: number[] = [];
   for await (const batch of batches) {
-    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(batch.batchType, 'batch has data batchType').toBe('data');
-    expect(batch.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
-    batchRowCounts.push(batch.length);
+    expect(batch).toHaveProperty('numRows');
+    expect(batch.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
+    batchRowCounts.push(batch.numRows);
   }
   expect(batchRowCounts, 'emits requested ASCII PCD Arrow batches').toEqual([100, 100, 13]);
 });
@@ -163,31 +161,29 @@ test('PCDLoader#parse(binary with counted fields)', async () => {
     1, 2, 3, 4, 5, 6
   ]);
 });
-test('PCDLoader#parseInBatches(binary with counted fields, arrow-table)', async () => {
+test('PCDLoader#parseInBatches(binary with counted fields, arrow)', async () => {
   const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
   const batches = await parseInBatches([binaryArrayBuffer], PCDLoader, {
-    batchSize: 1,
-    core: {worker: false},
-    pcd: {shape: 'arrow-table'}
+    core: {worker: false, batchSize: 1},
+    pcd: {shape: 'arrow'}
   });
   const positions: number[] = [];
   const batchRowCounts: number[] = [];
   for await (const batch of batches) {
-    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(batch.batchType, 'batch has data batchType').toBe('data');
-    batchRowCounts.push(batch.length);
-    const positionColumn = batch.data.getChild('POSITION');
+    expect(batch).toHaveProperty('numRows');
+    batchRowCounts.push(batch.numRows);
+    const positionColumn = batch.getChild('POSITION');
     positions.push(...Array.from(positionColumn.get(0)));
   }
   expect(batchRowCounts, 'emits requested binary PCD Arrow batches').toEqual([1, 1]);
   expect(positions, 'positions read correctly across batches').toEqual([1, 2, 3, 4, 5, 6]);
 });
-test('PCDWorkerLoader#parse(binary)', async () => {
+test('PCDLoader#parse(binary)', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(PCD_BINARY_URL, PCDWorkerLoader, {pcd: {shape: 'mesh'}});
+  const data = await load(PCD_BINARY_URL, PCDLoader, {pcd: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.indices, 'indices were not preset').toBeFalsy();
@@ -205,13 +201,15 @@ test('PCD parser subpath and batches honor point counts derived from dimensions'
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6]);
   const iterator = await parseInBatches([input], PCDLoader, {
     core: {worker: false, batchSize: 1},
-    pcd: {shape: 'arrow-table'}
+    pcd: {shape: 'arrow'}
   });
   const batches = [];
   for await (const batch of iterator) batches.push(batch);
-  expect(batches.map(batch => batch.length)).toEqual([1, 1]);
-  expect(batches.map(batch => batch.loaderData.points)).toEqual([1, 1]);
-  expect(batches.map(batch => Array.from(batch.data.getChild('POSITION')!.get(0)))).toEqual([
+  expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
+  expect(
+    batches.map(batch => JSON.parse(batch.schema.metadata.get('loaders.gl.pcd.header')!).points)
+  ).toEqual([1, 1]);
+  expect(batches.map(batch => Array.from(batch.getChild('POSITION')!.get(0)))).toEqual([
     [1, 2, 3],
     [4, 5, 6]
   ]);

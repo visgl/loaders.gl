@@ -24,7 +24,7 @@ export function getPLYSchema(plyHeader: PLYHeader, attributes: MeshAttributes): 
  * @param plyHeader
  * @returns
  */
-function makeMetadataFromPlyHeader(plyHeader: PLYHeader): Record<string, string> {
+export function makeMetadataFromPlyHeader(plyHeader: PLYHeader): Record<string, string> {
   /* eslint-disable camelcase */
   const metadata: Record<string, string> = {};
   metadata.ply_comments = JSON.stringify(plyHeader.comments);
@@ -131,3 +131,6 @@ function getNumberedPropertyComponent(name: string, prefix: string): string | un
   const match = name.match(new RegExp(`^${prefix}_(\\d+)$`));
   return match?.[1];
 }
+
+/** Schema metadata key carrying the original PLY header. */
+export const PLY_HEADER_KEY = 'loaders.gl.ply.header';

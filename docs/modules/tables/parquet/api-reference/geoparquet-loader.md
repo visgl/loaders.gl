@@ -50,7 +50,7 @@ import {ClientExample} from '@site/src/components';
   tone="mint"
 />
 
-`GeoParquetLoader` loads GeoParquet files into loaders.gl `ArrowTable` objects by default. Set `parquet.shape: 'object-row-table'` when row-oriented output is required.
+`GeoParquetLoader` loads GeoParquet files into native Apache Arrow `Table` objects by default. Set `parquet.shape: 'object-row-table'` when row-oriented output is required.
 
 ## Usage
 
@@ -69,7 +69,7 @@ const rowTable = await load(url, GeoParquetLoader, {
 | Shape              | Output                                          |
 | ------------------ | ----------------------------------------------- |
 | `object-row-table` | loaders.gl object-row table                    |
-| `arrow-table`      | loaders.gl `ArrowTable` with geospatial metadata |
+| `arrow`      | Apache Arrow `Table` with geospatial metadata |
 
 ## Geospatial Metadata
 

@@ -1,19 +1,21 @@
 import {expect, test} from 'vitest';
+import {Table as NativeArrowTable} from 'apache-arrow';
+import {ImageLoader} from '@loaders.gl/images';
 import {LERCLoader} from '@loaders.gl/raster';
 import {
-  ArcGISFeatureServerSourceLoader,
+  ArcGISFeatureServerLoader,
   ArcGISVectorSource,
-  ArcGISImageServerSourceLoader,
+  ArcGISImageServerLoader,
   ArcGISImageTileSource,
   ArcGISMapTileSource
 } from '@loaders.gl/arcgis/bundled';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
 const FEATURE_SERVER_URL = 'https://example.com/arcgis/rest/services/Roads/FeatureServer/0';
-test('ArcGISImageServerSourceLoader#testURL', () => {
-  expect(ArcGISImageServerSourceLoader).toBeTruthy();
+test('ArcGISImageServerLoader#testURL', () => {
+  expect(ArcGISImageServerLoader).toBeTruthy();
   expect(
-    ArcGISImageServerSourceLoader.testURL(IMAGE_SERVER_URL),
+    ArcGISImageServerLoader.testURL(IMAGE_SERVER_URL),
     'identifies ArcGIS ImageServer URLs'
   ).toBeTruthy();
 });
@@ -37,10 +39,7 @@ test('ArcGIS feature requests preserve tokens and select root-service layers', (
 });
 
 test('ArcGIS ImageServer requests preserve authentication parameters', () => {
-  const source = ArcGISImageServerSourceLoader.createDataSource(
-    `${IMAGE_SERVER_URL}?token=abc`,
-    {}
-  );
+  const source = ArcGISImageServerLoader.createDataSourceSync(`${IMAGE_SERVER_URL}?token=abc`, {});
   const url = new URL(source.exportImageURL({bbox: [1, 2, 3, 4], width: 32, height: 16}));
   expect(url.pathname).toBe('/arcgis/rest/services/Imagery/ImageServer/exportImage');
   expect(url.searchParams.get('token')).toBe('abc');
@@ -171,14 +170,33 @@ test('ArcGISImageTileSource parses the effective response format', () => {
   source.updateParameters({format: 'png32'});
   expect(new URL(source.getTileURL({x: 0, y: 0, z: 0})).searchParams.get('format')).toBe('png32');
 });
+test.each([
+  ['lerc', LERCLoader],
+  ['png32', ImageLoader]
+] as const)('ArcGIS ImageServer tiles select the decoder for %s', async (format, expectedLoader) => {
+  let parsedLoader;
+  const source = new ArcGISImageTileSource(
+    IMAGE_SERVER_URL,
+    {'arcgis-image-server-tiles': {format}},
+    {
+      parse: async (_data, loader) => {
+        parsedLoader = loader;
+        return null;
+      }
+    } as never
+  );
+  source.fetch = async () => new Response(Uint8Array.of(1));
+  await source.getTile({x: 0, y: 0, z: 0});
+  expect(parsedLoader).toBe(expectedLoader);
+});
 test('ArcGISImageSource#metadataURL', () => {
-  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerLoader.createDataSourceSync(IMAGE_SERVER_URL, {});
   const metadataUrl = new URL(source.metadataURL());
   expect(metadataUrl.origin + metadataUrl.pathname, 'metadata base URL').toBe(IMAGE_SERVER_URL);
   expect(metadataUrl.searchParams.get('f'), 'metadata format').toBe('pjson');
 });
 test('ArcGISImageSource#exportImageURL', () => {
-  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerLoader.createDataSourceSync(IMAGE_SERVER_URL, {});
   const exportImageUrl = new URL(
     source.exportImageURL({
       bbox: [1, 2, 3, 4],
@@ -198,7 +216,7 @@ test('ArcGISImageSource#exportImageURL', () => {
   expect(exportImageUrl.searchParams.get('f')).toBe('image');
 });
 test('ArcGISImageSource#exportImageURL supports LERC analytical rasters', () => {
-  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerLoader.createDataSourceSync(IMAGE_SERVER_URL, {});
   const exportRasterUrl = new URL(
     source.exportImageURL({
       bbox: [1, 2, 3, 4],
@@ -222,7 +240,7 @@ test('ArcGISImageSource#exportRaster requests and returns typed raster data', as
     depthCount: 1
   };
   let parsedLoader;
-  const source = ArcGISImageServerSourceLoader.createDataSource(
+  const source = ArcGISImageServerLoader.createDataSourceSync(
     IMAGE_SERVER_URL,
     {},
     {
@@ -250,7 +268,7 @@ test('ArcGISImageSource#exportRaster requests and returns typed raster data', as
   expect(result.pixels[0]).toBeInstanceOf(Float32Array);
 });
 test('ArcGISImageSource#getMetadata', async () => {
-  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerLoader.createDataSourceSync(IMAGE_SERVER_URL, {});
   source.fetch = async () =>
     new Response(
       JSON.stringify({
@@ -265,7 +283,7 @@ test('ArcGISImageSource#getMetadata', async () => {
   expect(metadata.keywords).toEqual(['raster', 'imagery']);
 });
 test('ArcGISImageSource#getImage maps generic parameters', async () => {
-  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerLoader.createDataSourceSync(IMAGE_SERVER_URL, {});
   let exportImageParameters;
   source.exportImage = async parameters => {
     exportImageParameters = parameters;
@@ -292,7 +310,7 @@ test('ArcGISImageSource#getImage maps generic parameters', async () => {
   });
 });
 test('ArcGISImageSource#getImage normalizes EPSG-prefixed spatial references', async () => {
-  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerLoader.createDataSourceSync(IMAGE_SERVER_URL, {});
   let exportImageParameters;
   source.exportImage = async parameters => {
     exportImageParameters = parameters;
@@ -318,21 +336,21 @@ test('ArcGISImageSource#getImage normalizes EPSG-prefixed spatial references', a
     format: 'png'
   });
 });
-test('ArcGISFeatureServerSourceLoader#testURL', () => {
-  expect(ArcGISFeatureServerSourceLoader).toBeTruthy();
+test('ArcGISFeatureServerLoader#testURL', () => {
+  expect(ArcGISFeatureServerLoader).toBeTruthy();
   expect(
-    ArcGISFeatureServerSourceLoader.testURL(FEATURE_SERVER_URL),
+    ArcGISFeatureServerLoader.testURL(FEATURE_SERVER_URL),
     'identifies ArcGIS FeatureServer URLs'
   ).toBeTruthy();
 });
 test('ArcGISVectorSource#metadataURL', () => {
-  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerLoader.createDataSourceSync(FEATURE_SERVER_URL, {});
   const metadataUrl = new URL(source.metadataURL());
   expect(metadataUrl.origin + metadataUrl.pathname, 'metadata base URL').toBe(FEATURE_SERVER_URL);
   expect(metadataUrl.searchParams.get('f'), 'metadata format').toBe('pjson');
 });
 test('ArcGISVectorSource#getFeaturesURL', () => {
-  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerLoader.createDataSourceSync(FEATURE_SERVER_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       boundingBox: [
@@ -355,7 +373,7 @@ test('ArcGISVectorSource#getFeaturesURL', () => {
   expect(featuresUrl.searchParams.get('f')).toBe('geojson');
 });
 test('ArcGISVectorSource#getFeaturesURL normalizes EPSG-prefixed spatial references', () => {
-  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerLoader.createDataSourceSync(FEATURE_SERVER_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       boundingBox: [
@@ -370,7 +388,7 @@ test('ArcGISVectorSource#getFeaturesURL normalizes EPSG-prefixed spatial referen
   expect(featuresUrl.searchParams.get('inSR')).toBe('3857');
 });
 test('ArcGISVectorSource#getFeaturesURL separates request and output CRS', () => {
-  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerLoader.createDataSourceSync(FEATURE_SERVER_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       boundingBox: [
@@ -386,7 +404,7 @@ test('ArcGISVectorSource#getFeaturesURL separates request and output CRS', () =>
   expect(featuresUrl.searchParams.get('outSR')).toBe('3857');
 });
 test('ArcGISVectorSource#getMetadata and getSchema', async () => {
-  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerLoader.createDataSourceSync(FEATURE_SERVER_URL, {});
   source.fetch = async () =>
     new Response(
       JSON.stringify({
@@ -416,7 +434,7 @@ test('ArcGISVectorSource#getMetadata and getSchema', async () => {
   ]);
 });
 test('ArcGISVectorSource#getFeatures defaults to Arrow', async () => {
-  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerLoader.createDataSourceSync(FEATURE_SERVER_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
     features: [
@@ -447,12 +465,15 @@ test('ArcGISVectorSource#getFeatures defaults to Arrow', async () => {
     layers: [],
     crs: '4326'
   });
-  expect(table.shape, 'returns Arrow tables by default').toBe('arrow-table');
-  expect(table.data.numRows, 'preserves feature rows').toBe(1);
-  expect(table.schema?.metadata?.geo, 'adds GeoArrow metadata').toBeTruthy();
+  expect(table).toBeInstanceOf(NativeArrowTable);
+  expect((table as NativeArrowTable).numRows, 'preserves feature rows').toBe(1);
+  expect(
+    (table as NativeArrowTable).schema.metadata.get('geo'),
+    'adds GeoArrow metadata'
+  ).toBeTruthy();
 });
 test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async () => {
-  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerLoader.createDataSourceSync(FEATURE_SERVER_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
     features: [

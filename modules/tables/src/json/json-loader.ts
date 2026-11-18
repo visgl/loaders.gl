@@ -3,10 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {serializeBinaryJSON, deserializeBinaryJSON} from './lib/json-binary-transport';
+import {serializeJSONWorkerBatch, deserializeJSONWorkerResult} from './lib/json-worker-transport';
+import type {RecordBatch} from 'apache-arrow';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
+import {convertTableBatchesToArrow} from './lib/parsers/convert-row-table-to-arrow';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
 import {
@@ -23,14 +26,14 @@ export const JSONLoaderWithParser = {
   ...JSONLoaderMetadataWithoutPreload,
   serializeWorkerResult: serializeBinaryJSON,
   deserializeWorkerResult: deserializeBinaryJSON,
-  serializeWorkerBatch: serializeBinaryJSON,
-  deserializeWorkerBatch: deserializeBinaryJSON,
+  serializeWorkerBatch: serializeJSONWorkerBatch,
+  deserializeWorkerBatch: deserializeJSONWorkerResult,
   parse,
   parseTextSync,
   parseInBatches
 } as const satisfies LoaderWithParser<
   unknown,
-  TableBatch | MetadataBatch | JSONBatch,
+  TableBatch | RecordBatch | MetadataBatch | JSONBatch,
   JSONLoaderOptions
 >;
 
@@ -48,13 +51,16 @@ function parseInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: JSONLoaderOptions
-): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
+): AsyncIterable<TableBatch | RecordBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = {...options, json: {...JSONLoaderWithParser.options.json, ...options?.json}};
   const parseOptions =
     jsonOptions.json?.backend === 'fast'
       ? {parserFactory: getFastStreamingJSONParserFactory()}
       : undefined;
-  return parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, parseOptions);
+  const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, parseOptions);
+  return jsonOptions.json?.table && jsonOptions.json.shape === undefined
+    ? convertTableBatchesToArrow<MetadataBatch | JSONBatch>(batches)
+    : batches;
 }
 
 /**

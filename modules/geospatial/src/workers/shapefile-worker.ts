@@ -17,10 +17,7 @@ function createShapefileContext(context?: LoaderContext, options?: any): LoaderC
     fetch: createAuthenticatedFetch({
       fetch: (url, init) => fetch(url as RequestInfo, init),
       credentials: options?.core?.credentials || [],
-      fetchOptions:
-        typeof (options?.core?.fetch ?? options?.fetch) === 'object'
-          ? (options?.core?.fetch ?? options?.fetch)
-          : undefined
+      fetchOptions: typeof options?.core?.fetch === 'object' ? options?.core?.fetch : undefined
     }),
     _parse: async (input: any, loader: LoaderWithParser, options: any) =>
       loader.parse!(
@@ -54,13 +51,13 @@ async function* readResponse(response: Response): AsyncIterable<Uint8Array> {
 
 /** Uses WKB columns for legacy output so feature construction runs only on the caller. */
 function getArrowOptions(options: any): any {
-  if ((options?.shapefile?.shape || 'arrow-table') === 'arrow-table') return options;
+  if ((options?.shapefile?.shape || 'arrow') === 'arrow') return options;
   return {
     ...options,
     geoarrow: {encodingPreference: 'geoarrow.wkb'},
     shapefile: {
       ...options?.shapefile,
-      shape: 'arrow-table',
+      shape: 'arrow',
       geoarrowEncoding: 'geoarrow.wkb',
       geoarrow: {encodingPreference: 'geoarrow.wkb'}
     }

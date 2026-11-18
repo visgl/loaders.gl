@@ -4,19 +4,14 @@
 
 import {CRSReprojectionError, type LoaderContext} from '@loaders.gl/core/loader-utils';
 import {
-  makeTableScanBatch,
   parseFromContext,
   parseInBatchesFromContext,
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
 import * as arrow from 'apache-arrow';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  Field,
-  Schema as TableSchema
-} from '@loaders.gl/core/schema';
-import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
+import type {Field, Schema as TableSchema} from '@loaders.gl/core/schema';
+import {makeArrowMetadataBatch, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
@@ -44,12 +39,12 @@ export async function parseShapefileToArrow(
   arrayBuffer: ArrayBuffer,
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
-): Promise<ArrowTable> {
+): Promise<arrow.Table> {
   const {cpg, prj, shx} = await loadShapefileSidecarFiles(options, context);
   const transform = getReprojectionTransform(prj, options);
   const geoArrowEncoding = getTypedGeoArrowEncoding(options);
   let header: SHPHeader | undefined;
-  let geometryTable: ArrowTable;
+  let geometryTable: arrow.Table;
 
   if (geoArrowEncoding) {
     geometryTable = makeSHPGeoArrowGeometryTable(arrayBuffer, options, {transform});
@@ -76,7 +71,7 @@ export async function parseShapefileToArrow(
       options?.geoarrow?.encodingPreference === 'geoarrow.geometry' ||
       options?.shapefile?.geoarrow?.encodingPreference === 'geoarrow.geometry'
     ) {
-      const geometryColumn = geometryTable.data.getChild(GEOMETRY_COLUMN_NAME);
+      const geometryColumn = geometryTable.getChild(GEOMETRY_COLUMN_NAME);
       const geometries = geometryColumn?.toArray() || [];
       geometryTable = convertFeaturesToGeoArrowTable(
         geometries.map(geometry => ({
@@ -90,33 +85,41 @@ export async function parseShapefileToArrow(
   }
 
   let propertySchema: TableSchema | null = null;
-  let propertyTable: ArrowTable | null = null;
+  let propertyTable: arrow.Table | null = null;
 
   const dbfResponse = context?.url
     ? await context.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
     : null;
   if (dbfResponse?.ok) {
-    propertyTable = (await parseFromContext(
+    const propertyData = (await parseFromContext(
       dbfResponse as any,
       DBFLoaderWithParser,
       {
         ...options,
         dbf: {
           ...options?.dbf,
-          shape: 'arrow-table' as const,
+          shape: 'arrow' as const,
           encoding: cpg || 'latin1'
         }
       },
       context!
-    )) as ArrowTable;
-    propertySchema = propertyTable.schema || null;
+    )) as arrow.Table;
+    propertySchema = convertArrowToSchema(propertyData.schema);
+    propertyTable = propertyData;
   }
 
-  const schema = buildOutputSchema(propertySchema, header, geometryTable.schema);
+  const schema = buildOutputSchema(
+    propertySchema,
+    header,
+    convertArrowToSchema(geometryTable.schema)
+  );
   const table = propertyTable
     ? appendGeometryColumnToArrowTable(propertyTable, geometryTable, schema)
     : geometryTable;
-  return Object.assign(table, {loaderData: {header, encoding: cpg, prj, shx}});
+  const encoded = encodeShapefileHeader({header, encoding: cpg, prj, shx});
+  table.schema.metadata.set(SHAPEFILE_HEADER_KEY, encoded);
+  for (const batch of table.batches) batch.schema.metadata.set(SHAPEFILE_HEADER_KEY, encoded);
+  return table;
 }
 
 /** Parses a shapefile into Arrow batches while keeping DBF-derived schema stable. */
@@ -126,20 +129,29 @@ export async function* parseShapefileToArrowInBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.RecordBatch> {
   if (getTypedGeoArrowEncoding(options)) {
     throw new Error('Typed GeoArrow shapefile output is only supported for non-streaming parse.');
   }
 
   const {cpg, prj, shx} = await loadShapefileSidecarFiles(options, context);
   const batchSize =
-    options?.shapefile?.batchSize || options?.shp?.batchSize || options?.dbf?.batchSize || 10000;
+    typeof options?.core?.batchSize === 'number'
+      ? options.core.batchSize
+      : (options?.shapefile?.batchSize ??
+        options?.shp?.batchSize ??
+        options?.dbf?.batchSize ??
+        10000);
+  const childOptions = {
+    ...options,
+    core: {...options?.core, batchMaxRowsPerSecond: 0}
+  };
 
   const shapeIterable = await parseInBatchesFromContext(
     toArrayBufferIterator(asyncIterator),
     SHPLoaderWithParser,
     {
-      ...options,
+      ...childOptions,
       shp: {
         ...options?.shp,
         shape: 'wkb',
@@ -152,6 +164,7 @@ export async function* parseShapefileToArrowInBatches(
 
   const shapeHeader = await getNextNonMetadataValue(shapeIterator);
   const header = shapeHeader as SHPHeader;
+  const encodedHeader = encodeShapefileHeader({header, encoding: cpg, prj, shx});
 
   let propertyIterator: AsyncIterator<any> | null = null;
   let propertySchema: TableSchema | null = null;
@@ -161,10 +174,10 @@ export async function* parseShapefileToArrowInBatches(
     : null;
   if (dbfResponse?.ok) {
     const dbfOptions = {
-      ...options,
+      ...childOptions,
       dbf: {
         ...options?.dbf,
-        shape: 'arrow-table' as const,
+        shape: 'arrow' as const,
         batchSize,
         encoding: cpg || 'latin1'
       }
@@ -178,14 +191,14 @@ export async function* parseShapefileToArrowInBatches(
     propertyIterator = getAsyncIterator(propertyIterable);
 
     const firstPropertyBatch = await getNextArrowBatch(propertyIterator);
-    propertySchema = firstPropertyBatch?.schema || null;
+    propertySchema = firstPropertyBatch ? convertArrowToSchema(firstPropertyBatch.schema) : null;
     const outputSchema = buildOutputSchema(propertySchema, header);
     const propertyQueue: arrow.Table[] = [];
     const geometryQueue: arrow.Table[] = [];
     let yieldedDataBatch = false;
 
-    if (firstPropertyBatch && firstPropertyBatch.length > 0) {
-      propertyQueue.push(firstPropertyBatch.data);
+    if (firstPropertyBatch && firstPropertyBatch.numRows > 0) {
+      propertyQueue.push(new arrow.Table(firstPropertyBatch.schema, [firstPropertyBatch]));
     }
 
     let shapeDone = false;
@@ -204,7 +217,6 @@ export async function* parseShapefileToArrowInBatches(
           const transform = getReprojectionTransform(prj, options);
           geometryQueue.push(
             makeGeometryArrowTable(shapeBatch.value as (SHPWKBGeometry | null)[], header, transform)
-              .data
           );
         }
       }
@@ -213,8 +225,8 @@ export async function* parseShapefileToArrowInBatches(
         const propertyBatch = await getNextArrowBatch(propertyIterator);
         if (!propertyBatch) {
           propertyDone = true;
-        } else if (propertyBatch.length > 0) {
-          propertyQueue.push(propertyBatch.data);
+        } else if (propertyBatch.numRows > 0) {
+          propertyQueue.push(new arrow.Table(propertyBatch.schema, [propertyBatch]));
         }
       }
 
@@ -231,16 +243,14 @@ export async function* parseShapefileToArrowInBatches(
 
       const propertyTable = takeRowsFromQueue(propertyQueue, rowCount);
       const geometryTable = takeRowsFromQueue(geometryQueue, rowCount);
-      const batch = appendGeometryColumnToArrowTable(
-        {shape: 'arrow-table', schema: propertySchema || undefined, data: propertyTable},
-        {shape: 'arrow-table', data: geometryTable},
-        outputSchema
-      );
+      const batch = appendGeometryColumnToArrowTable(propertyTable, geometryTable, outputSchema);
       yieldedDataBatch = true;
-      yield {...makeTableScanBatch(batch), loaderData: {header, encoding: cpg, prj, shx}};
+      const recordBatch = batch.batches[0];
+      recordBatch.schema.metadata.set(SHAPEFILE_HEADER_KEY, encodedHeader);
+      yield recordBatch;
     }
     if (!yieldedDataBatch) {
-      yield {...makeEmptyArrowBatch(outputSchema), loaderData: {header, encoding: cpg, prj, shx}};
+      yield makeEmptyArrowBatch(outputSchema, encodedHeader);
     }
     return;
   }
@@ -263,13 +273,13 @@ export async function* parseShapefileToArrowInBatches(
       transform
     );
     yieldedDataBatch = true;
-    yield {
-      ...makeTableScanBatch({...arrowTable, schema: outputSchema}),
-      loaderData: {header, encoding: cpg, prj, shx}
-    };
+    for (const batch of arrowTable.batches) {
+      batch.schema.metadata.set(SHAPEFILE_HEADER_KEY, encodedHeader);
+      yield batch;
+    }
   }
   if (!yieldedDataBatch) {
-    yield {...makeEmptyArrowBatch(outputSchema), loaderData: {header, encoding: cpg, prj, shx}};
+    yield makeEmptyArrowBatch(outputSchema, encodedHeader);
   }
 }
 
@@ -309,24 +319,20 @@ function makeGeometryArrowTable(
 }
 
 function appendGeometryColumnToArrowTable(
-  propertyTable: ArrowTable,
-  geometryTable: ArrowTable,
+  propertyTable: arrow.Table,
+  geometryTable: arrow.Table,
   schema: TableSchema
-): ArrowTable {
-  const propertyBatch = propertyTable.data.batches[0];
-  const geometryBatch = geometryTable.data.batches[0];
+): arrow.Table {
+  const propertyBatch = propertyTable.batches[0];
+  const geometryBatch = geometryTable.batches[0];
   const arrowSchema = convertSchemaToArrow(schema);
   const structField = new arrow.Struct(arrowSchema.fields);
   const children = [...propertyBatch.data.children, geometryBatch.data.children[0]];
-  const rowCount = Math.max(propertyTable.data.numRows, geometryTable.data.numRows);
+  const rowCount = Math.max(propertyTable.numRows, geometryTable.numRows);
   const structData = new arrow.Data(structField, 0, rowCount, 0, undefined, children);
   const recordBatch = new arrow.RecordBatch(arrowSchema, structData);
 
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, [recordBatch])
-  };
+  return new arrow.Table(arrowSchema, [recordBatch]);
 }
 
 function getReprojectionTransform(
@@ -418,16 +424,47 @@ async function getNextNonMetadataValue(iterator: AsyncIterator<any>): Promise<an
   }
 }
 
-async function getNextArrowBatch(iterator: AsyncIterator<any>): Promise<ArrowTableBatch | null> {
+/** Reads native DBF batches and imports columns originating from another Arrow build. */
+async function getNextArrowBatch(
+  iterator: AsyncIterator<unknown>
+): Promise<arrow.RecordBatch | null> {
   while (true) {
     const result = await iterator.next();
-    if (result.done) {
-      return null;
-    }
-    if (result.value?.shape === 'arrow-table') {
-      return result.value;
+    if (result.done) return null;
+    if (isArrowRecordBatch(result.value)) {
+      const batch = result.value;
+      return Object.getPrototypeOf(batch) === arrow.RecordBatch.prototype
+        ? batch
+        : importDBFRecordBatch(batch, convertArrowToSchema(batch.schema));
     }
   }
+}
+
+/** Rebuilds primitive DBF columns with local Arrow classes while reusing their buffers. */
+function importDBFRecordBatch(
+  batch: arrow.RecordBatch,
+  tableSchema: TableSchema
+): arrow.RecordBatch {
+  const schema = convertSchemaToArrow(tableSchema);
+  const children = batch.data.children.map(
+    (column, index) =>
+      new arrow.Data(
+        schema.fields[index].type,
+        column.offset,
+        column.length,
+        column.nullCount,
+        column.buffers,
+        undefined,
+        undefined,
+        column.variadicBuffers
+      )
+  );
+  const data = arrow.makeData({
+    type: new arrow.Struct(schema.fields),
+    length: batch.numRows,
+    children
+  });
+  return new arrow.RecordBatch(schema, data, new Map(batch.metadata));
 }
 
 function getQueuedRowCount(queue: arrow.Table[]): number {
@@ -441,12 +478,32 @@ function takeRowsFromQueue(queue: arrow.Table[], rowCount: number): arrow.Table 
     return table;
   }
   const result = table.slice(0, rowCount);
-  queue[0] = table.slice(rowCount, table.numRows - rowCount);
+  queue[0] = table.slice(rowCount);
   return result;
 }
 
-/** Creates an explicit empty Arrow batch so zero-row shapefiles still expose schema in batch mode. */
-function makeEmptyArrowBatch(schema: TableSchema): ArrowTableBatch {
-  const table = new ArrowTableBuilder(schema).finishTable();
-  return makeTableScanBatch({...table, schema});
+/** Creates an explicit empty Arrow batch so zero-row shapefiles still expose their schema. */
+function makeEmptyArrowBatch(schema: TableSchema, header: string): arrow.RecordBatch {
+  const nativeSchema = convertSchemaToArrow(schema);
+  nativeSchema.metadata.set(SHAPEFILE_HEADER_KEY, header);
+  return makeArrowMetadataBatch(nativeSchema);
+}
+
+/** Schema metadata key for the Shapefile header and sidecar data. */
+export const SHAPEFILE_HEADER_KEY = 'loaders.gl.shapefile.header';
+
+/** Encodes Shapefile sidecars for schema and worker transport. */
+function encodeShapefileHeader({
+  shx,
+  ...header
+}: {
+  header?: SHPHeader;
+  encoding?: string;
+  prj?: WKTCRSDefinition;
+  shx?: {offsets: Int32Array; lengths: Int32Array};
+}): string {
+  return JSON.stringify({
+    ...header,
+    ...(shx ? {shx: {offsets: Array.from(shx.offsets), lengths: Array.from(shx.lengths)}} : {})
+  });
 }

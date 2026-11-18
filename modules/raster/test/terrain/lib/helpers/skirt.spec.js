@@ -3,66 +3,62 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-
 import {addSkirt} from '../../../../src/terrain/lib/helpers/skirt';
 
-test('TerrainLoader-skirting#addSkirt finds border edges from triangles', () => {
-  const attributes = {
-    POSITION: {
-      value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-    },
-    TEXCOORD_0: {
-      value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8])
-    }
-  };
-  const triangles = new Uint16Array([0, 1, 2, 0, 2, 3]);
-  const addSkirtResult = addSkirt(attributes, triangles, 20);
-  expect(Array.from(attributes.POSITION.value)).toEqual([
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, -17, 4, 5, -14, 10, 11, -8, 1, 2, -17, 4, 5, -14,
-    7, 8, -11, 7, 8, -11, 10, 11, -8
-  ]);
-  expect(Array.from(attributes.TEXCOORD_0.value)).toEqual([
-    1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 7, 8, 1, 2, 3, 4, 5, 6, 5, 6, 7, 8
-  ]);
-  expect(Array.from(addSkirtResult.triangles)).toEqual([
-    0, 1, 2, 0, 2, 3, 0, 5, 1, 5, 0, 4, 3, 7, 0, 7, 3, 6, 1, 9, 2, 9, 1, 8, 2, 11, 3, 11, 2, 10
-  ]);
-});
-
-test('TerrainLoader-skirting#addSkirt uses quantized mesh edge indices', () => {
-  const attributes = {
+function createAttributes() {
+  return {
     POSITION: {value: new Float32Array([0, 0, 10, 1, 0, 20, 1, 1, 30, 0, 1, 40])},
     TEXCOORD_0: {value: new Float32Array([0, 0, 1, 0, 1, 1, 0, 1])}
   };
-  const outsideIndices = {
+}
+
+function assertSkirt(attributes, indices) {
+  const positions = attributes.POSITION.value;
+  const textureCoordinates = attributes.TEXCOORD_0.value;
+  expect(indices).toHaveLength(30);
+  expect(Array.from(indices.slice(0, 6))).toEqual([0, 1, 2, 0, 2, 3]);
+  expect(positions).toHaveLength(36);
+  for (let i = 4; i < positions.length / 3; i++) {
+    const x = positions[i * 3];
+    const y = positions[i * 3 + 1];
+    const source = [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 1]
+    ].findIndex(([sx, sy]) => sx === x && sy === y);
+    expect(source).toBeGreaterThanOrEqual(0);
+    expect(positions[i * 3 + 2]).toBe((source + 1) * 10 - 5);
+    expect(Array.from(textureCoordinates.slice(i * 2, i * 2 + 2))).toEqual([x, y]);
+  }
+}
+
+test('addSkirt delegates boundary construction and copies texture coordinates', () => {
+  const attributes = createAttributes();
+  const result = addSkirt(attributes, new Uint16Array([0, 1, 2, 0, 2, 3]), 5);
+  expect(result.triangles).toBeInstanceOf(Uint16Array);
+  assertSkirt(attributes, result.triangles);
+});
+
+test('addSkirt supports quantized mesh side indices', () => {
+  const attributes = createAttributes();
+  const sides = {
     westIndices: [3, 0],
     northIndices: [2, 3],
     eastIndices: [2, 1],
     southIndices: [1, 0]
   };
-
-  const result = addSkirt(attributes, new Uint16Array([0, 1, 2, 0, 2, 3]), 5, outsideIndices);
-
-  expect(outsideIndices.westIndices).toEqual([0, 3]);
-  expect(outsideIndices.northIndices).toEqual([3, 2]);
-  expect(outsideIndices.eastIndices).toEqual([2, 1]);
-  expect(outsideIndices.southIndices).toEqual([1, 0]);
-  expect(result.triangles).toBeInstanceOf(Uint16Array);
-  expect(result.triangles.length).toBe(30);
-  expect(Array.from(attributes.POSITION.value.slice(-12))).toEqual([
-    1, 1, 25, 1, 0, 15, 1, 0, 15, 0, 0, 5
-  ]);
+  const result = addSkirt(attributes, new Uint16Array([0, 1, 2, 0, 2, 3]), 5, sides);
+  assertSkirt(attributes, result.triangles);
+  expect(sides.westIndices).toEqual([0, 3]);
+  expect(sides.northIndices).toEqual([3, 2]);
+  expect(sides.eastIndices).toEqual([2, 1]);
+  expect(sides.southIndices).toEqual([1, 0]);
 });
 
-test('TerrainLoader-skirting#addSkirt preserves plain array triangle indices', () => {
-  const attributes = {
-    POSITION: {value: new Float32Array([0, 0, 10, 1, 0, 20, 0, 1, 30])},
-    TEXCOORD_0: {value: new Float32Array([0, 0, 1, 0, 0, 1])}
-  };
-
-  const result = addSkirt(attributes, [0, 1, 2], 2);
-
+test('addSkirt preserves plain array triangle indices', () => {
+  const attributes = createAttributes();
+  const result = addSkirt(attributes, [0, 1, 2, 0, 2, 3], 5);
   expect(Array.isArray(result.triangles)).toBe(true);
-  expect(result.triangles.slice(0, 3)).toEqual([0, 1, 2]);
-  expect(result.triangles).toHaveLength(21);
+  assertSkirt(attributes, result.triangles);
 });

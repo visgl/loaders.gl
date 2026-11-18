@@ -50,10 +50,10 @@ GeoArrow conversions split into two jobs:
 | --- | --- |
 | Package | `@loaders.gl/core/geoarrow` |
 | `id` | `'geoarrow-table'` |
-| `from` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
-| `to` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
+| `from` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
+| `to` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
 | Detection | Arrow tables whose schema carries GeoArrow metadata |
-| Typical use | Move a GeoArrow table into or out of wrappers without changing geometry encoding |
+| Typical use | Convert between native GeoArrow and row, columnar, or GeoJSON tables |
 
 ## GeoArrowGeometryConverter
 
@@ -81,7 +81,7 @@ GeoArrow conversions split into two jobs:
 
 `makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension})` adapts an existing
 `BinaryPolygonGeometry` to the Arrow-independent `GeoArrowColumn` descriptor from
-`@math.gl/geospatial/geoarrow`. It produces one `geoarrow.polygon` row per polygon, including empty
+`@math.gl/core/arrow`. It produces one `geoarrow.polygon` row per polygon, including empty
 polygons. It does not reconstruct MultiPolygon grouping or original feature identity.
 
 ```typescript
@@ -89,7 +89,7 @@ import {
   makeGeoArrowColumnFromBinaryPolygon,
   getGeoArrowRowBounds
 } from '@loaders.gl/core/geoarrow';
-import {getGeoArrowBounds} from '@math.gl/geospatial/geoarrow';
+import {getGeoArrowBounds} from '@math.gl/core/arrow';
 
 const column = makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension: 'xym'});
 const bounds = getGeoArrowBounds(column);

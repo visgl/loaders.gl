@@ -73,7 +73,7 @@ export function convertArrowBinaryFeatureCollectionToBinaryFeatureCollection(
   };
 }
 
-/** Converts binary point features into an Arrow table wrapper. */
+/** Converts binary point features into an Arrow-backed geometry family. */
 function convertPointsToArrowTable(binaryPoints: BinaryPointFeature): ArrowBinaryPointFeature {
   const pointOffsets = derivePointOffsets(binaryPoints.featureIds.value as Uint32Array);
   const columns: Record<string, arrow.Data> = {
@@ -112,7 +112,7 @@ function convertPointsToArrowTable(binaryPoints: BinaryPointFeature): ArrowBinar
   };
 }
 
-/** Converts binary line features into an Arrow table wrapper. */
+/** Converts binary line features into an Arrow-backed geometry family. */
 function convertLinesToArrowTable(binaryLines: BinaryLineFeature): ArrowBinaryLineFeature {
   const pathOffsets = reinterpretUint32AsInt32(binaryLines.pathIndices.value as Uint32Array);
   const columns: Record<string, arrow.Data> = {
@@ -147,7 +147,7 @@ function convertLinesToArrowTable(binaryLines: BinaryLineFeature): ArrowBinaryLi
   };
 }
 
-/** Converts binary polygon features into an Arrow table wrapper. */
+/** Converts binary polygon features into an Arrow-backed geometry family. */
 function convertPolygonsToArrowTable(
   binaryPolygons: BinaryPolygonFeature
 ): ArrowBinaryPolygonFeature {

@@ -69,13 +69,13 @@ import `ChromeTraceLoaderWithParser` from that subpath.
 | Shape | Return value |
 | --- | --- |
 | `json` | `ChromeTraceFileSchema`, preserving top-level and event passthrough fields. |
-| `arrow-table` | `ChromeTraceEventArrowTable`, with file metadata attached to the Arrow schema. |
+| `arrow` | `ChromeTraceEventArrowTable`, with file metadata attached to the Arrow schema. |
 
 ## Options
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `chromeTrace.shape` | `'json' \| 'arrow-table'` | `'arrow-table'` | Whole-file result shape. |
+| `chromeTrace.shape` | `'json' \| 'arrow'` | `'arrow'` | Whole-file result shape. |
 | `chromeTrace.batchSize` | `number` | `256` | Maximum events per streamed Arrow record batch. |
 | `maxLength` | `number` | `1000` | Maximum number of events structurally validated; all events are still returned. |
 
@@ -94,7 +94,7 @@ import {parseInBatches} from '@loaders.gl/core';
 import {ChromeTraceLoader} from '@loaders.gl/traces';
 
 const batches = await parseInBatches(chunks, ChromeTraceLoader, {
-  chromeTrace: {shape: 'arrow-table', batchSize: 1024}
+  chromeTrace: {shape: 'arrow', batchSize: 1024}
 });
 
 for await (const batch of batches) {

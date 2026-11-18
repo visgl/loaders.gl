@@ -10,9 +10,8 @@ import type {
   UpdateParameters,
   Viewport
 } from '@deck.gl/core';
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
-import type {DataSourceOptions, Loader, SourceLoader} from '@loaders.gl/core/loader-utils';
+import type {DataSourceOptions, Loader} from '@loaders.gl/core/loader-utils';
 import type {
   PointCloudTile,
   PointCloudTileset,
@@ -33,9 +32,7 @@ export type PointCloudSourceLayerProps = Omit<Tile3DLayerProps, 'data' | 'loader
   /** Point-cloud tileset source runtime, URL, or Blob. */
   data: PointCloudTilesetSource | string | Blob;
   /** Parser loaders and SourceLoaders used to resolve URL/Blob inputs. */
-  loaders?: ReadonlyArray<Loader | SourceLoader>;
-  /** @deprecated Put SourceLoaders in `loaders`. */
-  sources?: Readonly<SourceLoader[]>;
+  loaders?: ReadonlyArray<Loader>;
   /** Options forwarded to source construction. */
   sourceOptions?: DataSourceOptions;
   /** Optional metadata already loaded by a parent SourceLayer. */
@@ -71,7 +68,6 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
     ...Tile3DLayer.defaultProps,
     data: null,
     loaders: {type: 'array', compare: false, value: []},
-    sources: {type: 'array', compare: false, value: []},
     sourceOptions: {type: 'object', compare: false, value: {}},
     pointCloudTilesetOptions: {type: 'object', compare: false, value: {}},
     showTileBoundingBoxes: false,
@@ -127,7 +123,6 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
     if (
       changeFlags.dataChanged ||
       props.loaders !== oldProps.loaders ||
-      props.sources !== oldProps.sources ||
       props.sourceOptions !== oldProps.sourceOptions
     ) {
       void this.resolveSource(props);
@@ -295,7 +290,7 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
       constantRGBA,
       cartographicOrigin,
       modelMatrix,
-      coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS
+      coordinateSystem = 'meter-offsets'
     } = tile.content;
     const data = oldLayer?.props.data || tile.content.data;
     if (!data) {
@@ -308,8 +303,7 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
       tile,
       data,
       coordinateSystem,
-      coordinateOrigin:
-        coordinateSystem === COORDINATE_SYSTEM.CARTESIAN ? undefined : cartographicOrigin,
+      coordinateOrigin: coordinateSystem === 'cartesian' ? undefined : cartographicOrigin,
       modelMatrix,
       defaultPointColor: (constantRGBA || this.props.getPointColor) as [number, number, number],
       pointCloudLayerProps: {
@@ -323,7 +317,5 @@ export class PointCloudSourceLayer extends Tile3DLayer<any, PointCloudSourceLaye
 
 function getTileBoundingBoxCoordinateSystem(tiles: PointCloudTile[]): CoordinateSystem {
   const tileWithContent = tiles.find(tile => tile.content?.coordinateSystem !== undefined);
-  return tileWithContent?.content?.coordinateSystem === COORDINATE_SYSTEM.CARTESIAN
-    ? COORDINATE_SYSTEM.CARTESIAN
-    : COORDINATE_SYSTEM.LNGLAT;
+  return tileWithContent?.content?.coordinateSystem === 'cartesian' ? 'cartesian' : 'lnglat';
 }

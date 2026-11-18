@@ -89,8 +89,5 @@ The old private binary concatenation, table-to-Arrow batch iterator and unused
 conversion/encoding helpers were not supported package entry points and have
 been deleted rather than relocated.
 
-The repository no longer builds or publishes GIS. Its development/website dependency
-graph can still contain a published GIS 4.x release required by deck.gl 9.4; this is
-not the removed workspace package or a dependency added to loaders. Older standalone
-test applications also retain historical release lockfiles. Removing those external
-dependencies requires upgrading their consumers, not aliasing GIS to GeoArrow.
+Older standalone test applications may still resolve a published GIS 4.x release
+through their deck.gl dependencies. Upgrade those consumers to use the current geometry APIs.

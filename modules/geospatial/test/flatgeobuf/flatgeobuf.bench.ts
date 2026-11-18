@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf/index';
+import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
 
 const FLATGEOBUF_COUNTRIES_DATA_URL = '@loaders.gl/geospatial/flatgeobuf/test/data/countries.fgb';
 const ROW_BENCHMARK_OPTIONS = {multiplier: 179, unit: 'rows'};
@@ -15,12 +15,12 @@ export default async function flatgeobufBench(suite) {
   suite = suite.group('FlatGeobufLoader');
 
   suite.addAsync(
-    'FlatGeobufLoader load arrow-table geoarrow.wkb',
+    'FlatGeobufLoader load native Arrow geoarrow.wkb',
     ROW_BENCHMARK_OPTIONS,
     async () => {
       await load(arrayBuffer.slice(0), FlatGeobufLoader, {
         core: {worker: false},
-        flatgeobuf: {shape: 'arrow-table'}
+        flatgeobuf: {shape: 'arrow'}
       });
     }
   );

@@ -13,14 +13,9 @@ beforeAll(async () => {
 
 test('Parquet batch progress reports decoded rows', async () => {
   const onProgress = vi.fn();
-  const batches = await parseInBatches(input.slice(0), ParquetLoader, {
-    core: {worker: false},
-    _workerType: 'test',
-    parquet: {shape: 'arrow-table', signal: new AbortController().signal},
-    onProgress
-  });
+  const batches = await parseInBatches(input.slice(0), ParquetLoader, {core: {worker: false, _workerType: 'test'}, parquet: {shape: 'arrow', signal: new AbortController().signal}, onProgress});
   let rows = 0;
-  for await (const batch of batches) rows += batch.data.numRows;
+  for await (const batch of batches) rows += batch.numRows;
   expect(rows).toBe(2);
   expect(onProgress).toHaveBeenLastCalledWith({phase: 'decode', completed: 2, unit: 'rows'});
 });

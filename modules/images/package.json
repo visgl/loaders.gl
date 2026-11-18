@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "5.0.0-beta.4",
+  "version": "5.0.0-beta.12",
   "description": "Image, compressed texture, and video loaders with optional Node.js image codecs",
   "license": "MIT",
   "type": "module",
@@ -32,13 +32,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./unbundled": {
-      "types": "./dist/unbundled.d.ts",
-      "import": "./dist/unbundled.js"
-    },
     "./bundled": {
       "types": "./dist/bundled.d.ts",
-      "import": "./dist/bundled.js"
+      "import": "./dist/bundled.js",
+      "require": "./dist/bundled.cjs"
     },
     "./basis-worker.js": {
       "import": "./dist/basis-worker.js"
@@ -69,230 +66,100 @@
       "require": "./dist/ktx2-basis-writer-worker-node.cjs",
       "default": "./dist/ktx2-basis-writer-worker-node.cjs"
     },
-    "./load-image": {
-      "types": "./dist/load-image.d.ts",
-      "import": "./dist/load-image.js",
-      "require": "./dist/load-image.cjs"
-    },
-    "./load-image-cube": {
-      "types": "./dist/load-image-cube.d.ts",
-      "import": "./dist/load-image-cube.js",
-      "require": "./dist/load-image-cube.cjs"
-    },
-    "./texture-cube-loader": {
-      "types": "./dist/texture-cube-loader.d.ts",
-      "import": "./dist/texture-cube-loader.js",
-      "require": "./dist/texture-cube-loader.cjs"
-    },
-    "./basis-types": {
-      "types": "./dist/basis-types.d.ts",
-      "import": "./dist/basis-types.js",
-      "require": "./dist/basis-types.cjs"
-    },
-    "./video-format": {
-      "types": "./dist/video-format.d.ts",
-      "import": "./dist/video-format.js",
-      "require": "./dist/video-format.cjs"
-    },
-    "./compressed-texture-writer": {
-      "types": "./dist/compressed-texture-writer.d.ts",
-      "import": "./dist/compressed-texture-writer.js",
-      "require": "./dist/compressed-texture-writer.cjs"
-    },
-    "./basis-loader": {
-      "types": "./dist/basis-loader.d.ts",
-      "import": "./dist/basis-loader.js",
-      "require": "./dist/basis-loader.cjs"
-    },
-    "./texture-manifest-schema": {
-      "types": "./dist/texture-manifest-schema.d.ts",
-      "import": "./dist/texture-manifest-schema.js",
-      "require": "./dist/texture-manifest-schema.cjs"
-    },
-    "./legacy-image-loader": {
-      "types": "./dist/legacy-image-loader.d.ts",
-      "import": "./dist/legacy-image-loader.js",
-      "require": "./dist/legacy-image-loader.cjs"
-    },
-    "./compressed-texture-loader": {
-      "types": "./dist/compressed-texture-loader.d.ts",
-      "import": "./dist/compressed-texture-loader.js",
-      "require": "./dist/compressed-texture-loader.cjs"
-    },
-    "./crunch-module-loader": {
-      "types": "./dist/crunch-module-loader.d.ts",
-      "import": "./dist/crunch-module-loader.js",
-      "require": "./dist/crunch-module-loader.cjs"
-    },
-    "./texture-loader": {
-      "types": "./dist/texture-loader.d.ts",
-      "import": "./dist/texture-loader.js",
-      "require": "./dist/texture-loader.cjs"
-    },
     "./gl-extensions": {
       "types": "./dist/gl-extensions.d.ts",
       "import": "./dist/gl-extensions.js",
       "require": "./dist/gl-extensions.cjs"
-    },
-    "./image-loader": {
-      "types": "./dist/image-loader.d.ts",
-      "import": "./dist/image-loader.js",
-      "require": "./dist/image-loader.cjs"
-    },
-    "./gif-builder": {
-      "types": "./dist/gif-builder.d.ts",
-      "import": "./dist/gif-builder.js",
-      "require": "./dist/gif-builder.cjs"
-    },
-    "./texture-cube-array-loader": {
-      "types": "./dist/texture-cube-array-loader.d.ts",
-      "import": "./dist/texture-cube-array-loader.js",
-      "require": "./dist/texture-cube-array-loader.cjs"
-    },
-    "./video-loader-types": {
-      "types": "./dist/video-loader-types.d.ts",
-      "import": "./dist/video-loader-types.js",
-      "require": "./dist/video-loader-types.cjs"
-    },
-    "./load-image-array": {
-      "types": "./dist/load-image-array.d.ts",
-      "import": "./dist/load-image-array.js",
-      "require": "./dist/load-image-array.cjs"
-    },
-    "./image-writer": {
-      "types": "./dist/image-writer.d.ts",
-      "import": "./dist/image-writer.js",
-      "require": "./dist/image-writer.cjs"
-    },
-    "./texture-cube-loader-types": {
-      "types": "./dist/texture-cube-loader-types.d.ts",
-      "import": "./dist/texture-cube-loader-types.js",
-      "require": "./dist/texture-cube-loader-types.cjs"
-    },
-    "./basis-loader-types": {
-      "types": "./dist/basis-loader-types.d.ts",
-      "import": "./dist/basis-loader-types.js",
-      "require": "./dist/basis-loader-types.cjs"
-    },
-    "./image-format": {
-      "types": "./dist/image-format.d.ts",
-      "import": "./dist/image-format.js",
-      "require": "./dist/image-format.cjs"
     },
     "./types": {
       "types": "./dist/types.d.ts",
       "import": "./dist/types.js",
       "require": "./dist/types.cjs"
     },
-    "./texture-format": {
-      "types": "./dist/texture-format.d.ts",
-      "import": "./dist/texture-format.js",
-      "require": "./dist/texture-format.cjs"
-    },
-    "./basis-format-utils": {
-      "types": "./dist/basis-format-utils.d.ts",
-      "import": "./dist/basis-format-utils.js",
-      "require": "./dist/basis-format-utils.cjs"
-    },
-    "./radiance-hdr-loader": {
-      "types": "./dist/radiance-hdr-loader.d.ts",
-      "import": "./dist/radiance-hdr-loader.js",
-      "require": "./dist/radiance-hdr-loader.cjs"
-    },
-    "./texture-array-loader-types": {
-      "types": "./dist/texture-array-loader-types.d.ts",
-      "import": "./dist/texture-array-loader-types.js",
-      "require": "./dist/texture-array-loader-types.cjs"
-    },
-    "./basis-module-loader": {
-      "types": "./dist/basis-module-loader.d.ts",
-      "import": "./dist/basis-module-loader.js",
-      "require": "./dist/basis-module-loader.cjs"
-    },
-    "./texture-cube-array-loader-types": {
-      "types": "./dist/texture-cube-array-loader-types.d.ts",
-      "import": "./dist/texture-cube-array-loader-types.js",
-      "require": "./dist/texture-cube-array-loader-types.cjs"
-    },
-    "./radiance-hdr-loader-types": {
-      "types": "./dist/radiance-hdr-loader-types.d.ts",
-      "import": "./dist/radiance-hdr-loader-types.js",
-      "require": "./dist/radiance-hdr-loader-types.cjs"
-    },
-    "./compressed-texture-loader-types": {
-      "types": "./dist/compressed-texture-loader-types.d.ts",
-      "import": "./dist/compressed-texture-loader-types.js",
-      "require": "./dist/compressed-texture-loader-types.cjs"
-    },
-    "./texture-array-loader": {
-      "types": "./dist/texture-array-loader.d.ts",
-      "import": "./dist/texture-array-loader.js",
-      "require": "./dist/texture-array-loader.cjs"
-    },
-    "./ktx2-basis-writer": {
-      "types": "./dist/ktx2-basis-writer.d.ts",
-      "import": "./dist/ktx2-basis-writer.js",
-      "require": "./dist/ktx2-basis-writer.cjs"
-    },
-    "./legacy-image-loader-types": {
-      "types": "./dist/legacy-image-loader-types.d.ts",
-      "import": "./dist/legacy-image-loader-types.js",
-      "require": "./dist/legacy-image-loader-types.cjs"
-    },
-    "./texture-loader-types": {
-      "types": "./dist/texture-loader-types.d.ts",
-      "import": "./dist/texture-loader-types.js",
-      "require": "./dist/texture-loader-types.cjs"
-    },
-    "./video-loader": {
-      "types": "./dist/video-loader.d.ts",
-      "import": "./dist/video-loader.js",
-      "require": "./dist/video-loader.cjs"
-    },
-    "./ktx2-basis-writer-worker-loader": {
-      "types": "./dist/ktx2-basis-writer-worker-loader.d.ts",
-      "import": "./dist/ktx2-basis-writer-worker-loader.js",
-      "require": "./dist/ktx2-basis-writer-worker-loader.cjs"
-    },
-    "./crunch-loader": {
-      "types": "./dist/crunch-loader.d.ts",
-      "import": "./dist/crunch-loader.js",
-      "require": "./dist/crunch-loader.cjs"
-    },
-    "./image-loader-types": {
-      "types": "./dist/image-loader-types.d.ts",
-      "import": "./dist/image-loader-types.js",
-      "require": "./dist/image-loader-types.cjs"
-    },
-    "./ies-loader": {
-      "types": "./dist/ies-loader.d.ts",
-      "import": "./dist/ies-loader.js",
-      "require": "./dist/ies-loader.cjs"
-    },
-    "./exr-loader": {
-      "types": "./dist/exr-loader.d.ts",
-      "import": "./dist/exr-loader.js",
-      "require": "./dist/exr-loader.cjs"
-    },
-    "./cube-lut-loader": {
-      "types": "./dist/cube-lut-loader.d.ts",
-      "import": "./dist/cube-lut-loader.js",
-      "require": "./dist/cube-lut-loader.cjs"
-    },
-    "./3dl-lut-loader": {
-      "types": "./dist/3dl-lut-loader.d.ts",
-      "import": "./dist/3dl-lut-loader.js",
-      "require": "./dist/3dl-lut-loader.cjs"
-    },
     "./color-lut": {
-      "types": "./dist/lut/index.d.ts",
-      "import": "./dist/lut/index.js",
-      "require": "./dist/lut/index.cjs"
+      "types": "./dist/color-lut.d.ts",
+      "import": "./dist/color-lut.js",
+      "require": "./dist/color-lut.cjs"
     },
-    "./image-lut-loader": {
-      "types": "./dist/image-lut-loader.d.ts",
-      "import": "./dist/image-lut-loader.js",
-      "require": "./dist/image-lut-loader.cjs"
+    "./texture": {
+      "types": "./dist/texture.d.ts",
+      "import": "./dist/texture.js",
+      "require": "./dist/texture.cjs"
+    },
+    "./basis": {
+      "types": "./dist/basis.d.ts",
+      "import": "./dist/basis.js",
+      "require": "./dist/basis.cjs"
+    },
+    "./image": {
+      "types": "./dist/image.d.ts",
+      "import": "./dist/image.js",
+      "require": "./dist/image.cjs"
+    },
+    "./video": {
+      "types": "./dist/video.d.ts",
+      "import": "./dist/video.js",
+      "require": "./dist/video.cjs"
+    },
+    "./radiance-hdr": {
+      "types": "./dist/radiance-hdr.d.ts",
+      "import": "./dist/radiance-hdr.js",
+      "require": "./dist/radiance-hdr.cjs"
+    },
+    "./crunch": {
+      "types": "./dist/crunch.d.ts",
+      "import": "./dist/crunch.js",
+      "require": "./dist/crunch.cjs"
+    },
+    "./ies": {
+      "types": "./dist/ies.d.ts",
+      "import": "./dist/ies.js",
+      "require": "./dist/ies.cjs"
+    },
+    "./exr": {
+      "types": "./dist/exr.d.ts",
+      "import": "./dist/exr.js",
+      "require": "./dist/exr.cjs"
+    },
+    "./color-lut/bundled": {
+      "types": "./dist/color-lut-bundled.d.ts",
+      "import": "./dist/color-lut-bundled.js",
+      "require": "./dist/color-lut-bundled.cjs"
+    },
+    "./texture/bundled": {
+      "types": "./dist/texture-bundled.d.ts",
+      "import": "./dist/texture-bundled.js",
+      "require": "./dist/texture-bundled.cjs"
+    },
+    "./basis/bundled": {
+      "types": "./dist/basis-bundled.d.ts",
+      "import": "./dist/basis-bundled.js",
+      "require": "./dist/basis-bundled.cjs"
+    },
+    "./image/bundled": {
+      "types": "./dist/image-bundled.d.ts",
+      "import": "./dist/image-bundled.js",
+      "require": "./dist/image-bundled.cjs"
+    },
+    "./video/bundled": {
+      "types": "./dist/video-bundled.d.ts",
+      "import": "./dist/video-bundled.js",
+      "require": "./dist/video-bundled.cjs"
+    },
+    "./radiance-hdr/bundled": {
+      "types": "./dist/radiance-hdr-bundled.d.ts",
+      "import": "./dist/radiance-hdr-bundled.js",
+      "require": "./dist/radiance-hdr-bundled.cjs"
+    },
+    "./ies/bundled": {
+      "types": "./dist/ies-bundled.d.ts",
+      "import": "./dist/ies-bundled.js",
+      "require": "./dist/ies-bundled.cjs"
+    },
+    "./exr/bundled": {
+      "types": "./dist/exr-bundled.d.ts",
+      "import": "./dist/exr-bundled.js",
+      "require": "./dist/exr-bundled.cjs"
     }
   },
   "sideEffects": false,
@@ -302,8 +169,7 @@
     "README.md",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
-    "third-party-licenses",
-    "IES.md"
+    "third-party-licenses"
   ],
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers && npm run build-metadata",
@@ -326,7 +192,7 @@
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
   "dependencies": {
-    "@math.gl/core": "5.0.0-beta.4",
+    "@math.gl/core": "5.0.0-beta.12",
     "zod": "^4.1.12"
   },
   "peerDependenciesMeta": {

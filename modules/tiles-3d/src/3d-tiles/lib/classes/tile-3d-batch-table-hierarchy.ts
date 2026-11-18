@@ -8,7 +8,7 @@
 // TODO - Finish hierarchy suypport: this file is only half ported
 /* eslint-disable */
 // @ts-nocheck
-import {GL} from '@math.gl/geometry';
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {createTypedArrayFromAccessor} from './helpers/tile-3d-accessor-utils';
 
 const defined = x => x !== undefined;
@@ -53,8 +53,7 @@ export function initializeHierarchy(batchTable, jsonHeader, binaryBody) {
 
   const legacyHierarchy = jsonHeader.HIERARCHY;
   if (legacyHierarchy) {
-    // eslint-disable-next-line
-    console.warn('3D Tile Parser: HIERARCHY is deprecated. Use 3DTILES_batch_table_hierarchy.');
+    loaderLog.warn('3D Tile Parser: HIERARCHY is deprecated. Use 3DTILES_batch_table_hierarchy.')();
     jsonHeader.extensions = jsonHeader.extensions || {};
     jsonHeader.extensions['3DTILES_batch_table_hierarchy'] = legacyHierarchy;
     hierarchy = legacyHierarchy;
@@ -79,7 +78,7 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
   let parentIdsLength = instancesLength;
 
   if (defined(classIds.byteOffset)) {
-    classIds.componentType ??= GL.UNSIGNED_SHORT;
+    classIds.componentType ??= 'UNSIGNED_SHORT';
     classIds.type = 'SCALAR';
     classIds = createTypedArrayFromAccessor(
       classIds,
@@ -92,7 +91,7 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
   let parentIndexes;
   if (defined(parentCounts)) {
     if (defined(parentCounts.byteOffset)) {
-      parentCounts.componentType ??= GL.UNSIGNED_SHORT;
+      parentCounts.componentType ??= 'UNSIGNED_SHORT';
       parentCounts.type = 'SCALAR';
       parentCounts = createTypedArrayFromAccessor(
         parentCounts,
@@ -110,7 +109,7 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
   }
 
   if (defined(parentIds) && defined(parentIds.byteOffset)) {
-    parentIds.componentType ??= GL.UNSIGNED_SHORT;
+    parentIds.componentType ??= 'UNSIGNED_SHORT';
     parentIds.type = 'SCALAR';
     parentIds = createTypedArrayFromAccessor(
       parentIds,

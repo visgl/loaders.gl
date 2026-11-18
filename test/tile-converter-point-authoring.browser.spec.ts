@@ -78,7 +78,7 @@ test.each([
   const rows: number[][] = [];
   for (const child of tileset.root.children) {
     const file = result.files.find(file => file.resourceId === child.content.uri)!;
-    const tile = await parse(await file.blob.arrayBuffer(), Tiles3DLoader, {worker: false});
+    const tile = await parse(await file.blob.arrayBuffer(), Tiles3DLoader, {core: {worker: false}});
     const positions = tile.attributes.positions!;
     const colors = tile.attributes.colors!.value;
     for (let point = 0; point < positions.length / 3; point++) {
@@ -189,7 +189,7 @@ test('a zero-depth tiler retains terminal overflow rather than dropping source r
   expect(result.pointCount).toBe(4);
   expect(result.report.outputResources).toBe(1);
   const tile = await parse(await result.files[0].blob.arrayBuffer(), Tiles3DLoader, {
-    worker: false
+    core: {worker: false}
   });
   expect(tile.attributes.positions!.length / 3).toBe(4);
 });

@@ -9,6 +9,7 @@ export {
   readArrayBuffer,
   setLoaderOptions,
   getLoaderOptions,
+  compareLoaderOptions,
   registerLoaders,
   selectLoader,
   selectLoaderSync,
@@ -31,6 +32,7 @@ export {
   encodeText,
   encodeTextSync,
   createDataSource,
+  createDataSourceSync,
   _selectSource,
   setPathPrefix,
   getPathPrefix,
@@ -63,8 +65,7 @@ export {
   isIterator,
   isResponse,
   isReadableStream,
-  isWritableStream,
-  NullWorkerLoader
+  isWritableStream
 } from '@loaders.gl/core';
 export type {
   Loader,
@@ -97,12 +98,10 @@ export {
   MVTLoader,
   MVTGeoJSONLoader,
   MVTWriter,
-  MVTSourceLoader,
   MVTTileSource,
-  TableTileSourceLoader,
+  TableTileLoader,
   TableVectorTileSource,
-  ArrowTableTileSourceLoader,
-  MVTWorkerLoader
+  ArrowTableTileLoader
 } from '@loaders.gl/tiles/mvt';
 export type {
   TileJSONLoaderOptions,
@@ -124,8 +123,8 @@ export type {
   MVTGeoJSONTable,
   MVTWriterOptions,
   MVTSourceLoaderOptions,
-  TableTileSourceLoaderOptions,
+  TableTileLoaderOptions,
   ArrowTableVectorTileSource,
-  ArrowTableTileSourceLoaderOptions,
+  ArrowTableTileLoaderOptions,
   ArrowTableTileSourceInput
 } from '@loaders.gl/tiles/mvt';

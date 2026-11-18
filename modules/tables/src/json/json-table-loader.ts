@@ -2,24 +2,23 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  ArrayRowTable,
-  ArrowTable,
-  ArrowTableBatch,
-  ObjectRowTable,
-  Table,
-  TableBatch
-} from '@loaders.gl/core/schema';
-import {convertTable, makeTableFromData} from '@loaders.gl/core/schema-utils';
+import {type Table as ArrowTable, type RecordBatch as ArrowTableBatch} from 'apache-arrow';
+import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source';
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
+import type {Table, TableBatch} from '@loaders.gl/core/schema';
+import {convertTable} from '@loaders.gl/core/schema-utils';
+import {updateNativeArrowTableMetadata, isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
+import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
 
 import {
   serializeJSONWorkerOptions,
   serializeJSONWorkerBatch,
   deserializeJSONWorkerResult
 } from './lib/json-worker-transport';
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
+import {getJSONRowTable} from './lib/parsers/convert-json-to-arrow';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {
@@ -48,15 +47,18 @@ export const JSONTableLoaderWithParser = {
   deserializeWorkerBatch: deserializeJSONWorkerResult,
   parse,
   parseTextSync,
-  parseInBatches
+  parseInBatches,
+  createDataSourceSync: (data: string | Blob, options: JSONTableSourceOptions, coreApi?: CoreAPI) =>
+    new JSONTableSource(data, options, coreApi)
 } as const satisfies LoaderWithParser<
   Table | ArrowTable,
   TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
-  JSONTableLoaderOptions
+  JSONTableLoaderOptions,
+  JSONTableSource
 >;
 
 /**
- * Parses UTF-8 JSON bytes into row-table or Arrow-table output.
+ * Parses UTF-8 JSON bytes into row tables or native Arrow tables.
  *
  * @param arrayBuffer - UTF-8 encoded JSON payload.
  * @param options - JSON table loader options.
@@ -67,7 +69,7 @@ async function parse(arrayBuffer: ArrayBuffer, options?: JSONTableLoaderOptions)
 }
 
 /**
- * Parses JSON text into row-table or Arrow-table output.
+ * Parses JSON text into row tables or native Arrow tables.
  *
  * @param text - JSON text to parse.
  * @param options - JSON table loader options.
@@ -86,25 +88,28 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
     );
   }
 
-  if (jsonOptions.json?.shape !== 'arrow-table') {
+  if (jsonOptions.json?.shape !== 'arrow') {
     return jsonOptions.json?.shape === 'array-row-table'
       ? convertTable(table, 'array-row-table')
       : convertTable(table, 'object-row-table');
   }
 
-  return convertRowTableToArrowTable(table, {
-    schema: jsonOptions.json.schema,
-    arrowConversion: jsonOptions.json.arrowConversion,
-    log: getJSONTableLoaderLog(jsonOptions)
-  });
+  return updateNativeArrowTableMetadata(
+    convertRowTableToArrowTable(table, {
+      schema: jsonOptions.json.schema,
+      arrowConversion: jsonOptions.json.arrowConversion,
+      log: getLoaderLog(jsonOptions)
+    }),
+    getJSONContainerMetadata(json)
+  );
 }
 
 /**
- * Parses streamed JSON row arrays into table or Arrow-table batches.
+ * Parses streamed JSON row arrays into row-table batches or native Arrow record batches.
  *
  * @param asyncIterator - UTF-8 JSON byte chunks.
  * @param options - JSON table loader options.
- * @returns Table, Arrow-table, metadata, and JSON parser batches.
+ * @returns Table batches, native Arrow record batches, or JSON parser envelopes, depending on the output shape.
  */
 function parseInBatches(
   asyncIterator:
@@ -126,15 +131,25 @@ function parseInBatches(
     parseOptions
   );
 
-  if (jsonOptions.json?.shape !== 'arrow-table') {
+  if (jsonOptions.json?.shape !== 'arrow') {
     return rowBatches;
   }
 
-  return convertTableBatchesToArrow(rowBatches, {
+  const arrowBatches = convertTableBatchesToArrow(rowBatches, {
     schema: jsonOptions.json.schema,
     arrowConversion: jsonOptions.json.arrowConversion,
-    log: getJSONTableLoaderLog(jsonOptions)
+    log: getLoaderLog(jsonOptions)
   });
+  return makeNativeJSONBatches(arrowBatches);
+}
+
+/** Yields native data batches and schema refinements from the JSON stream. */
+async function* makeNativeJSONBatches(
+  batches: AsyncIterable<ArrowTableBatch | MetadataBatch | JSONBatch>
+): AsyncIterable<ArrowTableBatch> {
+  for await (const batch of batches) {
+    if (isArrowRecordBatch(batch)) yield batch;
+  }
 }
 
 /**
@@ -180,6 +195,10 @@ function getRawJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOptions {
 function getRowBatchJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOptions {
   return {
     ...options,
+    core: {
+      ...options.core,
+      metadata: options.json?.shape === 'arrow' || options.core?.metadata
+    },
     json: {
       backend: options.json?.backend,
       shape: options.json?.shape === 'array-row-table' ? 'array-row-table' : 'object-row-table',
@@ -187,74 +206,6 @@ function getRowBatchJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOpti
       jsonpaths: options.json?.jsonpaths
     }
   };
-}
-
-/**
- * Returns a row table when a JSON value contains row-array data.
- *
- * @param json - Parsed JSON value.
- * @returns A loaders.gl row table, or `null` when no row array is present.
- */
-function getJSONRowTable(json: unknown): ArrayRowTable | ObjectRowTable | null {
-  if (isRowTable(json)) {
-    return json;
-  }
-
-  const rows = Array.isArray(json) ? json : getFirstArray(json);
-  if (!rows) {
-    return null;
-  }
-
-  if (rows.length === 0) {
-    return {shape: 'object-row-table', schema: {fields: [], metadata: {}}, data: []};
-  }
-
-  const firstRow = rows[0];
-  if (Array.isArray(firstRow)) {
-    return makeTableFromData(rows as unknown[][]);
-  }
-  if (firstRow && typeof firstRow === 'object') {
-    return makeTableFromData(rows as {[key: string]: unknown}[]);
-  }
-
-  return null;
-}
-
-/**
- * Checks whether a parsed JSON value is already a row-table wrapper.
- *
- * @param value - Parsed JSON value.
- * @returns `true` when `value` is a loaders.gl object-row or array-row table.
- */
-function isRowTable(value: unknown): value is ArrayRowTable | ObjectRowTable {
-  return Boolean(
-    value &&
-      typeof value === 'object' &&
-      'shape' in value &&
-      ((value as Table).shape === 'array-row-table' ||
-        (value as Table).shape === 'object-row-table')
-  );
-}
-
-/**
- * Finds the first nested row array within a parsed JSON object.
- *
- * @param json - Parsed JSON value.
- * @returns The first nested array, or `null` when none exists.
- */
-function getFirstArray(json: unknown): unknown[] | null {
-  if (Array.isArray(json)) {
-    return json;
-  }
-  if (json && typeof json === 'object') {
-    for (const value of Object.values(json)) {
-      const array = getFirstArray(value);
-      if (array) {
-        return array;
-      }
-    }
-  }
-  return null;
 }
 
 /**
@@ -275,7 +226,7 @@ function getFastStreamingJSONParserFactory(
  * @returns Row-level Utf8 field names for streamed fast Arrow parsing.
  */
 function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
-  if (options.json?.shape !== 'arrow-table' || !options.json.schema) {
+  if (options.json?.shape !== 'arrow' || !options.json.schema) {
     return [];
   }
 
@@ -284,26 +235,22 @@ function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
 }
 
 /**
- * Returns the loader log object from normalized or deprecated option locations.
+ * Ensures Arrow-only options are used only with `shape: 'arrow'`.
  *
  * @param options - Normalized JSON table loader options.
- * @returns Logger object, when supplied by the caller.
- */
-function getJSONTableLoaderLog(options: JSONTableLoaderOptions): any {
-  return options.core?.log || options.log;
-}
-
-/**
- * Ensures Arrow-only options are used only when Arrow-table output is requested.
- *
- * @param options - Normalized JSON table loader options.
- * @throws If Arrow conversion options are supplied without `json.shape: 'arrow-table'`.
+ * @throws If Arrow conversion options are supplied without `json.shape: 'arrow'`.
  */
 function validateJSONTableArrowOptions(options: JSONTableLoaderOptions): void {
+  if (
+    options.json?.shape &&
+    !['arrow', 'object-row-table', 'array-row-table'].includes(options.json.shape)
+  ) {
+    throw new Error('This loader uses shape: "arrow" for native Arrow output');
+  }
   const hasArrowOnlyOptions = Boolean(options.json?.schema || options.json?.arrowConversion);
-  if (hasArrowOnlyOptions && options.json?.shape !== 'arrow-table') {
+  if (hasArrowOnlyOptions && options.json?.shape !== 'arrow') {
     throw new Error(
-      'JSONTableLoader: json.schema and json.arrowConversion require json.shape to be "arrow-table"'
+      'JSONTableLoader: json.schema and json.arrowConversion require json.shape to be "arrow"'
     );
   }
 }

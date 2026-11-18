@@ -3,13 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {
-  WKBLoader,
-  WKTLoader,
-  WKTWriter,
-  HexWKBLoader,
-  TWKBLoader
-} from '@loaders.gl/geospatial/wkt';
+import {WKTLoader, WKTWriter} from '@loaders.gl/geospatial/wkt';
+import {WKBLoader, HexWKBLoader, TWKBLoader} from '@loaders.gl/geospatial/wkb';
 import {isHexWKB} from '../../src/wkt/hex-wkb-loader-types';
 
 const POINT_GEOMETRY = {

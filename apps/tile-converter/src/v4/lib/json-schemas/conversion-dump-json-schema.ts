@@ -16,7 +16,8 @@ export const dumpJsonSchema = {
         generateTextures: {type: 'boolean'},
         generateBoundingVolumes: {type: 'boolean'},
         metadataClass: {type: 'string'},
-        analyze: {type: 'boolean'}
+        analyze: {type: 'boolean'},
+        attributeEncodingVersion: {type: 'number'}
       },
       required: ['inputUrl', 'outputPath', 'tilesetName']
     },
@@ -79,6 +80,7 @@ export const dumpJsonSchema = {
                       hasUvRegions: {type: 'boolean'},
                       materialId: {type: 'number'},
                       texelCountHint: {type: 'number'},
+                      textureOwnerId: {type: 'integer', minimum: 0},
                       vertexCount: {type: 'number'}
                     },
                     required: [

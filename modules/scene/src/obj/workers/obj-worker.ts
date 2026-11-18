@@ -11,14 +11,14 @@ createLoaderWorker({
   parse(input, options) {
     return OBJLoaderWithParser.parse(input, {
       ...options,
-      obj: {...options?.obj, shape: 'arrow-table'}
+      obj: {...options?.obj, shape: 'arrow'}
     });
   },
   /** Keeps one columnar parser alive for the entire worker input stream. */
   parseInBatches(input, options) {
     return OBJLoaderWithParser.parseInBatches(input, {
       ...options,
-      obj: {...options?.obj, shape: 'arrow-table'}
+      obj: {...options?.obj, shape: 'arrow'}
     });
   }
 });

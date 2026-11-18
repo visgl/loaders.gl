@@ -4,7 +4,7 @@
 
 import {load} from '@loaders.gl/core';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {SHPLoader} from '@loaders.gl/geospatial/shapefile';
 import {describe, expect, test} from 'vitest';
 
 const DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
@@ -35,12 +35,12 @@ describe('SHP dimensional geometry coverage', () => {
   ])('writes compact dimensional fixture %s directly to typed GeoArrow', async fixture => {
     const table = await load(`${DATA_FOLDER}/${fixture}.shp`, SHPLoader, {
       core: {worker: false},
-      shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+      shp: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
     });
-    expect(table.shape).toBe('arrow-table');
-    expect(table.data.numRows).toBeGreaterThan(0);
+    expect(table).toHaveProperty('numRows');
+    expect(table.numRows).toBeGreaterThan(0);
     expect(
-      table.data.schema.fields.some(field =>
+      table.schema.fields.some(field =>
         field.metadata?.get('ARROW:extension:name')?.startsWith('geoarrow.')
       )
     ).toBe(true);

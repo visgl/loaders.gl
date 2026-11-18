@@ -1,21 +1,18 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {validateArrowTableSchema} from '@loaders.gl/tables/arrow/index';
+import {validateArrowTableSchema} from '@math.gl/core/arrow';
 import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {canParseWithWorker} from '@loaders.gl/core/loader-utils';
-import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/scene/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
 import {setLoaderOptions, load, parseInBatches} from '@loaders.gl/core';
 import {equals} from '@math.gl/core';
 const OBJ_ASCII_URL = '@loaders.gl/scene/obj/test/data/bunny.obj';
 const OBJ_NORMALS_URL = '@loaders.gl/scene/obj/test/data/cube.obj';
 const OBJ_MULTI_PART_URL = '@loaders.gl/scene/obj/test/data/magnolia.obj';
 const OBJ_VERTEX_COLOR_URL = '@loaders.gl/scene/obj/test/data/cube-vertex-colors.obj';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('OBJLoader#loader objects', () => {
   validateLoader(OBJLoader, 'OBJLoader');
-  validateLoader(OBJWorkerLoader, 'OBJWorkerLoader');
   expect(OBJLoader.testText('v 1 2 3')).toBe(true);
   expect(OBJLoader.testText('# comment')).toBe(false);
 });
@@ -28,45 +25,37 @@ test('OBJLoader#parseText', async () => {
 });
 test('OBJLoader#parseText defaults to Arrow table', async () => {
   const table = await load(OBJ_ASCII_URL, OBJLoader, {core: {worker: false}});
-  expect(table.shape, 'default output has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'OBJLoader default table'});
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, meshArrowSchema, {schemaName: 'OBJLoader default table'});
 });
 test('OBJLoader#Arrow output supports workers', () => {
-  expect(canParseWithWorker(OBJLoader, {core: {worker: true}, obj: {shape: 'arrow-table'}})).toBe(
-    true
-  );
+  expect(canParseWithWorker(OBJLoader, {core: {worker: true}, obj: {shape: 'arrow'}})).toBe(true);
 });
-test('OBJLoader#parseText(shape: arrow-table)', async () => {
+test('OBJLoader#parseText(shape: arrow)', async () => {
   const table = await load(OBJ_ASCII_URL, OBJLoader, {
-    obj: {shape: 'arrow-table'}
+    obj: {shape: 'arrow'}
   });
-  expect(table.shape, 'table has arrow-table shape').toBe('arrow-table');
-  validateArrowTableSchema(table.data, meshArrowSchema, {
+  expect(table).toHaveProperty('numRows');
+  validateArrowTableSchema(table, meshArrowSchema, {
     schemaName: 'OBJLoader Mesh table'
   });
-  const rowCount =
-    table.data.numRows ??
-    table.data.length ??
-    table.data.batches?.[0]?.numRows ??
-    table.data.batches?.[0]?.data?.length;
+  const rowCount = table.numRows ?? table.batches?.[0]?.numRows ?? table.batches?.[0]?.numRows;
   expect(rowCount, 'table has expected vertex count').toBe(14904);
 });
-test('OBJLoader#parseInBatches(vertex-only point cloud, arrow-table)', async () => {
+test('OBJLoader#parseInBatches(vertex-only point cloud, arrow)', async () => {
   const batches = await parseInBatches(
     [new TextEncoder().encode(['v 0 0 0', 'v 1 1 1', 'v 2 2 2', 'v 3 3 3', ''].join('\n')).buffer],
     OBJLoader,
     {
-      core: {worker: false},
-      batchSize: 2,
-      obj: {shape: 'arrow-table'}
+      core: {worker: false, batchSize: 2},
+      obj: {shape: 'arrow'}
     }
   );
   const batchRowCounts = [];
   for await (const batch of batches) {
-    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(batch.batchType, 'batch has data batchType').toBe('data');
-    expect(batch.data.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
-    batchRowCounts.push(batch.length);
+    expect(batch).toHaveProperty('numRows');
+    expect(batch.getChild('POSITION'), 'batch includes POSITION column').toBeTruthy();
+    batchRowCounts.push(batch.numRows);
   }
   expect(batchRowCounts, 'emits requested OBJ point cloud Arrow batches').toEqual([2, 2]);
 });
@@ -79,34 +68,30 @@ test('OBJLoader#parseInBatches(pointCloud flag streams vertices without geometry
     ],
     OBJLoader,
     {
-      core: {worker: false},
-      batchSize: 2,
-      obj: {shape: 'arrow-table', pointCloud: true}
+      core: {worker: false, batchSize: 2},
+      obj: {shape: 'arrow', pointCloud: true}
     }
   );
   const batchRowCounts = [];
   for await (const batch of batches) {
-    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(batch.batchType, 'batch has data batchType').toBe('data');
-    batchRowCounts.push(batch.length);
+    expect(batch).toHaveProperty('numRows');
+    batchRowCounts.push(batch.numRows);
   }
   expect(batchRowCounts, 'pointCloud mode streams vertex rows and ignores faces').toEqual([2, 2]);
 });
-test('OBJLoader#parseInBatches(faces, arrow-table) falls back to atomic parse', async () => {
+test('OBJLoader#parseInBatches(faces, arrow) falls back to atomic parse', async () => {
   const batches = await parseInBatches(
     [new TextEncoder().encode(['v 0 0 0', 'v 1 0 0', 'v 0 1 0', 'f 1 2 3', ''].join('\n')).buffer],
     OBJLoader,
     {
-      core: {worker: false},
-      batchSize: 1,
-      obj: {shape: 'arrow-table'}
+      core: {worker: false, batchSize: 1},
+      obj: {shape: 'arrow'}
     }
   );
   const batchRowCounts = [];
   for await (const batch of batches) {
-    expect(batch.shape, 'batch has arrow-table shape').toBe('arrow-table');
-    expect(batch.batchType, 'batch has data batchType').toBe('data');
-    batchRowCounts.push(batch.length);
+    expect(batch).toHaveProperty('numRows');
+    batchRowCounts.push(batch.numRows);
   }
   expect(batchRowCounts, 'face geometry emits one atomic Arrow batch').toEqual([3]);
 });
@@ -167,12 +152,12 @@ test('OBJLoader#parseText - object with vertex colors', async () => {
     'vertex 2 color parsed as float rgb'
   ).toBeTruthy();
 });
-test('OBJWorkerLoader#parse(text)', async () => {
+test('OBJLoader#parse(text)', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(OBJ_ASCII_URL, OBJWorkerLoader, {obj: {shape: 'mesh'}});
+  const data = await load(OBJ_ASCII_URL, OBJLoader, {obj: {shape: 'mesh'}});
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is TRIANGLES (4)').toBe(4);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(14904 * 3);
@@ -205,7 +190,7 @@ test.each([
 ])('OBJ empty input produces no batches with pointCloud=%s', async pointCloud => {
   const iterator = await parseInBatches([], OBJLoader, {
     core: {worker: false},
-    obj: {shape: 'arrow-table', pointCloud}
+    obj: {shape: 'arrow', pointCloud}
   });
   const batches = [];
   for await (const batch of iterator) batches.push(batch);

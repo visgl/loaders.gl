@@ -35,6 +35,8 @@ export {
 
 export {MVTFormat} from './mvt-format';
 export {MVTLoader} from './mvt-loader';
+/** @deprecated Compatibility alias for deck.gl 10.0.0-alpha.1. Use MVTLoader. */
+export {MVTLoader as MVTWorkerLoader} from './mvt-loader';
 export type {MVTLoaderOptions} from './mvt-loader';
 export {MVTGeoJSONLoader} from './mvt-geojson-loader-types';
 export type {MVTGeoJSONLoaderOptions} from './mvt-geojson-loader-types';
@@ -47,21 +49,17 @@ export type {MVTWriterOptions} from './lib/encode-mvt';
 
 // MVTSourceLoader
 
-export {MVTSourceLoader} from './mvt-source-loader';
-export {MVTTileSource} from './mvt-source-loader';
-export type {MVTSourceLoaderOptions} from './mvt-source-loader';
+export {MVTTileSource} from './mvt-source';
+export type {MVTSourceLoaderOptions} from './mvt-source';
 
-// TableTileSourceLoader (dynamically tiles a table)
+// TableTileLoader (dynamically tiles a table)
 
-export {TableTileSourceLoader, TableVectorTileSource} from './table-tile-source-loader';
-export type {TableTileSourceLoaderOptions} from './table-tile-source-loader';
+export {TableTileLoader, TableVectorTileSource} from './table-tile-loader';
+export type {TableTileLoaderOptions} from './table-tile-loader';
 
-export {ArrowTableTileSourceLoader} from './arrow-table-tile-source-loader-types';
-export type {ArrowTableVectorTileSource} from './arrow-table-tile-source-loader';
+export {ArrowTableTileLoader} from './arrow-table-tile-loader-types';
+export type {ArrowTableVectorTileSource} from './arrow-table-tile-loader';
 export type {
-  ArrowTableTileSourceLoaderOptions,
+  ArrowTableTileLoaderOptions,
   ArrowTableTileSourceInput
 } from './arrow-table-tile-source-types';
-
-// DEPRECATED EXPORTS
-export {MVTWorkerLoader} from './mvt-loader';

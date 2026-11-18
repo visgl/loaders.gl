@@ -4,14 +4,11 @@
 
 export {NetCDFReader} from './netcdfjs/netcdf-reader';
 export {NetCDFFormat} from './netcdf-format';
+export {NetCDFLoader} from './netcdf-loader';
 export type {NetCDF, NetCDFLoaderOptions} from './netcdf-loader';
 export {NetCDFLoaderWithParser, NetCDFWorkerLoaderWithParser} from './netcdf-loader-with-parser';
-export {
-  NetCDFSourceLoaderWithParser,
-  NetCDFSourceLoaderWithParser as NetCDFSourceLoader,
-  NetCDFSource
-} from './netcdf-source-loader';
-export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf-source-loader';
+export {NetCDFSource} from './netcdf-source';
+export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf-source';
 
 export {NetCDF4Source} from './netcdf4-source';
 
@@ -19,3 +16,5 @@ export {openNetCDF4Source} from './open-netcdf4-source';
 
 export {parseCFVariableMetadata, decodeCFNumericValues} from './cf-conventions';
 export type {CFVariableMetadata} from './cf-conventions';
+
+export {createNetCDFSource} from '../netcdf-source';

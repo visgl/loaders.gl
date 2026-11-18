@@ -46,16 +46,16 @@ Framework-independent loaders for GraphML, Graphviz DOT, and GEXF documents.
 
 ## Graph output shapes
 
-Graph loaders default to `graphml.shape: 'arrow-table'`, `dot.shape: 'arrow-table'`,
-or `gexf.shape: 'arrow-table'`.
+Graph loaders default to `graphml.shape: 'arrow'`, `dot.shape: 'arrow'`,
+or `gexf.shape: 'arrow'`.
 The result uses the standard table collection shape:
 
 ```typescript
 {
   shape: 'tables',
   tables: [
-    {name: 'nodes', table: {shape: 'arrow-table', schema, data: nodes}},
-    {name: 'edges', table: {shape: 'arrow-table', schema, data: edges}}
+    {name: 'nodes', table: nodes},
+    {name: 'edges', table: edges}
   ]
 }
 ```
@@ -78,9 +78,11 @@ subgraph membership uses List and Struct columns. Missing values become Arrow nu
 Empty undeclared attributes have a Struct with no child fields.
 
 ```typescript
+import {Table} from 'apache-arrow';
+
 const graph = await load('network.graphml', GraphMLLoader);
-if (graph.shape === 'tables' && graph.tables[0].table.shape === 'arrow-table') {
-  const nodes = graph.tables[0].table.data;
+if (graph.shape === 'tables' && graph.tables[0].table instanceof Table) {
+  const nodes = graph.tables[0].table;
   console.log(nodes.getChild('id')?.get(0));
 }
 ```
@@ -92,6 +94,8 @@ application attribute values rather than applying Arrow column normalization.
 For compatibility with existing graph-layer consumers, request plain graph records:
 
 ```typescript
+import {Table} from 'apache-arrow';
+
 const graph = await load('network.graphml', GraphMLLoader, {
   graphml: {shape: 'plain-graph-data'}
 });
@@ -110,6 +114,8 @@ DOT graph metadata is available as `graph.metadata` in every output shape.
 ```typescript
 import {load} from '@loaders.gl/core';
 import {GraphMLLoader} from '@loaders.gl/graphs';
+
+import {Table} from 'apache-arrow';
 
 const graph = await load('network.graphml', GraphMLLoader);
 ```

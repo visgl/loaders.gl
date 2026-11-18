@@ -2,18 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {serializeArrowTableResult, deserializeArrowTableBatch} from './lib/arrow-worker-transport';
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
+import {
+  serializeArrowTableResult,
+  deserializeIPCWorkerBatch,
+  deserializeIPCWorkerTable
+} from './lib/arrow-worker-transport';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {preloadArrowCompressionDecoders} from './lib/parsers/arrow-compression';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoJSONTable,
-  GeoJSONTableBatch
-} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/core/schema';
 import {parseGeoArrowSync, parseGeoArrowInBatches} from './lib/parsers/parse-geoarrow';
-import type {GeoArrowLoaderOptions} from './exports/geoarrow-loader';
+import type {GeoArrowLoaderOptions} from './geoarrow-loader-types';
 import {GeoArrowLoader as GeoArrowLoaderMetadata} from './geoarrow-loader-types';
 
 const {preload: _GeoArrowLoaderPreload, ...GeoArrowLoaderMetadataWithoutPreload} =
@@ -28,16 +29,13 @@ export const GeoArrowLoaderWithParser = {
   serializeWorkerResult: serializeArrowTableResult,
   /** Converts geometry on the caller after restoring Arrow extension metadata. */
   deserializeWorkerResult(result: unknown, options?: GeoArrowLoaderOptions) {
-    const table = deserializeArrowTableBatch(result);
-    if (options?.arrow?.shape === 'geojson-table' && !table.schema) {
-      throw new Error('Arrow table is missing its schema');
-    }
+    const table = deserializeIPCWorkerTable(result);
     return options?.arrow?.shape === 'geojson-table'
-      ? convertGeoArrowTableToGeoJSON(table.data, table.schema!)
+      ? convertGeoArrowTableToGeoJSON(table, convertArrowToSchema(table.schema))
       : table;
   },
   serializeWorkerBatch: serializeArrowTableResult,
-  deserializeWorkerBatch: deserializeArrowTableBatch,
+  deserializeWorkerBatch: deserializeIPCWorkerBatch,
   parse: async (arraybuffer: ArrayBuffer, options?: GeoArrowLoaderOptions) => {
     await preloadArrowCompressionDecoders();
     return parseGeoArrowSync(arraybuffer, options?.arrow);
@@ -46,7 +44,7 @@ export const GeoArrowLoaderWithParser = {
     parseGeoArrowSync(arraybuffer, options?.arrow),
   parseInBatches: parseGeoArrowInBatches
 } as const satisfies LoaderWithParser<
-  ArrowTable | GeoJSONTable, // | BinaryGeometry,
-  ArrowTableBatch | GeoJSONTableBatch, // | BinaryGeometry,
+  GeoJSONTable | NativeArrowTable, // | BinaryGeometry,
+  GeoJSONTableBatch | RecordBatch, // | BinaryGeometry,
   GeoArrowLoaderOptions
 >;

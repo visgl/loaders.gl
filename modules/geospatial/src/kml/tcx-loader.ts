@@ -2,33 +2,25 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {Table as ArrowTable} from 'apache-arrow';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import type {
   GeoJSONTable,
   FeatureCollection,
   ObjectRowTable,
-  BinaryFeatureCollection,
-  ArrowTable,
-  GeoArrowEncodingPreference
+  BinaryFeatureCollection
 } from '@loaders.gl/core/schema';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
 } from './lib/feature-collection-to-arrow';
-import {TCXLoader as TCXLoaderMetadata} from './tcx-loader-types';
+import {TCXLoader as TCXLoaderMetadata, type TCXLoaderOptions} from './tcx-loader-types';
 import {parseTCXTextToFeatureCollection as parseTCXDocumentText} from './sports-track-parser';
 
-const {preload: _TCXLoaderPreload, ...TCXLoaderMetadataWithoutPreload} = TCXLoaderMetadata;
+export type {TCXLoaderOptions} from './tcx-loader-types';
 
-export type TCXLoaderOptions = LoaderOptions & {
-  /** Preferred encoding for Arrow geometry output. */
-  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  tcx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
-    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  };
-};
+const {preload: _TCXLoaderPreload, ...TCXLoaderMetadataWithoutPreload} = TCXLoaderMetadata;
 
 /**
  * Loader for TCX (Training Center XML) - Garmin GPS track format
@@ -59,7 +51,7 @@ export function parseTCXTextToFeatureCollection(text: string): FeatureCollection
  *
  * @param text - TCX XML document text.
  * @param options - Loader options controlling the output shape.
- * @returns A GeoJSON table, object-row table, or binary feature collection.
+ * @returns A native Arrow table, GeoJSON table, object-row table, or binary feature collection.
  */
 function parseTextSync(
   text: string,
@@ -87,7 +79,7 @@ function parseTextSync(
       };
       return table;
     }
-    case 'arrow-table':
+    case 'arrow':
       return convertFeatureCollectionToArrowTable(
         geojson.features,
         options?.geoarrow || tcxOptions.geoarrow

@@ -80,7 +80,6 @@ Apache Avro is a schema-based data serialization system. This loader targets Avr
 
 | Output | Supported |
 | --- | :---: |
-| loaders.gl `arrow-table` wrapper | ✓ |
 | Apache Arrow `Table` | ✓ |
 | Object-row table output | — |
 | Arrow schema metadata copied from Avro schema annotations | — |
@@ -112,8 +111,8 @@ These limitations are intentional and should not be inferred as supported merely
 
 | Loader | Input | Output |
 | --- | --- | --- |
-| `AvroLoader` | `.avro` Object Container Files | loaders.gl `arrow-table` containing an Apache Arrow `Table` |
+| `AvroLoader` | `.avro` Object Container Files | Apache Arrow `Table` |
 | `AvroSchemaLoader` | `.avsc` standalone JSON schemas | Parsed and validated Avro schema object |
-| `AvroWriter` | Arrow `arrow-table` | `.avro` Object Container File; null codec |
+| `AvroWriter` | Apache Arrow `Table` | `.avro` Object Container File; null codec |
 
 `AvroSchemaLoader` validates primitive types, unions, arrays, maps, records, enums, fixed types, and named-type references. It does not parse Avro RPC protocol definitions, which are a separate JSON document type.

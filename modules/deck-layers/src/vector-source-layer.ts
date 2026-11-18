@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {
   CompositeLayer,
   type CompositeLayerProps,
@@ -13,19 +14,18 @@ import {
 } from '@deck.gl/core';
 import type {GeoJsonLayerProps} from '@deck.gl/layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/core/geoarrow';
 import type {GeoJSONTable} from '@loaders.gl/core/schema';
 import type {
   DataSourceOptions,
   GetFeaturesParameters,
   Loader,
-  SourceLoader,
   VectorSource,
   VectorSourceData,
   VectorSourceMetadata
 } from '@loaders.gl/core/loader-utils';
-import {isSourceLoader} from '@loaders.gl/core/loader-utils';
+import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
 import {VectorSet} from './vector-source-layer/vector-set';
 import {createGeoJsonLayerProps, type GeoArrowLayerProps} from './geoarrow-layer';
 import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';
@@ -41,9 +41,7 @@ export type VectorSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders
   /** Vector source runtime, URL, or Blob. */
   data: VectorSource | string | Blob;
   /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
-  loaders?: ReadonlyArray<Loader | SourceLoader>;
-  /** @deprecated Put SourceLoaders in `loaders`. */
-  sources?: Readonly<SourceLoader[]>;
+  loaders?: ReadonlyArray<Loader>;
   /** Options forwarded to source construction. */
   sourceOptions?: DataSourceOptions;
   /** Named source layers forwarded to `VectorSource#getFeatures`. */
@@ -83,7 +81,6 @@ const defaultProps: DefaultProps<VectorSourceLayerProps> = {
   id: 'vector-source-layer',
   data: null as never,
   loaders: {type: 'array', compare: false, value: []},
-  sources: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   layers: 'auto',
   crs: 'EPSG:4326',
@@ -99,8 +96,7 @@ const defaultProps: DefaultProps<VectorSourceLayerProps> = {
     type: 'function',
     compare: false,
     value: (error: Error) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      loaderLog.error(String(error))();
     }
   },
   onLoadingStateChange: {type: 'function', value: () => {}}
@@ -167,7 +163,6 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
     const dataChanged =
       changeFlags.dataChanged ||
       props.loaders !== oldProps.loaders ||
-      props.sources !== oldProps.sources ||
       props.sourceOptions !== oldProps.sourceOptions;
 
     if (dataChanged) {
@@ -363,14 +358,12 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
       return props.data;
     }
     const loaders = props.loaders || [];
-    const sourceLoaders = Array.from(
-      new Set([...(props.sources || []), ...loaders.filter(isSourceLoader)])
-    );
+    const sourceLoaders = Array.from(new Set(loaders.filter(supportsSourceCreation)));
     if (!sourceLoaders.length) {
       throw new Error('VectorSourceLayer requires a SourceLoader for URL or Blob inputs.');
     }
-    const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
-    return createDataSource(props.data, sourceLoaders, {
+    const parserLoaders = loaders.filter(loader => !supportsSourceCreation(loader));
+    return createDataSourceSync(props.data, sourceLoaders, {
       ...props.sourceOptions,
       core: {
         ...props.sourceOptions?.core,
@@ -409,8 +402,6 @@ function isGeoJSONTable(data: VectorSourceData): data is GeoJSONTable {
   return (data as GeoJSONTable).shape === 'geojson-table';
 }
 
-function isArrowTable(
-  data: VectorSourceData
-): data is Extract<VectorSourceData, {shape: 'arrow-table'}> {
-  return (data as {shape?: string}).shape === 'arrow-table';
+function isArrowTable(data: VectorSourceData): data is Exclude<VectorSourceData, {shape: string}> {
+  return !('shape' in data);
 }

@@ -7,19 +7,20 @@ import type {
   CoreAPI,
   DataSourceOptions,
   ScanQueryMetadata,
-  SourceLoader,
   TableScanReadOptions,
-  TableScanSource
+  TableScanSource,
+  TableQueryPushdownRequest
 } from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {CSVLoaderOptions} from './csv-loader-options';
-import {CSVFormat} from './csv-format';
 
 const CSV_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
-  projection: 'pushdown',
+  projection: 'pushdown+residual',
   limit: 'pushdown',
+  offset: 'pushdown',
+  cast: 'pushdown',
   streaming: true,
   cancellation: true
 } as const);
@@ -63,6 +64,13 @@ export class CSVTableSource
     );
   }
 
+  /** Plans typed output for numeric columns without building input Arrow vectors. */
+  async planQueryPushdown(query: TableQueryPushdownRequest, options: {signal?: AbortSignal} = {}) {
+    const {schema} = await this.getQueryMetadata(options);
+    const {planTextFloatProjection} = await import('../lib/plan-text-float-projection');
+    return planTextFloatProjection(schema, query, readOptions => this.read(readOptions));
+  }
+
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
     for await (const batch of this.parseBatches(signal)) {
       if (!batch.schema) throw new Error('CSV source did not provide a schema');
@@ -88,11 +96,11 @@ export class CSVTableSource
       this.data instanceof Blob
         ? readStreamChunks(this.data.stream(), signal, onByteLength)
         : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
-    const {CSVLoaderWithParser} = await import('@loaders.gl/tables/csv-loader');
+    const {CSVLoaderWithParser} = await import('@loaders.gl/tables/csv');
     yield* CSVLoaderWithParser.parseInBatches(chunks, {
       ...this.options,
       csv: {...this.options.csv, shape: 'object-row-table'}
-    });
+    }) as AsyncIterable<TableBatch>;
   }
 }
 
@@ -129,20 +137,3 @@ async function* readStreamChunks(
     await reader.cancel();
   }
 }
-
-/** Metadata-only CSV source loader. */
-export const CSVSourceLoader = {
-  ...CSVFormat,
-  name: 'CSVSourceLoader',
-  type: 'csv-source',
-  version: '1.0.0',
-  dataType: null as unknown as CSVTableSource,
-  batchType: null as never,
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.csv(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: CSVSourceOptions, coreApi?: CoreAPI) =>
-    new CSVTableSource(data, options, coreApi)
-} as const satisfies SourceLoader<CSVTableSource>;

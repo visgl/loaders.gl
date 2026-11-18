@@ -13,7 +13,7 @@ const {preload: _WMTSCapabilitiesLoaderPreload, ...WMTSCapabilitiesLoaderMetadat
 
 // export type {WMTSCapabilities};
 
-export type WMTSLoaderOptions = XMLLoaderOptions & {
+export type WMTSCapabilitiesLoaderOptions = XMLLoaderOptions & {
   wmts?: {};
 };
 
@@ -22,9 +22,9 @@ export type WMTSLoaderOptions = XMLLoaderOptions & {
  */
 export const WMTSCapabilitiesLoaderWithParser = {
   ...WMTSCapabilitiesLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMTSLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: WMTSCapabilitiesLoaderOptions) =>
     parseWMTSCapabilities(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMTSLoaderOptions) => parseWMTSCapabilities(text, options)
-} as const satisfies LoaderWithParser<WMTSCapabilities, never, WMTSLoaderOptions>;
+  parseTextSync: (text: string, options?: WMTSCapabilitiesLoaderOptions) => parseWMTSCapabilities(text, options)
+} as const satisfies LoaderWithParser<WMTSCapabilities, never, WMTSCapabilitiesLoaderOptions>;
 
 export const _typecheckWMTSCapabilitiesLoader: LoaderWithParser = WMTSCapabilitiesLoaderWithParser;

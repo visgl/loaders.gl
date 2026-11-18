@@ -447,7 +447,9 @@ function triangulatePolygon(
   const holes = indices.slice(1).map((n: number) => (n - offset) / coordLength);
 
   // Compute triangulation
-  const triangles = earcut(polygonPositions, holes, coordLength, areas);
+  const triangles = earcut(polygonPositions, holes, coordLength, areas, 'xy', {
+    triangulation: 'balanced'
+  });
 
   // Indices returned by triangulation are relative to start
   // of polygon, so we need to offset

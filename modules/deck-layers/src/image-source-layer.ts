@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {
   CompositeLayer,
   type CompositeLayerProps,
@@ -10,20 +11,18 @@ import {
   type LayerContext,
   type UpdateParameters,
   type Viewport,
-  COORDINATE_SYSTEM,
   _deepEqual as deepEqual
 } from '@deck.gl/core';
 import {BitmapLayer} from '@deck.gl/layers';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import type {
   DataSourceOptions,
   GetImageParameters,
   ImageSource,
   ImageSourceMetadata,
-  Loader,
-  SourceLoader
+  Loader
 } from '@loaders.gl/core/loader-utils';
-import {isSourceLoader} from '@loaders.gl/core/loader-utils';
+import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {
@@ -47,10 +46,8 @@ export type ImageSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders'
   srs?: 'EPSG:4326' | 'EPSG:3857' | 'auto';
   /** Debounce interval applied before viewport image requests are issued. */
   debounceTime?: number;
-  /** Source factories used to auto-create image sources from URL/blob inputs. */
-  sources?: Readonly<SourceLoader[]>;
   /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
-  loaders?: ReadonlyArray<Loader | SourceLoader>;
+  loaders?: ReadonlyArray<Loader>;
   /** Source and parser options forwarded to `createDataSource`. The layer's `loadOptions` prop is not forwarded. */
   sourceOptions?: DataSourceOptions;
   /** Called when metadata resolves successfully. */
@@ -84,14 +81,12 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
   srs: 'auto',
   debounceTime: 200,
   layers: 'auto',
-  sources: {type: 'array', compare: false, value: []},
   loaders: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   onMetadataLoad: {type: 'function', value: () => {}},
   onMetadataLoadError: {
     type: 'function',
-    // eslint-disable-next-line no-console
-    value: console.error
+    value: (error: Error) => loaderLog.error(error.message)()
   },
   onImageLoadStart: {type: 'function', value: () => {}},
   onImageLoad: {type: 'function', value: () => {}},
@@ -99,8 +94,7 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
     type: 'function',
     compare: false,
     value: (requestId: number, error: Error) => {
-      // eslint-disable-next-line no-console
-      console.error(error, requestId);
+      loaderLog.error(String(error), requestId)();
     }
   },
   onLoadingStateChange: {type: 'function', value: () => {}},
@@ -166,8 +160,7 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
     const dataChanged =
       changeFlags.dataChanged ||
       (changeFlags.propsChanged &&
-        (props.sources !== oldProps.sources ||
-          props.loaders !== oldProps.loaders ||
+        (props.loaders !== oldProps.loaders ||
           props.sourceOptions !== oldProps.sourceOptions ||
           props.serviceType !== oldProps.serviceType));
 
@@ -289,8 +282,7 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
 
     return new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),
-      _imageCoordinateSystem:
-        crs === 'EPSG:4326' ? COORDINATE_SYSTEM.LNGLAT : COORDINATE_SYSTEM.CARTESIAN,
+      _imageCoordinateSystem: crs === 'EPSG:4326' ? 'lnglat' : 'cartesian',
       bounds,
       image
     }) as unknown as Layer;
@@ -342,18 +334,16 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
 
   /** Resolves URL/blob inputs to concrete image sources. */
   _resolveData(props: ImageSourceLayerProps): ImageSource | null {
-    const {data, sources, sourceOptions, loaders = []} = props;
+    const {data, sourceOptions, loaders = []} = props;
 
     if (this._isImageSource(data)) {
       return data;
     }
 
-    const sourceLoaders = Array.from(
-      new Set([...(sources || []), ...loaders.filter(isSourceLoader)])
-    );
-    const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
+    const sourceLoaders = Array.from(new Set(loaders.filter(supportsSourceCreation)));
+    const parserLoaders = loaders.filter(loader => !supportsSourceCreation(loader));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
-      return createDataSource(data, sourceLoaders, {
+      return createDataSourceSync(data, sourceLoaders, {
         ...sourceOptions,
         core: {
           ...sourceOptions?.core,
@@ -364,11 +354,15 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
     }
 
     if (data instanceof Blob) {
-      throw new Error('ImageSourceLayer requires `sources` to resolve Blob inputs');
+      throw new Error(
+        'ImageSourceLayer requires a SourceLoader in `loaders` to resolve Blob inputs'
+      );
     }
 
     if (typeof data === 'string') {
-      throw new Error('ImageSourceLayer requires `sources` to resolve string inputs');
+      throw new Error(
+        'ImageSourceLayer requires a SourceLoader in `loaders` to resolve string inputs'
+      );
     }
 
     return null;

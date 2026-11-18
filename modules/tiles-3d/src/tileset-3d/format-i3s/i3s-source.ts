@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {path} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
@@ -401,7 +402,7 @@ export class I3SSource implements Tileset3DSource {
       };
     }
 
-    console.warn('Extent is not defined in the tileset header');
+    loaderLog.warn('Extent is not defined in the tileset header')();
     return {
       cartographicCenter: new Vector3(),
       zoom: 1

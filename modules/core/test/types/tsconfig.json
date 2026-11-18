@@ -4,8 +4,13 @@
     "noEmit": true,
     "moduleResolution": "bundler",
     "paths": {
-      "@loaders.gl/*": ["modules/*/dist/index.d.ts"]
+      "@loaders.gl/*": [
+        "modules/*/dist/index.d.ts"
+      ]
     }
   },
-  "include": ["source-options.ts"]
+  "include": [
+    "source-options.ts",
+    "native-arrow.ts"
+  ]
 }

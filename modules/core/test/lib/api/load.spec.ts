@@ -9,12 +9,11 @@ import {
   fetchFile,
   registerLoaders,
   NullLoader,
-  NullWorkerLoader,
   isBrowser,
   resolvePath
 } from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
-import {JSONLoader} from '@loaders.gl/tables/json/index';
+import {ArrowLoader} from '@loaders.gl/tables/arrow';
+import {JSONLoader} from '@loaders.gl/tables/json';
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
 const JSON_DATA = [{col1: 22, col2: 'abc'}];
@@ -27,7 +26,9 @@ test('load#load', async () => {
 
 test('load#with fetch options', async () => {
   expect(
-    await load(JSON_URL, JSONLoader, {fetch: {headers: {'Content-Type': 'application/json'}}}),
+    await load(JSON_URL, JSONLoader, {
+      core: {fetch: {headers: {'Content-Type': 'application/json'}}}
+    }),
     'load with fetch options work'
   ).toBeTruthy();
 
@@ -35,7 +36,7 @@ test('load#with fetch options', async () => {
 
   expect(
     // @ts-expect-error
-    await load(JSON_URL, JSONLoader, {fetch}),
+    await load(JSON_URL, JSONLoader, {core: {fetch}}),
     'load with fetch function works'
   ).toEqual({abc: 1});
 });
@@ -124,11 +125,14 @@ test('load#load retrieve Response', async () => {
 });
 
 test.runIf(isBrowser)('load#load retrieve Response from worker - BROWSER ONLY', async () => {
-  const result = await load(JSON_URL, NullWorkerLoader, {
-    _workerType: 'test',
-    reuseWorkers: false
-  });
-  expect(result, 'null passed through by NullWorkerLoader').toBe(null);
+  const result = await load(
+    JSON_URL,
+    {...NullLoader, worker: true},
+    {
+      core: {_workerType: 'test'}
+    }
+  );
+  expect(result, 'null passed through by the null worker').toBe(null);
 });
 
 test.runIf(isBrowser)('load#Blob(text) - BROWSER ONLY', async () => {
@@ -156,7 +160,6 @@ test('load#ignores core.shape for loaders without shape support', async () => {
 function _typeTestsForCoreShape() {
   load(JSON_URL, JSONLoader, {core: {shape: 'array-row-table'}});
   load(JSON_URL, JSONLoader, {core: {shape: 'object-row-table'}});
-  load(JSON_URL, JSONLoader, {core: {shape: 'arrow-table'}});
   // @ts-expect-error JSONLoader core.shape should be limited to JSON row shapes
   load(JSON_URL, JSONLoader, {core: {shape: 'columnar-table'}});
 

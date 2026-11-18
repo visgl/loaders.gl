@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import {
   canEncodeWithWorker,
   type WriterWithEncoder,
   type WriterOptions
 } from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable, TypedArray} from '@loaders.gl/core/schema';
-import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import type {Mesh, TypedArray} from '@loaders.gl/core/schema';
+import {convertTableToMesh, isArrowTable} from '@loaders.gl/core/schema-utils';
 import {extractLoadLibraryOptions, processOnWorkerInBatches} from '@loaders.gl/core/worker-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuilderMesh, DracoBuildOptions, DracoEncodingResult} from './lib/draco-builder';
@@ -21,12 +22,7 @@ import {DracoFormat} from './draco-format';
 export type DracoWriterAttributes = Record<string, TypedArray>;
 
 /** Inputs accepted by `DracoWriter`. */
-export type DracoWriterInput =
-  | DracoMesh
-  | Mesh
-  | MeshArrowTable
-  | DracoBuilderMesh
-  | DracoWriterAttributes;
+export type DracoWriterInput = DracoMesh | Mesh | Table | DracoBuilderMesh | DracoWriterAttributes;
 
 /** Options for `DracoWriter`. */
 export type DracoWriterOptions = WriterOptions & {
@@ -220,7 +216,7 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
 
 /** Returns Draco-writable mesh data without copying ordinary Mesh attributes. */
 function normalizeDracoMesh(data: DracoWriterInput): DracoBuilderMesh {
-  if (isMeshArrowTable(data)) {
+  if (isArrowTable(data)) {
     return convertTableToMesh(data);
   }
 
@@ -230,13 +226,6 @@ function normalizeDracoMesh(data: DracoWriterInput): DracoBuilderMesh {
 
   const {indices, ...attributes} = data;
   return {attributes, ...(indices ? {indices} : {})};
-}
-
-/** Return true when the input is MeshArrowTable category data. */
-function isMeshArrowTable(data: unknown): data is MeshArrowTable {
-  return (
-    typeof data === 'object' && data !== null && 'shape' in data && data.shape === 'arrow-table'
-  );
 }
 
 /** Returns true when input uses the nested Mesh attribute representation. */

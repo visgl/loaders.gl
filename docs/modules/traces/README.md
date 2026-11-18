@@ -152,7 +152,7 @@ import {
 } from '@loaders.gl/traces';
 
 const chromeEvents = await load('trace.json', ChromeTraceLoader, {
-  chromeTrace: {shape: 'arrow-table'}
+  chromeTrace: {shape: 'arrow'}
 });
 const chromeJson = await encode(chromeEvents, ChromeTraceWriter);
 
@@ -230,7 +230,7 @@ for await (const {table, data} of batches) {
 
 Chrome trace whole-file `shape: 'json'` converts hydrated Arrow events into the validated
 JSON container on the caller, preserving passthrough event and container fields. Chrome
-trace batches continue to require `shape: 'arrow-table'`. Use an abort signal or close the
+trace batches continue to require `shape: 'arrow'`. Use an abort signal or close the
 iterator to release the worker. Input buffers already transferred remain detached.
 
 ## Sources and credits

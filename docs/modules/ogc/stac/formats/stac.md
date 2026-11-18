@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Catalogs and Items', 'Space and time', 'Asset links']}
   links={[
     {label: 'STAC module', to: '/docs/modules/ogc/stac'},
-    {label: 'STAC source API', to: '/docs/modules/ogc/stac/api-reference/stac-source-loader'}
+    {label: 'STAC source API', to: '/docs/modules/ogc/stac/api-reference/stac-loader'}
   ]}
 />
 
@@ -25,7 +25,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 | Type | API |
 | --- | --- |
-| Source loader | [`STACSourceLoader`](../api-reference/stac-source-loader.md) |
+| Source loader | [`STACLoader`](../api-reference/stac-loader.md) |
 
 <DatasetDiscoveryGraphic kind="stac" />
 
@@ -75,10 +75,10 @@ links and inspect Item metadata.
 
 Catalog discovery and asset decoding are intentionally separate:
 
-1. Open a catalog with `STACSourceLoader`.
+1. Open a catalog with `STACLoader`.
 2. Select an Item and a suitable data asset.
-3. Open that asset with a format source such as `ParquetSourceLoader`, `GeoTIFFSourceLoader`, or
-   `PMTilesSourceLoader`.
+3. Open that asset with a format source such as `ParquetLoader`, `GeoTIFFLoader`, or
+   `PMTilesLoader`.
 
 This keeps the STAC module small and lets each format source retain its own range planning,
 predicate pushdown, worker, and caching behavior.

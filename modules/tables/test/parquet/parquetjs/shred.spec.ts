@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { ParquetSchema } from '@loaders.gl/tables/parquet/index';
+import { ParquetSchema } from '@loaders.gl/tables/parquet';
 import { ParquetRowGroup, shredRecord, materializeColumns, materializeRows } from '../../../src/parquet/parquetjs/schema/shred';
 const TEXT_DECODER = new TextDecoder();
 function bytes(values: number[]): Uint8Array {

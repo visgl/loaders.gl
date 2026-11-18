@@ -231,7 +231,7 @@ test('browser 3TZ preserves normalized colors and one selected material, while I
   const reader = new Tiles3DArchive(new ArrayBufferFile(await result.file.arrayBuffer()));
   try {
     const gltf = await parse(await reader.getFile('meshes/0.glb'), GLTFLoader, {
-      worker: false,
+      core: {worker: false},
       gltf: {loadImages: false}
     });
     const primitive = gltf.json.meshes![0].primitives[0];

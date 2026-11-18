@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
+import {createMVTSource} from './mvt-source';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 // import type {MVTOptions} from './lib/types';
@@ -16,7 +17,7 @@ export type MVTLoaderOptions = LoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   mvt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
     /** `wgs84`: coordinates in long, lat (`tileIndex` must be provided. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
@@ -38,6 +39,7 @@ export type MVTLoaderOptions = LoaderOptions & {
  * Loader for the Mapbox Vector Tile format
  */
 export const MVTLoaderWithParser = {
+  createDataSourceSync: createMVTSource,
   ...MVTLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer, options?: MVTLoaderOptions) => parseMVT(arrayBuffer, options),
   parseSync: parseMVT,
@@ -48,6 +50,3 @@ export const MVTLoaderWithParser = {
   never,
   MVTLoaderOptions
 >;
-
-/** @deprecated Use MVTLoaderWithParser. */
-export const MVTWorkerLoaderWithParser = MVTLoaderWithParser;

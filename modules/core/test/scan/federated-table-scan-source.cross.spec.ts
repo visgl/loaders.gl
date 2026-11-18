@@ -13,7 +13,6 @@ import {
   type TableScanReadOptions,
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {SQLPredicate} from '@loaders.gl/core/scan';
 import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/core/scan';
@@ -42,7 +41,7 @@ test('FederatedTableScanSource has matching Node and browser execution semantics
     predicate: parseSQLPredicate('score >= 20'),
     columns: ['id']
   })) {
-    rows.push(...batch.data.toArray().map(row => row?.toJSON()));
+    rows.push(...batch.toArray().map(row => row?.toJSON()));
   }
   expect(rows).toEqual([{id: 2}]);
 });
@@ -50,16 +49,16 @@ test('FederatedTableScanSource has matching Node and browser execution semantics
 /** Minimal Arrow source used to execute the public federation contract in both runtimes. */
 class CrossRuntimeTableSource
   extends DataSource<string, DataSourceOptions>
-  implements TableScanSource<ArrowTableBatch, SQLPredicate>
+  implements TableScanSource<arrow.RecordBatch, SQLPredicate>
 {
   /** Immutable in-memory Arrow table emitted by this source. */
-  private readonly table: ArrowTable;
+  private readonly table: arrow.Table;
 
   /** Creates the deterministic two-row fixture. */
   constructor() {
     super('memory', {});
     const data = arrow.tableFromArrays({id: [1, 2], score: [10, 20]});
-    this.table = {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+    this.table = data;
   }
 
   /** Reports the fixture schema without consuming rows. */
@@ -68,7 +67,7 @@ class CrossRuntimeTableSource
       sourceType: 'memory',
       queryType: 'table',
       execution: {status: 'supported', method: 'read'},
-      schema: this.table.schema!,
+      schema: convertArrowToSchema(this.table.schema),
       capabilities: {
         table: {
           predicate: 'unsupported',
@@ -78,18 +77,12 @@ class CrossRuntimeTableSource
           cancellation: true
         }
       },
-      statistics: {rowCount: this.table.data.numRows}
+      statistics: {rowCount: this.table.numRows}
     });
   }
 
   /** Emits the fixture as one physical batch for residual federation execution. */
-  async *read(_options: TableScanReadOptions<SQLPredicate> = {}): AsyncIterable<ArrowTableBatch> {
-    yield {
-      batchType: 'data',
-      shape: 'arrow-table',
-      schema: this.table.schema,
-      data: this.table.data,
-      length: this.table.data.numRows
-    };
+  async *read(_options: TableScanReadOptions<SQLPredicate> = {}): AsyncIterable<arrow.RecordBatch> {
+    yield* this.table.batches;
   }
 }

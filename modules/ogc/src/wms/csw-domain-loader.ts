@@ -13,7 +13,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type {CSWDomain};
 
-export type CSWLoaderOptions = XMLLoaderOptions & {
+export type CSWDomainLoaderOptions = XMLLoaderOptions & {
   csw?: {};
 };
 
@@ -45,7 +45,7 @@ export const CSWDomainLoader = {
     csw: {}
   },
   preload
-} as const satisfies Loader<CSWDomain, never, CSWLoaderOptions>;
+} as const satisfies Loader<CSWDomain, never, CSWDomainLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

@@ -11,14 +11,14 @@ import type {
   SourceLoader
 } from '@loaders.gl/core/loader-utils';
 import {createAuthenticatedFetch, redactCredentialURL} from '@loaders.gl/core/loader-utils';
-import {CSWSourceLoader} from './csw-source-loader';
-import {WMSSourceLoader} from './wms-source-loader';
-import {WMTSSourceLoader} from './wmts-source-loader';
-import {WFSSourceLoader} from './wfs-source-loader';
-import {OGCAPIEDRSourceLoader} from './ogc-api-edr-source-loader';
-import {OGCAPICoveragesSourceLoader} from './ogc-api-coverages-source-loader';
-import {OGCAPIFeaturesSourceLoader, OGCAPITilesSourceLoader} from './ogc-api-source-loader';
-import {WCSCoverageSourceLoader} from './wcs-source-loader';
+import {CSWLoader} from './csw-loader';
+import {WMSLoader} from './wms-loader';
+import {WMTSLoader} from './wmts-loader';
+import {WFSLoader} from './wfs-loader';
+import {OGCAPIEDRLoader} from './ogc-api-edr-loader';
+import {OGCAPICoveragesLoader} from './ogc-api-coverages-loader';
+import {OGCAPIFeaturesLoader, OGCAPITilesLoader} from './ogc-api-loaders';
+import {WCSCoverageLoader} from './wcs-coverage-loader';
 
 /** A source loader that can be selected by the universal service runtime. */
 export type ServiceSourceLoader = SourceLoader;
@@ -81,15 +81,15 @@ export class ServiceRequestError extends Error {
 
 /** Default source set spanning the OGC service families implemented by WMS. */
 export const DEFAULT_SERVICE_LOADERS: readonly ServiceSourceLoader[] = [
-  WMTSSourceLoader,
-  WMSSourceLoader,
-  WFSSourceLoader,
-  WCSCoverageSourceLoader,
-  OGCAPITilesSourceLoader,
-  OGCAPICoveragesSourceLoader,
-  OGCAPIEDRSourceLoader,
-  OGCAPIFeaturesSourceLoader,
-  CSWSourceLoader
+  WMTSLoader,
+  WMSLoader,
+  WFSLoader,
+  WCSCoverageLoader,
+  OGCAPITilesLoader,
+  OGCAPICoveragesLoader,
+  OGCAPIEDRLoader,
+  OGCAPIFeaturesLoader,
+  CSWLoader
 ];
 
 type CachedSource = {source: DataSource<unknown, DataSourceOptions>; expires: number};
@@ -121,7 +121,7 @@ export class ServiceRuntime {
     const loader = this.options.loaders.find(candidate => candidate.testURL(url));
     if (!loader) throw new Error(`No geospatial service loader recognized URL: ${url}`);
     const sourceOptions = this._getSourceOptions(options);
-    const source = loader.createDataSource(url, sourceOptions, this.options.coreApi);
+    const source = loader.createDataSourceSync(url, sourceOptions, this.options.coreApi);
     this._sources.set(url, {source, expires: Date.now() + this.options.cacheTTL});
     return source;
   }

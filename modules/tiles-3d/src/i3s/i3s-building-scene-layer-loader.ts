@@ -26,9 +26,10 @@ export const I3SBuildingSceneLayerLoader = {
   version: VERSION,
   mimeTypes: ['application/json'],
   /** Loads the parser-bearing I3S building scene layer loader implementation. */
-  preload: async () =>
-    (await import('./i3s-building-scene-layer-loader-with-parser'))
-      .I3SBuildingSceneLayerLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./i3s-building-scene-layer-loader-with-parser');
+    return loaderModule.I3SBuildingSceneLayerLoaderWithParser;
+  },
   extensions: ['json'],
   options: {}
 } as const satisfies Loader<BuildingSceneLayerTileset, never, I3SLoaderOptions>;

@@ -78,7 +78,7 @@ const data = await load(url, GMLLoader, options);
 
 The `GMLLoader` supports the standard geospatial subset of geometries (points, multipoints, lines,
 linestrings, polygons and multipolygons). By default, it returns
-`{shape: 'arrow-table', schema, data}`. Feature properties and IDs become columns and geometry uses
+an Apache Arrow `Table`. Feature properties and IDs become columns and geometry uses
 `geoarrow.wkb`. A bare geometry becomes a one-row table; an empty result becomes an empty table.
 Coordinates are not reprojected, and CRS metadata is explicitly unknown (`crs: null`); this loader
 does not yet resolve GML `srsName` into Arrow CRS metadata.
@@ -98,7 +98,7 @@ import {GMLLoader} from '@loaders.gl/ogc/wms';
 for await (const batch of await parseInBatches(response.body, GMLLoader, {
   gml: {batchSize: 500}
 })) {
-  console.log(batch.data.numRows);
+  console.log(batch.numRows);
 }
 ```
 
@@ -112,7 +112,7 @@ controlled by the WFS format option.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `gml.shape` | `'arrow-table' \| 'geojson'` | `'arrow-table'` | Whole-file and streaming output shape. |
+| `gml.shape` | `'arrow' \| 'geojson'` | `'arrow'` | Whole-file and streaming output shape. |
 | `gml.batchSize` | `number` | `1000` | Feature count per streaming batch. |
 | `gml.propertyTypes` | `Record<string, GMLPropertyType>` | — | XML Schema scalar types keyed by local property name. |
 | `gml.transformCoords` | `(...coordinates: number[]) => number[]` | Identity | Optional coordinate transformation. |

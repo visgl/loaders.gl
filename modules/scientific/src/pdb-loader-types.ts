@@ -6,7 +6,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 import type {PDBStructure} from './pdb/parse-pdb';
 /** Loads the PDB parser on demand. */
 async function preload() {
-  const {PDBLoaderWithParser} = await import('@loaders.gl/scientific/pdb-loader');
+  const {PDBLoaderWithParser} = await import('@loaders.gl/scientific/pdb');
   return PDBLoaderWithParser;
 }
 /** Metadata-only PDB molecular structure loader. */

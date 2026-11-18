@@ -57,11 +57,11 @@ Most applications should create runtime sources with `createDataSource()` from `
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
 const dataSourceManager = new DataSourceManager();
 
-const tiles = createDataSource('https://example.com/world.pmtiles', [PMTilesSourceLoader], {
+const tiles = await createDataSource('https://example.com/world.pmtiles', [PMTilesLoader], {
   pmtiles: {
     // PMTiles-specific options
   }
@@ -84,7 +84,7 @@ const firstTiles = dataSourceManager.getOrCreate({
   dataSourceId: 'world-tiles',
   data: 'https://example.com/world.pmtiles',
   createDataSource: data =>
-    createDataSource(data as string, [PMTilesSourceLoader], {
+    createDataSource(data as string, [PMTilesLoader], {
       pmtiles: {
         // PMTiles-specific options
       }
@@ -94,7 +94,7 @@ const firstTiles = dataSourceManager.getOrCreate({
 const secondTiles = dataSourceManager.getOrCreate({
   dataSourceId: 'world-tiles',
   data: 'https://example.com/world.pmtiles',
-  createDataSource: data => createDataSource(data as string, [PMTilesSourceLoader])
+  createDataSource: data => createDataSource(data as string, [PMTilesLoader])
 });
 
 // firstTiles and secondTiles reference the same DataSource.
@@ -105,7 +105,7 @@ const secondTiles = dataSourceManager.getOrCreate({
 ```ts
 const tiles = dataSourceManager.getOrCreate({
   data: 'https://example.com/world.pmtiles',
-  createDataSource: data => createDataSource(data as string, [PMTilesSourceLoader])
+  createDataSource: data => createDataSource(data as string, [PMTilesLoader])
 });
 ```
 
@@ -116,12 +116,12 @@ const blob = new Blob([arrayBuffer]);
 
 const firstSource = dataSourceManager.getOrCreate({
   data: blob,
-  createDataSource: data => createDataSource(data as Blob, [GeoPackageSource])
+  createDataSource: data => createDataSourceSync(data as Blob, [GeoPackageSource])
 });
 
 const secondSource = dataSourceManager.getOrCreate({
   data: blob,
-  createDataSource: data => createDataSource(data as Blob, [GeoPackageSource])
+  createDataSource: data => createDataSourceSync(data as Blob, [GeoPackageSource])
 });
 
 // firstSource and secondSource are deduplicated because they use the same Blob object.
@@ -170,7 +170,7 @@ const pendingTiles = dataSourceManager.subscribe({
 
 dataSourceManager.add({
   dataSourceId: 'world-tiles',
-  dataSource: createDataSource('https://example.com/world.pmtiles', [PMTilesSourceLoader])
+  dataSource: await createDataSource('https://example.com/world.pmtiles', [PMTilesLoader])
 });
 ```
 
@@ -181,7 +181,7 @@ Deferred ids are useful when layer configuration is created before data sources 
 Calling `add()` with an existing `dataSourceId` replaces the current `DataSource`, notifies subscribers, and releases the previous instance through its lifecycle method.
 
 ```ts
-const updatedTiles = createDataSource('https://example.com/world-v2.pmtiles', [PMTilesSourceLoader]);
+const updatedTiles = await createDataSource('https://example.com/world-v2.pmtiles', [PMTilesLoader]);
 
 dataSourceManager.add({
   dataSourceId: 'world-tiles',
@@ -260,16 +260,16 @@ This lets `DataSource` subclasses release database handles, network sessions, ti
 A `SourceLoader` is metadata plus a `createDataSource()` method. The manager does not select source loaders itself; selection stays with `createDataSource()`, `selectSource()`, or application code.
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
 const dataSourceManager = new DataSourceManager();
 
-const dataSource = createDataSource(
+const dataSource = createDataSourceSync(
   url,
-  [PMTilesSourceLoader, MVTSourceLoader],
+  [PMTilesLoader, MVTLoader],
   {
     core: {
       type: 'auto'
@@ -291,12 +291,12 @@ This split keeps responsibilities clear:
 
 ### Use the manager for scan federation
 
-`@loaders.gl/core/scan` reuses this manager rather than defining a scan-only registry. Register each
+`@loaders.gl/core/query` reuses this manager rather than defining a scan-only registry. Register each
 `TableScanSource` under a stable id, then reference those ids from `FederatedTableScanSource`:
 
 ```ts
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {FederatedTableScanSource} from '@loaders.gl/core/scan';
+import {FederatedTableScanSource} from '@loaders.gl/core/query';
 
 const dataSourceManager = new DataSourceManager();
 dataSourceManager.add({dataSourceId: 'today', dataSource: todaySource});

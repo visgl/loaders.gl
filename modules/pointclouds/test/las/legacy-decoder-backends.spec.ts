@@ -2,17 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {MemoryLog} from 'probe.gl/log';
 import {expect, test, vi} from 'vitest';
 import {
   parseLAS as parseLASWithLazPerf,
   parseLASInBatches as parseLASInBatchesWithLazPerf
-} from '../../src/las/lib/laz-perf/parse-las';
-import {LASFile as LazPerfLASFile} from '../../src/las/lib/laz-perf/laslaz-decoder';
+} from '../../../../website/src/alternate-loaders/las/lib/laz-perf/parse-las';
+import {LASFile as LazPerfLASFile} from '../../../../website/src/alternate-loaders/las/lib/laz-perf/laslaz-decoder';
 import {
   parseLAS as parseLASWithLazRs,
   parseLASInBatches as parseLASInBatchesWithLazRs
-} from '../../src/las/lib/laz-rs-wasm/parse-las';
-import {LASFile as LazRsLASFile} from '../../src/las/lib/laz-rs-wasm/laslaz-decoder';
+} from '../../../../website/src/alternate-loaders/las/lib/laz-rs-wasm/parse-las';
+import {LASFile as LazRsLASFile} from '../../../../website/src/alternate-loaders/las/lib/laz-rs-wasm/laslaz-decoder';
 
 const POINT_FORMAT_LENGTHS = [20, 28, 26, 34];
 
@@ -87,7 +88,7 @@ test('legacy LAS backends stream small batches and honor explicit color depth', 
   ]);
   for (const parseLASInBatches of [parseLASInBatchesWithLazPerf, parseLASInBatchesWithLazRs]) {
     const batches = parseLASInBatches([source.slice(0, 100), source.slice(100)], {
-      batchSize: 2,
+      core: {batchSize: 2},
       las: {colorDepth: 8}
     });
     const vertexCounts: number[] = [];
@@ -142,10 +143,12 @@ test('legacy LAS backends reject signatures, versions, formats, and old compress
   expect(() => new LazPerfLASFile(oldCompression)).toThrow('Old style compression');
   expect(() => new LazRsLASFile(oldCompression)).toThrow('Old style compression');
 
-  const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const log = new MemoryLog();
   parseLASWithLazPerf(createLegacyLAS(0, [[0, 0, 0]]), {
+    core: {log},
     las: {colorDepth: 'invalid' as any}
   });
-  expect(warning).toHaveBeenCalledWith('las: illegal value for options.las.colorDepth');
-  warning.mockRestore();
+  expect(log.messages).toMatchObject([
+    {type: 'warning', message: 'las: illegal value for options.las.colorDepth'}
+  ]);
 });

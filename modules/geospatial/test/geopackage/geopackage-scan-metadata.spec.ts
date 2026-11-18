@@ -1,7 +1,7 @@
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {GeoPackageDataSource} from '../../src/geopackage/geopackage-source-loader';
+import {GeoPackageDataSource} from '../../src/geopackage/geopackage-source';
 
 const GEOPACKAGE_FIXTURE = '@loaders.gl/geospatial/geopackage/test/data/rivers_multi.gpkg';
 
@@ -28,21 +28,18 @@ test.runIf(isBrowser)(
 
 test('GeoPackage source executes projection, residual predicates, and limits', async () => {
   const source = new GeoPackageDataSource(new Blob([]), {geopackage: {}});
-  source.getTable = async () => ({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]})
-  });
+  source.getTable = async () => arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]});
 
   const result = await source.query({
     predicate: {op: '=', args: [{property: 'name'}, 'a']},
     columns: ['value'],
     limit: 1
   });
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['value']);
-  expect(Array.from(result.data.getChild('value')?.toArray() || [])).toEqual([1]);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['value']);
+  expect(Array.from(result.getChild('value')?.toArray() || [])).toEqual([1]);
 
   const batch = await source.read({limit: 2})[Symbol.asyncIterator]().next();
-  expect(batch.value?.length).toBe(2);
+  expect(batch.value?.numRows).toBe(2);
   await expect(source.query({limit: -1})).rejects.toThrow('non-negative safe integer');
 });
 
@@ -65,7 +62,7 @@ test.runIf(isBrowser)(
         }
       ]
     });
-    source.getTable = async () => ({shape: 'arrow-table', data: tableData}) as never;
+    source.getTable = async () => tableData;
 
     const metadata = await source.getQueryMetadata();
     expect(metadata.name).toBe('fallback');
@@ -99,7 +96,7 @@ test.runIf(isBrowser)(
         }
       ]
     });
-    source.getTable = async () => ({shape: 'arrow-table', data: tableData}) as never;
+    source.getTable = async () => tableData;
 
     const metadata = await source.getQueryMetadata();
     expect(metadata.name).toBe('identified');

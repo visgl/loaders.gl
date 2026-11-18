@@ -3,27 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  ObjectRowTable,
-  ObjectRowTableBatch
-} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 
 import type {ParquetLoaderOptions} from '../../parquet-loader-options';
 import {
   parseParquetFileToArrowWithJs,
   parseParquetFileToArrowInBatchesWithJs
 } from './parse-parquet-to-arrow-js';
-import {
-  convertArrowBatchToObjectRows,
-  convertArrowTableToObjectRows
-} from './convert-parquet-tables';
-
-export {
-  convertArrowBatchToObjectRows,
-  convertArrowTableToObjectRows
-} from './convert-parquet-tables';
+import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 
 /**
  * Parses a parquet file into an Arrow-backed table.
@@ -35,7 +23,7 @@ export {
 export function parseParquetArrowTable(
   file: ReadableFile,
   options: ParquetLoaderOptions
-): Promise<ArrowTable> {
+): Promise<Table> {
   return parseParquetFileToArrowWithJs(file, options);
 }
 
@@ -49,7 +37,7 @@ export function parseParquetArrowTable(
 export function parseParquetArrowTableInBatches(
   file: ReadableFile,
   options: ParquetLoaderOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<Table> {
   return parseParquetFileToArrowInBatchesWithJs(file, options);
 }
 
@@ -65,7 +53,7 @@ export async function parseParquetObjectRowTable(
   options: ParquetLoaderOptions
 ): Promise<ObjectRowTable> {
   const arrowTable = await parseParquetArrowTable(file, options);
-  return convertArrowTableToObjectRows(arrowTable);
+  return convertArrowToTable(arrowTable, 'object-row-table');
 }
 
 /**
@@ -80,6 +68,15 @@ export async function* parseParquetObjectRowTableInBatches(
   options: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
   for await (const batch of parseParquetArrowTableInBatches(file, options)) {
-    yield convertArrowBatchToObjectRows(batch);
+    yield convertParquetTableToRows(batch);
   }
+}
+
+/** Converts one decoded Arrow table chunk to the Parquet object-row batch contract. */
+export function convertParquetTableToRows(table: Table): ObjectRowTableBatch {
+  return {
+    ...convertArrowToTable(table, 'object-row-table'),
+    batchType: 'data',
+    length: table.numRows
+  };
 }

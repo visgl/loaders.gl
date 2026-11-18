@@ -9,7 +9,7 @@ import {WMSErrorFormat} from './wms-format';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type WMSLoaderOptions = LoaderOptions & {
+export type WMSErrorLoaderOptions = LoaderOptions & {
   wms?: {
     /** By default the error loader will throw an error with the parsed error message */
     throwOnError?: boolean;
@@ -48,7 +48,7 @@ export const WMSErrorLoader = {
     }
   },
   preload
-} as const satisfies Loader<string, never, WMSLoaderOptions>;
+} as const satisfies Loader<string, never, WMSErrorLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

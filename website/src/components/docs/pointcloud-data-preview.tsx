@@ -1,3 +1,4 @@
+import type {Table} from 'apache-arrow';
 import React, {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {load} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/scene';
@@ -5,7 +6,7 @@ import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {OBJLoader} from '@loaders.gl/scene/obj';
 import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {EXAMPLES, type Example} from 'examples/website/pointcloud/examples';
 import {
@@ -361,13 +362,13 @@ async function loadPreviewPointCloud(
 
   if (urls.length === 1) {
     const pointCloud = await load(firstArrayBuffer, loader as any, {
-      worker: false,
-      las: {shape: 'arrow-table'},
-      obj: {shape: 'arrow-table'},
-      pcd: {shape: 'arrow-table'},
-      ply: {shape: 'arrow-table', pointCloud: true}
+      core: {worker: false},
+      las: {shape: 'arrow'},
+      obj: {shape: 'arrow'},
+      pcd: {shape: 'arrow'},
+      ply: {shape: 'arrow', pointCloud: true}
     });
-    return isMeshArrowTable(pointCloud) ? ((convertTableToMesh(pointCloud) as unknown) as Mesh) : (pointCloud as Mesh);
+    return convertTableToMesh(pointCloud as Table);
   }
 
   const pointClouds = await Promise.all(
@@ -375,28 +376,21 @@ async function loadPreviewPointCloud(
       const arrayBuffer =
         index === 0 ? firstArrayBuffer : await (await fetch(url)).arrayBuffer();
       return load(arrayBuffer, loader as any, {
-        worker: false,
-        las: {shape: 'arrow-table'},
-        obj: {shape: 'arrow-table'},
-        pcd: {shape: 'arrow-table'},
-        ply: {shape: 'arrow-table', pointCloud: true}
+        core: {worker: false},
+        las: {shape: 'arrow'},
+        obj: {shape: 'arrow'},
+        pcd: {shape: 'arrow'},
+        ply: {shape: 'arrow', pointCloud: true}
       });
     })
   );
-  const combinedPointCloud = combineMeshArrowTables(pointClouds as MeshArrowTable[]);
+  const combinedPointCloud = combineMeshArrowTables(pointClouds as Table[]);
   return (convertTableToMesh(combinedPointCloud) as unknown) as Mesh;
 }
 
-function combineMeshArrowTables(pointClouds: MeshArrowTable[]): MeshArrowTable {
-  const firstPointCloud = pointClouds[0];
-  if (!firstPointCloud || pointClouds.some((pointCloud) => !isMeshArrowTable(pointCloud))) {
-    throw new Error('Multi-file point cloud examples require Arrow table loader output.');
-  }
-
-  return {
-    ...firstPointCloud,
-    data: firstPointCloud.data.concat(...pointClouds.slice(1).map((pointCloud) => pointCloud.data))
-  };
+function combineMeshArrowTables([first, ...rest]: Table[]): Table {
+  if (!first) throw new Error('A point cloud table is required.');
+  return first.concat(...rest);
 }
 
 function getExampleUrls(example: Example): string[] {
@@ -419,9 +413,6 @@ function getExampleType(format: string): Example['type'] {
   return format.toLowerCase() === 'laz' ? 'las' : (format.toLowerCase() as Example['type']);
 }
 
-function isMeshArrowTable(data: unknown): data is MeshArrowTable {
-  return Boolean(data && typeof data === 'object' && 'shape' in data && data.shape === 'arrow-table');
-}
 
 function getFileNameFromUrl(url: string): string {
   try {

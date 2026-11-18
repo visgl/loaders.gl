@@ -4,18 +4,10 @@
 
 import * as arrow from 'apache-arrow';
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrayType,
-  ArrowTable,
-  ArrowTableBatch,
-  DataType,
-  Field,
-  Schema,
-  SchemaMetadata
-} from '@loaders.gl/core/schema';
-import {deserializeArrowType} from '@loaders.gl/core/schema-utils';
+import type {ArrayType, DataType, Field, Schema, SchemaMetadata} from '@loaders.gl/core/schema';
+import {deserializeArrowType, makeArrowTableFromBatches} from '@loaders.gl/core/schema-utils';
 
-import type {ParquetJSLoaderOptions} from '../../parquet-loader-options';
+import type {ParquetLoaderOptions} from '../../parquet-loader-options';
 import {preloadCompressions} from '../../parquetjs/compression';
 import {ParquetReader, type ParquetIterationProps} from '../../parquetjs/parser/parquet-reader';
 import type {
@@ -103,8 +95,8 @@ class ParquetArrowSchema extends arrow.Schema {
  */
 export async function parseParquetFileToArrowWithJs(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
-): Promise<ArrowTable> {
+  options?: ParquetLoaderOptions
+): Promise<arrow.Table> {
   if (
     !options?.parquet?.offset &&
     options?.parquet?.limit === undefined &&
@@ -113,25 +105,21 @@ export async function parseParquetFileToArrowWithJs(
     return await parseCompleteParquetFileToArrowWithJs(file, options);
   }
   const recordBatches: arrow.RecordBatch[] = [];
-  let schema: Schema | undefined;
 
   for await (const batch of parseParquetFileToArrowInBatchesWithJs(file, options)) {
-    schema ||= batch.schema;
-    recordBatches.push(...batch.data.batches);
+    recordBatches.push(...batch.batches);
   }
 
-  schema ||= await readProjectedSchema(file, options);
-  const table = recordBatches.length
-    ? new arrow.Table(recordBatches)
-    : new arrow.Table(createParquetArrowSchema(schema), []);
-  return {shape: 'arrow-table', data: table, schema};
+  return recordBatches.length
+    ? (await makeArrowTableFromBatches(recordBatches))!
+    : new arrow.Table(createParquetArrowSchema(await readProjectedSchema(file, options)), []);
 }
 
-/** Parses complete row groups directly, bypassing batch slicing and wrapper reconstruction. */
+/** Parses complete row groups directly, bypassing batch slicing. */
 async function parseCompleteParquetFileToArrowWithJs(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
-): Promise<ArrowTable> {
+  options?: ParquetLoaderOptions
+): Promise<arrow.Table> {
   await preloadCompressions(options);
   const reader = new ParquetReader(file, {
     signal: options?.parquet?.signal,
@@ -149,11 +137,10 @@ async function parseCompleteParquetFileToArrowWithJs(
   const arrowSchema = createParquetArrowSchema(schema);
   const parquetSchema = await reader.getSchema();
   const recordBatches: arrow.RecordBatch[] = [];
-  let onlyTable: ArrowTable | undefined;
+  let onlyTable: arrow.Table | undefined;
 
   for await (const rowGroup of reader.rowGroupIterator(getParquetIterationProps(options))) {
     const table = convertRowGroupSliceToArrow(
-      schema,
       arrowSchema,
       parquetSchema,
       rowGroup,
@@ -161,24 +148,20 @@ async function parseCompleteParquetFileToArrowWithJs(
       rowGroup.rowCount
     );
     onlyTable = recordBatches.length === 0 ? table : undefined;
-    recordBatches.push(...table.data.batches);
+    recordBatches.push(...table.batches);
   }
-  if (onlyTable && recordBatches.length === onlyTable.data.batches.length) {
+  if (onlyTable && recordBatches.length === onlyTable.batches.length) {
     return onlyTable;
   }
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: recordBatches.length
-      ? new arrow.Table(recordBatches)
-      : new arrow.Table(createParquetArrowSchema(schema), [])
-  };
+  return recordBatches.length
+    ? (await makeArrowTableFromBatches(recordBatches))!
+    : new arrow.Table(arrowSchema, []);
 }
 
 /** Reads the projected loaders.gl schema when row selection produces no Arrow record batches. */
 async function readProjectedSchema(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): Promise<Schema> {
   const reader = new ParquetReader(file, {
     signal: options?.parquet?.signal,
@@ -200,8 +183,8 @@ async function readProjectedSchema(
  */
 export async function* parseParquetFileToArrowInBatchesWithJs(
   file: ReadableFile,
-  options?: ParquetJSLoaderOptions
-): AsyncIterable<ArrowTableBatch> {
+  options?: ParquetLoaderOptions
+): AsyncIterable<arrow.Table> {
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
@@ -244,7 +227,6 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
     }
 
     const arrowTable = convertRowGroupSliceToArrow(
-      schema,
       arrowSchema,
       parquetSchema,
       rowGroup,
@@ -263,13 +245,7 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
       );
       const length = batchEnd - batchStart;
 
-      yield {
-        batchType: 'data',
-        shape: batchTable.shape,
-        schema: batchTable.schema,
-        data: batchTable.data,
-        length
-      };
+      yield batchTable;
       rowsYielded += length;
     }
 
@@ -317,13 +293,12 @@ function createParquetArrowMetadata(metadata?: SchemaMetadata): Map<string, stri
 
 /** Builds Arrow from one selected row-group range with per-column fallbacks. */
 function convertRowGroupSliceToArrow(
-  schema: Schema,
   arrowSchema: arrow.Schema,
   parquetSchema: ParquetSchema,
   rowGroup: ParquetRowGroup,
   start: number,
   end: number
-): ArrowTable {
+): arrow.Table {
   const vectors: Record<string, arrow.Vector> = {};
   let materializedRows: Record<string, unknown>[] | undefined;
   for (const field of arrowSchema.fields) {
@@ -390,11 +365,7 @@ function convertRowGroupSliceToArrow(
     );
   }
 
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: createArrowTable(arrowSchema, vectors, end - start)
-  };
+  return createArrowTable(arrowSchema, vectors, end - start);
 }
 
 /** Converts absent legacy repeated values to empty lists before invoking Arrow builders. */
@@ -1221,15 +1192,15 @@ function normalizeArrowColumn(
   });
 }
 
-/** Slices one Arrow table while preserving the loaders.gl schema wrapper. */
-function sliceArrowTable(table: ArrowTable, start: number, end: number): ArrowTable {
-  if (start === 0 && end === table.data.numRows) {
+/** Slices one Arrow table while preserving the row count for an empty projection. */
+function sliceArrowTable(table: arrow.Table, start: number, end: number): arrow.Table {
+  if (start === 0 && end === table.numRows) {
     return table;
   }
-  if (table.data.numCols === 0) {
-    return {...table, data: createArrowTable(table.data.schema, {}, end - start)};
+  if (table.numCols === 0) {
+    return createArrowTable(table.schema, {}, end - start);
   }
-  return {...table, data: table.data.slice(start, end)};
+  return table.slice(start, end);
 }
 
 /** Slices an arbitrary column while preserving efficient native slice implementations. */
@@ -1242,7 +1213,7 @@ function sliceColumn(column: ArrayLike<unknown>, start: number, end: number): Ar
 
 /** Creates row-group projection properties from public loader options. */
 function getParquetIterationProps(
-  options?: ParquetJSLoaderOptions
+  options?: ParquetLoaderOptions
 ): ParquetIterationProps | undefined {
   const columnList = options?.parquet?.columns;
   if (

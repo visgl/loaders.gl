@@ -92,7 +92,7 @@ export async function* parseShapefileInBatches(
       propertyIterable[Symbol.asyncIterator]?.() || propertyIterable[Symbol.iterator]();
   }
 
-  // When `options.metadata` is `true`, there's an extra initial `metadata`
+  // When `options.core.metadata` is `true`, there's an extra initial `metadata`
   // object before the iterator starts. zipBatchIterators expects to receive
   // batches of Array objects, and will fail with non-iterable batches, so it's
   // important to skip over the first batch.

@@ -1,42 +1,20 @@
 import {expect, test} from 'vitest';
 import {
   flattenPropertyTableByFeatureIds,
-  checkPropertiesLength,
   getAttributeTypesMapFromSchema,
   getAttributeTypesMapFromPropertyTable,
   getAttributeType
 } from '../../../src/v4/i3s-converter/helpers/feature-attributes';
 import type {GLTF} from '@loaders.gl/scene/gltf';
-test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async () => {
-  const featureIdsMap = {0: 0, 1: 1, 3: 3};
+test('tile-converter(i3s)#flattenPropertyTableByFeatureIds preserves geometry order and missing rows', () => {
   const propertyTable = {
-    component: ['Wall', 'Roof', 'Clock', 'Frames'],
-    color: ['red', 'green', 'blue', 'white']
+    component: ['Wall', '', 'Clock', 'Frames'],
+    count: [0, 1, null, 3]
   };
-  const expectedResult = {
-    component: ['Wall', 'Roof', 'Frames'],
-    color: ['red', 'green', 'white']
-  };
-  const result = flattenPropertyTableByFeatureIds(featureIdsMap, propertyTable);
-  expect(result).toEqual(expectedResult);
-});
-test('tile-converter(i3s)#checkPropertiesLength - Should return false if properies count is the same as featureIds count', async () => {
-  const featureIds = [0, 1, 3];
-  const propertyTable = {
-    component: ['Wall', 'Roof', 'Clock'],
-    color: ['red', 'green', 'blue']
-  };
-  const result = checkPropertiesLength(featureIds, propertyTable);
-  expect(result).toEqual(false);
-});
-test('tile-converter(i3s)#checkPropertiesLength - Should return true if properies count is not the same as featureIds count', async () => {
-  const featureIds = [0, 1, 3];
-  const propertyTable = {
-    component: ['Wall', 'Roof', 'Clock', 'Frames'],
-    color: ['red', 'green', 'blue', 'white']
-  };
-  const result = checkPropertiesLength(featureIds, propertyTable);
-  expect(result).toEqual(true);
+  expect(flattenPropertyTableByFeatureIds([3, 0, 1, 2, 5, 3], propertyTable)).toEqual({
+    component: ['Frames', 'Wall', '', 'Clock', null, 'Frames'],
+    count: [3, 0, 1, null, null, 3]
+  });
 });
 test('tile-converter(i3s)#getAttributeType - Should return the type of attribute', async () => {
   const attributes = ['', 'myName', 0, 1, 2n, 3.5];

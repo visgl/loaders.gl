@@ -13,7 +13,7 @@ const {preload: _CSWRecordsLoaderPreload, ...CSWRecordsLoaderMetadataWithoutPrel
 
 export {CSWRecords};
 
-export type CSWLoaderOptions = XMLLoaderOptions & {
+export type CSWRecordsLoaderOptions = XMLLoaderOptions & {
   csw?: {};
 };
 
@@ -22,7 +22,7 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
  */
 export const CSWRecordsLoaderWithParser = {
   ...CSWRecordsLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer: ArrayBuffer, options?: CSWLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: CSWRecordsLoaderOptions) =>
     parseCSWRecords(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: CSWLoaderOptions) => parseCSWRecords(text, options)
-} as const satisfies LoaderWithParser<CSWRecords, never, CSWLoaderOptions>;
+  parseTextSync: (text: string, options?: CSWRecordsLoaderOptions) => parseCSWRecords(text, options)
+} as const satisfies LoaderWithParser<CSWRecords, never, CSWRecordsLoaderOptions>;

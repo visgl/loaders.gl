@@ -4,6 +4,8 @@
 
 // import type {} from '@loaders.gl/core/loader-utils';
 
+import type {Table as ArrowJSTable} from 'apache-arrow';
+import {encodeArrowSync} from './lib/encoders/encode-arrow';
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoJSONTable, BinaryGeometry} from '@loaders.gl/core/schema';
 import {encodeGeoArrowSync} from './lib/encoders/encode-geoarrow';
@@ -33,11 +35,21 @@ export const GeoArrowWriter = {
   binary: true,
   options: {},
   encode: async function encodeArrow(data, options?): Promise<ArrayBuffer> {
+    if ('batches' in data) {
+      return encodeArrowSync(data);
+    }
     // @ts-expect-error
     return encodeGeoArrowSync(data);
   },
   encodeSync(data, options?) {
+    if ('batches' in data) {
+      return encodeArrowSync(data);
+    }
     // @ts-expect-error
     return encodeGeoArrowSync(data);
   }
-} as const satisfies WriterWithEncoder<GeoJSONTable | BinaryGeometry, never, ArrowWriterOptions>;
+} as const satisfies WriterWithEncoder<
+  GeoJSONTable | BinaryGeometry | ArrowJSTable,
+  never,
+  ArrowWriterOptions
+>;

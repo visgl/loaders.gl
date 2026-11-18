@@ -53,7 +53,7 @@ test('encodePointCloudSourceTile#encodes Arrow positions and retains source plac
 
   const encoded = encodePointCloudSourceTile(sourceTile);
   expect(encoded).not.toBeNull();
-  const parsedTile = await parse(encoded!.pnts, Tiles3DLoader, {worker: false});
+  const parsedTile = await parse(encoded!.pnts, Tiles3DLoader, {core: {worker: false}});
 
   expect(Array.from(parsedTile.attributes.positions!)).toEqual([1, 2, 3, 4, 5, 6]);
   expect(Array.from(parsedTile.attributes.colors!.value)).toEqual([255, 0, 0, 0, 255, 0]);
@@ -94,7 +94,7 @@ test.each([
     },
     {constantRGBA}
   );
-  const parsedTile = await parse(encoded!.pnts, Tiles3DLoader, {worker: false});
+  const parsedTile = await parse(encoded!.pnts, Tiles3DLoader, {core: {worker: false}});
 
   expect(parsedTile.constantRGBA).toEqual(expected);
 });
@@ -114,7 +114,7 @@ test('encodePointCloudSourceTile#retains small offsets in large coordinates with
     },
     {rtcCenter}
   );
-  const parsedTile = await parse(encoded!.pnts, Tiles3DLoader, {worker: false});
+  const parsedTile = await parse(encoded!.pnts, Tiles3DLoader, {core: {worker: false}});
 
   expect(Array.from(parsedTile.attributes.positions!)).toEqual([0.125, 0.25, 0.5]);
   expect(parsedTile.rtcCenter).toEqual(rtcCenter);
@@ -166,7 +166,7 @@ test.each([
   expect(encodedTiles[0].pointCount).toBe(1);
   expect(encodedTiles[0].pnts).toBeInstanceOf(ArrayBuffer);
   expect(selectedTileIds).toEqual(withMetadata ? ['tile-0'] : []);
-  const parsedTile = await parse(encodedTiles[0].pnts, Tiles3DLoader, {worker: false});
+  const parsedTile = await parse(encodedTiles[0].pnts, Tiles3DLoader, {core: {worker: false}});
   if (withMetadata) {
     expect(parsedTile.batchTableJson).toEqual({sourceTileId: ['tile-0']});
     expect(Array.from(parsedTile.batchIds!)).toEqual([0]);

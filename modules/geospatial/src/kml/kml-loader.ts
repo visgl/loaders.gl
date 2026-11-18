@@ -2,32 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {Table as ArrowTable} from 'apache-arrow';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 // import {GeoJSONTable} from '@loaders.gl/core/schema';
-import {
-  FeatureCollection,
-  GeoJSONTable,
-  ObjectRowTable,
-  ArrowTable,
-  GeoArrowEncodingPreference
-} from '@loaders.gl/core/schema';
+import {FeatureCollection, GeoJSONTable, ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
 } from './lib/feature-collection-to-arrow';
-import {KMLLoader as KMLLoaderMetadata} from './kml-loader-types';
+import {KMLLoader as KMLLoaderMetadata, type KMLLoaderOptions} from './kml-loader-types';
 import {convertKMLDocumentToFeatureCollection, parseKMLDocument} from './kml-parser';
 
-const {preload: _KMLLoaderPreload, ...KMLLoaderMetadataWithoutPreload} = KMLLoaderMetadata;
+export type {KMLLoaderOptions} from './kml-loader-types';
 
-export type KMLLoaderOptions = LoaderOptions & {
-  /** Preferred encoding for Arrow geometry output. */
-  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  kml?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'raw';
-    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  };
-};
+const {preload: _KMLLoaderPreload, ...KMLLoaderMetadataWithoutPreload} = KMLLoaderMetadata;
 
 /**
  * Loader for KML (Keyhole Markup Language)
@@ -58,7 +46,7 @@ export function parseKMLTextToFeatureCollection(text: string): FeatureCollection
  *
  * @param text - KML XML document text.
  * @param options - Loader options controlling the output shape.
- * @returns A GeoJSON or object-row table.
+ * @returns A native Arrow table, GeoJSON table, or object-row table.
  */
 function parseTextSync(
   text: string,
@@ -79,7 +67,7 @@ function parseTextSync(
       };
       return table;
     }
-    case 'arrow-table':
+    case 'arrow':
       return convertFeatureCollectionToArrowTable(
         geojson.features,
         options?.geoarrow || kmlOptions.geoarrow

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowTable} from 'apache-arrow';
 import type {
-  ArrowTable,
   BinaryFeatureCollection,
   GeoArrowEncodingPreference,
   GeoJSONTable,
@@ -33,7 +33,7 @@ export interface VectorSource {
 /**
  * Normalized capabilities of an Image service
  * @example
- *  The WMSSourceLoader will normalize the response to the WMS `GetCapabilities`
+ *  The WMSLoader will normalize the response to the WMS `GetCapabilities`
  *  data structure extracted from WMS XML response into an VectorSourceMetadata.
  */
 export type VectorSourceMetadata = {
@@ -79,7 +79,7 @@ export type GetFeaturesParameters = {
   requestCrs?: CRSIdentifier;
   /**
    * Requested feature encoding for the returned table.
-   * `arrow` returns a loaders.gl `ArrowTable` with `shape: 'arrow-table'`.
+   * `arrow` returns a native Apache Arrow `Table`.
    */
   format?: 'geojson' | 'binary' | 'arrow';
   /** Preferred GeoArrow encoding when `format` is `arrow`. */

@@ -29,7 +29,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Loader | [`KSPLATLoader`](../api-reference/ksplat-loader.md) |
 | Loader | [`SPZLoader`](../api-reference/spz-loader.md) |
 | Loader | `RADLoader` |
-| Source loader | [RADLoader and RADSourceLoader](../api-reference/rad-source-loader.md) |
+| Source loader | [RADLoader and RADLoader](../api-reference/rad-source-loader.md) |
 
 <DocOrientation
   eyebrow="The format family"
@@ -84,7 +84,7 @@ The v1 loader supports complete in-memory `.ksplat` files and decodes compressio
 
 `.spz` is Niantic Spatial's compressed 3D Gaussian splat interchange format. SPZ version 4 stores a 32-byte plaintext header, optional extension records, a table of contents, and independent ZSTD-compressed attribute streams for positions, alphas, colors, scales, rotations, and spherical harmonics.
 
-`SPZLoader` decodes complete in-memory SPZ version 4 files into the same Mesh Arrow table shape as `SPLATLoader` and `KSPLATLoader`, preserving SPZ header fields and extension bytes in `loaderData` where practical.
+`SPZLoader` decodes complete in-memory SPZ version 4 files into the same native Apache Arrow table structure as `SPLATLoader` and `KSPLATLoader`, preserving SPZ header fields and extension bytes in Arrow schema metadata.
 
 Legacy SPZ versions 2 and 3 use a gzip-compressed single-stream layout and are decoded alongside version 4 by `SPZLoader`.
 
@@ -96,17 +96,17 @@ See the [SPZLoader](/docs/modules/splats/api-reference/spz-loader) API reference
 with the `RAD0` magic value, a JSON metadata block, and then either inline RADC
 chunks or chunk table entries that point to sidecar `.radc` files.
 
-`RADLoader` parses the top-level RAD metadata from a full buffer. `RADSourceLoader`
+`RADLoader` parses the top-level RAD metadata from a full buffer. `RADLoader`
 is the preferred entry point for applications because it can range-fetch the
 header, expose the chunk table, and fetch inline or sidecar RADC chunk bytes on
 demand.
 
-`RADSourceLoader` can also decode individual RADC chunks into the same Gaussian
+`RADLoader` can also decode individual RADC chunks into the same Gaussian
 splat Mesh Arrow table shape used by the full-buffer loaders. RAD remains a paged
 LoD format, so large scenes should still be rendered with chunk paging, LoD tree
 traversal, and GPU residency management instead of eagerly decoding every chunk.
 
-See the [RADSourceLoader](/docs/modules/splats/api-reference/rad-source-loader)
+See the [RADLoader](/docs/modules/splats/api-reference/rad-source-loader)
 API reference for usage.
 
 ## Output

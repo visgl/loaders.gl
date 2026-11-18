@@ -1,3 +1,4 @@
+import {createI3SMeshSink} from '../apps/tile-converter/src/v5/i3s-mesh-sink';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -7,10 +8,9 @@ import {beforeAll as preloadBeforeAll} from 'vitest';
 import {expect, test} from 'vitest';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s';
-import {I3SNodePageSchema, I3SSceneLayerSchema} from '@loaders.gl/tiles-3d/i3s/i3s-zod-schema';
+import {I3SNodePageSchema, I3SSceneLayerSchema} from '@loaders.gl/tiles-3d/i3s-zod-schema';
 import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {
-  createI3SMeshSink,
   createSingleMeshI3SSink,
   convertTileset,
   createI3SMeshConversionCodec,
@@ -186,4 +186,72 @@ test.each([
   });
   expect(sink.getFiles()[0].blob.type).toBe(contentType);
   expect(new Uint8Array(await sink.getFiles()[0].blob.arrayBuffer())).toEqual(bytes);
+});
+
+test.each([
+  false,
+  true
+])('SLPK collection shares identical textures and retains distinct bytes (%s)', async distinct => {
+  const image = new Uint8Array(
+    await (await fetch('/test/data/tile-converter-texture.png')).arrayBuffer()
+  );
+  const sink = createI3SMeshSink({...OPTIONS, maxMeshes: 3, maxTotalBytes: 1000000});
+  const source = {
+    inspect: async () => ({}),
+    async *read() {
+      for (let index = 0; index < 3; index++) {
+        const resource = createResource(index);
+        resource.mesh.attributes.TEXCOORD_0 = {
+          size: 2,
+          value: new Float32Array([0, 0, 1, 0, 0, 1])
+        };
+        const bytes = image.slice();
+        if (distinct && index === 2) bytes[bytes.length - 1] ^= 1;
+        resource.material!.baseColorTexture = {data: bytes, mimeType: 'image/png'};
+        yield resource;
+      }
+    }
+  };
+  await convertTileset({
+    source,
+    sink: {
+      ...sink,
+      /** Recycles borrowed codec buffers after the sink has accepted each resource. */
+      async write(resource, signal) {
+        await sink.write(resource, signal);
+        for (const [name, bytes] of Object.entries(resource.files)) {
+          if (name.includes('/textures/')) new Uint8Array(bytes).fill(0);
+        }
+      }
+    },
+    measureInputBytes: () => 1,
+    measureOutputBytes: () => 1,
+    codec: createI3SMeshConversionCodec({
+      ...OPTIONS,
+      draco: false,
+      spatialContext: createTiles3DConversionSpatialContext({
+        sourceCrs: 'EPSG:4978',
+        coordinateFrame: 'geocentric',
+        heightReference: 'ellipsoidal'
+      })
+    })
+  });
+  const files = sink.getFiles();
+  expect(files.filter(file => file.resourceId.includes('/textures/'))).toHaveLength(
+    distinct ? 2 : 1
+  );
+  const page = await readJson(files, 'nodepages/0.json.gz');
+  for (let index = 1; index <= 3; index++) {
+    expect(page.nodes[index].mesh.material.resource).toBe(distinct && index === 3 ? 3 : 1);
+    expect(page.nodes[index].mesh.geometry.resource).toBe(index);
+    const legacy = await readJson(files, `nodes/${index}/3dNodeIndexDocument.json.gz`);
+    expect(legacy.textureData[0].href).toBe(
+      index === 1 || (distinct && index === 3) ? './textures/0' : '../1/textures/0'
+    );
+  }
+  expect(
+    new Uint8Array(
+      await files.find(file => file.resourceId === 'nodes/1/textures/0.png')!.blob.arrayBuffer()
+    )
+  ).toEqual(image);
 });

@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Mesh} from '@loaders.gl/core/schema';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
@@ -15,7 +16,7 @@ export type TerrainLoaderOptions = ImageLoaderOptions & {
   /** TerrainLoader options */
   terrain?: TerrainOptions & {
     /** Selects mesh output or Apache Arrow output. */
-    shape?: 'mesh' | 'arrow-table';
+    shape?: 'mesh' | 'arrow';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -25,18 +26,23 @@ export type TerrainLoaderOptions = ImageLoaderOptions & {
  * Worker loader for image encoded terrain
  */
 export const TerrainLoader = {
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as Mesh | Table,
   batchType: null as never,
 
   ...TerrainFormat,
   version: VERSION,
   worker: true,
   /** Loads the parser-bearing terrain loader implementation. */
-  preload: async () => (await import('@loaders.gl/raster/terrain-loader')).TerrainLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('@loaders.gl/raster/terrain');
+    return loaderModule.TerrainLoaderWithParser;
+  },
   options: {
     terrain: {
       tesselator: 'auto',
-      shape: 'arrow-table',
+      shape: 'arrow',
       bounds: undefined!,
       meshMaxError: 10,
       elevationDecoder: {
@@ -48,4 +54,4 @@ export const TerrainLoader = {
       skirtHeight: undefined
     }
   }
-} as const satisfies Loader<Mesh | MeshArrowTable, never, TerrainLoaderOptions>;
+} as const satisfies Loader<Mesh | Table, never, TerrainLoaderOptions>;

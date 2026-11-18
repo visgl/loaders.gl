@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {fetchFile, parse, encode} from '@loaders.gl/core';
 // import {getMeshSize} from '@loaders.gl/core/schema-utils';
 import {DracoLoader} from '@loaders.gl/scene';
-import {DracoWriter} from '@loaders.gl/scene/draco-writer';
+import {DracoWriter} from '@loaders.gl/scene/draco';
 import {validateMeshCategoryData} from 'test/common/conformance';
 import {isBrowser} from '@loaders.gl/core/worker-utils';
 const POSITIONS_URL = '@loaders.gl/scene/draco/test/data/raw-attribute-buffers/lidar-positions.bin';

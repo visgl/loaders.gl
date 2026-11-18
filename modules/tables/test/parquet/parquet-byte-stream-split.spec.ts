@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {encode, load} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter, ParquetReader} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter, ParquetReader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -51,9 +51,9 @@ const INPUT: ObjectRowTable = {
 };
 
 test.each([false, true])(
-  'ParquetJSWriter and ParquetJSLoader round-trip BYTE_STREAM_SPLIT with Data Page V2=%s',
+  'ParquetWriter and ParquetJSLoader round-trip BYTE_STREAM_SPLIT with Data Page V2=%s',
   async useDataPageV2 => {
-    const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+    const parquetBuffer = await encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         useDataPageV2,
@@ -85,18 +85,18 @@ test.each([false, true])(
   }
 );
 
-test('ParquetJSWriter rejects BYTE_STREAM_SPLIT for variable-width columns', async () => {
+test('ParquetWriter rejects BYTE_STREAM_SPLIT for variable-width columns', async () => {
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {columnEncodings: {label: 'BYTE_STREAM_SPLIT'}}
     })
   ).rejects.toThrow('BYTE_STREAM_SPLIT does not support BYTE_ARRAY');
 });
 
-test('ParquetJSWriter rejects unknown column encoding overrides', async () => {
+test('ParquetWriter rejects unknown column encoding overrides', async () => {
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {columnEncodings: {typo: 'BYTE_STREAM_SPLIT'}}
     })

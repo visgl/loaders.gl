@@ -1,5 +1,5 @@
 ---
-title: PotreeSourceLoader
+title: Potree data source
 description: Build a progressive point-cloud source from supported Potree hierarchy and node layouts.
 hide_title: true
 page_style: designed
@@ -12,12 +12,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 <DocPageHeader
   eyebrow="Potree source"
   title="Traverse an octree as the view moves."
-  description="PotreeSourceLoader turns supported Potree metadata and node payloads into a source that can be traversed progressively. It shares the point-cloud runtime model with COPC while respecting Potree's own layouts."
+  description="PotreeLoader turns supported Potree metadata and node payloads into a source that can be traversed progressively. It shares the point-cloud runtime model with COPC while respecting Potree's own layouts."
   tone="violet"
   meta={['Potree 1.0–1.8 and 2.0', 'Octree nodes', 'Progressive loading']}
   links={[
     {label: 'Potree module', to: '/docs/modules/tiles-3d/potree'},
-    {label: 'COPC source', to: '/docs/modules/tiles-3d/copc/api-reference/copc-source-loader'}
+    {label: 'COPC source', to: '/docs/modules/tiles-3d/copc/api-reference/copc-loader'}
   ]}
 />
 
@@ -41,7 +41,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-`PotreeSourceLoader` creates a point-cloud tile source for Potree datasets rooted at `cloud.js` (1.x), `metadata.json` (2.0), or a legacy dataset directory.
+`PotreeLoader` creates a point-cloud tile source for Potree datasets rooted at `cloud.js` (1.x), `metadata.json` (2.0), or a legacy dataset directory.
 
 <ReferenceBoundary
   title="Source construction and traversal"
@@ -49,16 +49,19 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="violet"
 />
 
+| Property | Value |
+| --- | --- |
+| Data source | `PotreeNodesSource`, `Potree2Source` |
+
 ## Usage
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {createDataSourceSync, preload} from '@loaders.gl/core';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
-const dataSource = createDataSource(url, [PotreeSourceLoader], {
-  potree: {}
-});
+await preload(PotreeLoader);
+const dataSource = createDataSourceSync(url, PotreeLoader);
 
 const tileset = new PointCloudTileset(dataSource);
 await tileset.selectTiles(viewport);
@@ -86,10 +89,11 @@ PotreeConverter 2.x, including 2.1.5, writes the **2.0 dataset format**; convert
 and viewer release numbers are distinct from dataset versions.
 
 ```typescript
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {createDataSource} from '@loaders.gl/core';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
-const source = PotreeSourceLoader.createDataSource('https://example.com/cloud/metadata.json', {});
+const source = await createDataSource('https://example.com/cloud/metadata.json', PotreeLoader);
 await source.initialize();
 const tileset = new PointCloudTileset(source);
 // Select tiles using the application's viewport and placement.

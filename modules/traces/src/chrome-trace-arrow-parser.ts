@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {makeArrowMetadataBatch, updateArrowTableSchema} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import {chromeTraceEventArrowSchema} from './chrome-trace-arrow-schema';
@@ -72,13 +73,14 @@ export async function* parseChromeTraceToArrowRecordBatches(
   const tokenizer = createChromeTraceFileTokenizer(undefined);
   const normalizedBatchSize = normalizeChromeTraceBatchSize(options.batchSize);
   const pendingEvents: ChromeTraceEventSchema[] = [];
-  let deferredBatchEvents: ChromeTraceEventSchema[] | null = null;
+
   let rawText = '';
+  let emittedMetadata: Map<string, string> | undefined;
   let tokenizedEventCount = 0;
   const textDecoder = new TextDecoder();
 
   /**
-   * Appends tokenized events and returns batches ready for deferred emission.
+   * Appends tokenized events and returns complete batches ready for immediate emission.
    */
   const appendTokenizedEvents = (events: ChromeTraceEventSchema[]): ChromeTraceEventSchema[][] => {
     const readyBatches: ChromeTraceEventSchema[][] = [];
@@ -91,10 +93,7 @@ export async function* parseChromeTraceToArrowRecordBatches(
 
     while (pendingEvents.length >= normalizedBatchSize) {
       const batchEvents = pendingEvents.splice(0, normalizedBatchSize);
-      if (deferredBatchEvents) {
-        readyBatches.push(deferredBatchEvents);
-      }
-      deferredBatchEvents = batchEvents;
+      readyBatches.push(batchEvents);
     }
 
     return readyBatches;
@@ -106,9 +105,11 @@ export async function* parseChromeTraceToArrowRecordBatches(
 
     const events = appendChromeTraceFileChunk(tokenizer, chunkText);
     for (const batchEvents of appendTokenizedEvents(events)) {
-      yield buildChromeTraceEventArrowRecordBatch(batchEvents, {
+      const batch = buildChromeTraceEventArrowRecordBatch(batchEvents, {
         displayTimeUnit: tokenizer.displayTimeUnit
       });
+      emittedMetadata = new Map(batch.schema.metadata);
+      yield batch;
     }
   }
 
@@ -118,9 +119,11 @@ export async function* parseChromeTraceToArrowRecordBatches(
     for (const batchEvents of appendTokenizedEvents(
       appendChromeTraceFileChunk(tokenizer, trailingText)
     )) {
-      yield buildChromeTraceEventArrowRecordBatch(batchEvents, {
+      const batch = buildChromeTraceEventArrowRecordBatch(batchEvents, {
         displayTimeUnit: tokenizer.displayTimeUnit
       });
+      emittedMetadata = new Map(batch.schema.metadata);
+      yield batch;
     }
   }
 
@@ -128,32 +131,26 @@ export async function* parseChromeTraceToArrowRecordBatches(
   if (tokenizedEventCount === 0 && parsedTraceFile) {
     yield* emitChromeTraceArrowBatches(
       parsedTraceFile.traceEvents,
-      {
-        displayTimeUnit: parsedTraceFile.displayTimeUnit,
-        metadata: parsedTraceFile.metadata
-      },
+      parsedTraceFile,
       normalizedBatchSize
     );
     return;
   }
 
-  const finalTraceFile = {
-    displayTimeUnit: parsedTraceFile?.displayTimeUnit ?? tokenizer.displayTimeUnit,
-    metadata: parsedTraceFile?.metadata
-  };
-
-  if (deferredBatchEvents) {
-    if (pendingEvents.length === 0) {
-      yield buildChromeTraceEventArrowRecordBatch(deferredBatchEvents, finalTraceFile);
-    } else {
-      yield buildChromeTraceEventArrowRecordBatch(deferredBatchEvents, {
-        displayTimeUnit: tokenizer.displayTimeUnit
-      });
-    }
-  }
-
+  const finalTraceFile = parsedTraceFile || {displayTimeUnit: tokenizer.displayTimeUnit};
   if (pendingEvents.length > 0) {
     yield buildChromeTraceEventArrowRecordBatch(pendingEvents, finalTraceFile);
+  } else {
+    const metadata = buildChromeTraceArrowSchemaMetadata(finalTraceFile);
+    if (
+      !emittedMetadata ||
+      metadata.size !== emittedMetadata.size ||
+      Array.from(metadata).some(([key, value]) => emittedMetadata!.get(key) !== value)
+    ) {
+      yield makeArrowMetadataBatch(
+        buildChromeTraceEventArrowSchema(metadata)
+      ) as ChromeTraceEventArrowRecordBatch;
+    }
   }
 }
 
@@ -193,7 +190,7 @@ function buildChromeTraceEventArrowRecordBatch(
   traceFile: Pick<ChromeTraceFileSchema, 'displayTimeUnit' | 'metadata'>
 ): ChromeTraceEventArrowRecordBatch {
   const table = buildChromeTraceEventArrowTable(events, traceFile);
-  const [batch] = table.batches;
+  const [batch] = updateArrowTableSchema(table, table.schema).batches;
 
   if (!batch) {
     throw new Error('Chrome trace Arrow record batches require at least one event.');
@@ -418,6 +415,11 @@ async function* emitChromeTraceArrowBatches(
   traceFile: Pick<ChromeTraceFileSchema, 'displayTimeUnit' | 'metadata'>,
   batchSize: number
 ): AsyncIterable<ChromeTraceEventArrowRecordBatch> {
+  if (events.length === 0) {
+    yield makeArrowMetadataBatch(
+      buildChromeTraceEventArrowSchema(buildChromeTraceArrowSchemaMetadata(traceFile))
+    ) as ChromeTraceEventArrowRecordBatch;
+  }
   for (let startIndex = 0; startIndex < events.length; startIndex += batchSize) {
     const batchEvents = events.slice(startIndex, startIndex + batchSize);
     if (batchEvents.length === 0) {

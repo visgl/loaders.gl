@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 import {IESLoader} from './ies-loader-types';
 import {parseIES} from './ies/parse-ies';
 const {preload: _preload, ...metadata} = IESLoader;

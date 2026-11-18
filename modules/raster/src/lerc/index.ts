@@ -8,3 +8,5 @@ export type {LERCData} from './lib/parsers/lerc/lerc-types';
 export {LERCFormat} from './lerc-format';
 export {LERCLoader} from './lerc-loader-types';
 export {LERCLoaderWithParser} from './lerc-loader';
+
+export {type LERCLoaderOptions} from './lerc-loader-types';

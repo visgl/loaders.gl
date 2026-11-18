@@ -4,12 +4,11 @@
 
 export type {ParquetLoaderOptions} from './parquet-loader-types';
 export type {GeoParquetLoaderOptions} from './geoparquet-loader-types';
-export {ParquetLoaderWithParser as ParquetLoader} from './parquet-loader';
+export {ParquetLoaderWithParser as ParquetLoader} from '../parquet-loader';
 export {GeoParquetLoaderWithParser as GeoParquetLoader} from './geoparquet-loader';
-export {ParquetJSLoaderWithParser as ParquetJSLoader} from './parquet-js-loader';
 export {
-  ParquetSourceLoader,
   ParquetSource,
+  getParquetBatchProvenance,
   type ParquetDeferredPageFilter,
   type ParquetEncodedColumnChunk,
   type ParquetEncodedPage,
@@ -27,7 +26,7 @@ export {
   type ParquetGeospatialStatistics,
   type ParquetBatchMetadata,
   type ParquetSourceBatch
-} from './parquet-source-loader';
+} from './parquet-source';
 export {
   ParquetDatasetSource,
   type ParquetDatasetBatch,
@@ -41,3 +40,5 @@ export {
   PARQUET_SOURCE_CAPABILITIES,
   type ParquetSourceCapabilities
 } from './parquet-source-capabilities';
+
+export * from '.';

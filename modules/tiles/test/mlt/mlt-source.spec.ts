@@ -3,21 +3,22 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {tableFromArrays} from 'apache-arrow';
 import type {Feature} from '@loaders.gl/core/schema';
 
-import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
+import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt-loader';
 import {MLTLoaderWithParser as MLTLoader} from '../../src/mlt/mlt-loader-with-parser';
-import {getURLFromTemplate} from '../../src/mlt/mlt-source-loader';
+import {getURLFromTemplate} from '../../src/mlt/mlt-source';
 
-test('MLTSourceLoader#testURL', () => {
-  expect(MLTSourceLoader.testURL('https://server/{z}/{x}/{y}.mlt')).toBe(true);
-  expect(MLTSourceLoader.testURL('https://server/{z}/{x}/{-y}.mlt')).toBe(true);
-  expect(MLTSourceLoader.testURL('https://server/tiles-mlt/plain')).toBe(true);
-  expect(MLTSourceLoader.testURL('https://server/tiles.mlt')).toBe(true);
-  expect(MLTSourceLoader.testURL('https://server/tiles.json')).toBe(false);
+test('MLTLoaderWithParser#testURL', () => {
+  expect(MLTLoaderWithParser.testURL('https://server/{z}/{x}/{y}.mlt')).toBe(true);
+  expect(MLTLoaderWithParser.testURL('https://server/{z}/{x}/{-y}.mlt')).toBe(true);
+  expect(MLTLoaderWithParser.testURL('https://server/tiles-mlt/plain')).toBe(true);
+  expect(MLTLoaderWithParser.testURL('https://server/tiles.mlt')).toBe(true);
+  expect(MLTLoaderWithParser.testURL('https://server/tiles.json')).toBe(false);
 });
 
-test('MLTSourceLoader#getURLFromTemplate', () => {
+test('MLTLoaderWithParser#getURLFromTemplate', () => {
   expect(getURLFromTemplate('https://server/{z}/{x}/{y}', 1, 2, 3, '.mlt')).toBe(
     'https://server/3/1/2.mlt'
   );
@@ -36,15 +37,18 @@ test('MLTSourceLoader#getURLFromTemplate', () => {
 });
 
 test('MLTTileSource#getTileURL', () => {
-  const tmsSource = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
+  const tmsSource = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {});
   expect(tmsSource.getTileURL(1, 2, 3)).toBe('https://example.com/tiles/3/1/2.mlt');
 
-  const templateSource = MLTSourceLoader.createDataSource('https://example.com/tiles/{z}/{x}/{y}', {
-    mlt: {extension: '.mvt'}
-  });
+  const templateSource = MLTLoaderWithParser.createDataSourceSync(
+    'https://example.com/tiles/{z}/{x}/{y}',
+    {
+      mlt: {extension: '.mvt'}
+    }
+  );
   expect(templateSource.getTileURL(1, 2, 3)).toBe('https://example.com/tiles/3/1/2.mvt');
 
-  const templateSourceWithExt = MLTSourceLoader.createDataSource(
+  const templateSourceWithExt = MLTLoaderWithParser.createDataSourceSync(
     'https://example.com/tiles/{z}/{x}/{y}',
     {mlt: {extension: '.mvt'}}
   );
@@ -52,7 +56,7 @@ test('MLTTileSource#getTileURL', () => {
 });
 
 test('MLTTileSource#getSchema and default metadata', async () => {
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {
     core: {attributions: ['base']}
   });
 
@@ -61,7 +65,7 @@ test('MLTTileSource#getSchema and default metadata', async () => {
 });
 
 test('MLTTileSource#reads metadata with both zoom key styles', async () => {
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {
     core: {attributions: ['base']},
     mlt: {metadataUrl: 'data:application/json,%7B%7D'}
   });
@@ -78,7 +82,7 @@ test('MLTTileSource#reads metadata with both zoom key styles', async () => {
 });
 
 test('MLTTileSource#falls back when metadata fetch or JSON parsing fails', async () => {
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {
     mlt: {metadataUrl: 'data:application/json,%7B%7D'}
   });
   source.fetch = async () => new Response('missing', {status: 404, statusText: 'Not Found'});
@@ -89,7 +93,7 @@ test('MLTTileSource#falls back when metadata fetch or JSON parsing fails', async
 });
 
 test('MLTTileSource#getTile returns data or null for HTTP responses', async () => {
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {});
   source.fetch = async () => new Response(new Uint8Array([1, 2, 3]));
   expect(await source.getTile({x: 1, y: 2, z: 3})).toEqual(new Uint8Array([1, 2, 3]).buffer);
 
@@ -103,10 +107,10 @@ test('MLTTileSource#getTileData returns Arrow by default', async () => {
 
   MLTLoader.parse = (async (arrayBuffer: ArrayBuffer, options?: unknown) => {
     parseOptions.options = options;
-    return {shape: 'arrow-table', data: {numRows: 1}, schema: {fields: []}};
+    return {numRows: 1, schema: {fields: []}};
   }) as unknown as typeof MLTLoader.parse;
 
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {});
   source.fetch = async () => new Response(new ArrayBuffer(8));
   try {
     const tile = await source.getTileData({
@@ -114,11 +118,11 @@ test('MLTTileSource#getTileData returns Arrow by default', async () => {
       id: '1/2/3',
       bbox: {west: 0, north: 0, east: 0, south: 0}
     });
-    expect((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape).toBe('arrow-table');
+    expect((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape).toBe('arrow');
     expect((parseOptions.options as {mlt?: {coordinates?: string}})?.mlt?.coordinates).toBe(
       'wgs84'
     );
-    expect((tile as {shape?: string})?.shape).toBe('arrow-table');
+    expect(tile).toHaveProperty('numRows');
   } finally {
     MLTLoader.parse = originalParse;
   }
@@ -138,7 +142,7 @@ test('MLTTileSource#supports table shape by converting to Feature[]', async () =
     features: [feature]
   })) as unknown as typeof MLTLoader.parse;
 
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {
     mlt: {shape: 'geojson-table'}
   });
   source.fetch = async () => new Response(new ArrayBuffer(8));
@@ -159,16 +163,12 @@ test('MLTTileSource#supports Arrow table shape', async () => {
   let parsedOptions: unknown;
   MLTLoader.parse = (async (_arrayBuffer: ArrayBuffer, options?: unknown) => {
     parsedOptions = options;
-    return {
-      shape: 'arrow-table',
-      schema: {fields: [], metadata: {geo: '{}'}},
-      data: {numRows: 1}
-    };
+    return tableFromArrays({value: [1]});
   }) as unknown as typeof MLTLoader.parse;
 
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {
     geoarrow: {encodingPreference: 'optimized'},
-    mlt: {shape: 'arrow-table'}
+    mlt: {shape: 'arrow'}
   });
   source.fetch = async () => new Response(new ArrayBuffer(8));
   try {
@@ -177,7 +177,7 @@ test('MLTTileSource#supports Arrow table shape', async () => {
       id: '1/2/3',
       bbox: {west: 0, north: 0, east: 0, south: 0}
     });
-    expect((tile as {shape?: string})?.shape).toBe('arrow-table');
+    expect(tile).toHaveProperty('numRows');
     expect((parsedOptions as {geoarrow?: {encodingPreference?: string}}).geoarrow).toEqual({
       encodingPreference: 'optimized'
     });
@@ -187,7 +187,7 @@ test('MLTTileSource#supports Arrow table shape', async () => {
 });
 
 test('MLTTileSource supports XYZ URLs and inverted-y templates', () => {
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {
     mlt: {extension: '.tile'}
   });
   source.schema = 'xyz';
@@ -199,7 +199,7 @@ test('MLTTileSource supports XYZ URLs and inverted-y templates', () => {
 });
 
 test('MLTTileSource returns null for failed tile data and preserves metadata defaults', async () => {
-  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
+  const source = MLTLoaderWithParser.createDataSourceSync('https://example.com/tiles', {});
   source.fetch = async () => new Response('missing', {status: 500, statusText: 'Server Error'});
 
   await expect(

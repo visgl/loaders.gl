@@ -4,7 +4,7 @@
 
 import type {Schema} from '../types/schema';
 import type {TypedArray} from '../types/types';
-import type {ColumnarTable, ArrowTable} from './category-table';
+import type {ColumnarTable} from './category-table';
 import * as arrow from 'apache-arrow';
 
 /** Mesh as columnar table */
@@ -14,16 +14,8 @@ export interface MeshTable extends ColumnarTable {
   indices?: MeshAttribute;
 }
 
-/** Mesh as arrow table */
-export interface MeshArrowTable extends ArrowTable {
-  // shape: 'mesh-arrow-table';
-  /** Mesh topology represented by the Arrow table rows and indices. */
-  topology: MeshTopology;
-  /** Optional top-level primitive indices accessor for indexed meshes. */
-  indices?: MeshAttribute;
-  /** Raw Apache Arrow table data for Mesh or IndexedMesh columns. */
-  data: MeshArrowTableData | IndexedMeshArrowTableData;
-}
+/** Native Apache Arrow table carrying mesh columns and topology metadata. */
+export type MeshArrowTable = arrow.Table;
 
 /** Apache Arrow columns for a mesh vertex table. */
 export type MeshArrowColumns = {

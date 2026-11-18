@@ -35,7 +35,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Geometry', value: 'Scaled positions with source offsets and bounds'},
     {label: 'Attributes', value: 'Classification, returns, color, time, NIR, and waveform data'},
-    {label: 'Columnar path', value: "Use shape: 'arrow-table' and select columns"},
+    {label: 'Columnar path', value: "Use shape: 'arrow' and select columns"},
     {label: 'Write back', value: 'Encode Mesh or Mesh Arrow tables as LAS or LAZ'}
   ]}
 />
@@ -83,3 +83,37 @@ LASLoader is a fork of Uday Verma and Howard Butler's [plasio](https://github.co
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/pointclouds/THIRD-PARTY-NOTICES.md)
 and the project-wide [Attributions and Credits](/docs/references-and-credits).
+
+## Querying LAS and LAZ
+
+`LASLoader` supports `createDataSource()` and the loaders.gl table query API:
+
+```typescript
+import {createDataSource} from '@loaders.gl/core';
+import {query} from '@loaders.gl/core/scan';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
+
+const source = await createDataSource('points.laz', LASLoader);
+const result = await query({
+  select: ['POSITION', {column: 'COLOR_0', as: 'colors'}],
+  limit: 10000
+}, {source});
+```
+
+The source discovers its schema from the LAS header and variable-length records without decoding
+point records. Projection selects the decoder's output columns before allocation; predicate
+columns remain available until filtering completes. `POSITION` is always decoded internally,
+even when it is not selected. The result contains only the requested fields in selection order.
+
+`source.read()` yields native Arrow record batches and supports `columns`, `predicate`, `offset`,
+`limit`, and `signal`. Filters run on decoded Arrow data before the global row window. Limits stop
+consumption of the input stream. LAS and LAZ remain sequential scans: selecting fewer columns does
+not imply fewer network bytes or skipping compressed point records.
+
+`las.fp64` controls position precision during decoding. Cast expressions remain query-engine
+operations rather than decoder pushdowns. Casting Float32 positions to Float64 after decoding
+cannot recover precision lost during decoding. `core.batchSize` and `core.batchMaxRowsPerSecond`
+control batch size and delivery rate.
+
+For synchronous construction, call `await preload(LASLoader)` before
+`createDataSourceSync(input, LASLoader)`. `load()` continues to return parsed data.

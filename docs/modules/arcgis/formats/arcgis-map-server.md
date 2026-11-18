@@ -25,7 +25,7 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 
 | Type | API |
 | --- | --- |
-| Source loader | [`ArcGISMapTileSourceLoader`](../api-reference/arcgis.md) |
+| Source loader | [`ArcGISMapTileLoader`](../api-reference/arcgis.md) |
 
 <ArcGISDocsTabs service="arcgis-map-server" />
 

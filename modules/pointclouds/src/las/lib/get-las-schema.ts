@@ -46,5 +46,10 @@ export function makeMetadataFromLasHeader(lasHeader: LASHeader): Record<string, 
   if (lasHeader.isCompressed !== undefined) {
     metadata.las_isCompressed = lasHeader.isCompressed.toString();
   }
+  if (lasHeader.metadata?.wkt) metadata.las_wkt = lasHeader.metadata.wkt;
+  if (lasHeader.metadata?.wktMathTransform)
+    metadata.las_wktMathTransform = lasHeader.metadata.wktMathTransform;
+  if (lasHeader.metadata?.geotiff)
+    metadata.las_geotiff = JSON.stringify(lasHeader.metadata.geotiff);
   return metadata;
 }

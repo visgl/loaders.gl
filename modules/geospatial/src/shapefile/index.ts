@@ -18,8 +18,10 @@ export {BinaryReader as _BinaryReader} from './lib/streaming/binary-reader';
 export {BinaryChunkReader as _BinaryChunkReader} from './lib/streaming/binary-chunk-reader';
 export {zipBatchIterators as _zipBatchIterators} from './lib/streaming/zip-batch-iterators';
 
-// DEPRECATED EXPORTS
-/** @deprecated Use DBFLoader. */
-export {DBFWorkerLoader} from './dbf-loader-types';
-/** @deprecated Use SHPLoader. */
-export {SHPWorkerLoader} from './shp-loader-types';
+export {
+  parseShapefileToArrow,
+  parseShapefileToArrowInBatches,
+  SHAPEFILE_HEADER_KEY
+} from '../shapefile-arrow-loader';
+
+export {ShapefileLoaderWithParser} from '../shapefile-loader';

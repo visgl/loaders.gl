@@ -104,16 +104,17 @@ const WIRE_TYPES: [Potree2AttributeType, new (length: number) => WireArray, numb
 
 /** Validates decoded rows and layouts before writing any point bytes. */
 function getMesh(input: Mesh | MeshArrowTable): Mesh {
-  if ('shape' in input) {
+  if (!('attributes' in input)) {
+    const table = input;
     /** Rejects null rows and components before Arrow conversion can replace them. */
     type NullableColumn = {nullCount: number; children: readonly NullableColumn[]};
     const checkNulls = (data: NullableColumn): void => {
       if (data.nullCount) throw new Error('Potree writer cannot preserve null point attributes');
       for (const child of data.children) checkNulls(child);
     };
-    for (const batch of input.data.batches) checkNulls(batch.data);
+    for (const batch of table.batches) checkNulls(batch.data);
   }
-  const mesh = 'shape' in input ? convertTableToMesh(input) : input;
+  const mesh = 'attributes' in input ? input : convertTableToMesh(input);
   const position = mesh.attributes.POSITION;
   if (
     mesh.topology !== 'point-list' ||

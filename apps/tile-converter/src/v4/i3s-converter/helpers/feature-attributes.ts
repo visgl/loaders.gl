@@ -14,72 +14,21 @@ import {AttributeType} from '../types';
 import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/scene/gltf';
 
 /**
- * Takes attributes from property table based on featureIdsMap.
- * If there is no property value for particular featureId (index) the property will be null.
- * Example:
- * Initial data:
- *   OBJECTID: {0: 0, 3: 33, 4: 333}
- *   component: ['Windows', 'Frames', 'Wall', 'Roof', 'Skylight']
- * Result:
- *   OBJECTID: [0, 33, 333]
- *   component: ['Windows', 'Roof', 'Skylight']
- * @param featureIdsMap
- * @param propertyTable
+ * Select batch-table rows in geometry feature order, including repeated or missing rows.
+ * Missing values become null; zero and empty strings remain valid values.
+ * @param batchIds - original batch-table row indices in geometry feature order
+ * @param propertyTable - source tile's metadata columns
  */
 export function flattenPropertyTableByFeatureIds(
-  featureIdsMap: Record<string, number>,
+  batchIds: number[],
   propertyTable: FeatureTableJson
 ): FeatureTableJson {
   const resultPropertyTable: FeatureTableJson = {};
   for (const propertyName in propertyTable) {
     const properties = propertyTable[propertyName];
-    resultPropertyTable[propertyName] = getPropertiesByFeatureIds(properties, featureIdsMap);
+    resultPropertyTable[propertyName] = batchIds.map(batchId => properties?.[batchId] ?? null);
   }
-
   return resultPropertyTable;
-}
-
-/**
- * Getting properties by featureId index
- * @param properties
- * @param featureIdsMap
- */
-function getPropertiesByFeatureIds(
-  properties: unknown[],
-  featureIdsMap: Record<string, number>
-): unknown[] {
-  const resultProperties: unknown[] = [];
-
-  if (properties) {
-    for (const featureIdKey in featureIdsMap) {
-      const property = properties[featureIdKey] || null;
-      resultProperties.push(property);
-    }
-  }
-
-  return resultProperties;
-}
-
-/**
- * Check that all attributes in propertyTable have the same length as FeatureIds.
- * If there are differencies between lengths we should flatten property table based on exiesting featureIds.
- * @param featureIds
- * @param propertyTable
- * @returns
- */
-export function checkPropertiesLength(
-  featureIds: number[],
-  propertyTable: FeatureTableJson
-): boolean {
-  let needFlatten = false;
-
-  for (const attribute of Object.values(propertyTable)) {
-    if (!featureIds || !attribute || featureIds.length !== attribute.length) {
-      needFlatten = true;
-    }
-  }
-
-  return needFlatten;
 }
 
 /**
@@ -90,7 +39,9 @@ export function getAttributeType(attribute: unknown): string {
   if (typeof attribute === 'string' || typeof attribute === 'bigint') {
     return AttributeType.STRING_TYPE;
   } else if (typeof attribute === 'number') {
-    return Number.isInteger(attribute) ? AttributeType.SHORT_INT_TYPE : AttributeType.DOUBLE_TYPE;
+    return Number.isInteger(attribute) && attribute > -0x80000000 && attribute <= 0x7fffffff
+      ? AttributeType.SHORT_INT_TYPE
+      : AttributeType.DOUBLE_TYPE;
   }
   return AttributeType.STRING_TYPE;
 }
@@ -244,3 +195,34 @@ const getAttributeTypeFromExtStructuralMetadata = (
   }
   return attributeType;
 };
+
+/**
+ * Collects a stable batch-table schema before nodes are written. Null-only columns
+ * defer type selection; numeric columns widen to Float64 and mixed columns to String.
+ */
+export function collectBatchTableAttributeTypes(
+  propertyTable: FeatureTableJson,
+  attributeTypes: Map<string, Attribute | null>
+): void {
+  for (const [name, values] of Object.entries(propertyTable)) {
+    if (name === 'OBJECTID' || !Array.isArray(values)) {
+      continue;
+    }
+    let type = attributeTypes.get(name) ?? null;
+    for (const value of values) {
+      if (value === null || value === undefined) {
+        continue;
+      }
+      const valueType = getAttributeType(value) as Attribute;
+      if (!type) {
+        type = valueType;
+      } else if (type !== valueType) {
+        type =
+          type === AttributeType.STRING_TYPE || valueType === AttributeType.STRING_TYPE
+            ? AttributeType.STRING_TYPE
+            : AttributeType.DOUBLE_TYPE;
+      }
+    }
+    attributeTypes.set(name, type);
+  }
+}

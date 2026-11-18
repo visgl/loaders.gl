@@ -14,19 +14,18 @@ import {
 } from '@deck.gl/core';
 import {MVTLayer, TileLayer, type TileLayerProps} from '@deck.gl/geo-layers';
 import {BitmapLayer, GeoJsonLayer, PathLayer} from '@deck.gl/layers';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import type {
   DataSourceOptions,
   GetTileDataParameters,
   Loader,
-  SourceLoader,
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
-import {isSourceLoader} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import {SharedTile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
+import {Tile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
+import {isArrowTable} from '@math.gl/core/arrow';
 import {Matrix4, type NumericArray} from '@math.gl/core';
 import {sharedTile2DDeckAdapter} from './shared-tile-2d/deck-tileset-adapter';
 import {SharedTile2DView} from './shared-tile-2d/shared-tile-2d-view';
@@ -57,11 +56,9 @@ export type Tile2DSourceLayerProps<DataT = unknown> = Omit<
   Partial<Omit<TileLayerProps, 'data' | 'loaders' | 'renderSubLayers'>> & {
     /** URL/blob input or a fully constructed loaders.gl tile source. */
     data: Tile2DSourceLayerData;
-    /** Source factories used to auto-create tile sources from URL/blob inputs. */
-    sources?: Readonly<SourceLoader[]>;
     /** Parser loaders and SourceLoaders used to resolve URL/blob inputs. */
-    loaders?: ReadonlyArray<Loader | SourceLoader>;
-    /** Options forwarded to `createDataSource` when `sources` are supplied. */
+    loaders?: ReadonlyArray<Loader>;
+    /** Options forwarded to `createDataSource` when source loaders are supplied. */
     sourceOptions?: DataSourceOptions;
     /** Optional metadata used by the example overlay and zoom bounds. */
     metadata?: TileSourceMetadata | null;
@@ -70,14 +67,14 @@ export type Tile2DSourceLayerProps<DataT = unknown> = Omit<
     /** Called when a tile payload cannot be fetched or parsed. */
     onTileError?: (error: unknown, tileParameters?: unknown) => void;
     /** Called when the viewport's currently selected tiles are loaded. */
-    onTilesLoad?: (tiles: SharedTile2DHeader<DataT>[]) => void;
+    onTilesLoad?: (tiles: Tile2DHeader<DataT>[]) => void;
     /** Custom sub-layer factory for non-local shared-tile rendering. */
     renderSubLayers?: (
       props: Tile2DSourceLayerProps<DataT> & {
         id: string;
         data: DataT;
         _offset: number;
-        tile: SharedTile2DHeader<DataT>;
+        tile: Tile2DHeader<DataT>;
         tileSource: TileSourceRuntime;
       }
     ) => Layer | null | LayersList;
@@ -113,9 +110,9 @@ export type Tile2DSourceLayerPickingInfo<
   SubLayerPickingInfo = PickingInfo
 > = SubLayerPickingInfo & {
   /** Picked tile when a tile sub-layer is hit. */
-  tile?: SharedTile2DHeader<DataT>;
+  tile?: Tile2DHeader<DataT>;
   /** Tile that produced the picked sub-layer. */
-  sourceTile: SharedTile2DHeader<DataT>;
+  sourceTile: Tile2DHeader<DataT>;
   /** Concrete sub-layer instance that handled the pick. */
   sourceTileSubLayer: Layer;
 };
@@ -193,7 +190,6 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   static defaultProps = {
     ...TileLayer.defaultProps,
     data: '',
-    sources: {type: 'array', compare: false, value: []},
     loaders: {type: 'array', compare: false, value: []},
     sourceOptions: {type: 'object', compare: false, value: {}},
     tileSize: 256,
@@ -281,7 +277,6 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
 
     const dataChanged =
       changeFlags.dataChanged ||
-      props.sources !== oldProps.sources ||
       props.loaders !== oldProps.loaders ||
       props.sourceOptions !== oldProps.sourceOptions;
 
@@ -362,7 +357,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     if (!sourceLayer) {
       throw new Error('Tile2DSourceLayer picking info requires a source layer.');
     }
-    const sourceTile: SharedTile2DHeader<DataT> = (sourceLayer.props as any).tile;
+    const sourceTile: Tile2DHeader<DataT> = (sourceLayer.props as any).tile;
     const info = params.info as Tile2DSourceLayerPickingInfo<DataT>;
     if (info.picked) {
       info.tile = sourceTile;
@@ -393,7 +388,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     if (!this.state.tileset) {
       return true;
     }
-    const {tile} = (layer as Layer<{tile: SharedTile2DHeader<DataT>}>).props;
+    const {tile} = (layer as Layer<{tile: Tile2DHeader<DataT>}>).props;
     const tilesetView = this._getOrCreateTilesetView(this._getViewportKey());
     return tilesetView.isTileVisible(
       tile,
@@ -650,20 +645,20 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
   }
 
   /** Clears cached sub-layers when a tile loads. */
-  private _onTileLoad(tile: SharedTile2DHeader<DataT>): void {
+  private _onTileLoad(tile: Tile2DHeader<DataT>): void {
     this.state.tileLayers.delete(tile.id);
     this.setNeedsUpdate();
   }
 
   /** Clears cached sub-layers when a tile errors. */
-  private _onTileError(error: any, tile: SharedTile2DHeader<DataT>): void {
+  private _onTileError(error: any, tile: Tile2DHeader<DataT>): void {
     this.state.tileLayers.delete(tile.id);
     this.props.onTileError?.(error, tile);
     this.setNeedsUpdate();
   }
 
   /** Removes cached sub-layers when a tile is evicted. */
-  private _onTileUnload(tile: SharedTile2DHeader<DataT>): void {
+  private _onTileUnload(tile: Tile2DHeader<DataT>): void {
     this.state.tileLayers.delete(tile.id);
   }
 
@@ -688,16 +683,14 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
 
   /** Resolves the `data` prop to a concrete loaders.gl tile source. */
   _resolveData(props: Tile2DSourceLayerProps<DataT>): TileSourceRuntime | null {
-    const {data, sources, sourceOptions = {}, loaders = []} = props;
+    const {data, sourceOptions = {}, loaders = []} = props;
     if (isTileSourceRuntime(data)) {
       return data;
     }
-    const sourceLoaders = Array.from(
-      new Set([...(sources || []), ...loaders.filter(isSourceLoader)])
-    );
+    const sourceLoaders = Array.from(new Set(loaders.filter(supportsSourceCreation)));
     if ((typeof data === 'string' || data instanceof Blob) && sourceLoaders.length) {
-      const parserLoaders = loaders.filter(loader => !isSourceLoader(loader));
-      return createDataSource(data, sourceLoaders, {
+      const parserLoaders = loaders.filter(loader => !supportsSourceCreation(loader));
+      return createDataSourceSync(data, sourceLoaders, {
         ...sourceOptions,
         core: {
           ...sourceOptions.core,
@@ -705,7 +698,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
         }
       }) as unknown as TileSourceRuntime;
     }
-    throw new Error('Tile2DSourceLayer requires `sources` for URL/blob inputs.');
+    throw new Error('Tile2DSourceLayer requires a SourceLoader in `loaders` for URL/blob inputs.');
   }
 
   /** Copies a tileset option only when the layer prop was explicitly set. */
@@ -756,7 +749,7 @@ function defaultRenderSubLayers<DataT>(
     id: string;
     data: DataT;
     _offset: number;
-    tile: SharedTile2DHeader<DataT>;
+    tile: Tile2DHeader<DataT>;
     tileSource: TileSourceRuntime;
   }
 ) {
@@ -851,11 +844,6 @@ function getArrowTileRenderData(data: unknown): unknown {
         geometryColumn: getGeoMetadata(data.schema?.metadata)?.primary_column
       })
     : data;
-}
-
-/** Identifies the loaders.gl Arrow table wrapper. */
-function isArrowTable(data: unknown): data is ArrowTable {
-  return (data as {shape?: string} | null)?.shape === 'arrow-table';
 }
 
 function isTileSourceRuntime(value: unknown): value is TileSourceRuntime {

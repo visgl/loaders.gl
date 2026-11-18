@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 import {expect, test} from 'vitest';
-import {GeoTIFFRasterSource, getImageTileGrid} from '../../src/geotiff/geotiff-source-loader';
+import {GeoTIFFRasterSource, getImageTileGrid} from '../../src/geotiff/geotiff-source';
 import {createTiffFixture} from './lib/tiff/tiff-fixture';
 import type {TiffSourceImage} from '../../src/geotiff/lib/tiff/tiff-source-decoder';
 

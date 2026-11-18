@@ -18,10 +18,10 @@ describe('experimental 3D Tiles 2.0 conformance fixtures', () => {
   beforeAll(async () => {
     [parsedHeaders[VECTOR_PREVIEW_URL], parsedHeaders[NATIVE_DRAFT_URL]] = await Promise.all([
       load(VECTOR_PREVIEW_URL, Tiles3DLoader, {
-        worker: false
+        core: {worker: false}
       }) as Promise<Tiles3DTilesetJSONPostprocessed>,
       load(NATIVE_DRAFT_URL, Tiles3DLoader, {
-        worker: false
+        core: {worker: false}
       }) as Promise<Tiles3DTilesetJSONPostprocessed>
     ]);
   });

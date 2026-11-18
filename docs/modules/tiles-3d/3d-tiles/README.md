@@ -83,7 +83,6 @@ npm install @loaders.gl/core @loaders.gl/tiles-3d @loaders.gl/tiles
 The module provides loaders for the individual 3D Tiles payload forms:
 
 - [`Tiles3DLoader`](/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader), a loader for loading a top-down or nested tileset and its tiles.
-- [`CesiumIonLoader`](/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader), a `Tiles3DLoader` variant that resolves credentials and tileset URLs from Cesium ion.
 
 For dynamic selection and loading of tilesets larger than browser memory, use the helper classes in
 the `@loaders.gl/tiles` module:

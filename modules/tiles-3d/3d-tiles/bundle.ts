@@ -9,6 +9,7 @@ export {
   readArrayBuffer,
   setLoaderOptions,
   getLoaderOptions,
+  compareLoaderOptions,
   registerLoaders,
   selectLoader,
   selectLoaderSync,
@@ -31,6 +32,7 @@ export {
   encodeText,
   encodeTextSync,
   createDataSource,
+  createDataSourceSync,
   _selectSource,
   setPathPrefix,
   getPathPrefix,
@@ -63,8 +65,7 @@ export {
   isIterator,
   isResponse,
   isReadableStream,
-  isWritableStream,
-  NullWorkerLoader
+  isWritableStream
 } from '@loaders.gl/core';
 export type {
   Loader,
@@ -89,7 +90,6 @@ export {
   Tile3DSubtreeFormat,
   ThreeTZFormat,
   Tiles3DLoader,
-  CesiumIonLoader,
   Tile3DSubtreeLoader,
   Tiles3DArchiveFileLoader,
   Tiles3DArchiveSource,
@@ -98,7 +98,7 @@ export {
   Tile3DFeatureTable,
   Tile3DBatchTable,
   TILE3D_TYPE,
-  _getIonTilesetMetadata,
+  resolveCesiumIonTileset,
   Tiles3DArchive,
   parse3DTilesArchive,
   getStructuralMetadataProperty,

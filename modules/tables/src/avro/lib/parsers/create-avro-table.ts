@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {mergeArrowSchemas, updateArrowTableSchema} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 import type {AvroSchema} from './parse-avro';
 
@@ -26,7 +27,13 @@ export function createAvroTable(
 
 /** Combines Arrow batches without spreading an unbounded number of function arguments. */
 export function concatenateAvroTables(tables: arrow.Table[]): arrow.Table {
-  return new arrow.Table(tables.flatMap(table => table.batches));
+  let schema: arrow.Schema | undefined;
+  const batches: arrow.RecordBatch[] = [];
+  for (const table of tables) {
+    schema = mergeArrowSchemas(schema, table.schema);
+    batches.push(...updateArrowTableSchema(table, table.schema).batches);
+  }
+  return schema ? new arrow.Table(schema, batches) : new arrow.Table([]);
 }
 
 /** Registers definitions used by named record, enum, and fixed references. */

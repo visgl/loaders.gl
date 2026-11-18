@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {SplatsLoaderOptions} from './types';
 import {KSPLATFormat} from './splats-format';
 
@@ -19,14 +19,16 @@ async function preload() {
 
 /** Metadata-only loader for `.ksplat` Gaussian splat files. */
 export const KSPLATLoader = {
-  dataType: null as unknown as MeshArrowTable,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as Table,
   batchType: null as never,
   ...KSPLATFormat,
   version: VERSION,
   options: {
     splats: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     }
   },
   preload
-} as const satisfies Loader<MeshArrowTable, never, SplatsLoaderOptions>;
+} as const satisfies Loader<Table, never, SplatsLoaderOptions>;

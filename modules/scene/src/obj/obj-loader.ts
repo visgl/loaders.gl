@@ -2,23 +2,25 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {OBJLoaderOptions, OBJParsedBatch} from './obj-loader-types';
+import {refineArrowTableBatches, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {Table, type RecordBatch} from 'apache-arrow';
+import type {OBJLoaderOptions, OBJMeshBatch, OBJParsedBatch} from './obj-loader-types';
 
 import {
   concatenateArrayBuffersAsync,
   makeLineIterator,
   makeTextDecoderIterator,
-  makeTableScanBatch,
   type LoaderWithParser
 } from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Mesh} from '@loaders.gl/core/schema';
 import {
-  deserializeArrowWorkerTable,
-  serializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+  deserializeNativeArrowWorkerResult,
+  serializeNativeArrowWorkerResult
+} from '@loaders.gl/core/arrow-worker-transport';
 import {
-  convertMeshToTable,
+  convertMeshToArrowTable,
   convertTableToMesh,
+  isArrowTable,
   getMeshBoundingBox
 } from '@loaders.gl/core/schema-utils';
 import {getOBJSchema} from './lib/get-obj-schema';
@@ -27,54 +29,37 @@ import {OBJLoader as OBJLoaderMetadata} from './obj-loader-types';
 
 const {preload: _OBJLoaderPreload, ...OBJLoaderMetadataWithoutPreload} = OBJLoaderMetadata;
 
-function convertOBJMesh(mesh: Mesh, options?: OBJLoaderOptions): Mesh | MeshArrowTable {
-  const table = convertMeshToTable(mesh, 'arrow-table');
+/** Converts an OBJ mesh through native Arrow and materializes the mesh layout on request. */
+function convertOBJMesh(mesh: Mesh, options?: OBJLoaderOptions): Mesh | Table {
+  const table = convertMeshToArrowTable(mesh);
   return options?.obj?.shape === 'mesh' ? convertTableToMesh(table) : table;
 }
 
-// OBJLoaderWithParser
-
-/**
- * Loader for the OBJ geometry format
- */
+/** Loader for OBJ geometry. */
 export const OBJLoaderWithParser = {
   ...OBJLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: OBJLoaderOptions) =>
     convertOBJMesh(parseOBJ(new TextDecoder().decode(arrayBuffer), options), options),
   parseTextSync: (text: string, options?: OBJLoaderOptions) =>
     convertOBJMesh(parseOBJ(text, options), options),
-  parseInBatches: async function* (
-    arrayBuffer:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ): AsyncIterable<OBJParsedBatch> {
-    const batchSize = getNumericBatchSize(options);
-    if (options?.obj?.pointCloud) {
-      const textIterator = makeTextDecoderIterator(arrayBuffer as AsyncIterable<ArrayBuffer>);
-      const lineIterator = makeLineIterator(textIterator);
-      yield* parseOBJPointCloudLinesInBatches(lineIterator, options, batchSize);
-      return;
+  async *parseInBatches(input, options) {
+    for await (const chunk of refineArrowTableBatches(
+      parseOBJWithMetadataInBatches(input, options)
+    )) {
+      if (options?.obj?.shape === 'mesh') yield convertOBJBatchToMesh(chunk);
+      else if (chunk.batches.length) yield* chunk.batches;
+      else yield makeArrowMetadataBatch(chunk.schema);
     }
-
-    const data = await concatenateArrayBuffersAsync(arrayBuffer);
-    const text = new TextDecoder().decode(data);
-    if (hasOBJGeometryRecords(text)) {
-      yield makeOBJBatch(parseOBJ(text, options), options);
-      return;
-    }
-
-    yield* parseOBJPointCloudInBatches(text, options, batchSize);
   },
-  serializeWorkerResult: serializeArrowWorkerTable,
+  serializeWorkerResult: result => serializeNativeArrowWorkerResult(result as Table),
   deserializeWorkerResult: deserializeOBJWorkerResult,
-  serializeWorkerBatch: serializeArrowWorkerTable,
+  serializeWorkerBatch: batch => serializeNativeArrowWorkerResult(batch as RecordBatch),
   deserializeWorkerBatch: deserializeOBJWorkerBatch
-} as const satisfies LoaderWithParser<Mesh | MeshArrowTable, OBJParsedBatch, OBJLoaderOptions>;
+} as const satisfies LoaderWithParser<Mesh | Table, OBJParsedBatch, OBJLoaderOptions>;
 
 /** Returns a numeric batch size when batching has an explicit row count. */
 function getNumericBatchSize(options?: OBJLoaderOptions): number | undefined {
-  const batchSize = options?.batchSize ?? options?.core?.batchSize;
+  const batchSize = options?.core?.batchSize;
   return typeof batchSize === 'number' ? batchSize : undefined;
 }
 
@@ -85,20 +70,15 @@ function hasOBJGeometryRecords(text: string): boolean {
   });
 }
 
-function* parseOBJPointCloudInBatches(
-  text: string,
-  options?: OBJLoaderOptions,
-  batchSize?: number
-): Iterable<OBJParsedBatch> {
+function* parseOBJPointCloudInBatches(text: string, batchSize?: number): Iterable<Table> {
   const vertexLines = text.split(/\r?\n/).filter(line => line.trimStart().startsWith('v '));
-  yield* makeOBJPointCloudBatches(vertexLines, options, batchSize);
+  yield* makeOBJPointCloudBatches(vertexLines, batchSize);
 }
 
 async function* parseOBJPointCloudLinesInBatches(
   lines: AsyncIterable<string>,
-  options?: OBJLoaderOptions,
   batchSize?: number
-): AsyncIterable<OBJParsedBatch> {
+): AsyncIterable<Table> {
   const normalizedBatchSize = batchSize || 1000;
   let vertexLines: string[] = [];
 
@@ -108,28 +88,24 @@ async function* parseOBJPointCloudLinesInBatches(
     }
     vertexLines.push(line);
     if (vertexLines.length >= normalizedBatchSize) {
-      yield makeOBJBatch(parseOBJPointCloudMesh(vertexLines), options);
+      yield convertMeshToArrowTable(parseOBJPointCloudMesh(vertexLines));
       vertexLines = [];
     }
   }
 
   if (vertexLines.length > 0) {
-    yield makeOBJBatch(parseOBJPointCloudMesh(vertexLines), options);
+    yield convertMeshToArrowTable(parseOBJPointCloudMesh(vertexLines));
   }
 }
 
-function* makeOBJPointCloudBatches(
-  vertexLines: string[],
-  options?: OBJLoaderOptions,
-  batchSize?: number
-): Iterable<OBJParsedBatch> {
+function* makeOBJPointCloudBatches(vertexLines: string[], batchSize?: number): Iterable<Table> {
   const normalizedBatchSize = batchSize || vertexLines.length || 1;
 
   for (let rowIndex = 0; rowIndex < vertexLines.length; rowIndex += normalizedBatchSize) {
     const mesh = parseOBJPointCloudMesh(
       vertexLines.slice(rowIndex, rowIndex + normalizedBatchSize)
     );
-    yield makeOBJBatch(mesh, options);
+    yield convertMeshToArrowTable(mesh);
   }
 }
 
@@ -170,34 +146,50 @@ function parseOBJPointCloudMesh(vertexLines: string[]): Mesh {
   };
 }
 
-function makeOBJBatch(mesh: Mesh, options?: OBJLoaderOptions): OBJParsedBatch {
-  const table = convertMeshToTable(mesh, 'arrow-table');
-  if (options?.obj?.shape === 'mesh') {
-    const convertedMesh = convertTableToMesh(table);
-    return {
-      shape: 'mesh',
-      batchType: 'data',
-      data: convertedMesh,
-      length: convertedMesh.header?.vertexCount || 0
-    };
-  }
-
-  return makeTableScanBatch(table);
+/** Creates the mesh batch envelope from decoded native columns. */
+function convertOBJBatchToMesh(table: Table): OBJMeshBatch {
+  return {shape: 'mesh', batchType: 'data', data: convertTableToMesh(table), length: table.numRows};
 }
 
-/** Hydrates worker columns before applying the requested legacy mesh shape on the caller. */
-function deserializeOBJWorkerResult(
-  result: unknown,
-  options?: OBJLoaderOptions
-): Mesh | MeshArrowTable {
-  const table = deserializeArrowWorkerTable(result);
+/** Hydrates a native worker table before optional mesh reconstruction. */
+function deserializeOBJWorkerResult(result: unknown, options?: OBJLoaderOptions): Mesh | Table {
+  const table = deserializeNativeArrowWorkerResult(result);
+  if (!isArrowTable(table)) throw new Error('OBJ worker requires an Arrow table');
   return options?.obj?.shape === 'mesh' ? convertTableToMesh(table) : table;
 }
 
-/** Restores the OBJ mesh batch envelope after caller-side conversion. */
+/** Hydrates a worker batch and reconstructs the mesh envelope when requested. */
 function deserializeOBJWorkerBatch(result: unknown, options?: OBJLoaderOptions): OBJParsedBatch {
-  const table = deserializeArrowWorkerTable(result);
-  if (options?.obj?.shape !== 'mesh') return table;
-  const mesh = convertTableToMesh(table);
-  return {shape: 'mesh', batchType: 'data', data: mesh, length: table.length};
+  const chunk = deserializeNativeArrowWorkerResult(result);
+  const batch = isArrowTable(chunk)
+    ? (chunk.batches[0] ?? makeArrowMetadataBatch(chunk.schema))
+    : chunk;
+  return options?.obj?.shape === 'mesh'
+    ? convertOBJBatchToMesh(new Table(batch.schema, [batch]))
+    : batch;
+}
+
+/** Parses OBJ batches before shared cumulative metadata refinement. */
+async function* parseOBJWithMetadataInBatches(
+  arrayBuffer:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: OBJLoaderOptions
+): AsyncIterable<Table> {
+  const batchSize = getNumericBatchSize(options);
+  if (options?.obj?.pointCloud) {
+    const textIterator = makeTextDecoderIterator(arrayBuffer as AsyncIterable<ArrayBuffer>);
+    const lineIterator = makeLineIterator(textIterator);
+    yield* parseOBJPointCloudLinesInBatches(lineIterator, batchSize);
+    return;
+  }
+
+  const data = await concatenateArrayBuffersAsync(arrayBuffer);
+  const text = new TextDecoder().decode(data);
+  if (hasOBJGeometryRecords(text)) {
+    yield convertMeshToArrowTable(parseOBJ(text, options));
+    return;
+  }
+
+  yield* parseOBJPointCloudInBatches(text, batchSize);
 }

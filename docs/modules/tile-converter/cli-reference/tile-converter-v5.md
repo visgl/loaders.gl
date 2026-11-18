@@ -219,3 +219,12 @@ numeric coercion is inferred. This mapping does not add support for multiple pro
 classes or texture/implicit feature IDs. The JSON configuration has its own 64 KiB read
 limit and does not count as dataset bytes. See the [feature profiles](../api-reference/v5-conversion.md#declared-gltf-feature-schemas)
 for the source/destination semantic checks.
+
+SLPK collections share byte-identical encoded texture sets with compatible texture
+profiles across mesh nodes. Geometry, UVs and material definitions remain per mesh.
+Both node pages and legacy node indices reference the shared texture owner.
+
+Both converter commands accept `--version`, which prints the installed package
+version and converter implementation. Legacy invocations print this identity to stderr. V5 includes a `converter`
+identity object in JSON results and errors so both output streams stay parseable.
+`tile-converter` selects `legacy-v4`; `tile-converter-v5` selects `v5`.

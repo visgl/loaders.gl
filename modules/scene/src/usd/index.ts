@@ -6,6 +6,7 @@ export {USDLoader} from './usd-loader-types';
 export type {
   USDAssetPath,
   USDAttribute,
+  USDEmbeddedAsset,
   USDLoaderOptions,
   USDPrim,
   USDScenePath,
@@ -13,3 +14,5 @@ export type {
   USDValue,
   USDVariant
 } from './lib/usd-types';
+
+export {USDLoaderWithParser} from '../usd-loader';

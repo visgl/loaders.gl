@@ -62,7 +62,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Loader</span>
     <strong>ShapefileLoader</strong>
     <span>Loads Shapefile geometries and DBF properties as loaders.gl geometry tables.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ArrowTable, legacy Shapefile output</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, Apache Arrow table, legacy Shapefile output</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync, parseInBatches</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/geospatial/shapefile/api-reference/shp-loader">
@@ -87,4 +87,4 @@ A Shapefile dataset is normally a set of sidecar files. `.shp` stores geometry, 
 
 ## Arrow
 
-Set `shapefile.shape: 'arrow-table'` to return an Arrow table with DBF property columns and a WKB `geometry` column.
+Set `shapefile.shape: 'arrow'` to return an Arrow table with DBF property columns and a WKB `geometry` column.

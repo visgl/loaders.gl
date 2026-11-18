@@ -19,7 +19,7 @@ import {
 import type {ChromeTraceEventSchema, ChromeTraceFileSchema, TraceStreamChunk} from '../src';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 /**
  * Builds one minimal metadata event.
@@ -101,7 +101,7 @@ function encodeChromeTraceFixture(traceFile: ChromeTraceFileSchema): ArrayBuffer
 async function parseChromeTraceArrowTable(traceFile: ChromeTraceFileSchema): Promise<arrow.Table> {
   const parsed = await parse(encodeChromeTraceFixture(traceFile), ChromeTraceLoader, {
     chromeTrace: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     }
   });
 
@@ -117,7 +117,7 @@ async function parseChromeTraceArrowBatches(
 ): Promise<arrow.RecordBatch[]> {
   const batchIterable = await parseInBatches(streamChromeTraceFile(traceFile), ChromeTraceLoader, {
     chromeTrace: {
-      shape: 'arrow-table',
+      shape: 'arrow',
       batchSize
     }
   });
@@ -254,7 +254,7 @@ describe('chrome-trace-stream', () => {
       ChromeTraceLoader,
       {
         chromeTrace: {
-          shape: 'arrow-table',
+          shape: 'arrow',
           batchSize: 2
         }
       }
@@ -306,7 +306,7 @@ describe('chrome-trace-stream', () => {
 
     const chunks: TraceStreamChunk[] = [];
     for await (const chunk of streamChromeTraceArrowChunks(tableSource(), {
-      name: 'public-arrow-table',
+      name: 'public-native-arrow',
       publishEveryEvents: 1
     })) {
       chunks.push(chunk);
@@ -341,7 +341,7 @@ describe('chrome-trace-stream', () => {
 
     const batches = [];
     for await (const batch of await parseInBatches(source(), ChromeTraceLoader, {
-      chromeTrace: {shape: 'arrow-table', batchSize: 1}
+      chromeTrace: {shape: 'arrow', batchSize: 1}
     })) {
       batches.push(batch as arrow.RecordBatch);
     }

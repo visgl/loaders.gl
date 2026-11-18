@@ -12,13 +12,9 @@ export type {
   FlatGeobufReadOptions,
   FlatGeobufSourceExplain,
   FlatGeobufSourceLoaderOptions
-} from './flatgeobuf-source-loader';
-export {
-  FlatGeobufSourceLoader,
-  FlatGeobufSourceLoader as _FlatGeobufSourceLoader,
-  FlatGeobufVectorSource
-} from './flatgeobuf-source-loader';
+} from './flatgeobuf-source';
+export {FlatGeobufVectorSource} from './flatgeobuf-source';
 
-// DEPRECATED EXPORTS
-/** @deprecated Use FlatGeobufLoader. */
-export {FlatGeobufWorkerLoader} from './flatgeobuf-loader-types';
+export {FlatGeobufWorkerLoaderWithParser, FlatGeobufLoaderWithParser} from '../flatgeobuf-loader';
+
+export {createFlatGeobufSource} from '../flatgeobuf-source';

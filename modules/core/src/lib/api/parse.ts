@@ -4,16 +4,17 @@
 
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderContext,
   LoaderOptions,
-  LoaderOptionsWithShape,
   DataType,
   LoaderWithParser,
-  LoaderOptionsType,
-  LoaderShapeType,
   LoaderReturnType,
-  LoaderArrayOptionsType,
   LoaderArrayReturnType,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
@@ -22,8 +23,7 @@ import {
   shouldParseWithWorker,
   mergeOptions,
   isResponse,
-  isBlob,
-  isSourceLoader
+  isBlob
 } from '@loaders.gl/core/loader-utils';
 import {validateWorkerVersion} from '@loaders.gl/core/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -32,7 +32,7 @@ import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getArrayBufferFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
-import {getLoaderImplementation} from './load-loader';
+import {getLoaderImplementation, isLoaderWithParser} from './load-loader';
 import {selectLoader} from './select-loader';
 
 // type LoaderArrayType<T> = T extends (infer Loader)[] ? LoaderOptionsType<Loader> : T
@@ -40,31 +40,45 @@ import {selectLoader} from './select-loader';
 /**
  * Parses `data` asynchronously using the supplied loader
  */
+export async function parse<LoaderT extends Loader>(
+  data: DataType | Promise<DataType>,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
 export async function parse<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   data: DataType | Promise<DataType>,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 /**
  * Parses `data` asynchronously by matching one of the supplied loader
  */
+export async function parse<LoaderArrayT extends Loader[]>(
+  data: DataType | Promise<DataType>,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+
 export async function parse<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   data: DataType | Promise<DataType>,
   loaders: LoaderArrayT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+): Promise<LoaderArrayReturnType<LoaderArrayT, OptionsT>>;
 
 /**
  * Parses data asynchronously by matching a pre-registered loader
@@ -116,12 +130,6 @@ export async function parse(
     return null;
   }
 
-  if (isSourceLoader(loader)) {
-    throw new Error(
-      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parse().`
-    );
-  }
-
   // Normalize options
   // @ts-expect-error candidateLoaders
   const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
@@ -143,7 +151,7 @@ export async function parse(
     context || null
   );
 
-  return await parseWithLoader(loader, data, strictOptions, context);
+  return parseWithLoader(loader, data, strictOptions, context);
 }
 
 // TODO - should accept loader.parseAsyncIterator and concatenate.
@@ -168,18 +176,24 @@ async function parseWithLoader(
 
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
 
-  if (shouldParseWithWorker(loaderWithParser, data, options, context, loader)) {
-    data = await getArrayBufferFromData(data, options);
-    return await parseWithWorker(loaderWithParser, data, options, context, parse);
+  if (loaderWithParser.createDataSourceSync && !isLoaderWithParser(loaderWithParser)) {
+    throw new Error(`${loader.id} creates sources. Use createDataSource() to open a source.`);
   }
 
-  if (isBlob(data) && loaderWithParser.parseBlob) {
-    return await loaderWithParser.parseBlob(data, options, context);
+  const output = loaderWithParser.prepareParseOutput?.(options);
+  const parseOptions = output?.options ?? options;
+  let result: unknown;
+
+  if (shouldParseWithWorker(loaderWithParser, data, parseOptions, context, loader)) {
+    data = await getArrayBufferFromData(data, parseOptions);
+    result = await parseWithWorker(loaderWithParser, data, parseOptions, context, parse);
+  } else if (isBlob(data) && loaderWithParser.parseBlob) {
+    result = await loaderWithParser.parseBlob(data, parseOptions, context);
+  } else {
+    data = await getArrayBufferOrStringFromData(data, loader, parseOptions);
+    result = await parseWithLoaderImplementation(loaderWithParser, data, parseOptions, context);
   }
-
-  data = await getArrayBufferOrStringFromData(data, loader, options);
-
-  return await parseWithLoaderImplementation(loaderWithParser, data, options, context);
+  return output ? output.convert(result) : result;
 }
 
 async function parseWithLoaderImplementation(
@@ -201,11 +215,14 @@ async function parseWithLoaderImplementation(
     return await loader.parse(data as ArrayBuffer, options, context);
   }
 
-  // All parser-bearing sync loaders should also offer `parse` so async APIs can use them.
   if (loader.parseSync) {
     throw new Error(
       `${loader.name} loader: 'parse' not available on parser-bearing sync loader. Add an async 'parse' function to this loader, or call preload(loader) before parseSync(). ${context.url || ''}`
     );
+  }
+
+  if (loader.createDataSourceSync) {
+    throw new Error(`${loader.id} creates sources. Use createDataSource() to open a source.`);
   }
 
   // TBD - If asynchronous parser not available, return null

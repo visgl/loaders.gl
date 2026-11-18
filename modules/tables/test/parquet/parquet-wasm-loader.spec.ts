@@ -5,24 +5,24 @@
 import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
-import {ParquetWasmLoaderWithParser} from '@loaders.gl/tables/parquet-wasm-loader';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWasmLoaderWithParser} from '../../../../website/src/alternate-loaders/parquet/parquet-wasm-loader';
 
 /** Tiny generated fixture shared by the optional WASM reader conformance cases. */
 let fixture: ArrayBuffer;
 
 beforeAll(async () => {
-  fixture = await encode({shape: 'object-row-table', data: [{id: 1}, {id: 2}]}, ParquetJSWriter);
+  fixture = await encode({shape: 'object-row-table', data: [{id: 1}, {id: 2}]}, ParquetWriter);
 });
 
 test('Explicit Parquet WASM reader preserves file parsing shapes and row selection', async () => {
   const file = new ArrayBufferFile(fixture);
   const arrowTable = await ParquetWasmLoaderWithParser.parseFile(file, {
-    parquet: {shape: 'arrow-table'}
+    parquet: {shape: 'arrow'}
   });
-  expect(arrowTable.shape).toBe('arrow-table');
-  if (arrowTable.shape === 'arrow-table') {
-    expect(arrowTable.data.numRows).toBe(2);
+  expect(arrowTable).toHaveProperty('numRows');
+  if ('numRows' in arrowTable) {
+    expect(arrowTable.numRows).toBe(2);
   }
   const virtualFile = {
     ...file,
@@ -46,9 +46,9 @@ test('Explicit Parquet WASM reader preserves file and fragmented-input batch API
   expect(rows).toEqual([{id: 1}, {id: 2}]);
   const batches = [];
   for await (const batch of ParquetWasmLoaderWithParser.parseInBatches([fixture.slice(0, 8), fixture.slice(8)], {
-    parquet: {shape: 'arrow-table', batchSize: 1}
+    parquet: {shape: 'arrow', batchSize: 1}
   })) {
-    if (batch.shape === 'arrow-table') batches.push(batch.data.numRows);
+    if ('numRows' in batch) batches.push(batch.numRows);
   }
   expect(batches).toEqual([1, 1]);
 });

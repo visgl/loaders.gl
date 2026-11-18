@@ -17,7 +17,7 @@ function makeTable(geometries: (Geometry | null)[], columns: Record<string, arro
   const table = convertFeaturesToGeoArrowTable(
     geometries.map(geometry => ({type: 'Feature', geometry, properties: {}})),
     {encodingPreference: 'geoarrow.wkb'}
-  ).data;
+  );
   return new arrow.Table(
     new arrow.Schema(
       table.schema.fields.concat(
@@ -222,7 +222,7 @@ test('MLT rejects geographic CRS, nested attributes and non-XY geometry explicit
     [{type: 'Feature', geometry: POINT, properties: {}}],
     {encodingPreference: 'geoarrow.wkb'}
   );
-  geographic.data.schema.fields[0].metadata.set(
+  geographic.schema.fields[0].metadata.set(
     'ARROW:extension:metadata',
     JSON.stringify({crs: 'OGC:CRS84'})
   );

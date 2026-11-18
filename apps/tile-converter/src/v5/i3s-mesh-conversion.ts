@@ -131,7 +131,7 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       }
       signal?.throwIfAborted();
       objectIdOffset +=
-        resource.features?.batches.reduce((total, batch) => total + batch.data.numRows, 0) ?? 1;
+        resource.features?.batches.reduce((total, batch) => total + batch.numRows, 0) ?? 1;
       yield {id: resource.id, ...layer, sourceLayerType: resource.sourceLayerType};
     },
     /** Reports measured precision and explicitly authorized integer representation changes. */

@@ -49,8 +49,8 @@ describe('raw Arrow CSV byte parser boundaries', () => {
         dynamicTyping: false,
         skipEmptyLines: false
       } as any)!;
-      expect(table.data.numRows).toBe(expectedRowCount);
-      expect(table.data.schema.fields.map(field => field.name)).toEqual(['name', 'note']);
+      expect(table.numRows).toBe(expectedRowCount);
+      expect(table.schema.fields.map(field => field.name)).toEqual(['name', 'note']);
       expect(csvText.includes(expectedDelimiter)).toBe(true);
     }
   });
@@ -67,10 +67,10 @@ describe('raw Arrow CSV byte parser boundaries', () => {
       skipEmptyLines: false
     } as any)!;
 
-    expect(table.data.numRows).toBe(1100);
-    expect(table.data.getChild('value')!.get(2)).toBeNull();
-    expect(table.data.getChild('value')!.get(3)).toBe(longValue);
-    expect(table.data.getChild('value')!.get(1099)).toBe('value-1099');
+    expect(table.numRows).toBe(1100);
+    expect(table.getChild('value')!.get(2)).toBeNull();
+    expect(table.getChild('value')!.get(3)).toBe(longValue);
+    expect(table.getChild('value')!.get(1099)).toBe('value-1099');
   });
 
   test('handles escaped, multiline, empty, extra, and late UTF-8 fields', () => {
@@ -83,12 +83,12 @@ describe('raw Arrow CSV byte parser boundaries', () => {
       skipEmptyLines: false
     } as any)!;
 
-    expect(table.data.schema.fields.map(field => field.name)).toEqual(['a', 'a.1', 'c']);
-    expect(table.data.numRows).toBe(3);
-    expect(table.data.getChild('a')!.get(0)).toBe(`${padding}"quoted`);
-    expect(table.data.getChild('a.1')!.get(0)).toBe('line\none');
-    expect(table.data.getChild('a.1')!.get(1)).toBe('');
-    expect(table.data.getChild('a.1')!.get(2)).toBe('é');
+    expect(table.schema.fields.map(field => field.name)).toEqual(['a', 'a.1', 'c']);
+    expect(table.numRows).toBe(3);
+    expect(table.getChild('a')!.get(0)).toBe(`${padding}"quoted`);
+    expect(table.getChild('a.1')!.get(0)).toBe('line\none');
+    expect(table.getChild('a.1')!.get(1)).toBe('');
+    expect(table.getChild('a.1')!.get(2)).toBe('é');
   });
 
   test('covers empty/header-only tables and automatic header decisions', () => {
@@ -96,14 +96,14 @@ describe('raw Arrow CSV byte parser boundaries', () => {
       delimiter: ',',
       header: false
     } as any)!;
-    expect(empty.data.numRows).toBe(0);
+    expect(empty.numRows).toBe(0);
 
     const headerOnly = parseRawArrowCSVASCIIText('left,right', {
       delimiter: ',',
       header: true
     } as any)!;
-    expect(headerOnly.data.numRows).toBe(0);
-    expect(headerOnly.data.numCols).toBe(2);
+    expect(headerOnly.numRows).toBe(0);
+    expect(headerOnly.numCols).toBe(2);
 
     const automaticHeader = parseRawArrowCSVASCIIText('left,right\n1,2', {
       delimiter: ',',
@@ -116,9 +116,9 @@ describe('raw Arrow CSV byte parser boundaries', () => {
       dynamicTyping: true,
       columnPrefix: 'field'
     } as any)!;
-    expect(automaticHeader.data.schema.fields.map(field => field.name)).toEqual(['left', 'right']);
-    expect(automaticData.data.schema.fields.map(field => field.name)).toEqual(['field1', 'field2']);
-    expect(automaticData.data.numRows).toBe(2);
+    expect(automaticHeader.schema.fields.map(field => field.name)).toEqual(['left', 'right']);
+    expect(automaticData.schema.fields.map(field => field.name)).toEqual(['field1', 'field2']);
+    expect(automaticData.numRows).toBe(2);
   });
 
   test('classifies every automatic-header value family and skip-empty mode', () => {
@@ -127,15 +127,15 @@ describe('raw Arrow CSV byte parser boundaries', () => {
       `${headerValues.join(',')}\n${headerValues.map((_, index) => `name${index}`).join(',')}`,
       {delimiter: ',', header: 'auto', dynamicTyping: true} as any
     )!;
-    expect(header.data.numRows).toBe(2);
+    expect(header.numRows).toBe(2);
 
     const names = ['enabled', 'disabled', 'empty', 'integer', 'float', 'date'];
     const named = parseRawArrowCSVBytes(
       textEncoder.encode(`${names.join(',')}\n${headerValues.join(',')}`).buffer,
       {delimiter: ',', header: 'auto', dynamicTyping: true, skipEmptyLines: false} as any
     )!;
-    expect(named.data.schema.fields.map(field => field.name)).toEqual(names);
-    expect(named.data.numRows).toBe(1);
+    expect(named.schema.fields.map(field => field.name)).toEqual(names);
+    expect(named.numRows).toBe(1);
 
     const rows = 'a,b\n,\n   ,\t\n1,2\n\n3,4\n';
     const strict = parseRawArrowCSVBytes(textEncoder.encode(rows).buffer, {
@@ -148,8 +148,8 @@ describe('raw Arrow CSV byte parser boundaries', () => {
       header: true,
       skipEmptyLines: 'greedy'
     } as any)!;
-    expect(strict.data.numRows).toBe(4);
-    expect(greedy.data.numRows).toBe(2);
+    expect(strict.numRows).toBe(4);
+    expect(greedy.numRows).toBe(2);
   });
 
   test('rejects late text-path quotes and UTF-8 while byte parsing them', () => {
@@ -170,6 +170,6 @@ describe('raw Arrow CSV byte parser boundaries', () => {
       quoteChar: "'",
       escapeChar: "'"
     } as any)!;
-    expect(table.data.getChild('b')!.get(0)).toBe('é');
+    expect(table.getChild('b')!.get(0)).toBe('é');
   });
 });

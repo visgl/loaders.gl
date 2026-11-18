@@ -4,7 +4,7 @@ Explore OME-Zarr microscopy image sources.
 
 Supported formats: OME-Zarr, Zarr.
 
-Interactive demo for `OMEZarrSourceLoader` with:
+Interactive demo for `OMEZarrLoader` with:
 
 - a local SpatialData-style Zarr v3 fixture;
 - public OME-Zarr bioimaging presets from the Image Data Resource;

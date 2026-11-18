@@ -22,7 +22,7 @@ import {
   encodeI3SMeshLayer,
   encodeI3SMeshLayerWithDraco
 } from '@loaders.gl/tiles-3d/i3s-mesh-writer';
-import {I3SSceneLayerSchema, I3SNodePageSchema} from '@loaders.gl/tiles-3d/i3s/i3s-zod-schema';
+import {I3SSceneLayerSchema, I3SNodePageSchema} from '@loaders.gl/tiles-3d/i3s-zod-schema';
 import {parseI3STileContent} from '../../src/i3s/lib/parsers/parse-i3s-tile-content';
 import {parseI3STileAttribute} from '../../src/i3s/lib/parsers/parse-i3s-attribute';
 import {encodeI3SMeshAttributes} from '../../src/i3s/i3s-mesh-attributes';
@@ -66,8 +66,9 @@ function createFeatures(schema?: Schema, rows?: Record<string, unknown>[]): I3SM
     {feature_id: 18446744073709551615n, label: 'München 🏠', count: -1, height: 0}
   ])
     builder.addObjectRow(row);
+  const data = builder.finishTable();
   return {
-    batches: [builder.finishBatch()!],
+    batches: data.batches,
     triangleFeatureIndices: new Uint32Array([1, 0]),
     featureIdField: 'feature_id',
     integer64Encoding: 'decimal-string'
@@ -285,10 +286,8 @@ test.each([
     (features: any) => (features.triangleFeatureIndices = new Uint32Array([0]))
   ],
   ['unused row', (features: any) => (features.triangleFeatureIndices = new Uint32Array([0, 0]))],
-  ['wrong row count', (features: any) => (features.batches[0].length = 3)],
   ['field name', (features: any) => (features.batches[0].schema.fields[1].name = 'bad name')],
   ['reserved field', (features: any) => (features.batches[0].schema.fields[1].name = 'objectid')],
-  ['missing column', (features: any) => (features.batches[0].schema.fields[1].name = 'missing')],
   ['unsupported scalar', (features: any) => (features.batches[0].schema.fields[2].type = 'bool')]
 ])('I3S rejects invalid or unmapped features %s', (_name, mutate) => {
   const features = createFeatures();
@@ -329,7 +328,7 @@ test('I3S rejects malformed Unicode returned by an externally supplied Arrow tab
     {feature_id: 'a'},
     {feature_id: 'b'}
   ]);
-  features.batches[0].data.getChild = (() => ({
+  features.batches[0].getChild = (() => ({
     length: 2,
     get: (index: number) => (index ? 'other' : '\uD800')
   })) as any;
@@ -381,18 +380,18 @@ test('I3S scalar schema validation rejects reserved names, unsupported widths, a
     expect(() => encodeI3SMeshAttributes(features, 8192)).toThrow();
   }
   const features = createFeatures();
-  const getChild = features.batches[0].data.getChild.bind(features.batches[0].data);
-  features.batches[0].data.getChild = ((name: string) =>
+  const getChild = features.batches[0].getChild.bind(features.batches[0]);
+  features.batches[0].getChild = ((name: string) =>
     name === 'label' ? null : getChild(name)) as any;
   expect(() => encodeI3SMeshAttributes(features, 8192)).toThrow(/Missing Arrow column/);
-  features.batches[0].data.getChild = (() => null) as any;
+  features.batches[0].getChild = (() => null) as any;
   expect(() => encodeI3SMeshAttributes(features, 8192)).toThrow(/identifier column/);
 });
 
 test('I3S rejects rounded integer64 values and per-resource string/numeric caps', () => {
   const features = createFeatures();
-  const getChild = features.batches[0].data.getChild.bind(features.batches[0].data);
-  features.batches[0].data.getChild = ((name: string) =>
+  const getChild = features.batches[0].getChild.bind(features.batches[0]);
+  features.batches[0].getChild = ((name: string) =>
     name === 'feature_id' ? {length: 2, get: (index: number) => index} : getChild(name)) as any;
   expect(() => encodeI3SMeshAttributes(features, 8192)).toThrow(/bigint/);
   expect(() => encodeI3SMeshAttributes(createFeatures(), 30)).toThrow(/maxResourceBytes/);

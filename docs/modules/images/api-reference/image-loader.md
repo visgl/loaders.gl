@@ -56,11 +56,7 @@ The preferred image loader for new code. `ImageLoader` returns `ImageBitmap` in 
 | Worker Thread  | ❌ No (but may run on separate native thread in browsers)                    |
 | Streaming      | ❌ No                                                                        |
 
-`ImageLoader` was previously named `ImageBitmapLoader`. The older loader with
-`auto`, `image`, and `data` output modes is now
-[`LegacyImageLoader`](/docs/modules/images/api-reference/legacy-image-loader).
-Use `ImageLoaderOptions` for bitmap options and `LegacyImageLoaderOptions` for
-those older output modes.
+`ImageLoader` was previously named `ImageBitmapLoader`. Use `ImageLoaderOptions` for bitmap options.
 
 ## Usage
 

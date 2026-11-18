@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@deck.gl/core": "^9.4.0",
-    "@deck.gl/layers": "^9.4.0",
+    "@deck.gl/core": "10.0.0-alpha.1",
+    "@deck.gl/layers": "10.0.0-alpha.1",
     "@loaders.gl/tables": "workspace:*"
   },
   "devDependencies": {

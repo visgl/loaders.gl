@@ -65,7 +65,7 @@ test.each([
     },
     Tile3DWriter
   );
-  const tile = await parse(arrayBuffer, Tiles3DLoaderWithParser, {worker: false});
+  const tile = await parse(arrayBuffer, Tiles3DLoaderWithParser, {core: {worker: false}});
 
   expect(Array.from(tile.attributes.positions!)).toEqual([1, 2, 3]);
   expect(Array.from(tile.attributes.colors!.value)).toEqual(expected);

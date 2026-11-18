@@ -1,0 +1,13 @@
+#usda 1.0
+# SPDX-License-Identifier: MIT
+# Copyright (c) vis.gl contributors
+(
+    defaultPrim = "World"
+)
+def Xform "World" (
+    references = @../parts/model.usda@
+)
+{
+    asset preview = @../textures/albedo.PNG@
+    asset missing = @../textures/missing.png@
+}

@@ -47,7 +47,6 @@ The converters connect a few distinct format families. Keeping those families st
 | Shape | Family | Notes |
 | --- | --- | --- |
 | `arrow` | Apache Arrow | Raw Arrow `Table` |
-| `arrow-table` | loaders.gl table wrapper | Arrow-backed wrapper shape |
 | `object-row-table` | loaders.gl table wrapper | row objects |
 | `array-row-table` | loaders.gl table wrapper | row arrays |
 | `columnar-table` | loaders.gl table wrapper | column-oriented wrapper |

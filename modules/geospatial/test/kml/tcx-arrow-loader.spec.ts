@@ -7,10 +7,10 @@ import {validateLoader} from 'test/common/conformance';
 import {load} from '@loaders.gl/core';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
-import {TCXLoader} from '@loaders.gl/geospatial/kml/index';
-import * as kml from '@loaders.gl/geospatial/kml/index';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
+import * as kml from '@loaders.gl/geospatial/kml';
 import * as bundledKml from '@loaders.gl/geospatial/kml/bundled';
-import * as unbundledKml from '@loaders.gl/geospatial/kml/unbundled';
+import * as unbundledKml from '@loaders.gl/geospatial/kml';
 import type {Feature, Geometry} from '@loaders.gl/core/schema';
 const TCX_URL = '@loaders.gl/geospatial/kml/test/data/tcx/tcx_sample.tcx';
 test('TCXLoader#loader conformance', () => {
@@ -21,16 +21,15 @@ test('TCXLoader#removed Arrow loader exports', () => {
   expect('TCXArrowLoader' in bundledKml, 'bundled does not export TCXArrowLoader').toBeFalsy();
   expect('TCXArrowLoader' in unbundledKml, 'unbundled does not export TCXArrowLoader').toBeFalsy();
 });
-test('TCXLoader#parse with shape: arrow-table', async () => {
-  const arrowTable = await load(TCX_URL, TCXLoader, {tcx: {shape: 'arrow-table'}});
-  const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
-  const roundTripped = convertGeoArrowTableToGeoJSON(arrowTable.data, arrowTable.schema!);
+test('TCXLoader#parse with shape: arrow', async () => {
+  const arrowTable = await load(TCX_URL, TCXLoader, {tcx: {shape: 'arrow'}});
+  const geoMetadata = getGeoMetadata(Object.fromEntries(arrowTable.schema.metadata));
+  const roundTripped = convertGeoArrowTableToGeoJSON(arrowTable);
   const expectedTable = await load(TCX_URL, TCXLoader, {tcx: {shape: 'geojson-table'}});
   const expectedFeatures =
     expectedTable.shape === 'geojson-table'
       ? normalizeComplexProperties(expectedTable.features)
       : [];
-  expect(arrowTable.shape, 'shape is arrow-table').toBe('arrow-table');
   expect(geoMetadata?.primary_column, 'geo metadata primary column is set').toBe('geometry');
   expect(geoMetadata?.columns.geometry.encoding, 'geo metadata uses WKB encoding').toBe('wkb');
   expect(

@@ -18,10 +18,11 @@ npm install @loaders.gl/core @loaders.gl/scientific
 | — | `/hdf5` | `openHDF5Source`, `HDF5Source`, experimental `HDF5TypeScriptFile` | [HDF5](./hdf5/README.md) |
 | — | `/grib2` | `parseGRIB2`, `GRIB2Source` | [GRIB2](./grib2/README.md) |
 | <FormatLogo slug="vtk" /> | `/vtk` | `parseVTKLegacy`, `parseVTKXML` | [VTK](./vtk/README.md) |
+| — | `/pdb` | `PDBLoader`, `PDBLoaderWithParser` | [PDB](./pdb/README.md) |
 | — | `/scientific-array` | Common scientific-array interfaces and helpers | Shared source contracts |
 | — | `/vector-field` | Vector-field processing helpers | Explicit processing entrypoint |
 
-The root exports NetCDF and Zarr metadata loaders, PDBLoader, and shared types. It does not re-export every
+The root exports NetCDF, Zarr, NRRD, VTK and PDB metadata loaders and shared types. It does not re-export every
 parser or experimental source. For direct NetCDF parsing:
 
 ```ts
@@ -42,12 +43,15 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 `NPYLoader` and `NPYFormat` are metadata exports from the lightweight package root.
-For parser access use the flat `@loaders.gl/scientific/npy-loader` subpath.
+For parser access use the flat `@loaders.gl/scientific/npy` subpath.
 
 
 ## Format guides
 
 - [PDB](./pdb/README.md)
+- [NRRD](./nrrd/README.md)
+
+- [VTK](./vtk/README.md)
 
 - [NumPy NPY](./formats/npy.md)
 - [NetCDF](./netcdf/formats/netcdf.md)

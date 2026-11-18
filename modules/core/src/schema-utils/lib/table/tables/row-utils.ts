@@ -17,7 +17,7 @@ export function convertToObjectRow(
     }
   } else {
     for (let i = 0; i < arrayRow.length; i++) {
-      const columnName = `column-${i}`;
+      const columnName = `column${i + 1}`;
       objectRow[columnName] = arrayRow[i];
     }
   }
@@ -47,7 +47,7 @@ export function convertToArrayRow(
 export function inferHeadersFromArrayRow(arrayRow: unknown[]) {
   const headers: string[] = [];
   for (let i = 0; i < arrayRow.length; i++) {
-    const columnName = `column-${i}`;
+    const columnName = `column${i + 1}`;
     headers.push(columnName);
   }
   return headers;

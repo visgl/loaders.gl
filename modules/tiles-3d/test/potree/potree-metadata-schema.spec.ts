@@ -4,7 +4,7 @@
 
 import {fetchFile, parse} from '@loaders.gl/core';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
-import {PotreeMetadataSchema} from '@loaders.gl/tiles-3d/potree/potree-metadata-schema';
+import {PotreeMetadataSchema} from '@loaders.gl/tiles-3d/potree-metadata-schema';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 

@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import {snapshotArrowSchema} from '../../arrow/arrow-metadata';
+import type {Schema} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {
   convertArrowToSchema,
@@ -27,7 +28,7 @@ export class ArrowTableBuilder {
         ? convertArrowToSchema(this.arrowSchema)
         : schema;
     this.arrowBuilders = this.arrowSchema.fields.map(field =>
-      arrow.makeBuilder({type: field.type, nullValues: [null]})
+      arrow.makeBuilder({type: field.type, nullValues: [null, undefined]})
     );
     this.length = 0;
   }
@@ -51,62 +52,28 @@ export class ArrowTableBuilder {
     this.length++;
   }
 
-  /** Makes sure that a first batch with schema is sent even if no rows */
-  firstBatch(): ArrowTableBatch | null {
-    const arrowRecordBatch = this._getArrowRecordBatch();
-    // If there is data, a batch will be sent later
-    if (arrowRecordBatch.numCols !== 0) {
-      return null;
-    }
-    return {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowRecordBatch.numRows,
-      schema: this.schema,
-      data: new arrow.Table(arrowRecordBatch)
-    };
+  /** Emits the declared schema before any rows are buffered. */
+  firstBatch(): arrow.RecordBatch | null {
+    return this.length === 0 ? this._getArrowRecordBatch() : null;
   }
 
-  /** Flush the current batch if conditions are right */
-  flushBatch(): ArrowTableBatch | null {
-    const arrowRecordBatch = this._getArrowRecordBatch();
-    if (arrowRecordBatch.numCols === 0) {
-      return null;
-    }
-    return {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowRecordBatch.numRows,
-      schema: this.schema,
-      data: new arrow.Table(arrowRecordBatch)
-    };
+  /** Flushes the buffered rows as a native record batch. */
+  flushBatch(): arrow.RecordBatch | null {
+    return this.length === 0 ? null : this._getArrowRecordBatch();
   }
 
-  /** Get a last batch if any data is left */
-  finishBatch(): ArrowTableBatch | null {
-    const arrowRecordBatch = this._getArrowRecordBatch();
+  /** Finishes the builders and returns the final native batch when it has rows or fields. */
+  finishBatch(): arrow.RecordBatch | null {
+    const batch = this._getArrowRecordBatch();
     this.arrowBuilders.forEach(builder => builder.finish());
-    if (arrowRecordBatch.numCols === 0 && arrowRecordBatch.numRows === 0) {
-      return null;
-    }
-    return {
-      shape: 'arrow-table',
-      batchType: 'data',
-      length: arrowRecordBatch.numRows,
-      schema: this.schema,
-      data: new arrow.Table(arrowRecordBatch)
-    };
+    return batch.numCols || batch.numRows ? batch : null;
   }
 
-  /** Return a table with all the accumulated data */
-  finishTable(): ArrowTable {
-    const arrowRecordBatch = this._getArrowRecordBatch();
+  /** Finishes the builders and returns a native Arrow table. */
+  finishTable(): arrow.Table {
+    const batch = this._getArrowRecordBatch();
     this.arrowBuilders.forEach(builder => builder.finish());
-    return {
-      shape: 'arrow-table',
-      schema: this.schema,
-      data: new arrow.Table(arrowRecordBatch)
-    };
+    return new arrow.Table(batch);
   }
 
   /** Extract a record batch flushing the currently accumulated data in the builders */
@@ -117,7 +84,10 @@ export class ArrowTableBuilder {
     this.length = 0;
     const structField = new arrow.Struct(arrowSchema.fields);
     const arrowStructData = new arrow.Data(structField, 0, length, 0, undefined, arrowDatas);
-    const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowStructData);
+    const arrowRecordBatch = new arrow.RecordBatch(
+      snapshotArrowSchema(arrowSchema),
+      arrowStructData
+    );
     return arrowRecordBatch;
   }
 }

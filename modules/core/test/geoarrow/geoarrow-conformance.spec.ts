@@ -190,7 +190,7 @@ test('GeoArrow type guards recognize 64-bit native list layouts', () => {
 test('GeoArrow conversion preserves GeoParquet column semantics', () => {
   const source = convertFeaturesToGeoArrowTable([
     {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}}
-  ]).data;
+  ]);
   const geoMetadata = {
     version: '1.1.0',
     primary_column: 'geometry',
@@ -245,7 +245,7 @@ test('GeoArrow inspection preserves separated XYM semantics', () => {
 test('GeoArrow Box validation rejects inverted extents', () => {
   const source = convertFeaturesToGeoArrowTable([
     {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}}
-  ]).data;
+  ]);
   const boxes = convertGeoArrowGeometry(source, 'geoarrow.box');
   const geometry = boxes.getChild('geometry')!;
   const xmax = geometry.data[0].children[2].values as Float64Array;

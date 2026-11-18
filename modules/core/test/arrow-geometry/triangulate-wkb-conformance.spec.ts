@@ -217,6 +217,29 @@ test.each([
     const triangles = triangulateWKB(wkb);
     expect(triangles.length).toBeGreaterThan(0);
     expect(triangles.every(Number.isInteger)).toBe(true);
+  } else if (_name === 'duplicate and collinear vertices') {
+    // Updated Earcut can retain a collinear boundary vertex. Verify the rectangle's
+    // covered area and triangle winding independently of that subdivision.
+    /** Oriented indices from the direct binary triangulator. */
+    const triangles = triangulateWKB(wkb);
+    /** Accumulated signed triangle area. */
+    let area = 0;
+    for (let index = 0; index < triangles.length; index += 3) {
+      /** First corner of the current triangle. */
+      const first = ring[triangles[index]];
+      /** Second corner of the current triangle. */
+      const second = ring[triangles[index + 1]];
+      /** Third corner of the current triangle. */
+      const third = ring[triangles[index + 2]];
+      /** Positive area confirms counterclockwise winding. */
+      const triangleArea =
+        ((second[0] - first[0]) * (third[1] - first[1]) -
+          (second[1] - first[1]) * (third[0] - first[0])) /
+        2;
+      expect(triangleArea).toBeGreaterThan(0);
+      area += triangleArea;
+    }
+    expect(area).toBe(16);
   } else {
     assertTriangulateWKBMatchesEarcutInputs(wkb, _name);
   }
@@ -262,9 +285,9 @@ test('triangulateWKB#handles touching, single-point, and multiple holes', () => 
 function assertTriangulateWKBMatchesEarcutInputs(wkb: ArrayBuffer, title: string): void {
   const inputs = getGeometryEarcutInputs(convertWKBToGeometry(wkb));
   const expectedTriangles = inputs.flatMap(input =>
-    earcut(input.positions, input.holeIndices, input.dimensions).map(
-      triangleIndex => triangleIndex + input.vertexOffset
-    )
+    earcut(input.positions, input.holeIndices, input.dimensions, undefined, 'xy', {
+      triangulation: 'balanced'
+    }).map(triangleIndex => triangleIndex + input.vertexOffset)
   );
   const triangles = triangulateWKB(wkb);
 

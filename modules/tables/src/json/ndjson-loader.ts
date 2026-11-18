@@ -2,19 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
+import {NDJSONTableSource, type NDJSONSourceOptions} from './ndjson-source';
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {
   serializeJSONWorkerOptions,
   serializeJSONWorkerBatch,
   deserializeJSONWorkerResult
 } from './lib/json-worker-transport';
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {
-  ObjectRowTable,
-  ArrayRowTable,
-  ArrowTable,
-  ArrowTableBatch,
-  TableBatch
-} from '@loaders.gl/core/schema';
+import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {ObjectRowTable, ArrayRowTable, TableBatch} from '@loaders.gl/core/schema';
 import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
 import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
 import {
@@ -45,11 +42,14 @@ export const NDJSONLoaderWithParser = {
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options?: NDJSONLoaderOptions
-  ) => parseNDJSONInRequestedShape(asyncIterator, options)
+  ) => parseNDJSONInRequestedShape(asyncIterator, options),
+  createDataSourceSync: (data: string | Blob, options: NDJSONSourceOptions, coreApi?: CoreAPI) =>
+    new NDJSONTableSource(data, options, coreApi)
 } as const satisfies LoaderWithParser<
-  ObjectRowTable | ArrayRowTable | ArrowTable,
-  TableBatch | ArrowTableBatch,
-  NDJSONLoaderOptions
+  ObjectRowTable | ArrayRowTable | NativeArrowTable,
+  TableBatch | RecordBatch,
+  NDJSONLoaderOptions,
+  NDJSONTableSource
 >;
 
 /**
@@ -62,14 +62,14 @@ export const NDJSONLoaderWithParser = {
 function parseNDJSONText(
   text: string,
   options?: NDJSONLoaderOptions
-): ObjectRowTable | ArrayRowTable | ArrowTable {
+): ObjectRowTable | ArrayRowTable | NativeArrowTable {
   validateNDJSONArrowOptions(options);
   const table = parseNDJSONSync(text);
-  return getNDJSONShape(options) === 'arrow-table'
+  return getNDJSONShape(options) === 'arrow'
     ? convertRowTableToArrowTable(table, {
         schema: options?.ndjson?.schema,
         arrowConversion: options?.ndjson?.arrowConversion,
-        log: getNDJSONLoaderLog(options)
+        log: getLoaderLog(options)
       })
     : table;
 }
@@ -81,21 +81,23 @@ function parseNDJSONText(
  * @param options - Loader options including optional output shape.
  * @returns Batch iterator yielding row-table or Arrow batches.
  */
-function parseNDJSONInRequestedShape(
+async function* parseNDJSONInRequestedShape(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: NDJSONLoaderOptions
-): AsyncIterable<TableBatch | ArrowTableBatch> {
+): AsyncIterable<TableBatch | RecordBatch> {
   validateNDJSONArrowOptions(options);
   const batches = parseNDJSONInBatches(asyncIterator, options);
-  return getNDJSONShape(options) === 'arrow-table'
-    ? makeNDJSONArrowBatchIterator(batches, {
-        schema: options?.ndjson?.schema,
-        arrowConversion: options?.ndjson?.arrowConversion,
-        log: getNDJSONLoaderLog(options)
-      })
-    : batches;
+  if (getNDJSONShape(options) !== 'arrow') {
+    yield* batches;
+    return;
+  }
+  yield* makeNDJSONArrowBatchIterator(batches, {
+    schema: options?.ndjson?.schema,
+    arrowConversion: options?.ndjson?.arrowConversion,
+    log: getLoaderLog(options)
+  });
 }
 
 /** Returns the requested NDJSON output shape, including the deprecated JSON alias. */
@@ -105,17 +107,16 @@ function getNDJSONShape(options?: NDJSONLoaderOptions): NDJSONShape {
   );
 }
 
-/** Returns the loader log object from normalized or deprecated option locations. */
-function getNDJSONLoaderLog(options?: NDJSONLoaderOptions): any {
-  return options?.core?.log || options?.log;
-}
-
+/** Validates shape selection and options that require Arrow output. */
 function validateNDJSONArrowOptions(options?: NDJSONLoaderOptions): void {
   const shape = getNDJSONShape(options);
+  if (!['arrow', 'object-row-table', 'array-row-table'].includes(shape)) {
+    throw new Error('NDJSONLoader: use ndjson.shape "arrow" for native Arrow output');
+  }
   const hasArrowOnlyOptions = Boolean(options?.ndjson?.schema || options?.ndjson?.arrowConversion);
-  if (hasArrowOnlyOptions && shape !== 'arrow-table') {
+  if (hasArrowOnlyOptions && shape !== 'arrow') {
     throw new Error(
-      'NDJSONLoader: ndjson.schema and ndjson.arrowConversion require ndjson.shape or json.shape to be "arrow-table"'
+      'NDJSONLoader: ndjson.schema and ndjson.arrowConversion require ndjson.shape or json.shape to be "arrow"'
     );
   }
 }

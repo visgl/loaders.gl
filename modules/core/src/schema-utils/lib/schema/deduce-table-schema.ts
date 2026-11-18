@@ -4,6 +4,8 @@
 
 // Type deduction
 import type {Schema, Field, ArrayType, Table} from '@loaders.gl/core/schema';
+import type {Table as ArrowTable} from 'apache-arrow';
+import {convertArrowToSchema} from './convert-arrow-schema';
 import {getDataTypeFromArray, getDataTypeFromValue} from './data-type';
 
 /**
@@ -12,7 +14,8 @@ import {getDataTypeFromArray, getDataTypeFromValue} from './data-type';
  * @param {*} schema
  * @returns
  */
-export function deduceTableSchema(table: Table): Schema {
+export function deduceTableSchema(table: Table | ArrowTable): Schema {
+  if (!('shape' in table)) return convertArrowToSchema(table.schema);
   switch (table.shape) {
     case 'array-row-table':
     case 'object-row-table':
@@ -24,7 +27,6 @@ export function deduceTableSchema(table: Table): Schema {
     case 'columnar-table':
       return deduceSchemaFromColumns(table.data);
 
-    case 'arrow-table':
     default:
       throw new Error('Deduce schema');
   }
@@ -55,9 +57,11 @@ function deduceSchemaFromRows(rowTable: unknown[][] | {[key: string]: unknown}[]
   const row0 = rowTable[0];
   // TODO - fields can be nullable, false detection...
   // Could look at additional rows if nulls in first row
-  // TODO - if array, column names will be numbers
+  // Positional rows use the same one-based generated names as headerless CSV.
+  // Object rows keep their original keys, including numeric-looking names.
   for (const [columnName, value] of Object.entries(row0)) {
-    fields.push(deduceFieldFromValue(value, columnName));
+    const name = Array.isArray(row0) ? `column${Number(columnName) + 1}` : columnName;
+    fields.push(deduceFieldFromValue(value, name));
   }
 
   return {fields, metadata: {}};

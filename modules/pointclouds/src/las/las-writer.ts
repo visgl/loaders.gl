@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import {
   encodeLASzipVLR,
   encodeLAZChunk,
@@ -10,8 +11,8 @@ import {
   type WriterOptions,
   type WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
+import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {LASFormat} from './las-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -86,7 +87,7 @@ export type LASWriterOptions = WriterOptions & {
  */
 export const LASWriter = {
   ...LASFormat,
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  dataType: null as unknown as Mesh | Table,
   batchType: null as never,
   version: VERSION,
   extensions: ['las', 'laz'],
@@ -96,16 +97,16 @@ export const LASWriter = {
   encode: async (data, options) => encodeLASSync(data, options),
   encodeSync: encodeLASSync,
   encodeInBatches: async function* (dataIterator, options) {
-    const batches: (Mesh | MeshArrowTable)[] = [];
-    for await (const batch of dataIterator as AsyncIterable<Mesh | MeshArrowTable>) {
+    const batches: (Mesh | Table)[] = [];
+    for await (const batch of dataIterator as AsyncIterable<Mesh | Table>) {
       batches.push(batch);
     }
     yield encodeLASSync(mergeMeshBatches(batches), options);
   }
-} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable, never, LASWriterOptions>;
+} as const satisfies WriterWithEncoder<Mesh | Table, never, LASWriterOptions>;
 
 /** Encode mesh category data as LAS or LAZ bytes. */
-function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = {}): ArrayBuffer {
+function encodeLASSync(data: Mesh | Table, options: LASWriterOptions = {}): ArrayBuffer {
   const format = options.las?.format || 'las';
   const colorDepth = options.las?.colorDepth;
   if (colorDepth !== undefined && colorDepth !== 'auto' && colorDepth !== 8 && colorDepth !== 16)
@@ -651,23 +652,21 @@ function validateLAZOptions(
   }
 }
 
-/** Return mesh data as a Mesh, converting MeshArrowTable input first. */
-function normalizeMesh(data: Mesh | MeshArrowTable): Mesh {
-  if ('shape' in data && data.shape === 'arrow-table') {
+/** Return mesh data as a Mesh, converting Arrow input first. */
+function normalizeMesh(data: Mesh | Table): Mesh {
+  if (!('attributes' in data)) {
     return convertTableToMesh(data);
   }
   return data as Mesh;
 }
 
-/** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
-function normalizeMeshArrowTable(data: Mesh | MeshArrowTable): MeshArrowTable {
-  return 'shape' in data && data.shape === 'arrow-table'
-    ? data
-    : convertMeshToTable(data as Mesh, 'arrow-table');
+/** Return mesh data as a native Arrow table, converting plain Mesh data first. */
+function normalizeMeshArrowTable(data: Mesh | Table): Table {
+  return !('attributes' in data) ? data : convertMeshToArrowTable(data as Mesh);
 }
 
 /** Merge buffered mesh batches for `encodeInBatches`. */
-function mergeMeshBatches(batches: (Mesh | MeshArrowTable)[]): Mesh | MeshArrowTable {
+function mergeMeshBatches(batches: (Mesh | Table)[]): Mesh | Table {
   if (batches.length === 0) {
     throw new Error('LASWriter: at least one input batch is required');
   }

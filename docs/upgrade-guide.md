@@ -18,6 +18,146 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Math.gl beta.12 imports
+
+Arrow transport, table utilities, WKB, and GeoArrow helpers now use
+`@math.gl/core/arrow`, and UTF-8 utilities use `@math.gl/core/utf8`.
+Replace `@math.gl/web-mercator` with `@math.gl/geospatial/web-mercator`
+and `@math.gl/sql/arrow-scales` with `@math.gl/sql/scales`.
+Update package dependencies to `@math.gl/core` and `@math.gl/geospatial`
+when removing the consolidated Arrow and Web Mercator packages.
+
+### Canonical format imports and TypeScript Parquet writer
+
+Import metadata loaders and writers from the clean format entry point:
+
+```typescript
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+```
+
+Public `/index` suffixes and repeated format paths have been removed, except for the temporary `@loaders.gl/raster/terrain/index` compatibility alias used by deck.gl 10 alpha. Use one format entry point for loaders, writers, sources, options, and public helpers. Separate `*-loader`, `*-writer`, and `*-source` entry points have been removed from the format packages.
+
+`ParquetJSWriter` is now `ParquetWriter`; its options and encoding types are named `ParquetWriterOptions` and `ParquetWriterEncoding`. The former WASM-backed writer is no longer published. Remove `parquet.wasmUrl`; production Parquet readers and writers use TypeScript. The source capability `supportsLocalWasmAsset` and packaged Parquet WASM assets have also been removed.
+
+`LASCOPCLoader`, `LAZPerfLoader`, and `LAZRsLoader` are no longer public loaders. Use `LASLoader` from `@loaders.gl/pointclouds/las`. Alternate implementations remain in website benchmark support for comparisons and interoperability tests. The separate COPC source in tiles-3d is unchanged.
+
+### Format entry points
+
+Import loaders and their public options from the format entry point:
+
+```typescript
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
+import {JSONLoader} from '@loaders.gl/documents/json';
+import {GPXLoader} from '@loaders.gl/geospatial/gpx';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf';
+```
+
+`/unbundled` aliases have been removed; use the default format entry point. Format
+metadata, loader options, source types and capabilities are exported by their format
+entry points instead of separate micro-endpoints. For example, import
+`FlatGeobufFormat` and `FLATGEOBUF_TABLE_QUERY_CAPABILITIES` from
+`@loaders.gl/geospatial/flatgeobuf`, `GeoPackageFormat`, `GeoPackageLoaderOptions`
+and `DEFAULT_SQLJS_CDN` from `@loaders.gl/geospatial/geopackage`, and `WKTFormat`
+from `@loaders.gl/geospatial/wkt`. KML parser helpers remain available through
+`@loaders.gl/geospatial/kml`; the separate `/kml-parser` export is removed.
+
+KML no longer re-exports GPX or TCX loaders and options; use their own format
+entry points. The low-level KML helpers are exported as `_openKMZArchive`,
+`_parseKMLDocument`, and `_resolveKMZResourcePath`.
+
+Import parser-bearing `*WithParser` loaders from the same format entry point, or
+use `/bundled` to import parser-bearing loaders under their ordinary names:
+
+```typescript
+import {KMLLoaderWithParser, KMLWriter} from '@loaders.gl/geospatial/kml';
+import {KMLLoader} from '@loaders.gl/geospatial/kml/bundled';
+import {WKBLoader, HexWKBLoader, TWKBLoader, WKBWriter} from '@loaders.gl/geospatial/wkb';
+```
+
+WKB, HexWKB, and TWKB now share `/wkb`; `/wkt` contains text WKT APIs.
+Source classes retain descriptive `*-source` filenames but are imported from
+their format, such as `@loaders.gl/tables/parquet` or
+`@loaders.gl/raster/geotiff`. Internal shared files such as `las-loader-shared`
+are no longer package exports; public LAS types are available from `/las`.
+
+### Decoded tile attributes
+
+Decoded 3D Tiles point clouds expose `topology: 'point-list'`. I3S tile
+content exposes `'point-list'` or `'triangle-list'` according to the layer.
+COPC and Potree Arrow tile schemas use `topology: point-list` in their
+metadata. Use these WebGPU topology strings when selecting a draw topology.
+
+Point cloud and I3S attribute descriptors no longer carry a numeric `type`.
+Read the scalar storage from the typed array in `value`, the tuple width
+from `size`, and integer normalization from `normalized`. Check
+`componentType: 'float16'` when half-float colors use a `Uint16Array` fallback.
+Decoded point cloud normals are XYZ triples, including normals decoded from
+octahedral pairs.
+
+If you read binary feature tables directly with `Tile3DFeatureTable`, pass
+typed array constructors such as `Float32Array` in place of numeric component
+constants. Existing numeric inputs to the feature table reader still work.
+Embedded glTF and binary table descriptors use their file format identifiers.
+
+### Source-only loader imports
+
+Use `-loader` subpaths for source-only loaders. For example,
+`@loaders.gl/arcgis/arcgis-feature-server-source-loader` is now
+`@loaders.gl/arcgis/arcgis-feature-server-loader`, and
+`@loaders.gl/ogc/stac-source` is now `@loaders.gl/ogc/stac-loader`.
+Options follow the loader name, such as `ArcGISFeatureServerLoaderOptions`,
+`STACLoaderOptions`, and `WMTSLoaderOptions`. Use
+`WMTSCapabilitiesLoaderOptions` for the XML capabilities parser.
+
+### Removed compression, texture, and Cesium ion APIs
+
+- Replace combined compression classes with the corresponding `Compressor` and
+  `Decompressor`. Use `compressBatches` or `decompressBatches` for streaming.
+  Preload a synchronous backend before using its sync methods. Use compress-utils
+  for Zstandard encoding in place of the combined zstd-codec binding.
+- Replace `loadImageTexture(url)` with `load(url, ImageLoader)`. For arrays,
+  cubemaps, and mip chains, generate a manifest from your URLs and use the matching
+  texture loader. Manifest loaders return structured textures.
+- Replace `CesiumIonLoader` with `resolveCesiumIonTileset` followed by
+  `Tiles3DLoader`. Pass the returned credentials in `core.credentials` for both
+  the root tileset and child requests.
+
+
+### Loader aliases and WMS options
+
+Use the canonical loader names in place of the removed worker aliases:
+`NullWorkerLoader` becomes `NullLoader`, and aliases such as `CSVWorkerLoader`,
+`LASWorkerLoader`, and `DracoWorkerLoader` become `CSVLoader`, `LASLoader`,
+and `DracoLoader`. Use `MVTLoader` and `TerrainLoader` in place of
+`MVTWorkerLoader` and `TerrainWorkerLoader`. The canonical format loaders retain their existing worker support.
+The MVT and Terrain format subpaths retain these aliases for deck.gl 10.0.0-alpha.1.
+`NullLoader` returns null on the main thread. Code that used `NullWorkerLoader`
+specifically to exercise worker dispatch can use `{...NullLoader, worker: true}`.
+
+Pass WMS vendor defaults as `{wms: {vendorParameters: {...}}}` when creating a
+source. Per-request vendor parameters can still be passed to source methods.
+
+### Batched parsing
+
+- Replace `core.batchDebounceMs` and `arrow.batchDebounceMs` with
+  `core.batchMaxRowsPerSecond`. For a fixed batch size, divide the batch row
+  count by the old interval in seconds to approximate the previous rate.
+- When streaming tabular JSON with `json.table: true`, batches default to
+  Arrow. Set `json.shape: 'object-row-table'` or `'array-row-table'` for row
+  output. Atomic JSON parsing keeps its existing default.
+- Use table scans for offset and limit. The `core.limit` and `core._limitMB`
+  loader options and their top-level aliases have been removed.
+- Use `ArrowTableBuilder` to construct Arrow batches and convert completed
+  batches to row or columnar output as needed. The legacy batch aggregators
+  have been removed.
+
+### Terrain sampling
+
+The beta terrain sampling helpers `createTerrainHeightGrid`, `sampleTerrainHeightGrid`, `TerrainHeightField`, `sampleTerrainNeighborhood`, and `resampleTerrainNodes` have been removed from `@loaders.gl/raster/terrain/heightmap`. Use `HeightField`, `GeographicHeightField`, or `TiledHeightField` from `@math.gl/geospatial/terrain` with decoded heights and explicit registration, coordinates, validity, and height reference. Review edge clamping, no-data, overlap, and tile-residency behavior when migrating; the APIs do not have identical sampling semantics. `decodeTerrainHeightmap` remains available.
+
+
 Version 5 is in prerelease development. Removed packages have no forwarding packages: install the
 new owner package and update imports and worker asset URLs together. Subpaths are import paths,
 not separately installable packages.
@@ -40,7 +180,7 @@ The standalone `@loaders.gl/flatgeobuf`, `geopackage`, `kml`, and `shapefile` pa
 **Schema packages move into core subpaths**
 
 - Replace imports from `@loaders.gl/schema` with `@loaders.gl/core/schema`, and imports from `@loaders.gl/schema-utils` with `@loaders.gl/core/schema-utils`.
-- Use `@loaders.gl/core/schema-utils/arrow-transport` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
+- Use `@math.gl/core/arrow` for Arrow transport helpers and `@loaders.gl/core/schema/geospatial-metadata-zod-schema` for runtime metadata validation. The GeoParquet and GeoArrow JSON schema files are exported under `@loaders.gl/core/schema/`.
 - Install `@loaders.gl/core` as the package. Published loaders use it as a peer dependency so applications can provide one compatible core version.
 
 #### Point-cloud, scene and geometry package consolidation
@@ -60,7 +200,7 @@ Use parser-bearing loaders from named implementation subpaths such as `@loaders.
 
 #### Draco moves to scene
 
-`@loaders.gl/draco` has been removed. Import `DracoLoader`, `DracoWorkerLoader`, `DracoFormat` and public Draco types from `@loaders.gl/scene`. Use `@loaders.gl/scene/draco-loader` for `DracoLoaderWithParser`, `/draco-writer` for writers and encoding helpers, and `/draco-library-options` for runtime URLs and bundled library options. Decoder-specific parsers are available at `/draco-wasm-loader`, `/draco-javascript-loader`, and `/draco3d-loader`. Worker files move to the scene package root. Draco options and supported geometry representations are unchanged.
+`@loaders.gl/draco` has been removed. Import `DracoLoader`, `DracoFormat` and public Draco types from `@loaders.gl/scene`. Use `@loaders.gl/scene/draco-loader` for `DracoLoaderWithParser`, `/draco-writer` for writers and encoding helpers, and `/draco-library-options` for runtime URLs and bundled library options. Decoder-specific parsers are available at `/draco-wasm-loader`, `/draco-javascript-loader`, and `/draco3d-loader`. Worker files move to the scene package root. Draco options and supported geometry representations are unchanged.
 
 #### Raster package consolidation
 
@@ -87,8 +227,14 @@ source subpath when using synchronous `createDataSource()`.
 - Replace dependencies on the removed `@loaders.gl/textures` and `@loaders.gl/video`
   packages with `@loaders.gl/images`; no compatibility packages are published.
 - `ImageBitmapLoader` is now `ImageLoader` and always returns an `ImageBitmap`.
-  The older environment-dependent loader is `LegacyImageLoader`, with
-  `LegacyImageLoaderOptions`. `ImageLoaderOptions` describes the bitmap loader.
+- `LegacyImageLoader`, `LegacyImageLoaderOptions`, and their subpaths have been
+  removed. ArcGIS and WMTS image responses use `ImageLoader`. Remove `image.decode`
+  and the `auto`, `image`, and `data` values for `image.type`. Use
+  `getImageData(bitmap)` for raw pixels. ArcGIS LERC responses still return raster data.
+- Replace `WMSSource` with `WMSLoader`. Replace `createImageSource` with
+  `createDataSourceSync(url, [WMSLoader], options)` or use `createDataSource`
+  for asynchronous creation. `ImageSource` is a type. To recognize an existing
+  image source at runtime, check for callable `getMetadata` and `getImage` methods.
 - Import metadata loaders from `@loaders.gl/images`. For direct implementations,
   import `*WithParser` exports from direct subpaths such as
   `@loaders.gl/images/basis-loader` or `@loaders.gl/images/image-loader`.
@@ -110,7 +256,7 @@ source subpath when using synchronous `createDataSource()`.
 NetCDF and Zarr now share the public `@loaders.gl/scientific` package. Replace dependencies on `@loaders.gl/netcdf` or the previously private `@loaders.gl/zarr` package with `@loaders.gl/scientific`. Metadata loaders are exported from the package root; import implementation APIs from a format subpath:
 
 ```ts
-import {NetCDFLoader, OMEZarrSourceLoader} from '@loaders.gl/scientific';
+import {NetCDFLoader, OMEZarrLoader} from '@loaders.gl/scientific';
 import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
 import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
 ```
@@ -147,7 +293,7 @@ The standalone `@loaders.gl/wms` and `@loaders.gl/stac` packages are removed in 
 `@loaders.gl/ogc` for OGC service protocols and STAC catalogs. Replace imports from
 `@loaders.gl/wms` with `@loaders.gl/ogc/wms`, and imports from `@loaders.gl/stac` with
 `@loaders.gl/ogc/stac`. Parser-bearing implementations remain on named subpaths, such as
-`@loaders.gl/ogc/gml-loader` and `@loaders.gl/ogc/stac-source`.
+`@loaders.gl/ogc/gml-loader` and `@loaders.gl/ogc/stac-loader`.
 
 `@loaders.gl/services` now contains provider authentication presets for Mapbox, Google Maps,
 and Cesium ion. ArcGIS remains in `@loaders.gl/arcgis`. OGC loader IDs and option namespaces
@@ -183,12 +329,12 @@ segment from implementation imports:
 | `@loaders.gl/geospatial/shapefile/shapefile-loader` | `@loaders.gl/geospatial/shapefile-loader` |
 | `@loaders.gl/pointclouds/las/las-loader` | `@loaders.gl/pointclouds/las-loader` |
 | `@loaders.gl/scene/gltf/gltf-loader` | `@loaders.gl/scene/gltf-loader` |
-| `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source-loader` |
+| `@loaders.gl/raster/geotiff/geotiff-source-loader` | `@loaders.gl/raster/geotiff-source` |
 | `@loaders.gl/ogc/wms/wmts-capabilities-loader-with-parser` | `@loaders.gl/ogc/wmts-capabilities-loader-with-parser` |
 | `@loaders.gl/tiles-3d/3d-tiles/cesium-ion-loader-with-parser` | `@loaders.gl/tiles-3d/cesium-ion-loader-with-parser` |
-| `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-source` |
+| `@loaders.gl/ogc/stac/stac-source` | `@loaders.gl/ogc/stac-loader` |
 | `@loaders.gl/archives/zip/zip-loader` | `@loaders.gl/archives/zip-loader` |
-| `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` | `@loaders.gl/tiles/arrow-table-tile-source-loader` |
+| `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader` | `@loaders.gl/tiles/arrow-table-tile-loader` |
 | `@loaders.gl/tiles-3d/i3s/i3s-mesh-writer` | `@loaders.gl/tiles-3d/i3s-mesh-writer` |
 | `@loaders.gl/core/scan/vector-table-scan-source` | `@loaders.gl/core/vector-table-scan-source` |
 
@@ -263,7 +409,7 @@ The `@loaders.gl/polyfills` package has moved to the independent `@loaders.gl/co
 
 math.gl alpha.19 removes the standalone leaf packages. Applications importing their APIs or types
 alongside loaders.gl should install the grouped package and use the following public imports
-for math.gl `5.0.0-beta.1`:
+for current math.gl 5.0 prereleases:
 
 | Removed package | Replacement import |
 | --- | --- |
@@ -273,8 +419,8 @@ for math.gl `5.0.0-beta.1`:
 | `@math.gl/polygon` | `@math.gl/geometry` |
 | `@math.gl/crs` | `@math.gl/geospatial/crs` |
 | `@math.gl/projection` | `@math.gl/geospatial/projection` |
-| `@math.gl/wkb` | `@math.gl/geospatial` |
-| `@math.gl/geoarrow` | `@math.gl/geospatial/geoarrow` |
+| `@math.gl/wkb` | `@math.gl/core/arrow` |
+| `@math.gl/geoarrow` | `@math.gl/core/arrow` |
 | `@math.gl/geoid` | `@math.gl/earth` |
 
 Install the package name before the subpath, such as `@math.gl/geospatial`. Nested entry points move
@@ -319,8 +465,8 @@ Parquet BSON reading and writing continue to work automatically.
 
 ```typescript
 import {XMLLoader, HTMLLoader, YAMLLoader, TOMLLoader, BSONLoader} from '@loaders.gl/documents';
-import {XMLLoaderWithParser} from '@loaders.gl/documents/xml-loader';
-import {BSONWriter} from '@loaders.gl/documents/bson-writer';
+import {XMLLoaderWithParser} from '@loaders.gl/documents/xml';
+import {BSONWriter} from '@loaders.gl/documents/bson';
 import {encodeBSONSync, parseBSONSync, BSONObjectId, createBSONValue} from '@loaders.gl/documents/bson-codec';
 import {parseXMLSync} from '@loaders.gl/documents/xml-parser';
 import {SAXParser} from '@loaders.gl/documents/sax-parser';
@@ -333,26 +479,28 @@ or `/bundled` and `/unbundled` entry points in documents.
 
 #### Alternate loader imports
 
-Package roots expose the primary loader for each format. Alternate backend loaders
-are available through implementation subpaths instead of root exports:
+Package roots expose the primary loader for each format. The alternate LAS backends
+`LASCOPCLoader`, `LAZPerfLoader`, and `LAZRsLoader` are no longer published. Use
+`LASLoader` from `@loaders.gl/pointclouds/las`; comparison implementations live in
+the website benchmark directory.
+
+Replace the former `_FastJSONLoader` root export with its implementation subpath:
 
 ```typescript
-import {LASCOPCLoaderWithParser} from '@loaders.gl/pointclouds/las-copc-loader';
-import {LAZPerfLoaderWithParser} from '@loaders.gl/pointclouds/lazperf-loader';
-import {LAZRsLoaderWithParser} from '@loaders.gl/pointclouds/laz-rs-loader';
-import {ParquetJSLoaderWithParser} from '@loaders.gl/tables/parquet-js-loader';
-import {FastJSONLoader} from '@loaders.gl/tables/fast-json-loader';
+import {FastJSONLoader} from '@loaders.gl/tables/json';
 ```
 
-These replace the root exports `LASCOPCLoader`, `LAZPerfLoader`, `LAZRsLoader`,
-`ParquetJSLoader`, and `_FastJSONLoader`. Implementation subpaths load the parser
-eagerly and support direct parsing. Primary metadata loaders continue to preload
-their implementations for asynchronous core APIs.
+Primary metadata loaders continue to preload their implementations for asynchronous
+core APIs. Parser-bearing implementation subpaths support direct parsing.
 
 The explicit `@loaders.gl/tables/arrow/types` facade exposes Apache Arrow names available
 in the supported minimum release, Arrow 17. Import version-specific names such
 as `Utf8View`, `BinaryView`, `LargeList`, compression helpers, and newer type
 guards directly from your installed `apache-arrow` package.
+
+The alternate ParquetJS and WASM readers now live in the website benchmark code. Replace
+imports from `@loaders.gl/tables/parquet-js-loader` or `@loaders.gl/tables/parquet-wasm-loader`
+with `ParquetLoader` from `@loaders.gl/tables/parquet`.
 
 ### Worker task runtime
 
@@ -395,7 +543,6 @@ with `BSONObjectId` and other special values with `createBSONValue()` from
 `Long` objects; regexes, Decimal128, timestamps, and deprecated scalar types use
 explicit native representations. Replace deserializer options with the documented
 native options. See the [BSON value contract](/docs/modules/documents/bson#native-value-representations).
-
 
 
 Use a supported Node.js LTS release and keep it patched, especially when decoding untrusted data. Node.js 20 is no longer supported. See [Node.js support](./developer-guide/node.md#supported-nodejs-versions) for runtime requirements and security updates.
@@ -444,7 +591,7 @@ prefer the default `ZstdDecompressor` if no reference backend is required.
 - Removed deprecated root exports: `Compression`, `DeflateCompression`, `GZipCompression`,
   `NoCompression`, `CompressionMetadata`, and the `*Compression` metadata aliases such as
   `gzipCompression`. Use `Compressor`/`Decompressor` and the direction-specific root classes.
-  Combined implementation subpaths remain available for migration. Root imports no longer
+  Combined implementation subpaths have been removed. Root imports no longer
   statically include the DEFLATE/GZIP JavaScript fallback.
 
   | Deprecated combined import | Preferred root classes |
@@ -457,7 +604,7 @@ prefer the default `ZstdDecompressor` if no reference backend is required.
 - Async Brotli decompression remains available without application changes: it tries native support first and lazily loads the bundled fallback decoder when needed. Applications that call `BrotliCompression.decompressSync()` must first `await compression.preload()` or inject `modules.brotli`.
 - Snappy synchronous methods no longer initialize the optional `snappyjs` dependency implicitly. Call `await compression.preload()` before `compressSync()` or `decompressSync()`, or inject `modules: {snappyjs}`. Async methods preload it automatically.
 - `BrotliCompression`, `ZstdCompression`, and frame-based `LZ4Compression` may load larger codec implementations asynchronously. Prefer their async APIs; synchronous callers must explicitly preload or inject the required codec.
-- `transformBatches()` remains available for compatibility but is deprecated. Use `compressBatches()` or `decompressBatches()` for new code.
+- `transformBatches()` has been removed. Use `compressBatches()` or `decompressBatches()` for new code.
 
 #### ZIP archive API changes
 
@@ -508,6 +655,14 @@ prefer the default `ZstdDecompressor` if no reference backend is required.
 
 ### Sources, services, and tile traversal
 
+#### Query completion callback
+
+The v5 table-scan completion callback is now `onQueryComplete`, replacing `onTelemetry`
+on scan read options. Its payload type is `TableQueryExecutionSummary` (previously
+`ScanExecutionTelemetry`). Update custom scan adapters to call `emitQueryComplete`.
+There are no compatibility aliases. Format-specific diagnostics such as
+`parquet.onTelemetry` keep their existing names.
+
 #### SourceLoader names
 
 If you are upgrading from the 4.4 release line, migrate top-level source factories and types as follows:
@@ -515,24 +670,28 @@ If you are upgrading from the 4.4 release line, migrate top-level source factori
 | v4.4 | v5.0 |
 | --- | --- |
 | `Source` | `SourceLoader` |
-| `WMSSource` | `WMSSourceLoader` |
-| `WFSSource` | `WFSSourceLoader` |
-| `MVTSource` | `MVTSourceLoader` |
-| `MLTSource` | `MLTSourceLoader` |
-| `PMTilesSource` | `PMTilesSourceLoader` |
-| `COPCSource` | `COPCSourceLoader` |
-| `PotreeSource` | `PotreeSourceLoader` |
-| `TableTileSource` | `TableTileSourceLoader` |
-| `FlatGeobufSource` | `FlatGeobufSourceLoader` |
-| `GeoTIFFSource` | `GeoTIFFSourceLoader` |
-| `OMETiffSource` | `OMETiffSourceLoader` |
+| `WMSSource` | `WMSLoader` |
+| `WFSSource` | `WFSLoader` |
+| `MVTSource` | `MVTLoader` |
+| `MLTSource` | `MLTLoader` |
+| `PMTilesSource` | `PMTilesLoader` |
+| `COPCSource` | `COPCLoader` |
+| `PotreeSource` | `PotreeLoader` |
+| `PotreeSourceLoader` | `PotreeLoader` |
+| `CSVSourceLoader` | `CSVLoader` |
+| `JSONTableSourceLoader` | `JSONTableLoader` |
+| `NDJSONSourceLoader` | `NDJSONLoader` |
+| `TableTileSource` | `TableTileLoader` |
+| `FlatGeobufSource` | `FlatGeobufLoader` |
+| `GeoTIFFSource` | `GeoTIFFLoader` |
+| `OMETiffSource` | `OMETiffLoader` |
 
 Concrete runtime classes are unchanged. For example:
 
-- `WMSSourceLoader` still creates `WMSImageSource`
-- `MVTSourceLoader` still creates `MVTTileSource`
-- `PMTilesSourceLoader` still creates `PMTilesTileSource`
-- `TableTileSourceLoader` still creates `TableVectorTileSource`
+- `WMSLoader` still creates `WMSImageSource`
+- `MVTLoader` still creates `MVTTileSource`
+- `PMTilesLoader` still creates `PMTilesTileSource`
+- `TableTileLoader` still creates `TableVectorTileSource`
 
 Update the old top-level `*Source` imports explicitly. Some deprecated aliases remain for deck.gl compatibility; they are not the v5 application API.
 
@@ -546,16 +705,16 @@ Update the old top-level `*Source` imports explicitly. Some deprecated aliases r
 
 ```typescript
 // Before
-createDataSource(url, [PMTilesSourceLoader], {
+createDataSource(url, [PMTilesLoader], {
   core: {loadOptions: {core: {worker: false}, mvt: {layerProperty: 'layer'}}},
-  pmtiles: {shape: 'arrow-table'}
+  pmtiles: {shape: 'arrow'}
 });
 
 // v5
-createDataSource(url, [PMTilesSourceLoader], {
+createDataSource(url, [PMTilesLoader], {
   core: {worker: false},
   mvt: {layerProperty: 'layer'},
-  pmtiles: {shape: 'arrow-table'}
+  pmtiles: {shape: 'arrow'}
 });
 ```
 
@@ -567,14 +726,16 @@ Move those settings into `sourceOptions`, using the flat shape above. This match
 `Tile2DSourceLayer` and avoids two competing source-options entry points. The deck.gl property
 itself and the separate `Tileset3D.loadOptions` API are not removed by this change.
 
-- Deprecated top-level parser option aliases such as `fetch`, `worker`, and `shape` are still
-  accepted by the current implementation. Migrate them to `core.fetch`, `core.worker`, and
-  `core.shape`. These aliases are distinct from the removed source `loadOptions` wrappers above;
-  their final v5 removal or retention decision is tracked in
-  [the v5 release tracker](https://github.com/visgl/loaders.gl/issues/3316).
+- Top-level parser option aliases have been removed. Move shared settings under `core`,
+  including `fetch`, `worker`, `shape`, and `batchSize`. Rename `baseUri` to
+  `core.baseUrl`. For example, use
+  `load(url, Loader, {core: {worker: false, batchSize: 1000}})`. Format-specific
+  options still use their format namespace.
 - `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
-- `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
-- `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
+- Use `await createDataSource(url, loader, options)` to construct a source.
+  `load()` returns parsed data and rejects source-only loaders.
+- Rename synchronous `createDataSource()` calls to `createDataSourceSync()`.
+  This API requires an available source implementation.
 
 #### SourceLoader migration examples
 
@@ -594,21 +755,11 @@ const loaded = await load(url, WMSSource);
 Now, in v5:
 
 ```ts
-import type {SourceLoader} from '@loaders.gl/core/loader-utils';
-import {createDataSource, load} from '@loaders.gl/core';
-import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {createDataSource} from '@loaders.gl/core';
+import {WMSLoader} from '@loaders.gl/ogc/wms';
 
-const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
-const wmsSource = createDataSource(url, [WMSSourceLoader], options);
-const loaded = await load(url, WMSSourceLoader); // WMSImageSource
+const source = await createDataSource(url, WMSLoader, options);
 ```
-
-This unifies top-level loading behavior:
-
-- parser loaders still return parsed data
-- source loaders now return runtime source objects
-- metadata remains available from the returned runtime object, typically via `await source.getMetadata()`
 
 #### Source capability interfaces
 
@@ -647,7 +798,7 @@ class CustomImageSource
 Import these contracts with `import type`; they are no longer runtime constructor values. Concrete
 source classes and operational methods such as `getMetadata()`, `getImage()`, `getRaster()`, and
 `getFeatures()` are unchanged. `@loaders.gl/ogc/wms` temporarily retains a deprecated structural
-`ImageSource` runtime guard for deck.gl 9.x compatibility; it is not a constructor or base class.
+`ImageSource` runtime guard and a `WMSSource` alias for deck.gl 10.0.0-alpha.1 compatibility.
 
 #### ArcGIS single-response feature queries
 
@@ -691,19 +842,19 @@ Redundant Arrow-specific loader and writer variants have been removed where the 
 
 | Removed API | Replacement |
 | --- | --- |
-| `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow-table'` |
-| `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow-table'` |
-| `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow-table'` |
-| `GPXArrowLoader` | `GPXLoader` with `gpx.shape: 'arrow-table'` |
-| `TCXArrowLoader` | `TCXLoader` with `tcx.shape: 'arrow-table'` |
-| `DracoArrowLoader` | `DracoLoader` with `draco.shape: 'arrow-table'` |
-| `TerrainArrowLoader` | `TerrainLoader` with `terrain.shape: 'arrow-table'` |
-| `QuantizedMeshArrowLoader` | `QuantizedMeshLoader` with `quantized-mesh.shape: 'arrow-table'` |
-| `GeoPackageArrowLoader(tableName?)` | `GeoPackageLoader` with `geopackage.shape: 'arrow-table'` and optional `geopackage.table` |
-| `ParquetArrowLoader` | `ParquetLoader` with `parquet.shape: 'arrow-table'` |
-| `ParquetArrowWorkerLoader` | `ParquetLoader` with `parquet.shape: 'arrow-table'` |
+| `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow'` |
+| `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow'` |
+| `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow'` |
+| `GPXArrowLoader` | `GPXLoader` with `gpx.shape: 'arrow'` |
+| `TCXArrowLoader` | `TCXLoader` with `tcx.shape: 'arrow'` |
+| `DracoArrowLoader` | `DracoLoader` with `draco.shape: 'arrow'` |
+| `TerrainArrowLoader` | `TerrainLoader` with `terrain.shape: 'arrow'` |
+| `QuantizedMeshArrowLoader` | `QuantizedMeshLoader` with `quantized-mesh.shape: 'arrow'` |
+| `GeoPackageArrowLoader(tableName?)` | `GeoPackageLoader` with `geopackage.shape: 'arrow'` and optional `geopackage.table` |
+| `ParquetArrowLoader` | `ParquetLoader` with `parquet.shape: 'arrow'` |
+| `ParquetArrowWorkerLoader` | `ParquetLoader` with `parquet.shape: 'arrow'` |
 | `ParquetArrowWriter` | `ParquetWriter` |
-| `ShapefileArrowLoader` | `ShapefileLoader` with `shapefile.shape: 'arrow-table'` |
+| `ShapefileArrowLoader` | `ShapefileLoader` with `shapefile.shape: 'arrow'` |
 
 For example:
 
@@ -712,7 +863,7 @@ import {load, encode} from '@loaders.gl/core';
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 
 const parquetArrowTable = await load(parquetUrl, ParquetLoader, {
-  parquet: {shape: 'arrow-table'}
+  parquet: {shape: 'arrow'}
 });
 
 const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
@@ -725,8 +876,7 @@ named `nodes` and `edges` Arrow tables. Applications that consume `graph.nodes` 
 `graph.edges`, including plain graph-layer integrations, must explicitly select
 `{graphml: {shape: 'plain-graph-data'}}` or `{dot: {shape: 'plain-graph-data'}}`.
 
-For Arrow output, read `graph.tables[0].table.data` and `graph.tables[1].table.data`
-after checking the collection and table discriminators. Structural identifiers are
+For Arrow output, read the native tables from `graph.tables[index].table`. Structural identifiers are
 strings; GraphML `long` attributes become exact `bigint` values. See the
 [graphs module](./modules/graphs/README.md) for schemas and object-row output.
 
@@ -734,12 +884,106 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 
 - The underscored GeoJSON exports have been removed. Replace `_GeoJSONLoader`, `_GeoJSONWorkerLoader`, and `_GeoJSONWriter` with `GeoJSONLoader`, `GeoJSONWorkerLoader`, and `GeoJSONWriter`.
 - `GeoJSONLoader` now returns a GeoArrow-compatible Arrow table by default. Set `options.geojson.shape: 'geojson-table'` for the previous object-row feature table, or use `'binary-feature-collection'` for deck.gl-style binary features.
-- `JSONLoader` remains the arbitrary JSON document loader. Use `JSONTableLoader` for table-only JSON workflows and for `json.shape: 'arrow-table'`.
-- `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
+- `JSONLoader` remains the arbitrary JSON document loader. Use `JSONTableLoader` for table-only JSON workflows and for `json.shape: 'arrow'`.
+- `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
+
+#### Table loaders default to native Arrow
+
+Code that reads `result.data` from a table returned by a loader in
+`@loaders.gl/tables` can use the returned Apache Arrow `Table` directly.
+Batch APIs yield Apache Arrow `RecordBatch` objects. A loader-specific shape option,
+such as `csv.shape`, takes precedence over `core.shape`.
+
+See [native Apache Arrow output](./modules/core/schema/table-guide.md#native-apache-arrow-output)
+for batch metadata and examples. Pass the native Arrow table to writers. Access columns directly
+on the returned value and use `numRows` for batch row counts. Schema and field metadata use
+Arrow Maps. Container and CRS refinements can arrive in a final zero-row batch.
+JSON batch paths are available through `batch.metadata.get('jsonpath')`. Use the returned
+`RecordBatch` directly in place of the removed `Batch.recordBatch` field.
+
+GeoPackage, FlatGeobuf, GML, Parquet, GeoParquet, and the SPLAT, KSPLAT, and SPZ loaders now
+use `shape: 'arrow'` for native Arrow output. Use `table.numRows` and `table.getChild(name)`
+directly. Batching APIs emit Arrow `RecordBatch` values. Chrome Trace uses the same option
+name and continues to return its native trace table and batches.
+
+Mesh and point-cloud loaders (LAS/LAZ, PLY, PCD, OBJ, Draco, terrain, quantized mesh,
+and Potree BIN), Shapefile/SHP/DBF, and MVT/MLT/PMTiles now select native Arrow with
+`shape: 'arrow'`. Full parses and Arrow tile reads return Apache Arrow `Table` values.
+Streaming Arrow parsers emit `RecordBatch` values. LAS, PLY, PCD, and Shapefile
+store file information as JSON in the Arrow schema under `loaders.gl.<format>.header`.
+Mesh topology, bounds, and attribute metadata remain available through the Arrow schema.
+
+Pass native Apache Arrow tables directly to `GeoArrowLayer`, `MeshArrowPointCloudLayer`,
+and `SplatLayer`. For streaming point clouds and splats, pass an async iterable of Arrow
+`RecordBatch` values.
+
+#### Native Arrow types and guards
+
+Import `Table` and `RecordBatch` from `apache-arrow` in place of the removed
+`ArrowTable` and `ArrowTableBatch` exports from `@loaders.gl/core/schema`.
+Use `isArrowTable` and `isArrowRecordBatch` from `@loaders.gl/core/schema-utils`
+in place of `isNativeArrowTable` and `isNativeArrowRecordBatch`.
+
+#### Table and batch conversions use native Arrow
+
+Use `'arrow'` as the target for table converters, mesh conversion, and batch conversion. Table conversion returns an Apache Arrow `Table`. Batch conversion produces `RecordBatch` values, with schema metadata available on each batch. Use `convertBatches(batches, 'arrow')` for portable row and column batches, and `makeArrowTableFromBatches` to collect a native stream. Use `makeArrowRecordBatchIterator` in place of `makeArrowTableBatchIterator`.
+
+#### Federated and format-specific scans yield native Arrow batches
+
+Federated scans yield Apache Arrow `RecordBatch` objects. Read source provenance
+with `getFederatedTableBatchProvenance(batch)` from `@loaders.gl/core/scan`.
+When federation removes rows, original physical metadata is available through
+`sourceMetadata` and describes the input batch.
+Parquet, dataset, and lakehouse readers store file and row provenance as JSON
+in Arrow batch metadata. Read it with `getParquetBatchProvenance(batch)` from
+`@loaders.gl/tables/parquet-source`, which restores BigInt and binary values.
+
+Arrow IPC, JSONTable, FlatGeobuf, Lance, DuckDB, COPC, and Potree physical readers also
+yield native batches. Use `batch.numRows` and access Arrow columns directly.
+
+#### Physical Arrow scans yield RecordBatches
+
+`queryArrowTableInBatches()` now accepts and yields native Arrow `RecordBatch`
+objects. The in-memory Arrow, GeoPackage, ORC, and addressed vector sources also
+yield native batches from `read()` (and `scan()` on addressed vector sources).
+Use `batch.numRows` and read columns directly from the batch.
+
+#### Row windows belong to logical queries
+
+Move Parquet construction options `parquet.offset` and `parquet.limit` to the logical request
+passed to `query()` or `queryInBatches()`. For example, use
+`query({offset: 100, limit: 50}, {source})` with a source created without window defaults.
+For direct selective I/O, pass `{offset, limit}` to `ParquetSource.read()`.
+Direct parsing and direct source reads still accept the legacy settings during migration.
+
+#### Query APIs return native Arrow
+
+`query()` returns an Apache Arrow `Table`, `queryInBatches()` yields native
+`RecordBatch` objects, and `queryProgressive()` puts a native `Table` in each
+snapshot. Access Arrow data directly and use `numRows` for batch row counts.
+
+#### Vector sources return native Arrow tables
+
+`getFeatures({format: 'arrow'})` returns an Apache Arrow `Table` directly.
+Read columns with `result.getChild(name)` and count rows with `result.numRows`.
+Custom vector sources should return their underlying Arrow table. This also
+applies to Arrow output from WFS `getFeaturesInBatches()`.
+
+#### KML, KMZ, GPX, and TCX return native Arrow tables
+
+Use `shape: 'arrow'` for these loaders and read the returned Apache Arrow Table
+directly. Pass it to `convertGeoArrowTableToGeoJSON(table)` to reconstruct features
+using the geometry metadata in the table schema.
+
+#### Graph loaders return native Arrow tables
+
+DOT, GEXF, and GraphML use `shape: 'arrow'` for the default output. Read the
+native Arrow Table at `graph.tables[index].table`. Existing code that reads
+`graph.tables[index].table.data` should remove the final `.data` access.
 
 #### NDGeoJSON, trace, and GML output defaults
 
-- `NDGeoJSONLoader` now returns Arrow tables by default. Set `geojson.shape: 'object-row-table'`
+- `NDGeoJSONLoader` now returns native Arrow tables by default. Set `geojson.shape: 'object-row-table'`
   to keep complete GeoJSON features as object rows. Its loader ID is now `ndgeojson` rather than
   the ambiguous `ndjson`.
 - `ChromeTraceLoader` now defaults to its existing native Apache Arrow `Table` output. Set
@@ -751,28 +995,28 @@ strings; GraphML `long` attributes become exact `bigint` values. See the
 
 #### Parquet backends and exact integers
 
-- `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoaderWithParser`, or `ParquetJSWriter` instead depending on the backend you want.
-- `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. For the experimental parquetjs backend, import `ParquetJSLoaderWithParser` from `@loaders.gl/tables/parquet-js-loader` and `ParquetJSWriter` from `@loaders.gl/tables/parquet-js-writer`.
-- `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Import `ParquetLoader` for WASM or the parser-bearing `ParquetJSLoaderWithParser` for the TypeScript parquetjs implementation.
-- Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetJSWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
+- `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader` and `ParquetWriter` from `@loaders.gl/tables/parquet`.
+- Import the canonical TypeScript `ParquetLoader` and `ParquetWriter` from `@loaders.gl/tables/parquet`.
+- `parquet.backend` and the deprecated `parquet.implementation` options have been removed. Use the canonical TypeScript `ParquetLoader`; alternate readers are unpublished website comparison support.
+- Unannotated Parquet `INT64` values now remain exact: Arrow output uses Arrow `Int64`, and object-row output uses JavaScript `bigint`. `ParquetWriter` accepts `bigint` and rejects unsafe `number` inputs for these fields rather than silently rounding them. Convert to `number` explicitly only when values are known to remain within JavaScript's safe integer range.
 
 #### MLT output defaults
 
-- `MLTLoader` and `MLTSourceLoader` now return an Arrow table with WKB-compatible GeoArrow geometry by
+- `MLTLoader` now returns a native Arrow table with WKB-compatible GeoArrow geometry by
    default. Applications that expect the previous GeoJSON table default must set
    `mlt.shape: 'geojson-table'` explicitly. `binary-geometry` remains available as an explicit shape.
 
 #### MVT source output defaults
 
-- `MVTSourceLoader` now returns tiles in the Arrow-table shape by default, matching the source's
-   columnar query path. Set `mvt.shape: 'geojson-table'` explicitly for object-row GeoJSON tiles.
+- `MVTLoader` returns tiles as native Apache Arrow tables by default. Set
+   `mvt.shape: 'geojson-table'` for object-row GeoJSON tiles.
 - The top-level `gis.format` compatibility alias has been removed. Use `mvt.shape` instead.
 
 #### PMTiles output shapes
 
 - PMTiles v3 archives with MapLibre Tile (MLT) payloads are supported through `@loaders.gl/tiles/mlt`.
 - The `pmtiles.shape: 'columnar-table'` option remains supported for MVT archives only. Passing it
-   for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow-table` instead.
+   for an MLT archive now throws; use `geojson-table`, `binary-geometry`, or `arrow` instead.
 
 #### Mesh output and Draco backends
 
@@ -798,7 +1042,7 @@ The representation remains subject to prerelease API review.
 
 `LASLoader` no longer supports `options.las.backend`. It now uses the pure TypeScript implementation. Use the [alternate loader imports](#alternate-loader-imports) when a compatibility backend is required.
 
-`COPCSourceLoader` no longer supports `options.copc.decoder`. COPC headers, hierarchy pages, node ranges, and PDRF 6-8 LAZ chunks are now read by the native TypeScript implementation.
+`COPCLoader` no longer supports `options.copc.decoder`. COPC headers, hierarchy pages, node ranges, and PDRF 6-8 LAZ chunks are now read by the native TypeScript implementation.
 
 #### CRS types and coordinate options
 
@@ -853,9 +1097,15 @@ view 0. An explicit `bufferView: 0` continues to read the first buffer view.
 
 #### Removed compatibility aliases
 
-- `getMeshSize` is no longer exported from `@loaders.gl/core/schema`; import it from
-   `@loaders.gl/core/schema-utils`. The `getMeshBoundingBox` root export is deprecated and retained
-   temporarily for deck.gl 9.4 compatibility; migrate imports to `@loaders.gl/core/schema-utils`.
+- Replace `AnyLayer` and `AnyLayerProps` with `SourceLayer` and `SourceLayerProps`.
+  Move the layer's `sources` entries into `loaders`. If you previously supplied both props,
+  put the former `sources` entries first to preserve source selection order.
+- Replace `ArrowWorkerLoader` and `GeoArrowWorkerLoader` with `ArrowLoader` and `GeoArrowLoader`.
+  For metadata-only imports, use `@loaders.gl/tables` or `@loaders.gl/tables/arrow`.
+
+- Import `getMeshSize` and `getMeshBoundingBox` from `@loaders.gl/core/schema-utils`.
+  The `@loaders.gl/core/schema` exports have been removed. The canonical bounding-box helper can
+  return `null` when positions are missing or empty.
 - CRS forwarding exports (`PROJ4CRS`, `WKTCRS`, `parseWKTCRS`, and `encodeWKTCRS`) are no
    longer exported from `@loaders.gl/gis`; import the canonical definitions and helpers from
    `@math.gl/geospatial/crs`.
@@ -888,7 +1138,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 | Deprecated helper         | Replacement                     |
 | ------------------------- | ------------------------------- |
-| `loadImageTexture()`      | `load(url, TextureLoader)`      |
+| `loadImageTexture()`      | `load(url, ImageLoader)`        |
 | `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
 | `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
 
@@ -904,7 +1154,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 - `@loaders.gl/parquet/buffer`, `BufferPolyfill`, and `installBufferPolyfill()` were removed. The JavaScript Parquet parser and writer now use `Uint8Array` internally instead of installing a global `Buffer`.
 - `ParquetLoader` and the experimental parquetjs APIs now return unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` values as `Uint8Array` instead of `Buffer`. Logical values such as `UTF8` and `JSON` are still decoded to JavaScript strings/objects according to the Parquet schema.
-- `ParquetLoader` and `ParquetWriter` are now wasm-only. Use `ParquetJSLoader` and `ParquetJSWriter` for the experimental parquetjs plain-row/plain-table backend.
+- `ParquetLoader` and `ParquetWriter` use the native TypeScript implementation; alternative backends are unpublished website comparison support.
 
 ## Upgrading to v4.3
 
@@ -912,7 +1162,7 @@ v4.5 is additive. Existing loaders and defaults continue to work unchanged, exce
 
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
-- `@loaders.gl/core/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
+- `@loaders.gl/core/loader-utils` - Deprecated `FileProvider` classes have been removed; use `HttpFile`, `BlobFile`, `NodeFile`, or `ArrayBufferFile` to provide `ReadableFile` access instead.
 - `@loaders.gl/zip`/`@loaders.gl/tiles-3d/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
 
 **Deprecations**
@@ -1302,3 +1552,39 @@ Also, Node support now requires installing `@loaders.gl/core/polyfills` before u
 ## v1.0
 
 First official release of loaders.gl.
+### Arrow and task utilities in math.gl beta.5
+
+Import Arrow transport, indexed/mapped tables, column renaming, and schema validation from
+`@math.gl/core/arrow`, UTF-8 helpers from `@math.gl/core/utf8`, and Arrow/GeoArrow adapters from
+`@math.gl/core/arrow`. The v5 forwarding exports in tables and core/arrow-geometry,
+`core/schema-utils/arrow-transport`, and `tables/arrow/transport` are removed.
+Loader worker result hooks live in `@loaders.gl/core/arrow-worker-transport`.
+
+The upstream column-buffer payload uses schema-only IPC bytes and direct Arrow data nodes
+for batches. Loader worker messages carry those columns alongside any format-specific metadata. Regenerate payloads with the matching upstream serializer. Transport types
+come from math.gl; `DehydratedArrowVector` and `DehydratedArrowRecordBatch` aliases are removed.
+
+Task imports move from `@math.gl/core/tasks` to `@math.gl/tasks`. The task API forwarding
+exports from `core/worker-utils` are removed; loader processing APIs remain there.
+
+#### Materialized scan queries use Apache Arrow tables
+
+The scan engine, its custom backends, and the `queryArrowTable()` helpers now
+accept and return Apache Arrow `Table` objects. Pass a native table to
+`explainArrowTableQuery()`, to the in-memory SQL package `ArrowTableSource`
+constructor, and in `ArrowQueryOptions.tables` for joins and unions.
+
+Addressed vector, FlatGeobuf, GeoPackage, and ORC source queries now return
+Apache Arrow `Table` objects. GeoPackage `getTable()` returns the same native
+type. The schema-utils `selectArrowTableRows()` also takes and returns a native
+table. Use `result.numRows`, `result.getChild(name)`, and `result.schema`
+directly. When starting with a legacy wrapper, pass its `data` to the query
+APIs.
+
+SQL data sources and custom SQL adapters now return native tables from
+`queryArrow()` and `executeArrow()`. Pass a native table to
+`DuckDBSQLDataSource.insertArrowTable()`.
+
+### Tables writer imports
+
+Import table writers through their format subpaths, such as `@loaders.gl/tables/parquet` and `@loaders.gl/tables/arrow`. The tables package root exports loader metadata and shared types. Keeping writers on format subpaths prevents parser dependencies from entering the initial metadata bundle.

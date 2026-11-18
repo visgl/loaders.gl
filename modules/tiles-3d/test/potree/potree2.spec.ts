@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createDataSource} from '@loaders.gl/core';
 import {expect, test, vi} from 'vitest';
-import {PotreeLoader, PotreeSourceLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
 import {Potree2Source} from '../../src/potree/potree2-source';
 import {PotreeLoaderWithParser} from '@loaders.gl/tiles-3d/potree-loader';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
@@ -169,8 +170,9 @@ test('modern source incrementally reads one hierarchy and each requested point r
     {potree: {projection: 'EPSG:4978'}}
   );
   const transport = createDatasetFetch(dataset);
-  const source = PotreeSourceLoader.createDataSource(
+  const source = await createDataSource(
     'https://example.com/dataset/metadata.json?token=1',
+    PotreeLoader,
     {
       core: {fetch: transport.fetch}
     }
@@ -187,6 +189,8 @@ test('modern source incrementally reads one hierarchy and each requested point r
     const [child] = await source.getChildren(root);
     expect(child).toMatchObject({id: 'r7', level: 1});
     const content = await source.loadTileContent({...child, pointCount: 999});
+    expect(content!.data.schema.metadata.get('topology')).toBe('point-list');
+    expect(content!.data.schema.metadata.has('mode')).toBe(false);
     expect(content?.pointCount).toBe(1);
     expect(content?.coordinateSystem).toBe('cartesian');
     expect(Array.from(convertTableToMesh(content!.data).attributes.POSITION.value)).toEqual([
@@ -273,7 +277,7 @@ test('modern source rejects status, metadata, range, hierarchy budgets and missi
     });
     await expect(source.initialize()).rejects.toThrow();
   }
-  for (const contentRange of [null, 'bytes 0-21/21', 'bytes 1-22/44']) {
+  for (const contentRange of ['', 'bytes 0-21/21', 'bytes 1-22/44']) {
     const source = new Potree2Source('https://example.com/dataset', {
       core: {
         fetch: async (url, init) =>
@@ -281,11 +285,11 @@ test('modern source rejects status, metadata, range, hierarchy budgets and missi
             ? transport.fetch(url, init)
             : new Response(new Uint8Array(22), {
                 status: 206,
-                headers: contentRange ? {'Content-Range': contentRange} : {}
+                headers: {'Content-Range': contentRange}
               })
       }
     });
-    await expect(source.initialize()).rejects.toThrow('honor');
+    await expect(source.initialize()).rejects.toThrow('Content-Range');
   }
   const source = new Potree2Source('https://example.com/dataset', {
     core: {fetch: transport.fetch},
@@ -380,15 +384,13 @@ test('unified metadata loader parses both layouts without public version selecti
     );
   }
   expect(PotreeLoader.testText(JSON.stringify(createMetadata()))).toBe(true);
-  expect(PotreeSourceLoader.testURL('https://example.com/dataset/metadata.json?token=1')).toBe(
-    true
-  );
-  expect(PotreeSourceLoader.testURL('https://example.com/dataset/cloud.js?token=1')).toBe(true);
+  expect(PotreeLoader.testURL('https://example.com/dataset/metadata.json?token=1')).toBe(true);
+  expect(PotreeLoader.testURL('https://example.com/dataset/cloud.js?token=1')).toBe(true);
 });
 
 test('unified modern source exposes query limitations and shared range limits', async () => {
   const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
-  const source = PotreeSourceLoader.createDataSource('https://example.com/dataset/metadata.json', {
+  const source = await createDataSource('https://example.com/dataset/metadata.json', PotreeLoader, {
     core: {fetch: transport.fetch},
     potree: {maxPointBytes: 1}
   });
@@ -405,7 +407,7 @@ test('unified modern source exposes query limitations and shared range limits', 
 
 test('closing a unified modern source before initialization prevents metadata reads', async () => {
   const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
-  const source = PotreeSourceLoader.createDataSource('https://example.com/dataset/metadata.json', {
+  const source = await createDataSource('https://example.com/dataset/metadata.json', PotreeLoader, {
     core: {fetch: transport.fetch}
   });
   source.close();
@@ -432,4 +434,22 @@ test('legacy hierarchy accepts complete trees deeper than the page step and chec
     parsePotreeHierarchyChunk(bytes.slice(0, 15).buffer, {maximumDepth: 2}).children[0].children[0]
       .hasChildren
   ).toBe(true);
+});
+
+test('Potree2 accepts CORS-hidden range headers without HEAD requests', async () => {
+  const dataset = await encodePotreeDataset(createPoints());
+  const transport = createDatasetFetch(dataset);
+  const source = new Potree2Source('https://example.com/dataset', {
+    core: {
+      fetch: async (url, init) => {
+        expect(init?.method).not.toBe('HEAD');
+        const response = await transport.fetch(url, init);
+        response.headers.delete('Content-Range');
+        return response;
+      }
+    }
+  });
+  await source.initialize();
+  const root = await source.getRootTile();
+  expect(await source.loadTileContent(root)).toBeTruthy();
 });

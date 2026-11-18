@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import * as arrow from 'apache-arrow';
 import {encode, load} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter, ParquetReader} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter, ParquetReader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
@@ -53,16 +53,16 @@ test('ParquetJS logical types round-trip into exact Arrow vectors', async () => 
     ]
   };
 
-  const parquetBuffer = await encode(input, ParquetJSWriter, {worker: false});
+  const parquetBuffer = await encode(input, ParquetWriter, {worker: false});
   const output = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
-    parquet: {shape: 'arrow-table'}
+    parquet: {shape: 'arrow'}
   });
 
-  expect(output.shape).toBe('arrow-table');
-  if (output.shape !== 'arrow-table') return;
+  expect(output).toHaveProperty('numRows');
+  if (!('numRows' in output)) return;
 
-  const fields = output.data.schema.fields;
+  const fields = output.schema.fields;
   expect(fields.map(field => field.type.constructor)).toEqual([
     arrow.Uint8,
     arrow.Uint64,
@@ -73,20 +73,20 @@ test('ParquetJS logical types round-trip into exact Arrow vectors', async () => 
     arrow.Float16,
     arrow.DateDay
   ]);
-  expect(output.data.getChild('unsigned8')?.get(0)).toBe(255);
-  expect(output.data.getChild('unsigned64')?.get(0)).toBe(UINT64_MAXIMUM);
-  expect(output.data.getChild('timeNanos')?.data[0].values[0]).toBe(TIME_NANOS);
-  expect(output.data.getChild('timestampNanos')?.data[0].values[0]).toBe(TIMESTAMP_NANOS);
-  expect(output.data.getChild('decimal')?.data[0].values[0]).toBe(12_345_678);
-  expect(output.data.getChild('decimal')?.type).toMatchObject({precision: 18, scale: 3, bitWidth: 128});
-  expect(readArrowDecimalValue(output.data.getChild('decimal256')!, 256)).toBe(DECIMAL256_VALUE);
-  expect(output.data.getChild('decimal256')?.type).toMatchObject({
+  expect(output.getChild('unsigned8')?.get(0)).toBe(255);
+  expect(output.getChild('unsigned64')?.get(0)).toBe(UINT64_MAXIMUM);
+  expect(output.getChild('timeNanos')?.data[0].values[0]).toBe(TIME_NANOS);
+  expect(output.getChild('timestampNanos')?.data[0].values[0]).toBe(TIMESTAMP_NANOS);
+  expect(output.getChild('decimal')?.data[0].values[0]).toBe(12_345_678);
+  expect(output.getChild('decimal')?.type).toMatchObject({precision: 18, scale: 3, bitWidth: 128});
+  expect(readArrowDecimalValue(output.getChild('decimal256')!, 256)).toBe(DECIMAL256_VALUE);
+  expect(output.getChild('decimal256')?.type).toMatchObject({
     precision: 40,
     scale: 0,
     bitWidth: 256
   });
-  expect(output.data.getChild('half')?.get(0)).toBe(1.0009765625);
-  expect(output.data.getChild('date')?.get(0)).toBe(-86_400_000);
+  expect(output.getChild('half')?.get(0)).toBe(1.0009765625);
+  expect(output.getChild('date')?.get(0)).toBe(-86_400_000);
 
   const metadata = await new ParquetReader(new BlobFile(parquetBuffer)).getFileMetadata();
   const timeNanosSchema = metadata.schema.find(field => field.name === 'timeNanos');

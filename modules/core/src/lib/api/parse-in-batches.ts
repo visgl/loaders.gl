@@ -2,27 +2,36 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {
+  usesNativeArrowBatches,
+  isArrowTable,
+  normalizeNativeArrowBatches
+} from '../loader-utils/native-arrow';
+
 import type {Batch, Table} from '@loaders.gl/core/schema';
 import {resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderWithParser,
   StrictLoaderOptions,
   LoaderOptions,
   LoaderContext,
-  LoaderOptionsWithShape,
   BatchableDataType,
-  LoaderOptionsType,
-  LoaderShapeType,
   LoaderBatchType,
-  LoaderArrayOptionsType,
   LoaderArrayBatchType,
   TransformBatches
 } from '@loaders.gl/core/loader-utils';
 import {
   canParseWithWorkerInBatches,
   concatenateArrayBuffersAsync,
-  parseWithWorkerInBatches
+  parseWithWorkerInBatches,
+  paceBatchIterator,
+  validateBatchDeliveryRate
 } from '@loaders.gl/core/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -38,31 +47,45 @@ import {parse} from './parse';
 /**
  * Parses `data` synchronously using a specified loader
  */
+export async function parseInBatches<LoaderT extends Loader>(
+  data: BatchableDataType,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+
 export async function parseInBatches<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   data: BatchableDataType,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+): Promise<AsyncIterable<LoaderBatchType<LoaderT, OptionsT>>>;
 
 /**
  * Parses `data` using one of the supplied loaders
  */
+export async function parseInBatches<LoaderArrayT extends Loader[]>(
+  data: BatchableDataType,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<AsyncIterable<LoaderArrayBatchType<LoaderArrayT>>>;
+
 export async function parseInBatches<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   data: BatchableDataType,
   loaders: LoaderArrayT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayBatchType<LoaderArrayT>>;
+): Promise<AsyncIterable<LoaderArrayBatchType<LoaderArrayT, OptionsT>>>;
 
 /**
  * Parses `data` in batches by selecting a pre-registered loader
@@ -107,7 +130,7 @@ export async function parseInBatches(
   // Chooses a loader and normalizes it
   // Note - only uses URL and contentType for streams and iterator inputs
   const loader = await selectLoader(data, loaders, options);
-  // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
+  // Note: if options.core.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return [];
   }
@@ -123,6 +146,7 @@ export async function parseInBatches(
     url || '',
     normalizedOptions
   );
+  const nativeArrow = usesNativeArrowBatches(loader, strictOptions);
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
     strictOptions,
@@ -130,7 +154,14 @@ export async function parseInBatches(
   );
 
   const loaderWithParser = await getLoaderImplementation(loader, strictOptions, context.url);
-  return await parseWithLoaderInBatches(loader, loaderWithParser, data, strictOptions, context);
+  const batches = await parseWithLoaderInBatches(
+    loader,
+    loaderWithParser,
+    data,
+    strictOptions,
+    context
+  );
+  return nativeArrow ? normalizeNativeArrowBatches(batches) : batches;
 }
 
 /**
@@ -143,7 +174,33 @@ async function parseWithLoaderInBatches(
   options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
-  const outputIterator = await parseToOutputIterator(loader, data, options, context);
+  const {batchMaxRowsPerSecond = 0, batchSize} = options.core ?? {};
+  validateBatchDeliveryRate(batchMaxRowsPerSecond);
+  if (
+    batchSize !== undefined &&
+    batchSize !== 'auto' &&
+    (!Number.isSafeInteger(batchSize) || batchSize < 1)
+  ) {
+    throw new RangeError('core.batchSize must be a positive integer or "auto"');
+  }
+  const parserOptions = batchMaxRowsPerSecond
+    ? {...options, core: {...options.core, batchMaxRowsPerSecond: 0}}
+    : options;
+  const output = loader.parseInBatches ? loader.prepareParseBatchOutput?.(parserOptions) : null;
+  const decoded = await parseToOutputIterator(
+    loader,
+    data,
+    output?.options ?? parserOptions,
+    context
+  );
+  const batches = output ? convertOutputBatches(decoded, output.convert) : decoded;
+  const outputIterator = batchMaxRowsPerSecond
+    ? paceBatchIterator(batches, {
+        batchMaxRowsPerSecond,
+        getRowCount: batch => getBatchRowCount(batch, loader.module),
+        signal: options.signal ?? context.signal
+      })
+    : batches;
 
   // Generate metadata batch if requested
   if (!options?.core?.metadata) {
@@ -172,6 +229,16 @@ async function parseWithLoaderInBatches(
   return makeMetadataBatchIterator(outputIterator);
 }
 
+/** Converts batches as they are consumed and closes the decoder on early return. */
+async function* convertOutputBatches(
+  batches: AsyncIterable<unknown>,
+  convert: (batch: unknown) => unknown
+): AsyncIterable<unknown> {
+  for await (const batch of batches) {
+    yield convert(batch);
+  }
+}
+
 /**
  * Prep work is done, now it is time to start parsing into an output operator
  * The approach depends on which parse function the loader exposes
@@ -186,7 +253,7 @@ async function parseToOutputIterator(
   // Get an iterator from the input
   const inputIterator = await getAsyncIterableFromData(data, options);
 
-  // Apply any iterator transforms (options.transforms)
+  // Apply any iterator transforms (options.core.transforms)
   const transformedIterator = await applyInputTransforms(
     inputIterator,
     options?.core?.transforms || []
@@ -211,16 +278,21 @@ async function* parseChunkInBatches(
   loader: LoaderWithParser,
   options: StrictLoaderOptions,
   context: LoaderContext
-): AsyncIterable<Batch> {
+): AsyncIterable<unknown> {
   const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);
   // Call `parse` instead of `loader.parse` to ensure we can call workers etc.
-  const parsedData = await parse(
+  const parsedData: unknown = await parse(
     arrayBuffer,
     loader,
     // TODO - Hack: supply loaders MIME type to ensure we match it
     {...options, core: {...options?.core, mimeType: loader.mimeTypes[0]}},
     context
   );
+
+  if (isArrowTable(parsedData)) {
+    yield* parsedData.batches;
+    return;
+  }
 
   // yield a single batch, the output from loader.parse() repackaged as a batch
   const batch = convertDataToBatch(parsedData, loader);
@@ -262,8 +334,6 @@ function isTable(value: unknown): value is Table {
       return Array.isArray(table.features);
     case 'columnar-table':
       return Boolean(table.data && typeof table.data === 'object');
-    case 'arrow-table':
-      return Boolean(table.data && typeof table.data === 'object' && 'numRows' in table.data);
     default:
       return false;
   }
@@ -277,8 +347,6 @@ function getTableLength(table: Table): number {
       return table.data.length;
     case 'geojson-table':
       return table.features.length;
-    case 'arrow-table':
-      return table.data.numRows;
     case 'columnar-table':
       for (const column of Object.values(table.data)) {
         return column.length || 0;
@@ -305,4 +373,37 @@ async function applyInputTransforms(
     iteratorChain = transformBatches(iteratorChain);
   }
   return iteratorChain;
+}
+
+/** Reads row counts from data batches, including tagged trace and point-cloud batches. */
+function getBatchRowCount(batch: unknown, module?: string): number | undefined {
+  if (!batch || typeof batch !== 'object') return undefined;
+  if (module === 'geospatial' && Array.isArray(batch)) return batch.length;
+  const result = batch as {
+    batchType?: string;
+    table?: string;
+    shape?: string;
+    length?: number;
+    features?: unknown[];
+    data?: {numRows?: number};
+    numRows?: number;
+    header?: {vertexCount?: number};
+  };
+  if (
+    module === 'traces' &&
+    result.table !== undefined &&
+    result.table !== 'spans' &&
+    result.table !== 'slices'
+  ) {
+    return undefined;
+  }
+  if (result.batchType !== undefined && result.batchType !== 'data') return undefined;
+  if (result.shape === 'unknown') return undefined;
+  return (
+    result.data?.numRows ??
+    result.numRows ??
+    result.header?.vertexCount ??
+    result.features?.length ??
+    result.length
+  );
 }

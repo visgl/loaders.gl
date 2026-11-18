@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* global importScripts */
+import {log as loaderLog} from './../../../loader-utils/lib/log-utils/log';
 import {isBrowser, isWorker} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';
@@ -190,7 +191,7 @@ async function loadLibraryFromFile(libraryUrl: string, moduleLibraryUrl: string)
           // ignore
         }
       }
-      console.error(error); // eslint-disable-line no-console
+      loaderLog.error(String(error))();
       return null;
     }
   }
@@ -217,7 +218,7 @@ export async function loadLibraryInWorker(
   } catch {
     // Resolve local asset paths against the same worker location used by importScripts.
     const moduleUrl = new URL(moduleLibraryUrl, globalThis.location.href).href;
-    const library = await import(/* @vite-ignore */ moduleUrl);
+    const library = await import(/* webpackIgnore: true */ /* @vite-ignore */ moduleUrl);
     return library.default ?? library;
   }
   return importScripts(libraryUrl);

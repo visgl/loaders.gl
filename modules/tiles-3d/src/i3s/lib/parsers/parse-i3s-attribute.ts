@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import type {BigTypedArray} from '@loaders.gl/core/schema';
 
 import {
@@ -246,7 +247,7 @@ function parseStringsAttribute(arrayBuffer: ArrayBuffer, exactStrings = false): 
       throw new Error('I3S string byte counts must match the resource length');
   } catch (error) {
     if (exactStrings) throw error;
-    console.error('Parse string attribute error: ', (error as Error).message); // eslint-disable-line
+    loaderLog.error('Parse string attribute error: ', (error as Error).message)();
   }
 
   return stringsArray;

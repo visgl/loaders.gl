@@ -20,7 +20,7 @@ export function prepareMeshFeatureGeometry(
   features?: MeshTileFeatures
 ): MeshGeometry {
   if (!features) return mesh;
-  const count = features.batches.reduce((total, batch) => total + batch.data.numRows, 0);
+  const count = features.batches.reduce((total, batch) => total + batch.numRows, 0);
   const indices = mesh.indices?.value;
   const vertexCount = indices?.length ?? mesh.attributes.POSITION.value.length / 3;
   const associations = features.triangleFeatureIndices;
@@ -71,8 +71,8 @@ export function encodeMeshFeatures(
 ): void {
   if (!features) return;
   const {batches, featureIdField} = features;
-  const schema = batches[0]?.schema;
-  const count = batches.reduce((total, batch) => total + batch.data.numRows, 0);
+  const schema = batches[0]?.schema && convertArrowToSchema(batches[0].schema);
+  const count = batches.reduce((total, batch) => total + batch.numRows, 0);
   const metadataClass = schema?.metadata?.['loaders.gl:feature-class'] || 'features';
   if (
     !schema ||
@@ -87,13 +87,7 @@ export function encodeMeshFeatures(
     );
   }
   for (const batch of batches) {
-    const actual = convertArrowToSchema(batch.data.schema).fields;
-    if (
-      JSON.stringify(batch.schema) !== JSON.stringify(schema) ||
-      batch.length !== batch.data.numRows ||
-      JSON.stringify(actual.map(field => [field.name, field.type])) !==
-        JSON.stringify(schema.fields.map(field => [field.name, field.type]))
-    ) {
+    if (JSON.stringify(convertArrowToSchema(batch.schema)) !== JSON.stringify(schema)) {
       throw new TileConversionError(
         'MESH_FEATURE_SCHEMA_INVALID',
         'Declared feature schemas and Arrow column types must agree across batches'
@@ -109,7 +103,7 @@ export function encodeMeshFeatures(
         'Property names must be metadata identifiers'
       );
     const values = batches.flatMap(batch => {
-      const column = batch.data.getChild(field.name);
+      const column = batch.getChild(field.name);
       if (!column)
         throw new TileConversionError(
           'MESH_FEATURE_SCHEMA_INVALID',

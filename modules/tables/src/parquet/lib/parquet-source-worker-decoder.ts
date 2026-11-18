@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {dehydrateArrowTable} from '@loaders.gl/core/schema-utils/arrow-transport';
+import {dehydrateArrowTable} from '@math.gl/core/arrow';
 import type {ArrayType} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
 
 import {preloadCompressions} from '../parquetjs/compression';
 import {filterParquetRowIndices, gatherParquetColumns} from './parquet-predicate';
-import type {RowGroup} from '../parquetjs/parquet-thrift/index';
+import type {RowGroup} from '../parquetjs/parquet-thrift';
 import {ParquetReader} from '../parquetjs/parser/parquet-reader';
 import {ParquetSchema} from '../parquetjs/schema/schema';
 import {ParquetSourceWorkerFile} from './parquet-source-worker-file';
@@ -108,13 +108,13 @@ export async function decodeParquetSourceWorkerInput(
         schema: input.projectedSchema,
         data: batchColumns
       },
-      'arrow-table'
+      'arrow'
     );
     batches.push({
       rowGroupRowOffset,
       rowCount,
       rowGroupRowIndices: batchRowIndices,
-      arrowTable: dehydrateArrowTable(arrowTable.data)
+      arrowTable: dehydrateArrowTable(arrowTable)
     });
   }
   const arrowConversionDurationMs = getCurrentTime() - conversionStartTime;

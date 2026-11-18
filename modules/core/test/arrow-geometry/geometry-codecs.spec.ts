@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {parseWKB, WKBBuilder} from '@math.gl/geospatial';
+import {parseWKB, WKBBuilder} from '@math.gl/core/arrow';
 import type {Geometry} from '@loaders.gl/core/schema';
 import {
   convertGeometryToWKB,

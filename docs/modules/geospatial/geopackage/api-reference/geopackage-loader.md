@@ -59,6 +59,10 @@ The `GeoPackageLoader` parses GeoPackage vector tables into loaders.gl geometry 
 The `GeoPackageLoader` requires applications to install the optional peer dependency `sql.js` (`npm install sql.js`). It uses the [`sql.js`](https://github.com/sql-js/sql.js) npm module which has caused issues with certain JavaScript bundlers. It is recommended that you do your own tests before using the `GeoPackageLoader` in your project.
 :::
 
+| Property | Value |
+| --- | --- |
+| Data source | `GeoPackageDataSource` |
+
 ## Installation
 
 Install `sql.js` to use this API. It is an optional peer of `@loaders.gl/geospatial`.
@@ -77,9 +81,10 @@ single table, the metadata-marked default, or the first vector table as a fallba
 ```typescript
 import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 import {load} from '@loaders.gl/core';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import {isArrowTable} from '@loaders.gl/core/schema-utils';
 
-const table: ArrowTable = await load(url, GeoPackageLoader);
+const table = await load(url, GeoPackageLoader);
+if (!isArrowTable(table)) throw new Error('Expected an Arrow table');
 ```
 
 To load a specific table named `feature_table` in a GeoPackage file as GeoJSON:
@@ -114,13 +119,13 @@ and query them through a source API, use [`GeoPackageSource`](/docs/modules/geos
 | Shape              | Output                                      |
 | ------------------ | ------------------------------------------- |
 | `geojson-table`    | loaders.gl `GeoJSONTable` for one table     |
-| `arrow-table`      | loaders.gl `ArrowTable` with WKB geometry   |
+| `arrow`      | Apache Arrow `Table` with WKB geometry   |
 
 ## Options
 
 | Option                | Type   | Default                                             | Description                                                                                                            |
 | --------------------- | ------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `geopackage.shape`    | String | `'arrow-table'`                                     | Output shape: `'arrow-table'` or `'geojson-table'`.                                                                     |
+| `geopackage.shape`    | String | `'arrow'`                                     | Output shape: `'arrow'` or `'geojson-table'`.                                                                     |
 | `geopackage.table`    | String | metadata-selected table                             | Name of the vector table to load.                                                                                      |
 | `geopackage.sqlJsCDN` | String | `'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackage loader is called on a file. |
 | `gis.reproject`       | boolean | `false`                                             | Opt-in coordinate transformation; missing source CRS or unsupported transformations throw `CRSReprojectionError`.       |
@@ -134,9 +139,9 @@ The `GeoPackageLoader` loads one GeoPackage vector table.
 
   Returns a `GeoJSONTable` for the selected table.
 
-- If `geopackage.shape` is `'arrow-table'`:
+- If `geopackage.shape` is `'arrow'`:
 
-  Returns an `ArrowTable` for the selected table with a WKB `geometry` column.
+  Returns an Apache Arrow `Table` for the selected table with a WKB `geometry` column.
 
 Use [`GeoPackageSource`](/docs/modules/geospatial/geopackage/api-reference/geopackage-source) when the
 application needs table discovery, metadata for multiple layers, or repeated table queries.

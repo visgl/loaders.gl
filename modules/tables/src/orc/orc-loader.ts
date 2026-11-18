@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createORCSource} from './orc-source';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {ORCLoaderOptions} from './orc-loader-types';
 import {ORCLoader as ORCLoaderMetadata} from './orc-loader-types';
 import {parseORCToArrow} from './lib/parsers/parse-orc-to-arrow';
@@ -14,9 +15,10 @@ const {preload: _ORCLoaderPreload, ...ORCLoaderMetadataWithoutPreload} = ORCLoad
 
 /** Minimal parser-bearing Apache ORC loader. */
 export const ORCLoaderWithParser = {
+  createDataSourceSync: createORCSource,
   ...ORCLoaderMetadataWithoutPreload,
   async parse(arrayBuffer: ArrayBuffer, options?: ORCLoaderOptions) {
     await preloadORCCompression(readORCPostScript(arrayBuffer).compression, options?.modules);
     return parseORCToArrow(arrayBuffer);
   }
-} as const satisfies LoaderWithParser<ArrowTable, never, ORCLoaderOptions>;
+} as const satisfies LoaderWithParser<Table, RecordBatch, ORCLoaderOptions>;

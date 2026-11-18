@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Schema} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import type {CoreAPI, RequiredOptions} from '@loaders.gl/core/loader-utils';
+import type {CoreAPI, RequiredOptions, TableMetadata} from '@loaders.gl/core/loader-utils';
 
 import type {
   SQLAdapter,
@@ -108,6 +109,36 @@ export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
     return await adapter.listTables(options);
   }
 
+  /** Lists stable native table identifiers without fetching any column schemas or data rows. */
+  async getTablesMetadata(options: {signal?: AbortSignal} = {}): Promise<readonly TableMetadata[]> {
+    options.signal?.throwIfAborted();
+    const tables = await this.listTables();
+    options.signal?.throwIfAborted();
+    return tables.map(table => ({name: getTableMetadataName(table), queryable: false}));
+  }
+
+  /** Discovers one native table schema; ambiguous unqualified names are rejected. */
+  async getTableMetadata(
+    name: string,
+    options: {signal?: AbortSignal} = {}
+  ): Promise<TableMetadata> {
+    const table = await this.resolveTable(name, options.signal);
+    const schema = await this.getTableSchema(table);
+    options.signal?.throwIfAborted();
+    return {name: getTableMetadataName(table), schema, queryable: false};
+  }
+
+  /** Resolves a qualified or unique unqualified table name. */
+  protected async resolveTable(name: string, signal?: AbortSignal): Promise<SQLTableInfo> {
+    signal?.throwIfAborted();
+    const tables = await this.listTables();
+    signal?.throwIfAborted();
+    const exact = tables.filter(table => getTableMetadataName(table) === name);
+    const matches = exact.length ? exact : tables.filter(table => table.tableName === name);
+    if (matches.length !== 1) throw new Error(`Unknown or ambiguous SQL table: ${name}`);
+    return matches[0];
+  }
+
   /** Returns the schema for a specific SQL table. */
   async getTableSchema(options: {
     catalogName?: string;
@@ -128,8 +159,8 @@ export class SQLDataSource extends DataSource<string, SQLSourceOptions> {
     return await adapter.executeRows(compiledQuery.sql, compiledQuery.options);
   }
 
-  /** Executes a SQL query and returns a loaders.gl Arrow table. */
-  async queryArrow(query: SQLQuery, options: SQLQueryOptions = {}): Promise<ArrowTable> {
+  /** Executes a SQL query and returns a native Arrow table. */
+  async queryArrow(query: SQLQuery, options: SQLQueryOptions = {}): Promise<Table> {
     const adapter = await this.getAdapter();
     const compiledQuery = this.compileQuery(query, options);
     if (adapter.executeArrow) {
@@ -225,4 +256,12 @@ function getSQLTableQueryDialect(sourceType: string): SQLTableQueryDialect {
   if (sourceType === 'duckdb-sql') return 'duckdb';
   if (sourceType === 'snowflake-sql') return 'snowflake';
   throw new Error(`Portable table queries are not supported for SQL source type "${sourceType}".`);
+}
+
+/** Preserves native namespace components as one unambiguous provider-defined loaded name. */
+function getTableMetadataName(table: SQLTableInfo): string {
+  return [table.catalogName, table.schemaName, table.tableName]
+    .filter((name): name is string => typeof name === 'string' && name.length > 0)
+    .map(name => `"${name.replaceAll('"', '""')}"`)
+    .join('.');
 }

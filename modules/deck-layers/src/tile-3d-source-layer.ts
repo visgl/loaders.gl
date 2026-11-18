@@ -14,7 +14,6 @@ import {
 } from '@loaders.gl/tiles-3d';
 import {coreApi, preload, selectLoader} from '@loaders.gl/core';
 import {
-  getAuthenticatedFetch,
   resolveLoaderAuthenticationOptions,
   type LoaderOptions,
   type LoaderWithParser,
@@ -167,11 +166,14 @@ export class Tile3DSourceLayer<
           ...options.loadOptions.core,
           credentials: combinedCredentials
         };
-        options.loadOptions.fetch = getAuthenticatedFetch(options.loadOptions);
       } else if (preloadOptions.headers) {
-        options.loadOptions.fetch = {
-          ...options.loadOptions.fetch,
-          headers: preloadOptions.headers
+        const fetchOptions = options.loadOptions.core?.fetch;
+        options.loadOptions.core = {
+          ...options.loadOptions.core,
+          fetch: {
+            ...(typeof fetchOptions === 'object' ? fetchOptions : {}),
+            headers: preloadOptions.headers
+          }
         };
       }
       Object.assign(options, preloadOptions);

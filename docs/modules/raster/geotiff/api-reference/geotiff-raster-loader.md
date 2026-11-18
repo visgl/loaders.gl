@@ -25,7 +25,7 @@ shift pixel registration. Consumers decide how to interpret these values.
 
 For display imagery, use [`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-loader).
 For remote windows and overview selection, use
-[`GeoTIFFSourceLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader).
+[`GeoTIFFLoader`](/docs/modules/raster/geotiff/api-reference/geotiff-source).
 This loader downloads the complete file and decodes complete selected images into memory.
 
 ## Returned data
@@ -84,11 +84,11 @@ const dataset = await load('multiband.tif', GeoTIFFRasterLoader, {
 
 ## Parser loading
 
-The root export is metadata-only. Core's asynchronous `load()` and `parse()`
+The root export is metadata-only. Core's asynchronous `createDataSource()` and `parse()`
 automatically preload the parser on first use. To bundle the numeric parser explicitly:
 
 ```typescript
-import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff-raster-loader';
+import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff';
 ```
 
 TIFF decompression is asynchronous; there is no `parseSync()` implementation.

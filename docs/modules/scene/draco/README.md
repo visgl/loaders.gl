@@ -57,14 +57,13 @@ The injectable `draco3d` npm backend is an `optionalDependency`. The default loa
 vendored runtimes and work with `npm install --omit=optional`. If you omit optional dependencies and
 want to inject `options.modules.draco3d`, install `draco3d` explicitly.
 
-The scene root exports loader metadata and public Draco types. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco-loader` for direct parsing, and import writers and encoding helpers from `@loaders.gl/scene/draco-writer`. Bundled runtime URL helpers use `@loaders.gl/scene/draco-library-options` (an ESM entry point).
+The scene root exports loader metadata and public Draco types. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco` for direct parsing, and import writers and encoding helpers from `@loaders.gl/scene/draco`. Bundled runtime URL helpers use `@loaders.gl/scene/draco` (an ESM entry point).
 
 ## Loaders and Writers
 
 | Loader                                                                | Description                                      |
 | --------------------------------------------------------------------- | ------------------------------------------------ |
 | [`DracoLoader`](/docs/modules/scene/draco/api-reference/draco-loader)       | Loads Draco meshes and point clouds as Mesh objects or [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
-| [`DracoWorkerLoader`](/docs/modules/scene/draco/api-reference/draco-loader) | Loads Draco meshes and point clouds in a worker. |
 | [`DracoWriter`](/docs/modules/scene/draco/api-reference/draco-writer)       | Encodes Draco meshes and point clouds from Mesh or Mesh Arrow table data. |
 
 `encodeDracoInBatches` accepts an async or synchronous iterator of geometry
@@ -102,7 +101,7 @@ Using the bundled WebAssembly decoder and encoder assets:
 
 ```typescript
 import {setLoaderOptions} from '@loaders.gl/core';
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
 setLoaderOptions(getDracoLibraryOptions());
 ```
 

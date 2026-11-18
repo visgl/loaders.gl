@@ -13,7 +13,7 @@ export type CubeLUTLoaderOptions = LoaderOptions & {
 };
 /** Loads the parser-bearing LUT implementation. */
 async function preload() {
-  const {CubeLUTLoaderWithParser} = await import('@loaders.gl/images/cube-lut-loader');
+  const {CubeLUTLoaderWithParser} = await import('@loaders.gl/images/color-lut');
   return CubeLUTLoaderWithParser;
 }
 /** Metadata-only cube color lookup table loader. */

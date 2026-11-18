@@ -2,13 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type * as arrow from 'apache-arrow';
+import type {Logger} from 'probe.gl/log';
+
 import type {Format} from './format-types';
 import type {LoadWorker, WorkerOptions, WorkerProgress} from '@loaders.gl/core/worker-utils';
 import {DataType, FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
-import type {CoreAPI} from './lib/sources/data-source';
+import type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 import type {Credential, AuthenticationConstructor} from './lib/request-utils/authentication';
-import type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
+import type {QueryOptions} from './lib/scan-utils/query-options';
 
 /** Query parameters appended to URL-backed loader requests. */
 export type SearchParams = Record<string, string | number | boolean>;
@@ -19,8 +22,8 @@ export type SearchParams = Record<string, string | number | boolean>;
  * Core Loader Options
  */
 export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
-  /** Experimental common scan request. Format loaders implement the fields they support. */
-  _scan?: ExperimentalScanOptions;
+  /** Common query request. Format loaders implement the fields they support. */
+  _scan?: QueryOptions;
   /** Query parameters appended to the initial URL request. */
   searchParams?: SearchParams;
   core?: {
@@ -46,18 +49,14 @@ export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> &
 
     // general
     /** Experimental: Supply a logger to the parser */
-    log?: any;
+    log?: Logger | null;
 
     // batched parsing
 
     /** Size of each batch. `auto` matches batches to size of incoming chunks */
     batchSize?: number | 'auto';
-    /** Minimal amount of time between batches */
-    batchDebounceMs?: number;
-    /** Stop loading after a given number of rows (compare SQL limit clause) */
-    limit?: 0;
-    /** Experimental: Stop loading after reaching */
-    _limitMB?: 0;
+    /** Maximum data rows delivered per second in batches. Zero means unlimited. */
+    batchMaxRowsPerSecond?: number;
     /** Generate metadata batches */
     metadata?: boolean;
     /** Transforms to run on incoming batches */
@@ -109,65 +108,10 @@ export type StrictLoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> &
 /**
  * Core Loader Options
  */
-export type LoaderOptions = Pick<WorkerOptions, 'signal' | 'onProgress'> & {
-  /** Experimental common scan request. Format loaders implement the fields they support. */
-  _scan?: ExperimentalScanOptions;
-  /** Query parameters appended to the initial URL request. */
-  searchParams?: SearchParams;
-  core?: StrictLoaderOptions['core'];
-  modules?: StrictLoaderOptions['modules'];
-
-  // Deprecated top-level aliases for core options
-  /** @deprecated Use options.core.baseUrl */
-  baseUri?: string;
-  /** @deprecated Use options.core.fetch */
-  fetch?: typeof fetch | FetchLike | RequestInit | null;
-  /** @deprecated Use options.core.mimeType */
-  mimeType?: string;
-  /** @deprecated Use options.core.fallbackMimeType */
-  fallbackMimeType?: string;
-  /** @deprecated Use options.core.ignoreRegisteredLoaders */
-  ignoreRegisteredLoaders?: boolean;
-  /** @deprecated Use options.core.nothrow */
-  nothrow?: boolean;
-  /** @deprecated Use options.core.log */
-  log?: any;
-  /** @deprecated Use options.core.useLocalLibraries */
-  useLocalLibraries?: boolean;
-  /** @deprecated Use options.core.CDN */
-  CDN?: string | null;
-  /** @deprecated Use options.core.worker */
-  worker?: boolean | 'auto';
-  /** @deprecated Use options.core.maxConcurrency */
-  maxConcurrency?: number;
-  /** @deprecated Use options.core.maxMobileConcurrency */
-  maxMobileConcurrency?: number;
-  /** @deprecated Task handles close after each atomic call or stream. */
-  reuseWorkers?: boolean;
-  /** @deprecated Use options.core.workerTransferBufferCopy */
-  workerTransferBufferCopy?: 'none' | 'sliced' | 'all';
-  /** @deprecated Use options.core._nodeWorkers */
-  _nodeWorkers?: boolean;
-  /** @deprecated Use options.core._workerType */
-  _workerType?: string;
-  /** @deprecated Use options.core._workerType */
-  _worker?: string;
-  /** @deprecated Use options.core.limit */
-  limit?: 0;
-  /** @deprecated Use options.core._limitMB */
-  _limitMB?: 0;
-  /** @deprecated Use options.core.shape */
-  shape?: string;
-  /** @deprecated Use options.core.batchSize */
-  batchSize?: number | 'auto';
-  /** @deprecated Use options.core.batchDebounceMs */
-  batchDebounceMs?: number;
-  /** @deprecated Use options.core.metadata */
-  metadata?: boolean;
-  /** @deprecated Use options.core.transforms */
-  transforms?: TransformBatches[];
-
-  // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
+export type LoaderOptions = Pick<
+  StrictLoaderOptions,
+  'signal' | 'onProgress' | '_scan' | 'searchParams' | 'core' | 'modules'
+> & {
   [loaderId: string]: unknown;
 };
 
@@ -178,7 +122,28 @@ type PreloadOptions = {
 /**
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
-export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptions> = Format & {
+export type Loader<
+  DataT = any,
+  BatchT = any,
+  LoaderOptionsT = StrictLoaderOptions,
+  SourceT = unknown
+> = Format & {
+  /** Type identifier used when explicitly selecting a source. */
+  type?: string;
+  /** Whether a source can open a URL. */
+  fromUrl?: boolean;
+  /** Whether a source can open a Blob. */
+  fromBlob?: boolean;
+  /** Matches a URL when selecting a source. */
+  testURL?: (url: string) => boolean;
+  /** Matches a Blob when selecting a source. */
+  testData?: (data: Blob) => boolean;
+  /** Constructs a source synchronously from an available implementation. */
+  createDataSourceSync?: (
+    data: any,
+    options: LoaderOptionsT & DataSourceOptions,
+    coreApi?: CoreAPI
+  ) => SourceT;
   /** The result type of this loader  */
   dataType?: DataT;
   /** The batched result type of this loader  */
@@ -190,6 +155,12 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
    * without transferring parser or preload functions between threads.
    */
   subloaders?: Readonly<Record<string, Loader>>;
+
+  /** Default public output shape applied by the core parse and load APIs. */
+  defaultShape?: string;
+
+  /** Passes the native Arrow shape to the parser and its worker result hooks. */
+  supportsNativeArrow?: boolean;
 
   /** Default Options */
   options: LoaderOptionsT;
@@ -274,10 +245,31 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
 export type LoaderWithParser<
   DataT = any,
   BatchT = any,
-  LoaderOptionsT = StrictLoaderOptions
-> = Loader<DataT, BatchT, LoaderOptionsT> & {
+  LoaderOptionsT = StrictLoaderOptions,
+  SourceT = unknown
+> = Loader<DataT, BatchT, LoaderOptionsT, SourceT> & {
+  /** Parses data from a URL using the loader's own request strategy. */
+  parseUrl?: (url: string, options?: LoaderOptionsT, context?: LoaderContext) => Promise<DataT>;
+  /**
+   * Optionally selects a parser representation for an atomic core parse call.
+   * Core uses the returned options for decoding and applies convert on the caller
+   * after decoding or worker hydration. Direct parser calls do not invoke this hook.
+   */
+  prepareParseOutput?: (options: StrictLoaderOptions) => {
+    options: StrictLoaderOptions;
+    convert: (result: DataT) => DataT;
+  } | null;
+  /**
+   * Optionally selects a parser representation for core batch parsing.
+   * Core applies convert lazily to decoded or hydrated batches on the caller.
+   * The hook applies to native batch parsers and receives no core metadata envelopes.
+   */
+  prepareParseBatchOutput?: (options: StrictLoaderOptions) => {
+    options: StrictLoaderOptions;
+    convert: (batch: BatchT) => BatchT;
+  } | null;
   /** Parse asynchronously and atomically from an arraybuffer */
-  parse: (
+  parse?: (
     arrayBuffer: ArrayBuffer,
     options?: LoaderOptionsT,
     context?: LoaderContext
@@ -427,59 +419,146 @@ export type LoaderContext = {
  */
 type Preload = (url: string, options?: PreloadOptions) => any;
 
-/** Typescript helper to extract options type from a loader type */
-export type LoaderOptionsType<T = Loader> =
-  T extends Loader<unknown, unknown, infer Options> ? Options : never;
-export type LoaderShapeType<T extends Loader = Loader> = LoaderOptionsType<T>[T['id']] extends {
-  shape?: infer Shape;
-}
-  ? Extract<Shape, string>
-  : LoaderOptionsType<T>[T['id']] extends {shape: infer Shape}
-    ? Extract<Shape, string>
-    : never;
+/** Extracts the declared parser options, including from metadata-only loaders. */
+export type LoaderOptionsType<T = Loader> = T extends {preload: (...args: any[]) => infer Parser}
+  ? LoaderOptionsType<Awaited<Parser>>
+  : T extends {parse: (data: any, options?: infer Options, ...args: any[]) => any}
+    ? NonNullable<Options> extends LoaderOptions
+      ? NonNullable<Options>
+      : LoaderOptions
+    : T extends Loader<unknown, unknown, infer Options>
+      ? Options
+      : never;
+
+/** Extracts shapes from the loader's declared option namespaces. */
+export type LoaderShapeType<T extends Loader = Loader> = T extends unknown
+  ? {
+      [Key in Exclude<keyof T['options'], 'core'>]: NonNullable<LoaderOptionsType<T>[Key]> extends {
+        shape?: infer Shape;
+      }
+        ? Extract<Shape, string>
+        : never;
+    }[Exclude<keyof T['options'], 'core'>]
+  : never;
 type LoaderShapeOrString<Shape extends string> = [Shape] extends [never] ? string : Shape;
 export type LoaderOptionsWithShape<
   Options extends LoaderOptions,
   Shape extends string
-> = Options extends LoaderOptions
-  ? Omit<Options, 'core'> & {
-      core?: Omit<NonNullable<Options['core']>, 'shape'> & {shape?: LoaderShapeOrString<Shape>};
-    }
+> = Options extends LoaderOptions ? Options & {core?: {shape?: LoaderShapeOrString<Shape>}} : never;
+/** Checks declared options while allowing an options variable with a dynamic common shape. */
+export type LoaderCallOptions<T extends Loader, Options extends LoaderOptions> = Options &
+  (T extends {defaultShape: 'arrow'}
+    ? LoaderOptionsType<T> &
+        (Options extends {core: {shape: infer Shape}}
+          ? string extends Shape
+            ? LoaderOptions
+            : LoaderOptionsWithShape<LoaderOptions, LoaderShapeType<T>>
+          : LoaderOptions)
+    : LoaderOptions);
+
+/** Extracts possible shape selections, including optional option namespaces. */
+type OptionShape<Options> = Options extends {shape?: infer Shape} ? Extract<Shape, string> : never;
+
+/** Extracts required shape selections without treating omitted options as native output. */
+type RequiredOptionShape<Options> = [Options] extends [{shape: infer Shape}]
+  ? Extract<Shape, string>
   : never;
-/** Typescript helper to extract data type from a loader type */
-export type LoaderReturnType<T = Loader> =
-  T extends Loader<infer Return, unknown, unknown> ? Return : never;
-/** Typescript helper to extract batch type from a loader type */
-export type LoaderBatchType<T = Loader> =
-  T extends Loader<unknown, infer Batch, unknown> ? Batch : never;
+
+/** Extracts loader-scoped selection from the declared option namespaces. */
+type ScopedOutputShape<T, Options, Required extends boolean = false> = T extends {
+  options: infer Defaults;
+}
+  ? {
+      [Key in Exclude<keyof Defaults, 'core'> & keyof Options]: Required extends true
+        ? RequiredOptionShape<Options[Key]>
+        : OptionShape<Options[Key]>;
+    }[Exclude<keyof Defaults, 'core'> & keyof Options]
+  : never;
+
+/** Resolves an explicit loader-scoped selection before the common shape default. */
+type RequiredOutputShape<T, Options> = [ScopedOutputShape<T, Options, true>] extends [never]
+  ? [ScopedOutputShape<T, Options>] extends [never]
+    ? Options extends {core: infer Core}
+      ? RequiredOptionShape<Core>
+      : never
+    : never
+  : ScopedOutputShape<T, Options, true>;
+
+/** Evaluates each options variant independently, including an absent options object. */
+type NativeArrowOutput<T, Options, Wrapped, Native> = [Options] extends [never]
+  ? NativeArrowOutputForOption<T, undefined, Wrapped, Native>
+  : Options extends unknown
+    ? NativeArrowOutputForOption<T, Options, Wrapped, Native>
+    : never;
+
+/** Selects native output when certain and a union when shape selection is dynamic. */
+type NativeArrowOutputForOption<T, Options, Wrapped, Native> = [Extract<Wrapped, Native>] extends [
+  never
+]
+  ? Wrapped
+  : [RequiredOutputShape<T, Options>] extends [never]
+    ? [
+        | ScopedOutputShape<T, Options>
+        | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
+      ] extends [never]
+      ? T extends {defaultShape: 'arrow'}
+        ? Native
+        : Wrapped
+      : T extends {defaultShape: 'arrow'}
+        ? Native | Wrapped
+        : 'arrow' extends
+              | ScopedOutputShape<T, Options>
+              | (Options extends {core?: infer Core} ? OptionShape<Core> : never)
+          ? Native | Wrapped
+          : Wrapped
+    : 'arrow' extends RequiredOutputShape<T, Options>
+      ? Exclude<RequiredOutputShape<T, Options>, 'arrow'> extends never
+        ? Native
+        : Native | Wrapped
+      : Exclude<Wrapped, Native>;
+
+/** Typescript helper to extract the public data type, accounting for native Arrow output. */
+export type LoaderReturnType<T = Loader, Options = never> =
+  T extends Loader<infer Return, unknown, unknown>
+    ? NativeArrowOutput<T, Options, Return, arrow.Table>
+    : never;
+/** Typescript helper to extract the public batch type, accounting for native Arrow output. */
+export type LoaderBatchType<T = Loader, Options = never> =
+  T extends Loader<unknown, infer Batch, unknown>
+    ? NativeArrowOutput<T, Options, Batch, arrow.RecordBatch>
+    : never;
 
 /** Typescript helper to extract options type from an array of loader types */
 export type LoaderArrayOptionsType<LoadersT extends Loader[] = Loader[]> = LoaderOptionsWithShape<
-  LoadersT[number]['options'],
+  LoaderOptionsType<LoadersT[number]>,
   LoaderShapeType<LoadersT[number]>
 >;
-/** Typescript helper to extract data type from a loader type */
-export type LoaderArrayReturnType<LoadersT extends Loader[] = Loader[]> =
-  LoadersT[number]['dataType'];
-/** Typescript helper to extract batch type from a loader type */
-export type LoaderArrayBatchType<LoadersT extends Loader[] = Loader[]> =
-  LoadersT[number]['batchType'];
+/** Typescript helper to extract data type from an array of loader types. */
+export type LoaderArrayReturnType<
+  LoadersT extends Loader[] = Loader[],
+  Options = never
+> = LoaderReturnType<LoadersT[number], Options>;
+/** Typescript helper to extract batch type from an array of loader types. */
+export type LoaderArrayBatchType<
+  LoadersT extends Loader[] = Loader[],
+  Options = never
+> = LoaderBatchType<LoadersT[number], Options>;
 
 /**
  * Parses `data` asynchronously using the supplied loader, parse function provided via the loader context
  */
 export async function parseFromContext<
   LoaderT extends Loader,
-  OptionsT extends StrictLoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends StrictLoaderOptions | undefined = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   data: ArrayBuffer,
   loader: LoaderT,
-  options: OptionsT | undefined,
+  options: OptionsT,
   context: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 /**
  * Parses `data` asynchronously by matching one of the supplied loader
@@ -513,13 +592,13 @@ export async function parseFromContext(
  */
 export function parseSyncFromContext<
   LoaderT extends Loader,
-  OptionsT extends StrictLoaderOptions = LoaderOptionsType<LoaderT>
+  const OptionsT extends StrictLoaderOptions | undefined = LoaderOptionsType<LoaderT>
 >(
   data: ArrayBuffer,
   loader: LoaderT,
-  options: OptionsT | undefined,
+  options: OptionsT,
   context: LoaderContext
-): LoaderReturnType<LoaderT> {
+): LoaderReturnType<LoaderT, OptionsT> {
   if (!context._parseSync) {
     throw new Error('parseSync');
   }
@@ -531,13 +610,13 @@ export function parseSyncFromContext<
  */
 export async function parseInBatchesFromContext<
   LoaderT extends Loader,
-  OptionsT extends StrictLoaderOptions = LoaderOptionsType<LoaderT>
+  const OptionsT extends StrictLoaderOptions | undefined = LoaderOptionsType<LoaderT>
 >(
   data: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer> | Response,
   loader: LoaderT,
-  options: OptionsT | undefined,
+  options: OptionsT,
   context: LoaderContext
-): Promise<AsyncIterable<LoaderBatchType<LoaderT>>> {
+): Promise<AsyncIterable<LoaderBatchType<LoaderT, OptionsT>>> {
   if (!context._parseInBatches) {
     throw new Error('parseInBatches');
   }

@@ -35,6 +35,7 @@ export type {
   LoaderOptions,
   LoaderShapeType,
   LoaderOptionsWithShape,
+  LoaderCallOptions,
   LoaderOptionsType,
   LoaderReturnType,
   LoaderBatchType,
@@ -44,7 +45,7 @@ export type {
 } from './loader-types';
 export type {SearchParams} from './loader-types';
 
-export type {ExperimentalScanOptions} from './lib/scan-utils/experimental-scan-options';
+export type {QueryOptions} from './lib/scan-utils/query-options';
 
 export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';
 
@@ -71,7 +72,7 @@ export {
   document
 } from './lib/env-utils/globals';
 
-export {log} from './lib/log-utils/log';
+export {log, getLoaderLog} from './lib/log-utils/log';
 
 export type {ReadableStreamType} from './lib/javascript-utils/is-type';
 export {
@@ -310,7 +311,7 @@ export type {
   SourceArrayOptionsType,
   SourceArrayDataSourceType
 } from './source-types';
-export {isSourceLoader} from './source-types';
+export {isSourceLoader, supportsSourceCreation} from './source-types';
 
 export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {getSourceLoaderOptions} from './lib/sources/data-source';
@@ -344,7 +345,6 @@ export {executeScanTasks} from './lib/scan-utils/scan-executor';
 export {
   executeTableScanBatches,
   filterTableBatch,
-  makeTableScanBatch,
   projectTableBatch,
   projectTableSchema,
   truncateTableBatch
@@ -366,7 +366,7 @@ export type {
 } from './lib/scan-utils/relational-query';
 export {
   createScanQueryMetadata,
-  emitScanExecutionTelemetry
+  emitQueryComplete
 } from './lib/scan-utils/scan-query-metadata';
 export {
   intersectPointCloudBounds,
@@ -392,10 +392,10 @@ export type {
   ScanQueryMetadata,
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider,
-  ScanExecutionTelemetry,
-  ScanExecutionTelemetryCallback,
-  ScanExecutionTelemetryStatus,
-  ScanSourceExecutionTelemetry,
+  TableQueryExecutionSummary,
+  TableQueryCompleteCallback,
+  TableQueryExecutionStatus,
+  TableQuerySourceExecutionSummary,
   PointCloudScanReadOptions,
   PointCloudScanSource,
   TableScanReadOptions,
@@ -430,6 +430,10 @@ export type {
   TableQueryFilterStep,
   TableQueryLimitStep,
   TableQueryOperatorSupport,
+  TableQuery,
+  TableReference,
+  TableSelection,
+  TableQueryExecutionOptions,
   TableQueryOptions,
   TableQueryPlan,
   TableQueryPlanStep,
@@ -532,3 +536,39 @@ export type {
 export {createWebMercatorTileGrid, resolveXYZTileParameters} from './lib/sources/xyz-grid';
 export {getXYZTileGridOptions} from './lib/sources/xyz-grid-options';
 export type {XYZTileGridAssessment, XYZTileGridOptions} from './lib/sources/xyz-grid-options';
+
+export {
+  normalizeTableQuery,
+  planLogicalTableQuery,
+  validateTableReference
+} from './lib/scan-utils/logical-table-query';
+export type {
+  NormalizedTableSelection,
+  NormalizedTableQuery,
+  LogicalTableQueryProjectStep,
+  LogicalTableQueryPlan
+} from './lib/scan-utils/logical-table-query';
+
+export {readRangeResponse} from './lib/files/read-range-response';
+
+export type {
+  TableSourceCollection,
+  TableDiscoverySource,
+  TableMetadata
+} from './lib/sources/table-source-collection';
+
+export {paceBatchIterator, validateBatchDeliveryRate} from './lib/pace-batch-iterator';
+export type {BatchPacingOptions} from './lib/pace-batch-iterator';
+
+export {createQueryMetadata} from './lib/scan-utils/scan-query-metadata';
+export type {
+  CreateQueryMetadataOptions,
+  QueryMetadata,
+  QueryMetadataOptions,
+  QueryCapabilities,
+  TableQuerySource,
+  TableQueryReadOptions,
+  TableQueryPushdownRequest,
+  TableQueryPushdownPlan
+} from './lib/scan-utils/scan-query-metadata';
+export type {QueryPushdownCapabilityHints} from './lib/scan-utils/table-query';

@@ -4,9 +4,9 @@
 
 import {expect, test} from 'vitest';
 import {ZstdCodec} from 'zstd-codec';
-import {ZstdCompression} from '@loaders.gl/compression/zstd-compression';
+import {ZstdDecompressor} from '@loaders.gl/compression/zstd-decompressor';
 
-test('ZstdCompression decompresses without an injected codec', async () => {
+test('ZstdDecompressor decompresses without an injected codec', async () => {
   const input = new TextEncoder().encode('A lightweight browser-native ZSTD fallback');
   const compressed = await compressWithZstdCodec(input);
   const originalModules = globalThis.loaders?.modules;
@@ -15,7 +15,7 @@ test('ZstdCompression decompresses without an injected codec', async () => {
   }
 
   try {
-    const output = await new ZstdCompression().decompress(compressed.buffer as ArrayBuffer);
+    const output = await new ZstdDecompressor().decompress(compressed.buffer as ArrayBuffer);
     expect(new Uint8Array(output)).toEqual(input);
   } finally {
     if (globalThis.loaders) {

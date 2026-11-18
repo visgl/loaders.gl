@@ -1,0 +1,243 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Table as NativeArrowTable} from 'apache-arrow';
+
+import type {
+  CoreAPI,
+  VectorTileSource,
+  GetTileParameters,
+  GetTileDataParameters
+} from '@loaders.gl/core/loader-utils';
+import type {
+  BinaryFeatureCollection,
+  Feature,
+  Schema,
+  GeoArrowEncodingPreference
+} from '@loaders.gl/core/schema';
+import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/core/loader-utils';
+import type {MLTLoaderOptions} from './mlt-loader';
+
+export type MLTSourceLoaderOptions = DataSourceOptions &
+  MLTLoaderOptions & {
+    /** Preferred encoding for Arrow geometry output. */
+    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
+    mlt?: {
+      /** Optional metadata URL. */
+      metadataUrl?: string | null;
+      /** Override file extension (default: `.mlt`). */
+      extension?: string;
+      /** Coordinates for parsed tile geometries. */
+      coordinates?: 'wgs84' | 'local';
+      /** Shape of returned data. */
+      shape?: 'geojson-table' | 'binary-geometry' | 'arrow';
+      /** Optional layer filter. */
+      layers?: string[];
+    };
+  };
+
+/** Default options for the MLT source. */
+const MLT_SOURCE_DEFAULT_OPTIONS = {
+  mlt: {
+    extension: '.mlt',
+    metadataUrl: null,
+    coordinates: 'wgs84',
+    shape: 'arrow',
+    layers: undefined!
+  }
+} as const;
+
+/** Creates a reusable MLT source. */
+export function createMLTSource(
+  data: string,
+  options: MLTSourceLoaderOptions,
+  coreApi?: CoreAPI
+): MLTTileSource {
+  return new MLTTileSource(data, options, coreApi);
+}
+
+/**
+ * Vector tile source for MapLibre Tile files served by `z/x/y` tile services.
+ */
+export class MLTTileSource
+  extends DataSource<string, MLTSourceLoaderOptions>
+  implements VectorTileSource
+{
+  readonly metadataUrl: string | null;
+  schema: 'tms' | 'xyz' | 'template' = 'tms';
+  metadata: Promise<TileSourceMetadata>;
+  extension: string;
+  mimeType = 'application/vnd.maplibre-tile';
+
+  constructor(url: string, options: MLTSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(url, options, MLT_SOURCE_DEFAULT_OPTIONS, coreApi);
+    this.metadataUrl = this.options.mlt?.metadataUrl || null;
+    this.extension = this.options.mlt?.extension || '.mlt';
+
+    this.getTileData = this.getTileData.bind(this);
+    this.metadata = this.getMetadata();
+
+    if (isURLTemplate(this.url)) {
+      this.schema = 'template';
+    }
+  }
+
+  async getSchema(): Promise<Schema> {
+    return {fields: [], metadata: {}};
+  }
+
+  async getMetadata(): Promise<TileSourceMetadata> {
+    const attributions = this.options.core?.attributions || [];
+
+    if (!this.metadataUrl) {
+      return {minZoom: 0, maxZoom: 30, attributions};
+    }
+
+    try {
+      const response = await this.fetch(this.metadataUrl);
+      if (!response.ok) {
+        this.reportError(
+          new Error(`${response.status} ${response.statusText}`),
+          `Failed to fetch metadata from ${this.metadataUrl}`
+        );
+        return {minZoom: 0, maxZoom: 30, attributions};
+      }
+
+      const metadataText = await response.text();
+      const metadataJson = JSON.parse(metadataText) as Record<string, unknown>;
+      const minZoom = Number.isFinite(metadataJson?.minZoom as number)
+        ? (metadataJson.minZoom as number)
+        : Number.isFinite(metadataJson?.minzoom as number)
+          ? (metadataJson.minzoom as number)
+          : 0;
+      const maxZoom = Number.isFinite(metadataJson?.maxZoom as number)
+        ? (metadataJson.maxZoom as number)
+        : Number.isFinite(metadataJson?.maxzoom as number)
+          ? (metadataJson.maxzoom as number)
+          : 30;
+      return {
+        ...metadataJson,
+        minZoom,
+        maxZoom,
+        attributions: [...attributions, ...((metadataJson?.attributions as string[]) || [])]
+      };
+    } catch (error) {
+      this.reportError(error, `Failed to fetch metadata from ${this.metadataUrl}`);
+      return {minZoom: 0, maxZoom: 30, attributions};
+    }
+  }
+
+  async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
+    const tileUrl = this.getTileURL(parameters.x, parameters.y, parameters.z);
+    const response = await this.fetch(tileUrl);
+    if (!response.ok) {
+      this.reportError(
+        new Error(`${response.status} ${response.statusText}`),
+        `Failed to fetch tile ${tileUrl} ${JSON.stringify(parameters)}`
+      );
+      return null;
+    }
+    return response.arrayBuffer();
+  }
+
+  async getTileData(
+    parameters: GetTileDataParameters
+  ): Promise<Feature[] | BinaryFeatureCollection | NativeArrowTable | null> {
+    const {index} = parameters;
+    return this.getVectorTile({x: index.x, y: index.y, z: index.z, layers: []});
+  }
+
+  async getVectorTile(
+    tileParameters: GetTileParameters
+  ): Promise<Feature[] | BinaryFeatureCollection | NativeArrowTable | null> {
+    const tileData = await this.getTile(tileParameters);
+    return tileData ? this._parseTile(tileData, tileParameters) : null;
+  }
+
+  protected async _parseTile(
+    arrayBuffer: ArrayBuffer,
+    tileParameters: GetTileParameters
+  ): Promise<Feature[] | BinaryFeatureCollection | NativeArrowTable | null> {
+    const options: MLTSourceLoaderOptions = this.options;
+    const coordinates = options.mlt?.coordinates || 'wgs84';
+    const shape = options.mlt?.shape || 'arrow';
+    const tileIndex =
+      coordinates === 'wgs84'
+        ? {x: tileParameters.x, y: tileParameters.y, z: tileParameters.z}
+        : undefined;
+    const loadOptions: MLTLoaderOptions = {
+      ...this.loadOptions,
+      mlt: {
+        ...(this.loadOptions as MLTLoaderOptions).mlt,
+        shape,
+        coordinates,
+        layers: options.mlt?.layers,
+        tileIndex
+      },
+      geoarrow: options.geoarrow ?? (this.loadOptions as MLTLoaderOptions).geoarrow
+    };
+
+    // Keep the package root and writer usable without eagerly evaluating the decoder.
+    const {MLTLoaderWithParser} = await import('./mlt-loader-with-parser');
+    const parsed = await MLTLoaderWithParser.parse(arrayBuffer, loadOptions);
+    if (shape === 'geojson-table') {
+      return (parsed as {features: Feature[]}).features || null;
+    }
+
+    if (shape === 'binary-geometry' || shape === 'arrow') {
+      return parsed as BinaryFeatureCollection | NativeArrowTable;
+    }
+    return (parsed as {features: Feature[]}).features || null;
+  }
+
+  getTileURL(x: number, y: number, z: number) {
+    switch (this.schema) {
+      case 'xyz':
+        return `${this.url}/${x}/${y}/${z}${this.extension}`;
+      case 'tms':
+        return `${this.url}/${z}/${x}/${y}${this.extension}`;
+      case 'template':
+        return getURLFromTemplate(this.url, x, y, z, this.extension);
+      default:
+        throw new Error(`Unknown tile schema: ${this.schema}`);
+    }
+  }
+}
+
+export function isURLTemplate(s: string): boolean {
+  return /(?=.*\{z\})(?=.*\{x\})(?=.*(\{y\}|\{\-y\}))|(?=.*\{x\})(?=.*(\{y\}|\{\-y\})(?=.*\{z\}))/i.test(
+    s
+  );
+}
+
+export function getURLFromTemplate(
+  template: string,
+  x: number,
+  y: number,
+  z: number,
+  extension: string = ''
+): string {
+  const id = `${x}-${y}-${z}`;
+  const url = template
+    .replace(/\{x\}/g, x.toString())
+    .replace(/\{-y\}/g, String((1 << z) - 1 - y))
+    .replace(/\{y\}/g, y.toString())
+    .replace(/\{z\}/g, z.toString())
+    .replace(/\{id\}/g, id);
+
+  if (!extension || url.endsWith(extension)) {
+    return url;
+  }
+
+  // If template already contains an extension (e.g. ".mvt"), don't double-append.
+  const separatorIndex = url.search(/[?#]/);
+  const path = separatorIndex < 0 ? url : url.slice(0, separatorIndex);
+  const suffix = separatorIndex < 0 ? '' : url.slice(separatorIndex);
+  const file = path.split('/').pop() || '';
+  if (/\.[a-z0-9]+$/i.test(file)) {
+    return url;
+  }
+
+  return `${path}${extension}${suffix}`;
+}

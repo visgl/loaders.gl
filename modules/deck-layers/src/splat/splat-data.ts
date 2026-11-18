@@ -4,7 +4,6 @@
 
 import type * as arrow from 'apache-arrow';
 import type {Color} from '@deck.gl/core';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
 const SH_C0 = 0.28209479177387814;
 const DEFAULT_COLOR = [255, 255, 255, 255] as const;
@@ -28,16 +27,6 @@ export type GaussianSplatData = {
   /** Circular fallback radii used by the CPU billboard renderer. */
   radii: Float32Array;
 };
-
-/** Convert a loaders.gl wrapper or raw Apache Arrow table to a raw Arrow table. */
-export function getArrowTable(data: MeshArrowTable | arrow.Table): arrow.Table {
-  return isMeshArrowTable(data) ? data.data : (data as arrow.Table);
-}
-
-/** Checks whether layer data is a loaders.gl Arrow table wrapper. */
-export function isMeshArrowTable(data: MeshArrowTable | arrow.Table): data is MeshArrowTable {
-  return (data as MeshArrowTable).shape === 'arrow-table';
-}
 
 /** Extract and decode all Gaussian splat columns needed by the render paths. */
 export function getGaussianSplatDataFromArrowTable(

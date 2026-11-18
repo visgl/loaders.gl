@@ -44,6 +44,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 OGC network Common Data Form (netCDF) standards suite
 
+| Property | Value |
+| --- | --- |
+| Data source | `NetCDFSource` |
+
 ## Scan support
 
 <ReferenceBoundary
@@ -52,7 +56,7 @@ OGC network Common Data Form (netCDF) standards suite
   tone="cyan"
 />
 
-`NetCDFSource` and `NetCDFSourceLoader` expose NetCDF classic and 64-bit-offset headers through
+`NetCDFSource` and `NetCDFLoader` expose NetCDF classic and 64-bit-offset headers through
 the shared scan architecture. `getQueryMetadata()` discovers variable names, portable scalar
 types, variable attributes, dimensions, and file size without decoding data arrays. `getRaster()`
 then reads selected numeric variables and applies named dimension slices.
@@ -69,7 +73,7 @@ then reads selected numeric variables and applies named dimension slices.
 | Streaming or chunk pruning | ❌ Not implemented | Current classic-file execution materializes the source |
 
 ```ts
-import {NetCDFSource} from '@loaders.gl/scientific/netcdf/netcdf-source-loader';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf';
 
 const source = new NetCDFSource('weather.nc', {});
 const metadata = await source.getQueryMetadata();

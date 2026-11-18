@@ -39,13 +39,13 @@ const GEOTIFF_DOCS_TABS: GeoTiffDocsTab[] = [
   },
   {
     id: 'geotiffsource',
-    label: 'GeoTIFFSourceLoader',
-    href: '/docs/modules/raster/geotiff/api-reference/geotiff-source-loader'
+    label: 'GeoTIFFLoaderWithParser',
+    href: '/docs/modules/raster/geotiff/api-reference/geotiff-source'
   },
   {
     id: 'ometiffsource',
-    label: 'OMETiffSourceLoader',
-    href: '/docs/modules/raster/geotiff/api-reference/ometiff-source-loader'
+    label: 'OMETiffLoader',
+    href: '/docs/modules/raster/geotiff/api-reference/ometiff-loader'
   }
 ];
 

@@ -31,8 +31,8 @@ import {ClientExample} from '@site/src/components';
 | --- | --- |
 | Loader | [`GeoTIFFLoader`](../api-reference/geotiff-loader.md) |
 | Loader | [`GeoTIFFRasterLoader`](../api-reference/geotiff-raster-loader.md) |
-| Source loader | [`GeoTIFFSourceLoader`](../api-reference/geotiff-source-loader.md) |
-| Source loader | [`OMETiffSourceLoader`](../api-reference/ometiff-source-loader.md) |
+| Source loader | [`GeoTIFFLoader`](../api-reference/geotiff-source.md) |
+| Source loader | [`OMETiffLoader`](../api-reference/ometiff-loader.md) |
 
 <DocLiveExample label="GeoTIFF raster format example" height="420px">
   <ClientExample kind="geotiff" />
@@ -91,7 +91,7 @@ window, resolution, and band vocabulary rather than pretending pixels are table 
 | --- | --- | --- |
 | Entry point | `getRaster()` | `getRaster()` |
 | Metadata discovery | Bands, dtype, bounds, CRS, overviews | Channels, dtype, dimensions, multiscale levels |
-| Native TileMatrix geometry | Optional for tiled, axis-aligned overview hierarchies; see [source details](/docs/modules/raster/geotiff/api-reference/geotiff-source-loader#native-tilematrix-geometry) | Not provided |
+| Native TileMatrix geometry | Optional for tiled, axis-aligned overview hierarchies; see [source details](/docs/modules/raster/geotiff/api-reference/geotiff-source#native-tilematrix-geometry) | Not provided |
 | Spatial window | Bounds pushdown in the source CRS | Not geospatial |
 | Resolution | Overview/target-size selection | Multiscale level selection |
 | Components | Band selection | Channel selection plus time and z slices |

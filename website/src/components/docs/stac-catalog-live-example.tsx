@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from 'react';
-import {STACSource} from '@loaders.gl/ogc/stac-source';
+import {STACSource} from '@loaders.gl/ogc/stac-loader';
 
 import {CatalogExplorerPanel} from './catalog-explorer-panel';
 import {CatalogAssetPreview, hasCatalogMapData, type CatalogPreviewAsset} from './catalog-asset-preview';
@@ -68,7 +68,7 @@ export function STACCatalogLiveExample({
           </button>
         </CatalogControls>
         <CatalogExplorerPanel
-          sources={[{id: 'stac-source', title: 'STAC catalog', source}]}
+          sources={[{id: 'stac-loader', title: 'STAC catalog', source}]}
           title="STAC catalog explorer"
           onCatalogTitle={setCatalogTitle}
           onSelectAsset={setSelectedAsset}

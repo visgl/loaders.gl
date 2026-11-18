@@ -9,16 +9,10 @@ import {
   preloadSync,
   isAsyncIterable
 } from '@loaders.gl/core';
-import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/tables/csv/index';
-import {
-  CSVLoader as BundledCSVLoader,
-  CSVWorkerLoader as BundledCSVWorkerLoader
-} from '@loaders.gl/tables/csv/bundled';
-import {
-  CSVLoader as UnbundledCSVLoader,
-  CSVWorkerLoader as UnbundledCSVWorkerLoader
-} from '@loaders.gl/tables/csv/unbundled';
-import * as csv from '@loaders.gl/tables/csv/index';
+import {CSVLoader} from '@loaders.gl/tables/csv';
+import {CSVLoader as BundledCSVLoader} from '@loaders.gl/tables/csv/bundled';
+import {CSVLoader as MetadataCSVLoader} from '@loaders.gl/tables/csv';
+import * as csv from '@loaders.gl/tables';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {getTableLength} from '@loaders.gl/core/schema-utils';
 // Small CSV Sample Files
@@ -35,70 +29,62 @@ const TSV_BRAZIL = '@loaders.gl/tables/csv/test/data/tsv/brazil.tsv';
 test('CSVLoader#loader conformance', () => {
   validateLoader(CSVLoader, 'CSVLoader');
 });
-test('CSV root loaders expose metadata loaders and deprecated WorkerLoader aliases', () => {
+test('CSV root loaders expose metadata loaders', () => {
   expect(typeof CSVLoader.preload, 'CSVLoader exposes preload').toBe('function');
   expect('parse' in CSVLoader, 'CSVLoader does not expose parse').toBeFalsy();
   expect('parseInBatches' in CSVLoader, 'CSVLoader does not expose parseInBatches').toBeFalsy();
-  expect(CSVWorkerLoader, 'CSVWorkerLoader aliases CSVLoader').toBe(CSVLoader);
   expect(
     'CSVLoaderWithParser' in csv,
     'root package does not export CSVLoaderWithParser'
   ).toBeFalsy();
 });
-test('CSV bundled loaders expose parser methods and deprecated WorkerLoader aliases', () => {
+test('CSV bundled loaders expose parser methods', () => {
   expect(typeof BundledCSVLoader.parse, 'bundled CSVLoader exposes parse').toBe('function');
   expect(typeof BundledCSVLoader.parseInBatches, 'bundled CSVLoader exposes parseInBatches').toBe(
     'function'
   );
-  expect(BundledCSVWorkerLoader, 'bundled CSVWorkerLoader aliases CSVLoader').toBe(
-    BundledCSVLoader
-  );
 });
-test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader aliases', async () => {
-  expect(preloadSync(UnbundledCSVLoader), 'unbundled CSVLoader is not preloaded initially').toBe(
+test('CSV default format metadata loaders expose preload', async () => {
+  expect(preloadSync(MetadataCSVLoader), 'metadata CSVLoader is not preloaded initially').toBe(
     null
   );
-  expect(typeof UnbundledCSVLoader.preload, 'unbundled CSVLoader exposes preload').toBe('function');
-  expect('parse' in UnbundledCSVLoader, 'unbundled CSVLoader does not expose parse').toBeFalsy();
+  expect(typeof MetadataCSVLoader.preload, 'metadata CSVLoader exposes preload').toBe('function');
+  expect('parse' in MetadataCSVLoader, 'metadata CSVLoader does not expose parse').toBeFalsy();
   expect(
-    'parseSync' in UnbundledCSVLoader,
-    'unbundled CSVLoader does not expose parseSync'
+    'parseSync' in MetadataCSVLoader,
+    'metadata CSVLoader does not expose parseSync'
   ).toBeFalsy();
   expect(
-    'parseInBatches' in UnbundledCSVLoader,
-    'unbundled CSVLoader does not expose parseInBatches'
+    'parseInBatches' in MetadataCSVLoader,
+    'metadata CSVLoader does not expose parseInBatches'
   ).toBeFalsy();
-  expect(UnbundledCSVWorkerLoader, 'unbundled CSVWorkerLoader aliases CSVLoader').toBe(
-    UnbundledCSVLoader
-  );
-  const parsedTable = await parse('city,population\nParis,2148000', UnbundledCSVLoader, {
+  const parsedTable = await parse('city,population\nParis,2148000', MetadataCSVLoader, {
     csv: {header: true, shape: 'object-row-table'}
   });
-  expect(parsedTable.shape, 'parse works with unbundled CSVLoader').toBe('object-row-table');
+  expect(parsedTable.shape, 'parse works with metadata CSVLoader').toBe('object-row-table');
   if (parsedTable.shape === 'object-row-table') {
     expect(parsedTable.data[0]).toEqual({city: 'Paris', population: 2148000});
   }
-  const preloadedLoader = await preload(UnbundledCSVLoader);
+  const preloadedLoader = await preload(MetadataCSVLoader);
   expect(typeof preloadedLoader.parse, 'preload returns parser-bearing CSV loader').toBe(
     'function'
   );
-  expect(preloadSync(UnbundledCSVLoader), 'preloadSync returns cached CSV loader').toBe(
+  expect(preloadSync(MetadataCSVLoader), 'preloadSync returns cached CSV loader').toBe(
     preloadedLoader
   );
 });
 test('CSVLoader#load(states.csv)', async () => {
   const table = await load(CSV_STATES_URL, CSVLoader);
-  expect(table.shape, 'CSV defaults to Arrow table output').toBe('arrow-table');
-  expect(getTableLength(table)).toBe(110);
+  expect(table.numRows).toBe(110);
 });
-test('CSVLoader#load(numbers-100.csv, shape: arrow-table)', async () => {
+test('CSVLoader#load(numbers-100.csv, shape: arrow)', async () => {
   const table = await load(CSV_NO_HEADER_URL, CSVLoader, {
     core: {worker: false},
-    csv: {header: false, shape: 'arrow-table'}
+    csv: {header: false, shape: 'arrow'}
   });
-  expect(table.shape, 'Got correct table shape').toBe('arrow-table');
-  expect(table.data.numRows, 'Got correct row count').toBe(100);
-  expect(table.data.getChildAt(0)?.get(0), 'Got correct first value').toBe(1);
+  expect(table).not.toHaveProperty('shape');
+  expect(table.numRows, 'Got correct row count').toBe(100);
+  expect(table.getChildAt(0)?.get(0), 'Got correct first value').toBe(1);
 });
 test('CSVLoader#load(geospatial-points-wkt.csv, detectGeometryColumns)', async () => {
   const table = await load(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
@@ -257,7 +243,7 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async () => {
 // TSV
 test('CSVLoader#load(brazil.tsv)', async () => {
   const table = await load(TSV_BRAZIL, CSVLoader);
-  expect(getTableLength(table)).toBe(10);
+  expect(table.numRows).toBe(10);
 });
 // loadInBatches
 test('CSVLoader#loadInBatches(sample.csv, columns)', async () => {
@@ -292,8 +278,8 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async () => {
 });
 test('CSVLoader#loadInBatches(geospatial-points-wkt.csv, detectGeometryColumns)', async () => {
   const iterator = await loadInBatches(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
-    csv: {shape: 'columnar-table', detectGeometryColumns: true},
-    batchSize: 2
+    core: {batchSize: 2},
+    csv: {shape: 'columnar-table', detectGeometryColumns: true}
   });
   let firstBatch: any = null;
   for await (const batch of iterator) {
@@ -317,39 +303,37 @@ test('CSVLoader#loadInBatches(geospatial-points-wkt.csv, detectGeometryColumns)'
     ).toBeTruthy();
   }
 });
-test('CSVLoader#load(geospatial-points-wkt.csv, arrow-table, detectGeometryColumns)', async () => {
+test('CSVLoader#load(geospatial-points-wkt.csv, arrow, detectGeometryColumns)', async () => {
   const table = await load(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
     core: {worker: false},
-    csv: {shape: 'arrow-table', detectGeometryColumns: true}
+    csv: {shape: 'arrow', detectGeometryColumns: true}
   });
-  expect(table.shape, 'Got correct table shape').toBe('arrow-table');
+  expect(table).not.toHaveProperty('shape');
   const geometryField = table.schema?.fields.find(field => field.name === 'geometry');
-  const geoMetadata = getGeoMetadata(table.schema?.metadata);
-  expect(geometryField?.type, 'WKT Arrow geometry field is binary').toBe('binary');
+  const geoMetadata = getGeoMetadata(Object.fromEntries(table.schema.metadata));
+  expect(geometryField?.type.toString()).toBe('Binary');
   expect(
-    geometryField?.metadata?.['ARROW:extension:name'],
+    geometryField?.metadata.get('ARROW:extension:name'),
     'WKT Arrow geometry field is annotated as WKB'
   ).toBe('geoarrow.wkb');
   expect(geoMetadata?.columns.geometry.encoding, 'Arrow geo metadata includes WKB encoding').toBe(
     'wkb'
   );
   expect(
-    table.data.getChild('geometry')?.get(0) instanceof Uint8Array,
+    table.getChild('geometry')?.get(0) instanceof Uint8Array,
     'Arrow geometry is WKB'
   ).toBeTruthy();
 });
-test('CSVLoader#loadInBatches(numbers-100.csv, shape: arrow-table)', async () => {
+test('CSVLoader#loadInBatches(numbers-100.csv, shape: arrow)', async () => {
   const iterator = await loadInBatches(CSV_STATES_URL, CSVLoader, {
     core: {worker: false, batchSize: 40},
-    csv: {shape: 'arrow-table'}
+    csv: {shape: 'arrow'}
   });
   let batchCount = 0;
   let rowCount = 0;
   for await (const batch of iterator) {
-    expect(batch.shape, `Got correct Arrow batch shape for batch ${batchCount}`).toBe(
-      'arrow-table'
-    );
-    rowCount += batch.data.numRows;
+    expect(batch).not.toHaveProperty('shape');
+    rowCount += batch.numRows;
     batchCount++;
   }
   expect(batchCount >= 1, 'Received one or more batches').toBeTruthy();
@@ -358,10 +342,10 @@ test('CSVLoader#loadInBatches(numbers-100.csv, shape: arrow-table)', async () =>
 test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async () => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
+    core: {batchSize},
     csv: {
       shape: 'columnar-table'
-    },
-    batchSize
+    }
   });
   let batchCount = 0;
   for await (const batch of iterator) {
@@ -390,7 +374,9 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async () => {
   expect(batchCount, 'Correct number of batches received').toBe(5);
 });
 test('CSVLoader#loadInBatches(sample.csv, array-rows)', async () => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {shape: 'array-row-table'});
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
+    core: {shape: 'array-row-table'}
+  });
   let batchCount = 0;
   for await (const batch of iterator) {
     // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
@@ -465,11 +451,11 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async () => {
 test('CSVLoader#loadInBatches(no header, row format, prefix)', async () => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_NO_HEADER_URL, CSVLoader, {
+    core: {batchSize},
     csv: {
       shape: 'object-row-table',
       columnPrefix: 'column_'
-    },
-    batchSize
+    }
   });
   for await (const batch of iterator) {
     expect(batch.shape, 'Got correct batch shape').toBe('object-row-table');
@@ -610,6 +596,22 @@ test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks af
     }
   }
   expect(rows, 'preserves split UTF-8 characters').toEqual([{city: 'Zürich'}, {city: '東京'}]);
+});
+test('CSVLoader#parseInBatches preserves typed coordinates after an empty first field', async () => {
+  const csvText =
+    'LIBELLEFRANCAIS;CIRCONFERENCE(CM);LATITUDE;LONGITUDE\n;20.0;48.8635049;2.2684223\n';
+  const iterator = await parseInBatches([new TextEncoder().encode(csvText)], CSVLoader, {
+    csv: {header: true, shape: 'object-row-table', dynamicTyping: true}
+  });
+  const rows: unknown[] = [];
+  for await (const batch of iterator) {
+    if (batch.shape === 'object-row-table') {
+      rows.push(...batch.data);
+    }
+  }
+  expect(rows).toEqual([
+    {LIBELLEFRANCAIS: null, 'CIRCONFERENCE(CM)': 20, LATITUDE: 48.8635049, LONGITUDE: 2.2684223}
+  ]);
 });
 test('CSV parser loaders are available through direct implementation imports', async () => {
   const preloadedLoader = await preload(CSVLoader);

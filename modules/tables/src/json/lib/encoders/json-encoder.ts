@@ -3,9 +3,11 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
+import type {Table as ArrowTable} from 'apache-arrow';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import type {Field, Schema, Table} from '@loaders.gl/core/schema';
+import type {Field, Schema} from '@loaders.gl/core/schema';
 import {convertArrowToSchema, makeRowIterator} from '@loaders.gl/core/schema-utils';
+import {isNativeWriterTable, type TableWriterInput} from '../../../arrow/table-writer-input';
 import type {JSONWriterOptions} from '../../json-writer';
 
 type GeoArrowWKBField = {
@@ -18,46 +20,35 @@ type GeoArrowWKBField = {
 /**
  * Encode a table as a JSON string
  */
-export function encodeTableAsJSON(table: Table, options?: JSONWriterOptions): string {
-  const shape =
-    options?.json?.shape === 'arrow-table'
-      ? 'object-row-table'
-      : options?.json?.shape || 'object-row-table';
+export function encodeTableAsJSON(table: TableWriterInput, options?: JSONWriterOptions): string {
+  const shape = options?.json?.shape || 'object-row-table';
 
   const strings: string[] = [];
+  const native = isNativeWriterTable(table);
+  const schema = native ? convertArrowToSchema(table.schema) : table.schema;
   const geoArrowWKBFields =
-    (options?.json?.geoarrow || 'auto') === 'auto' ? getGeoArrowWKBFields(table) : [];
-  const rowIterator = makeRowIterator(table, shape);
-  for (const row of rowIterator) {
-    // Round elements etc
-    // processRow(wrappedRow, table.schema);
-    // const wrappedRow = options.wrapper ? options.wrapper(row) : row;
+    (options?.json?.geoarrow || 'auto') === 'auto' && schema ? getGeoArrowWKBFields(schema) : [];
+  const rows = native ? makeNativeRows(table, shape) : makeRowIterator(table, shape);
+  for (const row of rows) {
     strings.push(JSON.stringify(decodeGeoArrowWKBRow(row, shape, geoArrowWKBFields)));
   }
   return `[${strings.join(',')}]`;
 }
 
+/** Iterates native rows in the JSON writer's requested row shape. */
+function* makeNativeRows(table: ArrowTable, shape: 'array-row-table' | 'object-row-table') {
+  for (const row of table) {
+    yield shape === 'array-row-table' ? row.toArray() : row.toJSON();
+  }
+}
+
 /** Returns GeoArrow WKB fields declared by a table schema. */
-function getGeoArrowWKBFields(table: Table): GeoArrowWKBField[] {
-  const schema = getTableSchema(table);
+function getGeoArrowWKBFields(schema: Schema): GeoArrowWKBField[] {
   const geometryColumns = getGeoMetadataWKBColumns(schema);
 
   return schema.fields.flatMap((field, index) =>
     isGeoArrowWKBField(field, geometryColumns) ? [{index, name: field.name}] : []
   );
-}
-
-/** Returns a loaders.gl schema for plain and Arrow table inputs. */
-function getTableSchema(table: Table): Schema {
-  if (table.schema) {
-    return table.schema;
-  }
-
-  if (table.shape === 'arrow-table') {
-    return convertArrowToSchema(table.data.schema);
-  }
-
-  return {fields: [], metadata: {}};
 }
 
 /** Returns geometry column names declared as WKB in GeoArrow metadata. */

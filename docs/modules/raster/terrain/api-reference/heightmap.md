@@ -59,84 +59,9 @@ For a reconstructed mesh instead, pass this preset as
 `terrain.elevationDecoder` to [TerrainLoader](./terrain-loader.md). Its existing
 tessellation, border handling, and output shapes are unchanged.
 
-## Shared physical grids
+## Terrain sampling
 
-`createTerrainHeightGrid(heightmap, metadata, validity?)` detaches decoded samples,
-the footprint and an optional byte validity mask into a `TerrainHeightGrid`. Grids
-require at least two rows and columns. Metadata is explicit:
-
-```typescript
-import {createTerrainHeightGrid, sampleTerrainHeightGrid} from '@loaders.gl/raster/terrain/heightmap';
-
-const grid = createTerrainHeightGrid(heightmap, {
-  bounds: [west, south, east, north], // unwrapped EPSG:3857 meters
-  registration: 'pixel-center',     // or 'grid-node', including both edges
-  verticalDatum: 'unknown'          // or 'ellipsoidal' / 'orthometric'
-}, validity);
-const elevation = sampleTerrainHeightGrid(grid, [mercatorX, mercatorY]);
-```
-
-Rows run north to south, columns west to east. Heights are physical meters, never
-display exaggeration. The constructor copies arrays, normalizes valid bytes to 0/1,
-replaces explicitly invalid heights with NaN, and rejects nonfinite valid samples.
-Without a mask every sample must be finite. Alpha, datum conversion and horizontal
-wrapping remain source/host responsibilities. Treat published grids as immutable.
-
-`sampleTerrainHeightGrid` performs bilinear interpolation on a valid grid. Closed
-footprint edges clamp to the nearest pixel center. Outside or nonfinite coordinates
-and missing samples with nonzero interpolation weight return `null`; a valid zero
-height remains zero. The sampler does not repair holes or blend neighboring tiles.
-
-## Neighborhoods and shared edge nodes
-
-`sampleTerrainNeighborhood(grids, position)` samples touching footprints in source
-order and averages their contributions at shared edges and corners. A hole in any
-contributing grid remains a hole. Grids must use the same vertical datum; resolution
-and registration may differ. No longitude wrapping or datum conversion is implicit.
-Use a retained `TerrainHeightField` for repeated queries instead of rebuilding it.
-
-`resampleTerrainNodes(grid, neighbors = [])` creates detached north-first,
-`grid-node` samples over the source footprint. A pixel-centered W×H grid becomes
-(W+1)×(H+1); a grid-node source keeps its dimensions. Neighbors must match source
-dimensions, registration, footprint extent (within relative 1e-8) and vertical datum.
-Repeated neighbor references count once. Adjacent nodes blend touching footprints;
-absent neighbors clamp to the source edge. Missing samples are not filled.
-
-## TerrainHeightField
-
-```typescript
-import {TerrainHeightField} from '@loaders.gl/raster/terrain/heightmap';
-
-const field = new TerrainHeightField(grids, {maxMaskBytes: 8 * 1024 * 1024});
-const elevation = field.sampleHeight([mercatorX, mercatorY]);
-const loaded = field.coversBounds([west, south, east, north]);
-const statistics = field.getStatistics();
-```
-
-Construction snapshots membership, descriptors and footprints, but **borrows immutable
-sample and validity arrays**. Supply valid physical grids, normally created with
-`createTerrainHeightGrid`, and rebuild the field when their data changes. Mixed datums
-are rejected. Empty fields return null samples and false coverage.
-
-- `sampleHeight(position)`: ordered bilinear neighborhood sampling. Closed touching
-  edges use a footprint-relative 1e-10 tolerance for coordinate roundoff; points
-  admitted by this tolerance clamp to the contributing footprint.
-- `coversBounds(bounds)`: conservative complete rectangular coverage with valid
-  bilinear support, including zero-width/height probes. Overlaps cannot conceal gaps;
-  coverage uses exact interval/slab unions, not area tolerances. This is a physical
-  height-grid admission test, **not** a displayed triangle or terrain-hole pick.
-- `getStatistics()`: detached counts for grids, spatial bounds tests, candidate
-  grids, retained mask bytes/builds and validity samples inspected.
-
-Large fields prune queries through a static footprint tree while preserving source
-accumulation order. Summed-area validity masks are built lazily within
-`maxMaskBytes` (default 8 MiB). Zero or insufficient budget uses exact scans with
-the same answers. This limit covers retained mask arrays only, not source arrays,
-tree metadata or transient query allocations. No provider, cache eviction, worker,
-renderer, projection engine or GPU resource is owned.
-
-These utilities adapt Tangram's validated physical terrain field implementation;
-rendered mesh topology, geometry indexes and renderer lifecycle stay downstream.
+Use `HeightField` or `TiledHeightField` from `@math.gl/geospatial/terrain` to sample decoded heights. Provide an explicit coordinate frame, registration, validity and height reference. See the [upgrade guide](../../../../upgrade-guide.md) for migration details.
 
 ## Shared surface query boundary
 

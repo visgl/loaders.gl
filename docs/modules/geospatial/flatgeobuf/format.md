@@ -19,7 +19,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'FlatGeobuf module', to: '/docs/modules/geospatial/flatgeobuf'},
     {label: 'FlatGeobufLoader', to: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader'},
-    {label: 'Remote source', to: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader'}
+    {label: 'Remote source', to: '/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source'}
   ]}
 />
 
@@ -63,12 +63,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Loader</span>
     <strong>FlatGeobufLoader</strong>
     <span>Loads FlatGeobuf files as GeoJSON, Arrow, columnar, or binary geometry data.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ArrowTable, ColumnarTable, BinaryFeatureCollection</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, Apache Arrow table, ColumnarTable, BinaryFeatureCollection</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync, parseInBatches</span>
   </a>
-  <a className="docs-api-card" href="/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader">
+  <a className="docs-api-card" href="/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source">
     <span className="docs-api-card__kind">Source</span>
-    <strong>FlatGeobufSourceLoader</strong>
+    <strong>FlatGeobufLoader</strong>
     <span>Creates an indexed vector source for remote FlatGeobuf datasets.</span>
     <span className="docs-api-card__meta">Output: VectorSource</span>
     <span className="docs-api-card__meta">APIs: createDataSource, getFeatures</span>
@@ -77,8 +77,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## Spatial Indexes
 
-FlatGeobuf files can include a packed spatial index for range-request access. `FlatGeobufSourceLoader` uses that index when present to fetch viewport-sized feature subsets from remote files.
+FlatGeobuf files can include a packed spatial index for range-request access. `FlatGeobufLoader` uses that index when present to fetch viewport-sized feature subsets from remote files.
 
 ## Arrow
 
-Set `flatgeobuf.shape: 'arrow-table'` to preserve FlatGeobuf property columns in an Arrow table and append a WKB `geometry` column with geospatial metadata.
+Set `flatgeobuf.shape: 'arrow'` to preserve FlatGeobuf property columns in an Arrow table and append a WKB `geometry` column with geospatial metadata.

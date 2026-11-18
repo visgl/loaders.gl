@@ -243,7 +243,8 @@ export class PointCloudTiler {
   /** Validates the decoded profile and creates a root cube from finite native coordinates. */
   private async initialize(input: Mesh | MeshArrowTable): Promise<void> {
     this.signal.throwIfAborted();
-    if ('shape' in input) {
+    if (!('attributes' in input)) {
+      const table = input;
       const buffers = new Set<ArrayBufferLike>();
       let arrowBytes = 0;
       /** Counts retained Arrow buffers and rejects null child values before conversion. */
@@ -260,15 +261,15 @@ export class PointCloudTiler {
         if (data.dictionary)
           for (const dictionaryData of data.dictionary.data) checkData(dictionaryData);
       };
-      for (const batch of input.data.batches) checkData(batch.data);
+      for (const batch of table.batches) checkData(batch.data);
       if (arrowBytes > this.options.maxInputBytes)
         throw new Error('PointCloudTiler: input byte budget exceeded');
-      for (const column of input.data.schema.fields) {
-        if (input.data.getChild(column.name)?.nullCount)
+      for (const column of table.schema.fields) {
+        if (table.getChild(column.name)?.nullCount)
           throw new Error('PointCloudTiler: null point attributes require an explicit mapping');
       }
     }
-    const mesh = 'shape' in input ? convertTableToMesh(input) : input;
+    const mesh = 'attributes' in input ? input : convertTableToMesh(input);
     if (mesh.topology !== 'point-list' || mesh.indices)
       throw new Error('PointCloudTiler: unindexed point-list input required');
     const position = mesh.attributes.POSITION;

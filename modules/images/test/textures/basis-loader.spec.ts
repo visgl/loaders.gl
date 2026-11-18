@@ -9,10 +9,7 @@ import { GL_COMPRESSED_RGB_ETC1_WEBGL, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG, GL_CO
 import { withBasisTranscodingLock } from '../../src/lib/parsers/parse-basis';
 const BASIS_TEST_URL = '@loaders.gl/images/test/textures/data/alpha3.basis';
 const KTX2_BASIS_TEST_URL = '@loaders.gl/images/test/textures/data/kodim23.ktx2';
-setLoaderOptions({
-    _workerType: 'test',
-    CDN: null
-});
+setLoaderOptions({core: {_workerType: 'test', CDN: null}});
 test('BasisLoader#imports', () => {
     expect(BasisLoader, 'BasisLoader defined').toBeTruthy();
 });
@@ -32,7 +29,7 @@ test('BasisLoader#load(URL, worker: false)', async () => {
     expect(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`').toBeTruthy();
 });
 test('BasisLoader#load(URL, worker: true)', async () => {
-    const images = await load(BASIS_TEST_URL, BasisLoader, { worker: true, _nodeWorkers: true });
+    const images = await load(BASIS_TEST_URL, BasisLoader, {core: {worker: true, _nodeWorkers: true}});
     const image = images[0][0];
     expect(image, 'image loaded successfully from URL').toBeTruthy();
     expect(image.width, 'image width is correct').toBe(768);
@@ -65,16 +62,12 @@ test('BasisLoader#auto-select a target format', async () => {
 
 });
 test('BasisLoader#transcode to explicit format', async () => {
-    const images = await load(BASIS_TEST_URL, BasisLoader, {
-        worker: true,
-        _nodeWorkers: true,
-        basis: {
+    const images = await load(BASIS_TEST_URL, BasisLoader, {core: {worker: true, _nodeWorkers: true}, basis: {
             format: {
                 alpha: 'BC3',
                 noAlpha: 'BC1'
             }
-        }
-    });
+        }});
     const image = images[0][0];
     expect(image.format, 'The texture was transcoded to DXT fromat').toBe(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
     expect(image.textureFormat, 'The texture exposes the WebGPU format').toBe('bc3-rgba-unorm');
@@ -93,23 +86,16 @@ test('BasisLoader#auto-selects format from supportedTextureFormats', async () =>
     expect(image.textureFormat, 'BasisLoader sets the selected texture format').toBe('bc3-rgba-unorm');
 });
 test('BasisLoader#auto-select a decoder format', async () => {
-    const images = await load(BASIS_TEST_URL, BasisLoader, {
-        worker: true,
-        basis: {
+    const images = await load(BASIS_TEST_URL, BasisLoader, {core: {worker: true}, basis: {
             format: 'astc-4x4',
             containerFormat: 'auto'
-        }
-    });
+        }});
     const image = images[0][0];
     expect(image, 'Transcode .basis').toBeTruthy();
-    const ktx2Images = await load(KTX2_BASIS_TEST_URL, BasisLoader, {
-        worker: true,
-        _nodeWorkers: true,
-        basis: {
+    const ktx2Images = await load(KTX2_BASIS_TEST_URL, BasisLoader, {core: {worker: true, _nodeWorkers: true}, basis: {
             format: 'astc-4x4',
             containerFormat: 'auto'
-        }
-    });
+        }});
     const ktx2Image = ktx2Images[0];
     expect(ktx2Image, 'Transcode .ktx2').toBeTruthy();
     expect(ktx2Image.length, 'Transcode .ktx2 mips').toBe(10);

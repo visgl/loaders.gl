@@ -12,6 +12,7 @@ import {
   List,
   Struct,
   Utf8,
+  Table as ArrowTable,
   tableFromIPC,
   tableToIPC
 } from 'apache-arrow';
@@ -54,7 +55,7 @@ function wrapGraph(contents: string, attributes = ''): string {
 function getArrowTables(output: GEXFOutput): GraphTables {
   expect(output.shape).toBe('tables');
   const graph = output as GraphTables;
-  expect(graph.tables.map(entry => entry.table.shape)).toEqual(['arrow-table', 'arrow-table']);
+  for (const {table} of graph.tables) expect(table).toBeInstanceOf(ArrowTable);
   return graph;
 }
 
@@ -84,7 +85,7 @@ describe('GEXFLoader', () => {
         lastmodifieddate: '2026-10-06'
       }
     });
-    const nodes = tables.tables[0].table.data;
+    const nodes = tables.tables[0].table;
     expect(nodes.getChild('id')!.toArray()).toEqual(['001', 'b']);
     expect(nodes.getChild('label')!.toArray()).toEqual([' A & B ', null]);
     const attributes = nodes.getChild('attributes')!;
@@ -106,14 +107,14 @@ describe('GEXFLoader', () => {
     expect((fields.find(field => field.name === 'numbers')!.type as List).valueType).toBeInstanceOf(
       Int64
     );
-    const edges = tables.tables[1].table.data;
+    const edges = tables.tables[1].table;
     expect(edges.getChild('attributes')!.get(0).score).toBe(1.5);
     expect((edges.getChild('attributes')!.type as Struct).children[0].type).toBeInstanceOf(Float32);
     expect(nodes.schema.fields.map(field => field.name)).toEqual(['id', 'label', 'attributes']);
   });
 
   test('retains native visualization properties, weights, and parallel edge kinds', () => {
-    const visualization = tables.tables[0].table.data.getChild('attributes')!.get(0).gexf.viz;
+    const visualization = tables.tables[0].table.getChild('attributes')!.get(0).gexf.viz;
     expect(visualization.color.toJSON()).toEqual({r: 255, g: 0, b: 128, a: 0.5});
     expect(visualization.position.toJSON()).toEqual({x: 1.5, y: -2});
     expect(visualization.size.value).toBe(3);
@@ -121,7 +122,7 @@ describe('GEXFLoader', () => {
       value: 'image',
       uri: 'https://example.invalid/image.png'
     });
-    const edges = tables.tables[1].table.data;
+    const edges = tables.tables[1].table;
     expect(edges.getChild('id')!.toArray()).toEqual(['_edge-0', 'edge-0', 'edge-2']);
     expect(edges.getChild('directed')!.toArray()).toEqual([true, false, true]);
     expect(edges.getChild('targetId')!.get(2)).toBe('b');
@@ -134,7 +135,7 @@ describe('GEXFLoader', () => {
   });
 
   test('Arrow tables survive IPC serialization', () => {
-    const restored = tableFromIPC(tableToIPC(tables.tables[0].table.data));
+    const restored = tableFromIPC(tableToIPC(tables.tables[0].table));
     expect(restored.getChild('attributes')!.get(0).large).toBe(9007199254740993n);
     expect(Array.from(restored.getChild('attributes')!.get(0).numbers)).toEqual([
       9007199254740993n,
@@ -150,10 +151,14 @@ describe('GEXFLoader', () => {
       await GEXFLoaderWithParser.parse(binary.buffer),
       GEXFLoaderWithParser.parseTextSync(DOCUMENT)
     ]) {
-      expect(getArrowTables(result).tables[0].table.data.numRows).toBe(2);
+      expect(getArrowTables(result).tables[0].table.numRows).toBe(2);
     }
     const rows = GEXFLoaderWithParser.parseTextSync(DOCUMENT, {gexf: {shape: 'object-row-table'}});
-    if (rows.shape !== 'tables' || rows.tables[0].table.shape !== 'object-row-table')
+    if (
+      rows.shape !== 'tables' ||
+      !('shape' in rows.tables[0].table) ||
+      rows.tables[0].table.shape !== 'object-row-table'
+    )
       throw new Error('Expected object rows.');
     expect(rows.tables[0].table.data[0].attributes).toMatchObject({
       large: 9007199254740993n,
@@ -175,13 +180,13 @@ describe('GEXFLoader', () => {
         )
       )
     );
-    const nodes = graph.tables[0].table.data;
+    const nodes = graph.tables[0].table;
     expect(nodes.numRows).toBe(0);
     const fields = (nodes.getChild('attributes')!.type as Struct).children;
     expect((fields[0].type as List).valueType).toBeInstanceOf(Float64);
     expect(fields[1].type).toBeInstanceOf(Utf8);
     expect(fields[2].type).toBeInstanceOf(Utf8);
-    expect(getArrowTables(parseGEXF('<gexf><graph/></gexf>')).tables[1].table.data.numRows).toBe(0);
+    expect(getArrowTables(parseGEXF('<gexf><graph/></gexf>')).tables[1].table.numRows).toBe(0);
   });
 
   test.each([
@@ -287,7 +292,7 @@ describe('GEXFLoader', () => {
         )
       )
     );
-    const attributes = graph.tables[0].table.data.getChild('attributes')!;
+    const attributes = graph.tables[0].table.getChild('attributes')!;
     expect((attributes.type as Struct).children[0].type).toBeInstanceOf(Utf8);
     expect(attributes.get(0).value).toBe(value);
     expect(attributes.get(1).value).toBe('1.5');
@@ -308,7 +313,7 @@ describe('GEXFLoader', () => {
         )
       )
     );
-    const attributes = graph.tables[0].table.data.getChild('attributes')!;
+    const attributes = graph.tables[0].table.getChild('attributes')!;
     expect((attributes.type as Struct).children[0].type).toBeInstanceOf(
       type === 'float' ? Float32 : Float64
     );
@@ -323,7 +328,7 @@ describe('GEXFLoader', () => {
         )
       )
     );
-    const attributes = graph.tables[0].table.data.getChild('attributes')!.get(0);
+    const attributes = graph.tables[0].table.getChild('attributes')!.get(0);
     expect(attributes.integer).toBe('2147483648');
     expect(attributes.long).toBe('9223372036854775808');
     expect(Array.from(attributes.list)).toEqual(['1', 'bad']);

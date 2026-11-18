@@ -67,9 +67,7 @@ describe('GeoArrow physical layout oracle', () => {
     ];
 
     for (const geometry of cases) {
-      const source = convertFeaturesToGeoArrowTable([
-        {type: 'Feature', properties: {}, geometry}
-      ]).data;
+      const source = convertFeaturesToGeoArrowTable([{type: 'Feature', properties: {}, geometry}]);
       const native = convertGeoArrowGeometry(source, 'native', {
         dimension: 'xyz',
         coordinates: 'separated',
@@ -115,7 +113,7 @@ describe('GeoArrow physical layout oracle', () => {
         }
       },
       {type: 'Feature', properties: {}, geometry: null}
-    ]).data;
+    ]);
 
     const collection = convertGeoArrowGeometry(source, 'geoarrow.geometrycollection', {
       offsetType: 'int64'
@@ -244,7 +242,7 @@ describe('GeoArrow physical layout oracle', () => {
           ]
         }
       }
-    ]).data;
+    ]);
     const union = convertGeoArrowGeometry(source, 'geoarrow.geometry');
     const field = union.schema.fields[0];
     const unionType = field.type as arrow.DenseUnion;
@@ -270,7 +268,7 @@ describe('GeoArrow physical layout oracle', () => {
 
     expect(result.valid).toBe(true);
     expect(result.layout.kind).toBe('geometry-union');
-    expect(result.layout.unionTypeIds).toEqual([1, 5]);
+    expect(result.layout.unionTypeIds).toEqual([1, 2]);
     expect(result.layout.unionChildren.map(child => child.geometryType)).toEqual([
       'Point',
       'LineString'

@@ -42,7 +42,7 @@ vi.mock('../../src/parquet/parquetjs/compression', () => ({
 import {
   parseParquetFile,
   parseParquetFileInBatches
-} from '../../src/parquet/lib/parsers/parse-parquet-to-json';
+} from '../../../../website/src/alternate-loaders/parquet/parse-parquet-to-json';
 
 beforeEach(() => {
   parquetMocks.batches = [];

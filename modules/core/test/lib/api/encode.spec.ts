@@ -74,7 +74,7 @@ test('batch encoders normalize input and expose unsupported operations', async (
   const binaryWriter = makeWriter({
     encodeInBatches: async function* (batches: Iterable<any>) {
       for (const batch of batches) {
-        yield TEXT_ENCODER.encode(`${batch.start}:${batch.end}`).buffer;
+        yield TEXT_ENCODER.encode(batch).buffer;
       }
     }
   });
@@ -82,7 +82,7 @@ test('batch encoders normalize input and expose unsupported operations', async (
   for await (const output of encodeInBatches(['a', 'b'] as any, binaryWriter)) {
     binaryOutputs.push(TEXT_DECODER.decode(output));
   }
-  expect(binaryOutputs).toEqual(['0:2']);
+  expect(binaryOutputs).toEqual(['a', 'b']);
 
   const textWriter = makeWriter({
     encodeTextInBatches: async function* (batches: Iterable<any>) {

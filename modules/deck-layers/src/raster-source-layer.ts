@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {
-  COORDINATE_SYSTEM,
   CompositeLayer,
   type CompositeLayerProps,
   type CoordinateSystem,
@@ -23,8 +22,7 @@ import type {
   NumericRasterData,
   RasterSource,
   RasterSourceMetadata,
-  RasterViewport,
-  SourceLoader
+  RasterViewport
 } from '@loaders.gl/core/loader-utils';
 import {sampleRaster, computeRasterStatistics} from '@loaders.gl/core/loader-utils';
 import {RasterSet, type RasterSetRequest} from '@loaders.gl/tiles';
@@ -69,9 +67,7 @@ export type RasterSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders
   /** Raster source runtime, URL, or Blob. */
   data: RasterSource | string | Blob;
   /** Parser loaders and SourceLoaders used to resolve URL/Blob inputs. */
-  loaders?: ReadonlyArray<Loader | SourceLoader>;
-  /** @deprecated Put SourceLoaders in `loaders`. */
-  sources?: Readonly<SourceLoader[]>;
+  loaders?: ReadonlyArray<Loader>;
   /** Options forwarded to source construction. */
   sourceOptions?: DataSourceOptions;
   /** Optional metadata already loaded by a parent SourceLayer. */
@@ -119,7 +115,6 @@ const defaultProps: DefaultProps<RasterSourceLayerProps> = {
   id: 'raster-source-layer',
   data: null as never,
   loaders: {type: 'array', compare: false, value: []},
-  sources: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   rasterParameters: {type: 'object', compare: false, value: {}},
   bitmapLayerProps: {type: 'object', compare: false, value: {}},
@@ -193,7 +188,6 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
     const sourceChanged =
       changeFlags.dataChanged ||
       props.loaders !== oldProps.loaders ||
-      props.sources !== oldProps.sources ||
       props.sourceOptions !== oldProps.sourceOptions;
 
     if (sourceChanged) {
@@ -420,7 +414,7 @@ export function createDefaultRasterRenderResult(
     return {
       image: colorizeRasterData(rasterWithMetadataNoData),
       bounds: [0, metadata.height, metadata.width, 0],
-      coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
+      coordinateSystem: 'cartesian'
     };
   }
   const rasterBounds = raster.boundingBox || parameters.viewport.bounds || metadata.boundingBox;
@@ -428,7 +422,7 @@ export function createDefaultRasterRenderResult(
     return {
       image: colorizeRasterData(rasterWithMetadataNoData),
       bounds: [0, raster.height, raster.width, 0],
-      coordinateSystem: COORDINATE_SYSTEM.CARTESIAN
+      coordinateSystem: 'cartesian'
     };
   }
   const rasterCoordinateReferenceSystem = getCoordinateReferenceSystemIdentifier(
@@ -451,9 +445,7 @@ export function createDefaultRasterRenderResult(
   return {
     image: colorizeRasterData(rasterWithMetadataNoData),
     bounds,
-    coordinateSystem: rasterCoordinateReferenceSystem
-      ? COORDINATE_SYSTEM.LNGLAT
-      : COORDINATE_SYSTEM.CARTESIAN
+    coordinateSystem: rasterCoordinateReferenceSystem ? 'lnglat' : 'cartesian'
   };
 }
 

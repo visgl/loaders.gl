@@ -31,8 +31,9 @@ function selectLoader(options: Record<string, unknown>): LoaderWithParser {
       let completed = 0;
       context?.reportProgress?.({phase: 'decode', completed, unit: 'rows'});
       for await (const batch of loader.parseInBatches!(input, parserOptions, context)) {
-        if (batch.batchType === 'data') {
-          completed += batch.length;
+        const rowCount = batch.batchType === 'data' ? batch.length : batch.numRows;
+        if (typeof rowCount === 'number') {
+          completed += rowCount;
           context?.reportProgress?.({phase: 'decode', completed, unit: 'rows'});
         }
         yield batch;

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 
 /** Portable options for applying a residual query to an Arrow table. */
@@ -30,11 +29,11 @@ export type ArrowTableRowFilter<PredicateT = unknown> = (
  * allowing WHERE columns that are not returned to the caller.
  */
 export function queryArrowTable<PredicateT = unknown>(
-  table: ArrowTable,
+  table: arrow.Table,
   options: ArrowTableQueryOptions<PredicateT> = {},
   filterRows?: ArrowTableRowFilter<PredicateT>
-): ArrowTable {
-  const availableColumns = table.data.schema.fields.map(field => field.name);
+): arrow.Table {
+  const availableColumns = table.schema.fields.map(field => field.name);
   const selectedColumns = options.columns ? [...options.columns] : availableColumns;
   for (const columnName of selectedColumns) {
     if (!availableColumns.includes(columnName)) {
@@ -46,36 +45,27 @@ export function queryArrowTable<PredicateT = unknown>(
   if (options.predicate !== undefined) {
     if (!filterRows) throw new Error('Arrow table query requires a predicate evaluator.');
     const columns = Object.fromEntries(
-      availableColumns.map(name => [name, [...(table.data.getChild(name) || [])]])
+      availableColumns.map(name => [name, [...(table.getChild(name) || [])]])
     );
-    rowIndices = filterRows(options.predicate, columns, table.data.numRows);
+    rowIndices = filterRows(options.predicate, columns, table.numRows);
   }
 
   const limitedRowIndices = rowIndices
     ? rowIndices.slice(0, options.limit ?? Number.POSITIVE_INFINITY)
     : undefined;
-  const data = limitedRowIndices
-    ? createArrowTableFromRowIndices(table.data, selectedColumns, limitedRowIndices)
-    : table.data.select(selectedColumns).slice(0, options.limit ?? Number.POSITIVE_INFINITY);
-  const schema = table.schema
-    ? {
-        ...table.schema,
-        fields: selectedColumns.flatMap(
-          columnName => table.schema?.fields.filter(field => field.name === columnName) || []
-        )
-      }
-    : undefined;
-  return schema ? {shape: 'arrow-table', schema, data} : {shape: 'arrow-table', data};
+  return limitedRowIndices
+    ? createArrowTableFromRowIndices(table, selectedColumns, limitedRowIndices)
+    : table.select(selectedColumns).slice(0, options.limit ?? Number.POSITIVE_INFINITY);
 }
 
 /** Selects rows from an Arrow table while preserving the requested column order. */
 export function selectArrowTableRows(
-  table: ArrowTable,
+  table: arrow.Table,
   rowIndices: readonly number[],
   columns?: readonly string[],
   limit?: number
-): ArrowTable {
-  const availableColumns = table.data.schema.fields.map(field => field.name);
+): arrow.Table {
+  const availableColumns = table.schema.fields.map(field => field.name);
   const selectedColumns = columns ? [...columns] : availableColumns;
   for (const columnName of selectedColumns) {
     if (!availableColumns.includes(columnName)) {
@@ -83,16 +73,7 @@ export function selectArrowTableRows(
     }
   }
   const limitedRowIndices = rowIndices.slice(0, limit ?? Number.POSITIVE_INFINITY);
-  const data = createArrowTableFromRowIndices(table.data, selectedColumns, limitedRowIndices);
-  const schema = table.schema
-    ? {
-        ...table.schema,
-        fields: selectedColumns.flatMap(
-          columnName => table.schema?.fields.filter(field => field.name === columnName) || []
-        )
-      }
-    : undefined;
-  return schema ? {shape: 'arrow-table', schema, data} : {shape: 'arrow-table', data};
+  return createArrowTableFromRowIndices(table, selectedColumns, limitedRowIndices);
 }
 
 function createArrowTableFromRowIndices(
@@ -103,7 +84,8 @@ function createArrowTableFromRowIndices(
   const schema = new arrow.Schema(
     selectedColumns.map(
       columnName => sourceData.schema.fields.find(field => field.name === columnName)!
-    )
+    ),
+    sourceData.schema.metadata
   );
   const vectors = Object.fromEntries(
     selectedColumns.map(columnName => {

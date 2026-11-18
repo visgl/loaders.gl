@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GPXLoader, KMLLoader, TCXLoader} from '@loaders.gl/geospatial/kml/index';
+import {KMLLoader} from '@loaders.gl/geospatial/kml';
+import {GPXLoader} from '@loaders.gl/geospatial/gpx';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 
 const KML_URL = '@loaders.gl/geospatial/kml/test/data/kml/KML_Samples.kml';
 const GPX_URL = '@loaders.gl/geospatial/kml/test/data/gpx/trek.gpx';
@@ -25,15 +27,11 @@ async function addLoaderBenchmarks(suite, loader, url, optionName, benchmarkPref
   const response = await fetchFile(url);
   const text = await response.text();
 
-  suite.addAsync(
-    `${benchmarkPrefix} load arrow-table geoarrow.wkb`,
-    ROW_BENCHMARK_OPTIONS,
-    async () => {
-      await parse(text, loader, {
-        [optionName]: {shape: 'arrow-table'}
-      });
-    }
-  );
+  suite.addAsync(`${benchmarkPrefix} load arrow geoarrow.wkb`, ROW_BENCHMARK_OPTIONS, async () => {
+    await parse(text, loader, {
+      [optionName]: {shape: 'arrow'}
+    });
+  });
 
   suite.addAsync(`${benchmarkPrefix} load geojson-table`, ROW_BENCHMARK_OPTIONS, async () => {
     await parse(text, loader, {

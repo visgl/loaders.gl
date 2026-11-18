@@ -4,9 +4,9 @@
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import {expect, test} from 'vitest';
-import {createDataSource, fetchFile, load} from '@loaders.gl/core';
-import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
-import {TableTileSourceLoader, TableVectorTileSource} from '@loaders.gl/tiles/mvt';
+import {createDataSource, createDataSourceSync, fetchFile, load} from '@loaders.gl/core';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {TableTileLoader, TableVectorTileSource} from '@loaders.gl/tiles/mvt';
 import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 const DATA_PATH = '@loaders.gl/tiles/mvt/test/data/geojson-vt';
 const square = [
@@ -25,21 +25,23 @@ const square = [
     id: '42'
   }
 ];
-test('TableTileSourceLoader reports the configured output coordinate mode', () => {
+test('TableTileLoader reports the configured output coordinate mode', () => {
   const table = makeGeoJSONTable({type: 'Point', coordinates: [0, 0]});
-  const localSource = TableTileSourceLoader.createDataSource(table, {
+  const localSource = TableTileLoader.createDataSourceSync(table, {
     table: {coordinates: 'local'}
   });
-  const wgs84Source = TableTileSourceLoader.createDataSource(table, {
+  const wgs84Source = TableTileLoader.createDataSourceSync(table, {
     table: {coordinates: 'wgs84'}
   });
 
   expect(localSource.localCoordinates).toBe(true);
   expect(wgs84Source.localCoordinates).toBe(false);
 });
-test('TableTileSourceLoader#getTile#us-states.json', async () => {
+test('TableTileLoader#getTile#us-states.json', async () => {
   const geojson = await loadGeoJSONTable('us-states.json');
-  const source = TableTileSourceLoader.createDataSource(geojson, {table: {coordinates: 'wgs84'}}); // , debug: 2});
+  const source = TableTileLoader.createDataSourceSync(geojson, {
+    table: {coordinates: 'wgs84'}
+  }); // , debug: 2});
   await source.ready;
   // Check that tiles are correctly generated
   let tile = source.getProtoTile({z: 7, x: 37, y: 48});
@@ -59,7 +61,7 @@ test('TableTileSourceLoader#getTile#us-states.json', async () => {
   const total = source.stats.get('total').count;
   expect(total).toBe(37);
 });
-test('TableTileSourceLoader#getTile#unbuffered tile left/right edges', async () => {
+test('TableTileLoader#getTile#unbuffered tile left/right edges', async () => {
   const geojson = makeGeoJSONTable({
     type: 'LineString',
     coordinates: [
@@ -67,7 +69,7 @@ test('TableTileSourceLoader#getTile#unbuffered tile left/right edges', async () 
       [0, -90]
     ]
   });
-  const source = TableTileSourceLoader.createDataSource(geojson, {
+  const source = TableTileLoader.createDataSourceSync(geojson, {
     table: {
       coordinates: 'local',
       buffer: 0
@@ -90,7 +92,7 @@ test('TableTileSourceLoader#getTile#unbuffered tile left/right edges', async () 
     }
   ]);
 });
-test('TableTileSourceLoader#getTile#unbuffered tile top/bottom edges', async () => {
+test('TableTileLoader#getTile#unbuffered tile top/bottom edges', async () => {
   const geojson = makeGeoJSONTable({
     type: 'LineString',
     coordinates: [
@@ -98,7 +100,7 @@ test('TableTileSourceLoader#getTile#unbuffered tile top/bottom edges', async () 
       [90, 66.51326044311188]
     ]
   });
-  const source = TableTileSourceLoader.createDataSource(geojson, {
+  const source = TableTileLoader.createDataSourceSync(geojson, {
     table: {
       coordinates: 'local',
       buffer: 0
@@ -119,7 +121,7 @@ test('TableTileSourceLoader#getTile#unbuffered tile top/bottom edges', async () 
   ]);
   expect(source.getProtoTile({z: 2, x: 1, y: 1})?.protoFeatures).toEqual([]);
 });
-test('TableTileSourceLoader#getTile#polygon clipping on the boundary', async () => {
+test('TableTileLoader#getTile#polygon clipping on the boundary', async () => {
   const geojson = makeGeoJSONTable({
     type: 'Polygon',
     coordinates: [
@@ -132,7 +134,7 @@ test('TableTileSourceLoader#getTile#polygon clipping on the boundary', async () 
       ]
     ]
   });
-  const source = TableTileSourceLoader.createDataSource(geojson, {
+  const source = TableTileLoader.createDataSourceSync(geojson, {
     table: {
       coordinates: 'local',
       buffer: 1024
@@ -155,8 +157,8 @@ test('TableTileSourceLoader#getTile#polygon clipping on the boundary', async () 
     }
   ]);
 });
-test('TableTileSourceLoader#load#url input uses options.core.loaders', async () => {
-  const source = await load(`${DATA_PATH}/us-states.json`, TableTileSourceLoader, {
+test('TableTileLoader#load#url input uses options.core.loaders', async () => {
+  const source = await createDataSource(`${DATA_PATH}/us-states.json`, TableTileLoader, {
     table: {
       coordinates: 'wgs84'
     },
@@ -169,8 +171,8 @@ test('TableTileSourceLoader#load#url input uses options.core.loaders', async () 
   const metadata = await source.getMetadata();
   expect(metadata.maxZoom, 'metadata is available from the returned runtime source').toBe(14);
 });
-test('TableTileSourceLoader#createDataSource#url input uses options.core.loaders', async () => {
-  const source = createDataSource(`${DATA_PATH}/us-states.json`, [TableTileSourceLoader], {
+test('TableTileLoader#createDataSource#url input uses options.core.loaders', async () => {
+  const source = createDataSourceSync(`${DATA_PATH}/us-states.json`, [TableTileLoader], {
     table: {
       coordinates: 'wgs84'
     },
@@ -178,7 +180,7 @@ test('TableTileSourceLoader#createDataSource#url input uses options.core.loaders
   });
   expect(
     source instanceof TableVectorTileSource,
-    'createDataSource() returns a runtime tile source'
+    'createDataSourceSync() returns a runtime tile source'
   ).toBeTruthy();
   const metadata = await source.getMetadata();
   expect(metadata.maxZoom, 'metadata is available after parser-backed source creation').toBe(14);

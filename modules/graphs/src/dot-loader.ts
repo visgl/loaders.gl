@@ -9,9 +9,9 @@ import {parseDOT} from './lib/parse-dot';
 export const DOTLoaderWithParser = {
   ...DOTLoader,
   parse: async (data: ArrayBuffer, options?: DOTLoaderOptions) =>
-    parseDOT(new TextDecoder().decode(data), options?.dot?.shape ?? 'arrow-table'),
+    parseDOT(new TextDecoder().decode(data), options?.dot?.shape ?? 'arrow'),
   parseSync: (data: ArrayBuffer, options?: DOTLoaderOptions) =>
-    parseDOT(new TextDecoder().decode(data), options?.dot?.shape ?? 'arrow-table'),
+    parseDOT(new TextDecoder().decode(data), options?.dot?.shape ?? 'arrow'),
   parseTextSync: (data: string, options?: DOTLoaderOptions) =>
-    parseDOT(data, options?.dot?.shape ?? 'arrow-table')
+    parseDOT(data, options?.dot?.shape ?? 'arrow')
 };

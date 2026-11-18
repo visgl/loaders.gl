@@ -65,7 +65,6 @@ Both implement the shared [Compressor and Decompressor](./compressor-decompresso
 | Backend | Direction | Subpath |
 | --- | --- | --- |
 | fzstd | Decompression | `zstd-decompressor-fzstd` |
-| zstd-codec | Compression and decompression compatibility | `zstd-zstd-codec` |
 | compress-utils | Compression | `zstd-compressor-compress-utils` |
 | compress-utils | Decompression | `zstd-decompressor-compress-utils` |
 

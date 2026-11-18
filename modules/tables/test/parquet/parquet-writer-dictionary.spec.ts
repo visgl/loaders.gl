@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {encode, load} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter, ParquetLoader, ParquetReader} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter, ParquetLoader, ParquetReader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {parquetReadObjects} from 'hyparquet';
 import {compressors} from 'hyparquet-compressors';
@@ -29,9 +29,9 @@ const INPUT: ObjectRowTable = {
 };
 
 test.each([false, true])(
-  'ParquetJSWriter emits chunk dictionaries and multiple Data Page V2=%s pages',
+  'ParquetWriter emits chunk dictionaries and multiple Data Page V2=%s pages',
   async useDataPageV2 => {
-    const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+    const parquetBuffer = await encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {
         pageSize: 3,
@@ -64,8 +64,8 @@ test.each([false, true])(
   }
 );
 
-test('ParquetJSWriter falls back when a forced dictionary exceeds its size limit', async () => {
-  const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+test('ParquetWriter falls back when a forced dictionary exceeds its size limit', async () => {
+  const parquetBuffer = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {dictionary: true, dictionaryPageSizeLimit: 1}
   });
@@ -75,17 +75,17 @@ test('ParquetJSWriter falls back when a forced dictionary exceeds its size limit
   );
 });
 
-test('ParquetJSWriter rejects unknown dictionary column overrides', async () => {
+test('ParquetWriter rejects unknown dictionary column overrides', async () => {
   await expect(
-    encode(INPUT, ParquetJSWriter, {
+    encode(INPUT, ParquetWriter, {
       worker: false,
       parquet: {columnDictionaries: {typo: true}}
     })
   ).rejects.toThrow('Unknown column dictionary override "typo"');
 });
 
-test('ParquetJSWriter multi-page dictionaries interoperate with maintained browser readers', async () => {
-  const parquetBuffer = await encode(INPUT, ParquetJSWriter, {
+test('ParquetWriter multi-page dictionaries interoperate with maintained browser readers', async () => {
+  const parquetBuffer = await encode(INPUT, ParquetWriter, {
     worker: false,
     parquet: {
       pageSize: 3,
@@ -111,7 +111,7 @@ test('ParquetJSWriter multi-page dictionaries interoperate with maintained brows
   expect(selectScalarColumns(hyparquetRows)).toEqual(expectedRows);
 });
 
-test('ParquetJSWriter preserves the legacy PLAIN_DICTIONARY encoding declaration', async () => {
+test('ParquetWriter preserves the legacy PLAIN_DICTIONARY encoding declaration', async () => {
   const input: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -120,7 +120,7 @@ test('ParquetJSWriter preserves the legacy PLAIN_DICTIONARY encoding declaration
     },
     data: [{label: 'alpha'}, {label: 'beta'}, {label: 'alpha'}]
   };
-  const parquetBuffer = await encode(input, ParquetJSWriter, {
+  const parquetBuffer = await encode(input, ParquetWriter, {
     worker: false,
     parquet: {dictionary: true, columnEncodings: {label: 'PLAIN_DICTIONARY'}}
   });
@@ -139,7 +139,7 @@ test('ParquetJSWriter preserves the legacy PLAIN_DICTIONARY encoding declaration
   );
 });
 
-test('ParquetJSWriter falls back from an oversized explicit PLAIN_DICTIONARY', async () => {
+test('ParquetWriter falls back from an oversized explicit PLAIN_DICTIONARY', async () => {
   const input: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -148,7 +148,7 @@ test('ParquetJSWriter falls back from an oversized explicit PLAIN_DICTIONARY', a
     },
     data: [{label: 'alpha'}, {label: 'beta'}]
   };
-  const parquetBuffer = await encode(input, ParquetJSWriter, {
+  const parquetBuffer = await encode(input, ParquetWriter, {
     worker: false,
     parquet: {
       dictionaryPageSizeLimit: 1,

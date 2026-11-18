@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {encode, load} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 
-test('ParquetJSWriter round-trips nested structs, lists, maps, and nulls', async () => {
+test('ParquetWriter round-trips nested structs, lists, maps, and nulls', async () => {
   const table: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -56,7 +56,7 @@ test('ParquetJSWriter round-trips nested structs, lists, maps, and nulls', async
     ]
   };
 
-  const parquetBuffer = await encode(table, ParquetJSWriter, {worker: false});
+  const parquetBuffer = await encode(table, ParquetWriter, {worker: false});
   const output = await load(parquetBuffer, ParquetJSLoader, {
     core: {worker: false},
     parquet: {shape: 'object-row-table'}
@@ -80,7 +80,7 @@ test('ParquetJSWriter round-trips nested structs, lists, maps, and nulls', async
   }
 });
 
-test('ParquetJSWriter rejects invalid nested table schemas before writing', async () => {
+test('ParquetWriter rejects invalid nested table schemas before writing', async () => {
   const invalidList: ObjectRowTable = {
     shape: 'object-row-table',
     schema: {
@@ -89,7 +89,7 @@ test('ParquetJSWriter rejects invalid nested table schemas before writing', asyn
     },
     data: [{values: []}]
   };
-  await expect(encode(invalidList, ParquetJSWriter, {worker: false})).rejects.toThrow(
+  await expect(encode(invalidList, ParquetWriter, {worker: false})).rejects.toThrow(
     'List field "values" has no value child'
   );
 
@@ -110,7 +110,7 @@ test('ParquetJSWriter rejects invalid nested table schemas before writing', asyn
     },
     data: [{values: {key: 'value'}}]
   };
-  await expect(encode(invalidMap, ParquetJSWriter, {worker: false})).rejects.toThrow(
+  await expect(encode(invalidMap, ParquetWriter, {worker: false})).rejects.toThrow(
     'Map field "values" needs key and value children'
   );
 });

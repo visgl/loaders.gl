@@ -16,3 +16,5 @@ export {
   GeoJSONLoaderWithParser as GeoJSONLoader,
   GeoJSONWorkerLoaderWithParser as GeoJSONWorkerLoader
 } from './geojson-loader';
+
+export * from '.';

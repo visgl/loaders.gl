@@ -52,10 +52,10 @@ difference between native raster CRS metadata and raster reprojection or resampl
 
 ```ts
 import {RasterSet} from '@loaders.gl/tiles';
-import {createDataSource} from '@loaders.gl/core';
-import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff-source-loader';
+import {createDataSourceSync} from '@loaders.gl/core';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';
 
-const rasterSource = createDataSource('example.tif', [GeoTIFFSourceLoader], {
+const rasterSource = createDataSourceSync('example.tif', [GeoTIFFLoaderWithParser], {
   core: {type: 'geotiff'}
 });
 

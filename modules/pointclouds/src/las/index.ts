@@ -6,7 +6,7 @@
 
 export {LASFormat} from './las-format';
 
-export type {LASColumnName, LASLoaderOptions} from './las-loader-types';
+export type {LASColumnName, LASLoaderOptions, LASSourceOptions} from './las-loader-types';
 
 export type {LASExtraBytesWriter, LASWriterOptions} from './las-writer';
 export {LASWriter} from './las-writer';
@@ -63,8 +63,12 @@ export type {
   LAZChunkMetadata
 } from '@loaders.gl/core/loader-utils';
 
-// DEPRECATED EXPORTS
-/** @deprecated Use LASLoader. */
-export {LASWorkerLoader} from './las-loader-types';
-
 export type {LASCompatibilityLayout} from './lib/las-compatibility';
+
+export {
+  LASColumnLoader,
+  LASLoaderWithParser,
+  toPublicLASResult,
+  getLASRecordBatches,
+  parseLASMetadata
+} from '../las-loader';

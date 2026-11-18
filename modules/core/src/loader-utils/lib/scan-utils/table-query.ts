@@ -9,19 +9,62 @@ import {
   type ColumnarPredicateProperty
 } from './columnar-predicate';
 
+/** One source column selected for logical output, optionally under a new name. */
+export type TableSelection =
+  | string
+  | Readonly<{
+      /** Source column name, resolved before aliases are applied. */
+      column: string;
+      /** Output field name. Defaults to the source column name. */
+      as?: string;
+    }>;
+
+/** Named source, or a named table exposed by a source. Strings are literal names, not dotted paths. */
+export type TableReference =
+  | string
+  | Readonly<{
+      /** Name of a registered data source. */
+      source: string;
+      /** Name of a table exposed by that source. */
+      table: string;
+    }>;
+
+/** Logical query description, independent of cancellation and execution observers. */
+export type TableQuery<
+  PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate
+> = Readonly<{
+  /** Optional named source or qualified table selected before planning. */
+  from?: TableReference;
+  /** Output columns in selection order. Omission selects all source columns. */
+  select?: readonly TableSelection[];
+  /** Predicate evaluated against source columns before output aliases are applied. */
+  where?: PredicateT;
+  /** Number of filtered rows skipped before applying the limit. */
+  offset?: number;
+  /** Maximum number of rows retained after filtering and offset. */
+  limit?: number;
+}>;
+
+/** Controls one execution without becoming part of the logical query. */
+export type TableQueryExecutionOptions = Readonly<{
+  /** Cooperatively cancels source discovery and execution. */
+  signal?: AbortSignal;
+  /** Receives one terminal summary, including cancellation, failure, and early termination. */
+  onQueryComplete?: import('./scan-query-metadata').TableQueryCompleteCallback;
+}>;
+
 /** Immutable, backend-neutral request for a scan, filter, projection, and limit. */
 export type TableQueryOptions<
   PredicateT extends ColumnarPredicate<unknown, ColumnarPredicateProperty> = ColumnarPredicate
-> = Readonly<{
-  /** Portable predicate applied before projection. */
-  predicate?: PredicateT;
-  /** Output columns in caller-specified order. Defaults to every source column. */
-  columns?: readonly string[];
-  /** Maximum number of rows retained after filtering and projection. */
-  limit?: number;
-  /** Cancels discovery and batch production. */
-  signal?: AbortSignal;
-}>;
+> = Pick<TableQueryExecutionOptions, 'signal'> &
+  Readonly<{
+    /** Portable predicate applied before projection. */
+    predicate?: PredicateT;
+    /** Output columns in caller-specified order. Defaults to every source column. */
+    columns?: readonly string[];
+    /** Maximum number of rows retained after filtering and projection. */
+    limit?: number;
+  }>;
 
 /** Reads the minimum source columns required by the remaining table-query plan. */
 export type TableQueryScanStep = Readonly<{
@@ -81,6 +124,10 @@ export type TableQueryCapabilities = Readonly<{
   predicate: TableQueryOperatorSupport;
   /** Whether limits are unsupported, applied after execution, or stop physical work early. */
   limit: TableQueryOperatorSupport;
+  /** Whether exact CAST semantics can execute at the source; conversions require negotiation. */
+  cast?: TableQueryOperatorSupport;
+  /** Whether the source can skip filtered rows before its limit. */
+  offset?: TableQueryOperatorSupport;
   /** Whether the backend can stream bounded result batches. */
   streaming: boolean;
   /** Whether active and queued physical work observes cancellation. */
@@ -161,3 +208,24 @@ export function validateTableQueryLimit(limit: number | undefined): void {
     throw new Error('Table query limit must be a non-negative safe integer.');
   }
 }
+
+/** Validates a logical row offset before any batches are read. */
+export function validateTableQueryOffset(offset: number | undefined): void {
+  if (offset !== undefined && (!Number.isSafeInteger(offset) || offset < 0)) {
+    throw new Error('Table query offset must be a non-negative safe integer.');
+  }
+}
+
+/** Static format hints only; omission means unknown and never authorizes execution. */
+export type QueryPushdownCapabilityHints = Readonly<{
+  /** The format may support reading only selected columns. */
+  projection?: boolean;
+  /** The format may support predicate evaluation or pruning. */
+  predicate?: boolean;
+  /** An implementation may evaluate some CAST conversions. */
+  cast?: boolean;
+  /** An implementation may skip rows at the source. */
+  offset?: boolean;
+  /** An implementation may stop source work after a row limit. */
+  limit?: boolean;
+}>;

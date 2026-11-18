@@ -18,7 +18,7 @@ import {LoaderLiveExample} from '@site/src/components/docs/loader-live-example';
   links={[
     {label: 'MLT module', to: '/docs/modules/tiles/mlt'},
     {label: 'MLT format', to: '/docs/modules/tiles/mlt/formats/mlt'},
-    {label: 'MLT source', to: '/docs/modules/tiles/mlt/api-reference/mlt-source-loader'}
+    {label: 'MLT source', to: '/docs/modules/tiles/mlt/api-reference/mlt-source'}
   ]}
 />
 
@@ -56,6 +56,7 @@ Loader for the [MapLibre Tile (MLT)](/docs/modules/tiles/mlt/formats/mlt) geospa
 | File Format    | [MapLibre Tile](/docs/modules/tiles/mlt/formats/mlt) |
 | MIME Types     | `application/vnd.maplibre-tile`                |
 | Data Format    | [Geometry](/docs/specifications/category-gis)  |
+| Data source | `MLTTileSource` |
 | Supported APIs | `load`, `parse`, `parseSync`                   |
 | Worker Thread  | Not available for this loader                  |
 
@@ -111,7 +112,7 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 | `shape` option              | Output                    |
 | --------------------------- | ------------------------- |
-| `'arrow-table'` (default)   | Arrow table with GeoArrow geometry |
+| `'arrow'` (default)   | Arrow table with GeoArrow geometry |
 | `'binary-geometry'`         | binary feature collection  |
 | `'geojson-table'`           | `GeoJSONTable`             |
 
@@ -119,7 +120,7 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 | Option              | Type                                       | Default     | Description                                                    |
 | ------------------- | ------------------------------------------ | ----------- | -------------------------------------------------------------- |
-| `mlt.shape`         | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `arrow-table` | Output shape |
+| `mlt.shape`         | `'geojson-table' \| 'binary-geometry' \| 'arrow'` | `arrow` | Output shape |
 | `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference |
 | `mlt.coordinates`   | `'local' \| 'wgs84'`                       | `local`     | Coordinate system for returned geometries                      |
 | `mlt.tileIndex`     | `{x: number, y: number, z: number}`        | N/A         | Required when `coordinates` is `wgs84`                         |
@@ -128,7 +129,7 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 `mlt.tileIndex` is required for WGS84 output.
 
-When `mlt.shape` is `'arrow-table'` (the default), the decoder writes directly from MLT's decoded
+When `mlt.shape` is `'arrow'` (the default), the decoder writes directly from MLT's decoded
 geometry and property columns. It does not materialize an intermediate GeoJSON feature collection. Use
 `geoarrow.encodingPreference` to select WKB, dense-union GeoArrow, or the optimized native
 GeoArrow encoding.
@@ -138,7 +139,7 @@ To preserve the legacy GeoJSON default, set `mlt.shape: 'geojson-table'` explici
 ## Additional examples
 
 - [loaders.gl MLT website example](/examples/tiles/mlt).
-- [MLTSourceLoader](/docs/modules/tiles/mlt/api-reference/mlt-source-loader) for URL tile sets.
+- [MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-source) for URL tile sets.
 
 ## Attribution
 

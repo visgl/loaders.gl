@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import type {ParquetSource} from '@loaders.gl/tables/parquet';
-import type {ArrowTable} from '@loaders.gl/core/schema';
-import type {ScanQueryMetadata} from '@loaders.gl/core/scan';
+import type {RecordBatch} from 'apache-arrow';
+import type {ScanQueryMetadata} from '@loaders.gl/core/query';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
 type ParquetDemoState = Readonly<{
   metadata?: ScanQueryMetadata;
-  table?: ArrowTable;
+  batch?: RecordBatch;
   loading: boolean;
   error?: string;
 }>;
@@ -26,22 +26,22 @@ export function ParquetScanLiveExample(): JSX.Element {
     let mounted = true;
     void (async () => {
       try {
-        const {ParquetSource} = await import('@loaders.gl/tables/parquet-source-loader');
+        const {ParquetSource} = await import('@loaders.gl/tables/parquet');
         const source = new ParquetSource(url, {
           core: {fetch: fetchWithExposedContentRange, worker: false}
         }) as ParquetSource;
         const metadata = await source.getQueryMetadata();
-        let table: ArrowTable | undefined;
+        let previewBatch: RecordBatch | undefined;
         for await (const batch of source.read({
           columns: submittedQuery.columns,
           limit: submittedQuery.limit,
           signal: undefined
         })) {
-          table = batch.data;
+          previewBatch = batch;
           break;
         }
         await source.close();
-        if (mounted) setState({metadata, table, loading: false});
+        if (mounted) setState({metadata, batch: previewBatch, loading: false});
       } catch (error) {
         if (mounted) setState({loading: false, error: error instanceof Error ? error.message : String(error)});
       }
@@ -71,14 +71,14 @@ export function ParquetScanLiveExample(): JSX.Element {
         title="Parquet scan parameters"
       />
       {state.error ? <p role="alert">{state.error}</p> : null}
-      {state.table ? <ParquetPreview table={state.table} /> : null}
+      {state.batch ? <ParquetPreview batch={state.batch} /> : null}
     </div>
   );
 }
 
-function ParquetPreview({table}: {table: ArrowTable}): JSX.Element {
-  const columns = table.schema.fields.map(field => field.name);
-  return <p><strong>Arrow result:</strong> {table.data.numRows} rows · {columns.length} columns ({columns.join(', ')})</p>;
+function ParquetPreview({batch}: {batch: RecordBatch}): JSX.Element {
+  const columns = batch.schema.fields.map(field => field.name);
+  return <p><strong>Arrow result:</strong> {batch.numRows} rows · {columns.length} columns ({columns.join(', ')})</p>;
 }
 
 /** Adds the range metadata hidden by the public GitHub CORS policy. */

@@ -11,14 +11,14 @@ import type {ArrowViewTypeMode} from '@loaders.gl/core/schema-utils';
 export const CSV_LOADER_VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Default output shape for CSV parsing. */
-export const DEFAULT_CSV_SHAPE = 'arrow-table';
+export const DEFAULT_CSV_SHAPE = 'arrow';
 
 export type CSVLoaderOptions = LoaderOptions & {
   /** Preferred GeoArrow encoding for detected geometry columns. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   csv?: {
-    /** Selects row-table, columnar-table, or Arrow-table output. */
-    shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
+    /** Selects row-table, columnar-table, or native Arrow output (`'arrow'`). */
+    shape?: 'arrow' | 'array-row-table' | 'object-row-table' | 'columnar-table';
     /** optimizes memory usage but increases parsing time. */
     optimizeMemoryUsage?: boolean;
     columnPrefix?: string;

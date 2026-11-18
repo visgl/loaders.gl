@@ -24,3 +24,9 @@ Retain this file and the applicable licenses when redistributing bundles or work
 ## Draco
 
 Google’s [Draco](https://github.com/google/draco) supplies encoding and decoding, including adapted Web IDL types. Vendored runtimes are pinned to 1.5.7; see [versions, sources and checksums](./src/draco/libs/README.md). Retain the [Apache-2.0 license](./src/draco/libs/DRACO-LICENSE) with runtime and worker distributions.
+
+## Binary OpenUSD
+
+The dependency-free USDC decoder is adapted from THREE.js r187. See
+[src/usd/libs/README.md](./src/usd/libs/README.md) for source and modifications,
+and retain [MIT terms](./src/usd/libs/THREE-LICENSE) with distributions.

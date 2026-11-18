@@ -63,14 +63,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Loader</span>
     <strong>GeoPackageLoader</strong>
     <span>Loads one selected GeoPackage vector table.</span>
-    <span className="docs-api-card__meta">Output: GeoJSONTable, ArrowTable</span>
+    <span className="docs-api-card__meta">Output: GeoJSONTable, Apache Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/geospatial/geopackage/api-reference/geopackage-source">
     <span className="docs-api-card__kind">Source</span>
     <strong>GeoPackageSource</strong>
     <span>Exposes GeoPackage table metadata and one-table Arrow reads.</span>
-    <span className="docs-api-card__meta">Output: ArrowTable</span>
+    <span className="docs-api-card__meta">Output: Apache Arrow table</span>
     <span className="docs-api-card__meta">APIs: createDataSource, getMetadata, getTable</span>
   </a>
 </div>
@@ -81,4 +81,4 @@ GeoPackage stores geospatial data in a SQLite database with OGC-defined metadata
 
 ## Arrow
 
-Set `geopackage.shape: 'arrow-table'` and specify `geopackage.table` to load one vector table as an Arrow table with a WKB `geometry` column.
+Set `geopackage.shape: 'arrow'` and specify `geopackage.table` to load one vector table as an Arrow table with a WKB `geometry` column.

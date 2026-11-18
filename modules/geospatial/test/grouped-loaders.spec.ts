@@ -15,18 +15,18 @@ import {
   FlatGeobufLoader,
   GeoPackageLoader
 } from '@loaders.gl/geospatial';
-import {KMLLoaderWithParser} from '@loaders.gl/geospatial/kml-loader';
+import {KMLLoaderWithParser} from '@loaders.gl/geospatial/kml';
 import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
 import {GPXLoaderWithParser} from '@loaders.gl/geospatial/gpx';
 import {TCXLoaderWithParser} from '@loaders.gl/geospatial/tcx';
-import {ShapefileLoaderWithParser} from '@loaders.gl/geospatial/shapefile-loader';
+import {ShapefileLoaderWithParser} from '@loaders.gl/geospatial/shapefile';
 import {SHPLoaderWithParser} from '@loaders.gl/geospatial/shp';
 import {DBFLoaderWithParser} from '@loaders.gl/geospatial/dbf';
 import {KMLLoader as FormatKMLLoader} from '@loaders.gl/geospatial/kml';
 import {ShapefileLoader as FormatShapefileLoader} from '@loaders.gl/geospatial/shapefile';
-import {FlatGeobufLoaderWithParser} from '@loaders.gl/geospatial/flatgeobuf-loader';
+import {FlatGeobufLoaderWithParser} from '@loaders.gl/geospatial/flatgeobuf';
 import {FlatGeobufLoader as FormatFlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
-import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage-loader';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
 import {GeoPackageLoader as FormatGeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 
 test.each([
@@ -56,7 +56,7 @@ test('core parses KML using group metadata', async () => {
   const text =
     '<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><name>A</name><Point><coordinates>1,2</coordinates></Point></Placemark></kml>';
   const result = await parse(new TextEncoder().encode(text).buffer, KMLLoader, {
-    worker: false,
+    core: {worker: false},
     kml: {shape: 'geojson-table'}
   });
   expect(result).toMatchObject({
@@ -75,13 +75,11 @@ test('format geopackage metadata shares its grouped owner', () => {
 
 test('grouped source entry points preserve format source APIs', async () => {
   const [flatgeobuf, formatFlatgeobuf, geopackage, formatGeopackage] = await Promise.all([
-    import('@loaders.gl/geospatial/flatgeobuf-source-loader'),
     import('@loaders.gl/geospatial/flatgeobuf'),
-    import('@loaders.gl/geospatial/geopackage-source-loader'),
+    import('@loaders.gl/geospatial/flatgeobuf'),
+    import('@loaders.gl/geospatial/geopackage'),
     import('@loaders.gl/geospatial/geopackage')
   ]);
-  expect(flatgeobuf.FlatGeobufSourceLoader).toBe(formatFlatgeobuf.FlatGeobufSourceLoader);
   expect(flatgeobuf.FlatGeobufVectorSource).toBe(formatFlatgeobuf.FlatGeobufVectorSource);
-  expect(geopackage.GeoPackageSource).toBe(formatGeopackage.GeoPackageSource);
   expect(geopackage.GeoPackageDataSource).toBe(formatGeopackage.GeoPackageDataSource);
 });

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import {explainArrowTableQuery, queryArrowTable, type ArrowQueryOptions} from './query-arrow-table';
 import {type SQLPredicate} from './sql-predicate-types';
 import type {TableQueryExplain} from '@loaders.gl/core/loader-utils';
@@ -15,11 +15,11 @@ export type ScanBackend = Readonly<{
   /** Stable backend name reported by the engine. */
   name: ScanBackendName;
   /** Executes a query over one in-memory Arrow table. */
-  query(sourceTable: ArrowTable, options?: ArrowQueryOptions): ArrowTable;
+  query(sourceTable: Table, options?: ArrowQueryOptions): Table;
   /** Optional asynchronous execution hook for backends that compile or schedule work. */
-  queryAsync?: (sourceTable: ArrowTable, options?: ArrowQueryOptions) => Promise<ArrowTable>;
+  queryAsync?: (sourceTable: Table, options?: ArrowQueryOptions) => Promise<Table>;
   /** Explains a query without evaluating table rows. */
-  explain(sourceTable: ArrowTable, options?: ArrowQueryOptions): TableQueryExplain<SQLPredicate>;
+  explain(sourceTable: Table, options?: ArrowQueryOptions): TableQueryExplain<SQLPredicate>;
 }>;
 
 /** Lazy loader used to register an optional scan backend. */
@@ -34,7 +34,7 @@ export type ScanEngineOptions = Readonly<{
 /** Stable application-facing scan engine returned by {@link createScanEngine}. */
 export type ScanEngine = ScanBackend & {
   /** Executes a query asynchronously, allowing backends to schedule remote or compiled work. */
-  queryAsync: (sourceTable: ArrowTable, options?: ArrowQueryOptions) => Promise<ArrowTable>;
+  queryAsync: (sourceTable: Table, options?: ArrowQueryOptions) => Promise<Table>;
 };
 
 const scanBackends = new Map<ScanBackendName, ScanBackend | ScanBackendLoader>();
@@ -90,7 +90,7 @@ export async function createScanEngine(options: ScanEngineOptions = {}): Promise
   const explain = backend.explain.bind(backend);
   const queryAsync = backend.queryAsync
     ? backend.queryAsync.bind(backend)
-    : async (sourceTable: ArrowTable, queryOptions?: ArrowQueryOptions) =>
+    : async (sourceTable: Table, queryOptions?: ArrowQueryOptions) =>
         backend.query.call(backend, sourceTable, queryOptions);
   return Object.freeze({...backend, query, explain, queryAsync});
 }

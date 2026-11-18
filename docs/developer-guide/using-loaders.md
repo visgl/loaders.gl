@@ -195,7 +195,7 @@ load(url, Loader, {
 
 Use `options.core.shape` when you want one shared default return shape across loaders that support shape selection. Loader-scoped options such as `options.csv.shape` or `options.json.shape` still take precedence for that loader. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
-The deprecated top-level forms (`options.fetch`, `options.worker`, `options.nothrow`, `options.shape`, ...) are still supported for backwards compatibility and will continue to emit a warning so that applications can migrate at their own pace. The intent is to make the structure of loader options self-describing by grouping cross-loader settings together under `core`.
+
 
 ## Using Composite Loaders
 
@@ -274,5 +274,5 @@ Prepared dependency graphs run locally because their function-valued bindings ca
 transferred to a worker. `core.worker` is forced to `false` in nested calls as well,
 even when parse-time options request workers. Use the original metadata loader for normal
 worker dispatch.
-`createDataSource()` remains synchronous; preload a source first when its dependencies must
+`createDataSourceSync()` requires a loaded implementation. Preload a source first when its dependencies must
 be available before source creation.

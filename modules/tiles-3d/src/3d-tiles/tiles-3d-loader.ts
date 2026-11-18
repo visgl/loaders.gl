@@ -65,7 +65,10 @@ export const Tiles3DLoader = {
   /** Named glTF dependencies that core preload() prepares before tile streaming. */
   subloaders: {GLTFLoader, GLBLoader},
   /** Loads the parser-bearing 3D Tiles loader implementation. */
-  preload: async () => (await import('./tiles-3d-loader-with-parser')).Tiles3DLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./tiles-3d-loader-with-parser');
+    return loaderModule.Tiles3DLoaderWithParser;
+  },
   serializeWorkerResult: serialize3DTilesWorkerResult,
   deserializeWorkerResult: result => deserialize3DTilesWorkerResult(result, Tiles3DLoader),
   options: {

@@ -27,7 +27,8 @@ module.exports = function createNodePolyfillsPlugin(_context, options = {}) {
           buffer: require.resolve('buffer/'),
           console: require.resolve('console-browserify'),
           constants: require.resolve('constants-browserify'),
-          crypto: require.resolve('crypto-browserify'),
+          // Node crypto is not supported in the browser; use Web Crypto where needed.
+          crypto: false,
           domain: require.resolve('domain-browser'),
           events: require.resolve('events/'),
           http: require.resolve('stream-http'),

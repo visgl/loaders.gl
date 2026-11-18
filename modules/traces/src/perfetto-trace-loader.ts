@@ -8,7 +8,7 @@ import {
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type * as arrow from 'apache-arrow';
 
 import {
@@ -37,7 +37,15 @@ export const PerfettoTraceLoaderWithParser = {
     parsePerfettoTrace(new Uint8Array(arrayBuffer), options?.perfettoTrace),
   parseSync: (arrayBuffer: ArrayBuffer, options?: PerfettoTraceLoaderOptions) =>
     parsePerfettoTrace(new Uint8Array(arrayBuffer), options?.perfettoTrace),
-  parseInBatches: parsePerfettoTraceInBatches
+  parseInBatches: (
+    iterator: Parameters<typeof parsePerfettoTraceInBatches>[0],
+    options?: PerfettoTraceLoaderOptions
+  ) =>
+    paceBatchIterator(parsePerfettoTraceInBatches(iterator, options), {
+      batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+      getRowCount: batch => (batch.table === 'slices' ? batch.data.numRows : undefined),
+      signal: options?.signal
+    })
 } as const satisfies LoaderWithParser<
   PerfettoTrace,
   PerfettoTraceBatch,

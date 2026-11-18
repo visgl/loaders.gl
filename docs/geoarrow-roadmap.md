@@ -53,7 +53,7 @@ them because the GeoArrow collection member union cannot recursively contain Geo
 - `@loaders.gl/core/geoarrow` owns conversion, layout inspection, validation, bounds, coordinate
   iteration, canonicalization, and metadata operations.
 - `@loaders.gl/tables/parquet` owns GeoParquet I/O and remains independent of GeoArrow processing code.
-- `@loaders.gl/tables/arrow/transport` owns worker transfer and sliced-buffer isolation.
+- `@math.gl/core/arrow` owns worker transfer and sliced-buffer isolation.
 
 These boundaries are part of the foundation review. Moving more code between packages requires a
 measured bundle or ownership benefit, not just conceptual neatness.
@@ -121,7 +121,7 @@ pass before changing loader contracts.
 
 ### Tranche 4: Deliberate loader adoption and stabilization
 
-Adopt GeoArrow-compliant `arrow-table` output one loader at a time without changing established
+Adopt GeoArrow-compliant native Arrow output one loader at a time without changing established
 default return values. Each adoption needs a compatibility review, focused integration tests, and a
 bundle-cost check. Finish with documentation, performance baselines, migration guidance where
 needed, and the Gate D release decision.

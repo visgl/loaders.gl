@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['MapLibre Tile', 'Binary geometry', 'Feature tables']}
   links={[
     {label: 'MLT module', to: '/docs/modules/tiles/mlt'},
-    {label: 'MLT source', to: '/docs/modules/tiles/mlt/api-reference/mlt-source-loader'}
+    {label: 'MLT source', to: '/docs/modules/tiles/mlt/api-reference/mlt-source'}
   ]}
 />
 
@@ -26,7 +26,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 | Type | API |
 | --- | --- |
 | Loader | [`MLTLoader`](../api-reference/mlt-loader.md) |
-| Source loader | [`MLTSourceLoader`](../api-reference/mlt-source-loader.md) |
+| Source loader | [`MLTLoader`](../api-reference/mlt-source.md) |
 | Writer | [`MLTWriter`](../api-reference/mlt-writer.md) |
 
 <TileDocsTabs active="mlt" />
@@ -47,7 +47,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 - _[MapLibre Tile format](https://github.com/maplibre/mlt)_
 - _[@loaders.gl/tiles/mlt](/docs/modules/tiles/mlt)_
 - _[MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-loader)_
-- _[MLTSourceLoader](/docs/modules/tiles/mlt/api-reference/mlt-source-loader)_
+- _[MLTLoader](/docs/modules/tiles/mlt/api-reference/mlt-source)_
 - _[MLT example](/examples/tiles/mlt)_
 
 A MapLibre Tile (MLT) file is a binary geospatial tile format used by vector tile services and tooling.
@@ -163,7 +163,7 @@ contain a logical type that the current JavaScript decoder or Arrow adapter cann
 
 ## Arrow output choices
 
-Arrow output uses `mlt.shape: 'arrow-table'`, which is the default. The default geometry column is
+Arrow output uses `mlt.shape: 'arrow'`, which is the default. The default geometry column is
 WKB-compatible GeoArrow.
 Applications can request native GeoArrow with `geoarrow.encodingPreference`:
 

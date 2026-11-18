@@ -3,20 +3,20 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderWithParser,
   LoaderOptions,
   LoaderContext,
-  LoaderOptionsWithShape,
   SyncDataType,
-  LoaderOptionsType,
-  LoaderShapeType,
   LoaderReturnType,
-  LoaderArrayOptionsType,
   LoaderArrayReturnType,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import {isSourceLoader} from '@loaders.gl/core/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -30,31 +30,45 @@ import {getLoaderImplementationSync} from './load-loader';
 /**
  * Parses `data` synchronously using the specified loader
  */
+export function parseSync<LoaderT extends Loader>(
+  data: SyncDataType,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): LoaderReturnType<LoaderT>;
+
 export function parseSync<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   data: SyncDataType,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): LoaderReturnType<LoaderT>;
+): LoaderReturnType<LoaderT, OptionsT>;
 
 /**
  * Parses `data` synchronously by matching one of the supplied loaders
  */
+export function parseSync<LoaderArrayT extends Loader[]>(
+  data: SyncDataType,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): LoaderArrayReturnType<LoaderArrayT>;
+
 export function parseSync<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   data: SyncDataType,
   loaders: LoaderArrayT,
   options?: OptionsT,
   context?: LoaderContext
-): LoaderArrayReturnType<LoaderArrayT>;
+): LoaderArrayReturnType<LoaderArrayT, OptionsT>;
 
 /**
  * Parses `data` synchronously by matching a pre=registered loader
@@ -89,12 +103,6 @@ export function parseSync(
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;
-  }
-
-  if (isSourceLoader(loader)) {
-    throw new Error(
-      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parseSync().`
-    );
   }
 
   // Normalize options
@@ -141,6 +149,12 @@ function parseWithLoaderSync(
   if (loader.preload) {
     throw new Error(
       `${loader.name} loader: 'parseSync' requires a parser-bearing loader. Import the loader implementation directly, or call preload(loader) before parseSync(). ${context.url || ''}`
+    );
+  }
+
+  if (loader.createDataSourceSync) {
+    throw new Error(
+      `${loader.id} has no synchronous parser. Use createDataSource() to open a source.`
     );
   }
 

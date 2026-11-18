@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {PotreeNodesSource} from '../../src/potree/lib/potree-node-source';
 import {projectionEngine} from '@math.gl/geospatial/projection';
@@ -97,7 +98,7 @@ test('Potree source normalizes tile content and rejects incomplete meshes', asyn
   });
   const content = await source.loadTileContent({id: 'r'});
   expect(content).toMatchObject({pointCount: 1, coordinateSystem: 'cartesian'});
-  expect(content?.data.shape).toBe('arrow-table');
+  expect(content!.data.numRows).toBe(content!.pointCount);
 });
 
 test('Potree source covers loader fallbacks, failures, and color usability', async () => {
@@ -133,7 +134,7 @@ test('Potree source covers loader fallbacks, failures, and color usability', asy
       [0, 0, 0],
       [1, 1, 1]
     ])
-  ).toEqual({las: {colorDepth: 'auto', colorFormat: 'uint8norm'}});
+  ).toEqual({las: {shape: 'mesh', colorDepth: 'auto', colorFormat: 'uint8norm'}});
 
   const sourceWithLoadOptions = createSource();
   sourceWithLoadOptions.metadata = {version: '1.7', pointAttributes: 'LAZ'};
@@ -145,7 +146,7 @@ test('Potree source covers loader fallbacks, failures, and color usability', asy
     ])
   ).toMatchObject({
     core: {worker: false},
-    las: {colorDepth: 'auto', colorFormat: 'uint8norm'}
+    las: {shape: 'mesh', colorDepth: 'auto', colorFormat: 'uint8norm'}
   });
 });
 
@@ -243,7 +244,7 @@ test('Potree scan filters source bounds and streams scalar and vector columns in
     batches.push(batch);
   }
   expect(batches).toHaveLength(2);
-  expect(batches.flatMap(batch => Array.from(batch.data.getChild('INTENSITY')))).toEqual([10, 20]);
+  expect(batches.flatMap(batch => Array.from(batch.getChild('INTENSITY')))).toEqual([10, 20]);
 
   await expect(async () => {
     for await (const _batch of source.scan({batchSize: 0})) {
@@ -315,9 +316,11 @@ test('Potree bounds, URL layouts, loader options, and mesh normalization cover a
   expect(mesh.attributes.colors).toBe(mesh.attributes.COLOR_0);
 
   const table = source.getPointCloudTileTable(mesh);
-  expect(table.data.numRows).toBe(1);
-  expect(table.data.getChild('COLOR_0')).toBeTruthy();
-  expect(table.data.getChild('NORMAL')).toBeTruthy();
+  expect(table.schema.metadata.get('topology')).toBe('point-list');
+  expect(table.schema.metadata.has('mode')).toBe(false);
+  expect(table.numRows).toBe(1);
+  expect(table.getChild('COLOR_0')).toBeTruthy();
+  expect(table.getChild('NORMAL')).toBeTruthy();
 });
 
 test('Potree projects hierarchy bounds and normalizes native mesh offsets', async () => {
@@ -398,7 +401,7 @@ test('Potree initializes a tiny inline hierarchy and loads normalized node conte
   expect((await source.getChildren(root)).map(tile => tile.id)).toEqual(['r0']);
   const content = await source.loadTileContent({id: 'r0'});
   expect(content).toMatchObject({pointCount: 1, coordinateSystem: 'meter-offsets'});
-  expect(Array.from(content!.data.data.getChild('POSITION')!.get(0).toArray())).toEqual([-1, 0, 1]);
+  expect(Array.from(content!.data.getChild('POSITION')!.get(0).toArray())).toEqual([-1, 0, 1]);
   expect(load.mock.calls.map(([url]) => url)).toEqual([
     'https://example.test/cloud/cloud.js',
     'https://example.test/cloud/data/r0.bin'
@@ -487,9 +490,9 @@ test('Potree scans LAS scalar coordinates from projected offsets and skips unava
   }))
     batches.push(batch);
   expect(batches).toHaveLength(1);
-  expect(Array.from(batches[0].data.getChild('X')!)).toEqual([3]);
-  expect(Array.from(batches[0].data.getChild('Y')!)).toEqual([3]);
-  expect(Array.from(batches[0].data.getChild('Z')!)).toEqual([3]);
+  expect(Array.from(batches[0].getChild('X')!)).toEqual([3]);
+  expect(Array.from(batches[0].getChild('Y')!)).toEqual([3]);
+  expect(Array.from(batches[0].getChild('Z')!)).toEqual([3]);
   expect(source.loadNodeContent.mock.calls.map(([name]: [string]) => name)).toEqual(['', '0']);
 });
 
@@ -524,14 +527,14 @@ test('Potree scans skip meshes without decoded positions', async () => {
   const batches = [];
   for await (const batch of source.scan({columns: ['INTENSITY']})) batches.push(batch);
   expect(batches).toHaveLength(1);
-  expect(batches[0].data.numRows).toBe(1);
-  expect(batches[0].data.getChild('INTENSITY')!.get(0)).toBe(10);
+  expect(batches[0].numRows).toBe(1);
+  expect(batches[0].getChild('INTENSITY')!.get(0)).toBe(10);
 });
 
 test('Potree child-bound warnings are deduplicated and leave source bounds intact', () => {
   const source = createSource();
   source.hierarchyBoundingBox = BOUNDS;
-  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const warn = vi.spyOn(loaderLog, 'warn').mockReturnValue(() => {});
   try {
     source.warnIfInvalidChildBounds('r0', {...BOUNDS, lx: -1});
     source.warnIfInvalidChildBounds('r0', {...BOUNDS, lx: -1});

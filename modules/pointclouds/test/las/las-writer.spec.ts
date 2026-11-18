@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/pointclouds/las-copc-loader';
+import {LASCOPCLoaderWithParser as LASCOPCLoader} from '../../../../website/src/alternate-loaders/las/las-copc-loader';
 import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {LASLoader, LASWriter, type LASExtraBytesWriter} from '@loaders.gl/pointclouds/las';
@@ -32,7 +32,7 @@ test('LASWriter#encode plain and Arrow mesh data', async () => {
   validateMeshCategoryData(data);
   expect(data.mode, 'mode is POINTS (0)').toBe(0);
   expect(data.attributes.POSITION.value.length, 'POSITION attribute roundtripped').toBe(9);
-  const arrowTable = convertMeshToTable(mesh, 'arrow-table');
+  const arrowTable = await parse(arrayBuffer, LASLoader, {core: {worker: false}});
   const arrowArrayBuffer = await encode(arrowTable, LASWriter);
   const arrowData = await parse(arrowArrayBuffer, LASLoader, {
     las: {shape: 'mesh'},

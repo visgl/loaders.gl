@@ -7,7 +7,6 @@ import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
 import {
-  COORDINATE_SYSTEM,
   FirstPersonView,
   type FirstPersonViewState,
   LinearInterpolator,
@@ -21,6 +20,7 @@ import {SidebarPanelWidget} from '@deck.gl-community/widgets';
 import {load} from '@loaders.gl/core';
 import {getDeckBinaryDataFromArrowMesh, getBoundingBoxFromArrowPositions} from '@loaders.gl/core/geoarrow';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import type {Table as ArrowTable} from 'apache-arrow';
 import {DracoArrowLoader} from '@loaders.gl/scene';
 import {LASArrowLoader} from '@loaders.gl/pointclouds/las';
 import {OBJArrowLoader} from '@loaders.gl/scene/obj';
@@ -119,7 +119,7 @@ export default function App(props: AppProps = {}) {
     state.pointData &&
       new PointCloudLayer({
         id: `point-cloud-layer-${state.selectedExampleName ?? 'arrow-example'}`,
-        coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+        coordinateSystem: 'cartesian',
         data: state.pointData,
         getNormal: [0, 1, 0],
         getColor: [200, 200, 255],
@@ -136,7 +136,9 @@ export default function App(props: AppProps = {}) {
         id: 'pointcloud-arrow-example-sidebar',
         placement: 'top-right',
         side: 'right',
-        widthPx: 420,
+        widthPx: Math.min(420, window.innerWidth - 100, window.innerHeight - 100),
+        button: true,
+        defaultOpen: !window.matchMedia('(max-width: 996px) and (pointer: coarse)').matches,
         panel: new ColumnPanel({
           id: 'pointcloud-arrow-example-panel',
           title: '',
@@ -243,18 +245,18 @@ export default function App(props: AppProps = {}) {
     }));
 
     try {
-      const arrowTable = await load(example.url, POINT_CLOUD_LOADERS as any);
-      const pointCloud = convertTableToMesh(arrowTable as any) as any;
-      const {schema, header, loaderData, attributes} = pointCloud;
+      const arrowTable = (await load(example.url, POINT_CLOUD_LOADERS as any)) as ArrowTable;
+      const pointCloud = convertTableToMesh(arrowTable) as any;
+      const {schema, header, loaderData} = pointCloud;
 
       const viewState = getArrowViewState(
         state.viewState,
         state.controllerMode,
-        arrowTable as any,
+        arrowTable,
         loaderData
       );
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
-      const pointData = getDeckBinaryDataFromArrowMesh((arrowTable as any).data);
+      const pointData = getDeckBinaryDataFromArrowMesh(arrowTable);
 
       setState((currentState) => ({
         ...currentState,
@@ -438,13 +440,13 @@ function getViewStateForControllerMode(
 function getArrowViewState(
   previousViewState: OrbitViewState | FirstPersonViewState,
   controllerMode: ControllerMode,
-  arrowTable: any,
+  arrowTable: ArrowTable,
   loaderData: any
 ) {
   const [mins, maxs] =
     loaderData?.header?.mins && loaderData?.header?.maxs
       ? [loaderData.header.mins, loaderData.header.maxs]
-      : getBoundingBoxFromArrowPositions(arrowTable.data.getChild('POSITION'));
+      : getBoundingBoxFromArrowPositions(arrowTable.getChild('POSITION')!);
   const center =
     getFiniteVector([(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2]) ||
     INITIAL_VIEW_STATE.target;

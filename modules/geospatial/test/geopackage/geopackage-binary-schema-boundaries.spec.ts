@@ -104,9 +104,9 @@ test('GeoPackage geometry distinguishes absent and explicitly empty binary value
   const table = getGeoPackageGeoJSONTable(database, VECTOR_TABLE, {}, PARSE_OPTIONS);
   expect(table.features.map(feature => feature.geometry)).toEqual([null, null]);
   const arrowTable = getGeoPackageArrowTable(database, VECTOR_TABLE, {}, PARSE_OPTIONS);
-  expect(arrowTable.data.numRows).toBe(2);
-  expect(arrowTable.data.getChild('geometry')!.get(0)).toBeNull();
-  expect(arrowTable.data.getChild('geometry')!.get(1)).toBeNull();
+  expect(arrowTable.numRows).toBe(2);
+  expect(arrowTable.getChild('geometry')!.get(0)).toBeNull();
+  expect(arrowTable.getChild('geometry')!.get(1)).toBeNull();
   const reprojected = getGeoPackageGeoJSONTable(
     database,
     {...VECTOR_TABLE, srsId: 4326},
@@ -170,7 +170,7 @@ test('GeoPackage empty feature results retain schema and tolerate missing type a
     ['custom', 'utf8', true],
     ['count', 'int32', false]
   ]);
-  expect(getGeoPackageArrowTable(database, VECTOR_TABLE, {}, PARSE_OPTIONS).data.numRows).toBe(0);
+  expect(getGeoPackageArrowTable(database, VECTOR_TABLE, {}, PARSE_OPTIONS).numRows).toBe(0);
 });
 
 test('GeoPackage schemas preserve authority and object CRS metadata and unknown geometry types', () => {

@@ -308,9 +308,7 @@ test('multi-feature strip retains visible ownership and first-corner rows for de
   for await (const resource of source.read(await base.inspect())) {
     resources.push(resource);
     expect(resource.features!.triangleFeatureIndices).toEqual(new Uint32Array([0, 0, 0, 0, 1, 1]));
-    expect(resource.features!.batches[0].data.getChild('source_id')!.get(0)).toBe(
-      '9007199254740993'
-    );
+    expect(resource.features!.batches[0].getChild('source_id')!.get(0)).toBe('9007199254740993');
   }
   expect(resources).toHaveLength(1);
   const output = encodeI3SMeshLayer(resources[0].mesh, {

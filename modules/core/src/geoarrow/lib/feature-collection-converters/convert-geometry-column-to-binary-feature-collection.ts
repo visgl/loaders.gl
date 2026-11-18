@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type * as arrow from 'apache-arrow';
+import {isArrowTable} from '@math.gl/core/arrow';
 import type {
   BinaryFeatureCollection,
   BinaryPointFeature,
@@ -218,7 +219,7 @@ export function convertGeometryColumnToBinaryFeatureCollection(
   table: Table | arrow.Table,
   options: TableGeometryColumnToBinaryFeatureCollectionOptions
 ): BinaryFeatureCollection {
-  if (isArrowTableLike(table)) {
+  if (isArrowTable(table)) {
     const geoArrowBinaryFeatures = convertGeoArrowColumnToBinaryFeatureCollection(table, options);
     if (geoArrowBinaryFeatures) {
       return geoArrowBinaryFeatures;
@@ -238,7 +239,7 @@ function getGeometryValuesFromTable(
   table: Table | arrow.Table,
   geometryColumn: string
 ): ArrayLike<GeometryValue> {
-  if (isArrowTableLike(table)) {
+  if (isArrowTable(table)) {
     const geometryValues = table.getChild(geometryColumn);
     if (!geometryValues) {
       throw new Error(`Could not find geometry column "${geometryColumn}".`);
@@ -255,7 +256,7 @@ function getPropertyResolver(
   table: Table | arrow.Table,
   geometryColumn: string
 ): (rowIndex: number) => Record<string, unknown> {
-  if (isArrowTableLike(table)) {
+  if (isArrowTable(table)) {
     const columnNames = table.schema.fields
       .map(field => field.name)
       .filter(fieldName => fieldName !== geometryColumn);
@@ -275,14 +276,6 @@ function getPropertyResolver(
     const {[geometryColumn]: _geometry, ...properties} = row;
     return properties;
   };
-}
-
-function isArrowTableLike(table: Table | arrow.Table): table is arrow.Table {
-  return Boolean(
-    table &&
-      typeof (table as arrow.Table).getChild === 'function' &&
-      (table as arrow.Table).schema?.fields
-  );
 }
 
 /** Converts a typed GeoArrow column to binary features without decoding through GeoJSON. */
@@ -1475,7 +1468,10 @@ function triangulatePolygons(polygons: BinaryPolygonFeature): Uint32Array | null
       const polygonTriangles = earcut(
         polygonPositions,
         holeIndices.length > 0 ? holeIndices : undefined,
-        polygons.positions.size
+        polygons.positions.size,
+        undefined,
+        'xy',
+        {triangulation: 'balanced'}
       );
       if (polygonTriangles.length === 0) {
         throw new Error('earcut failed e.g. invalid polygon');

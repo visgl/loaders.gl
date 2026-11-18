@@ -15,7 +15,7 @@ import {
 import {
   loadLegacyLAZFixture,
   type LegacyLAZFixture
-} from '../../../core/test/loader-utils-package/lib/laz/legacy-laz-fixtures';
+} from '../../../core/test/loader-utils/lib/laz/legacy-laz-fixtures';
 
 let fixtures: LegacyLAZFixture[];
 beforeAll(async () => {
@@ -68,16 +68,18 @@ test.each([
 ] as const)('LASLoader parses %s into the same columns as uncompressed LAS', async (_label, fixtureIndex) => {
   const fixture = fixtures[fixtureIndex];
   const expected = convertTableToMesh(
-    parseLAS(createUncompressedFile(fixture), options)
+    parseLAS(createUncompressedFile(fixture), options).data
   ).attributes;
-  const actual = convertTableToMesh(parseLAS(fixture.compressedFile.buffer, options)).attributes;
+  const actual = convertTableToMesh(
+    parseLAS(fixture.compressedFile.buffer, options).data
+  ).attributes;
   expect(actual).toEqual(expected);
   const streamedAttributes: Record<string, number[]> = {};
   for await (const batch of parseLASInBatches(splitInput(fixture.compressedFile), {
     ...options,
-    batchSize: 37
+    core: {batchSize: 37}
   })) {
-    for (const [name, attribute] of Object.entries(convertTableToMesh(batch).attributes)) {
+    for (const [name, attribute] of Object.entries(convertTableToMesh(batch.data).attributes)) {
       streamedAttributes[name] ??= [];
       streamedAttributes[name].push(...attribute.value);
     }
@@ -92,7 +94,7 @@ test('LASLoader public entrypoint supports legacy pointwise mesh output', async 
     las: {shape: 'mesh'},
     core: {worker: false}
   })) as LASMesh;
-  const expected = convertTableToMesh(parseLAS(createUncompressedFile(fixture)));
+  const expected = convertTableToMesh(parseLAS(createUncompressedFile(fixture)).data);
   expect(actual.attributes).toEqual(expected.attributes);
 });
 
@@ -107,7 +109,7 @@ test('pointwise raw streaming emits before EOF and preserves every reference byt
   const actual = new Uint8Array(fixture.rawPointData.byteLength);
   let byteOffset = 0;
   let emittedBeforeEnd = false;
-  for await (const batch of decodeLAZFileInBatches(readInput(), {batchSize: 37})) {
+  for await (const batch of decodeLAZFileInBatches(readInput(), {core: {batchSize: 37}})) {
     emittedBeforeEnd = emittedBeforeEnd || !inputComplete;
     const bytes = new Uint8Array(batch.arrayBuffer);
     actual.set(bytes, byteOffset);
@@ -123,7 +125,7 @@ test('pointwise streams reject truncation and invalid codec declarations', async
   const truncated = fixture.compressedFile.slice(0, -100);
   expect(() => parseLAS(truncated.buffer)).toThrow(/needs more compressed data/);
   await expect(async () => {
-    for await (const _batch of parseLASInBatches(splitInput(truncated), {batchSize: 37})) {
+    for await (const _batch of parseLASInBatches(splitInput(truncated), {core: {batchSize: 37}})) {
       /* Consume the iterator to verify final-input errors. */
     }
   }).rejects.toThrow(/needs more compressed data|truncated/);

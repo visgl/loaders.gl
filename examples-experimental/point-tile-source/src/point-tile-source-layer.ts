@@ -1,5 +1,5 @@
 import {Tile3DLayer, Tile3DLayerProps} from '@deck.gl/geo-layers';
-import {Viewport, UpdateParameters, COORDINATE_SYSTEM, Layer, LayersList} from '@deck.gl/core';
+import {Viewport, UpdateParameters, Layer, LayersList} from '@deck.gl/core';
 import {Source} from '@loaders.gl/core/loader-utils';
 import {PointCloudLayer} from '@deck.gl/layers';
 import {PointCloudTile, PointCloudTileset} from '@loaders.gl/tiles';
@@ -40,7 +40,7 @@ export class PointTileSourceLayer<
   }
 
   private async _loadTileset(tilesetUrl) {
-    const dataSource = this.props.source.createDataSource(tilesetUrl, {});
+    const dataSource = this.props.source.createDataSourceSync(tilesetUrl, {});
 
     const tileset3d = new PointCloudTileset(dataSource);
 
@@ -88,7 +88,7 @@ export class PointTileSourceLayer<
       constantRGBA,
       cartographicOrigin,
       modelMatrix,
-      coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS
+      coordinateSystem = 'meter-offsets'
     } = tileHeader.content;
     const {positions, normals, colors} = attributes;
 

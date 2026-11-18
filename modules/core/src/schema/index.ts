@@ -62,7 +62,6 @@ export type {
   ObjectRowTable,
   GeoJSONTable,
   ColumnarTable,
-  ArrowTable,
   Tables
 } from './categories/category-table';
 export type {
@@ -70,8 +69,7 @@ export type {
   ArrayRowTableBatch,
   ObjectRowTableBatch,
   GeoJSONTableBatch,
-  ColumnarTableBatch,
-  ArrowTableBatch
+  ColumnarTableBatch
 } from './categories/category-table';
 
 // MESH CATEGORY
@@ -92,8 +90,6 @@ export type {
   MeshTopology
 } from './categories/category-mesh';
 export {meshArrowSchema, indexedMeshArrowSchema} from './categories/category-mesh';
-/** @deprecated Import `getMeshBoundingBox` from `@loaders.gl/core/schema-utils`. */
-export {getMeshBoundingBox} from './deprecated/mesh-utils';
 // TEXTURES
 export type {
   TextureMetadata,
@@ -167,3 +163,6 @@ export type {
   ArrowBinaryFeatureCollection,
   BinaryFeatureCollectionLike
 } from './categories/category-gis';
+
+/** @deprecated Compatibility export for deck.gl 10.0.0-alpha.1. Use schema-utils. */
+export {getMeshBoundingBox} from '../schema-utils/lib/mesh/get-mesh-bounding-box';

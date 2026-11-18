@@ -104,6 +104,7 @@ test('point cloud parser normalizes quantized positions, RGB565, and oct normals
   expect(tile.isQuantized).toBe(false);
   expect(Array.from(tile.attributes.positions)).toEqual([1, 12.000152587890625, 33]);
   expect(Array.from(tile.attributes.colors.value)).toEqual([255, 255, 255]);
+  expect(tile.attributes.normals).toEqual({value: expect.any(Float32Array), size: 3});
   expect(tile.attributes.normals.value).toHaveLength(3);
   expect(tile.attributes.normals.value.every(Number.isFinite)).toBe(true);
   expect(tile.isRGB565).toBe(true);
@@ -126,7 +127,7 @@ test('point cloud parser retains quantized accessors when CPU decoding is disabl
   );
 
   expect(tile.isQuantized).toBe(true);
-  expect(tile.attributes.positions).toMatchObject({size: 3, normalized: true});
+  expect(tile.attributes.positions).toEqual({value: new Uint16Array(3), size: 3, normalized: true});
   expect(tile.attributes.colors).toMatchObject({size: 3, normalized: true});
 });
 

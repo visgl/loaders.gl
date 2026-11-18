@@ -25,7 +25,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Read STL as data."
   description="Surface triangles; units remain application-defined"
   tone="violet"
-  items={[{"label":"Input","value":"ASCII and little-endian binary"},{"label":"Output","value":"Mesh with float32 positions and facet normals"},{"label":"Loader","value":"STLLoader · @loaders.gl/scene"},{"label":"Parser","value":"@loaders.gl/scene/stl-loader"}]}
+  items={[{"label":"Input","value":"ASCII and little-endian binary"},{"label":"Output","value":"Mesh with float32 positions and facet normals"},{"label":"Loader","value":"STLLoader · @loaders.gl/scene"},{"label":"Parser","value":"@loaders.gl/scene/stl"}]}
 />
 
 :::note Availability
@@ -86,7 +86,7 @@ Malformed facets, truncated binary payloads, trailing bytes that disagree with t
 
 ```typescript
 import {parseSync} from '@loaders.gl/core';
-import {STLLoaderWithParser} from '@loaders.gl/scene/stl-loader';
+import {STLLoaderWithParser} from '@loaders.gl/scene/stl';
 
 const mesh = parseSync(bytes, STLLoaderWithParser);
 ```

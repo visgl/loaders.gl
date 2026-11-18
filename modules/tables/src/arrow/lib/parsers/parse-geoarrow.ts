@@ -2,41 +2,30 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  GeoJSONTable,
-  GeoJSONTableBatch,
-  ArrowTable,
-  ArrowTableBatch
-} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {GeoJSONTable} from '@loaders.gl/core/schema';
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
+import type {GeoArrowLoaderOptions} from '../../geoarrow-loader-types';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
 
-// Parses arrow to a columnar table
+/** Decodes Arrow IPC and materializes GeoJSON only when requested. */
 export function parseGeoArrowSync(
-  arrayBuffer,
-  options?: {shape?: 'arrow-table' | 'geojson-table' | 'binary-geometry'}
-): ArrowTable | GeoJSONTable {
-  // | BinaryGeometry
-  const table = parseArrowSync(arrayBuffer, {shape: 'arrow-table'}) as ArrowTable;
-  switch (options?.shape) {
-    case 'geojson-table': {
-      if (!table.schema) {
-        throw new Error('Arrow table is missing its schema');
-      }
-      return convertGeoArrowTableToGeoJSON(table.data, table.schema);
-    }
-    default:
-      return table;
-  }
+  input: ArrayBuffer,
+  options?: GeoArrowLoaderOptions['arrow']
+): Table | GeoJSONTable {
+  const table = parseArrowSync(input);
+  return options?.shape === 'geojson-table'
+    ? convertGeoArrowTableToGeoJSON(table, convertArrowToSchema(table.schema))
+    : table;
 }
 
-/**
- */
+/** Streams native record batches with geometry extension metadata. */
 export function parseGeoArrowInBatches(
-  asyncIterator:
+  input:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-    | Iterable<ArrayBufferLike | ArrayBufferView>
-): AsyncIterable<ArrowTableBatch | GeoJSONTableBatch> {
-  // | BinaryGeometry
-  return parseArrowInBatches(asyncIterator);
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: GeoArrowLoaderOptions
+): AsyncIterable<RecordBatch> {
+  return parseArrowInBatches(input, {core: options?.core, signal: options?.signal});
 }

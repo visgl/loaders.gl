@@ -5,14 +5,9 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {deflateSync, zlibSync} from 'fflate';
-import {SnappyCompression} from '@loaders.gl/compression/snappy-compression';
+import {SnappyCompressor} from '@loaders.gl/compression/snappy-compressor';
 import {ORCLoaderWithParser} from '../../src/orc/orc-loader';
-import {
-  createORCSchema,
-  getORCDataType,
-  ORCSource,
-  ORCSourceLoaderWithParser
-} from '../../src/orc/orc-source-loader';
+import {createORCSchema, getORCDataType, ORCSource} from '../../src/orc/orc-source';
 import {ORCTypeKind} from '../../src/orc/lib/parsers/parse-orc';
 import {ORCWriter} from '../../src/orc/orc-writer';
 import {encodeORC} from '../../src/orc/lib/encoders/encode-orc';
@@ -22,10 +17,7 @@ import {
 } from '../../src/orc/lib/parsers/orc-compression';
 
 test('ORCSource exposes footer metadata and shared projection/limit reads', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
-  };
+  const input = arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']});
   const encoded = await ORCWriter.encode(input);
   const source = new ORCSource(new Blob([encoded]));
 
@@ -36,20 +28,20 @@ test('ORCSource exposes footer metadata and shared projection/limit reads', asyn
   expect(metadata.statistics?.rowCount).toBe(4);
 
   const result = await source.query({columns: ['name'], limit: 1});
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name']);
-  expect(result.data.getChild('name')?.toArray()).toEqual(['a']);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['name']);
+  expect(result.getChild('name')?.toArray()).toEqual(['a']);
 
   const defaultQuery = await source.query({limit: 2});
-  expect(defaultQuery.data.numRows).toBe(2);
+  expect(defaultQuery.numRows).toBe(2);
   const batches = source.read({limit: 1});
   const batch = await batches[Symbol.asyncIterator]().next();
-  expect(batch.value?.length).toBe(1);
+  expect(batch.value?.numRows).toBe(1);
 });
 
 test('ORC source loader exposes explicit parser entry points', () => {
-  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
-  expect(ORCSourceLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
-  expect(ORCSourceLoaderWithParser.createDataSource(new Blob())).toBeInstanceOf(ORCSource);
+  expect(ORCLoaderWithParser.testURL('https://example.com/file.orc')).toBe(true);
+  expect(ORCLoaderWithParser.testURL('https://example.com/file.txt')).toBe(false);
+  expect(ORCLoaderWithParser.createDataSourceSync(new Blob())).toBeInstanceOf(ORCSource);
 });
 
 test('ORC metadata preserves nested map and struct types', () => {
@@ -84,33 +76,24 @@ test.each([
 });
 
 test('ORCSource applies residual predicates with three-valued semantics', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']})
-  };
+  const input = arrow.tableFromArrays({name: ['a', 'b', 'a', 'b']});
   const encoded = await ORCWriter.encode(input);
   const source = new ORCSource(new Blob([encoded]));
   const result = await source.query({
     predicate: {op: '=', args: [{property: 'name'}, 'a']}
   });
-  expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'a']);
+  expect(result.getChild('name')?.toArray()).toEqual(['a', 'a']);
 });
 
 test('ORCSource validates query limits before decoding rows', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a', 'b']})
-  };
+  const input = arrow.tableFromArrays({name: ['a', 'b']});
   const encoded = await ORCWriter.encode(input);
   const source = new ORCSource(new Blob([encoded]));
   await expect(source.query({limit: -1})).rejects.toThrow('non-negative safe integer');
 });
 
 test('ORCSource clears failed URL fetches so a retry can succeed', async () => {
-  const input = {
-    shape: 'arrow-table' as const,
-    data: arrow.tableFromArrays({name: ['a']})
-  };
+  const input = arrow.tableFromArrays({name: ['a']});
   const encoded = await ORCWriter.encode(input);
   let attempts = 0;
   const source = new ORCSource('https://example.com/data.orc', {
@@ -204,9 +187,8 @@ test('ORCLoader#parse decodes dictionary-encoded string columns', async () => {
   bytes[bytes.length - 1] = postscript.length;
 
   const result = await ORCLoaderWithParser.parse(bytes.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table')
-    expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'bb', 'a']);
+
+  expect(result.getChild('name')?.toArray()).toEqual(['a', 'bb', 'a']);
 });
 
 test('ORC compression decodes framed ZLIB chunks', async () => {
@@ -238,7 +220,7 @@ test('ORC compression decodes framed raw DEFLATE chunks', async () => {
 test('ORC compression decodes framed Snappy chunks', async () => {
   await preloadORCCompression('SNAPPY');
   const input = new TextEncoder().encode('orc-snappy');
-  const encoder = new SnappyCompression();
+  const encoder = new SnappyCompressor();
   await encoder.preload();
   const compressed = new Uint8Array(encoder.compressSync(input.buffer));
   const header = compressed.length << 1;
@@ -251,31 +233,25 @@ test('ORC compression decodes framed Snappy chunks', async () => {
 });
 
 test('ORCWriter#encode writes dictionary-encoded repeated strings', async () => {
-  const output = await ORCWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({name: ['a', 'bb', 'a', 'bb']})
-  });
+  const output = await ORCWriter.encode(arrow.tableFromArrays({name: ['a', 'bb', 'a', 'bb']}));
   const result = await ORCLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table')
-    expect(result.data.getChild('name')?.toArray()).toEqual(['a', 'bb', 'a', 'bb']);
+
+  expect(result.getChild('name')?.toArray()).toEqual(['a', 'bb', 'a', 'bb']);
 });
 
 test('ORCWriter#encode writes dictionary-encoded repeated binary values', async () => {
-  const output = await ORCWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({
+  const output = await ORCWriter.encode(
+    arrow.tableFromArrays({
       payload: arrow.vectorFromArray(
         [new Uint8Array([1, 2]), new Uint8Array([1, 2])],
         new arrow.Binary()
       )
     })
-  });
+  );
   const result = await ORCLoaderWithParser.parse(output);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
+  {
     expect(
-      result.data
+      result
         .getChild('payload')
         ?.toArray()
         .map(value => Array.from(value as Uint8Array))
@@ -346,20 +322,18 @@ test('ORC writer round-trips primitive columns, nulls, and multiple stripes', as
 
   const encoded = encodeORC(table, {orc: {stripeSize: 2}});
   const result = await ORCLoaderWithParser.parse(encoded);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape !== 'arrow-table') return;
-  expect(result.data.numRows).toBe(3);
-  expect(getColumnValues(result.data, 'enabled')).toEqual([true, false, null]);
-  expect(getColumnValues(result.data, 'tiny')).toEqual([-2, 3, null]);
-  expect(getColumnValues(result.data, 'small')).toEqual([300, -400, null]);
-  expect(getColumnValues(result.data, 'count')).toEqual([-50_000, 75_000, null]);
-  expect(getColumnValues(result.data, 'large')).toEqual([123_456, -654_321, null]);
-  expect(getColumnValues(result.data, 'ratio')).toEqual([1.25, -3.5, null]);
-  expect(getColumnValues(result.data, 'score')).toEqual([-2.5, 4.75, null]);
-  expect(getColumnValues(result.data, 'day')).toEqual([20_000, 20_001, null]);
-  expect(getColumnValues(result.data, 'label')).toEqual(['repeat', 'repeat', null]);
+  expect(result.numRows).toBe(3);
+  expect(getColumnValues(result, 'enabled')).toEqual([true, false, null]);
+  expect(getColumnValues(result, 'tiny')).toEqual([-2, 3, null]);
+  expect(getColumnValues(result, 'small')).toEqual([300, -400, null]);
+  expect(getColumnValues(result, 'count')).toEqual([-50_000, 75_000, null]);
+  expect(getColumnValues(result, 'large')).toEqual([123_456, -654_321, null]);
+  expect(getColumnValues(result, 'ratio')).toEqual([1.25, -3.5, null]);
+  expect(getColumnValues(result, 'score')).toEqual([-2.5, 4.75, null]);
+  expect(getColumnValues(result, 'day')).toEqual([20_000, 20_001, null]);
+  expect(getColumnValues(result, 'label')).toEqual(['repeat', 'repeat', null]);
   expect(
-    result.data
+    result
       .getChild('payload')
       ?.toArray()
       .slice(0, 2)
@@ -374,19 +348,17 @@ test('ORC writer supports columnar and explicitly typed empty tables', async () 
     data: {value: [1, 2, 3]}
   } as any;
   const columnarResult = await ORCLoaderWithParser.parse(encodeORC(columnar));
-  expect(columnarResult.shape).toBe('arrow-table');
-  if (columnarResult.shape === 'arrow-table') {
-    expect(Array.from(columnarResult.data.getChild('value')?.toArray() || [])).toEqual([1, 2, 3]);
+  {
+    expect(Array.from(columnarResult.getChild('value')?.toArray() || [])).toEqual([1, 2, 3]);
   }
 
   const empty = encodeORC({shape: 'object-row-table', data: []} as any, {
     orc: {schema: [{name: 'name', type: 'string'}]}
   });
   const emptyResult = await ORCLoaderWithParser.parse(empty);
-  expect(emptyResult.shape).toBe('arrow-table');
-  if (emptyResult.shape === 'arrow-table') {
-    expect(emptyResult.data.numRows).toBe(0);
-    expect(emptyResult.data.schema.fields[0].name).toBe('name');
+  {
+    expect(emptyResult.numRows).toBe(0);
+    expect(emptyResult.schema.fields[0].name).toBe('name');
   }
 });
 
@@ -421,20 +393,18 @@ test('ORCLoader#parse decodes nested primitive Arrow types in one stripe', async
   });
 
   const result = await ORCLoaderWithParser.parse(fixture.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape !== 'arrow-table') return;
-  expect(getColumnValues(result.data, 'count')).toEqual([7, 7, 7]);
-  expect(getColumnValues(result.data, 'ratio')).toEqual([1.5, -2.5, 3.25]);
-  expect(getColumnValues(result.data, 'score')).toEqual([10.5, -20.25, 30.75]);
+  expect(getColumnValues(result, 'count')).toEqual([7, 7, 7]);
+  expect(getColumnValues(result, 'ratio')).toEqual([1.5, -2.5, 3.25]);
+  expect(getColumnValues(result, 'score')).toEqual([10.5, -20.25, 30.75]);
   expect(
-    result.data
+    result
       .getChild('text')
       ?.toArray()
       .map(value => Array.from(value as Uint8Array))
   ).toEqual([[97], [98], [99]]);
-  expect(Array.from(result.data.getChild('field_4')?.get(0)?.toArray() || [])).toEqual([9, 9]);
-  expect(Array.from(result.data.getChild('field_4')?.get(1)?.toArray() || [])).toEqual([9, 10]);
-  expect(Array.from(result.data.getChild('field_4')?.get(2)?.toArray() || [])).toEqual([10, 10]);
+  expect(Array.from(result.getChild('field_4')?.get(0)?.toArray() || [])).toEqual([9, 9]);
+  expect(Array.from(result.getChild('field_4')?.get(1)?.toArray() || [])).toEqual([9, 10]);
+  expect(Array.from(result.getChild('field_4')?.get(2)?.toArray() || [])).toEqual([10, 10]);
 });
 
 test('ORC writer rejects invalid shapes, stripe sizes, and unsupported types', () => {
@@ -509,9 +479,8 @@ test('ORCLoader#parse decodes patched-base RLEv2 integers', async () => {
   bytes[bytes.length - 1] = postscript.length;
 
   const result = await ORCLoaderWithParser.parse(bytes.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    const values = result.data.getChild('id')?.toArray();
+  {
+    const values = result.getChild('id')?.toArray();
     expect(Array.from(values || [])).toEqual([100, 101, 102, 1000]);
   }
 });
@@ -528,9 +497,8 @@ test.each([
     encodingKinds: [0, 2]
   });
   const result = await ORCLoaderWithParser.parse(fixture.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    expect(getColumnValues(result.data, 'value')).toEqual(expected);
+  {
+    expect(getColumnValues(result, 'value')).toEqual(expected);
   }
 });
 
@@ -649,9 +617,8 @@ test('ORCLoader#parse reconstructs LIST child streams', async () => {
   bytes[bytes.length - 1] = postscript.length;
 
   const result = await ORCLoaderWithParser.parse(bytes.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    const items = result.data.getChild('items');
+  {
+    const items = result.getChild('items');
     expect(items?.get(0)?.length).toBe(2);
     expect(items?.get(0)?.get(0)).toBe(10);
     expect(items?.get(0)?.get(1)).toBe(11);
@@ -671,9 +638,8 @@ test('ORCLoader#parse reconstructs nested STRUCT and MAP columns', async () => {
     ]
   });
   const structResult = await ORCLoaderWithParser.parse(nestedStruct.buffer);
-  expect(structResult.shape).toBe('arrow-table');
-  if (structResult.shape === 'arrow-table') {
-    expect(structResult.data.getChild('nested')?.get(0)?.toJSON()).toEqual({value: 42});
+  {
+    expect(structResult.getChild('nested')?.get(0)?.toJSON()).toEqual({value: 42});
   }
 
   const map = buildORCFixture({
@@ -692,10 +658,9 @@ test('ORCLoader#parse reconstructs nested STRUCT and MAP columns', async () => {
     ]
   });
   const mapResult = await ORCLoaderWithParser.parse(map.buffer);
-  expect(mapResult.shape).toBe('arrow-table');
-  if (mapResult.shape === 'arrow-table') {
-    expect(mapResult.data.numRows).toBe(1);
-    expect(mapResult.data.getChild('mapping')?.get(0)).toBeTruthy();
+  {
+    expect(mapResult.numRows).toBe(1);
+    expect(mapResult.getChild('mapping')?.get(0)).toBeTruthy();
   }
 });
 
@@ -709,9 +674,8 @@ test('ORCLoader#parse reconstructs boolean lists including empty lists', async (
     types: [{kind: 12, subtypes: [1], fieldNames: ['flags']}, {kind: 10, subtypes: [2]}, {kind: 0}]
   });
   const result = await ORCLoaderWithParser.parse(fixture.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table') {
-    const flags = result.data.getChild('flags');
+  {
+    const flags = result.getChild('flags');
     expect(flags?.get(0)?.toArray()).toEqual([true, false]);
     expect(flags?.get(1)?.length).toBe(0);
     expect(flags?.get(2)?.toArray()).toEqual([true]);
@@ -726,17 +690,15 @@ test('ORCLoader#parse reconstructs boolean lists including empty lists', async (
     types: [{kind: 12, subtypes: [1], fieldNames: ['enabled']}, {kind: 0}]
   });
   const nullableResult = await ORCLoaderWithParser.parse(nullableFixture.buffer);
-  expect(nullableResult.shape).toBe('arrow-table');
-  if (nullableResult.shape === 'arrow-table') {
-    expect(getColumnValues(nullableResult.data, 'enabled')).toEqual([true, null, true]);
+  {
+    expect(getColumnValues(nullableResult, 'enabled')).toEqual([true, null, true]);
   }
 });
 
 test('ORCLoader#parse validates root, stream, and container structure', async () => {
   const emptyNonStruct = buildORCFixture({rowCount: 0, streams: [], types: [{kind: 3}]});
   const emptyResult = await ORCLoaderWithParser.parse(emptyNonStruct.buffer);
-  expect(emptyResult.shape).toBe('arrow-table');
-  if (emptyResult.shape === 'arrow-table') expect(emptyResult.data.numCols).toBe(0);
+  expect(emptyResult.numCols).toBe(0);
 
   await expect(
     ORCLoaderWithParser.parse(
@@ -803,9 +765,8 @@ test('ORCLoader#parse validates root, stream, and container structure', async ()
       types: [{kind: 12, subtypes: [1], fieldNames: ['value']}, {kind: 3}]
     }).buffer
   );
-  expect(allNull.shape).toBe('arrow-table');
-  if (allNull.shape === 'arrow-table') {
-    expect(getColumnValues(allNull.data, 'value')).toEqual([null, null, null]);
+  {
+    expect(getColumnValues(allNull, 'value')).toEqual([null, null, null]);
   }
 
   const missingNestedChild = await ORCLoaderWithParser.parse(
@@ -818,9 +779,8 @@ test('ORCLoader#parse validates root, stream, and container structure', async ()
       ]
     }).buffer
   );
-  expect(missingNestedChild.shape).toBe('arrow-table');
-  if (missingNestedChild.shape === 'arrow-table') {
-    expect(missingNestedChild.data.getChild('nested')?.get(0)?.toJSON()).toEqual({});
+  {
+    expect(missingNestedChild.getChild('nested')?.get(0)?.toJSON()).toEqual({});
   }
 });
 
@@ -838,7 +798,7 @@ test.each([
     encodingKinds: [0, Number(encoding)]
   });
   const result = await ORCLoaderWithParser.parse(fixture.buffer);
-  expect(getColumnValues((result as any).data, 'value')).toEqual(expected);
+  expect(getColumnValues(result, 'value')).toEqual(expected);
 });
 
 test.each([
@@ -870,9 +830,9 @@ test('ORC decodes byte-RLE presence and supports legacy raw presence bits', asyn
       types: [{kind: 12, subtypes: [1], fieldNames: ['flag']}, {kind: 0}]
     });
   const result = await ORCLoaderWithParser.parse(build([0, 0xff]).buffer);
-  expect(getColumnValues((result as any).data, 'flag')).toEqual(new Array(17).fill(true));
+  expect(getColumnValues(result, 'flag')).toEqual(new Array(17).fill(true));
   const rawPresence = await ORCLoaderWithParser.parse(build([0]).buffer);
-  expect(getColumnValues((rawPresence as any).data, 'flag')).toEqual(new Array(17).fill(null));
+  expect(getColumnValues(rawPresence, 'flag')).toEqual(new Array(17).fill(null));
 });
 
 test.each([
@@ -888,7 +848,7 @@ test.each([
     encodingKinds: [0, 2]
   });
   const result = await ORCLoaderWithParser.parse(fixture.buffer);
-  expect(getColumnValues((result as any).data, 'value')).toEqual(expected);
+  expect(getColumnValues(result, 'value')).toEqual(expected);
 });
 
 /** Concatenates small fixture stream payloads. */
@@ -1032,9 +992,8 @@ test('ORCLoader parses an LZO-compressed file including its footer and stripe st
     compression: frameLzoTestChunk
   });
   const result = await ORCLoaderWithParser.parse(fixture.buffer);
-  expect(result.shape).toBe('arrow-table');
-  if (result.shape === 'arrow-table')
-    expect(getColumnValues(result.data, 'value')).toEqual([7, 7, 7]);
+
+  expect(getColumnValues(result, 'value')).toEqual([7, 7, 7]);
   expect(() =>
     decompressORCStream(frameLzoTestChunk(new Uint8Array([1, 2, 3])), 'LZO', 2)
   ).toThrow();

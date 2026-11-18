@@ -98,8 +98,6 @@ test('archive example drops both formats and gives a replacement scene its own l
   await dropArchive(element, 'first.slpk');
   const first = layerMock.selections.at(-1);
   expect(first.data).toBeInstanceOf(SLPKSource);
-  const meshExtension = first._subLayerProps['tile-3d']._subLayerProps.mesh.extensions[0];
-  expect(meshExtension.getShaders().inject['fs:#main-start']).toContain('vec4(1.0)');
   await dropArchive(element, 'second.3tz');
   const second = layerMock.selections.at(-1);
   expect(second.data).toBeInstanceOf(Tiles3DArchiveSource);

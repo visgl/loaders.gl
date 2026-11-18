@@ -10,7 +10,7 @@ import {
   loadInBatches,
   selectLoader
 } from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 import {projectionEngine} from '@math.gl/geospatial/projection';
 
 const SHAPEFILE_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
@@ -35,8 +35,7 @@ test('ShapefileLoader#loads browser File objects', async () => {
   const files = await getFixtureFiles(fixtureName);
   const fileSystem = new BrowserFileSystem(files);
   const table = await load(`${fixtureName}.shp`, ShapefileLoader, {
-    core: {worker: false},
-    fetch: fileSystem.fetch,
+    core: {worker: false, fetch: fileSystem.fetch},
     shapefile: {shape: 'v3'}
   });
 
@@ -78,7 +77,7 @@ test('ShapefileLoader#reprojects points', async () => {
 
 test.each([
   'v3',
-  'arrow-table'
+  'arrow'
 ] as const)('ShapefileLoader#rejects %s reprojection without a .prj sidecar', async shape => {
   const response = await fetchFile(`${SHAPEFILE_DATA_FOLDER}/points.shp`);
   const arrayBuffer = await response.arrayBuffer();

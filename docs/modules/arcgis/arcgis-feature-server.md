@@ -63,8 +63,12 @@ Have a portal item instead of a service URL? Use the [item explorer and sign-in 
 />
 
 ArcGIS FeatureServer endpoints expose queryable vector feature layers through the ArcGIS REST API.
-`ArcGISFeatureServerSourceLoader` adapts a service or layer endpoint to the loaders.gl
+`ArcGISFeatureServerLoader` adapts a service or layer endpoint to the loaders.gl
 `VectorSource` contract.
+
+| Property | Value |
+| --- | --- |
+| Data source | `ArcGISVectorSource` |
 
 ## Feature support
 
@@ -107,12 +111,12 @@ common client-side query contract after the service has returned the bounded fea
 ## Create and query a source
 
 ```ts
-import {load} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {createDataSource} from '@loaders.gl/core';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
-const source = await load(
+const source = await createDataSource(
   'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
-  [ArcGISFeatureServerSourceLoader]
+  [ArcGISFeatureServerLoader]
 );
 
 const metadata = await source.getMetadata();
@@ -129,7 +133,7 @@ projected GeoJSON output produce actionable errors.
 When the URL points to the FeatureServer root, `layers` chooses the layer used for the query:
 
 ```ts
-const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader]);
+const source = await createDataSource(featureServerUrl, [ArcGISFeatureServerLoader]);
 const trails = await source.getFeatures({layers: ['3']});
 ```
 
@@ -171,7 +175,7 @@ ArcGIS query defaults live under `arcgis-feature-server`. Per-request viewport a
 combined with these parameters.
 
 ```ts
-const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader], {
+const source = await createDataSource(featureServerUrl, [ArcGISFeatureServerLoader], {
   'arcgis-feature-server': {
     queryParameters: {
       where: 'status = 1',

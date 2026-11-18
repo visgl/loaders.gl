@@ -7,10 +7,10 @@ import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load} from '@loaders.gl/core';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
-import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
-import * as kml from '@loaders.gl/geospatial/kml/index';
+import {KMLLoader} from '@loaders.gl/geospatial/kml';
+import * as kml from '@loaders.gl/geospatial/kml';
 import * as bundledKml from '@loaders.gl/geospatial/kml/bundled';
-import * as unbundledKml from '@loaders.gl/geospatial/kml/unbundled';
+import * as unbundledKml from '@loaders.gl/geospatial/kml';
 import type {Feature, Geometry} from '@loaders.gl/core/schema';
 const KML_URL = '@loaders.gl/geospatial/kml/test/data/kml/KML_Samples.kml';
 const KML_LINESTRING_URL = '@loaders.gl/geospatial/kml/test/data/kml/linestring';
@@ -22,12 +22,11 @@ test('KMLLoader#removed Arrow loader exports', () => {
   expect('KMLArrowLoader' in bundledKml, 'bundled does not export KMLArrowLoader').toBeFalsy();
   expect('KMLArrowLoader' in unbundledKml, 'unbundled does not export KMLArrowLoader').toBeFalsy();
 });
-test('KMLLoader#load sample infers mixed geometry metadata with shape: arrow-table', async () => {
-  const arrowTable = await load(KML_URL, KMLLoader, {kml: {shape: 'arrow-table'}});
-  const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
+test('KMLLoader#load sample infers mixed geometry metadata with shape: arrow', async () => {
+  const arrowTable = await load(KML_URL, KMLLoader, {kml: {shape: 'arrow'}});
+  const geoMetadata = getGeoMetadata(Object.fromEntries(arrowTable.schema.metadata));
   const expectedFeatures = await loadKMLFeatures(KML_URL);
-  expect(arrowTable.shape, 'shape is arrow-table').toBe('arrow-table');
-  expect(arrowTable.data.numRows, 'Arrow row count matches KML feature count').toBe(
+  expect(arrowTable.numRows, 'Arrow row count matches KML feature count').toBe(
     expectedFeatures.length
   );
   expect(geoMetadata?.primary_column, 'geo metadata primary column is set').toBe('geometry');
@@ -37,11 +36,11 @@ test('KMLLoader#load sample infers mixed geometry metadata with shape: arrow-tab
     'geo metadata geometry types match mixed KML feature types'
   ).toEqual(inferExpectedGeometryTypes(expectedFeatures));
 });
-test('KMLLoader#load fixture matches expected GeoJSON with shape: arrow-table', async () => {
+test('KMLLoader#load fixture matches expected GeoJSON with shape: arrow', async () => {
   const arrowTable = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {
-    kml: {shape: 'arrow-table'}
+    kml: {shape: 'arrow'}
   });
-  const roundTripped = convertGeoArrowTableToGeoJSON(arrowTable.data, arrowTable.schema!);
+  const roundTripped = convertGeoArrowTableToGeoJSON(arrowTable);
   const response = await fetchFile(`${KML_LINESTRING_URL}.geojson`);
   const expected = await response.json();
   expect(roundTripped.features, 'Arrow linestring matches expected GeoJSON').toEqual(

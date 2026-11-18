@@ -2,10 +2,23 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {
+  RecordBatch,
+  type Table as ArrowTable,
+  type RecordBatch as ArrowTableBatch
+} from 'apache-arrow';
+
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
+import {
+  convertSchemaToArrow,
+  makeArrowMetadataBatch,
+  convertArrowToSchema,
+  updateNativeArrowTableMetadata
+} from '@loaders.gl/core/schema-utils';
+import {getGeoMetadata, setGeoMetadata, type Schema} from '@loaders.gl/core/schema';
+import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {
-  ArrowTable,
-  ArrowTableBatch,
   BinaryFeatureCollection,
   Feature,
   GeoJSONTable,
@@ -13,18 +26,22 @@ import type {
   TableBatch
 } from '@loaders.gl/core/schema';
 import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/core/arrow-geometry/legacy-binary';
-import {type LegacyGeoJSONCRS} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {
-  deserializeArrowWorkerResult,
-  serializeArrowWorkerResult
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+  applyLegacyGeoJSONCRSToSchema,
+  type LegacyGeoJSONCRS
+} from '@loaders.gl/core/arrow-geometry/feature-table';
+import {
+  serializeGeoJSONWorkerResult,
+  deserializeGeoJSONWorkerResult
+} from './lib/geojson-worker-transport';
+import {serializeJSONWorkerOptions} from './lib/json-worker-transport';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {
   convertGeoJSONFeaturesToArrowTable,
   normalizeJSONArrowSchema
 } from './lib/parsers/convert-row-table-to-arrow';
 import {
-  GeoJSONWorkerLoader as GeoJSONWorkerLoaderMetadata,
+  GeoJSONLoader as GeoJSONWorkerLoaderMetadata,
   GeoJSONLoader as GeoJSONLoaderMetadata,
   type GeoJSONLoaderOptions
 } from './geojson-loader-types';
@@ -36,8 +53,8 @@ const {preload: _GeoJSONLoaderPreload, ...GeoJSONLoaderMetadataWithoutPreload} =
 
 /** GeoJSON worker loader with parser metadata. */
 export const GeoJSONWorkerLoaderWithParser = {
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
+  serializeWorkerResult: serializeGeoJSONWorkerResult,
+  deserializeWorkerResult: deserializeGeoJSONWorkerResult,
   ...GeoJSONWorkerLoaderMetadataWithoutPreload
 } as const satisfies Loader<
   GeoJSONTable | BinaryFeatureCollection | ArrowTable,
@@ -47,14 +64,15 @@ export const GeoJSONWorkerLoaderWithParser = {
 
 /** GeoJSON loader with synchronous, asynchronous and batched parse support. */
 export const GeoJSONLoaderWithParser = {
-  serializeWorkerResult: serializeArrowWorkerResult,
-  deserializeWorkerResult: deserializeArrowWorkerResult,
+  serializeWorkerOptions: serializeJSONWorkerOptions,
+  serializeWorkerResult: serializeGeoJSONWorkerResult,
+  deserializeWorkerResult: deserializeGeoJSONWorkerResult,
   ...GeoJSONLoaderMetadataWithoutPreload,
   parse,
   parseTextSync,
   parseInBatches,
-  serializeWorkerBatch: serializeArrowWorkerResult,
-  deserializeWorkerBatch: deserializeArrowWorkerResult
+  serializeWorkerBatch: serializeGeoJSONWorkerResult,
+  deserializeWorkerBatch: deserializeGeoJSONWorkerResult
 } as const satisfies LoaderWithParser<
   GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   TableBatch | ArrowTableBatch,
@@ -90,15 +108,18 @@ function parseTextSync(
   switch (options.geojson?.shape) {
     case 'binary-feature-collection':
       return geojsonToBinary(table.features);
-    case 'arrow-table':
-      return convertGeoJSONFeaturesToArrowTable(table.features, {
-        schema: options.json?.schema,
-        arrowConversion: options.json?.arrowConversion,
-        geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
-        geoarrow: options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow,
-        crs: getGeoJSONCRS(geojson),
-        log: getGeoJSONLoaderLog(options)
-      });
+    case 'arrow':
+      return updateNativeArrowTableMetadata(
+        convertGeoJSONFeaturesToArrowTable(table.features, {
+          schema: options.json?.schema,
+          arrowConversion: options.json?.arrowConversion,
+          geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+          geoarrow: options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow,
+          crs: getGeoJSONCRS(geojson),
+          log: getLoaderLog(options)
+        }),
+        getJSONContainerMetadata(geojson, '$.features')
+      );
     default:
       return table;
   }
@@ -116,17 +137,16 @@ function parseInBatches(
   options.geojson = {...GeoJSONLoaderWithParser.options.geojson, ...options.geojson};
   validateGeoJSONArrowOptions(options);
 
-  const emitMetadataBatches = getGeoJSONLoaderMetadata(options);
   const geojsonIterator = parseJSONInBatches(
     asyncIterator,
-    getRowBatchJSONOptions(options, options.geojson?.shape === 'arrow-table')
+    getRowBatchJSONOptions(options, options.geojson?.shape === 'arrow')
   );
 
   switch (options.geojson?.shape) {
     case 'binary-feature-collection':
       return makeBinaryGeometryIterator(geojsonIterator);
-    case 'arrow-table':
-      return makeGeoJSONArrowBatchIterator(geojsonIterator, options, emitMetadataBatches);
+    case 'arrow':
+      return makeGeoJSONArrowBatchIterator(geojsonIterator, options);
     default:
       return geojsonIterator as AsyncIterable<TableBatch>;
   }
@@ -162,35 +182,65 @@ async function* makeBinaryGeometryIterator(
 /** Converts streamed GeoJSON feature batches to GeoArrow WKB Arrow table batches. */
 async function* makeGeoJSONArrowBatchIterator(
   geojsonIterator: AsyncIterable<any>,
-  options: GeoJSONLoaderOptions,
-  emitMetadataBatches: boolean
+  options: GeoJSONLoaderOptions
 ): AsyncIterable<TableBatch | ArrowTableBatch> {
   let frozenSchema = options.json?.schema ? normalizeJSONArrowSchema(options.json.schema) : null;
   let crs: LegacyGeoJSONCRS | null = null;
+  let containerMetadata: Record<string, string> = {};
+  let emittedSchema: Schema | undefined;
+  const configuredGeoArrowOptions =
+    options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow;
+  const configuredPreference = configuredGeoArrowOptions?.encodingPreference;
+  const streamingPreference =
+    configuredPreference && configuredPreference !== 'geoarrow.wkb'
+      ? 'geoarrow.geometry'
+      : configuredPreference;
 
   for await (const batch of geojsonIterator) {
     if (batch.batchType !== 'data') {
-      crs ||= getGeoJSONCRS(batch.container);
-      if (emitMetadataBatches) {
-        yield batch;
+      crs = getGeoJSONCRS(batch.container) || crs;
+      containerMetadata = {
+        ...containerMetadata,
+        ...getJSONContainerMetadata(batch.container, '$.features')
+      };
+      if (batch.batchType === 'final-result') {
+        const schema = emittedSchema
+          ? structuredClone(emittedSchema)
+          : convertArrowToSchema(
+              convertGeoJSONFeaturesToArrowTable([], {
+                schema: frozenSchema || undefined,
+                arrowConversion: options.json?.arrowConversion,
+                geoarrowGeometryColumn: options.json?.geoarrowGeometryColumn,
+                geoarrow: streamingPreference
+                  ? {encodingPreference: streamingPreference}
+                  : configuredGeoArrowOptions,
+                crs,
+                log: getLoaderLog(options)
+              }).schema
+            );
+        applyLegacyGeoJSONCRSToSchema(
+          schema,
+          options.json?.geoarrowGeometryColumn || 'geometry',
+          crs
+        );
+        schema.metadata = {...schema.metadata, ...containerMetadata};
+        if (JSON.stringify(schema) !== JSON.stringify(emittedSchema)) {
+          const finalBatch = makeArrowMetadataBatch(convertSchemaToArrow(schema));
+          const metadata = new Map(finalBatch.metadata);
+          if (batch.jsonpath) metadata.set('jsonpath', String(batch.jsonpath));
+          yield new RecordBatch(finalBatch.schema, finalBatch.data, metadata);
+        }
       }
       continue;
     }
 
     if (batch.shape !== 'object-row-table') {
       throw new Error(
-        `GeoJSONLoader: arrow-table shape requires object-row-table feature batches, got ${batch.shape}`
+        `GeoJSONLoader: arrow shape requires object-row-table feature batches, got ${batch.shape}`
       );
     }
 
     const featureBatch = batch as ObjectRowTable & TableBatch;
-    const configuredGeoArrowOptions =
-      options.geoarrow || options.geojson?.geoarrow || options.json?.geoarrow;
-    const configuredPreference = configuredGeoArrowOptions?.encodingPreference;
-    const streamingPreference =
-      configuredPreference && configuredPreference !== 'geoarrow.wkb'
-        ? 'geoarrow.geometry'
-        : configuredPreference;
     const arrowTable = convertGeoJSONFeaturesToArrowTable(featureBatch.data as Feature[], {
       schema: frozenSchema || undefined,
       arrowConversion: options.json?.arrowConversion,
@@ -199,20 +249,37 @@ async function* makeGeoJSONArrowBatchIterator(
         ? {encodingPreference: streamingPreference}
         : configuredGeoArrowOptions,
       crs,
-      log: getGeoJSONLoaderLog(options)
+      log: getLoaderLog(options)
     });
 
-    if (!frozenSchema && arrowTable.data.numRows > 0) {
-      frozenSchema = arrowTable.schema || null;
+    if (!frozenSchema && arrowTable.numRows > 0) {
+      frozenSchema = convertArrowToSchema(arrowTable.schema);
     }
 
-    yield {
-      ...batch,
-      shape: 'arrow-table',
-      schema: arrowTable.schema,
-      data: arrowTable.data,
-      length: arrowTable.data.numRows
-    };
+    const tableSchema = convertArrowToSchema(arrowTable.schema);
+    const geoMetadata = getGeoMetadata(tableSchema.metadata);
+    const previousGeoMetadata = getGeoMetadata(emittedSchema?.metadata);
+    if (geoMetadata && previousGeoMetadata) {
+      for (const [name, column] of Object.entries(geoMetadata.columns)) {
+        column.geometry_types = [
+          ...new Set([
+            ...(previousGeoMetadata.columns[name]?.geometry_types || []),
+            ...column.geometry_types
+          ])
+        ];
+      }
+      setGeoMetadata(tableSchema.metadata, geoMetadata);
+    }
+    const refinedTable = updateNativeArrowTableMetadata(arrowTable, {
+      ...tableSchema.metadata,
+      ...containerMetadata
+    });
+    emittedSchema = convertArrowToSchema(refinedTable.schema);
+    for (const recordBatch of refinedTable.batches) {
+      const metadata = new Map(recordBatch.metadata);
+      if (batch.jsonpath) metadata.set('jsonpath', String(batch.jsonpath));
+      yield new RecordBatch(recordBatch.schema, recordBatch.data, metadata);
+    }
   }
 }
 
@@ -243,26 +310,20 @@ function getGeoJSONCRS(geojson: unknown): LegacyGeoJSONCRS | null {
   return crs && typeof crs === 'object' && !Array.isArray(crs) ? (crs as LegacyGeoJSONCRS) : null;
 }
 
-/** Returns the loader log object from normalized or deprecated option locations. */
-function getGeoJSONLoaderLog(options: GeoJSONLoaderOptions): any {
-  return (options.core as {log?: any} | undefined)?.log || (options as {log?: any}).log;
-}
-
-/** Returns whether caller-visible metadata batches were requested. */
-function getGeoJSONLoaderMetadata(options: GeoJSONLoaderOptions): boolean {
-  return Boolean(
-    (options.core as {metadata?: boolean} | undefined)?.metadata || (options as any).metadata
-  );
-}
-
 /** Throws when GeoJSON Arrow-only options are used without Arrow output. */
 function validateGeoJSONArrowOptions(options: GeoJSONLoaderOptions): void {
+  if (
+    options.geojson?.shape &&
+    !['arrow', 'geojson-table', 'binary-feature-collection'].includes(options.geojson.shape)
+  ) {
+    throw new Error('This loader uses shape: "arrow" for native Arrow output');
+  }
   const hasArrowOnlyOptions = Boolean(
     options.json?.schema || options.json?.arrowConversion || options.json?.geoarrowGeometryColumn
   );
-  if (hasArrowOnlyOptions && options.geojson?.shape !== 'arrow-table') {
+  if (hasArrowOnlyOptions && options.geojson?.shape !== 'arrow') {
     throw new Error(
-      'GeoJSONLoader: json.schema, json.arrowConversion and json.geoarrowGeometryColumn require geojson.shape to be "arrow-table"'
+      'GeoJSONLoader: json.schema, json.arrowConversion and json.geoarrowGeometryColumn require geojson.shape to be "arrow"'
     );
   }
 }

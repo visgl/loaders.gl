@@ -249,7 +249,10 @@ export function getTriangleIndices(
       const triangleIndices = earcut(
         slicedFlatCoords,
         holeIndices.length > 0 ? holeIndices : undefined,
-        nDim
+        nDim,
+        undefined,
+        'xy',
+        {triangulation: 'balanced'}
       );
       if (triangleIndices.length === 0) {
         throw Error('earcut failed e.g. invalid polygon');

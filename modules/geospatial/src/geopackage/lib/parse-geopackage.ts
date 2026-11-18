@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
+import type {Table} from 'apache-arrow';
 import {CRSReprojectionError} from '@loaders.gl/core/loader-utils';
 import type {
-  ArrowTable,
   DataType,
   Feature,
   Field,
@@ -93,9 +93,9 @@ const DEFAULT_TABLE_MARKERS = new Set(['default', 'default table', 'main', 'prim
 export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<GeoJSONTable | ArrowTable> {
-  const shape = options?.geopackage?.shape || 'arrow-table';
-  if (shape === 'arrow-table') {
+): Promise<GeoJSONTable | Table> {
+  const shape = options?.geopackage?.shape || 'arrow';
+  if (shape === 'arrow') {
     return parseGeoPackageToArrow(arrayBuffer, options);
   }
 
@@ -124,7 +124,7 @@ export async function parseGeoPackage(
 export async function parseGeoPackageToArrow(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<ArrowTable> {
+): Promise<Table> {
   const database = await loadGeoPackageDatabase(
     arrayBuffer,
     options?.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
@@ -282,7 +282,7 @@ export function getGeoPackageArrowTable(
   vectorTable: GeoPackageVectorTableInfo,
   projections: ProjectionMapping,
   options: {reproject: boolean; targetCrs: ReadonlyCRSDefinition}
-): ArrowTable {
+): Table {
   const queryResult = database.exec(`SELECT * FROM \`${vectorTable.name}\`;`)[0];
   const columns = queryResult?.columns || [];
   const values = queryResult?.values || [];

@@ -25,8 +25,8 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 
 | Type | API |
 | --- | --- |
-| Source loader | [`ArcGISImageServerSourceLoader`](../api-reference/arcgis.md) |
-| Source loader | [`ArcGISImageTileSourceLoader`](../api-reference/arcgis.md) |
+| Source loader | [`ArcGISImageServerLoader`](../api-reference/arcgis.md) |
+| Source loader | [`ArcGISImageTileLoader`](../api-reference/arcgis.md) |
 
 <ArcGISDocsTabs service="arcgis-image-server" />
 
@@ -69,7 +69,7 @@ A server advertising a capability does not imply that this client implements it.
 | --- | --- | --- |
 | Viewport images | Supported | `getImage()` or `exportImage()` returns decoded imagery |
 | LERC rasters | Supported | `exportRaster()` returns typed bands, masks, dimensions and statistics |
-| Image tiles | Supported | `ArcGISImageTileSourceLoader` makes dynamic exports for tile bounds |
+| Image tiles | Supported | `ArcGISImageTileLoader` makes dynamic exports for tile bounds |
 | Native cached imagery tiles | Not implemented | This tile source does not consume `/tile` or cached elevation protocols |
 | Spatial references | Supported for viewport exports | `bboxSR` and `imageSR`; tile exports use Web Mercator |
 | Bands and pixel types | Supported | Selection/parameters forwarded; numerical types retained in LERC results |

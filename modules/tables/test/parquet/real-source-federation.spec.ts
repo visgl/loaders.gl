@@ -5,18 +5,18 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
-import {CSVTableSource} from '@loaders.gl/tables/csv/index';
-import {NDJSONTableSource} from '@loaders.gl/tables/json/index';
-import {DataSourceManager, type ScanExecutionTelemetry} from '@loaders.gl/core/loader-utils';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
+import {CSVTableSource} from '@loaders.gl/tables/csv';
+import {NDJSONTableSource} from '@loaders.gl/tables/json';
+import {DataSourceManager, type TableQueryExecutionSummary} from '@loaders.gl/core/loader-utils';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {DeltaTableSource} from '@loaders.gl/tables/delta';
 import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
-import {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+import {ParquetSource} from '@loaders.gl/tables/parquet';
 import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/core/scan';
 
-import {FederatedTableScanSource} from '@loaders.gl/core/scan';
+import {getFederatedTableBatchProvenance, FederatedTableScanSource} from '@loaders.gl/core/scan';
 
 const OUTPUT_SCHEMA: Schema = {
   fields: [
@@ -33,7 +33,7 @@ test('exposes table-format sources from their owning module', () => {
 });
 
 test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () => {
-  const parquetBytes = await ParquetJSWriter.encode({
+  const parquetBytes = await ParquetWriter.encode({
     shape: 'object-row-table',
     schema: OUTPUT_SCHEMA,
     data: [
@@ -98,17 +98,17 @@ test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () =>
 
   const provenance: string[] = [];
   const rows: Record<string, unknown>[] = [];
-  let telemetry: ScanExecutionTelemetry | undefined;
+  let telemetry: TableQueryExecutionSummary | undefined;
   for await (const batch of source.read({
     predicate: parseSQLPredicate('id >= 2'),
     columns: ['id', 'label'],
     limit: 7,
-    onTelemetry: value => {
+    onQueryComplete: value => {
       telemetry = value;
     }
   })) {
-    provenance.push(batch.sourceId);
-    rows.push(...batch.data.toArray().map(row => row.toJSON()));
+    provenance.push(getFederatedTableBatchProvenance(batch).sourceId);
+    rows.push(...batch.toArray().map(row => row.toJSON()));
   }
 
   expect(rows).toEqual([
@@ -137,7 +137,7 @@ test('federates actual CSV, NDJSON, Arrow IPC, and Parquet sources', async () =>
 });
 
 test('federates an actual Delta snapshot with another table source', async () => {
-  const parquetBytes = await ParquetJSWriter.encode({
+  const parquetBytes = await ParquetWriter.encode({
     shape: 'object-row-table',
     schema: OUTPUT_SCHEMA,
     data: [
@@ -176,7 +176,7 @@ test('federates an actual Delta snapshot with another table source', async () =>
 
   const rows: Record<string, unknown>[] = [];
   for await (const batch of source.read()) {
-    rows.push(...batch.data.toArray().map(row => row.toJSON()));
+    rows.push(...batch.toArray().map(row => row.toJSON()));
   }
   expect(rows).toEqual([
     {id: 9, label: 'india', format: 'delta'},

@@ -10,7 +10,7 @@ import {afterEach, expect, test} from 'vitest';
 import YAML from 'yaml';
 
 const workflow = YAML.parse(readFileSync('.github/workflows/release.yml', 'utf8'));
-const cleanupScript = workflow.jobs.release.steps.find(
+const cleanupScript = workflow.jobs.build.steps.find(
   step => step.name === 'Verify clean release checkout'
 ).run;
 const temporaryDirectories: string[] = [];
@@ -78,4 +78,15 @@ test('release checkout refuses unrelated tracked source changes', () => {
   expect(() =>
     execFileSync('bash', ['-e', '-c', cleanupScript], {cwd: directory, stdio: 'pipe'})
   ).toThrow();
+});
+
+test('release runs both hermetic slow projects in separate processes before publishing', () => {
+  const commands = workflow.jobs.slow_tests.steps
+    .map(step => step.run)
+    .filter(command => command?.includes('--project slow-'));
+  expect(commands).toEqual([
+    'yarn exec vitest run --config vitest.config.ts --project slow-node --maxWorkers=1',
+    'yarn exec vitest run --config vitest.config.ts --project slow-headless --maxWorkers=1'
+  ]);
+  expect(workflow.jobs.release.needs).toContain('slow_tests');
 });

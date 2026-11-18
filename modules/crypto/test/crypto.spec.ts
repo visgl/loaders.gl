@@ -68,7 +68,7 @@ test('crypto#streaming hashes', async () => {
           }
         });
         const nullIterator = await loadInBatches(tc.url, NullLoader, {
-          transforms: [cryptoHash.hashBatches]
+          core: {transforms: [cryptoHash.hashBatches]}
         });
         // @ts-ignore
         // eslint-disable-next-line no-unused-vars, no-empty, max-depth, @typescript-eslint/no-unused-vars

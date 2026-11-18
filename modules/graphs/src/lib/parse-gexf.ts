@@ -42,7 +42,7 @@ const TEMPORAL_ATTRIBUTES = [
 /** Parses a static GEXF document directly into the selected graph representation. */
 export function parseGEXF(
   input: string | ArrayBuffer | Uint8Array,
-  shape: GraphShape = 'arrow-table'
+  shape: GraphShape = 'arrow'
 ): GEXFOutput {
   const text = typeof input === 'string' ? input : new TextDecoder().decode(input);
   const validation = validateXML(text);

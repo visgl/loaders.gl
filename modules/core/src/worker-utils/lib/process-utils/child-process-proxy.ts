@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable no-console */
+import {log as loaderLog} from './../../../loader-utils/lib/log-utils/log';
 import {getAvailablePort} from './process-utils';
 
 type NodeChildProcess = import('child_process').ChildProcess;
@@ -44,7 +45,7 @@ const DEFAULT_PROPS: ChildProcessProxyProps = {
   autoPort: true,
   wait: 2000,
   onSuccess: processProxy => {
-    console.log(`Started ${processProxy.props.command}`);
+    loaderLog.log(0, `Started ${processProxy.props.command}`)();
   }
 };
 
@@ -91,7 +92,7 @@ export default class ChildProcessProxy {
           resolve({});
         });
 
-        console.log(`Spawning ${props.command} ${props.arguments.join(' ')}`);
+        loaderLog.log(0, `Spawning ${props.command} ${props.arguments.join(' ')}`)();
         if (props.spawn?.shell) {
           throw new Error('ChildProcessProxy does not support shell execution');
         }
@@ -104,22 +105,22 @@ export default class ChildProcessProxy {
         this.childProcess = childProcess;
 
         childProcess.stdout?.on('data', data => {
-          console.log(data.toString());
+          loaderLog.log(0, data.toString())();
         });
         childProcess.stderr?.on('data', data => {
-          console.log(`Child process wrote to stderr: "${data}".`);
+          loaderLog.log(0, `Child process wrote to stderr: "${data}".`)();
           if (!props.ignoreStderr) {
             this._clearTimeout();
             reject(new Error(data));
           }
         });
         childProcess.on('error', error => {
-          console.log(`Child process errored with ${error}`);
+          loaderLog.log(0, `Child process errored with ${error}`)();
           this._clearTimeout();
           reject(error);
         });
         childProcess.on('close', code => {
-          console.log(`Child process exited with ${code}`);
+          loaderLog.log(0, `Child process exited with ${code}`)();
           this.childProcess = null;
           this._clearTimeout();
           resolve({});
@@ -145,7 +146,7 @@ export default class ChildProcessProxy {
       // eslint-disable-next-line no-process-exit
       process.exit(statusCode);
     } catch (error) {
-      console.error((error as Error).message || error);
+      loaderLog.error(String((error as Error).message || error))();
       // eslint-disable-next-line no-process-exit
       process.exit(1);
     }

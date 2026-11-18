@@ -4,15 +4,14 @@
 
 import { expect, test } from "vitest";
 // import {validateLoader} from 'test/common/conformance';
-import { GeoParquetLoader, ParquetLoader, ParquetWriter } from '@loaders.gl/tables/parquet/index';
+import { GeoParquetLoader, ParquetLoader, ParquetWriter } from '@loaders.gl/tables/parquet';
 import { load, encode, setLoaderOptions } from '@loaders.gl/core';
-import { getTableLength } from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 const PARQUET_DIR = '@loaders.gl/tables/parquet/test/data/geoparquet';
 const GEOPARQUET_EXAMPLE = `${PARQUET_DIR}/example.parquet`;
 const GEOPARQUET_FILES = ['example.parquet', 'airports.parquet', 'geojson-big.parquet'];
 // Use local workers
-setLoaderOptions({ _workerType: 'test' });
+setLoaderOptions({core: {_workerType: 'test'}});
 test('Load GeoParquet#airports.parquet', async () => {
     const table = await load(`${PARQUET_DIR}/airports.parquet`, GeoParquetLoader, {
         core: { worker: false },
@@ -20,16 +19,14 @@ test('Load GeoParquet#airports.parquet', async () => {
             preserveBinary: true
         }
     });
-    expect(table.shape).toBe('arrow-table');
-    expect(getTableLength(table)).toBe(1000);
+    expect(table.numRows).toBe(1000);
     expect(table.schema?.fields.map((f) => f.name)).toEqual(['cartodb_id', 'gps_code', 'name', 'geom']);
 });
 test('Load GeoParquet file', async () => {
     const table = await load(GEOPARQUET_EXAMPLE, GeoParquetLoader, {
         core: { worker: false }
     });
-    expect(table.shape).toBe('arrow-table');
-    expect(getTableLength(table)).toBe(5);
+    expect(table.numRows).toBe(5);
     expect(table.schema?.fields.map((f) => f.name)).toEqual(['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry']);
 });
 test.skip('GeoParquetLoader#load', async () => {
@@ -44,7 +41,7 @@ test.skip('GeoParquetLoader#load', async () => {
 });
 test.skip('ParquetWriterLoader round trip', async () => {
     const table = createArrowTable();
-    const parquetBuffer = await encode(table, ParquetWriter, {
+    const parquetBuffer = await encode(table.data, ParquetWriter, {
         core: { worker: false }
     });
     const newTable = await load(parquetBuffer, ParquetLoader, {

@@ -2,13 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  Field,
-  GeoArrowEncodingPreference
-} from '@loaders.gl/core/schema';
-import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
+import type {Schema, Field, GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
@@ -16,7 +11,7 @@ import {
   makeWKBGeometryField,
   setWKBGeometryColumnMetadata
 } from '@loaders.gl/core/arrow-geometry/geometry-field';
-import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
+import {convertSchemaToArrow, makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {parseSHP, parseSHPInBatches} from './parse-shp';
 import {parseSHPHeader, type SHPHeader} from './parse-shp-header';
 import type {SHPLoaderOptions} from './types';
@@ -30,7 +25,7 @@ import {makeSHPGeoArrowGeometryTable} from './build-geoarrow-geometry-arrow';
 const GEOMETRY_COLUMN_NAME = 'geometry';
 const SHP_HEADER_SIZE = 100;
 
-export function parseSHPToArrow(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): ArrowTable {
+export function parseSHPToArrow(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): Table {
   if (
     options?.geoarrow?.encodingPreference === 'geoarrow.geometry' ||
     options?.shp?.geoarrow?.encodingPreference === 'geoarrow.geometry'
@@ -54,7 +49,7 @@ export function parseSHPToArrow(arrayBuffer: ArrayBuffer, options?: SHPLoaderOpt
     return makeSHPGeoArrowGeometryTable(arrayBuffer, options);
   }
 
-  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE));
+  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE), options);
   const schema = buildOutputSchema(header);
   return makeSHPWKBGeometryArrowTable(arrayBuffer, schema, options);
 }
@@ -64,7 +59,7 @@ export async function* parseSHPToArrowInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: SHPLoaderOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<RecordBatch> {
   const preference =
     options?.geoarrow?.encodingPreference || options?.shp?.geoarrow?.encodingPreference;
   if (preference && preference !== 'geoarrow.wkb') {
@@ -79,9 +74,11 @@ export async function* parseSHPToArrowInBatches(
       geometry: geometry ? convertWKBToGeometry(geometry.buffer) : null,
       properties: {}
     }));
-    yield makeTableScanBatch(
-      convertFeaturesToGeoArrowTable(geometryFeatures as any, {encodingPreference: preference})
-    );
+    const table = convertFeaturesToGeoArrowTable(geometryFeatures as any, {
+      encodingPreference: preference
+    });
+    if (table.batches.length) yield* table.batches;
+    else yield makeArrowMetadataBatch(table.schema);
     return;
   }
 
@@ -103,7 +100,7 @@ export async function* parseSHPToArrowInBatches(
     const schema = buildOutputSchema(header);
     const arrowTable = makeWKBGeometryArrowTable(geometries, schema);
     yieldedDataBatch = true;
-    yield makeTableScanBatch(arrowTable);
+    yield* arrowTable.batches;
   }
 
   if (!yieldedDataBatch) {
@@ -175,10 +172,7 @@ function getWKBOptions(options?: SHPLoaderOptions): SHPLoaderOptions {
   };
 }
 
-function makeEmptyArrowBatch(schema: ArrowTable['schema']): ArrowTableBatch {
-  if (!schema) {
-    throw new Error('SHP Arrow batch requires a schema');
-  }
-  const table = new ArrowTableBuilder(schema).finishTable();
-  return makeTableScanBatch({...table, schema});
+/** Preserves the declared SHP geometry schema for streams without rows. */
+function makeEmptyArrowBatch(schema: Schema): RecordBatch {
+  return makeArrowMetadataBatch(convertSchemaToArrow(schema));
 }

@@ -8,8 +8,8 @@ const MIGRATED_VITEST_DIRECTORIES = [
   'modules/core/test',
   'modules/images/test',
   'modules/documents/test',
-  'modules/core/test/loader-utils-package',
-  'modules/core/test/polyfills-package'
+  'modules/core/test/loader-utils',
+  'modules/core/test/polyfills'
 ];
 
 const GUARDRAILS = [

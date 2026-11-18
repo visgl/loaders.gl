@@ -18,7 +18,12 @@ import {
 import {validateSQLPredicate} from './sql-predicate-schema';
 import type {SQLPredicate} from './sql-predicate-types';
 
-/** Immutable, backend-neutral request for a table query. */
+export type {TableSelection, TableQueryExecutionOptions} from '@loaders.gl/core/loader-utils';
+
+/** Logical query with the SQL predicate vocabulary. */
+export type TableQuery = import('@loaders.gl/core/loader-utils').TableQuery<SQLPredicate>;
+
+/** Immutable, backend-neutral request for a table scan. */
 export type TableQueryOptions = ColumnarTableQueryOptions<SQLPredicate>;
 
 /** Reads the minimum source columns required by the remaining table-query plan. */

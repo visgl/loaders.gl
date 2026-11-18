@@ -5,11 +5,11 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet/index';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {
   ParquetDatasetSource,
   type ParquetDatasetFileQuery
-} from '@loaders.gl/tables/parquet-dataset-source';
+} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 let westernFile: Blob;
@@ -42,15 +42,15 @@ describe('ParquetDatasetSource', () => {
 
     const batches = await collectBatches(source.scan({batchSize: 1}));
 
-    expect(batches.map(batch => batch.datasetFileId)).toEqual(['west', 'west', 'east', 'east']);
-    expect(batches.map(batch => batch.datasetFileIndex)).toEqual([0, 0, 1, 1]);
-    expect(batches.map(batch => batch.datasetPartitions?.theme)).toEqual([
+    expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).datasetFileId)).toEqual(['west', 'west', 'east', 'east']);
+    expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).datasetFileIndex)).toEqual([0, 0, 1, 1]);
+    expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).datasetPartitions?.theme)).toEqual([
       'buildings',
       'buildings',
       'places',
       'places'
     ]);
-    expect(batches.flatMap(batch => [...batch.data.getChild('id')!.toArray()])).toEqual([
+    expect(batches.flatMap(batch => [...batch.getChild('id')!.toArray()])).toEqual([
       1, 2, 3, 4
     ]);
     expect(source.getTelemetry()).toMatchObject({
@@ -64,6 +64,19 @@ describe('ParquetDatasetSource', () => {
     expect(Object.isFrozen(source.getTelemetry())).toBe(true);
     expect(Object.isFrozen(source.getTelemetry().parquet)).toBe(true);
     await source.close();
+  });
+
+  test('does not apply a single-file offset to every dataset child', async () => {
+    const source = new ParquetDatasetSource([{data: westernFile}, {data: easternFile}], {
+      core: {worker: false},
+      parquet: {offset: 1}
+    });
+    try {
+      const batches = await collectBatches(source.read());
+      expect(batches.flatMap(batch => [...batch.getChild('id')!.toArray()])).toEqual([1, 2, 3, 4]);
+    } finally {
+      await source.close();
+    }
   });
 
   test('aggregates descriptor and child Parquet physical scan plans', async () => {
@@ -118,10 +131,10 @@ describe('ParquetDatasetSource', () => {
       limit: 1
     });
     const batches = await collectBatches(source.executeScanPlan(plan));
-    expect(batches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual([
+    expect(batches.flatMap(batch => [...batch.getChild('value')!.toArray()])).toEqual([
       'east-one'
     ]);
-    expect(batches[0].datasetFileId).toBe('east');
+    expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).datasetFileId).toBe('east');
     await source.close();
   });
 
@@ -154,11 +167,11 @@ describe('ParquetDatasetSource', () => {
     const plan = await source.getScanPlan({columns: ['value']});
     expect(plan.plan).toContainEqual({kind: 'limit', limit: 1});
     const batches = await collectBatches(source.read({columns: ['value']}));
-    expect(batches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual([
+    expect(batches.flatMap(batch => [...batch.getChild('value')!.toArray()])).toEqual([
       'west-one'
     ]);
     const plannedBatches = await collectBatches(source.executeScanPlan(plan));
-    expect(plannedBatches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual([
+    expect(plannedBatches.flatMap(batch => [...batch.getChild('value')!.toArray()])).toEqual([
       'west-one'
     ]);
     await source.close();
@@ -185,11 +198,11 @@ describe('ParquetDatasetSource', () => {
         setTimeout(() => reject(new Error('first batch waited for later discovery')), 1000)
       )
     ]);
-    expect(first.value?.datasetFileId).toBe('first');
+    expect(JSON.parse(first.value?.metadata.get('loaders.gl.parquetProvenance')!).datasetFileId).toBe('first');
 
     releaseDiscovery?.();
     const remaining = await collectBatches({[Symbol.asyncIterator]: () => iterator});
-    expect(remaining.map(batch => batch.datasetFileId)).toEqual(['second']);
+    expect(remaining.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).datasetFileId)).toEqual(['second']);
     await source.close();
   });
 
@@ -228,7 +241,7 @@ describe('ParquetDatasetSource', () => {
     );
 
     expect(providerQuery?.bbox).toEqual([-80, 35, -70, 45]);
-    expect(batches.map(batch => batch.datasetFileId)).toEqual([
+    expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).datasetFileId)).toEqual([
       'east-buildings',
       'unknown-extent'
     ]);
@@ -263,7 +276,7 @@ describe('ParquetDatasetSource', () => {
       source.read({bbox: [175, -5, -1, 0, -175, 5, 1, 10]})
     );
 
-    expect(batches.map(batch => batch.datasetFileId)).toEqual(['antimeridian']);
+    expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).datasetFileId)).toEqual(['antimeridian']);
     expect(source.getTelemetry().filesPrunedByBoundingBox).toBe(1);
     await source.close();
   });
@@ -283,7 +296,7 @@ describe('ParquetDatasetSource', () => {
 
     expect(batches).toHaveLength(1);
     expect(batches[0].schema?.fields.map(field => field.name)).toEqual(['value']);
-    expect([...batches[0].data.getChild('value')!.toArray()]).toEqual(['east-one', 'east-two']);
+    expect([...batches[0].getChild('value')!.toArray()]).toEqual(['east-one', 'east-two']);
     await source.close();
   });
 
@@ -302,11 +315,11 @@ describe('ParquetDatasetSource', () => {
       })
     );
 
-    expect(batches.flatMap(batch => [...batch.data.getChild('value')!.toArray()])).toEqual([
+    expect(batches.flatMap(batch => [...batch.getChild('value')!.toArray()])).toEqual([
       'west-two',
       'east-one'
     ]);
-    expect(batches.map(batch => batch.length)).toEqual([1, 1]);
+    expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
     expect(source.getTelemetry().rowsEmitted).toBe(2);
     await source.close();
   });
@@ -433,16 +446,16 @@ async function createFixture(
       },
       data: rows
     } satisfies ObjectRowTable,
-    ParquetJSWriter
+    ParquetWriter
   );
   return new Blob([arrayBuffer]);
 }
 
 /** Collects all Arrow batches from a dataset read. */
 async function collectBatches(
-  batches: AsyncIterable<import('@loaders.gl/tables/parquet/index').ParquetDatasetBatch>
-): Promise<import('@loaders.gl/tables/parquet/index').ParquetDatasetBatch[]> {
-  const result: import('@loaders.gl/tables/parquet/index').ParquetDatasetBatch[] = [];
+  batches: AsyncIterable<import('apache-arrow').RecordBatch>
+): Promise<import('apache-arrow').RecordBatch[]> {
+  const result: import('apache-arrow').RecordBatch[] = [];
   for await (const batch of batches) {
     result.push(batch);
   }

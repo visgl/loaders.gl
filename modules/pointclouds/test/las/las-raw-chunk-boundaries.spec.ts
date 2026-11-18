@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {LASWriter} from '@loaders.gl/pointclouds/las';
 import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
-import {LASFile as LazPerfLASFile} from '../../src/las/lib/laz-perf/laslaz-decoder';
+import {LASFile as LazPerfLASFile} from '../../../../website/src/alternate-loaders/las/lib/laz-perf/laslaz-decoder';
 import {
   decodeLAZFileInBatches,
   parseLASChunkedIterator,
@@ -37,7 +37,7 @@ function createFiles(pointDataRecordFormat: 0 | 3 | 6 | 8 | 10, variableChunkTab
 async function collectRaw(input: Iterable<ArrayBuffer | ArrayBufferView>, batchSize = 3) {
   const bytes: number[] = [];
   const pointCounts: number[] = [];
-  for await (const batch of decodeLAZFileInBatches(input, {batchSize})) {
+  for await (const batch of decodeLAZFileInBatches(input, {core: {batchSize}})) {
     bytes.push(...new Uint8Array(batch.arrayBuffer));
     pointCounts.push(batch.header.pointsCount);
     expect(batch.header.pointsOffset).toBe(0);

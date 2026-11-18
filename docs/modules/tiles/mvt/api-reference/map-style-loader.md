@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['From v4.4', 'Map styles', 'TileJSON resolution']}
   links={[
     {label: 'Map style format', to: '/docs/modules/tiles/mvt/formats/map-style'},
-    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source-loader'},
+    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source'},
     {label: 'MVT module', to: '/docs/modules/tiles/mvt'}
   ]}
 />
@@ -229,5 +229,5 @@ manually.
 ## Related APIs
 
 - [`TileJSONLoader`](/docs/modules/tiles/mvt/api-reference/tilejson-loader)
-- [`MVTSourceLoader`](/docs/modules/tiles/mvt/api-reference/mvt-source-loader)
+- [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-source)
 - [`Map Styles`](/docs/modules/tiles/mvt/formats/map-style)

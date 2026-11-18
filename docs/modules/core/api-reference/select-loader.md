@@ -52,7 +52,7 @@ Loader selection heuristics are based on:
 
 **loader registry** - `selectLoader()` and `selectLoaderSync()` are also aware of the
 [loader registry](/docs/modules/core/api-reference/register-loaders).
-The list of pre-registered loaders will be included in the search for a compatible loader,
+Selection searches the supplied loaders first. If none match, it searches the registered loaders
 unless `options.core.ignoreRegisteredLoaders` is `true`.
 
 ## Usage

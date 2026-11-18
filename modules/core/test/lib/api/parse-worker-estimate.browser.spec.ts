@@ -16,10 +16,7 @@ function createTestLoader(
     version: 'latest',
     extensions: ['estimate'],
     mimeTypes: ['application/x-worker-estimate'],
-    worker: new URL(
-      '/modules/core/test/worker-utils-package/fixtures/task-worker.ts',
-      location.href
-    ).href,
+    worker: new URL('/modules/core/test/worker-utils/fixtures/task-worker.ts', location.href).href,
     options: {},
     parse: async (arrayBuffer: ArrayBuffer) => ({
       execution: 'main',
@@ -69,6 +66,7 @@ test('parse worker auto mode preserves an estimator on a metadata loader after p
   const metadataLoader = {
     ...parserLoader,
     parse: undefined,
+    parseBlob: undefined,
     getWorkerEstimate,
     preload: async () => parserLoader
   } as LoaderWithParser;

@@ -9,10 +9,10 @@ export {VECTOR_TYPES} from './lib/types';
 
 export {ArrowFormat} from './exports/arrow-format';
 
-export type {ArrowLoaderOptions} from './exports/arrow-loader';
+export type {ArrowLoaderOptions} from './arrow-loader-types';
 
 export {ArrowLoader} from './arrow-loader-types';
-export {ArrowSourceLoader, ArrowTableSource} from './arrow-source';
+export {ArrowTableSource} from './arrow-source';
 
 export {ArrowWriter, type ArrowWriterOptions} from './arrow-writer';
 export type {
@@ -30,57 +30,12 @@ export {GeoArrowLoader} from './geoarrow-loader-types';
 // EXPERIMENTAL
 
 // Arrow Utils
-export {IndexedArrowVector} from './lib/utils/indexed-arrow-vector';
-export {
-  IndexedArrowTable,
-  type IndexedArrowTableComparator,
-  type IndexedArrowTableFindPredicate,
-  type IndexedArrowTablePredicate,
-  type IndexedArrowTableRow
-} from './lib/utils/indexed-arrow-table';
-export {
-  MappedArrowTable,
-  type MappedArrowTableComparator,
-  type MappedArrowTablePredicate
-} from './lib/utils/mapped-arrow-table';
-export {
-  validateArrowTableSchema,
-  type ValidateArrowTableSchemaOptions
-} from './lib/utils/arrow-schema-utils';
-export {
-  renameArrowColumns,
-  type ArrowFieldNameMap,
-  type RenamedArrowColumns
-} from './lib/utils/rename-arrow-columns';
+
 export {
   convertArrowTableVariableWidthTypes,
   convertArrowVariableWidthVector,
   type ConvertArrowVariableWidthOptions
 } from './lib/utils/convert-arrow-variable-width';
-export {
-  splitArrowBuffers,
-  splitArrowTableBuffers,
-  type SplitArrowBuffersInput,
-  type SplitArrowBuffersOptions
-} from './lib/utils/split-arrow-buffers';
-export {
-  dehydrateArrowTable,
-  hydrateArrowTable,
-  serializeArrowTableToIPC,
-  deserializeArrowTableFromIPC,
-  type DehydratedArrowData,
-  type DehydratedArrowRecordBatch,
-  type DehydratedArrowTable,
-  type DehydratedArrowVector,
-  type SerializedArrowTableIPC
-} from './lib/utils/arrow-table-transport';
-export {
-  compareUTF8,
-  parseUTF8BigInt,
-  parseUTF8Boolean,
-  parseUTF8Number,
-  type UTF8Comparison
-} from './lib/utils/utf8-utils';
 
 export type {
   ParseGeoArrowInput,
@@ -99,8 +54,6 @@ export {
   type TriangulatedWKBGeometryColumns
 } from './triangulate-wkb-geometry-column';
 
-// DEPRECATED EXPORTS
-/** @deprecated Use ArrowLoader. */
-export {ArrowWorkerLoader} from './exports/arrow-loader';
-/** @deprecated Use GeoArrowLoader. */
-export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
+export {ArrowLoaderWithParser} from '../arrow-loader';
+
+export {createArrowSource} from '../arrow-source';

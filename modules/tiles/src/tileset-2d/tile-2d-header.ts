@@ -6,28 +6,28 @@
 import {RequestScheduler} from '@loaders.gl/core/loader-utils';
 import type {TileBoundingBox, TileIndex, TileLoadProps} from './types';
 
-/** Parameters used by {@link SharedTile2DHeader.loadData}. */
+/** Parameters used by {@link Tile2DHeader.loadData}. */
 export type Tile2DLoadDataProps<DataT = any> = {
   /** Shared request scheduler for throttling tile fetches. */
   requestScheduler: RequestScheduler;
   /** Application-provided tile data loader. */
   getData: (props: TileLoadProps) => Promise<DataT | null> | DataT | null;
   /** Callback fired after tile content resolves successfully. */
-  onLoad: (tile: SharedTile2DHeader<DataT>) => void;
+  onLoad: (tile: Tile2DHeader<DataT>) => void;
   /** Callback fired when canceled or superseded work returns a non-null payload. */
-  onDiscard?: (content: DataT, tile: SharedTile2DHeader<DataT>) => void;
+  onDiscard?: (content: DataT, tile: Tile2DHeader<DataT>) => void;
   /** Callback fired after tile content fails to load. */
-  onError: (error: any, tile: SharedTile2DHeader<DataT>) => void;
+  onError: (error: any, tile: Tile2DHeader<DataT>) => void;
 };
 
 /** Shared tile cache entry used by {@link Tileset2D}. */
-export class SharedTile2DHeader<DataT = any> {
+export class Tile2DHeader<DataT = any> {
   /** x/y/z tile coordinate. */
   index: TileIndex;
   /** Closest cached ancestor tile in the current tree. */
-  parent: SharedTile2DHeader | null;
+  parent: Tile2DHeader | null;
   /** Cached child tiles beneath this tile. */
-  children: SharedTile2DHeader[] | null;
+  children: Tile2DHeader[] | null;
   /** Loaded tile payload. */
   content: DataT | null;
   /** Cached tile load error, if the last request failed. */

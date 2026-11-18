@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {expect, test, vi} from 'vitest';
 import {ImageSourceLayer, type ImageSourceLayerProps} from '@loaders.gl/deck-layers';
 import {ImageSet} from '@loaders.gl/tiles';
@@ -28,7 +27,7 @@ const TEST_SOURCE_FACTORY = {
   fromUrl: true,
   fromBlob: true,
   testURL: () => true,
-  createDataSource() {
+  createDataSourceSync() {
     return TEST_IMAGE_SOURCE as any;
   }
 };
@@ -40,18 +39,18 @@ test('ImageSourceLayer#accepts direct ImageSource inputs', () => {
   const resolvedData = layer._resolveData(layer.props);
   expect(resolvedData).toBe(TEST_IMAGE_SOURCE);
 });
-test('ImageSourceLayer#resolves URL inputs with sources', () => {
+test('ImageSourceLayer#resolves URL inputs with source loaders', () => {
   const layer = createLayer({
     id: 'test',
     data: 'https://example.com/wms',
-    sources: [TEST_SOURCE_FACTORY as any]
+    loaders: [TEST_SOURCE_FACTORY as any]
   });
   const resolvedData = layer._resolveData(layer.props);
   expect(resolvedData).toBe(TEST_IMAGE_SOURCE);
 });
-test('ImageSourceLayer#rejects Blob inputs without sources', () => {
+test('ImageSourceLayer#rejects Blob inputs without source loaders', () => {
   const layer = createLayer({id: 'test', data: new Blob(['test'])});
-  expect(() => layer._resolveData(layer.props)).toThrow(/requires `sources`/);
+  expect(() => layer._resolveData(layer.props)).toThrow(/requires a SourceLoader in `loaders`/);
 });
 test('ImageSourceLayer#resolves mixed loader lists and rejects unresolved strings', () => {
   const parserLoader = {
@@ -78,7 +77,7 @@ test('ImageSourceLayer#resolves mixed loader lists and rejects unresolved string
       id: 'missing',
       data: 'https://example.com/wms'
     })
-  ).toThrow(/requires `sources`/);
+  ).toThrow(/requires a SourceLoader in `loaders`/);
   expect(createLayer()._resolveData({id: 'null', data: null} as any)).toBeNull();
   expect(
     createLayer()._resolveData({
@@ -96,7 +95,7 @@ test.each([
   const ignoredParser = {id: 'ignored-parser'};
   const sourceFactory = {
     ...TEST_SOURCE_FACTORY,
-    createDataSource: vi.fn(() => TEST_IMAGE_SOURCE)
+    createDataSourceSync: vi.fn(() => TEST_IMAGE_SOURCE)
   };
   const sourceOptions = hasSourceOptions
     ? {
@@ -119,7 +118,7 @@ test.each([
   } as ImageSourceLayerProps);
 
   expect(layer._resolveData(layer.props)).toBe(TEST_IMAGE_SOURCE);
-  expect(sourceFactory.createDataSource).toHaveBeenCalledExactlyOnceWith(
+  expect(sourceFactory.createDataSourceSync).toHaveBeenCalledExactlyOnceWith(
     'memory://image-source',
     {
       ...sourceOptions,
@@ -311,10 +310,10 @@ test('ImageSourceLayer renders accepted images in geographic and Cartesian coord
   };
   const geographic = layer.renderLayers();
   expect(geographic.props.bounds).toEqual([1, 2, 3, 4]);
-  expect(geographic.props._imageCoordinateSystem).toBe(COORDINATE_SYSTEM.LNGLAT);
+  expect(geographic.props._imageCoordinateSystem).toBe('lnglat');
 
   layer.state.imageSet.currentRequest.parameters.crs = 'EPSG:3857';
-  expect(layer.renderLayers().props._imageCoordinateSystem).toBe(COORDINATE_SYSTEM.CARTESIAN);
+  expect(layer.renderLayers().props._imageCoordinateSystem).toBe('cartesian');
 });
 
 test('ImageSourceLayer skips incomplete requests and WMS requests without layers', async () => {

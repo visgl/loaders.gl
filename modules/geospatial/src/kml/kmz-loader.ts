@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {createKMZSource} from './kmz-source';
+import type {Table as ArrowTable} from 'apache-arrow';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, ObjectRowTable} from '@loaders.gl/core/schema';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
@@ -16,6 +18,7 @@ const {preload: _KMZLoaderPreload, ...KMZLoaderMetadataWithoutPreload} = KMZLoad
 
 /** Parser-bearing loader for KMZ archives containing KML documents. */
 export const KMZLoaderWithParser = {
+  createDataSourceSync: createKMZSource,
   ...KMZLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer, options?: KMZLoaderOptions) =>
     parseKMZArrayBuffer(arrayBuffer, options)
@@ -39,16 +42,17 @@ export async function parseKMZArrayBuffer(
     switch (shape) {
       case 'object-row-table':
         return {shape, data: document.features};
-      case 'arrow-table':
+      case 'arrow':
         return convertFeatureCollectionToArrowTable(document.features);
       case 'geojson-table':
-      default:
         return {
           shape: 'geojson-table',
           schema: buildFeatureTableSchema(document.features),
           type: 'FeatureCollection',
           features: document.features
         };
+      default:
+        throw new Error(`Unsupported KMZ shape: ${shape}`);
     }
   } finally {
     await archive.close();

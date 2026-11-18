@@ -16,7 +16,7 @@ import {
   PrimitiveType,
   SchemaDefinition
 } from '../schema/declare';
-import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
+import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from '../codecs';
 import type {ParquetByteArrayOutput, ParquetValueBuffer} from '../codecs/declare';
 import {
   ConvertedType,
@@ -27,7 +27,7 @@ import {
   PageType,
   SchemaElement,
   Type
-} from '../parquet-thrift/index';
+} from '../parquet-thrift';
 import {decompress} from '../compression';
 import type {TimeUnit as ParquetThriftTimeUnit} from '../parquet-thrift/TimeUnit';
 import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../lib/constants';

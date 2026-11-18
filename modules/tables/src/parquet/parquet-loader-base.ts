@@ -2,12 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  ObjectRowTable,
-  ObjectRowTableBatch
-} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 
 import {ParquetFormat} from './parquet-format';
 import {PARQUET_LOADER_DEFAULT_OPTIONS} from './parquet-loader-options';
@@ -20,8 +16,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export const PARQUET_LOADER_BASE = {
   ...ParquetFormat,
 
-  dataType: null as unknown as ObjectRowTable | ArrowTable,
-  batchType: null as unknown as ObjectRowTableBatch | ArrowTableBatch,
+  dataType: null as unknown as ObjectRowTable | Table,
+  batchType: null as unknown as ObjectRowTableBatch | RecordBatch,
 
   id: 'parquet',
   module: 'tables',

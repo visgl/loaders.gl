@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/core/schema';
+import type {Schema as TableSchema} from '@loaders.gl/core/schema';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import {GeoArrowBuilder, type GeoArrowBuilderEncoding} from '@loaders.gl/core/arrow-geometry';
 import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
@@ -31,8 +31,8 @@ export function makeSHPGeoArrowGeometryTable(
   arrayBuffer: ArrayBuffer,
   options?: SHPLoaderOptions,
   geoArrowOptions?: SHPGeoArrowGeometryOptions
-): ArrowTable {
-  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE));
+): arrow.Table {
+  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE), options);
   const encoding = getDefaultGeoArrowEncoding(header);
   const builderOptions = {
     encoding,
@@ -78,11 +78,11 @@ export function makeSHPGeoArrowGeometrySchema(
   return schema;
 }
 
-/** Wraps typed GeoArrow geometry buffers in a loaders.gl Arrow table. */
+/** Wraps typed GeoArrow geometry buffers in an Apache Arrow table. */
 export function makeGeoArrowGeometryTable(
   geometryArray: ReturnType<GeoArrowBuilder['getGeometryArray']>,
   schema: TableSchema
-): ArrowTable {
+): arrow.Table {
   const arrowSchema = convertSchemaToArrow(schema);
   const geometryData = GeoArrowBuilder.makeGeometryData(geometryArray);
   const structField = new arrow.Struct(arrowSchema.fields);
@@ -91,11 +91,7 @@ export function makeGeoArrowGeometryTable(
   ]);
   const recordBatch = new arrow.RecordBatch(arrowSchema, structData);
 
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, [recordBatch])
-  };
+  return new arrow.Table(arrowSchema, [recordBatch]);
 }
 
 /** Returns the default typed GeoArrow encoding for an SHP header. */

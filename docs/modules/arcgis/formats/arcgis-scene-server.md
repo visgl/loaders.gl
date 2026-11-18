@@ -25,7 +25,7 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 
 | Type | API |
 | --- | --- |
-| Source loader | [`ArcGISSceneServerSourceLoader`](../api-reference/arcgis.md) |
+| Source loader | [`ArcGISSceneServerLoader`](../api-reference/arcgis.md) |
 
 <ArcGISDocsTabs service="arcgis-scene-server" />
 

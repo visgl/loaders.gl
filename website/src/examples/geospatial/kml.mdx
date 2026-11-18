@@ -8,7 +8,7 @@ import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
 
 <KmlDocsTabs active="try-it" />
 
-<div style={{height: 'calc(100vh - 76px)'}}> 
+<div style={{height: 'calc(100dvh - var(--ifm-navbar-height) - 2rem)'}}>
   <ClientExample kind="geospatial" format="KML" >
     [**`KMLLoader`**](/docs/modules/tables/arrow/api-reference/kml-loader) loads KML files, optionally into GeoJSON.
   </ClientExample>

@@ -25,7 +25,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {createRequire} from 'node:module';
 /* @ts-expect-error TS2732: Cannot find module 'node:module' or its corresponding type declarations. */
 
-import {DracoWriterWorker} from '@loaders.gl/scene/draco-writer';
+import {DracoWriterWorker} from '@loaders.gl/scene/draco';
 import {encode, assert} from '@loaders.gl/core';
 import {
   concatenateArrayBuffers,
@@ -54,9 +54,7 @@ import {
 import {Geoid} from '@math.gl/earth';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
-import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {GL} from '@math.gl/geometry';
-
+import {flattenPropertyTableByFeatureIds} from './feature-attributes';
 /*
   At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/core'.
   So the following import is replaced with the local import
@@ -67,6 +65,9 @@ import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 
 import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/scene/gltf';
+
+/** Primitive modes in the glTF file format. */
+const GLTF_PRIMITIVE_MODE = {TRIANGLES: 4, TRIANGLE_STRIP: 5, TRIANGLE_FAN: 6} as const;
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -211,13 +212,14 @@ function _generateBoundingVolumesFromGeometry(
   convertedAttributesMap: Map<string, ConvertedAttributes>,
   geoidHeightModel: Geoid | null
 ) {
-  for (const attributes of convertedAttributesMap.values()) {
+  for (const attributes of new Set(convertedAttributesMap.values())) {
     const boundingVolumes = createBoundingVolumesFromGeometry(
       attributes.positions,
       geoidHeightModel
     );
 
     attributes.boundingVolumes = boundingVolumes;
+    const geographicPositions = new Float32Array(attributes.positions.length);
     const cartographicOrigin = boundingVolumes.obb.center;
 
     for (let index = 0; index < attributes.positions.length; index += VALUES_PER_VERTEX) {
@@ -228,8 +230,9 @@ function _generateBoundingVolumesFromGeometry(
           scratchVector[2] - geoidHeightModel.getHeight(scratchVector[1], scratchVector[0]);
       }
       scratchVector = scratchVector.subtract(cartographicOrigin);
-      attributes.positions.set(scratchVector, index);
+      geographicPositions.set(scratchVector, index);
     }
+    attributes.positions = geographicPositions;
   }
 }
 
@@ -276,14 +279,15 @@ async function _makeNodeResources({
   const {faceRange, featureIds, positions, normals, colors, uvRegions, texCoords, featureCount} =
     generateAttributes(convertedAttributes);
 
-  let featureIdsMap: Record<string, number> = {};
+  // Attribute rows must follow geometry order, before IDs become layer-wide IDs.
+  const batchIds = [...featureIds];
   if (propertyTable) {
     /**
      * 3DTiles has featureIndices unique only for one tile.
      * In I3S featureIds are unique layer-wide. We create featureIds from all feature properties.
      * If 3DTiles features has equal set of properties they are considered as same feature in I3S.
      */
-    featureIdsMap = makeFeatureIdsUnique(
+    makeFeatureIdsUnique(
       featureIds,
       convertedAttributes.featureIndices,
       featuresHashArray,
@@ -327,11 +331,11 @@ async function _makeNodeResources({
 
   let attributes: ArrayBuffer[] = [];
 
-  if (attributeStorageInfo && propertyTable) {
+  if (attributeStorageInfo?.length) {
     attributes = convertPropertyTableToAttributeBuffers(
       featureIds,
-      featureIdsMap,
-      propertyTable,
+      batchIds,
+      propertyTable || {},
       attributeStorageInfo
     );
   }
@@ -374,7 +378,7 @@ export async function convertAttributes(
 
   for (const materialAndTexture of materialAndTextureList) {
     const attributes = {
-      positions: new Float32Array(0),
+      positions: useCartesianPositions ? new Float64Array(0) : new Float32Array(0),
       normals: new Float32Array(0),
       texCoords: new Float32Array(0),
       colors: new Uint8Array(0),
@@ -606,12 +610,12 @@ function convertMeshToTable({
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
     // Per the spec https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
-    // GL.TRIANGLES is default. So in case `mode` is `undefined`, it is 'TRIANGLES'
+    // An omitted glTF primitive mode defaults to triangles.
     assert(
       primitive.mode === undefined ||
-        primitive.mode === GL.TRIANGLES ||
-        primitive.mode === GL.TRIANGLE_STRIP ||
-        primitive.mode === GL.TRIANGLE_FAN,
+        primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLES ||
+        primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_STRIP ||
+        primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_FAN,
       `Primitive - unsupported mode ${primitive.mode}`
     );
     const attributes = primitive.attributes;
@@ -676,18 +680,21 @@ function normalizeIndices(primitive: ConversionPrimitive): TypedArray {
   const source = primitive.indices?.value;
   const vertexCount = primitive.attributes.POSITION.value.length / VALUES_PER_VERTEX;
   const count = source?.length ?? vertexCount;
-  if (primitive.mode !== GL.TRIANGLE_STRIP && primitive.mode !== GL.TRIANGLE_FAN) {
+  if (
+    primitive.mode !== GLTF_PRIMITIVE_MODE.TRIANGLE_STRIP &&
+    primitive.mode !== GLTF_PRIMITIVE_MODE.TRIANGLE_FAN
+  ) {
     return source || generateSyntheticIndices(vertexCount);
   }
   const indices = new Uint32Array(Math.max(0, count - 2) * 3);
   for (let triangleIndex = 0; triangleIndex + 2 < count; triangleIndex++) {
-    const first = primitive.mode === GL.TRIANGLE_FAN ? 0 : triangleIndex;
+    const first = primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_FAN ? 0 : triangleIndex;
     const second =
-      primitive.mode === GL.TRIANGLE_FAN
+      primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_FAN
         ? triangleIndex + 1
         : triangleIndex + 1 + (triangleIndex % 2);
     const third =
-      primitive.mode === GL.TRIANGLE_FAN
+      primitive.mode === GLTF_PRIMITIVE_MODE.TRIANGLE_FAN
         ? triangleIndex + 2
         : triangleIndex + 2 - (triangleIndex % 2);
     indices.set(
@@ -718,9 +725,10 @@ function transformVertexArray(args: {
   indices: TypedArray;
   attributeSpecificTransformation: Function;
   useCartesianPositions: boolean;
-}): Float32Array {
+}): Float32Array | Float64Array {
   const {vertices, indices, attributeSpecificTransformation} = args;
-  const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
+  const PositionsArray = args.useCartesianPositions ? Float64Array : Float32Array;
+  const newVertices = new PositionsArray(indices.length * VALUES_PER_VERTEX);
   if (!vertices) {
     return newVertices;
   }
@@ -1314,18 +1322,16 @@ function generateImageId(texture: ConversionTexture, nodeId: number) {
  * @param featureIndices
  * @param featuresHashArray
  * @param batchTable
- * @returns propertyTable indices to map featureIds
  */
 function makeFeatureIdsUnique(
   featureIds: number[],
   featureIndices: number[],
   featuresHashArray: string[],
   batchTable: {[key: string]: any}
-): Record<string, number> {
+): void {
   const replaceMap = getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray);
   replaceIndicesByUnique(featureIndices, replaceMap);
   replaceIndicesByUnique(featureIds, replaceMap);
-  return replaceMap;
 }
 
 /**
@@ -1344,7 +1350,7 @@ function getFeaturesReplaceMap(
 
   for (let index = 0; index < featureIds.length; index++) {
     const oldFeatureId = featureIds[index];
-    const uniqueFeatureId = getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray);
+    const uniqueFeatureId = getOrCreateUniqueFeatureId(oldFeatureId, batchTable, featuresHashArray);
     featureMap[oldFeatureId.toString()] = uniqueFeatureId;
   }
 
@@ -1401,39 +1407,32 @@ function replaceIndicesByUnique(indicesArray: number[], featureMap: Record<strin
 /**
  * Convert property table data to attribute buffers.
  * @param featureIds
+ * @param batchIds - original batch-table row indices in geometry feature order
  * @param propertyTable - table with metadata for particular feature.
  * @param attributeStorageInfo
  * @returns - Array of file buffers.
  */
-function convertPropertyTableToAttributeBuffers(
+export function convertPropertyTableToAttributeBuffers(
   featureIds: number[],
-  featureIdsMap: Record<string, number>,
+  batchIds: number[],
   propertyTable: FeatureTableJson,
   attributeStorageInfo: AttributeStorageInfo[]
-): any[] {
-  const attributeBuffers: ArrayBuffer[] = [];
+): ArrayBuffer[] {
+  const properties = flattenPropertyTableByFeatureIds(batchIds, propertyTable);
 
-  const needFlattenPropertyTable = checkPropertiesLength(featureIds, propertyTable);
-  const properties = needFlattenPropertyTable
-    ? flattenPropertyTableByFeatureIds(featureIdsMap, propertyTable)
-    : propertyTable;
-
-  const propertyTableWithObjectIds = {
-    OBJECTID: featureIds,
-    ...properties
-  };
-
-  for (const propertyName in propertyTableWithObjectIds) {
-    const type = getAttributeType(propertyName, attributeStorageInfo);
-    if (type) {
-      const value = propertyTableWithObjectIds[propertyName];
-      const attributeBuffer = generateAttributeBuffer(type, value);
-
-      attributeBuffers.push(attributeBuffer);
+  // The layer schema, not this tile's property order, determines buffer positions.
+  return attributeStorageInfo.map(attribute => {
+    if (!attribute.attributeValues) {
+      throw new Error(`Missing attribute value type for ${attribute.name}`);
     }
-  }
-
-  return attributeBuffers;
+    const values =
+      attribute.name === 'OBJECTID'
+        ? featureIds
+        : Object.hasOwn(properties, attribute.name)
+          ? properties[attribute.name]
+          : new Array(featureIds.length).fill(null);
+    return generateAttributeBuffer(attribute.attributeValues.valueType, values);
+  });
 }
 
 /**
@@ -1446,8 +1445,10 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 
   switch (type) {
     case OBJECT_ID_TYPE:
+      attributeBuffer = generateShortIntegerAttributeBuffer(value, true);
+      break;
     case SHORT_INT_TYPE:
-      attributeBuffer = generateShortIntegerAttributeBuffer(value);
+      attributeBuffer = generateShortIntegerAttributeBuffer(value, false);
       break;
     case DOUBLE_TYPE:
       attributeBuffer = generateDoubleAttributeBuffer(value);
@@ -1463,40 +1464,15 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 }
 
 /**
- * Return attribute type.
- * @param key
- * @param attributeStorageInfo
- * @returns attribute type.
- */
-function getAttributeType(key: string, attributeStorageInfo: any[]): string {
-  const attribute = attributeStorageInfo.find(attr => attr.name === key);
-  if (!attribute) {
-    // eslint-disable-next-line no-console
-    console.error(
-      `attribute is null, key=${key}, attributeStorageInfo=${JSON.stringify(
-        attributeStorageInfo,
-        null,
-        2
-      )}`
-    );
-    return '';
-  }
-  if (!attribute.attributeValues) {
-    // eslint-disable-next-line no-console
-    console.error(`attributeValues is null, attribute=${attribute}`);
-    return '';
-  }
-  return attribute.attributeValues.valueType;
-}
-
-/**
- * Convert short integer to attribute arrayBuffer.
+ * Convert integers to an attribute buffer, using the I3S null sentinel.
+ * @param objectIds - whether values use unsigned object IDs rather than signed integers
  * @param featureIds
  * @returns ArrayBuffer with objectId data.
  */
-function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
+function generateShortIntegerAttributeBuffer(featureIds: any[], objectIds: boolean): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
-  const valuesArray = new Uint32Array(featureIds);
+  const values = featureIds.map(value => value ?? (objectIds ? 0xffffffff : -0x80000000));
+  const valuesArray = objectIds ? new Uint32Array(values) : new Int32Array(values);
   return concatenateArrayBuffers(count.buffer, valuesArray.buffer);
 }
 
@@ -1508,7 +1484,7 @@ function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
 function generateDoubleAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const padding = new Uint8Array(4);
-  const valuesArray = new Float64Array(featureIds);
+  const valuesArray = new Float64Array(featureIds.map(value => value ?? Number.NaN));
 
   return concatenateArrayBuffers(count.buffer, padding.buffer, valuesArray.buffer);
 }

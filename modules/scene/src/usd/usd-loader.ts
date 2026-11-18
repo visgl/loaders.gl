@@ -1,6 +1,6 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
+// loaders.gl
 
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseUSD} from './lib/parse-usd';
@@ -9,7 +9,7 @@ import {USDLoader as USDLoaderMetadata} from './usd-loader-types';
 
 const {preload: _USDLoaderPreload, ...USDLoaderMetadataWithoutPreload} = USDLoaderMetadata;
 
-/** Parser-bearing loader for OpenUSD ASCII and uncompressed USDZ scenes. */
+/** Parser-bearing loader for OpenUSD ASCII, supported binary crate layers, and stored USDZ scenes. */
 export const USDLoaderWithParser = {
   ...USDLoaderMetadataWithoutPreload,
   parse: parseUSD,

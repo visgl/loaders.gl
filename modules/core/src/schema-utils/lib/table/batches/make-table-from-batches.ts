@@ -10,26 +10,44 @@ import type {
   ArrayRowTable,
   Feature
 } from '@loaders.gl/core/schema';
+import type * as arrow from 'apache-arrow';
+import {makeArrowTableFromBatches} from '../../arrow/arrow-metadata';
+import {isArrowRecordBatch} from '../../../../lib/loader-utils/native-arrow';
 import {getTableLength} from '../tables/table-accessors';
 
 /**
  * Assembles all batches from an async iterator into a single table.
- * @note All batches must have the same shape and schema
+ * All batches must have the same shape and compatible schemas. A native RecordBatch stream
+ * produces a native Arrow table with metadata refined in emission order.
  * @param batchIterator
  * @returns `null` if no batches are yielded by the async iterator
  */
-// eslint-disable-next-line complexity
-export async function makeTableFromBatches(
+export function makeTableFromBatches(
+  batchIterator: AsyncIterable<arrow.RecordBatch> | Iterable<arrow.RecordBatch>
+): Promise<arrow.Table | null>;
+export function makeTableFromBatches(
   batchIterator: AsyncIterable<TableBatch> | Iterable<TableBatch>
-): Promise<Table | null> {
+): Promise<Table | null>;
+export async function makeTableFromBatches(
+  batchIterator:
+    | AsyncIterable<TableBatch | arrow.RecordBatch>
+    | Iterable<TableBatch | arrow.RecordBatch>
+): Promise<Table | arrow.Table | null> {
   let arrayRows: ArrayRowTable['data'];
   let objectRows: ObjectRowTable['data'];
   let features: Feature[];
-  let shape: Table['shape'] | null = null;
+  let shape: Table['shape'] | 'arrow' | null = null;
   let schema: Schema | undefined;
+  const arrowBatches: arrow.RecordBatch[] = [];
 
   for await (const batch of batchIterator) {
-    shape = shape || batch.shape;
+    const batchShape = isArrowRecordBatch(batch) ? 'arrow' : batch.shape;
+    shape ??= batchShape;
+    if (shape !== batchShape) throw new Error('Batches must have the same shape');
+    if (isArrowRecordBatch(batch)) {
+      arrowBatches.push(batch);
+      continue;
+    }
     schema = schema || batch.schema;
 
     switch (batch.shape) {
@@ -58,7 +76,6 @@ export async function makeTableFromBatches(
         break;
 
       case 'columnar-table':
-      case 'arrow-table':
       default:
         throw new Error('shape');
     }
@@ -69,6 +86,8 @@ export async function makeTableFromBatches(
   }
 
   switch (shape) {
+    case 'arrow':
+      return makeArrowTableFromBatches(arrowBatches);
     case 'array-row-table':
       return {shape: 'array-row-table', data: arrayRows!, schema};
 

@@ -4,6 +4,7 @@
 
 // This code is inspired by https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import Protobuf from 'pbf';
 import {Schema} from '@loaders.gl/core/schema';
 import type {MVTTile, MVTLayer} from './mvt-types';
@@ -63,8 +64,7 @@ export function parseMVTTile(pbf: Protobuf, end?: number): MVTTile {
   try {
     pbf.readFields(readTileFieldFromPBF, tile, end);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn(error);
+    loaderLog.warn(String(error))();
   }
   return tile;
 }

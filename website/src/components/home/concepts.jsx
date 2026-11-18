@@ -58,7 +58,7 @@ const categoryTabs = [
     representations: {
       arrow: {
         data: 'Arrow table data',
-        detail: "shape: 'arrow-table'",
+        detail: "shape: 'arrow'",
         loaders: ['ArrowLoader', 'CSVLoader', 'JSONLoader', 'NDJSONLoader', 'ParquetLoader'],
         writers: ['ArrowWriter', 'ParquetWriter']
       },
@@ -76,7 +76,7 @@ const categoryTabs = [
     representations: {
       arrow: {
         data: 'GeoArrow table data',
-        detail: "shape: 'arrow-table'",
+        detail: "shape: 'arrow'",
         loaders: [
           'GeoArrowLoader',
           'GeoJSONLoader',
@@ -143,7 +143,7 @@ const categoryTabs = [
     representations: {
       arrow: {
         data: 'Arrow table data',
-        detail: "shape: 'arrow-table'",
+        detail: "shape: 'arrow'",
         loaders: ['JSONLoader'],
         writers: []
       },
@@ -186,7 +186,7 @@ const categoryTabs = [
       plain: {
         data: '3D Tiles category data',
         detail: 'Tilesets / tiles',
-        loaders: ['Tiles3DLoader', 'CesiumIonLoader', 'I3SLoader', 'PotreeLoader'],
+        loaders: ['Tiles3DLoader', 'I3SLoader', 'PotreeLoader'],
         writers: ['Tiles3DWriter']
       }
     }
@@ -215,7 +215,6 @@ const loaderDocumentationLinks = {
   BasisLoader: '/docs/modules/images/textures/api-reference/basis-loader',
   BSONLoader: '/docs/modules/documents/bson/api-reference/bson-loader',
   MarkdownLoader: '/docs/modules/documents/api-reference/markdown-loader',
-  CesiumIonLoader: '/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader',
   CompressedTextureLoader: '/docs/modules/images/textures/api-reference/compressed-texture-loader',
   CrunchLoader: '/docs/modules/images/textures/api-reference/crunch-loader',
   CSVLoader: '/docs/modules/tables/csv/api-reference/csv-loader',

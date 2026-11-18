@@ -76,6 +76,9 @@ export type {
 export type {
   TableQueryFilterStep,
   TableQueryLimitStep,
+  TableQuery,
+  TableSelection,
+  TableQueryExecutionOptions,
   TableQueryOptions,
   TableQueryPlan,
   TableQueryPlanStep,

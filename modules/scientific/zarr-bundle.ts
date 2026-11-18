@@ -9,6 +9,7 @@ export {
   readArrayBuffer,
   setLoaderOptions,
   getLoaderOptions,
+  compareLoaderOptions,
   registerLoaders,
   selectLoader,
   selectLoaderSync,
@@ -31,14 +32,14 @@ export {
   encodeText,
   encodeTextSync,
   createDataSource,
+  createDataSourceSync,
   _selectSource,
   makeIterator,
   makeStream,
   NullLoader,
   _fetchProgress,
   _BrowserFileSystem,
-  _unregisterLoaders,
-  NullWorkerLoader
+  _unregisterLoaders
 } from '@loaders.gl/core';
 export {
   setPathPrefix,
@@ -89,14 +90,14 @@ export type {
 export {
   loadZarr,
   ZarrPixelSource,
-  OMEZarrSourceLoader,
+  OMEZarrLoader,
   OMEZarrImageSource,
   loadZarrConsolidatedMetadata,
-  GeoZarrSourceLoader,
+  GeoZarrLoader,
   GeoZarrRasterSource,
-  ZarrArraySourceLoader,
+  ZarrArrayLoader,
   ZarrArraySource,
-  SpatialDataSourceLoader,
+  SpatialDataLoader,
   SpatialDataSource
 } from '@loaders.gl/scientific/zarr';
 export type {
@@ -104,12 +105,12 @@ export type {
   ZarrArrayData,
   ZarrArraySelection,
   ZarrArraySlice,
-  ZarrArraySourceLoaderOptions,
+  ZarrArrayLoaderOptions,
   ZarrArraySourceMetadata,
   SpatialDataElementFormat,
   SpatialDataElementKind,
   SpatialDataElementMetadata,
-  SpatialDataSourceLoaderOptions,
+  SpatialDataLoaderOptions,
   SpatialDataSourceMetadata,
   SpatialDataZarrElementSource,
   GetOMEZarrParameters,
@@ -121,11 +122,11 @@ export type {
   ZarrConsolidatedFormat,
   ZarrConsolidatedMetadata,
   ZarrMetadataPath,
-  ZarrSourceLoader,
-  ZarrSourceLoaderOptions,
+  ZarrLoader,
+  ZarrLoaderOptions,
   GeoZarrAffineTransform,
   GeoZarrSelectionDimension,
-  GeoZarrSourceLoaderOptions,
+  GeoZarrLoaderOptions,
   GeoZarrSourceMetadata,
   GetGeoZarrParameters
 } from '@loaders.gl/scientific/zarr';

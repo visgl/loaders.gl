@@ -10,6 +10,4 @@ export {PLYLoader} from './ply-loader-types';
 export type {PLYWriterOptions} from './ply-writer';
 export {PLYWriter} from './ply-writer';
 
-// DEPRECATED EXPORTS
-/** @deprecated Use PLYLoader. */
-export {PLYWorkerLoader} from './ply-loader-types';
+export {PLYLoaderWithParser} from '../ply-loader';

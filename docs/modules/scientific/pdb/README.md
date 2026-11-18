@@ -25,20 +25,21 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   title="Read PDB as data."
   description="Ångström coordinates; no inferred chemistry"
   tone="cyan"
-  items={[{"label":"Input","value":"Fixed-column ATOM/HETATM, MODEL/ENDMDL and CONECT"},{"label":"Output","value":"PDBStructure with model-local atoms and explicit bond pairs"},{"label":"Loader","value":"PDBLoader · @loaders.gl/scientific"},{"label":"Parser","value":"@loaders.gl/scientific/pdb-loader"}]}
+  items={[{"label":"Input","value":"Fixed-column ATOM/HETATM, MODEL/ENDMDL and CONECT"},{"label":"Output","value":"PDBStructure with model-local atoms and explicit bond pairs"},{"label":"Loader","value":"PDBLoader · @loaders.gl/scientific"},{"label":"Parser","value":"@loaders.gl/scientific/pdb"}]}
 />
-
-:::note Availability
-
-This page documents the initial implementation in [PR #4410](https://github.com/visgl/loaders.gl/pull/4410). Use a version containing that change; this guide does not imply availability in older published versions.
-
-:::
 
 <ReferenceBoundary
   title="Format, usage and output reference"
   description="Understand the source data, load it through the public entry point, and check the supported subset before integrating it."
   tone="cyan"
 />
+
+## API support
+
+| API | Kind | Import |
+| --- | --- | --- |
+| `PDBLoader` | Metadata loader | `@loaders.gl/scientific` or `@loaders.gl/scientific/pdb` |
+| `PDBLoaderWithParser` | Parser-bearing loader | `@loaders.gl/scientific/pdb` |
 
 ## What is PDB?
 
@@ -89,7 +90,7 @@ Hybrid-36 numbering, mmCIF, inferred bonds/elements, colors/radii, ANISOU interp
 
 ```typescript
 import {parseSync} from '@loaders.gl/core';
-import {PDBLoaderWithParser} from '@loaders.gl/scientific/pdb-loader';
+import {PDBLoaderWithParser} from '@loaders.gl/scientific/pdb';
 
 const structure = parseSync(text, PDBLoaderWithParser);
 ```

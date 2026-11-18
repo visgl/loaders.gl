@@ -9,6 +9,7 @@ export {
   readArrayBuffer,
   setLoaderOptions,
   getLoaderOptions,
+  compareLoaderOptions,
   registerLoaders,
   selectLoader,
   selectLoaderSync,
@@ -31,14 +32,14 @@ export {
   encodeText,
   encodeTextSync,
   createDataSource,
+  createDataSourceSync,
   _selectSource,
   makeIterator,
   makeStream,
   NullLoader,
   _fetchProgress,
   _BrowserFileSystem,
-  _unregisterLoaders,
-  NullWorkerLoader
+  _unregisterLoaders
 } from '@loaders.gl/core';
 export {
   setPathPrefix,
@@ -90,7 +91,7 @@ export {
   NetCDFReader,
   NetCDFFormat,
   NetCDFLoader,
-  NetCDFSourceLoader
+  NetCDFLoaderWithParser
 } from '@loaders.gl/scientific/netcdf';
 export type {
   NetCDF,

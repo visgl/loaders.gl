@@ -2,16 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {
-  GeoArrowBuilder,
-  WKBBuilder,
-  triangulateWKB,
-  makeGeoArrowColumnFromArrowVector,
-  makeArrowVectorFromGeoArrowColumn,
-  inferGeoArrowEncodingFromArrowType,
-  inferGeoArrowDimensionFromArrowType,
-  inferGeoArrowCoordinateLayoutFromArrowType
-} from '@loaders.gl/core/arrow-geometry';
+export {GeoArrowBuilder, WKBBuilder, triangulateWKB} from '@loaders.gl/core/arrow-geometry';
 export type {
   GeoArrowBuilderEncoding,
   GeoArrowCoordinateTransform,
@@ -34,6 +25,5 @@ export type {
   WKBGeometryArray,
   WKBGeometryTypeName,
   WKBGeometryWriter,
-  WKBCoordinateTransform,
-  MakeGeoArrowColumnFromArrowVectorOptions
+  WKBCoordinateTransform
 } from '@loaders.gl/core/arrow-geometry';

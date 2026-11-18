@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table} from 'apache-arrow';
+import {Table, RecordBatch} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {OBJLoader} from '@loaders.gl/scene/obj';
@@ -14,7 +14,7 @@ const source = ['v 1 2 3', 'v 4 5 6', 'v 7 8 9', ''].join('\n');
 afterEach(() => destroyWorkerTasks());
 
 test.each([
-  'arrow-table',
+  'arrow',
   'mesh'
 ] as const)('OBJ worker batches transfer column transport before %s conversion', async shape => {
   const parser = await OBJLoader.preload();
@@ -34,9 +34,9 @@ test.each([
   );
   const positions: number[] = [];
   for await (const batch of batches) {
-    if (shape === 'arrow-table') {
-      expect(batch.data).toBeInstanceOf(Table);
-      for (const position of batch.data.getChild('POSITION')!) positions.push(...position);
+    if (shape === 'arrow') {
+      expect(batch).toBeInstanceOf(RecordBatch);
+      for (const position of batch.getChild('POSITION')!) positions.push(...position);
     } else {
       const mesh = batch.data;
       positions.push(...mesh.attributes.POSITION.value);
@@ -46,8 +46,11 @@ test.each([
   expect(mainParser).not.toHaveBeenCalled();
   expect(deserialize).toHaveBeenCalledTimes(2);
   for (const [payload] of deserialize.mock.calls) {
-    expect(payload).toMatchObject({shape: 'arrow-table', data: {transport: 'arrow-js'}});
-    expect((payload as any).data.batches).toBeInstanceOf(Array);
+    expect(payload).toMatchObject({
+      transport: 'arrow-record-batch',
+      columns: {data: {transport: 'arrow-js'}}
+    });
+    expect((payload as any).columns.data.batches).toBeInstanceOf(Array);
   }
 });
 
@@ -61,8 +64,8 @@ test('OBJ atomic worker uses column transport before caller-side mesh conversion
   );
   expect(Array.from(mesh.attributes.POSITION.value)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
 });
 
@@ -87,11 +90,11 @@ test('OBJ emits worker batches before EOF and cancels blocked input promptly', a
     const batches = await parseInBatches(input(), OBJLoader, {
       signal: controller.signal,
       core: {worker: true, _workerType: 'test', batchSize: 2},
-      obj: {pointCloud: true, shape: 'arrow-table'}
+      obj: {pointCloud: true, shape: 'arrow'}
     });
     const iterator = batches[Symbol.asyncIterator]();
     const first = await iterator.next();
-    expect(first.value.length).toBe(2);
+    expect(first.value.numRows).toBe(2);
     controller.abort(new Error('cancel OBJ input'));
     await expect(iterator.next()).rejects.toThrow('cancel OBJ input');
   } finally {
@@ -119,20 +122,35 @@ test('Worker hydration rejects decoded mesh payloads', async () => {
 test('OBJ column transport hydration defaults to Arrow when caller options are omitted', async () => {
   const parser = await OBJLoader.preload();
   const table = await parser.parse(new TextEncoder().encode(source).buffer, {
-    obj: {shape: 'arrow-table'}
+    obj: {shape: 'arrow'}
   });
   const payload = parser.serializeWorkerResult(table);
-  expect(parser.deserializeWorkerResult(payload).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerResult(payload, {}).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerBatch(payload).data).toBeInstanceOf(Table);
-  expect(parser.deserializeWorkerBatch(payload, {}).data).toBeInstanceOf(Table);
+  expect(parser.deserializeWorkerResult(payload)).toBeInstanceOf(Table);
+  expect(parser.deserializeWorkerResult(payload, {})).toBeInstanceOf(Table);
+  expect(parser.deserializeWorkerBatch(payload)).toBeInstanceOf(RecordBatch);
+  expect(parser.deserializeWorkerBatch(payload, {})).toBeInstanceOf(RecordBatch);
 });
 
 test('OBJ bundled entrypoint retains OBJ and MTL parser and format exports', () => {
   expect(bundled.OBJFormat.id).toBe('obj');
   expect(bundled.MTLFormat.id).toBe('mtl');
   expect(bundled.OBJLoader.parse).toBeTypeOf('function');
-  expect(bundled.OBJWorkerLoader).toBe(bundled.OBJLoader);
   expect(bundled.MTLLoader.parseTextSync).toBeTypeOf('function');
-  expect(bundled.MTLWorkerLoader.id).toBe('mtl');
+  expect(bundled.MTLLoader.id).toBe('mtl');
+});
+
+test('OBJ worker preserves cumulative and batch-local bounds', async () => {
+  const iterator = await parseInBatches(
+    [new TextEncoder().encode('v 1 2 3\nv -1 4 0\n')],
+    OBJLoader,
+    {
+      core: {worker: true, _workerType: 'test', batchSize: 1},
+      obj: {shape: 'arrow', pointCloud: true}
+    }
+  );
+  const batches: any[] = [];
+  for await (const batch of iterator) batches.push(batch);
+  expect(batches[0].schema.metadata.get('boundingBox')).toBe('[[1,2,3],[1,2,3]]');
+  expect(batches[1].schema.metadata.get('boundingBox')).toBe('[[-1,2,0],[1,4,3]]');
+  expect(batches[1].metadata.get('boundingBox')).toBe('[[-1,4,0],[-1,4,0]]');
 });

@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="mint"
   meta={['STAC catalogs', 'API Item Search', 'Asset links']}
   links={[
-    {label: 'STAC source', to: '/docs/modules/ogc/stac/api-reference/stac-source-loader'},
+    {label: 'STAC source', to: '/docs/modules/ogc/stac/api-reference/stac-loader'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
@@ -60,10 +60,10 @@ npm install @loaders.gl/core @loaders.gl/services
 ## Usage
 
 ```ts
-import {load} from '@loaders.gl/core';
-import {STACSourceLoader} from '@loaders.gl/ogc/stac';
+import {createDataSource} from '@loaders.gl/core';
+import {STACLoader} from '@loaders.gl/ogc/stac';
 
-const source = await load('https://example.com/catalog.json', STACSourceLoader);
+const source = await createDataSource('https://example.com/catalog.json', STACLoader);
 const {mode, root} = await source.getMetadata();
 
 if (mode === 'api') {
@@ -81,7 +81,7 @@ if (mode === 'api') {
 }
 ```
 
-See [`STACSourceLoader`](/docs/modules/ogc/stac/api-reference/stac-source-loader) for the source API and
+See [`STACLoader`](/docs/modules/ogc/stac/api-reference/stac-loader) for the source API and
 [STAC format notes](/docs/modules/ogc/stac/formats/stac) for protocol behavior.
 
 ## Browser access

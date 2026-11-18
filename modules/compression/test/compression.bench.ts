@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import * as internal from '../src/lib/fflate/index';
+import * as internal from '../src/lib/fflate';
 import * as upstream from 'fflate';
 
 /** Registers hermetic, verified internal-versus-upstream compression baselines. */

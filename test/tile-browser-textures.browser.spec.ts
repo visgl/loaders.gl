@@ -89,7 +89,7 @@ test.each([
   const archive = new Tiles3DArchive(new ArrayBufferFile(await result.file.arrayBuffer()));
   try {
     const gltf = await parse(await archive.getFile('meshes/0.glb'), GLTFLoader, {
-      worker: false,
+      core: {worker: false},
       gltf: {loadImages: false}
     });
     const primitive = gltf.json.meshes[0].primitives[0];
@@ -221,7 +221,7 @@ test.each([
   try {
     const output = await archive.getFile('meshes/0.glb');
     const preserved = await parse(output, GLTFLoader, {
-      worker: false,
+      core: {worker: false},
       gltf: {loadImages: false, excludeExtensions: {KHR_texture_transform: false}}
     });
     expect(preserved.json.extensionsUsed).toContain('KHR_texture_transform');
@@ -253,7 +253,7 @@ test.each([
     expect(preserved.json.samplers![texture.sampler!]).toMatchObject(TEXTURE_SAMPLER);
     // A normal consumer applies the preserved transform exactly once, including integer normalization.
     const renderedContainer = await parse(output, GLTFLoader, {
-      worker: false,
+      core: {worker: false},
       gltf: {loadImages: false}
     });
     const rendered = renderedContainer.json.meshes![0].primitives[0];

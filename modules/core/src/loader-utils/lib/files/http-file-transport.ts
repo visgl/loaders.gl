@@ -64,6 +64,8 @@ export class HttpFileTransport {
   private readonly identityHints: HttpFileIdentityHints;
   /** Failure objects already included in telemetry. */
   private readonly countedFailures = new WeakSet<object>();
+  /** Observer for cumulative transport counters, including asynchronous cancellation. */
+  private readonly onTelemetry?: (telemetry: HttpFileTelemetry, error?: unknown) => void;
   /** Mutable counters backing immutable telemetry snapshots. */
   private readonly telemetry: MutableHttpFileTelemetry = {
     requestedBytes: 0,
@@ -79,6 +81,7 @@ export class HttpFileTransport {
     validateKnownByteLength(options.byteLength);
 
     this.url = url;
+    this.onTelemetry = options.onTelemetry;
     this.fetchFunction = options.fetch || ((input, init) => globalThis.fetch(input, init));
     this.fetchOptions = options.fetchOptions
       ? {...options.fetchOptions, headers: new Headers(options.fetchOptions.headers)}
@@ -121,6 +124,7 @@ export class HttpFileTransport {
     } else {
       this.telemetry.errorCount++;
     }
+    this.onTelemetry?.(this.getTelemetry(), error);
   }
 
   /** Performs and validates one exact HTTP range request. */
@@ -148,7 +152,18 @@ export class HttpFileTransport {
         throw new Error(`HTTP byte-range request expected 206, received ${response.status}`);
       }
 
-      const contentRange = await readContentRange(response);
+      // CORS can hide Content-Range from JS even when the server honored Range.
+      // Only an absent header uses inference; malformed visible headers still fail.
+      // The 206 status and exact body length are checked independently below/above.
+      const contentRange = response.headers.has('Content-Range')
+        ? await readContentRange(response)
+        : await this.inferContentRange(
+            response,
+            offset,
+            length,
+            expectedIdentity,
+            abortContext.signal
+          );
       const responseIdentity = getResponseIdentity(response, contentRange.byteLength);
       const responseError =
         getIdentityError(
@@ -185,6 +200,55 @@ export class HttpFileTransport {
     } finally {
       abortContext.removeAbortListeners();
       this.telemetry.networkTimeMs += getTimestamp() - requestStartTime;
+      this.onTelemetry?.(this.getTelemetry());
+    }
+  }
+
+  /** Infers bounds for a CORS-filtered 206; the caller still validates the body length. */
+  private async inferContentRange(
+    response: Response,
+    offset: number,
+    length: number,
+    expectedIdentity: HttpFileIdentity | null,
+    signal: AbortSignal
+  ): Promise<ParsedContentRange> {
+    try {
+      let byteLength = expectedIdentity?.byteLength ?? this.identityHints.byteLength;
+      if (byteLength === undefined) {
+        const headers = new Headers(this.fetchOptions?.headers);
+        headers.delete('Range');
+        this.telemetry.requestCount++;
+        const metadata = await this.fetchFunction(this.url, {
+          ...this.fetchOptions,
+          method: 'HEAD',
+          body: undefined,
+          headers,
+          signal
+        });
+        await cancelResponse(metadata);
+        const value = metadata.headers.get('Content-Length');
+        byteLength = value && /^\d+$/.test(value) ? Number(value) : NaN;
+        if (
+          metadata.status !== 200 ||
+          !Number.isSafeInteger(byteLength) ||
+          byteLength < offset + length
+        ) {
+          throw new Error(
+            'HTTP byte-range response is missing Content-Range and HEAD did not provide a valid file length'
+          );
+        }
+        const identityError = getIdentityError(
+          getResponseIdentity(metadata, byteLength),
+          getResponseIdentity(response, byteLength),
+          this.identityHints,
+          this.consistency
+        );
+        if (identityError) throw new Error(identityError);
+      }
+      return {offset, endOffset: offset + length - 1, byteLength};
+    } catch (error) {
+      await cancelResponse(response);
+      throw error;
     }
   }
 

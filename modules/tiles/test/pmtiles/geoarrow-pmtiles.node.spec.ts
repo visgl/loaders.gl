@@ -55,9 +55,7 @@ test('PMTiles root packaging import leaves GeoArrow export orchestration in its 
   );
   expect(files).not.toContain('modules/tiles/src/pmtiles/geoarrow.ts');
   expect(files).not.toContain('modules/tiles/src/pmtiles/raster.ts');
-  expect(result.outputFiles[0].text).not.toContain(
-    '@loaders.gl/tiles/arrow-table-tile-source-loader'
-  );
+  expect(result.outputFiles[0].text).not.toContain('@loaders.gl/tiles/arrow-table-tile-loader');
 });
 
 test('installed native Node ESM authoring imports do not eagerly load the MLT decoder', () => {

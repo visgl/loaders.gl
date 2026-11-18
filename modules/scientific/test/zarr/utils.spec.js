@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 // @ts-ignore
-import {isInterleaved, getIndexer} from '@loaders.gl/scientific/zarr/lib/utils';
+import {isInterleaved, getIndexer} from '../../src/zarr/lib/utils';
 test('isInterleaved', () => {
   expect.assertions(4);
   expect(isInterleaved([1, 2, 400, 400, 4])).toBeTruthy();

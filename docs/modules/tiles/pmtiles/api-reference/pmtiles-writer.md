@@ -15,7 +15,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   meta={['From v5.0', 'PMTiles v3', 'Browser and Node.js']}
   links={[
     {label: 'PMTiles format', to: '/docs/modules/tiles/pmtiles/formats/pmtiles'},
-    {label: 'PMTiles source', to: '/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader'},
+    {label: 'PMTiles source', to: '/docs/modules/tiles/pmtiles/api-reference/pmtiles-source'},
     {label: 'PMTiles module', to: '/docs/modules/tiles/pmtiles'}
   ]}
 />
@@ -108,5 +108,5 @@ iterator's pending `next()` call. No partial archive is returned on failure.
 This API packages existing tile payloads. [GeoArrow-to-MVT/MLT authoring](./geoarrow-pmtiles) composes the existing tiler with this writer. Raster reprojection,
 resampling and overview generation, source adapters, CLI export, browser download UI, deduplication,
 and streaming file sinks are separate follow-up work. The existing
-[Arrow table tiler](/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader) can supply
+[Arrow table tiler](/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader) can supply
 Arrow tiles to a future encoding/export pipeline.

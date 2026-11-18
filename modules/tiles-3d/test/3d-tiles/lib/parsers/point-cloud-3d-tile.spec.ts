@@ -93,12 +93,11 @@ test('point cloud tile#encodes positions, colors, normals, and batch properties'
       attributes: {
         positions: new Float32Array([1, 2, 3, 4, 5, 6]),
         colors: {
-          type: 5121,
           value: new Uint8Array([255, 0, 0, 0, 255, 0]),
           size: 3,
           normalized: false
         },
-        normals: {type: 5126, value: new Float32Array([0, 0, 1, 0, 1, 0]), size: 3},
+        normals: {value: new Float32Array([0, 0, 1, 0, 1, 0]), size: 3},
         batchIds: new Uint16Array([0, 1])
       },
       batchTableJson: {
@@ -113,9 +112,14 @@ test('point cloud tile#encodes positions, colors, normals, and batch properties'
   );
   const tile = await parse(arrayBuffer, Tiles3DLoader);
 
+  expect(tile.topology).toBe('point-list');
+  expect(tile.attributes.colors).toEqual({
+    value: new Uint8ClampedArray([255, 0, 0, 0, 255, 0]),
+    size: 3,
+    normalized: true
+  });
   expect(Array.from(tile.attributes.positions!)).toEqual([1, 2, 3, 4, 5, 6]);
-  expect(Array.from(tile.attributes.colors!.value)).toEqual([255, 0, 0, 0, 255, 0]);
-  expect(Array.from(tile.attributes.normals!.value)).toEqual([0, 0, 1, 0, 1, 0]);
+  expect(tile.attributes.normals).toEqual({value: new Float32Array([0, 0, 1, 0, 1, 0]), size: 3});
   expect(Array.from(tile.batchIds!)).toEqual([0, 1]);
   expect(tile.batchTableJson).toEqual({
     name: ['first', 'second'],

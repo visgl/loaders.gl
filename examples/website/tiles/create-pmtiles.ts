@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {waitForPromiseWithSignal} from '@loaders.gl/core/loader-utils';
+import type {Table} from 'apache-arrow';
 import type {PMTilesTile} from '@loaders.gl/tiles/pmtiles';
 
 /** In-memory export ceilings; actual allocations depend on the browser and available memory. */
@@ -243,7 +244,7 @@ export async function createPMTilesExampleArchive(
   if (options.format === 'geotiff') {
     const sourceInput = typeof input === 'string' ? getPMTilesExampleURL(input).href : input;
     const [{GeoTIFFRasterSource}, {encodeRasterPMTiles}] = await waitForPromiseWithSignal(
-      Promise.all([import('@loaders.gl/raster/geotiff-source-loader'), import('@loaders.gl/tiles/pmtiles/raster')]),
+      Promise.all([import('@loaders.gl/raster/geotiff'), import('@loaders.gl/tiles/pmtiles/raster')]),
       signal
     );
     signal.throwIfAborted();
@@ -279,23 +280,24 @@ export async function createPMTilesExampleArchive(
     signal.throwIfAborted();
     const {parse} = await waitForPromiseWithSignal(import('@loaders.gl/core'), signal);
     signal.throwIfAborted();
-    const table =
-      options.format === 'arrow'
-        ? await parse(
-            bytes,
-            (await waitForPromiseWithSignal(import('@loaders.gl/tables/arrow/index'), signal)).ArrowLoader,
-            {core: {worker: false}, arrow: {shape: 'arrow-table'}}
-          )
-        : await parse(
-            bytes,
-            (await waitForPromiseWithSignal(import('@loaders.gl/tables/json/index'), signal)).GeoJSONLoader,
-            {
-              core: {worker: false},
-              geojson: {shape: 'arrow-table'}
-            }
-          );
+    let table: Table;
+    if (options.format === 'arrow') {
+      const {ArrowLoader} = await waitForPromiseWithSignal(
+        import('@loaders.gl/tables/arrow'),
+        signal
+      );
+      table = await parse(bytes, ArrowLoader, {core: {worker: false}, arrow: {shape: 'arrow'}});
+    } else {
+      const {GeoJSONLoader} = await waitForPromiseWithSignal(
+        import('@loaders.gl/tables/geojson'),
+        signal
+      );
+      table = await parse(bytes, GeoJSONLoader, {
+        core: {worker: false},
+        geojson: {shape: 'arrow'}
+      });
+    }
     signal.throwIfAborted();
-    if (table.shape !== 'arrow-table') throw new Error('Input did not produce a GeoArrow table.');
     const {encodeGeoArrowPMTiles} = await waitForPromiseWithSignal(
       import('@loaders.gl/tiles/pmtiles/geoarrow'),
       signal

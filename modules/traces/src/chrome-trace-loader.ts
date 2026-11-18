@@ -12,7 +12,7 @@ import {
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 import {
   parseChromeTraceToArrowRecordBatches,
@@ -55,14 +55,21 @@ export const ChromeTraceLoaderWithParser = {
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options?: ChromeTraceLoaderOptions
   ) {
-    if (resolveChromeTraceLoaderShape(options) !== 'arrow-table') {
-      throw new Error('ChromeTraceLoader.parseInBatches currently requires shape: "arrow-table".');
+    if (resolveChromeTraceLoaderShape(options) !== 'arrow') {
+      throw new Error('ChromeTraceLoader.parseInBatches currently requires shape: "arrow".');
     }
 
-    yield* parseChromeTraceToArrowRecordBatches(iterator, {
-      batchSize: resolveChromeTraceLoaderBatchSize(options),
-      maxLength: options?.maxLength
-    });
+    yield* paceBatchIterator(
+      parseChromeTraceToArrowRecordBatches(iterator, {
+        batchSize: resolveChromeTraceLoaderBatchSize(options),
+        maxLength: options?.maxLength
+      }),
+      {
+        batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+        getRowCount: batch => batch.numRows,
+        signal: options?.signal
+      }
+    );
   }
 } as const satisfies LoaderWithParser<
   ChromeTraceFileSchema | ChromeTraceEventArrowTable,
@@ -107,7 +114,7 @@ function parseChromeTraceTextSync(
   text: string,
   options?: ChromeTraceLoaderOptions
 ): ChromeTraceFileSchema | ChromeTraceEventArrowTable {
-  if (resolveChromeTraceLoaderShape(options) === 'arrow-table') {
+  if (resolveChromeTraceLoaderShape(options) === 'arrow') {
     return parseChromeTraceToArrowTable(text, {
       maxLength: options?.maxLength
     });
@@ -121,10 +128,9 @@ function parseChromeTraceTextSync(
  */
 function resolveChromeTraceLoaderShape(
   options: ChromeTraceLoaderOptions | undefined
-): 'json' | 'arrow-table' {
-  // The explicit legacy option must override the namespaced loader default injected by core.
-  const shape = options?.shape ?? options?.chromeTrace?.shape;
-  return shape === 'json' ? 'json' : 'arrow-table';
+): 'json' | 'arrow' {
+  const shape = options?.chromeTrace?.shape ?? options?.core?.shape;
+  return shape === 'json' ? 'json' : 'arrow';
 }
 
 /**
@@ -133,10 +139,9 @@ function resolveChromeTraceLoaderShape(
 function resolveChromeTraceLoaderBatchSize(
   options: ChromeTraceLoaderOptions | undefined
 ): number | undefined {
-  return (
-    options?.chromeTrace?.batchSize ??
-    (typeof options?.batchSize === 'number' ? options.batchSize : undefined)
-  );
+  return typeof options?.core?.batchSize === 'number'
+    ? options.core.batchSize
+    : options?.chromeTrace?.batchSize;
 }
 
 /**
@@ -156,7 +161,7 @@ function deserializeChromeTraceWorkerResult(
   options?: ChromeTraceLoaderOptions
 ): ChromeTraceFileSchema | ChromeTraceEventArrowTable {
   const table = deserializeTraceWorkerResult(result) as ChromeTraceEventArrowTable;
-  if (resolveChromeTraceLoaderShape(options) === 'arrow-table') return table;
+  if (resolveChromeTraceLoaderShape(options) === 'arrow') return table;
   return {
     ...JSON.parse(table.schema.metadata.get('chromeTrace.containerJson') || '{}'),
     traceEvents: decodeChromeTraceArrowSource(table),

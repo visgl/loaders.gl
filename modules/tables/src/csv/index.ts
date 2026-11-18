@@ -8,9 +8,19 @@ export {CSVLoader} from './csv-loader-types';
 
 export type {CSVWriterOptions} from './csv-writer';
 export {CSVWriter} from './csv-writer';
-export {CSVSourceLoader, CSVTableSource} from './csv-source';
+export {CSVTableSource} from './csv-source';
 export type {CSVSourceOptions} from './csv-source';
 
-// DEPRECATED EXPORTS
-/** @deprecated Use CSVLoader. */
-export {CSVLoader as CSVWorkerLoader} from './csv-loader-types';
+export {CSV_LOADER_VERSION, DEFAULT_CSV_SHAPE, CSV_LOADER_OPTIONS} from './csv-loader-options';
+
+export {CSVLoaderWithParser} from '../csv-loader';
+
+export {
+  parseCSVArrayBufferAsArrow,
+  parseCSVTextAsArrow,
+  parseCSVInArrowBatches,
+  convertCSVRowTableToArrowTable,
+  calculateInitialTypedColumnCapacity,
+  type ArrowTableCSVOptions,
+  type ArrowTableCSVParseOptions
+} from './csv-arrow-table-parser';

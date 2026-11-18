@@ -70,11 +70,16 @@ function detectSourceShape<Shape extends string>(
     detectedShapes.add(fallbackShape as Shape);
   }
 
+  let detectionPriority = 0;
   for (const converter of converters) {
     const detectedShape = converter.detectInputShape?.(input);
-    if (detectedShape) {
-      detectedShapes.add(detectedShape);
+    if (!detectedShape) continue;
+    const priority = converter.inputShapePriority ?? 0;
+    if (priority > detectionPriority) {
+      detectedShapes.clear();
+      detectionPriority = priority;
     }
+    if (priority === detectionPriority) detectedShapes.add(detectedShape);
   }
 
   if (detectedShapes.size === 0) {

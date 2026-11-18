@@ -12,10 +12,9 @@
   "dependencies": {
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/images": "workspace:*",
-    "@luma.gl/core": "^9.4.0",
-    "@luma.gl/engine": "^9.4.0",
-    "@luma.gl/shadertools": "^9.4.0",
-    "@luma.gl/webgl": "^9.4.0",
+    "@luma.gl/core": "10.0.0-alpha.14",
+    "@luma.gl/engine": "10.0.0-alpha.14",
+    "@luma.gl/shaders": "10.0.0-alpha.14",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "styled-components": "^4.2.0"

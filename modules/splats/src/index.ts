@@ -26,4 +26,4 @@ export type {
   RADChunkTableIteratorOptions,
   RADSourceLoaderOptions
 } from './rad-source-loader';
-export {RADSource, RADSourceLoader, resolveRADChunkUrl} from './rad-source-loader';
+export {RADSource, resolveRADChunkUrl} from './rad-source-loader';

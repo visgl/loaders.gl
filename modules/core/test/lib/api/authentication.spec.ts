@@ -5,6 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {
   createDataSource,
+  createDataSourceSync,
   load,
   loadInBatches,
   parse,
@@ -213,7 +214,7 @@ const TestSourceLoader = {
   defaultOptions: {},
   testURL: () => true,
   getAuthentications: () => [BearerTokenAuthentication],
-  createDataSource: (data, options) => new DataSource(data, options)
+  createDataSourceSync: (data, options) => new DataSource(data, options)
 } satisfies SourceLoader;
 
 test('source APIs discover constructors and retain them for subsequent requests', async () => {
@@ -225,10 +226,10 @@ test('source APIs discover constructors and retain them for subsequent requests'
     }
   };
   const sources = [
-    createDataSource(`${ORIGIN}/source`, [TestSourceLoader], options),
-    await load(`${ORIGIN}/source`, TestSourceLoader, options),
-    await load(`${ORIGIN}/source`, [TestSourceLoader], options),
-    await load(`${ORIGIN}/source`, [TestLoader, TestSourceLoader], options)
+    createDataSourceSync(`${ORIGIN}/source`, [TestSourceLoader], options),
+    await createDataSource(`${ORIGIN}/source`, TestSourceLoader, options),
+    await createDataSource(`${ORIGIN}/source`, [TestSourceLoader], options),
+    await createDataSource(`${ORIGIN}/source`, [TestLoader, TestSourceLoader], options)
   ];
   for (const source of sources) await source.fetch(`${ORIGIN}/child`);
   expect(transport).toHaveBeenCalledTimes(4);
@@ -239,7 +240,7 @@ test('source APIs discover constructors and retain them for subsequent requests'
 
 test('synchronous source creation explains how to use an asynchronous discovery hook', () => {
   expect(() =>
-    createDataSource(
+    createDataSourceSync(
       `${ORIGIN}/source`,
       [{...TestSourceLoader, getAuthentications: async () => [BearerTokenAuthentication]}],
       {
@@ -248,7 +249,7 @@ test('synchronous source creation explains how to use an asynchronous discovery 
         }
       }
     )
-  ).toThrow('Use load()');
+  ).toThrow('Use createDataSource()');
 });
 
 test('source loading preserves metadata discovery when preload replaces the source definition', async () => {
@@ -264,9 +265,9 @@ test('source loading preserves metadata discovery when preload replaces the sour
     }
   };
   const sources = [
-    await load(`${ORIGIN}/source`, sourceLoader, options),
-    await load(`${ORIGIN}/source`, [sourceLoader], options),
-    await load(`${ORIGIN}/source`, [TestLoader, sourceLoader], options)
+    await createDataSource(`${ORIGIN}/source`, sourceLoader, options),
+    await createDataSource(`${ORIGIN}/source`, [sourceLoader], options),
+    await createDataSource(`${ORIGIN}/source`, [TestLoader, sourceLoader], options)
   ];
   for (const source of sources) await source.fetch(`${ORIGIN}/child`);
   expect(transport).toHaveBeenCalledTimes(3);

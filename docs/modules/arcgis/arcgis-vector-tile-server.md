@@ -55,8 +55,12 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 ArcGIS VectorTileServer endpoints publish Mapbox Vector Tile (MVT) data together with an ArcGIS
-tile grid, style document, and sprite resources. `ArcGISVectorTileServerSourceLoader` implements the
+tile grid, style document, and sprite resources. `ArcGISVectorTileServerLoader` implements the
 loaders.gl `VectorTileSource` contract.
+
+| Property | Value |
+| --- | --- |
+| Data source | `ArcGISVectorTileServerSource` |
 
 ## Feature support
 
@@ -82,10 +86,10 @@ loaders.gl `VectorTileSource` contract.
 ## Raw and decoded tiles
 
 ```ts
-import {load} from '@loaders.gl/core';
-import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/arcgis';
+import {createDataSource} from '@loaders.gl/core';
+import {ArcGISVectorTileServerLoader} from '@loaders.gl/arcgis';
 
-const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader]);
+const source = await createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerLoader]);
 
 const metadata = await source.getMetadata();
 const tileBytes = await source.getTile({z: 4, x: 6, y: 7});
@@ -100,7 +104,7 @@ needs decoded geometries and properties.
 MVT options are forwarded to `@loaders.gl/tiles/mvt`:
 
 ```ts
-const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader], {
+const source = await createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerLoader], {
   mvt: {
     shape: 'geojson-table',
     layers: ['roads', 'labels']

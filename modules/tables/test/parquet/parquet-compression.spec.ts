@@ -4,7 +4,6 @@
 
 import { expect, test } from "vitest";
 import { ZstdCodec } from 'zstd-codec';
-import { ZstdCompression } from '@loaders.gl/compression/zstd-compression';
 import { SnappyJSCompressor } from '@loaders.gl/compression/snappy-compressor-snappyjs';
 import { createParquetPageDecompressor, decompress } from '../../src/parquet/parquetjs/compression';
 test('Parquet compression#native streams avoid codec fallbacks', async () => {

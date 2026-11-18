@@ -2,14 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table, RecordBatch} from 'apache-arrow';
 import {
-  serializeArrowWorkerTable,
-  deserializeArrowWorkerTable
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+  serializeNativeArrowWorkerResult,
+  deserializeNativeArrowWorkerResult
+} from '@loaders.gl/core/arrow-worker-transport';
 
 /** Transfers owned Arrow columns or WKB buffers, with small SHP/DBF header envelopes. */
 export function serializeShapefileWorkerResult(result: any): unknown {
-  if (result?.shape === 'arrow-table') return serializeArrowWorkerTable(result);
+  if (result instanceof Table || result instanceof RecordBatch)
+    return serializeNativeArrowWorkerResult(result);
   if (
     Array.isArray(result) &&
     result.every(value => value === null || value instanceof Uint8Array)
@@ -32,7 +34,8 @@ export function serializeShapefileWorkerResult(result: any): unknown {
 
 /** Restores Arrow instances and binary geometry envelopes without accepting decoded row payloads. */
 export function deserializeShapefileWorkerResult<T>(result: any): T {
-  if (result?.shape === 'arrow-table') return deserializeArrowWorkerTable(result);
+  if (result?.transport === 'arrow-table-columns' || result?.transport === 'arrow-record-batch')
+    return deserializeNativeArrowWorkerResult(result) as T;
   if (result?.transport === 'shapefile-header') return result.header as T;
   if (result?.transport === 'shp-wkb') {
     return (

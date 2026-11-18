@@ -5,7 +5,8 @@
 import {expect, test, vi} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {VectorSourceLayer, type VectorSourceLayerProps} from '@loaders.gl/deck-layers';
-import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
+import {VectorFeatureTableScanSource} from '@loaders.gl/core/scan';
+import {ArrowTableBuilder, convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {VectorSet} from '../src/vector-source-layer/vector-set';
 function createDeferredPromise<T>() {
   let resolvePromise!: (value: T) => void;
@@ -357,7 +358,7 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
         return {metadata: {}, fields: []};
       },
       async getFeatures() {
-        return ARROW_TABLE as any;
+        return ARROW_TABLE;
       }
     } as any,
     layers: ['roads'],
@@ -367,19 +368,35 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer 
   });
   await vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
   expect(vectorSet.data, 'VectorSet keeps Arrow tables').toBe(ARROW_TABLE);
+  const source = {
+    async getMetadata() {
+      return {name: 'roads', keywords: [], layers: [{name: 'roads'}]};
+    },
+    async getSchema() {
+      return convertArrowToSchema(ARROW_TABLE.schema);
+    },
+    async getFeatures() {
+      return ARROW_TABLE;
+    }
+  };
+  const scanSource = new VectorFeatureTableScanSource(source, {
+    request: {
+      layers: 'roads',
+      boundingBox: [
+        [0, 1],
+        [2, 3]
+      ]
+    }
+  });
+  const scanned = await scanSource.query();
+  expect(scanned.numRows).toBe(ARROW_TABLE.numRows);
+  expect(scanned.schema.fields.find(field => field.name === 'geometry')?.metadata).toEqual(
+    ARROW_TABLE.schema.fields.find(field => field.name === 'geometry')?.metadata
+  );
+
   const layer = createLayer({
     id: 'vector-layer-arrow',
-    data: {
-      async getMetadata() {
-        return {name: 'roads', keywords: [], layers: [{name: 'roads'}]};
-      },
-      async getSchema() {
-        return ARROW_TABLE.schema;
-      },
-      async getFeatures() {
-        return ARROW_TABLE as any;
-      }
-    } as any,
+    data: source,
     layers: ['roads'],
     format: 'arrow',
     debounceTime: 0,
@@ -440,7 +457,6 @@ test('VectorSourceLayer exhausts option, viewport, and reuse update branches', a
   const stableProps = {
     ...layer.props,
     loaders: layer.props.loaders,
-    sources: layer.props.sources,
     sourceOptions: layer.props.sourceOptions
   };
 
@@ -504,7 +520,6 @@ test('VectorSourceLayer covers option defaults, direct source validation, and ta
     data: TEST_VECTOR_SOURCE as any,
     layers: undefined as any,
     loaders: undefined as any,
-    sources: undefined as any,
     sourceOptions: undefined as any
   });
   layer.initializeState();
@@ -622,12 +637,12 @@ test('VectorSourceLayer reports incompatible sources and finalizes owned URL sou
     fromUrl: true,
     fromBlob: false,
     testURL: () => true,
-    createDataSource: () => source
+    createDataSourceSync: () => source
   };
   const layer = createLayer({
     id: 'owned-vector-source',
     data: 'memory.vector',
-    sources: [sourceLoader] as any,
+    loaders: [sourceLoader] as any,
     layers: []
   });
   layer.initializeState();

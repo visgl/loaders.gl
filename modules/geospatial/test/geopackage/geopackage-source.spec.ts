@@ -1,54 +1,51 @@
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
+import {query} from '@loaders.gl/core/scan';
 import * as arrow from 'apache-arrow';
-import {createDataSource, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
-import {getTableRowAsObject} from '@loaders.gl/core/schema-utils';
-import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geospatial/geopackage/index';
+import {createDataSourceSync, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
+import {GeoPackageDataSource} from '@loaders.gl/geospatial/geopackage';
 import {GeoPackageLoader as BundledGeoPackageLoader} from '@loaders.gl/geospatial/geopackage/bundled';
 const GPKG_RIVERS_MULTI = '@loaders.gl/geospatial/geopackage/test/data/rivers_multi.gpkg';
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
+setLoaderOptions({core: {_workerType: 'test', worker: false}});
+test('GeoPackageLoaderWithParser#testURL recognizes GeoPackage URLs', () => {
+  expect(GeoPackageLoaderWithParser.testURL('data.gpkg')).toBe(true);
+  expect(GeoPackageLoaderWithParser.testURL('data.gpkg?download=1')).toBe(true);
+  expect(GeoPackageLoaderWithParser.testURL('data.sqlite')).toBe(false);
 });
-test('GeoPackageSource#testURL recognizes GeoPackage URLs', () => {
-  expect(GeoPackageSource.testURL('data.gpkg')).toBe(true);
-  expect(GeoPackageSource.testURL('data.gpkg?download=1')).toBe(true);
-  expect(GeoPackageSource.testURL('data.sqlite')).toBe(false);
-});
-test('GeoPackageSource#createDataSource selects GeoPackage source from URL', () => {
-  expect(GeoPackageSource.testURL?.('data.GPKG?download=1')).toBe(true);
-  expect(GeoPackageSource.testURL?.('data.parquet')).toBe(false);
+test('GeoPackageLoaderWithParser#createDataSource selects GeoPackage source from URL', () => {
+  expect(GeoPackageLoaderWithParser.testURL?.('data.GPKG?download=1')).toBe(true);
+  expect(GeoPackageLoaderWithParser.testURL?.('data.parquet')).toBe(false);
   expect(
-    GeoPackageSource.createDataSource(GPKG_RIVERS_MULTI, {geopackage: {}}) instanceof
+    GeoPackageLoaderWithParser.createDataSourceSync(GPKG_RIVERS_MULTI, {geopackage: {}}) instanceof
       GeoPackageDataSource
   ).toBe(true);
 
-  const dataSource = createDataSource(GPKG_RIVERS_MULTI, [GeoPackageSource], {
+  const dataSource = createDataSourceSync(GPKG_RIVERS_MULTI, [GeoPackageLoaderWithParser], {
     geopackage: {}
   });
   expect(dataSource instanceof GeoPackageDataSource, 'returns GeoPackageDataSource').toBeTruthy();
 });
 
-test('GeoPackageSource exposes URL matching and executes residual queries', async () => {
-  expect(GeoPackageSource.testURL('https://example.com/data.gpkg')).toBe(true);
-  expect(GeoPackageSource.testURL('https://example.com/data.gpkg?table=rivers')).toBe(true);
-  expect(GeoPackageSource.testURL('https://example.com/data.json')).toBe(false);
+test('GeoPackageLoaderWithParser exposes URL matching and executes residual queries', async () => {
+  expect(GeoPackageLoaderWithParser.testURL('https://example.com/data.gpkg')).toBe(true);
+  expect(GeoPackageLoaderWithParser.testURL('https://example.com/data.gpkg?table=rivers')).toBe(
+    true
+  );
+  expect(GeoPackageLoaderWithParser.testURL('https://example.com/data.json')).toBe(false);
 
-  const source = GeoPackageSource.createDataSource(new Blob([]), {geopackage: {}});
-  source.getTable = async () => ({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]})
-  });
+  const source = GeoPackageLoaderWithParser.createDataSourceSync(new Blob([]), {geopackage: {}});
+  source.getTable = async () => arrow.tableFromArrays({name: ['a', 'b', 'a'], value: [1, 2, 3]});
   const result = await source.query({
     predicate: {op: '=', args: [{property: 'name'}, 'a']},
     columns: ['value'],
     limit: 1
   });
 
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['value']);
-  expect(Array.from(result.data.getChild('value')?.toArray() || [])).toEqual([1]);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['value']);
+  expect(Array.from(result.getChild('value')?.toArray() || [])).toEqual([1]);
 });
-test('GeoPackageSource#getMetadata returns tables and default selection', async () => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+test('GeoPackageLoaderWithParser#getMetadata returns tables and default selection', async () => {
+  const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageLoaderWithParser], {
     core: {type: 'geopackage'},
     geopackage: {}
   }) as GeoPackageDataSource;
@@ -67,8 +64,8 @@ test('GeoPackageSource#getMetadata returns tables and default selection', async 
     'includes the table CRS definition'
   ).toBeTruthy();
 });
-test('GeoPackageSource#getQueryMetadata exposes the selected schema and bounds', async () => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+test('GeoPackageLoaderWithParser#getQueryMetadata exposes the selected schema and bounds', async () => {
+  const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageLoaderWithParser], {
     core: {type: 'geopackage'},
     geopackage: {}
   }) as GeoPackageDataSource;
@@ -81,21 +78,25 @@ test('GeoPackageSource#getQueryMetadata exposes the selected schema and bounds',
     'publishes the selected table CRS'
   ).toBe(1);
 });
-test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async () => {
+test('GeoPackageLoaderWithParser#getTable matches GeoPackageLoader Arrow output', async () => {
   const fixtureResponse = await fetchFile(GPKG_RIVERS_MULTI);
   const fixtureArrayBuffer = await fixtureResponse.arrayBuffer();
-  const dataSource = createDataSource(new Blob([fixtureArrayBuffer]), [GeoPackageSource], {
-    core: {type: 'geopackage'},
-    geopackage: {}
-  }) as GeoPackageDataSource;
+  const dataSource = createDataSourceSync(
+    new Blob([fixtureArrayBuffer]),
+    [GeoPackageLoaderWithParser],
+    {
+      core: {type: 'geopackage'},
+      geopackage: {}
+    }
+  ) as GeoPackageDataSource;
   const sourceTable = await dataSource.getTable('FEATURESriversds');
   const loaderTable = await load(fixtureArrayBuffer, BundledGeoPackageLoader, {
-    geopackage: {shape: 'arrow-table', table: 'FEATURESriversds'}
+    geopackage: {shape: 'arrow', table: 'FEATURESriversds'}
   });
   expect(getRows(sourceTable), 'source matches loader output').toEqual(getRows(loaderTable));
 });
-test('GeoPackageSource#getTable uses the default selection heuristic', async () => {
-  const dataSource = createDataSource(await createFixtureBlob(), [GeoPackageSource], {
+test('GeoPackageLoaderWithParser#getTable uses the default selection heuristic', async () => {
+  const dataSource = createDataSourceSync(await createFixtureBlob(), [GeoPackageLoaderWithParser], {
     core: {type: 'geopackage'},
     geopackage: {}
   }) as GeoPackageDataSource;
@@ -110,10 +111,58 @@ async function createFixtureBlob(): Promise<Blob> {
   const arrayBuffer = await response.arrayBuffer();
   return new Blob([arrayBuffer]);
 }
-function getRows(table): Record<string, unknown>[] {
-  const rows: Record<string, unknown>[] = [];
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    rows.push(getTableRowAsObject(table, rowIndex, {}));
-  }
-  return rows;
+function getRows(table: arrow.Table): Record<string, unknown>[] {
+  return table.toArray().map(row => row.toJSON());
 }
+
+test('qualified FROM selects a loaded GeoPackage table without changing its default table', async () => {
+  const source = createDataSourceSync(await createFixtureBlob(), [GeoPackageLoaderWithParser], {
+    core: {name: 'warehouse'},
+    geopackage: {}
+  });
+  const metadata = await source.getMetadata();
+  const getTable = vi.spyOn(source, 'getTable');
+  const result = await query(
+    {from: {source: 'warehouse', table: 'FEATURESriversds'}, limit: 1},
+    {sources: [source]}
+  );
+  expect(result.numRows).toBe(1);
+  expect(result.schema.fields.map(field => field.name)).toEqual(
+    metadata.tables
+      .find(table => table.name === 'FEATURESriversds')!
+      .schema.fields.map(field => field.name)
+  );
+  expect(getTable).toHaveBeenCalledExactlyOnceWith('FEATURESriversds', {signal: undefined});
+  expect(metadata.tables.find(table => table.isDefault)?.name).toBe('preferred_rivers');
+  expect(source.name).toBe('warehouse');
+});
+
+test('GeoPackage metadata commands discover named schemas without opening feature readers', async () => {
+  const source = createDataSourceSync(await createFixtureBlob(), [GeoPackageLoaderWithParser], {
+    core: {type: 'geopackage', name: 'warehouse'},
+    geopackage: {}
+  }) as GeoPackageDataSource;
+  const metadata = await source.getMetadata();
+  const open = vi.spyOn(source, 'getTable').mockImplementation(() => {
+    throw new Error('must not open features');
+  });
+  const tables = await query({command: 'showTables', from: 'warehouse'}, {sources: [source]});
+  expect(tables.getChild('table_name')?.toArray()).toEqual(
+    metadata.tables.map(table => table.name)
+  );
+  await expect(
+    query({command: 'describe', from: 'warehouse'}, {sources: [source]})
+  ).rejects.toThrow('qualified table reference');
+  const selected = metadata.tables[1];
+  const result = await query(
+    {command: 'describe', from: {source: 'warehouse', table: selected.name}},
+    {sources: [source]}
+  );
+  expect(result.getChild('column_name')?.toArray()).toEqual(
+    selected.schema.fields.map(field => field.name)
+  );
+  expect(open).not.toHaveBeenCalled();
+  expect((await source.getMetadata()).tables.find(table => table.isDefault)?.name).toBe(
+    'preferred_rivers'
+  );
+});

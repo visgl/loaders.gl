@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {GaussianSplats} from '../types';
 import {makeGaussianSplatsArrowTable} from './splats-arrow-table';
 import {convertAlphaByteToLinearOpacity, decodeFloat16, normalizeQuaternion} from './splat-utils';
@@ -94,7 +94,7 @@ const COMPRESSION_LAYOUTS: Record<0 | 1 | 2, CompressionLayout> = {
 };
 
 /** Parses a `.ksplat` ArrayBuffer into a Mesh Arrow table. */
-export function parseKSPLAT(data: ArrayBuffer): MeshArrowTable {
+export function parseKSPLAT(data: ArrayBuffer): Table {
   return makeGaussianSplatsArrowTable(parseKSPLATToGaussianSplats(data));
 }
 

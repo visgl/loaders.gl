@@ -4,13 +4,6 @@
 
 export type {TerrainLoaderOptions} from './terrain-loader-types';
 export type {
-  TerrainFieldBounds,
-  TerrainHeightFieldOptions,
-  TerrainHeightFieldStatistics
-} from './lib/terrain-height-field';
-export type {
-  TerrainGridMetadata,
-  TerrainHeightGrid,
   TerrainRay,
   TerrainSurfaceHit,
   TerrainSurfaceBounds,
@@ -25,6 +18,8 @@ export type {QuantizedMeshLoaderOptions} from './quantized-mesh-loader-types';
 
 export {TerrainFormat, QuantizedMeshFormat} from './terrain-format';
 export {TerrainLoader} from './terrain-loader-types';
+/** @deprecated Compatibility alias for deck.gl 10.0.0-alpha.1. Use TerrainLoader. */
+export {TerrainLoader as TerrainWorkerLoader} from './terrain-loader-types';
 
 export {parseTerrain} from './terrain-loader';
 export {TerrainLoaderWithParser} from './terrain-loader';
@@ -33,9 +28,3 @@ export {QuantizedMeshLoaderWithParser} from './quantized-mesh-loader';
 
 export type {QuantizedMeshWriterOptions} from './quantized-mesh-writer';
 export {QuantizedMeshWriter} from './quantized-mesh-writer';
-
-// DEPRECATED EXPORTS
-/** @deprecated Use TerrainLoader. */
-export {TerrainLoader as TerrainWorkerLoader} from './terrain-loader-types';
-/** @deprecated Use QuantizedMeshLoader. */
-export {QuantizedMeshLoader as QuantizedMeshWorkerLoader} from './quantized-mesh-loader-types';

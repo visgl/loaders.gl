@@ -1,3 +1,4 @@
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -6,13 +7,10 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {validateLoader} from 'test/common/conformance';
 import {setLoaderOptions, fetchFile, load, loadInBatches} from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/wkb-table';
 import {convertGeoArrowVectorCellToGeoJSON, getGeoMetadata} from '@loaders.gl/core/geoarrow';
-setLoaderOptions({
-  _workerType: 'test',
-  worker: false
-});
+setLoaderOptions({core: {_workerType: 'test', worker: false}});
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const TEST_FILES = [
   'points',
@@ -25,26 +23,26 @@ const TEST_FILES = [
 test('ShapefileLoader#loader conformance', () => {
   validateLoader(ShapefileLoader, 'ShapefileLoader');
 });
-test('ShapefileLoader#defaults to arrow-table output', async () => {
+test('ShapefileLoader#defaults to native Arrow output', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {core: {worker: false}});
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data.numRows).toBeGreaterThan(0);
-  expect(table.data.schema.fields.some(field => field.name === 'geometry')).toBe(true);
+  expect(table).toBeInstanceOf(arrow.Table);
+  expect(table.numRows).toBeGreaterThan(0);
+  expect(table.schema.fields.some(field => field.name === 'geometry')).toBe(true);
 });
-test('ShapefileLoader#worker hydrates arrow-table output', async () => {
+test('ShapefileLoader#worker hydrates native Arrow output', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {core: {worker: true}});
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data).toBeInstanceOf(arrow.Table);
-  expect(table.data.getChild('geometry')?.length).toBe(table.data.numRows);
+  expect(table).toBeInstanceOf(arrow.Table);
+
+  expect(table.getChild('geometry')?.length).toBe(table.numRows);
 });
-test('ShapefileLoader#load arrow-table fixtures round-trip to GeoJSON', async () => {
+test('ShapefileLoader#load native Arrow fixtures round-trip to GeoJSON', async () => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const table = await load(filename, ShapefileLoader, {shapefile: {shape: 'arrow-table'}});
+    const table = await load(filename, ShapefileLoader, {shapefile: {shape: 'arrow'}});
     const explicitArrowTable = await load(filename, ShapefileLoader, {
-      shapefile: {shape: 'arrow-table'}
+      shapefile: {shape: 'arrow'}
     });
     const geoMetadata = getGeoMetadata(table.schema.metadata);
     expect(geoMetadata?.primary_column, `${testFileName}: geo metadata primary column`).toBe(
@@ -52,12 +50,12 @@ test('ShapefileLoader#load arrow-table fixtures round-trip to GeoJSON', async ()
     );
     const rows = getRowsFromArrowTable(table);
     const roundTripped = convertWKBTableToGeoJSON(
-      {shape: 'object-row-table', schema: table.schema, data: rows},
-      table.schema
+      {shape: 'object-row-table', schema: convertArrowToSchema(table.schema), data: rows},
+      convertArrowToSchema(table.schema)
     );
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const expected = await response.json();
-    expect(getRowsFromArrowTable(table), `${testFileName}: arrow-table output is stable`).toEqual(
+    expect(getRowsFromArrowTable(table), `${testFileName}: native Arrow output is stable`).toEqual(
       getRowsFromArrowTable(explicitArrowTable)
     );
     expect(roundTripped.features, `${testFileName}: features round-trip`).toEqual(
@@ -65,10 +63,10 @@ test('ShapefileLoader#load arrow-table fixtures round-trip to GeoJSON', async ()
     );
   }
 });
-test('ShapefileLoader#load arrow-table reprojects like v3 output', async () => {
+test('ShapefileLoader#load native Arrow reprojects like v3 output', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const arrowTable = await load(filename, ShapefileLoader, {
-    shapefile: {shape: 'arrow-table'},
+    shapefile: {shape: 'arrow'},
     gis: {reproject: true, targetCrs: 'EPSG:3857'}
   });
   const shapeTable = await load(filename, ShapefileLoader, {
@@ -77,18 +75,18 @@ test('ShapefileLoader#load arrow-table reprojects like v3 output', async () => {
   });
   const rows = getRowsFromArrowTable(arrowTable);
   const roundTripped = convertWKBTableToGeoJSON(
-    {shape: 'object-row-table', schema: arrowTable.schema, data: rows},
-    arrowTable.schema
+    {shape: 'object-row-table', schema: convertArrowToSchema(arrowTable.schema), data: rows},
+    convertArrowToSchema(arrowTable.schema)
   );
   expect(roundTripped.features, 'reprojected features match ShapefileLoader').toEqual(
     shapeTable.data
   );
 });
-test('ShapefileLoader#load arrow-table stores WKB in one contiguous Arrow values buffer', async () => {
+test('ShapefileLoader#load native Arrow stores WKB in one contiguous Arrow values buffer', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
-  const table = await load(filename, ShapefileLoader, {shapefile: {shape: 'arrow-table'}});
+  const table = await load(filename, ShapefileLoader, {shapefile: {shape: 'arrow'}});
   const rows = getRowsFromArrowTable(table);
-  const recordBatch = table.data.batches[0];
+  const recordBatch = table.batches[0];
   const geometryFieldIndex = table.schema.fields.findIndex(field => field.name === 'geometry');
   const geometryData = recordBatch.data.children[geometryFieldIndex];
   expect(geometryData.valueOffsets.length, 'geometry offsets cover every row').toBe(
@@ -103,15 +101,15 @@ test('ShapefileLoader#load arrow-table stores WKB in one contiguous Arrow values
     'geometry values are stored as a byte buffer'
   ).toBeTruthy();
 });
-test('ShapefileLoader#load arrow-table can emit typed GeoArrow point geometry', async () => {
+test('ShapefileLoader#load native Arrow can emit typed GeoArrow point geometry', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {
-    shapefile: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+    shapefile: {shape: 'arrow', geoarrowEncoding: 'geoarrow'}
   });
   const geoMetadata = getGeoMetadata(table.schema.metadata);
-  const recordBatch = table.data.batches[0];
+  const recordBatch = table.batches[0];
   const geometryFieldIndex = table.schema.fields.findIndex(field => field.name === 'geometry');
-  const geometryField = table.data.schema.fields[geometryFieldIndex];
+  const geometryField = table.schema.fields[geometryFieldIndex];
   const geometryData = recordBatch.data.children[geometryFieldIndex];
   expect(geoMetadata?.columns.geometry.encoding, 'geo metadata records typed point encoding').toBe(
     'point'
@@ -120,18 +118,16 @@ test('ShapefileLoader#load arrow-table can emit typed GeoArrow point geometry', 
     geometryField.metadata.get('ARROW:extension:name'),
     'geometry field has GeoArrow point extension'
   ).toBe('geoarrow.point');
-  expect(geometryData.length, 'geometry data has one row per feature').toBe(table.data.numRows);
-  expect(geometryData.children[0].values.length, 'coordinates are dense').toBe(
-    table.data.numRows * 2
-  );
+  expect(geometryData.length, 'geometry data has one row per feature').toBe(table.numRows);
+  expect(geometryData.children[0].values.length, 'coordinates are dense').toBe(table.numRows * 2);
 });
-test('ShapefileLoader#load arrow-table decodes dense union geometry slices', async () => {
+test('ShapefileLoader#load native Arrow decodes dense union geometry slices', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const table = await load(filename, ShapefileLoader, {
-    shapefile: {shape: 'arrow-table'},
+    shapefile: {shape: 'arrow'},
     geoarrow: {encodingPreference: 'geoarrow.geometry'}
   });
-  const geometry = table.data.getChild('geometry');
+  const geometry = table.getChild('geometry');
   expect(geometry?.type).toBeInstanceOf(arrow.DenseUnion);
   expect(convertGeoArrowVectorCellToGeoJSON(geometry!, 0, 'geoarrow.geometry')).toEqual({
     type: 'Point',
@@ -141,12 +137,11 @@ test('ShapefileLoader#load arrow-table decodes dense union geometry slices', asy
     convertGeoArrowVectorCellToGeoJSON(geometry!, 0, 'geoarrow.geometry')
   );
 });
-test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', async () => {
+test('ShapefileLoader#loadInBatches native Arrow yields stable Arrow schema', async () => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const batches = await loadInBatches(filename, ShapefileLoader, {
-      shapefile: {shape: 'arrow-table'},
-      metadata: true
+      shapefile: {shape: 'arrow'}
     });
     const collectedRows = [];
     let schema = null;
@@ -154,8 +149,10 @@ test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', asy
       if (batch?.batchType === 'metadata') {
         continue;
       }
-      schema ||= batch.schema;
-      expect(batch.schema, `${testFileName}: batch schema is stable`).toEqual(schema);
+      schema ||= convertArrowToSchema(batch.schema);
+      expect(convertArrowToSchema(batch.schema), `${testFileName}: batch schema is stable`).toEqual(
+        schema
+      );
       collectedRows.push(...getRowsFromArrowTable(batch));
     }
     const roundTripped = convertWKBTableToGeoJSON(
@@ -169,11 +166,10 @@ test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', asy
     );
   }
 });
-test('ShapefileLoader#loadInBatches arrow-table yields Arrow batches', async () => {
+test('ShapefileLoader#loadInBatches native Arrow yields Arrow batches', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const batches = await loadInBatches(filename, ShapefileLoader, {
-    shapefile: {shape: 'arrow-table'},
-    metadata: true
+    shapefile: {shape: 'arrow'}
   });
   let sawDataBatch = false;
   for await (const batch of batches) {
@@ -181,32 +177,32 @@ test('ShapefileLoader#loadInBatches arrow-table yields Arrow batches', async () 
       continue;
     }
     sawDataBatch = true;
-    expect(batch.shape, 'main loader yields arrow-table batches').toBe('arrow-table');
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
     break;
   }
   expect(sawDataBatch, 'main loader produced at least one Arrow batch').toBeTruthy();
 });
-test('ShapefileLoader#loadInBatches arrow-table respects batchSize', async () => {
+test('ShapefileLoader#loadInBatches native Arrow respects batchSize', async () => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const batches = await loadInBatches(filename, ShapefileLoader, {
-    shapefile: {shape: 'arrow-table', batchSize: 1}
+    shapefile: {shape: 'arrow', batchSize: 1}
   });
   const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/points.json`);
   const expected = await response.json();
   let batchCount = 0;
   for await (const batch of batches) {
-    if (batch?.batchType === 'metadata' || batch.length === 0) {
+    if (batch?.batchType === 'metadata' || batch.numRows === 0) {
       continue;
     }
     batchCount++;
-    expect(batch.length, 'emits requested row batch size').toBe(1);
+    expect(batch.numRows, 'emits requested row batch size').toBe(1);
   }
   expect(batchCount, 'emits one Arrow batch per point').toBe(expected.features.length);
 });
 function getRowsFromArrowTable(table): Record<string, unknown>[] {
   const rows: Record<string, unknown>[] = [];
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    rows.push(table.data.get(rowIndex)?.toJSON() || {});
+  for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
+    rows.push(table.get(rowIndex)?.toJSON() || {});
   }
   return rows;
 }

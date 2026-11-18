@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table as ArrowTable} from 'apache-arrow';
 import {
   parseRawArrowCSVASCIIText,
   parseRawArrowCSVBytes
@@ -21,7 +21,7 @@ function parseBytes(csvText: string, options: CSVRawArrowOptions = {}): ArrowTab
 
 /** Materializes Arrow rows for exact field, escape, and null assertions. */
 function getRows(table: ArrowTable): Record<string, unknown>[] {
-  return table.data.toArray().map(row => row.toJSON());
+  return table.toArray().map(row => row.toJSON());
 }
 
 test('raw CSV delimiter inference ignores escaped quotes in the header', () => {

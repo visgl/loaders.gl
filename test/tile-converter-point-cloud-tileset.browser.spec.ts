@@ -85,7 +85,7 @@ function createResource(id = '../untrusted-path', offset = 0): EncodedPointCloud
 beforeAll(async () => {
   resource = createResource();
   decodedPositions = Array.from(
-    (await parse(resource.pnts, Tiles3DLoader, {worker: false})).attributes.positions!
+    (await parse(resource.pnts, Tiles3DLoader, {core: {worker: false}})).attributes.positions!
   );
 });
 

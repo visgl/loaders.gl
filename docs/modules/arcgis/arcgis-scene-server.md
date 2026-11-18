@@ -60,6 +60,10 @@ roots use a separate I3S loader.
 content decoding to the existing `I3SSource` (mesh and Point) or `I3SPointCloudSource`
 implementation.
 
+| Property | Value |
+| --- | --- |
+| Data source | `ArcGISSceneServerSource` |
+
 ## Usage
 
 ```ts

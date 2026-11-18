@@ -8,7 +8,6 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {SplatLayer, type SplatLayerProps} from '../src/splat-layer';
-import type {ArrowTableBatch} from '@loaders.gl/core/schema';
 type ControlledAsyncIterable<T> = AsyncIterable<T> & {
   push: (value: T) => void;
   close: () => void;
@@ -41,15 +40,6 @@ function createGaussianSplatTable(): arrow.Table {
     rot_2: [0, 0],
     rot_3: [0, 0]
   });
-}
-/** Creates a loaders.gl Arrow table batch from a Gaussian splat table. */
-function createGaussianSplatBatch(table: arrow.Table): ArrowTableBatch {
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    data: table,
-    length: table.numRows
-  };
 }
 /** Normalizes a layer render result to an array. */
 function asLayerArray(layerResult: ReturnType<SplatLayer['renderLayers']>) {
@@ -123,7 +113,7 @@ test('SplatLayer renders Gaussian splat Arrow table through binary attributes', 
   ).toEqual([128, 128, 128, 128]);
 });
 test('SplatLayer incrementally renders Arrow table batches', async () => {
-  const splatBatches = createControlledAsyncIterable<ArrowTableBatch>();
+  const splatBatches = createControlledAsyncIterable<arrow.RecordBatch>();
   const layer = createLayer({data: splatBatches});
   layer.state = {} as any;
   layer.initializeState();
@@ -136,12 +126,12 @@ test('SplatLayer incrementally renders Arrow table batches', async () => {
     asLayerArray(layer.renderLayers()).length,
     'renders no sublayers before batches load'
   ).toBe(0);
-  splatBatches.push(createGaussianSplatBatch(createGaussianSplatTable()));
+  splatBatches.push(createGaussianSplatTable().batches[0]);
   await waitForAsyncIterator();
   let sublayers = asLayerArray(layer.renderLayers());
   expect(sublayers.length, 'renders one sublayer after the first batch').toBe(1);
   expect((sublayers[0].props.data as any).length, 'uses the first batch row count').toBe(2);
-  splatBatches.push(createGaussianSplatBatch(createGaussianSplatTable()));
+  splatBatches.push(createGaussianSplatTable().batches[0]);
   await waitForAsyncIterator();
   sublayers = asLayerArray(layer.renderLayers());
   expect(sublayers.length, 'keeps streaming batches in one engine-backed sublayer').toBe(1);
@@ -149,7 +139,7 @@ test('SplatLayer incrementally renders Arrow table batches', async () => {
   splatBatches.close();
 });
 test('SplatLayer reports invalid async batch shapes', async () => {
-  const splatBatches = createControlledAsyncIterable<ArrowTableBatch>();
+  const splatBatches = createControlledAsyncIterable<arrow.RecordBatch>();
   const layer = createLayer({data: splatBatches});
   layer.state = {} as any;
   layer.initializeState();
@@ -163,7 +153,7 @@ test('SplatLayer reports invalid async batch shapes', async () => {
   expect(
     () => layer.renderLayers(),
     'throws a stable error for invalid async batch values'
-  ).toThrow(/requires ArrowTableBatch values/);
+  ).toThrow(/requires Arrow RecordBatch values/);
   splatBatches.close();
 });
 
@@ -244,7 +234,7 @@ test('SplatLayer covers static engine lifecycle, prop refreshes, and CPU policy'
 });
 
 test('SplatLayer covers GPU policy and streamed engine render branches', () => {
-  const stream = createControlledAsyncIterable<ArrowTableBatch>();
+  const stream = createControlledAsyncIterable<arrow.RecordBatch>();
   const layer = createLayer({data: stream, renderMode: 'gpu'});
   layer.state = {} as any;
   layer.initializeState();

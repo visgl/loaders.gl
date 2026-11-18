@@ -2,6 +2,72 @@
 
 ## v5.0
 
+### v5.0.0-beta.12
+
+- Upgrade math.gl to beta.12 and adopt its consolidated Arrow, UTF-8, Web Mercator, and scale entry points.
+- Support progressive quantile classification, computed scale domains, constant quantize extents, explicit threshold and ordinal color mappings, and composed scale expressions.
+
+- Add an experimental shared terrain source and same-level seam reconciliation backed by math.gl.
+- Consolidate TypeScript Parquet APIs and clean up format imports (#4540).
+- Apply consistent grid validation across WMTS and OGC tile sources (#4542).
+- Preserve merged tile geometry during bound generation and cover reflected source bounding boxes (#4547, #4549).
+- Share identical textures across I3S collection nodes, including unchanged legacy PNG and JPEG textures (#4550, #4551).
+- Run Node and Chromium slow tests in separate release processes (#4541).
+- Log the tile-converter package version and selected implementation at startup (#4548).
+
+### v5.0.0-beta.11
+
+- Upgrade to math.gl 5.0.0-beta.11 and adopt its SQL entry points, nested Arrow struct access, and batch metadata transport.
+- Add scale-aware Arrow query projections, fixed-domain batch streaming, and progressive scale snapshots. Validate matching output across Arrow IPC, CSV, and Parquet.
+- Use WebGPU topology strings and typed arrays in decoded tile payloads. See the upgrade guide for attribute and feature table changes.
+- Add LAS query sources with projection pushdown, run Arrow table queries in workers, and consolidate row pagination in logical queries.
+
+### v5.0.0-beta.10
+
+- Upgrade to math.gl 5.0.0-beta.10 and reuse its Arrow worker transport and sparse row selection helpers.
+- Return native Apache Arrow tables and record batches across loaders, scan sources, queries, and shared conversion APIs. Preserve per-batch metadata and row counts in worker transport.
+- Build typed Arrow projections from CSV and NDJSON, push supported queries into DuckDB, and skip Parquet row groups outside the requested page.
+- Consolidate parser and source descriptors under Loader names and remove redundant entry points and option aliases. See the upgrade guide for API changes.
+- Align example dependencies with deck.gl 10.0.0-alpha.1 and share one build across release tests and npm publishing.
+
+### v5.0.0-beta.8
+
+- Upgrade math.gl to beta.8 and adopt its standalone expressions package and Arrow inspection utilities.
+- Add progressive grouped aggregate snapshots, SQL OFFSET, and a queryable JSON table source.
+- Default supported table loaders to native Arrow and accept native Arrow in table writers.
+- Convert atomic and streaming Parquet results at the core API boundary and consolidate Arrow table conversion.
+- Separate parsing from data source creation and give explicit loaders priority over registered loaders.
+- Route library diagnostics through probe.gl, standardize unnamed positional columns, and preserve I3S attribute names and nulls in tile conversion.
+
+### v5.0.0-beta.7
+
+- Upgrade math.gl dependencies to beta.7 and reuse upstream SQL parsing and Arrow expression execution.
+- Support computed SELECT and WHERE expressions, casts, and packed fixed-size ARRAY projections in streaming table queries.
+- Align source columns and validate Arrow schema drift before compiled query execution.
+- Update test, build, development-server, website, HTTP, and XML dependencies with security fixes.
+- Add merge queue validation and a shared Required CI gate.
+
+### v5.0.0-beta.6
+
+- Upgrade math.gl dependencies to beta.6.
+- Add query/queryInBatches APIs, logical query planning, named data sources, explicit URL table sources, and tree-shakeable SQL SELECT parsers.
+- Add SHOW SOURCES, SHOW TABLES, and DESCRIBE queries for source discovery and table inspection.
+- Support zero-copy Arrow projection and aliases and consolidate streaming Arrow query execution.
+- Share bounded HTTP range validation, including Lance, NetCDF, Potree2, and CORS-hidden Content-Range handling.
+- Delegate terrain geometry to math.gl and add a shared terrain source.
+- Preserve runtime worker imports in webpack and align module documentation navigation.
+
+### v5.0.0-beta.5
+
+- Upgrade to math.gl beta.5 and reuse its Arrow and tasks modules; remove duplicated utilities and v5 forwarding entry points.
+- Use versioned Arrow column transport with a schema-only IPC message; keep loader-specific hooks in the flat core/arrow-worker-transport entry point.
+- Preserve canonical GeoArrow union IDs and mixed dimensions, and fix i3dm RTC-relative ENU orientation.
+- Add dependency-free STL, NRRD, OpenEXR, IES, and color LUT loaders, and expose validated VTK readers.
+- Add bounded USDC decoding, preserve USD dictionary metadata, validate USDZ roots, and expose embedded USDZ assets.
+- Support legacy SPZ2 glTF metadata and add glTF emissive and scene geometry metadata schemas.
+- Unload cached tiles on finalization and rename Tile2DHeader; remove crypto workers.
+- Improve format documentation, navigation, mobile examples, and release finalization recovery.
+
 ### v5.0.0-beta.4
 
 _Supersedes the unpublished beta.3 release tag._
@@ -119,7 +185,7 @@ _Supersedes the unpublished beta.3 release tag._
 
 ### v5.0.0-alpha.7
 
-- feat(mvt): add ArrowTableTileSourceLoader for Arrow input and GeoArrow WKB tiles with zero-copy attribute selection
+- feat(mvt): add ArrowTableTileLoader for Arrow input and GeoArrow WKB tiles with zero-copy attribute selection
 
 - feat(arrow): make NDGeoJSON, Chrome Trace, and GML loaders Arrow-primary while retaining explicit legacy output shapes
 
@@ -447,7 +513,7 @@ See `4.3-release` branch for additional CHANGELOGS
 ### v4.3.0-alpha.3
 
 - fix(i3s): slpk full path on Windows (#3011)
-- feat(mvt): TableTileSourceLoader refactor, improved typing (#2990)
+- feat(mvt): TableTileLoader refactor, improved typing (#2990)
 - chore: Cleanup of Source parameters (#3015)
 - fix(csv): move d3-dsv from devDependencies to dependencies (#3009)
 - fix(loader-utils): add missing dependency for @probe.gl/log (#3008)
@@ -468,7 +534,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - chore: update yarn and docusaurus deps (#2994)
 - example: TileSourceLayer can now render MVTLayer (#2992)
 - feat(parquet): Adopt new parquet-wasm File reader API. (#2987)
-- feat(mvt): TableTileSourceLoader uses probe.gl Stats and Log (#2989)
+- feat(mvt): TableTileLoader uses probe.gl Stats and Log (#2989)
 - feat(mvt): Add WGS84 support to GeoJSONTileSource (#2977)
 - fix(zip): zip optimization for range requests (#2983)
 - chore: Bump ocular-dev-tools@alpha.31 (#2988)
@@ -485,7 +551,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - chore(mvt): loader and source cleanup (#2975)
 - feat(parquet): support 'limit' option (#2973)
 - chore(mvt): Deduplicate vector tile code (#2974)
-- feat(mvt): TableTileSourceLoader (#2969)
+- feat(mvt): TableTileLoader (#2969)
 - chore(mvt): refactor for clarity (#2971)
 - docs: v4.2 release notes (#2963)
 
@@ -820,7 +886,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - feat(gltf): added support of arrays to ext-feature-metadata (#2663)
 - feat(mvt): Add TileJSONLoader (#2666)
 - feat(pmtiles): Create PMTileSource from Blob (#2668)
-- feat(wms): Separate WMSSourceLoader and WMSService (#2667)
+- feat(wms): Separate WMSLoader and WMSService (#2667)
 - fix: remove unused ts directive (#2665)
 - Move master to 4.0-beta tags (#2661)
 - feat(pmtools): Add vector tile support (#2664)

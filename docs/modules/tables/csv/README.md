@@ -63,7 +63,6 @@ npm install @loaders.gl/core @loaders.gl/tables
 | API                                                             | Description                                    |
 | --------------------------------------------------------------- | ---------------------------------------------- |
 | [`CSVLoader`](/docs/modules/tables/csv/api-reference/csv-loader)       | Loads CSV and TSV data as loaders.gl tables. |
-| [`CSVWorkerLoader`](/docs/modules/tables/csv/api-reference/csv-loader) | Deprecated alias for `CSVLoader`.            |
 | [`CSVWriter`](/docs/modules/tables/csv/api-reference/csv-writer)       | Writes loaders.gl tables as CSV text.        |
 
 ## Additional APIs

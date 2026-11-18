@@ -16,7 +16,7 @@ export type SHPLoaderOptions = StrictLoaderOptions & {
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   shp?: {
     _maxDimensions?: number;
-    shape?: 'arrow-table' | 'wkb';
+    shape?: 'arrow' | 'wkb';
     geoarrowEncoding?: SHPGeoArrowEncoding;
     /** Preferred encoding for Arrow geometry output. */
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
@@ -29,7 +29,7 @@ export type SHPLoaderOptions = StrictLoaderOptions & {
 export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
-    shape?: 'rows' | 'table' | 'object-row-table' | 'arrow-table';
+    shape?: 'rows' | 'table' | 'object-row-table' | 'arrow';
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
@@ -40,7 +40,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
   SHPLoaderOptions &
   DBFLoaderOptions & {
     shapefile?: {
-      shape?: 'geojson-table' | 'arrow-table' | 'v3';
+      shape?: 'geojson-table' | 'arrow' | 'v3';
       geoarrowEncoding?: SHPGeoArrowEncoding;
       /** Preferred encoding for Arrow geometry output. */
       geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};

@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {fetchFile, parseSync} from '@loaders.gl/core';
-import {HexWKBLoader} from '@loaders.gl/geospatial/wkt/bundled';
+import {HexWKBLoader} from '@loaders.gl/geospatial/wkb/bundled';
 import {parseTestCases} from '@loaders.gl/geospatial/wkt/test/data/wkt/parse-test-cases';
 const WKB_2D_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdataZ.json';

@@ -8,6 +8,9 @@ export {getSQLPredicateColumnNames, planTableQuery} from './table-query';
 export type {
   TableQueryFilterStep,
   TableQueryLimitStep,
+  TableQuery,
+  TableSelection,
+  TableQueryExecutionOptions,
   TableQueryOptions,
   TableQueryPlan,
   TableQueryPlanStep,

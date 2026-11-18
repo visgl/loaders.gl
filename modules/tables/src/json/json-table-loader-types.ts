@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, Schema, Table, TableBatch} from '@loaders.gl/core/schema';
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {Table as ArrowTable, RecordBatch as ArrowTableBatch} from 'apache-arrow';
+import type {JSONTableSource, JSONTableSourceOptions} from './json-table-source';
+import type {Schema, Table, TableBatch} from '@loaders.gl/core/schema';
+import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type * as arrow from 'apache-arrow';
 import {JSON_WORKER_URL} from './json-worker-url';
 import {JSONFormat} from './json-format';
@@ -23,7 +25,7 @@ export type JSONTableLoaderOptions = LoaderOptions & {
     /** Selects the streaming JSON parser backend. */
     backend?: 'clarinet' | 'fast';
     /** Requested table output shape. */
-    shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
+    shape?: 'arrow' | 'object-row-table' | 'array-row-table';
     /** JSON paths identifying arrays that can be streamed as row batches. */
     jsonpaths?: string[];
     /** Optional schema used when converting JSON rows to Arrow. */
@@ -39,9 +41,17 @@ export type JSONTableLoaderOptions = LoaderOptions & {
  * @returns The parser-bearing `JSONTableLoaderWithParser` implementation.
  */
 async function preload() {
-  const {JSONTableLoaderWithParser} = await import('@loaders.gl/tables/json-table-loader');
+  const {JSONTableLoaderWithParser} = await import('@loaders.gl/tables/json');
   return JSONTableLoaderWithParser;
 }
+
+const sourceMetadata = {
+  type: 'json-table-source',
+  fromUrl: true,
+  fromBlob: true,
+  defaultOptions: {},
+  testURL: (url: string): boolean => /\.json(?:$|[?#])/i.test(url)
+} as const;
 
 /**
  * Metadata-only loader for tabular JSON documents and streamed JSON row arrays.
@@ -50,6 +60,9 @@ async function preload() {
  * when the parsed payload may be an arbitrary JSON document.
  */
 export const JSONTableLoader = {
+  ...sourceMetadata,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
   dataType: null as unknown as Table | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
 
@@ -65,15 +78,23 @@ export const JSONTableLoader = {
   options: {
     json: {
       backend: 'clarinet',
-      shape: 'arrow-table',
+      shape: 'arrow',
       jsonpaths: [],
       schema: undefined,
       arrowConversion: undefined
     }
   },
-  preload
+  preload,
+  createDataSourceSync(
+    _data: string | Blob,
+    _options: JSONTableSourceOptions,
+    _coreApi?: CoreAPI
+  ): JSONTableSource {
+    throw new Error('Call preload(JSONTableLoader) before creating a source synchronously.');
+  }
 } as const satisfies Loader<
   Table | ArrowTable,
   TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
-  JSONTableLoaderOptions
+  JSONTableLoaderOptions,
+  JSONTableSource
 >;

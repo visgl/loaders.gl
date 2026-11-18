@@ -111,7 +111,7 @@ describe('Potree parser branches', () => {
     const colorBuffer = buffer.slice(0, 15);
 
     const table = parsePotreeBin(buffer, 0, {
-      potree: {pointAttributes, shape: 'arrow-table'}
+      potree: {pointAttributes, shape: 'arrow'}
     }) as any;
     expect(table.schema).toBeDefined();
     expect(table.data).toBeDefined();

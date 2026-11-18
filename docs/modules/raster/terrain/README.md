@@ -95,7 +95,7 @@ frame and retain the height reference; these APIs do not convert vertical datums
 ```ts
 import {HeightField, createTerrainGradientGrid} from '@math.gl/geospatial/terrain';
 
-// grid comes from createTerrainHeightGrid; bounds are EPSG:3857 meters.
+// grid is a decoded heightmap with source-provided bounds, registration, validity and datum.
 const [west, south, east, north] = grid.bounds;
 const cell = grid.registration === 'pixel-center';
 const field = new HeightField({

@@ -10,7 +10,7 @@ import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
 
 <GeoTiffDocsTabs active="geotiff-example" />
 
-<div style={{height: 'calc(100vh - 76px)'}}>
+<div style={{height: 'calc(100dvh - var(--ifm-navbar-height) - 2rem)'}}>
   <ClientExample kind="geotiff">
     [**`GeoTIFFSourceLoader`**](/docs/modules/raster/geotiff) loads typed raster data for the current viewport and renders it through a client-side color ramp.
   </ClientExample>

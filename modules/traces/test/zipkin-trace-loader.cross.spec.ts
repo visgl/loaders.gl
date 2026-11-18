@@ -18,7 +18,7 @@ import {ZipkinTraceLoaderWithParser} from '../src/zipkin-trace-loader';
 import zipkinTraceFixture from './data/zipkin/trace.json' with {type: 'json'};
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 /** Encodes one JSON value as UTF-8 bytes. */
 function encodeJson(value: unknown): Uint8Array {

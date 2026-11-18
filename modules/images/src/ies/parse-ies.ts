@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 /** Measured Type C photometric distribution, without normalization or resampling. */
 export type IESProfile = {
   /** Authored format revision. */

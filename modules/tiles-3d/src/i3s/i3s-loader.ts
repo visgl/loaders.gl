@@ -40,7 +40,10 @@ export const I3SLoader = {
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
   /** Loads the parser-bearing I3S loader implementation. */
-  preload: async () => (await import('./i3s-loader-with-parser')).I3SLoaderWithParser,
+  preload: async () => {
+    const loaderModule = await import('./i3s-loader-with-parser');
+    return loaderModule.I3SLoaderWithParser;
+  },
   extensions: ['bin'],
   options: {
     i3s: I3S_LOADER_OPTIONS

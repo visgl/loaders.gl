@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 import type {SHPResult} from './lib/parsers/parse-shp';
 import {parseSHPToArrow, parseSHPToArrowInBatches} from './lib/parsers/parse-shp-to-arrow';
@@ -28,7 +28,7 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
-    shape?: 'arrow-table' | 'wkb';
+    shape?: 'arrow' | 'wkb';
     geoarrowEncoding?: SHPGeoArrowEncoding;
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -45,17 +45,19 @@ export const SHPWorkerLoaderWithParser = {
 
 /** SHP file loader */
 export const SHPLoaderWithParser: LoaderWithParser<
-  SHPResult | ArrowTable,
-  SHPHeader | (Uint8Array | null)[] | ArrowTableBatch,
+  SHPResult | Table,
+  SHPHeader | (Uint8Array | null)[] | RecordBatch,
   SHPLoaderOptions
 > = {
   ...SHPLoaderMetadataWithoutPreload,
+  dataType: null as unknown as SHPResult | Table,
+  batchType: null as unknown as SHPHeader | (Uint8Array | null)[] | RecordBatch,
   parse: async (arrayBuffer, options?) =>
-    getSHPShape(options) === 'arrow-table'
+    getSHPShape(options) === 'arrow'
       ? parseSHPToArrow(arrayBuffer, options)
       : parseSHP(arrayBuffer, options),
   parseSync: (arrayBuffer, options?) =>
-    getSHPShape(options) === 'arrow-table'
+    getSHPShape(options) === 'arrow'
       ? parseSHPToArrow(arrayBuffer, options)
       : parseSHP(arrayBuffer, options),
   parseInBatches: (
@@ -63,12 +65,17 @@ export const SHPLoaderWithParser: LoaderWithParser<
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options
-  ): AsyncIterable<SHPHeader | (Uint8Array | null)[] | ArrowTableBatch> =>
-    (getSHPShape(options) === 'arrow-table'
-      ? parseSHPToArrowInBatches(arrayBufferIterator, options)
-      : parseSHPInBatches(arrayBufferIterator, options)) as AsyncIterable<
-      SHPHeader | (Uint8Array | null)[] | ArrowTableBatch
-    >,
+  ): AsyncIterable<SHPHeader | (Uint8Array | null)[] | RecordBatch> => {
+    const batchOptions =
+      typeof options?.core?.batchSize === 'number'
+        ? {...options, shp: {...options.shp, batchSize: options.core.batchSize}}
+        : options;
+    return (
+      getSHPShape(batchOptions) === 'arrow'
+        ? parseSHPToArrowInBatches(arrayBufferIterator, batchOptions)
+        : parseSHPInBatches(arrayBufferIterator, batchOptions)
+    ) as AsyncIterable<SHPHeader | (Uint8Array | null)[] | RecordBatch>;
+  },
   serializeWorkerResult: serializeShapefileWorkerResult,
   deserializeWorkerResult: deserializeShapefileWorkerResult,
   serializeWorkerBatch: serializeShapefileWorkerBatch,
@@ -76,5 +83,5 @@ export const SHPLoaderWithParser: LoaderWithParser<
 };
 
 function getSHPShape(options?: SHPLoaderOptions): NonNullable<SHPLoaderOptions['shp']>['shape'] {
-  return options?.shp?.shape || 'arrow-table';
+  return options?.shp?.shape || 'arrow';
 }

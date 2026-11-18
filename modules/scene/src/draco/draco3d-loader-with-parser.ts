@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {DracoMesh} from './lib/draco-types';
 import {loadDracoDecoderModuleFromDraco3D} from './lib/draco-module-loader';
 import {parseDraco} from './lib/parse-draco';
@@ -22,7 +22,7 @@ export const Draco3DLoaderWithParser = {
       async () => await loadDracoDecoderModuleFromDraco3D(getDraco3DModule(options)),
       context
     )
-} as const satisfies LoaderWithParser<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
+} as const satisfies LoaderWithParser<DracoMesh | Table, never, DracoLoaderOptions>;
 
 /** Extracts the injected `draco3d` package from loader options. */
 function getDraco3DModule(options?: DracoLoaderOptions): unknown {

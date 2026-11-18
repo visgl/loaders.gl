@@ -62,7 +62,7 @@ export const SnowflakeSQLSource = {
   },
   defaultOptions: SQL_SOURCE_DEFAULT_OPTIONS,
   testURL: (url: string): boolean => /^(sql\+snowflake|snowflake):\/\//i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string,
     options: SQLSourceOptions,
     coreApi?: CoreAPI

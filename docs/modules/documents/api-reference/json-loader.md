@@ -6,7 +6,7 @@ schemas, create Arrow tables, or stream batches.
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {JSONLoader} from '@loaders.gl/documents';
+import {JSONLoader} from '@loaders.gl/documents/json';
 
 const value = await parse('{"settings":{"enabled":true}}', JSONLoader);
 ```
@@ -15,7 +15,7 @@ The root loader is metadata-only. Async APIs preload the native parser automatic
 
 ```typescript
 import {parseSync} from '@loaders.gl/core';
-import {JSONLoaderWithParser} from '@loaders.gl/documents/json-loader';
+import {JSONLoaderWithParser} from '@loaders.gl/documents/json';
 
 const value = parseSync('[1,2,3]', JSONLoaderWithParser);
 ```

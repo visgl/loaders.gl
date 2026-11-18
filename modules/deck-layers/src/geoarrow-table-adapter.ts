@@ -8,13 +8,12 @@ import {
   hydrateArrowTable,
   type DehydratedArrowTable,
   type SerializedArrowTableIPC
-} from '@loaders.gl/tables/arrow/transport';
+} from '@math.gl/core/arrow';
 import {
   convertGeometryValuesToBinaryFeatureCollection,
   type GeometryColumnBinaryFeatureCollectionScratch
 } from '@loaders.gl/core/geoarrow';
 import type {
-  ArrowTable,
   BinaryAttribute,
   BinaryFeatureCollection,
   BinaryLineFeature,
@@ -22,7 +21,7 @@ import type {
   BinaryPolygonFeature,
   TypedArray
 } from '@loaders.gl/core/schema';
-import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {convertArrowToSchema, isArrowTable} from '@loaders.gl/core/schema-utils';
 import type {BinaryDataFromGeoArrow, GeoArrowEncoding} from '@loaders.gl/core/geoarrow';
 import {
   convertGeoArrowToBinaryFeatureCollection,
@@ -30,7 +29,7 @@ import {
 } from '@loaders.gl/core/geoarrow';
 
 /** GeoArrow table input accepted by the deck.gl Arrow adapter. */
-export type GeoArrowTableInput = ArrowTable | arrow.Table;
+export type GeoArrowTableInput = arrow.Table | DehydratedArrowTable | SerializedArrowTableIPC;
 
 /** Options for converting a GeoArrow table into deck.gl binary GeoJSON data. */
 export type GeoArrowBinaryFeatureCollectionOptions = {
@@ -41,7 +40,7 @@ export type GeoArrowBinaryFeatureCollectionOptions = {
 };
 
 /**
- * Converts a loaders.gl Arrow table wrapper or raw Apache Arrow table into deck.gl binary GeoJSON.
+ * Converts an Apache Arrow table or a serialized Arrow payload into deck.gl binary GeoJSON.
  * @param input GeoArrow table input.
  * @param options Geometry column and scratch-buffer options.
  * @returns A deck.gl-compatible binary feature collection.
@@ -95,21 +94,14 @@ function completeBinaryFeatureCollection(
 }
 
 /**
- * Resolves a raw Apache Arrow table from a loaders.gl wrapper or raw table.
+ * Resolves an Apache Arrow table from native or serialized Arrow.
  * @param input GeoArrow table input.
  * @returns Raw Apache Arrow table.
  */
 export function getApacheArrowTable(input: GeoArrowTableInput): arrow.Table {
-  const table = isLoadersArrowTable(input) ? input.data : input;
-  if (isApacheArrowTable(table)) {
-    return table;
-  }
-  if (isDehydratedArrowTable(table)) {
-    return hydrateArrowTable(table);
-  }
-  if (isSerializedArrowTableIPC(table)) {
-    return deserializeArrowTableFromIPC(table);
-  }
+  if (isArrowTable(input)) return input;
+  if (isDehydratedArrowTable(input)) return hydrateArrowTable(input);
+  if (isSerializedArrowTableIPC(input)) return deserializeArrowTableFromIPC(input);
   throw new Error('GeoArrow table adapter expected an Apache Arrow table.');
 }
 
@@ -173,31 +165,17 @@ export function getGeoArrowGeometryColumn(table: arrow.Table, geometryColumn?: s
   };
 }
 
-function isLoadersArrowTable(input: GeoArrowTableInput): input is ArrowTable {
-  return (input as ArrowTable).shape === 'arrow-table';
-}
-
-function isApacheArrowTable(table: unknown): table is arrow.Table {
-  return Boolean(table && typeof (table as arrow.Table).getChild === 'function');
-}
-
 function isDehydratedArrowTable(table: unknown): table is DehydratedArrowTable {
   const arrowTable = table as DehydratedArrowTable;
   return Boolean(
-    arrowTable &&
-      typeof arrowTable === 'object' &&
-      arrowTable.shape === 'arrow-table' &&
-      arrowTable.transport === 'arrow-js'
+    arrowTable && typeof arrowTable === 'object' && arrowTable.transport === 'arrow-js'
   );
 }
 
 function isSerializedArrowTableIPC(table: unknown): table is SerializedArrowTableIPC {
   const arrowTable = table as SerializedArrowTableIPC;
   return Boolean(
-    arrowTable &&
-      typeof arrowTable === 'object' &&
-      arrowTable.shape === 'arrow-table' &&
-      arrowTable.transport === 'arrow-ipc'
+    arrowTable && typeof arrowTable === 'object' && arrowTable.transport === 'arrow-ipc'
   );
 }
 

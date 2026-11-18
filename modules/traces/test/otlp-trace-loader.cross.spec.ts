@@ -29,7 +29,7 @@ import {
 } from '../src';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 const TRACE_ID = '5b8efff798038103d269b633813fc60c';
 const SPAN_ID = 'eee19b7ec3c1b174';

@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {
   createScanQueryMetadata,
-  emitScanExecutionTelemetry,
+  emitQueryComplete,
   explainTableQuery,
   getColumnarPredicateColumns,
   planTableQuery,
@@ -13,25 +13,18 @@ import {
   type ManageableDataSource,
   type ScanQueryMetadata,
   type ScanQueryMetadataOptions,
-  type ScanExecutionTelemetry,
-  type ScanExecutionTelemetryStatus,
-  type ScanSourceExecutionTelemetry,
+  type TableQueryExecutionSummary,
+  type TableQueryExecutionStatus,
+  type TableQuerySourceExecutionSummary,
   type TableQueryCapabilities,
   type TableQueryExplain,
   type TableScanReadOptions,
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  DataType,
-  Field,
-  Schema,
-  TableBatch
-} from '@loaders.gl/core/schema';
+import type {DataType, Field, Schema, TableBatch} from '@loaders.gl/core/schema';
 import {
   convertArrowToSchema,
-  convertBatch,
+  convertTableToArrow,
   convertSchemaToArrow
 } from '@loaders.gl/core/schema-utils';
 import {queryArrowTable} from './query-arrow-table';
@@ -45,7 +38,7 @@ export type FederatedTableSourceEntry = Readonly<{
   /** Stable id resolved through the shared {@link DataSourceManager}. */
   dataSourceId: string;
   /** Source-local predicate, projection, and limit applied before schema reconciliation. */
-  query?: Omit<TableScanReadOptions<SQLPredicate>, 'signal' | 'onTelemetry'>;
+  query?: Omit<TableScanReadOptions<SQLPredicate>, 'signal' | 'onQueryComplete'>;
   /** Source-column to federated-column renames applied before compatibility checks. */
   columnMapping?: Readonly<Record<string, string>>;
 }>;
@@ -77,15 +70,14 @@ export type FederatedTableBatchProvenance = Readonly<{
 }>;
 
 /** Arrow batch emitted by an ordered federated scan. */
-export type FederatedTableBatch = ArrowTableBatch<FederatedTableBatchProvenance> &
-  Readonly<{
-    /** Manager id of the source that emitted this batch. */
-    sourceId: string;
-    /** Zero-based source position in append order. */
-    sourceIndex: number;
-    /** Zero-based data-batch position within the source. */
-    sourceBatchIndex: number;
-  }>;
+export type FederatedTableBatch = arrow.RecordBatch;
+
+/** Reads provenance from a federated batch's metadata. */
+export function getFederatedTableBatchProvenance(
+  batch: FederatedTableBatch
+): FederatedTableBatchProvenance {
+  return JSON.parse(batch.metadata.get('loaders.gl.federation')!);
+}
 
 /** Per-source diagnostics included in a federated explanation. */
 export type FederatedTableSourceExplain = Readonly<{
@@ -123,7 +115,8 @@ export const FEDERATED_TABLE_QUERY_CAPABILITIES: TableQueryCapabilities = Object
   cancellation: true
 });
 
-type ManagedTableScanSource = ManageableDataSource & TableScanSource<TableBatch, SQLPredicate>;
+type ManagedTableScanSource = ManageableDataSource &
+  TableScanSource<TableBatch | arrow.RecordBatch, SQLPredicate>;
 
 type MappedSourceField = Readonly<{
   sourceName: string;
@@ -145,8 +138,8 @@ type FederatedTablePlan = Readonly<{
   sources: readonly ResolvedFederatedSource[];
 }>;
 
-type MutableScanExecutionTelemetry = {
-  status: ScanExecutionTelemetryStatus;
+type MutableTableQueryExecutionSummary = {
+  status: TableQueryExecutionStatus;
   sourcesPlanned: number;
   sourcesRead: number;
   batchesRead: number;
@@ -159,8 +152,8 @@ type MutableScanExecutionTelemetry = {
   tasksOpened: number;
   rowsPruned: number;
   durationMilliseconds: number;
-  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'];
-  sources: ScanSourceExecutionTelemetry[];
+  earlyTerminationReason?: TableQueryExecutionSummary['earlyTerminationReason'];
+  sources: TableQuerySourceExecutionSummary[];
   error?: unknown;
 };
 
@@ -197,7 +190,7 @@ export class FederatedTableScanSource
   /** Creates an ordered federated source backed by one shared DataSourceManager. */
   constructor(dataSourceManager: DataSourceManager, options: FederatedTableScanSourceOptions) {
     if (!options.sources.length) {
-      throw new Error('Federated table scans require at least one source.');
+      throw new Error('Federated scans require at least one source.');
     }
     if (
       options.schemaPolicy &&
@@ -227,7 +220,8 @@ export class FederatedTableScanSource
         description: this.description,
         schema: plan.schema,
         capabilities: {table: FEDERATED_TABLE_QUERY_CAPABILITIES},
-        statistics: getFederatedStatistics(plan.sources)
+        statistics: getFederatedStatistics(plan.sources),
+        hasDefaultRowWindow: plan.sources.some(({metadata}) => metadata.hasDefaultRowWindow)
       });
     } finally {
       this.dataSourceManager.unsubscribe({consumerId});
@@ -269,7 +263,7 @@ export class FederatedTableScanSource
   ): AsyncIterableIterator<FederatedTableBatch> {
     const consumerId = this.createConsumerId('read');
     const startedAt = Date.now();
-    const telemetry: MutableScanExecutionTelemetry = {
+    const telemetry: MutableTableQueryExecutionSummary = {
       status: 'early-terminated',
       sourcesPlanned: this.sources.length,
       sourcesRead: 0,
@@ -304,7 +298,7 @@ export class FederatedTableScanSource
           return;
         }
         const sourceStartedAt = Date.now();
-        let childTelemetry: ScanExecutionTelemetry | undefined;
+        let childTelemetry: TableQueryExecutionSummary | undefined;
         let sourceCompleted = false;
         let sourceError: unknown;
         let sourceBatchesDecoded = 0;
@@ -326,35 +320,38 @@ export class FederatedTableScanSource
         telemetry.sourcesRead++;
         let sourceBatchIndex = 0;
         try {
-          for await (const batch of resolvedSource.source.read(sourceReadOptions)) {
+          for await (const input of resolvedSource.source.read(sourceReadOptions)) {
+            const native = !('shape' in input);
+            const batchLength = native ? input.numRows : input.length;
             throwIfAborted(options.signal);
             if (remaining <= 0) {
               telemetry.earlyTerminationReason = 'limit';
               return;
             }
             if (sourceRemaining <= 0) break;
-            if (batch.batchType !== 'data') continue;
+            if (!native && input.batchType !== 'data') continue;
             telemetry.batchesRead++;
-            telemetry.rowsRead += batch.length;
+            telemetry.rowsRead += batchLength;
             sourceBatchesDecoded++;
-            sourceRowsRead += batch.length;
-            if (batch.length <= 0) continue;
-            const physicalTable = convertBatch(
-              batch.schema ? batch : {...batch, schema: resolvedSource.metadata.schema},
-              'arrow-table'
-            );
+            sourceRowsRead += batchLength;
+            if (batchLength <= 0) continue;
+            const physicalTable = native
+              ? new arrow.Table(input.schema, [input])
+              : convertTableToArrow(
+                  input.schema ? input : {...input, schema: resolvedSource.metadata.schema}
+                );
             const sourceResult = queryArrowTable(physicalTable, {
               predicate: sourceResidualPredicate,
               limit: Number.isFinite(sourceRemaining) ? sourceRemaining : undefined,
               signal: options.signal
             });
             if (sourceResidualPredicate) {
-              sourceRowsTested += physicalTable.data.numRows;
-              sourceRowsRetained += sourceResult.data.numRows;
+              sourceRowsTested += physicalTable.numRows;
+              sourceRowsRetained += sourceResult.numRows;
             }
-            sourceRemaining -= sourceResult.data.numRows;
+            sourceRemaining -= sourceResult.numRows;
             const currentSourceBatchIndex = sourceBatchIndex++;
-            if (!sourceResult.data.numRows) continue;
+            if (!sourceResult.numRows) continue;
             const canonicalTable = createCanonicalArrowTable(
               plan.schema,
               resolvedSource,
@@ -367,30 +364,26 @@ export class FederatedTableScanSource
               signal: options.signal
             });
             if (options.predicate) {
-              telemetry.rowsTested += canonicalTable.data.numRows;
-              telemetry.rowsRetained += result.data.numRows;
+              telemetry.rowsTested += canonicalTable.numRows;
+              telemetry.rowsRetained += result.numRows;
             }
-            const resultLength = result.data.numRows;
+            const resultLength = result.numRows;
             if (!resultLength) continue;
             const provenance: FederatedTableBatchProvenance = Object.freeze({
               sourceId: resolvedSource.entry.dataSourceId,
               sourceIndex: resolvedSource.sourceIndex,
               sourceBatchIndex: currentSourceBatchIndex,
-              sourceMetadata: batch.metadata
+              sourceMetadata: native ? Object.fromEntries(input.metadata) : input.metadata
             });
             telemetry.rowsReturned += resultLength;
             sourceRowsReturned += resultLength;
-            yield {
-              batchType: 'data',
-              shape: 'arrow-table',
-              schema: convertArrowToSchema(result.data.schema),
-              data: result.data,
-              length: resultLength,
-              metadata: provenance,
-              sourceId: provenance.sourceId,
-              sourceIndex: provenance.sourceIndex,
-              sourceBatchIndex: provenance.sourceBatchIndex
-            };
+            for (const recordBatch of result.batches) {
+              const metadata = new Map(
+                native && resultLength === batchLength ? input.metadata : undefined
+              );
+              metadata.set('loaders.gl.federation', JSON.stringify(provenance));
+              yield new arrow.RecordBatch(recordBatch.schema, recordBatch.data, metadata);
+            }
             remaining -= resultLength;
           }
           sourceCompleted = true;
@@ -429,13 +422,13 @@ export class FederatedTableScanSource
       if (telemetry.status === 'early-terminated' && !telemetry.earlyTerminationReason) {
         telemetry.earlyTerminationReason = 'consumer-return';
       }
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
+      emitQueryComplete(
+        options.onQueryComplete,
         Object.freeze({
           ...telemetry,
           batchesDecoded: telemetry.batchesRead,
           sources: Object.freeze([...telemetry.sources])
-        }) satisfies ScanExecutionTelemetry
+        }) satisfies TableQueryExecutionSummary
       );
     }
   }
@@ -458,7 +451,7 @@ export class FederatedTableScanSource
       }
       const metadata = await source.getQueryMetadata({signal});
       if (metadata.execution.status !== 'supported' || metadata.execution.method !== 'read') {
-        throw new Error(`Federated table source does not support read(): ${entry.dataSourceId}`);
+        throw new Error(`Source does not support read(): ${entry.dataSourceId}`);
       }
       if (metadata.queryType !== 'table') {
         throw new Error(`Federated source is not a table source: ${entry.dataSourceId}`);
@@ -661,7 +654,7 @@ function createSourceReadOptions(
   requiredOutputColumns: readonly string[],
   remaining: number,
   options: TableScanReadOptions<SQLPredicate>,
-  onTelemetry: (telemetry: ScanExecutionTelemetry) => void
+  onQueryComplete: (telemetry: TableQueryExecutionSummary) => void
 ): TableScanReadOptions<SQLPredicate> {
   const sourceResidualPredicate = getSourceResidualPredicate(source);
   const requiredSourceColumns = requiredOutputColumns
@@ -684,7 +677,7 @@ function createSourceReadOptions(
     predicate: sourceResidualPredicate ? undefined : source.entry.query?.predicate,
     limit: sourceResidualPredicate ? undefined : Number.isFinite(limit) ? limit : undefined,
     signal: options.signal,
-    onTelemetry
+    onQueryComplete
   };
 }
 
@@ -699,13 +692,13 @@ function getSourceResidualPredicate(source: ResolvedFederatedSource): SQLPredica
 function createCanonicalArrowTable(
   schema: Schema,
   source: ResolvedFederatedSource,
-  physicalTable: ArrowTable
-): ArrowTable {
+  physicalTable: arrow.Table
+): arrow.Table {
   const arrowSchema = convertSchemaToArrow(schema);
   const columns: Record<string, arrow.Vector> = {};
   for (const field of arrowSchema.fields) {
     const sourceName = source.sourceNameByOutputName.get(field.name);
-    const vector = sourceName ? physicalTable.data.getChild(sourceName) : null;
+    const vector = sourceName ? physicalTable.getChild(sourceName) : null;
     const mappedField = source.fields.find(sourceField => sourceField.outputName === field.name);
     columns[field.name] = vector
       ? mappedField &&
@@ -716,22 +709,18 @@ function createCanonicalArrowTable(
         ? arrow.vectorFromArray(Array.from(vector), field.type)
         : vector
       : arrow.vectorFromArray(
-          Array.from({length: physicalTable.data.numRows}, () => null),
+          Array.from({length: physicalTable.numRows}, () => null),
           field.type
         );
   }
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, columns)
-  };
+  return new arrow.Table(arrowSchema, columns);
 }
 
 /** Creates one portable per-source telemetry record and preserves source-specific counters. */
 function createSourceTelemetry(
   options: Readonly<{
     resolvedSource: ResolvedFederatedSource;
-    childTelemetry?: ScanExecutionTelemetry;
+    childTelemetry?: TableQueryExecutionSummary;
     sourceStartedAt: number;
     sourceCompleted: boolean;
     sourceError?: unknown;
@@ -742,9 +731,9 @@ function createSourceTelemetry(
     rowsRetained: number;
     rowsReturned: number;
   }>
-): ScanSourceExecutionTelemetry {
+): TableQuerySourceExecutionSummary {
   const {resolvedSource, childTelemetry} = options;
-  const status: ScanExecutionTelemetryStatus =
+  const status: TableQueryExecutionStatus =
     childTelemetry?.status ||
     (options.signal?.aborted
       ? 'cancelled'

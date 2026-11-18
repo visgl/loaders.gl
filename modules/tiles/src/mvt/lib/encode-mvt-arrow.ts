@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, Geometry} from '@loaders.gl/core/schema';
+import type {Geometry} from '@loaders.gl/core/schema';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {fromVectorTileJs} from './mapbox-vt-pbf/to-vector-tile';
@@ -32,11 +32,7 @@ interface ArrowMVTFeature {
 }
 
 /** Encodes a GeoArrow WKB tile, reading attribute columns directly at the protobuf boundary. */
-export function encodeMVTArrow(
-  input: ArrowTable | arrow.Table,
-  options: MVTWriterOptions
-): ArrayBuffer {
-  const table = input instanceof arrow.Table ? input : input.data;
+export function encodeMVTArrow(table: arrow.Table, options: MVTWriterOptions): ArrayBuffer {
   const configuration = options.mvt ?? {};
   const extent = configuration.extent ?? 4096;
   const version = configuration.version ?? 2;

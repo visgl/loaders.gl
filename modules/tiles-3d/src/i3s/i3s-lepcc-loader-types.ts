@@ -39,6 +39,8 @@ export const I3SLEPCCLoader = {
       verifyChecksum: true
     }
   },
-  preload: async () =>
-    (await import('@loaders.gl/tiles-3d/i3s-lepcc-loader')).I3SLEPCCLoaderWithParser
+  preload: async () => {
+    const loaderModule = await import('@loaders.gl/tiles-3d/i3s-lepcc-loader');
+    return loaderModule.I3SLEPCCLoaderWithParser;
+  }
 } as const satisfies Loader<I3SLEPCCLoaderResult, never, I3SLEPCCLoaderOptions>;

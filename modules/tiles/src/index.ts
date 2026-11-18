@@ -25,7 +25,7 @@ export type {
   Tile2DLoadDataProps
 } from './tileset-2d';
 export {
-  SharedTile2DHeader,
+  Tile2DHeader,
   Tileset2D,
   STRATEGY_DEFAULT,
   STRATEGY_NEVER,

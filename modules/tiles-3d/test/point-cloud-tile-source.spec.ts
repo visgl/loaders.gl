@@ -5,11 +5,11 @@
 import {expect, test} from 'vitest';
 import type {Mesh} from '@loaders.gl/core/schema';
 import {
-  PointCloudTileSourceLoader,
+  PointCloudTileLoader,
   PointCloudTileset,
   createTilesetSpatialReference
 } from '@loaders.gl/tiles-3d';
-import {PointCloudTileSourceLoaderWithParser} from '../src/point-cloud-tile-source-loader';
+import {PointCloudTileLoaderWithParser} from '../src/point-cloud-tile-loader';
 import {PointCloudTileSource} from '../src/point-cloud-tile-source';
 
 /** Minimal native-coordinate point data with a scalar attribute. */
@@ -31,7 +31,7 @@ function createInput(count = 4): Mesh {
 
 test('dynamic point source satisfies the native PointCloudTileset source contract', async () => {
   const spatialReference = createTilesetSpatialReference({sourceCrs: 'EPSG:4978'});
-  const source = PointCloudTileSourceLoaderWithParser.createDataSource(createInput(), {
+  const source = PointCloudTileLoaderWithParser.createDataSourceSync(createInput(), {
     pointCloudTiler: {nodePointLimit: 1, spatialReference}
   });
   try {
@@ -47,8 +47,8 @@ test('dynamic point source satisfies the native PointCloudTileset source contrac
       expect(content!.coordinateSystem).toBe('cartesian');
       expect(content!.cartographicOrigin).toEqual([0, 0, 0]);
       expect(content!.spatialReference).toEqual(spatialReference);
-      expect(content!.data.data.getChild('POSITION')!.type.toString()).toContain('Float64');
-      classifications.push(...Array.from(content!.data.data.getChild('classification')!.toArray()));
+      expect(content!.data.getChild('POSITION')!.type.toString()).toContain('Float64');
+      classifications.push(...Array.from(content!.data.getChild('classification')!.toArray()));
       const forged = {
         ...nodes[index],
         boundingVolume: {...nodes[index].boundingVolume, radius: -1}
@@ -82,13 +82,13 @@ test('empty source has no content and input defaults do not imply a CRS', async 
 });
 
 test('metadata preloads the explicit runtime and rejects direct construction', async () => {
-  expect(PointCloudTileSourceLoader.testURL()).toBe(false);
-  expect(() => PointCloudTileSourceLoader.createDataSource(createInput())).toThrow('preload');
-  const runtime = await PointCloudTileSourceLoader.preload();
-  expect(runtime.createDataSource).toBeTypeOf('function');
+  expect(PointCloudTileLoader.testURL()).toBe(false);
+  expect(() => PointCloudTileLoader.createDataSourceSync(createInput())).toThrow('preload');
+  const runtime = await PointCloudTileLoader.preload();
+  expect(runtime.createDataSourceSync).toBeTypeOf('function');
   for (const input of ['https://example.invalid/points.las', new Blob()])
-    expect(() => runtime.createDataSource(input, {})).toThrow('decoded Mesh/Arrow');
-  const source = runtime.createDataSource(createInput(), {});
+    expect(() => runtime.createDataSourceSync(input, {})).toThrow('decoded Mesh/Arrow');
+  const source = runtime.createDataSourceSync(createInput(), {});
   try {
     await source.initialize();
     expect(source.isReady).toBe(true);

@@ -1,16 +1,13 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {DracoLoader, DracoWorkerLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene';
 import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
 import draco3d from 'draco3d';
 const BUNNY_DRC_URL = '@loaders.gl/scene/draco/test/data/bunny.drc';
 const CESIUM_TILE_URL = '@loaders.gl/scene/draco/test/data/cesium-tile.drc';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('DracoLoader#loader conformance', () => {
   validateLoader(DracoLoader, 'DracoLoader');
-  validateLoader(DracoWorkerLoader, 'DracoWorkerLoader');
 });
 test('DracoLoader#parse(mainthread)', async () => {
   if (skipBrowserDracoWasmTest()) {
@@ -38,8 +35,7 @@ test('DracoLoader#draco3d npm package', async () => {
 });
 test('DracoLoader#JavaScript fallback decoder', async () => {
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
-    core: {worker: false},
-    useLocalLibraries: true,
+    core: {worker: false, useLocalLibraries: true},
     draco: {backend: 'javascript', shape: 'mesh'}
   });
   validateMeshCategoryData(data);
@@ -86,9 +82,9 @@ function skipBrowserDracoWasmTest() {
   }
   return false;
 }
-test('DracoWorkerLoader#parse', async () => {
-  const data = await load(BUNNY_DRC_URL, DracoWorkerLoader, {
-    _nodeWorkers: true,
+test('DracoLoader#parse', async () => {
+  const data = await load(BUNNY_DRC_URL, DracoLoader, {
+    core: {_nodeWorkers: true},
     draco: {shape: 'mesh'}
   });
   validateMeshCategoryData(data);

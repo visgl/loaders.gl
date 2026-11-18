@@ -28,15 +28,18 @@ test('sql-utils escapes SQL strings and identifiers', () => {
 });
 test('sql-utils converts rows to Arrow tables and infers nullable primitive types', () => {
   const table = convertRowsToArrowTable([{value: null}, {value: 7}]);
-  expect(table.data.numRows, 'creates arrow rows').toBe(2);
+  expect(table.numRows, 'creates arrow rows').toBe(2);
   expect(table.schema.fields[0]?.name, 'retains field name').toBe('value');
-  expect(table.data.get(1)?.toJSON()?.value, 'preserves later primitive values').toBe(7);
+  expect(table.get(1)?.toJSON()?.value, 'preserves later primitive values').toBe(7);
   const emptyTable = convertRowsToArrowTable([]);
-  expect(emptyTable.data.numRows, 'handles empty row sets').toBe(0);
+  expect(emptyTable.numRows, 'handles empty row sets').toBe(0);
   expect(emptyTable.schema.fields.length, 'returns empty schema for empty row sets').toBe(0);
 
   const populatedTable = convertRowsToArrowTable([{active: true, label: 'ready'}]);
-  expect(populatedTable.schema.fields.map(field => field.type)).toEqual(['bool', 'utf8']);
+  expect(populatedTable.schema.fields.map(field => field.type.toString())).toEqual([
+    'Bool',
+    'Dictionary<Int32, Utf8>'
+  ]);
 });
 test('sql-utils maps SQL column metadata to ordered schema fields', () => {
   const schema = convertSQLColumnsToSchema([

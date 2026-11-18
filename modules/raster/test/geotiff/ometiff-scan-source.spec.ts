@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {OMETiffImageSource} from '../../src/geotiff/ometiff-source-loader';
+import {OMETiffImageSource} from '../../src/geotiff/ometiff-loader';
 
 test('OMETiffImageSource exposes channel and pyramid scan metadata', async () => {
   const source = new OMETiffImageSource(new Blob([]), {});

@@ -3,10 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {createFloat16Array, getFloat16Value, setFloat16Value} from '@loaders.gl/core/schema';
-import type {Mesh, MeshAttribute, ColumnarTable, ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {Mesh, MeshAttribute, ColumnarTable, Schema} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListSize} from '../arrow-utils/arrow-fixed-size-list-utils';
 import {serializeArrowSchema} from '../schema/convert-arrow-schema';
+import {isArrowTable} from '../../../lib/loader-utils/native-arrow';
 import {getMeshBoundingBox} from './mesh-utils';
 
 /**
@@ -14,26 +15,22 @@ import {getMeshBoundingBox} from './mesh-utils';
  * @param table Table to convert.
  * @returns Mesh reconstructed from the table.
  */
-export function convertTableToMesh(table: ColumnarTable | ArrowTable): Mesh {
-  switch (table.shape) {
-    // case 'columnar-table':
-    //   return convertColumnarTableToMesh(table);
-    case 'arrow-table':
-      return convertArrowTableToMesh(table);
-    default:
-      throw new Error(table.shape);
-  }
+export function convertTableToMesh(table: ColumnarTable | arrow.Table): Mesh {
+  if (isArrowTable(table)) return convertArrowTableToMesh(table);
+  throw new Error(table.shape);
 }
 
 /**
  * Convert an Apache Arrow mesh table to a loaders.gl Mesh.
- * @param table Arrow table wrapper to convert.
+ * @param table Native Arrow table.
  * @returns Mesh reconstructed from the Arrow table.
  */
-export function convertArrowTableToMesh(table: ArrowTable): Mesh {
-  const arrowTable = table.data;
-
+export function convertArrowTableToMesh(arrowTable: arrow.Table): Mesh {
   const schema = serializeArrowSchema(arrowTable.schema);
+  // Legacy mesh batches describe their own vertices, not the cumulative stream extent.
+  const localBounds =
+    arrowTable.batches.length === 1 ? arrowTable.batches[0].metadata.get('boundingBox') : undefined;
+  if (localBounds) schema.metadata = {...schema.metadata, boundingBox: localBounds};
   const fields = schema.fields;
 
   const attributes: Mesh['attributes'] = {};
@@ -179,14 +176,20 @@ function getAttributeTypedArray(attributeData: arrow.Vector, size: number): any 
     return attributeData.toArray();
   }
 
-  const values = attributeData.data[0].children[0].values;
+  if (attributeData.length === 0) {
+    const EmptyStorage = attributeData.type.valueType.ArrayType;
+    return new EmptyStorage(0);
+  }
+
+  const values = attributeData.data.find(chunk => chunk.length > 0)!.children[0].values;
   const TypedArrayConstructor = values.constructor as any;
   const typedArray = new TypedArrayConstructor(attributeData.length * size);
   let targetOffset = 0;
 
   for (const data of attributeData.data) {
-    const child = data.children[0];
     const sourceLength = data.length * size;
+    if (sourceLength === 0) continue;
+    const child = data.children[0];
     const sourceOffset = child.offset || data.offset * size;
     // Arrow chunks can either slice child values eagerly or retain offsets into the source buffer.
     const sourceStart = sourceOffset + sourceLength <= child.values.length ? sourceOffset : 0;

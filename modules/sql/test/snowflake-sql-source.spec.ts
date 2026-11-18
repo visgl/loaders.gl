@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {SnowflakeSQLDataSource, SnowflakeSQLSource} from '@loaders.gl/sql';
 test('SnowflakeSQLSource#createDataSource selects Snowflake source from URL', () => {
-  const dataSource = createDataSource('sql+snowflake://example-account', [SnowflakeSQLSource], {
+  const dataSource = createDataSourceSync('sql+snowflake://example-account', [SnowflakeSQLSource], {
     snowflake: {token: 'token'}
   });
   expect(
@@ -42,7 +42,7 @@ test('SnowflakeSQLSource executes SQL API queries through fetch', async () => {
       }
     );
   };
-  const dataSource = createDataSource('sql+snowflake://example-account', [SnowflakeSQLSource], {
+  const dataSource = createDataSourceSync('sql+snowflake://example-account', [SnowflakeSQLSource], {
     snowflake: {token: 'token'},
     core: {fetch: fetchResponse}
   }) as SnowflakeSQLDataSource;
@@ -52,9 +52,9 @@ test('SnowflakeSQLSource executes SQL API queries through fetch', async () => {
     {name: 'extra', count: 4}
   ]);
   const arrowTable = await dataSource.queryArrow('SELECT * FROM demo');
-  expect(arrowTable.data.numRows, 'returns Arrow table fallback across partitions').toBe(2);
-  expect(arrowTable.data.get(0)?.toJSON()?.name, 'maps response rows to Arrow output').toBe('demo');
-  expect(arrowTable.data.get(1)?.toJSON()?.name, 'includes partition rows in Arrow output').toBe(
+  expect(arrowTable.numRows, 'returns Arrow table fallback across partitions').toBe(2);
+  expect(arrowTable.get(0)?.toJSON()?.name, 'maps response rows to Arrow output').toBe('demo');
+  expect(arrowTable.get(1)?.toJSON()?.name, 'includes partition rows in Arrow output').toBe(
     'extra'
   );
 });

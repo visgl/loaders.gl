@@ -12,13 +12,13 @@ props, lifecycle tests, and no example-specific imports.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
 new SourceLayer({
   id: 'basemap',
   data: 'https://example.com/basemap.pmtiles',
-  loaders: [PMTilesSourceLoader, MVTLoader]
+  loaders: [PMTilesLoader, MVTLoader]
 });
 ```
 
@@ -29,7 +29,6 @@ selection. There is no global loader registry or protocol probing.
 
 The resolved runtime is dispatched to `ImageSourceLayer`, `VectorSourceLayer`,
 `RasterSourceLayer`, `Tile2DSourceLayer`, `PointCloudSourceLayer`, or `Tile3DSourceLayer`.
-`AnyLayer` remains as a deprecated compatibility alias.
 
 ### Discovery
 
@@ -41,7 +40,7 @@ always take precedence.
 ```ts
 new SourceLayer({
   data: 'https://example.com/geoserver/wms',
-  loaders: [WMSSourceLoader],
+  loaders: [WMSLoader],
   onSourceLoad: ({sourceType}) => console.log(sourceType),
   onMetadataLoad: metadata => console.log(metadata),
   onViewStateLoad: hint => setViewState(current => ({...current, ...hint})),
@@ -56,15 +55,15 @@ new SourceLayer({
 
 ```ts
 // WFS vector features
-new SourceLayer({data: wfsUrl, loaders: [WFSSourceLoader]});
+new SourceLayer({data: wfsUrl, loaders: [WFSLoader]});
 
 // Typed GeoTIFF raster with automatic RGB/single-band colorization
-new SourceLayer({data: geotiffUrl, loaders: [GeoTIFFSourceLoader]});
+new SourceLayer({data: geotiffUrl, loaders: [GeoTIFFLoader]});
 
 // COPC or Potree point-cloud hierarchy
 new SourceLayer({
   data: pointCloudUrl,
-  loaders: [COPCSourceLoader, PotreeSourceLoader]
+  loaders: [COPCLoader, PotreeLoader]
 });
 
 // Parser-backed 3D Tiles, I3S, 3TZ, or SLPK
@@ -79,9 +78,9 @@ import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
 new SourceLayer({data: arcgisUrl, loaders: ARCGIS_LOADERS});
 ```
 
-Use `sourceOptions.core.type` when a URL is ambiguous. The deprecated `sources` prop is merged with
-source loaders in `loaders` and deduplicated by identity. The singular `loader` prop and
-preconstructed runtime sources remain supported.
+Use `sourceOptions.core.type` when a URL is ambiguous. Put source loaders and any parser loaders
+in `loaders`. The singular `loader` prop also accepts a loader, and `data` accepts preconstructed
+runtime sources.
 
 ## RasterSourceLayer
 

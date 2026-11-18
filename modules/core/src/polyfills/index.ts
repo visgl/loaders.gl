@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable dot-notation */
+import {log as loaderLog} from 'probe.gl/log';
 import {isBrowser} from './utils/is-browser';
 
 import {TextDecoder, TextEncoder} from './text-encoder/text-encoder';
@@ -42,10 +43,9 @@ export const File = globalThis.File;
 installFilePolyfills();
 
 if (isBrowser) {
-  // eslint-disable-next-line no-console
-  console.error(
+  loaderLog.error(
     'loaders.gl: The @loaders.gl/core/polyfills should only be used in Node.js environments'
-  );
+  )();
 }
 
 globalThis.loaders = globalThis.loaders || {};

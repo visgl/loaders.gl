@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table, RecordBatch} from 'apache-arrow';
 import {ORCFormat} from './orc-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline.
@@ -12,23 +12,34 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Options for the minimal ORC loader. */
 export type ORCLoaderOptions = {
+  orc?: {
+    /** Return native Arrow data. */
+    shape?: 'arrow';
+  };
   /** Optional codec implementations injected into the compression module. */
   modules?: Record<string, any>;
 };
 
 /** Preloads the parser-bearing ORC loader implementation. */
 async function preloadORCLoader() {
-  const {ORCLoaderWithParser} = await import('@loaders.gl/tables/orc-loader');
+  const {ORCLoaderWithParser} = await import('@loaders.gl/tables/orc');
   return ORCLoaderWithParser;
 }
 
 /** Metadata-only loader for Apache ORC files. */
 export const ORCLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.orc(?:$|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: true,
+  type: 'orc',
   ...ORCFormat,
   version: VERSION,
-  dataType: null as unknown as ArrowTable,
-  batchType: null as never,
+  dataType: null as unknown as Table,
+  batchType: null as unknown as RecordBatch,
   worker: false,
-  options: {},
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  options: {orc: {shape: 'arrow'}},
   preload: preloadORCLoader
-} as const satisfies Loader<ArrowTable, never, ORCLoaderOptions>;
+} as const satisfies Loader<Table, RecordBatch, ORCLoaderOptions>;

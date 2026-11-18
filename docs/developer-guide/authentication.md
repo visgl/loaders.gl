@@ -165,8 +165,8 @@ ArcGIS presets live in `@loaders.gl/arcgis/authentication`; other provider prese
 `core.credentials`:
 
 ```ts
-import {load} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {createDataSource} from '@loaders.gl/core';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 
 const credentials = [
@@ -176,7 +176,7 @@ const credentials = [
   })
 ];
 
-const source = await load(featureServerUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(featureServerUrl, ArcGISFeatureServerLoader, {
   core: {credentials}
 });
 const features = await source.getFeatures({layers: ['0']});
@@ -229,10 +229,10 @@ the service is reached through a proxy or another provider host.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 import {createMapboxCredential} from '@loaders.gl/services';
 
-const source = createDataSource(tileJSONUrl, [MVTSourceLoader], {
+const source = await createDataSource(tileJSONUrl, [MVTLoader], {
   core: {
     credentials: [createMapboxCredential({accessToken: mapboxToken})]
   }
@@ -260,18 +260,17 @@ without replacing an explicit child parameter.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {CesiumIonLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {resolveCesiumIonTileset, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
-const tileset = await load('https://assets.cesium.com/123/tileset.json', CesiumIonLoader, {
-  'cesium-ion': {accessToken: ionAccessToken, assetId: 123}
+const endpoint = await resolveCesiumIonTileset(accessToken, 123);
+const tileset = await load(endpoint.url, Tiles3DLoader, {
+  core: {credentials: endpoint.credentials}
 });
 ```
 
-The Cesium ion loader uses the account token only with `api.cesium.com`, resolves the asset
-endpoint, and installs the returned endpoint token only for that endpoint's exact origin. The
-legacy `cesium-ion.accessToken` option remains the shortest Cesium-specific entry point;
-`createCesiumIonCredential` is useful when the ion REST request shares a larger application
-credential registry.
+The resolver sends the account token only to `api.cesium.com`. The returned credentials
+scope the endpoint token to the resolved origin and refresh it when the server rejects it.
+Pass the credentials to the tileset consumer so child requests can authenticate.
 
 ## I3S and deck.gl layers
 
@@ -312,7 +311,7 @@ before the I3S parser receives its options.
 Cookie-authenticated services still use standard fetch configuration:
 
 ```ts
-const source = createDataSource(url, loaders, {
+const source = createDataSourceSync(url, loaders, {
   core: {fetch: {credentials: 'include'}}
 });
 ```

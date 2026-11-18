@@ -16,7 +16,7 @@ export const ParquetWorkerLoaderWithParser = {
       input,
       {
         ...options,
-        parquet: {...options?.parquet, shape: 'arrow-table'}
+        parquet: {...options?.parquet, shape: 'arrow'}
       },
       context
     );
@@ -33,7 +33,7 @@ export const ParquetWorkerLoaderWithParser = {
       input,
       {
         ...options,
-        parquet: {...options?.parquet, shape: 'arrow-table'}
+        parquet: {...options?.parquet, shape: 'arrow'}
       },
       context
     );

@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {
-  ArrowTable,
   Feature,
   FeatureCollection,
   Field,
@@ -15,11 +14,7 @@ import type {
 } from '@loaders.gl/core/schema';
 import type {PROJJSONCRS} from '@math.gl/geospatial/crs';
 import * as arrow from 'apache-arrow';
-import {
-  ArrowTableBuilder,
-  convertArrowToSchema,
-  convertSchemaToArrow
-} from '@loaders.gl/core/schema-utils';
+import {ArrowTableBuilder, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import {convertGeometryToWKT} from './geometry-codecs';
 import {
   encodeWKBGeometryValue,
@@ -158,22 +153,22 @@ export function isGeoJSONFeatureArray(value: unknown): value is Feature[] {
   return Array.isArray(value) && value.length > 0 && value.every(isGeoJSONFeature);
 }
 
-/** Converts a GeoJSON feature collection table to a loaders.gl Arrow table with GeoArrow metadata. */
+/** Converts a GeoJSON feature collection table to a native Arrow table with GeoArrow metadata. */
 export function convertFeatureCollectionToGeoArrowTable(
   table: GeoJSONTable,
   options?: GeoJSONToGeoArrowOptions
-): ArrowTable {
+): arrow.Table {
   return convertFeaturesToGeoArrowTable(table.features, {
     ...options,
     crs: options?.crs ?? (table as {crs?: LegacyGeoJSONCRS | null}).crs
   });
 }
 
-/** Converts GeoJSON features into a loaders.gl Arrow table with GeoArrow metadata. */
+/** Converts GeoJSON features into a native Arrow table with GeoArrow metadata. */
 export function convertFeaturesToGeoArrowTable(
   features: Feature[],
   options?: GeoJSONToGeoArrowOptions
-): ArrowTable {
+): arrow.Table {
   const preference = resolveGeoArrowEncodingPreference(options);
   if (preference === 'geoarrow.geometry' || preference === 'optimized') {
     return convertFeaturesToNativeGeoArrowTable(features, options, preference);
@@ -194,7 +189,7 @@ function convertFeaturesToNativeGeoArrowTable(
   features: Feature[],
   options: GeoJSONToGeoArrowOptions | undefined,
   preference: Exclude<GeoArrowEncodingPreference, 'geoarrow.wkb'>
-): ArrowTable {
+): arrow.Table {
   const geometries = features.map(feature => feature.geometry || null);
   const dimension = getFeatureDimension(geometries);
   const encoding =
@@ -266,7 +261,7 @@ function convertFeaturesToNativeGeoArrowTable(
   for (const row of propertyRows) {
     propertyTableBuilder.addObjectRow(row);
   }
-  const propertyTable = propertyTableBuilder.finishTable().data;
+  const propertyTable = propertyTableBuilder.finishTable();
   const propertyBatch = propertyTable.batches[0];
   const children = nextFields.map((field, fieldIndex) =>
     fieldIndex < schema.fields.length
@@ -279,11 +274,7 @@ function convertFeaturesToNativeGeoArrowTable(
     nullCount: 0,
     children
   } as any);
-  return {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(nextSchema),
-    data: new arrow.Table(nextSchema, [new arrow.RecordBatch(nextSchema, data as any)])
-  };
+  return new arrow.Table(nextSchema, [new arrow.RecordBatch(nextSchema, data as any)]);
 }
 
 /** Resolves the nested loader option and the bridge's direct option alias. */

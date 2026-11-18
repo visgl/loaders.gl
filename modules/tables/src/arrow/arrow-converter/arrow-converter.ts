@@ -12,7 +12,6 @@ const convertArrowUnchecked = convertArrow as (
     | 'object-row-table'
     | 'array-row-table'
     | 'columnar-table'
-    | 'arrow-table'
     | 'geojson-table',
   options?: unknown
 ) => unknown;
@@ -35,31 +34,12 @@ export type ArrowConvertFromOptions = {
  * Leaf converter for Apache Arrow table interop.
  */
 export const ArrowConverter: Converter<
-  | 'arrow'
-  | 'object-row-table'
-  | 'array-row-table'
-  | 'columnar-table'
-  | 'arrow-table'
-  | 'geojson-table',
+  'arrow' | 'object-row-table' | 'array-row-table' | 'columnar-table' | 'geojson-table',
   ArrowConvertFromOptions | ArrowConvertToOptions
 > = {
   id: 'arrow',
-  from: [
-    'arrow',
-    'object-row-table',
-    'array-row-table',
-    'columnar-table',
-    'arrow-table',
-    'geojson-table'
-  ],
-  to: [
-    'arrow',
-    'object-row-table',
-    'array-row-table',
-    'columnar-table',
-    'arrow-table',
-    'geojson-table'
-  ],
+  from: ['arrow', 'object-row-table', 'array-row-table', 'columnar-table', 'geojson-table'],
+  to: ['arrow', 'object-row-table', 'array-row-table', 'columnar-table', 'geojson-table'],
   canConvert(sourceShape, targetShape) {
     const sourceIsArrow = sourceShape === 'arrow';
     const targetIsArrow = targetShape === 'arrow';
@@ -78,8 +58,6 @@ export const ArrowConverter: Converter<
         return convertArrowUnchecked(input, 'array-row-table', options);
       case 'columnar-table':
         return convertArrowUnchecked(input, 'columnar-table', options);
-      case 'arrow-table':
-        return convertArrowUnchecked(input, 'arrow-table', options);
       case 'geojson-table':
         return convertArrowUnchecked(input, 'geojson-table', options);
       default:

@@ -12,7 +12,7 @@ export type {BasisLoaderOptions} from './basis-types';
 
 /** Preloads the parser-bearing Basis loader implementation. */
 async function preload() {
-  const {BasisLoaderWithParser} = await import('@loaders.gl/images/basis-loader');
+  const {BasisLoaderWithParser} = await import('@loaders.gl/images/basis');
   return BasisLoaderWithParser;
 }
 
@@ -41,6 +41,3 @@ export const BasisLoader = {
   },
   preload
 } as const satisfies Loader<TextureLevel[][], never, BasisLoaderOptions>;
-
-/** @deprecated Use BasisLoader. */
-export const BasisWorkerLoader = BasisLoader;

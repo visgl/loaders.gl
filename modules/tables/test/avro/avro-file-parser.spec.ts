@@ -16,10 +16,9 @@ async function collectBatches(iterator: AsyncIterable<unknown>): Promise<unknown
 }
 
 test('Avro file parsing reads small files through the whole-file path', async () => {
-  const encoded = await AvroWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({id: [1, 2], label: ['one', 'two']})
-  });
+  const encoded = await AvroWriter.encode(
+    arrow.tableFromArrays({id: [1, 2], label: ['one', 'two']})
+  );
   const file = await createReadableFileFromBuffer(encoded);
   const batches = [];
 
@@ -27,19 +26,16 @@ test('Avro file parsing reads small files through the whole-file path', async ()
     batches.push(batch);
   }
 
-  expect(batches.map(batch => batch.length)).toEqual([1, 1]);
-  expect(batches[1].data.getChild('label')?.get(0)).toBe('two');
+  expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
+  expect(batches[1].getChild('label')?.get(0)).toBe('two');
 });
 
 test('Avro file parsing reads multiple ranged blocks and applies block selection', async () => {
   const encoded = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({
-        id: Array.from({length: 160}, (_, index) => index),
-        label: Array.from({length: 160}, (_, index) => `${'x'.repeat(40)}-${index}`)
-      })
-    },
+    arrow.tableFromArrays({
+      id: Array.from({length: 160}, (_, index) => index),
+      label: Array.from({length: 160}, (_, index) => `${'x'.repeat(40)}-${index}`)
+    }),
     {avro: {blockSize: 1000}}
   );
   const file = await createReadableFileFromBuffer(encoded);
@@ -53,9 +49,7 @@ test('Avro file parsing reads multiple ranged blocks and applies block selection
     batches.push(batch);
   }
 
-  const selectedIds = batches.flatMap(batch =>
-    Array.from(batch.data.getChild('id')?.toArray() || [])
-  );
+  const selectedIds = batches.flatMap(batch => Array.from(batch.getChild('id')?.toArray() || []));
   expect(selectedIds.length).toBeGreaterThan(20);
   expect(selectedIds.every(id => Number(id) >= 0 && Number(id) < 160)).toBe(true);
   expect(selectedIds.includes(0)).toBe(false);
@@ -63,10 +57,9 @@ test('Avro file parsing reads multiple ranged blocks and applies block selection
 });
 
 test('Avro file parsing resolves stat-only sizes and the table convenience API', async () => {
-  const encoded = await AvroWriter.encode({
-    shape: 'arrow-table',
-    data: arrow.tableFromArrays({id: [1, 2], label: ['one', 'two']})
-  });
+  const encoded = await AvroWriter.encode(
+    arrow.tableFromArrays({id: [1, 2], label: ['one', 'two']})
+  );
   const bytes = new Uint8Array(encoded);
   const file = {
     size: 0,
@@ -75,8 +68,7 @@ test('Avro file parsing resolves stat-only sizes and the table convenience API',
     read: async (offset: number, length: number) => bytes.slice(offset, offset + length).buffer
   };
   await expect(parseAvroFromFile(file as any, {batchSize: 1})).resolves.toMatchObject({
-    shape: 'arrow-table',
-    data: {numRows: 2}
+    numRows: 2
   });
 });
 
@@ -96,12 +88,9 @@ test.each([
   ['invalid sync', 'Invalid Avro OCF sync marker']
 ] as const)('Avro file parsing rejects a %s', async (failureMode, expectedMessage) => {
   const encoded = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({
-        label: Array.from({length: 80}, (_, index) => `${index}-${'x'.repeat(40)}`)
-      })
-    },
+    arrow.tableFromArrays({
+      label: Array.from({length: 80}, (_, index) => `${index}-${'x'.repeat(40)}`)
+    }),
     {avro: {blockSize: 700}}
   );
   const bytes = new Uint8Array(encoded);
@@ -132,10 +121,7 @@ test.each([
 
 test('Avro file parsing stops at an explicit zero-count block and validates ranged batch size', async () => {
   const encoded = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({label: Array.from({length: 80}, () => 'x'.repeat(40))})
-    },
+    arrow.tableFromArrays({label: Array.from({length: 80}, () => 'x'.repeat(40))}),
     {avro: {blockSize: 700}}
   );
   const bytes = new Uint8Array(encoded);

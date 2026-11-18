@@ -10,12 +10,12 @@ import {
   type LayersList
 } from '@deck.gl/core';
 import type {Tile3DLayerProps} from '@deck.gl/geo-layers';
+import {compareLoaderOptions} from '@loaders.gl/core';
 import type {
   DataSourceOptions,
   ImageSource,
   Loader,
   RasterSource,
-  SourceLoader,
   TileSourceMetadata,
   VectorSource
 } from '@loaders.gl/core/loader-utils';
@@ -56,41 +56,31 @@ export type SourceLayerData =
 /** Props for {@link SourceLayer}. */
 export type SourceLayerProps<DataT = unknown> = Omit<CompositeLayerProps, 'data' | 'loaders'> &
   Partial<
-    Omit<
-      ImageSourceLayerProps,
-      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'layers' | 'onMetadataLoad'
-    >
+    Omit<ImageSourceLayerProps, 'data' | 'loaders' | 'sourceOptions' | 'layers' | 'onMetadataLoad'>
   > &
-  Partial<
-    Omit<VectorSourceLayerProps, 'data' | 'loaders' | 'sources' | 'sourceOptions' | 'layers'>
-  > &
+  Partial<Omit<VectorSourceLayerProps, 'data' | 'loaders' | 'sourceOptions' | 'layers'>> &
   Partial<
     Omit<
       RasterSourceLayerProps,
-      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'metadata' | 'onMetadataLoad'
+      'data' | 'loaders' | 'sourceOptions' | 'metadata' | 'onMetadataLoad'
     >
   > &
   Partial<
-    Omit<
-      Tile2DSourceLayerProps<DataT>,
-      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'onTileError'
-    >
+    Omit<Tile2DSourceLayerProps<DataT>, 'data' | 'loaders' | 'sourceOptions' | 'onTileError'>
   > &
   Partial<
     Omit<
       PointCloudSourceLayerProps,
-      'data' | 'loaders' | 'sources' | 'sourceOptions' | 'metadata' | 'onSourceError'
+      'data' | 'loaders' | 'sourceOptions' | 'metadata' | 'onSourceError'
     >
   > &
   Partial<Omit<Tile3DLayerProps<DataT>, 'data' | 'loader' | 'loaders' | 'onTileError'>> & {
     /** URL/blob input or a fully constructed visual source runtime. */
     data: SourceLayerData;
     /** Parser loaders and SourceLoaders available for automatic resolution. */
-    loaders?: ReadonlyArray<Loader | SourceLoader>;
+    loaders?: ReadonlyArray<Loader>;
     /** Singular loader compatibility prop. */
-    loader?: Loader | SourceLoader | Array<Loader | SourceLoader>;
-    /** @deprecated Put SourceLoaders in `loaders`. */
-    sources?: Readonly<SourceLoader[]>;
+    loader?: Loader | Array<Loader>;
     /** Options forwarded to source construction. */
     sourceOptions?: DataSourceOptions;
     /** Named source layer selection, or automatic first-leaf discovery. */
@@ -123,7 +113,6 @@ const defaultProps: DefaultProps<SourceLayerProps> = {
   id: 'source-layer',
   data: '',
   loaders: {type: 'array', compare: false, value: []},
-  sources: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
   layers: 'auto',
   onSourceLoad: {type: 'function', value: () => {}},
@@ -188,8 +177,7 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
       changeFlags.dataChanged ||
       props.loader !== oldProps.loader ||
       props.loaders !== oldProps.loaders ||
-      props.sources !== oldProps.sources ||
-      props.sourceOptions !== oldProps.sourceOptions ||
+      !compareLoaderOptions(props.sourceOptions, oldProps.sourceOptions) ||
       props.layers !== oldProps.layers
     ) {
       void this.resolveSource(props);
@@ -208,7 +196,6 @@ export class SourceLayer<DataT = any> extends CompositeLayer<SourceLayerProps<Da
       data,
       loader,
       loaders,
-      sources,
       sourceOptions,
       layers,
       onSourceLoad,

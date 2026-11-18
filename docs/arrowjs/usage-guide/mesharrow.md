@@ -46,17 +46,7 @@ The contract deliberately covers geometry attributes, primitive topology, indice
 
 ## Data model
 
-A `MeshArrowTable` wraps an `arrow.Table`:
-
-```ts
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
-
-declare const mesh: MeshArrowTable;
-
-mesh.shape; // 'arrow-table'
-mesh.topology; // 'point-list' | 'triangle-list' | 'triangle-strip'
-mesh.data; // Apache Arrow Table
-```
+A mesh loader returns an Apache Arrow table. Read topology from `table.schema.metadata.get('topology')` and vertex attributes with `table.getChild(name)`.
 
 The raw Arrow table has **one vertex per row**. Each vertex attribute is a scalar numeric column or a numeric `FixedSizeList` column. This is directly compatible with GPU vertex and instance buffers.
 
@@ -77,22 +67,22 @@ The raw Arrow table has **one vertex per row**. Each vertex attribute is a scala
 
 Schema metadata retains `topology`, numeric primitive `mode`, and optionally `boundingBox`. Field metadata can retain the source `normalized`, `byteOffset`, and `byteStride` values. Metadata values are strings; structured values are JSON-encoded.
 
-The `MeshArrowTable.topology` property is authoritative. Schema metadata lets the same information survive when a raw Arrow table is passed without the loaders.gl wrapper.
+Read the primitive topology from the Arrow schema metadata.
 
 Record batches are chunks of one logical vertex table, not separate meshes. An indexed table has one primitive-level index list. Keep primitives with different materials or pipelines in separate Mesh Arrow tables, or place them in an explicit scene/primitive layer above the tables.
 
 ## Producing tables
 
-Mesh-category loaders expose Arrow output through a loader-specific `shape: 'arrow-table'` option:
+Mesh-category loaders expose Arrow output through a loader-specific `shape: 'arrow'` option:
 
 ```ts
 import {load} from '@loaders.gl/core';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {MeshArrowTableData} from '@loaders.gl/core/schema';
 
 const pointCloud = (await load('point-cloud.laz', LASLoader, {
-  las: {shape: 'arrow-table'}
-})) as MeshArrowTable;
+  las: {shape: 'arrow'}
+})) as MeshArrowTableData;
 ```
 
 `@loaders.gl/core/schema-utils` can build a table from typed attributes:
@@ -115,7 +105,7 @@ const triangle = makeMeshArrowTable(
 );
 ```
 
-Use `convertMeshToTable(mesh, 'arrow-table')` when starting from a legacy loaders.gl `Mesh`. See the [Mesh and PointCloud category](/docs/specifications/category-mesh) for the loader and writer matrix.
+Use `convertMeshToTable(mesh, 'arrow')` when starting from a legacy loaders.gl `Mesh`. See the [Mesh and PointCloud category](/docs/specifications/category-mesh) for the loader and writer matrix.
 
 ### Project a glTF scene
 
@@ -145,7 +135,7 @@ Dense, packed accessors retain views of their source buffers. Interleaved, spars
 
 ## Rendering with luma.gl
 
-`@luma.gl/arrow` accepts the loaders.gl wrapper structurally, without introducing a loaders.gl dependency. `makeGPUGeometryFromArrow()` can create static GPU geometry from a Mesh Arrow table:
+`@luma.gl/arrow` accepts the native Apache Arrow table. `makeGPUGeometryFromArrow()` can create static GPU geometry from a Mesh Arrow table:
 
 ```ts
 import {makeGPUGeometryFromArrow} from '@luma.gl/arrow';

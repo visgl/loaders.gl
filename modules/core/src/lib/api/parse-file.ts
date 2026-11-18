@@ -3,24 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  LoaderArrayOptionsType,
+  LoaderShapeType,
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderCallOptions,
   Loader,
   LoaderContext,
   LoaderOptions,
-  LoaderOptionsWithShape,
-  LoaderOptionsType,
-  LoaderShapeType,
   LoaderReturnType,
-  LoaderArrayOptionsType,
   LoaderArrayReturnType,
   LoaderWithParser,
   ReadableFile,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import {
-  isSourceLoader,
-  mergeOptions,
-  resolveLoaderAuthenticationOptions
-} from '@loaders.gl/core/loader-utils';
+import {mergeOptions, resolveLoaderAuthenticationOptions} from '@loaders.gl/core/loader-utils';
 import {validateWorkerVersion} from '@loaders.gl/core/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -32,31 +29,45 @@ import {selectLoader} from './select-loader';
 /**
  * Parses a random access readable file asynchronously using the supplied loader.
  */
+export async function parseFile<LoaderT extends Loader>(
+  file: ReadableFile,
+  loader: LoaderT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
 export async function parseFile<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+  const OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
   >
 >(
   file: ReadableFile,
   loader: LoaderT,
-  options?: OptionsT,
+  options?: OptionsT & LoaderCallOptions<NoInfer<LoaderT>, NoInfer<OptionsT>>,
   context?: LoaderContext
-): Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT, OptionsT>>;
 
 /**
  * Parses a random access readable file asynchronously by matching one of the supplied loaders.
  */
+export async function parseFile<LoaderArrayT extends Loader[]>(
+  file: ReadableFile,
+  loaders: LoaderArrayT,
+  options?: undefined,
+  context?: LoaderContext
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+
 export async function parseFile<
   LoaderArrayT extends Loader[],
-  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+  const OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   file: ReadableFile,
   loaders: LoaderArrayT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+): Promise<LoaderArrayReturnType<LoaderArrayT, OptionsT>>;
 
 /**
  * Parses a random access readable file asynchronously by matching a pre-registered loader.
@@ -94,12 +105,6 @@ export async function parseFile(
     return null;
   }
 
-  if (isSourceLoader(loader)) {
-    throw new Error(
-      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parseFile().`
-    );
-  }
-
   // @ts-expect-error candidateLoaders may be a single forced loader
   const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url);
   const authenticationLoader =
@@ -118,7 +123,7 @@ export async function parseFile(
     context || null
   );
 
-  return await parseFileWithLoader(loader, file, strictOptions, context);
+  return parseFileWithLoader(loader, file, strictOptions, context);
 }
 
 /**
@@ -141,7 +146,9 @@ async function parseFileWithLoader(
 
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
   if (loaderWithParser.parseFile) {
-    return await loaderWithParser.parseFile(file, options, context);
+    const output = loaderWithParser.prepareParseOutput?.(options);
+    const result = await loaderWithParser.parseFile(file, output?.options ?? options, context);
+    return output ? output.convert(result) : result;
   }
 
   const parseFunction = (loaderWithParser as {parse?: LoaderWithParser['parse']}).parse;
@@ -154,5 +161,8 @@ async function parseFileWithLoader(
     return await parse(data, loaderWithParser, options, context);
   }
 
+  if (loaderWithParser.createDataSourceSync) {
+    throw new Error(`${loader.id} has no file parser. Use createDataSource() to open a source.`);
+  }
   throw new Error(`${loader.id} loader - no file parser found`);
 }

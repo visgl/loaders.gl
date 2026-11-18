@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['From v5.0', '2D tile runtime', 'Shared cache']}
   links={[
     {label: 'Tiles module', to: '/docs/modules/tiles'},
-    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source-loader'},
+    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />
@@ -172,7 +172,7 @@ individual unload callbacks.
 Failed tile requests are cached as settled tile entries with:
 
 - `content = null`
-- `error` set on the corresponding `SharedTile2DHeader`
+- `error` set on the corresponding `Tile2DHeader`
 
 This prevents repeated requests for the same failing tile until the tileset is explicitly reloaded,
 for example with `reloadAll()`.

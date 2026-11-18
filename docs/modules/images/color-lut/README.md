@@ -92,7 +92,7 @@ Combined shaper-plus-3D files, unknown vendor directives, inconsistent dimension
 
 ### Direct parsing and related formats
 
-Import `CubeLUTLoaderWithParser` from `@loaders.gl/images/cube-lut-loader` for synchronous core `parseSync`. There are no Cube-specific options. The root loader is metadata-only and async core APIs preload its parser.
+Import `CubeLUTLoaderWithParser` from `@loaders.gl/images/color-lut` for synchronous core `parseSync`. There are no Cube-specific options. The root loader is metadata-only and async core APIs preload its parser.
 
 Compare [grid-first 3dl](#grid-first-3dl-tables) for integer samples and nonuniform knots, or [PNG image LUTs](#png-image-layouts) for explicit blue-slice tilings. All three produce the same ColorLUT sample ordering.
 
@@ -128,7 +128,7 @@ Only grid-first integer files with a complete cubic set of RGB rows are supporte
 | --- | --- | --- |
 | `lut.outputBitDepth` | Yes | Integer output-channel encoding precision, 1 through 24; no inferred default |
 
-Import `ThreeDLLUTLoaderWithParser` from `@loaders.gl/images/3dl-lut-loader` for synchronous core parsing, passing the same options. The root export is metadata-only. No renderer object, interpolation implementation, or new codec dependency is added.
+Import `ThreeDLLUTLoaderWithParser` from `@loaders.gl/images/color-lut` for synchronous core parsing, passing the same options. The root export is metadata-only. No renderer object, interpolation implementation, or new codec dependency is added.
 
 See [Cube](#cube-text-tables) for text tables with domain directives and [image LUTs](#png-image-layouts) for PNG tilings.
 
@@ -179,6 +179,6 @@ The utility accepts Uint8Array or Uint8ClampedArray RGB/RGBA samples and validat
 
 ### Loader API
 
-Both `lut.size` and `lut.tilesPerRow` are required. The metadata export lives at the images root; `ImageLUTLoaderWithParser` lives at `@loaders.gl/images/image-lut-loader`. Encoded parsing is async, not `parseSync`. The raw-pixel utility is synchronous.
+Both `lut.size` and `lut.tilesPerRow` are required. The metadata export lives at the images root; `ImageLUTLoaderWithParser` lives at `@loaders.gl/images/color-lut`. Encoded parsing is async, not `parseSync`. The raw-pixel utility is synchronous.
 
 Compare [Cube](#cube-text-tables) and [3dl](#grid-first-3dl-tables) when a text LUT carries the mapping more directly.

@@ -139,7 +139,7 @@ test('Tile3DSourceLayer validates Blob fallbacks, preload headers, and missing l
   stringLayer.props = {...stringLayer.props, loaders: undefined, loader};
   await stringLayer.loadSourceTileset('tileset.json');
   expect(tileLayerMocks.tilesetOptions).toMatchObject({
-    loadOptions: {fetch: {headers: {authorization: 'token'}}}
+    loadOptions: {core: {fetch: {headers: {authorization: 'token'}}}}
   });
 
   const missing = createLayer('tileset.json', {loader: undefined, loaders: []}).layer;

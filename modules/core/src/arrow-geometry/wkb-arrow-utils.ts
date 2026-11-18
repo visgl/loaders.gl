@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {ArrowTable, Schema as TableSchema} from '@loaders.gl/core/schema';
+import type {Schema as TableSchema} from '@loaders.gl/core/schema';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import {reprojectWKBInPlace, type CoordinateTransform} from './binary-geometry-to-wkb';
 import {
@@ -26,7 +26,7 @@ export type WKBArrowGeometryValueOptions = {
 export type WKBArrowGeometryWriterOptions = WKBBuilderBaseOptions;
 
 /**
- * Creates a loaders.gl Arrow table containing one `geoarrow.wkb` geometry column.
+ * Creates an Apache Arrow table containing one `geoarrow.wkb` geometry column.
  *
  * @param geometries - WKB geometry byte values, with nullish values encoded as null rows.
  * @param schema - Table schema containing the WKB geometry field.
@@ -37,12 +37,12 @@ export function makeWKBGeometryArrowTable(
   geometries: (WKBGeometryValue | null | undefined)[],
   schema: TableSchema,
   options: WKBArrowGeometryValueOptions = {}
-): ArrowTable {
+): arrow.Table {
   return makeWKBGeometryArrowTableFromData(schema, makeWKBGeometryData(geometries, options));
 }
 
 /**
- * Creates a loaders.gl Arrow table from incremental WKB writer callbacks.
+ * Creates an Apache Arrow table from incremental WKB writer callbacks.
  *
  * @param geometryWriters - Writer callbacks, with nullish values encoded as null rows.
  * @param schema - Table schema containing the WKB geometry field.
@@ -53,7 +53,7 @@ export function makeWKBGeometryArrowTableFromWriters(
   geometryWriters: (WKBGeometryWriter | null | undefined)[],
   schema: TableSchema,
   options: WKBArrowGeometryWriterOptions = {}
-): ArrowTable {
+): arrow.Table {
   return makeWKBGeometryArrowTableFromData(
     schema,
     makeWKBGeometryDataFromWriters(geometryWriters, options)
@@ -61,7 +61,7 @@ export function makeWKBGeometryArrowTableFromWriters(
 }
 
 /**
- * Wraps Arrow WKB geometry data in a loaders.gl Arrow table.
+ * Wraps Arrow WKB geometry data in an Apache Arrow table.
  *
  * @param schema - Table schema containing the WKB geometry field.
  * @param geometryData - Arrow Binary data for the WKB geometry column.
@@ -70,7 +70,7 @@ export function makeWKBGeometryArrowTableFromWriters(
 export function makeWKBGeometryArrowTableFromData(
   schema: TableSchema,
   geometryData: arrow.Data<arrow.Binary>
-): ArrowTable {
+): arrow.Table {
   const arrowSchema = convertSchemaToArrow(schema);
   const structField = new arrow.Struct(arrowSchema.fields);
   const structData = new arrow.Data(structField, 0, geometryData.length, 0, undefined, [
@@ -78,11 +78,7 @@ export function makeWKBGeometryArrowTableFromData(
   ]);
   const recordBatch = new arrow.RecordBatch(arrowSchema, structData);
 
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, [recordBatch])
-  };
+  return new arrow.Table(arrowSchema, [recordBatch]);
 }
 
 /**

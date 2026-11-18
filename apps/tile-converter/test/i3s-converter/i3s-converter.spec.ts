@@ -38,9 +38,7 @@ const TEST_FULL_EXTENT = {
   zmin: 0,
   zmax: 20
 };
-setLoaderOptions({
-  _worker: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async () => {
   const converter = new I3SConverter();
   const tilesetJson = await converter.convert({
@@ -245,25 +243,20 @@ test('tile-converter(i3s)#layer json should contain fullExtent field', async () 
   }
   await cleanUpPath('data/BatchedTextured');
 });
-test('tile-converter(i3s)#proceed with failing content', async () => {
-  if (!isBrowser) {
-    const converter = new I3SConverter();
-    await converter.convert({
-      inputUrl: TILESET_WITH_FAILING_CONTENT,
-      outputPath: 'data',
-      tilesetName: 'FailingContent',
-      egmFilePath: PGM_FILE_PATH
-    });
-    const archive = await parseSLPKArchive(new NodeFile('data/FailingContent.slpk'));
-    const layerJson = new TextDecoder().decode(await archive.getFile('nodepages/0', 'http'));
-    const nodePage = JSON.parse(layerJson);
-    expect(nodePage.nodes[1].mesh).toBeTruthy();
-    expect(nodePage.nodes[2].mesh).toBeFalsy();
-    expect(nodePage.nodes[3].mesh).toBeFalsy();
-    expect(nodePage.nodes[4].mesh).toBeFalsy();
-    expect(nodePage.nodes[5].mesh).toBeFalsy();
+test('tile-converter(i3s)#rejects an incomplete preprocessing schema', async () => {
+  const converter = new I3SConverter();
+  try {
+    await expect(
+      converter.convert({
+        inputUrl: TILESET_WITH_FAILING_CONTENT,
+        outputPath: 'data',
+        tilesetName: 'FailingContent',
+        egmFilePath: PGM_FILE_PATH
+      })
+    ).rejects.toThrow('cannot determine the complete attribute schema');
+  } finally {
+    await cleanUpPath('data/FailingContent');
   }
-  await cleanUpPath('data/FailingContent');
 });
 test('tile-converter(i3s)#convert with --metadata-class option', async () => {
   if (!isBrowser) {

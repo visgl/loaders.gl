@@ -53,7 +53,7 @@ test.each(['COLOR', 'COLOR_0'])('PNTS retains supported attributes with %s', asy
   });
 
   const pnts = encodePointCloudTile(table, {batchTableJson: {name: ['point']}});
-  const parsed = await parse(pnts, Tiles3DLoader, {worker: false});
+  const parsed = await parse(pnts, Tiles3DLoader, {core: {worker: false}});
   expect(Array.from(parsed.attributes.positions!)).toEqual([1, 2, 3]);
   expect(Array.from(parsed.attributes.colors!.value)).toEqual([255, 0, 0]);
   expect(Array.from(parsed.attributes.normals!.value)).toEqual([0, 0, 1]);

@@ -117,7 +117,7 @@ describe('TypeScript LAZ streaming conformance', () => {
       await expect(async () => {
         for await (const batch of decodeLAZFileInBatches(
           splitArrayBufferRandomly(malformedInput.input, 0x4c415a14, 31),
-          {batchSize: 127}
+          {core: {batchSize: 127}}
         )) {
           yieldedPointCount += batch.header.pointsCount;
         }
@@ -176,9 +176,9 @@ describe('TypeScript LAZ streaming conformance', () => {
       decodedChunkAllocations: 0
     };
     const options = {
-      batchSize: 127,
+      core: {batchSize: 127},
       las: {
-        shape: 'arrow-table',
+        shape: 'arrow',
         lazStreamingStats: stats
       }
     } as LASLoaderOptions;
@@ -205,10 +205,10 @@ describe('TypeScript LAZ streaming conformance', () => {
         '@loaders.gl/pointclouds/las/test/data/ellipsoid-1.4.laz'
       );
       const pointCount = parseLASHeader(source).pointsCount;
-      const fullOptions: LASLoaderOptions = {batchSize: 25_000, las: {shape: 'arrow-table'}};
+      const fullOptions: LASLoaderOptions = {core: {batchSize: 25_000}, las: {shape: 'arrow'}};
       const renderOptions: LASLoaderOptions = {
-        batchSize: 25_000,
-        las: {shape: 'arrow-table', columns: ['POSITION', 'COLOR_0']}
+        core: {batchSize: 25_000},
+        las: {shape: 'arrow', columns: ['POSITION', 'COLOR_0']}
       };
 
       await consumeArrowBatches(source, renderOptions);
@@ -242,7 +242,7 @@ function getLASPointData(arrayBuffer: ArrayBuffer, pointDataRecordLength: number
 async function collectRawPointData(chunks: AsyncIterable<ArrayBufferView>): Promise<Uint8Array> {
   const batches: Uint8Array[] = [];
   let byteLength = 0;
-  for await (const batch of decodeLAZFileInBatches(chunks, {batchSize: 127})) {
+  for await (const batch of decodeLAZFileInBatches(chunks, {core: {batchSize: 127}})) {
     const bytes = new Uint8Array(batch.arrayBuffer);
     batches.push(bytes);
     byteLength += bytes.byteLength;

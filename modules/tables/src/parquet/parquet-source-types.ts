@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type * as parquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
+import type {RecordBatch, Table} from 'apache-arrow';
 
 import type {
   DataSourceOptions,
   RangeRequestScheduler,
   RangeRequestSchedulerProps,
-  ScanExecutionTelemetryCallback,
+  TableQueryExecutionOptions,
   StrictLoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch, Schema} from '@loaders.gl/core/schema';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {
   ColumnarComparisonPredicate,
   ColumnarInPredicate,
@@ -22,7 +22,7 @@ import type {
   ColumnarPredicateValue
 } from '@loaders.gl/core/loader-utils';
 import type {TableQueryExplain} from '@loaders.gl/core/loader-utils';
-import type {FileMetaData} from './parquetjs/parquet-thrift/index';
+import type {FileMetaData} from './parquetjs/parquet-thrift';
 import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
 /** Version validators captured from an HTTP Parquet object. */
@@ -254,11 +254,13 @@ export type ParquetPredicate =
   | ParquetNotPredicate;
 
 /** Options for one selective `ParquetSource.read()` operation. */
-export type ParquetSourceReadOptions = {
+export type ParquetSourceReadOptions = TableQueryExecutionOptions & {
   /** Zero-based row-group indexes to decode, in output order. Defaults to all row groups. */
   rowGroups?: readonly number[];
   /** Top-level columns to fetch and decode. Defaults to all columns. */
   columns?: readonly string[];
+  /** Number of filtered rows to skip in source order. */
+  offset?: number;
   /** Maximum number of rows retained after filtering across all emitted batches. */
   limit?: number;
   /** Maximum number of rows in each emitted Arrow batch. Defaults to one row group per batch. */
@@ -273,10 +275,6 @@ export type ParquetSourceReadOptions = {
   bbox?: ParquetBoundingBox;
   /** Geometry column whose GeoParquet covering should serve `bbox`; defaults to `primary_column`. */
   geometryColumn?: string;
-  /** Abort this read and all of its outstanding range requests. */
-  signal?: AbortSignal;
-  /** Receives one portable terminal execution snapshot for this read. */
-  onTelemetry?: ScanExecutionTelemetryCallback;
 };
 
 /** Explain result for a Parquet table query, including footer-level row-group pruning. */
@@ -284,6 +282,8 @@ export type ParquetSourceExplain = TableQueryExplain<ParquetPredicate> &
   Readonly<{
     /** Physical source kind. */
     source: 'parquet';
+    /** Post-filter offset to apply when replaying this plan. */
+    offset?: number;
     /** Row groups selected by the request and conservative footer statistics. */
     rowGroups: Readonly<{
       /** Zero-based row-group indexes retained by every physical pruning stage. */
@@ -451,8 +451,21 @@ export type ParquetBatchProvenance = {
 /** Compatibility alias for Parquet batch provenance. */
 export type ParquetBatchMetadata = ParquetBatchProvenance;
 
-/** Arrow batch returned by `ParquetSource.read()` with source provenance. */
-export type ParquetBatch = ArrowTableBatch<ParquetBatchProvenance> & ParquetBatchProvenance;
+/**
+ * Native Arrow batch returned by `ParquetSource.read()`.
+ * Read its source and row positions with `getParquetBatchProvenance`.
+ */
+export type ParquetBatch = RecordBatch;
+
+/** A decoded Arrow table paired with physical source positions for dataset composition. @internal */
+export type ParquetDecodedBatch<
+  ProvenanceT extends ParquetBatchProvenance = ParquetBatchProvenance
+> = {
+  /** Decoded columns, retaining their native schema and metadata. */
+  data: Table;
+  /** Source and row positions to attach when emitting record batches. */
+  metadata: ProvenanceT;
+} & ProvenanceT;
 
 /** Compatibility alias for Arrow batches returned by `ParquetSource.read()`. */
 export type ParquetSourceBatch = ParquetBatch;
@@ -471,7 +484,11 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
       NonNullable<StrictLoaderOptions['core']>,
       'worker' | 'maxConcurrency' | 'maxMobileConcurrency' | 'reuseWorkers' | '_workerType'
     >;
-  parquet?: ParquetSourceReadOptions & {
+  parquet?: Omit<ParquetSourceReadOptions, 'offset' | 'limit'> & {
+    /** @deprecated Pass the offset to `read()` or put it in a logical query. */
+    offset?: number;
+    /** @deprecated Pass the limit to `read()` or put it in a logical query. */
+    limit?: number;
     /** HTTP headers forwarded to every remote Parquet request. */
     headers?: HeadersInit;
     /** Preserve binary values when the TypeScript decoder is used for later reads. */
@@ -490,8 +507,6 @@ export type ParquetSourceLoaderOptions = DataSourceOptions & {
     onTelemetry?: (event: ParquetTelemetryEvent) => void;
     /** Overrides the package-local worker used for selective source decoding. */
     workerUrl?: string;
-    /** Retained for source API compatibility; the TypeScript backend does not initialize WASM. */
-    wasmUrl?: parquetWasm.InitInput | Promise<parquetWasm.InitInput>;
   };
   /** Byte-range scheduling and diagnostics configuration. */
   rangeRequests?: ParquetRangeRequestOptions;
@@ -556,7 +571,10 @@ export type ParquetDatasetSourceOptions = ParquetSourceLoaderOptions & {
 };
 
 /** Options for one multi-file Parquet dataset read. */
-export type ParquetDatasetReadOptions = Omit<ParquetSourceReadOptions, 'rowGroups' | 'signal'> &
+export type ParquetDatasetReadOptions = Omit<
+  ParquetSourceReadOptions,
+  'rowGroups' | 'signal' | 'offset'
+> &
   ParquetDatasetFileQuery & {
     /** Maximum files read concurrently for this operation. */
     fileConcurrency?: number;
@@ -603,8 +621,7 @@ export type ParquetDatasetBatchProvenance = ParquetBatchProvenance & {
 };
 
 /** Arrow batch emitted by `ParquetDatasetSource.read()`. */
-export type ParquetDatasetBatch = ArrowTableBatch<ParquetDatasetBatchProvenance> &
-  ParquetDatasetBatchProvenance;
+export type ParquetDatasetBatch = RecordBatch;
 
 /** Cumulative discovery, pruning, output, and child-source counters for one dataset source. */
 export type ParquetDatasetTelemetry = {

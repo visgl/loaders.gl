@@ -8,7 +8,6 @@ export {createScanEngine, registerScanBackend} from './scan-engine';
 export {
   executeTableScanBatches,
   filterTableBatch,
-  makeTableScanBatch,
   projectTableBatch,
   projectTableSchema,
   truncateTableBatch
@@ -31,6 +30,11 @@ export type {
   RelationalAggregate,
   RelationalExpression,
   RelationalOrderKey,
+  TableQuery,
+  TableReference,
+  TableSourceCollection,
+  TableSelection,
+  TableQueryExecutionOptions,
   TableQueryOptions
 } from '@loaders.gl/core/loader-utils';
 
@@ -55,10 +59,10 @@ export type {
   ScanColumnMetadata,
   ScanColumnRole,
   ScanExecutionMethod,
-  ScanExecutionTelemetry,
-  ScanExecutionTelemetryCallback,
-  ScanExecutionTelemetryStatus,
-  ScanSourceExecutionTelemetry,
+  TableQueryExecutionSummary,
+  TableQueryCompleteCallback,
+  TableQueryExecutionStatus,
+  TableQuerySourceExecutionSummary,
   ScanExecutionSupport,
   ScanQueryCapabilities,
   ScanQueryMetadata,
@@ -74,7 +78,8 @@ export type {ScanQuery} from './scan-query';
 
 export {
   FEDERATED_TABLE_QUERY_CAPABILITIES,
-  FederatedTableScanSource
+  FederatedTableScanSource,
+  getFederatedTableBatchProvenance
 } from './federated-table-scan-source';
 export type {
   FederatedTableBatch,
@@ -112,3 +117,56 @@ export type {
   TableQueryProjectStep,
   TableQueryScanStep
 } from './table-query';
+
+export {
+  normalizeTableQuery,
+  planLogicalTableQuery
+} from '../loader-utils/lib/scan-utils/logical-table-query';
+export type {
+  NormalizedTableSelection,
+  NormalizedTableQuery,
+  LogicalTableQueryProjectStep,
+  LogicalTableQueryPlan
+} from '../loader-utils/lib/scan-utils/logical-table-query';
+
+export {queryArrowTableInBatches} from './query-arrow-table-in-batches';
+
+export {projectArrowTable, filterArrowTable} from './arrow-execution';
+export type {ArrowFilterOptions} from './arrow-execution';
+
+export {query, queryInBatches, queryProgressive} from './query';
+export type {
+  ProgressiveAggregate,
+  ProgressiveAggregateQuery,
+  ProgressiveQueryOptions,
+  ProgressiveQuerySnapshot
+} from './query-progressive';
+export type {
+  Query,
+  QueryOptions,
+  SQLQueryParser,
+  TypedTableQuery,
+  TypedColumnSelection,
+  TypedColumnType
+} from './query';
+
+export {createQueryMetadata} from '@loaders.gl/core/loader-utils';
+export type {
+  CreateQueryMetadataOptions,
+  QueryMetadata,
+  QueryMetadataOptions,
+  QueryCapabilities,
+  TableQuerySource,
+  TableQueryReadOptions,
+  TableQueryPushdownRequest,
+  TableQueryPushdownPlan,
+  TableQueryCapabilities,
+  QueryPushdownCapabilityHints
+} from '@loaders.gl/core/loader-utils';
+
+export {
+  createArrowQueryWorker,
+  queryArrowTableInWorker,
+  type ArrowQueryWorkerOptions,
+  type ArrowQueryWorkerSession
+} from './arrow-query-worker';

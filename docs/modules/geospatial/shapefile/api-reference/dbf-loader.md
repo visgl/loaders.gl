@@ -63,7 +63,7 @@ const rows = await load(url, DBFLoader, {dbf: {encoding: 'utf8', shape: 'rows'}}
 ## Options
 
 - `encoding`: text encoding of DBF file: usually either `utf8`, or `ascii`/`windows-1252`. For Shapefiles, there's often a `.cpg` file designating the encoding used.
-- `shape`: defaults to `'arrow-table'`; set `'rows'`, `'table'`, or `'object-row-table'` for legacy row-oriented output.
+- `shape`: defaults to `'arrow'`; set `'rows'`, `'table'`, or `'object-row-table'` for legacy row-oriented output.
 
 ## Format Summary
 

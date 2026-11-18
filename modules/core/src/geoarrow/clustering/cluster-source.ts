@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {
   GetFeaturesParameters,
@@ -10,7 +11,6 @@ import type {
   VectorSourceMetadata
 } from '@loaders.gl/core/loader-utils';
 import type {
-  ArrowTable,
   Feature,
   GeoArrowEncoding,
   GeoJSONTable,
@@ -42,7 +42,7 @@ import {getRepresentativePoint, type RepresentativePointStrategy} from './get-re
  * Complete materialized input; remote viewport subsets must be collected before indexing.
  * @experimental
  */
-export type ClusterSourceData = GeoJSONTable | ArrowTable;
+export type ClusterSourceData = GeoJSONTable | Table;
 
 /**
  * Cluster source construction options; inputs must use longitude/latitude.
@@ -99,30 +99,25 @@ export class ClusterSource extends DataSource<ClusterSourceData, {}> implements 
     super(data, {});
     const positions: number[] = [];
     const rowIndices: number[] = [];
-    if (data.shape === 'arrow-table') {
-      const columns = getGeometryColumnsFromSchema(data.data.schema);
+    if (!('shape' in data)) {
+      const columns = getGeometryColumnsFromSchema(data.schema);
       const columnNames = Object.keys(columns);
       this.geometryColumn =
         options.geometryColumn ?? (columnNames.length === 1 ? columnNames[0] : undefined);
       this.geometryEncoding = this.geometryColumn
         ? columns[this.geometryColumn]?.encoding
         : undefined;
-      if (
-        !this.geometryColumn ||
-        !this.geometryEncoding ||
-        !data.data.getChild(this.geometryColumn)
-      ) {
+      if (!this.geometryColumn || !this.geometryEncoding || !data.getChild(this.geometryColumn)) {
         throw new Error('ClusterSource requires an explicitly identified GeoArrow geometry column');
       }
     }
-    const geometryVector =
-      data.shape === 'arrow-table' ? data.data.getChild(this.geometryColumn!)! : null;
+    const geometryVector = !('shape' in data) ? data.getChild(this.geometryColumn!)! : null;
     // Native point bounds read Arrow buffers directly, including chunks, slices and nulls.
     const pointBounds =
       geometryVector && this.geometryEncoding === 'geoarrow.point' && !options.getClusterPosition
         ? getGeoArrowRowBounds(geometryVector, this.geometryEncoding)
         : null;
-    const rowCount = data.shape === 'arrow-table' ? data.data.numRows : data.features.length;
+    const rowCount = !('shape' in data) ? data.numRows : data.features.length;
     for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
       let position: readonly [number, number] | null;
       if (pointBounds) {
@@ -144,12 +139,11 @@ export class ClusterSource extends DataSource<ClusterSourceData, {}> implements 
       if (['cluster', 'clusterId', 'pointCount', 'rowIndex', 'geometry'].includes(name)) {
         throw new Error(`Reserved cluster property: ${name}`);
       }
-      const column = data.shape === 'arrow-table' ? data.data.getChild(aggregation.column) : null;
+      const column = !('shape' in data) ? data.getChild(aggregation.column) : null;
       const values = rowIndices.map(rowIndex => {
-        const value =
-          data.shape === 'arrow-table'
-            ? column?.get(rowIndex)
-            : data.features[rowIndex].properties?.[aggregation.column];
+        const value = !('shape' in data)
+          ? column?.get(rowIndex)
+          : data.features[rowIndex].properties?.[aggregation.column];
         if (typeof value !== 'number' || !Number.isFinite(value))
           throw new Error(`Cluster aggregation ${name} requires finite numeric values`);
         return value;
@@ -229,35 +223,31 @@ export class ClusterSource extends DataSource<ClusterSourceData, {}> implements 
     const table = builder.finishTable();
     const preference = parameters.geoarrow?.encodingPreference;
     if (preference && preference !== 'geoarrow.wkb') {
-      return {
-        shape: 'arrow-table',
-        data: convertGeoArrowGeometry(
-          table.data,
-          preference === 'optimized' ? 'geoarrow.point' : 'geoarrow.geometry'
-        )
-      };
+      return convertGeoArrowGeometry(
+        table,
+        preference === 'optimized' ? 'geoarrow.point' : 'geoarrow.geometry'
+      );
     }
     return table;
   }
 
   /** Retrieves a member's original geometry and properties; Arrow rows are materialized on demand. */
   getFeature(rowIndex: number): Feature<Geometry | null> {
-    const rowCount =
-      this.data.shape === 'arrow-table' ? this.data.data.numRows : this.data.features.length;
+    const rowCount = !('shape' in this.data) ? this.data.numRows : this.data.features.length;
     if (!Number.isInteger(rowIndex) || rowIndex < 0 || rowIndex >= rowCount)
       throw new Error('Invalid cluster source row');
-    if (this.data.shape === 'geojson-table') return this.data.features[rowIndex];
-    const properties = {...this.data.data.get(rowIndex)!.toJSON()};
+    if ('shape' in this.data) return this.data.features[rowIndex];
+    const properties = {...this.data.get(rowIndex)!.toJSON()};
     delete properties[this.geometryColumn!];
     return {type: 'Feature', geometry: this.getGeometry(rowIndex), properties};
   }
 
   /** Decodes one geometry only when extraction or member retrieval needs it. */
   private getGeometry(rowIndex: number): Geometry | null {
-    return this.data.shape === 'geojson-table'
+    return 'shape' in this.data
       ? this.data.features[rowIndex].geometry
       : convertGeoArrowVectorCellToGeoJSON(
-          this.data.data.getChild(this.geometryColumn!)!,
+          this.data.getChild(this.geometryColumn!)!,
           rowIndex,
           this.geometryEncoding!
         );

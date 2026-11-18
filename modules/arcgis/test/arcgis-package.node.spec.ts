@@ -28,14 +28,20 @@ beforeAll(async () => {
   [lazyRegistry, bundledRegistry, bundledFeature, credentials] = await Promise.all([
     bundleImport('@loaders.gl/arcgis', 'ARCGIS_LOADERS'),
     bundleImport('@loaders.gl/arcgis/bundled', 'ARCGIS_LOADERS'),
-    bundleImport('@loaders.gl/arcgis/bundled', 'ArcGISFeatureServerSourceLoader'),
+    bundleImport('@loaders.gl/arcgis/bundled', 'ArcGISFeatureServerLoader'),
     bundleImport('@loaders.gl/arcgis/authentication', 'ArcGISAuthentication')
   ]);
 });
 
 test('published root defers service implementations and their heavy dependencies', () => {
   expect(lazyRegistry.initialInputs.some(input => input.includes('arcgis/dist/'))).toBe(true);
-  expect(lazyRegistry.initialInputs.some(input => /source-loader\.js$/.test(input))).toBe(false);
+  expect(
+    lazyRegistry.initialInputs.some(input =>
+      /arcgis-(feature-server|scene-server|vector-tile-server|image-server|image-tile|map-tile)-loader\.js$/.test(
+        input
+      )
+    )
+  ).toBe(false);
   expect(
     lazyRegistry.initialInputs.some(input =>
       /modules\/(gis|i3s|mvt|lerc|loader-utils|worker-utils)\//.test(input)
@@ -47,21 +53,17 @@ test('published root defers service implementations and their heavy dependencies
 
 test('named synchronous imports tree-shake unrelated ArcGIS clients', () => {
   expect(
-    bundledFeature.initialInputs.some(input =>
-      input.endsWith('arcgis-feature-server-source-loader.js')
-    )
+    bundledFeature.initialInputs.some(input => input.endsWith('arcgis-feature-server-loader.js'))
   ).toBe(true);
   expect(
     bundledFeature.initialInputs.some(input =>
-      /arcgis-(scene-server|vector-tile-server|image-server|image-tile|map-tile)-source-loader\.js$/.test(
+      /arcgis-(scene-server|vector-tile-server|image-server|image-tile|map-tile)-loader\.js$/.test(
         input
       )
     )
   ).toBe(false);
   expect(
-    bundledRegistry.initialInputs.some(input =>
-      input.endsWith('arcgis-scene-server-source-loader.js')
-    )
+    bundledRegistry.initialInputs.some(input => input.endsWith('arcgis-scene-server-loader.js'))
   ).toBe(true);
 });
 
@@ -79,7 +81,7 @@ test('built package exports resolve in Node without source aliases', () => {
       `
     import assert from 'node:assert/strict';
     import {createRequire} from 'node:module';
-    import {load, createDataSource} from '@loaders.gl/core';
+    import {createDataSource, createDataSourceSync} from '@loaders.gl/core';
     import * as root from '@loaders.gl/arcgis';
     import * as bundled from '@loaders.gl/arcgis/bundled';
     import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
@@ -94,13 +96,13 @@ test('built package exports resolve in Node without source aliases', () => {
     for (const loader of root.ARCGIS_LOADERS) {
       const runtime = await loader.preload();
       assert.equal(runtime, bundled.getArcGISLoader(loader.id));
-      const asynchronousSource = await load(serviceUrl, loader);
-      const synchronousSource = createDataSource(serviceUrl, [runtime], {});
+      const asynchronousSource = await createDataSource(serviceUrl, loader);
+      const synchronousSource = createDataSourceSync(serviceUrl, [runtime], {});
       assert.equal(asynchronousSource.constructor, synchronousSource.constructor);
     }
     const commonJs = createRequire(import.meta.url)('@loaders.gl/arcgis');
     assert.equal(commonJs.ARCGIS_LOADERS.length, 6);
-    assert.equal(typeof commonJs.ArcGISFeatureServerSourceLoader.preload, 'function');
+    assert.equal(typeof commonJs.ArcGISFeatureServerLoader.preload, 'function');
     console.log('published entrypoints passed');
   `
     ],

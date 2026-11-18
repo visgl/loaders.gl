@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
 import {getArrowViewTypeSupport} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
@@ -50,7 +49,7 @@ const textDecoder = new TextDecoder();
 export function parseRawArrowCSVBytes(
   arrayBuffer: ArrayBuffer,
   csvOptions: CSVRawArrowOptions
-): ArrowTable | null {
+): arrow.Table | null {
   const shouldUseUtf8View =
     csvOptions.viewTypes === 'require' ||
     (csvOptions.viewTypes === 'prefer' && getArrowViewTypeSupport().utf8View);
@@ -93,7 +92,7 @@ export function parseRawArrowCSVBytes(
 export function parseRawArrowCSVASCIIText(
   csvText: string,
   csvOptions: CSVRawArrowOptions
-): ArrowTable | null {
+): arrow.Table | null {
   const parserOptions = getCSVASCIITextParserOptions(csvOptions);
   if (!parserOptions) {
     return null;
@@ -286,7 +285,7 @@ class RawArrowCSVByteParser {
   }
 
   /** Parses all bytes and returns a loaders.gl Arrow table. */
-  parseTable(): ArrowTable {
+  parseTable(): arrow.Table {
     const rowFields = new CSVByteRowBuilder();
     let fieldStart = 0;
     let quotedFieldStart = 0;
@@ -533,7 +532,7 @@ class RawArrowCSVByteParser {
     }
   }
 
-  private finishTable(): ArrowTable {
+  private finishTable(): arrow.Table {
     const columnBuilders =
       this.columnBuilders || createRawArrowColumnBuilders(this.headerRow || [], this.bytes.length);
     return createRawArrowTable(this.headerRow || [], columnBuilders);
@@ -627,7 +626,7 @@ class RawArrowQuotedDirectCSVByteParser {
   }
 
   /** Parses all bytes and returns a loaders.gl Arrow table. */
-  parseTable(): ArrowTable {
+  parseTable(): arrow.Table {
     if (this.bytes.length === 0) {
       return createRawArrowTable([], []);
     }
@@ -820,7 +819,7 @@ class RawArrowUnquotedCSVByteParser {
   }
 
   /** Parses all bytes and returns a loaders.gl Arrow table. */
-  parseTable(): ArrowTable {
+  parseTable(): arrow.Table {
     if (this.bytes.length === 0) {
       return createRawArrowTable([], []);
     }
@@ -961,7 +960,7 @@ class RawArrowUnquotedCSVTextParser {
   }
 
   /** Parses the text or returns `null` when it requires the general UTF-8 parser. */
-  parseTable(): ArrowTable | null {
+  parseTable(): arrow.Table | null {
     if (this.csvText.length === 0) {
       return createRawArrowTable([], []);
     }
@@ -1391,24 +1390,22 @@ function countDelimitedTextFields(
   return fieldCount;
 }
 
-/** Creates a loaders.gl Arrow table from raw Utf8 column builders. */
+/** Creates a native Arrow table from raw Utf8 column builders. */
 function createRawArrowTable(
   headerRow: string[],
   columnBuilders: RawArrowUtf8ColumnBuilder[]
-): ArrowTable {
-  const schema = createUtf8Schema(headerRow);
-  if (headerRow.length === 0) {
-    return {
-      shape: 'arrow-table',
-      schema,
-      data: new arrow.Table({})
-    };
-  }
-
+): arrow.Table {
   const arrowFields = headerRow.map(
     columnName => new arrow.Field(columnName, new arrow.Utf8(), true)
   );
-  const arrowSchema = new arrow.Schema(arrowFields);
+  const arrowSchema = new arrow.Schema(
+    arrowFields,
+    new Map([
+      ['loaders.gl#format', 'csv'],
+      ['loaders.gl#loader', 'CSVLoader']
+    ])
+  );
+  if (headerRow.length === 0) return new arrow.Table(arrowSchema, []);
   const arrowDatas = columnBuilders.map(columnBuilder => columnBuilder.finishData());
   const arrowRecordBatch = new arrow.RecordBatch(
     arrowSchema,
@@ -1418,11 +1415,7 @@ function createRawArrowTable(
     })
   );
 
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table([arrowRecordBatch])
-  };
+  return new arrow.Table([arrowRecordBatch]);
 }
 
 /** Creates UTF-8 column builders with a coarse input-size based data capacity. */
@@ -1491,15 +1484,4 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
     headers.push(`${columnPrefix}${columnIndex + 1}`);
   }
   return headers;
-}
-
-/** Creates a loaders.gl schema with nullable Utf8 fields. */
-function createUtf8Schema(headerRow: string[]): Schema {
-  return {
-    fields: headerRow.map(columnName => ({name: columnName, type: 'utf8', nullable: true})),
-    metadata: {
-      'loaders.gl#format': 'csv',
-      'loaders.gl#loader': 'CSVLoader'
-    }
-  };
 }

@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['Remote range reads', 'Selected columns', 'Arrow output']}
   links={[
     {label: 'Lance module', to: '/docs/modules/tables/lance'},
-    {label: 'Lance source', to: '/docs/modules/tables/lance/api-reference/lance-source-loader'},
+    {label: 'Lance source', to: '/docs/modules/tables/lance/api-reference/lance-source'},
     {label: 'Apache Arrow', to: '/docs/developer-guide/apache-arrow'}
   ]}
 />
@@ -49,5 +49,5 @@ file. `readLanceRemoteFileToArrow()` supports selected fixed-width primitive
 columns. `readLanceRemoteCoordinatesToArrow()` supports two-dimensional
 fixed-size float columns such as PushT's `observation_state`.
 
-Both APIs are Work In Progress and currently require physical column indexes,
+Both helpers return native Apache Arrow tables. The APIs are Work In Progress and currently require physical column indexes,
 explicit names, and known Lance encodings.

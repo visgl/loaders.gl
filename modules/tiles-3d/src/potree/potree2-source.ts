@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DataSource, type CoreAPI} from '@loaders.gl/core/loader-utils';
-import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
-import type {PotreeSourceLoaderOptions} from './potree-source-options';
+import {DataSource, readRangeResponse, type CoreAPI} from '@loaders.gl/core/loader-utils';
+import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
+import type {PotreeLoaderOptions} from './potree-source-options';
 import type {Potree2HierarchyNode, Potree2Metadata} from './potree2-types';
 import {
   parsePotree2Metadata,
@@ -36,7 +36,7 @@ export type Potree2TileHeader = {
 };
 
 /** Range-backed, lazy Potree 2.0 octree with native-coordinate Arrow point content. */
-export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions> {
+export class Potree2Source extends DataSource<string, PotreeLoaderOptions> {
   /** Shared metadata and initial hierarchy loading. */
   readonly ready: Promise<void>;
   /** Whether the initial hierarchy is ready. */
@@ -47,7 +47,7 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
   private readonly signal: AbortSignal;
   /** Checked resource ceilings. */
   private readonly limits: Required<
-    Omit<NonNullable<PotreeSourceLoaderOptions['potree']>, 'signal' | 'colorFormat'>
+    Omit<NonNullable<PotreeLoaderOptions['potree']>, 'signal' | 'colorFormat'>
   >;
   /** Final metadata response URL, including redirect credentials. */
   private rootUrl: string;
@@ -61,7 +61,7 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
   private hierarchyBytes = 0;
 
   /** Starts opening one range-readable dataset; call close() when done. */
-  constructor(input: string, options: PotreeSourceLoaderOptions = {}, coreApi?: CoreAPI) {
+  constructor(input: string, options: PotreeLoaderOptions = {}, coreApi?: CoreAPI) {
     super(input, options, {potree: {}}, coreApi);
     const browserBase = typeof document !== 'undefined' ? document.baseURI : undefined;
     const inputUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(this.url)
@@ -152,9 +152,12 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
     );
     this.signal.throwIfAborted();
     const header = this.createHeader(node);
-    mesh.header!.boundingBox = header.boundingVolume.cartographicBounds;
     return {
-      data: convertMeshToTable(mesh, 'arrow-table'),
+      data: makeMeshArrowTable(mesh.attributes, {
+        schema: mesh.schema,
+        topology: mesh.topology,
+        boundingBox: header.boundingVolume.cartographicBounds
+      }),
       pointCount: node.pointCount,
       coordinateSystem: 'cartesian' as const,
       cartographicOrigin: [0, 0, 0],
@@ -268,19 +271,8 @@ export class Potree2Source extends DataSource<string, PotreeSourceLoaderOptions>
       headers: {Range: `bytes=${offset}-${end}`}
     });
     this.signal.throwIfAborted();
-    const contentRange = response.headers.get('content-range');
-    const total = contentRange?.split('/')[1];
-    if (
-      response.status !== 206 ||
-      !contentRange ||
-      (total !== '*' && (!total || !/^[0-9]+$/.test(total) || BigInt(total) <= end)) ||
-      !new RegExp(`^bytes ${offset}-${end}/(?:[0-9]+|\\*)$`).test(contentRange)
-    ) {
-      await response.body?.cancel();
-      throw new Error('Potree server must honor the requested byte range');
-    }
-    const data = await this.readResponse(response, Number(size));
-    if (data.byteLength !== Number(size)) throw new Error('Truncated Potree byte range');
+    const bytes = await readRangeResponse(response, offset, Number(size), this.signal);
+    const data = bytes.buffer as ArrayBuffer;
     return data;
   }
 

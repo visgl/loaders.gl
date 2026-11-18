@@ -2,24 +2,26 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
+import {streamNativeParquetBatches} from './lib/native-parquet-batches';
 import {
   executeScanTasks,
-  emitScanExecutionTelemetry,
+  emitQueryComplete,
   explainTableQuery,
   validateTableQueryLimit,
   type CoreAPI,
   type ScanFragment,
   type ScanFragmentProvider,
   type ScanTask,
-  type ScanExecutionTelemetry
+  type TableQueryExecutionSummary
 } from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
 
-import {ParquetSource} from './parquet-source-loader';
+import {ParquetSource} from './parquet-source';
 import {sliceParquetBatch} from './lib/slice-parquet-batch';
 import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
-  ParquetDatasetBatch,
+  ParquetDecodedBatch,
   ParquetDatasetBatchProvenance,
   ParquetDatasetBoundingBox,
   ParquetDatasetFile,
@@ -32,7 +34,6 @@ import type {
   ParquetDatasetExplain,
   ParquetDatasetSourceOptions,
   ParquetDatasetTelemetry,
-  ParquetSourceBatch,
   ParquetPredicate,
   ParquetSourceExplain,
   ParquetTelemetry
@@ -227,7 +228,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
   async *executeScanPlan(
     plan: ParquetDatasetExplain,
     options: ParquetDatasetReadOptions = {}
-  ): AsyncIterable<ParquetDatasetBatch> {
+  ): AsyncIterable<RecordBatch> {
     if (plan.source !== 'parquet-dataset') {
       throw new Error('ParquetDatasetSource can only execute dataset scan plans');
     }
@@ -256,11 +257,11 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
         concurrency: fileConcurrency,
         signal: readContext.abortController.signal
       })) {
-        const outputBatch = sliceParquetBatch(batch, Math.min(batch.length, remainingRows));
+        const outputBatch = sliceParquetBatch(batch, Math.min(batch.rowCount, remainingRows));
         this.telemetry.batchesEmitted++;
-        this.telemetry.rowsEmitted += outputBatch.length;
-        yield outputBatch;
-        remainingRows -= outputBatch.length;
+        this.telemetry.rowsEmitted += outputBatch.rowCount;
+        yield* streamNativeParquetBatches([outputBatch]);
+        remainingRows -= outputBatch.rowCount;
         if (remainingRows === 0) return;
       }
     } finally {
@@ -271,7 +272,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
   }
 
   /** Common scan-architecture alias for ordered multi-file reads. */
-  scan(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+  scan(options: ParquetDatasetReadOptions = {}): AsyncIterable<RecordBatch> {
     return this.read(options);
   }
 
@@ -281,16 +282,23 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
    * Files are decoded concurrently. Each later file is limited to one buffered batch until all
    * earlier files have been yielded, bounding memory while retaining stable provider order.
    */
-  async *read(options: ParquetDatasetReadOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+  read(options: ParquetDatasetReadOptions = {}): AsyncIterable<RecordBatch> {
+    return streamNativeParquetBatches(this.readWithProvenance(options));
+  }
+
+  /** Reads decoded batches for dataset composition and row provenance processing. @internal */
+  async *readWithProvenance(
+    options: ParquetDatasetReadOptions = {}
+  ): AsyncIterable<ParquetDecodedBatch<ParquetDatasetBatchProvenance>> {
     this.assertOpen();
     validateTableQueryLimit(options.limit);
     const startedAt = Date.now();
     const telemetryBefore = this.getTelemetry();
     let remainingRows = options.limit ?? this.options.parquet?.limit ?? Number.POSITIVE_INFINITY;
     if (remainingRows === 0) {
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
-        createParquetDatasetScanExecutionTelemetry(
+      emitQueryComplete(
+        options.onQueryComplete,
+        createParquetDatasetTableQueryExecutionSummary(
           telemetryBefore,
           this.getTelemetry(),
           startedAt,
@@ -315,11 +323,11 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
         concurrency: fileConcurrency,
         signal: readContext.abortController.signal
       })) {
-        const outputBatch = sliceParquetBatch(batch, Math.min(batch.length, remainingRows));
+        const outputBatch = sliceParquetBatch(batch, Math.min(batch.rowCount, remainingRows));
         this.telemetry.batchesEmitted++;
-        this.telemetry.rowsEmitted += outputBatch.length;
+        this.telemetry.rowsEmitted += outputBatch.rowCount;
         yield outputBatch;
-        remainingRows -= outputBatch.length;
+        remainingRows -= outputBatch.rowCount;
         if (remainingRows === 0) {
           limitReached = true;
           return;
@@ -334,16 +342,16 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
       readContext.abortController.abort();
       readContext.removeSignalListener();
       this.activeReadControllers.delete(readContext.abortController);
-      const status: ScanExecutionTelemetry['status'] = readError
+      const status: TableQueryExecutionSummary['status'] = readError
         ? cancelled
           ? 'cancelled'
           : 'failed'
         : limitReached || !completed
           ? 'early-terminated'
           : 'completed';
-      emitScanExecutionTelemetry(
-        options.onTelemetry,
-        createParquetDatasetScanExecutionTelemetry(
+      emitQueryComplete(
+        options.onQueryComplete,
+        createParquetDatasetTableQueryExecutionSummary(
           telemetryBefore,
           this.getTelemetry(),
           startedAt,
@@ -375,7 +383,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
     options: ParquetDatasetReadOptions,
     signal: AbortSignal,
     filePlans?: ReadonlyMap<number, ParquetSourceExplain>
-  ): AsyncIterable<ScanTask<ParquetDatasetBatch>> {
+  ): AsyncIterable<ScanTask<ParquetDecodedBatch<ParquetDatasetBatchProvenance>>> {
     const selectedFiles = this.getSelectedFiles({...options, signal});
     for await (const indexedFile of selectedFiles) {
       if (filePlans && !filePlans.has(indexedFile.index)) {
@@ -439,14 +447,14 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
     options: ParquetDatasetReadOptions,
     signal: AbortSignal,
     scanPlan?: ParquetSourceExplain
-  ): AsyncIterable<ParquetDatasetBatch> {
+  ): AsyncIterable<ParquetDecodedBatch<ParquetDatasetBatchProvenance>> {
     const source = this.createSource(indexedFile.file);
     this.telemetry.filesOpened++;
     try {
       if (this.options.parquetDataset?.validateSchema !== false) {
         await this.validateFileSchema(source, indexedFile, signal);
       }
-      for await (const batch of source.read({
+      for await (const batch of source.readWithProvenance({
         columns: options.columns,
         batchSize: options.batchSize,
         concurrency: options.concurrency,
@@ -494,7 +502,7 @@ export class ParquetDatasetSource implements ScanFragmentProvider<ParquetPredica
   /** Creates a child source while preserving caller fetch, worker, range, and decode options. */
   private createSource(file: ParquetDatasetFile): ParquetSource {
     const parquetOptions = this.options.parquet
-      ? {...this.options.parquet, limit: undefined}
+      ? {...this.options.parquet, limit: undefined, offset: undefined}
       : undefined;
     return new ParquetSource(file.data, {...this.options, parquet: parquetOptions}, this.coreApi);
   }
@@ -560,9 +568,9 @@ async function getFileCollection(
 
 /** Attaches dataset-level descriptor provenance without copying Arrow buffers. */
 function createDatasetBatch(
-  batch: ParquetSourceBatch,
+  batch: ParquetDecodedBatch,
   indexedFile: IndexedParquetDatasetFile
-): ParquetDatasetBatch {
+): ParquetDecodedBatch<ParquetDatasetBatchProvenance> {
   const datasetProvenance = {
     datasetFileIndex: indexedFile.index,
     datasetFileId: getDatasetFileId(indexedFile.file, indexedFile.index),
@@ -753,14 +761,14 @@ function createParquetDatasetTelemetry(): ParquetDatasetTelemetry {
 }
 
 /** Converts cumulative dataset and child counters into one portable read-scoped snapshot. */
-function createParquetDatasetScanExecutionTelemetry(
+function createParquetDatasetTableQueryExecutionSummary(
   before: ParquetDatasetTelemetry,
   after: ParquetDatasetTelemetry,
   startedAt: number,
-  status: ScanExecutionTelemetry['status'],
-  earlyTerminationReason?: ScanExecutionTelemetry['earlyTerminationReason'],
+  status: TableQueryExecutionSummary['status'],
+  earlyTerminationReason?: TableQueryExecutionSummary['earlyTerminationReason'],
   error?: unknown
-): ScanExecutionTelemetry {
+): TableQueryExecutionSummary {
   const parquet = Object.fromEntries(
     Object.keys(after.parquet).map(key => {
       const telemetryKey = key as keyof ParquetTelemetry;

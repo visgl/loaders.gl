@@ -11,7 +11,4 @@ export {NDJSONLoader} from './ndjson-loader-types';
 export {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';
 
 export type {GeoJSONLoaderOptions} from './geojson-loader-types';
-export {
-  GeoJSONLoader,
-  GeoJSONWorkerLoader
-} from './geojson-loader-types';
+export {GeoJSONLoader} from './geojson-loader-types';

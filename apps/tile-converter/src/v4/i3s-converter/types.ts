@@ -9,6 +9,8 @@ import {Matrix4, Vector3} from '@math.gl/core';
 
 /** Converted resources for specific node */
 export type I3SConvertedResources = {
+  /** Node owning an unchanged encoded texture, including this node for first use. */
+  textureOwnerId?: number;
   /**
    * Node id
    */
@@ -61,7 +63,7 @@ export type I3SConvertedResources = {
  */
 export type ConvertedAttributes = {
   /** POSITION attribute value */
-  positions: Float32Array;
+  positions: Float32Array | Float64Array;
   /** NORMAL attribute value */
   normals: Float32Array;
   /** TEXCOORD_0 attribute value */

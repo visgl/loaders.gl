@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 
-import type {ScanExecutionTelemetry, ScanQueryMetadata} from '@loaders.gl/core/scan';
+import type {TableQueryExecutionSummary, ScanQueryMetadata} from '@loaders.gl/core/query';
 
 import {
   FederatedScanPanel,
@@ -23,7 +23,7 @@ const DEFAULT_STATE: FederatedScanPanelState = {
 
 type DemoResults = Readonly<{
   explanation?: unknown;
-  telemetry?: ScanExecutionTelemetry;
+  telemetry?: TableQueryExecutionSummary;
   provenance?: readonly string[];
   rows?: readonly Record<string, unknown>[];
   error?: string;
@@ -51,7 +51,7 @@ export function FederatedScanLiveExample(): JSX.Element {
             import('@loaders.gl/tables/csv'),
             import('@loaders.gl/tables/json'),
             import('@loaders.gl/core/loader-utils'),
-            import('@loaders.gl/core/scan')
+            import('@loaders.gl/core/query')
           ]);
         const dataSourceManager = new loaderUtilsModule.DataSourceManager();
         dataSourceManager.add({
@@ -132,15 +132,15 @@ export function FederatedScanLiveExample(): JSX.Element {
         setMetadata(queryMetadata);
         const rows: Record<string, unknown>[] = [];
         const provenance: string[] = [];
-        let telemetry: ScanExecutionTelemetry | undefined;
+        let telemetry: TableQueryExecutionSummary | undefined;
         for await (const batch of source.read({
           ...query,
-          onTelemetry: value => {
+          onQueryComplete: value => {
             telemetry = value;
           }
         })) {
-          provenance.push(batch.sourceId);
-          rows.push(...batch.data.toArray().map(row => row.toJSON()));
+          provenance.push(scanModule.getFederatedTableBatchProvenance(batch).sourceId);
+          rows.push(...batch.toArray().map(row => row.toJSON()));
         }
         if (active) setResults({explanation, telemetry, provenance, rows});
       } catch (error) {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {GLType} from '@math.gl/geometry';
+import {getTileComponentArrayType} from './tile-component-types';
 import {assert} from '@loaders.gl/core/loader-utils';
 
 const COMPONENTS_PER_ATTRIBUTE = {
@@ -101,17 +101,16 @@ const PACKER = {
 export function createTypedArrayFromAccessor(tile3DAccessor, buffer, byteOffset, length) {
   const {componentType} = tile3DAccessor;
   assert(tile3DAccessor.componentType);
-  const type = typeof componentType === 'string' ? GLType.fromName(componentType) : componentType;
+  const ArrayType = getTileComponentArrayType(componentType);
   const size = COMPONENTS_PER_ATTRIBUTE[tile3DAccessor.type];
   const unpacker = UNPACKER[tile3DAccessor.type];
   const packer = PACKER[tile3DAccessor.type];
 
   byteOffset += tile3DAccessor.byteOffset;
-  const values = GLType.createTypedArray(type, buffer, byteOffset, size * length);
+  const values = new ArrayType(buffer, byteOffset, size * length);
 
   return {
     values,
-    type,
     size,
     unpacker,
     packer

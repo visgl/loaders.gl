@@ -55,7 +55,11 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 />
 
 ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or both.
-`ArcGISMapTileSourceLoader` presents either mode through one loaders.gl `TileSource`.
+`ArcGISMapTileLoader` presents either mode through one loaders.gl `TileSource`.
+
+| Property | Value |
+| --- | --- |
+| Data source | `ArcGISMapTileSource` |
 
 ## Feature support
 
@@ -82,12 +86,12 @@ the [authentication guide](/docs/developer-guide/authentication).
 ## Cached tiles
 
 ```ts
-import {load} from '@loaders.gl/core';
-import {ArcGISMapTileSourceLoader} from '@loaders.gl/arcgis';
+import {createDataSource} from '@loaders.gl/core';
+import {ArcGISMapTileLoader} from '@loaders.gl/arcgis';
 
-const source = await load(
+const source = await createDataSource(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
-  [ArcGISMapTileSourceLoader]
+  [ArcGISMapTileLoader]
 );
 
 const metadata = await source.getMetadata();
@@ -100,7 +104,7 @@ Select export mode when a service is not cached or when dynamic layer, time, or 
 parameters are required:
 
 ```ts
-const source = await load(mapServerUrl, [ArcGISMapTileSourceLoader], {
+const source = await createDataSource(mapServerUrl, [ArcGISMapTileLoader], {
   'arcgis-map-server': {
     mode: 'dynamic',
     tileSize: 512,
@@ -151,7 +155,7 @@ tiles and dynamic exports; the latter is an image request, not feature querying.
 
 ## Query vector features and tables
 
-For a queryable `/MapServer/{layerId}`, use `ArcGISFeatureServerSourceLoader` and its
+For a queryable `/MapServer/{layerId}`, use `ArcGISFeatureServerLoader` and its
 [feature query API](/docs/developer-guide/arcgis/feature-layers). The registry selects this vector
 source for numbered MapServer layer URLs; MapServer root URLs retain the imagery source.
 Spatial layer queries require advertised GeoJSON support. Counts, IDs, extents and nonspatial

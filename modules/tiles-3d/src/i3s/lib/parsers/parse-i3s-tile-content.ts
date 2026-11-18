@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
 import type {TypedArray} from '@loaders.gl/core/schema';
 import {Vector3, Matrix4} from '@math.gl/core';
@@ -28,7 +29,7 @@ import {
 } from '../../types';
 import {getUrlWithSearchParams, getUrlWithToken} from '../utils/url-utils';
 
-import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
+import {getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 import {I3SLoaderOptions} from '../../i3s-loader';
 
 const scratchVector = new Vector3([0, 0, 0]);
@@ -128,7 +129,7 @@ export async function parseI3STileContent(
         decodedTextures[textureResource.textureSetDefinitionId] = texture;
       }
     } catch (error) {
-      console.warn(error);
+      getLoaderLog(options).warn(String(error))();
     }
   }
 
@@ -716,7 +717,6 @@ function normalizeAttributes(
 
         attributes[attribute] = {
           value,
-          type: GL_TYPE_MAP[valueType],
           size: valuesPerElement
         };
 

@@ -3,15 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {load} from '@loaders.gl/core';
+import {createDataSource, load} from '@loaders.gl/core';
 import {
   GeoTIFFLoader,
   GeoTIFFRasterLoader,
   LERCLoader,
   TerrainLoader,
   QuantizedMeshLoader,
-  GeoTIFFSourceLoader,
-  OMETiffSourceLoader
+  OMETiffLoader
 } from '@loaders.gl/raster';
 import {GeoTIFFLoaderWithParser, GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff';
 import {LERCLoaderWithParser} from '@loaders.gl/raster/lerc';
@@ -32,15 +31,20 @@ test.each([
 });
 
 test('raster source metadata defers constructors and keeps TIFF selection distinct', async () => {
-  expect(GeoTIFFSourceLoader.testURL('https://example.com/a.tif')).toBe(true);
-  expect(GeoTIFFSourceLoader.testURL('https://example.com/a.ome.tif')).toBe(false);
-  expect(OMETiffSourceLoader.testURL('https://example.com/a.ome.tif')).toBe(true);
-  for (const metadata of [GeoTIFFSourceLoader, OMETiffSourceLoader]) {
-    expect(() => metadata.createDataSource(new Blob([]), {})).toThrow('requires async load()');
+  expect(GeoTIFFLoaderWithParser.testURL('https://example.com/a.tif')).toBe(true);
+  expect(GeoTIFFLoaderWithParser.testURL('https://example.com/a.ome.tif')).toBe(false);
+  expect(OMETiffLoader.testURL('https://example.com/a.ome.tif')).toBe(true);
+  for (const metadata of [GeoTIFFLoader, OMETiffLoader]) {
     const implementation = await metadata.preload();
     expect(implementation.id).toBe(metadata.id);
-    const source = implementation.createDataSource(new Blob([]), {});
+    const source = implementation.createDataSourceSync(new Blob([]), {});
     expect(source).toBeDefined();
-    expect((await load(new Blob([]), metadata)).constructor).toBe(source.constructor);
+    expect((await createDataSource(new Blob([]), metadata)).constructor).toBe(source.constructor);
   }
+});
+
+test('synchronous OME-TIFF construction requires the implementation subpath', () => {
+  expect(() => OMETiffLoader.createDataSourceSync(new Blob([]), {})).toThrow(
+    'OMETiffLoader requires async createDataSource() or its source implementation subpath'
+  );
 });

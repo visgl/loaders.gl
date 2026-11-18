@@ -1,28 +1,27 @@
-import * as arrow from 'apache-arrow';
+import {Table, type RecordBatch} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
 import {
   createScanQueryMetadata,
   executeTableScanBatches,
-  explainTableQuery,
-  filterColumnarRowIndices,
-  validateColumnarPredicate
+  explainTableQuery
 } from '@loaders.gl/core/loader-utils';
 import type {
   CoreAPI,
   DataSourceOptions,
   ScanQueryMetadata,
-  SourceLoader,
   TableScanReadOptions,
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTableBatch, TableBatch} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
+import {projectArrowTable, filterArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import {ArrowFormat} from './exports/arrow-format';
 
 const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
-  projection: 'pushdown',
+  projection: 'residual',
   limit: 'pushdown',
+  offset: 'pushdown',
+  cast: 'unsupported',
   streaming: true,
   cancellation: true
 } as const);
@@ -30,7 +29,7 @@ const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({
 /** Streams Arrow IPC record batches through the common table scan contract. */
 export class ArrowTableSource
   extends DataSource<string | Blob, DataSourceOptions>
-  implements TableScanSource<TableBatch>
+  implements TableScanSource<RecordBatch>
 {
   private metadataPromise: Promise<ScanQueryMetadata> | null = null;
 
@@ -56,17 +55,20 @@ export class ArrowTableSource
   }
 
   /** Streams Arrow record batches in source order with an optional global limit. */
-  async *read(options: TableScanReadOptions = {}): AsyncIterable<TableBatch> {
-    yield* executeTableScanBatches(
+  async *read(options: TableScanReadOptions = {}): AsyncIterable<RecordBatch> {
+    for await (const batch of executeTableScanBatches<Table>(
       (signal, onByteLength) => this.parseBatches(signal, onByteLength),
       options,
       {filter: filterArrowBatch, project: projectArrowBatch}
-    );
+    )) {
+      if (batch.batches.length) yield* batch.batches;
+      else yield makeArrowMetadataBatch(batch.schema);
+    }
   }
 
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
     for await (const batch of this.parseBatches(signal)) {
-      const arrowSchema = (batch as ArrowTableBatch).data.schema;
+      const arrowSchema = batch.schema;
       return createScanQueryMetadata({
         sourceType: 'arrow',
         queryType: 'table',
@@ -83,70 +85,31 @@ export class ArrowTableSource
   private async *parseBatches(
     signal?: AbortSignal,
     onByteLength?: (byteLength: number) => void
-  ): AsyncIterable<TableBatch> {
+  ): AsyncIterable<Table> {
     if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
     const chunks =
       this.data instanceof Blob
         ? readStreamChunks(this.data.stream(), signal, onByteLength)
         : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
-    const {ArrowLoaderWithParser} = await import('./arrow-loader');
-    yield* ArrowLoaderWithParser.parseInBatches(chunks);
+    const {parseArrowInBatches} = await import('./lib/parsers/parse-arrow');
+    for await (const batch of parseArrowInBatches(chunks)) {
+      yield new Table(batch.schema, [batch]);
+    }
   }
 }
 
-/** Applies the portable three-valued predicate evaluator without changing Arrow field types. */
-function filterArrowData(
-  data: arrow.Table,
-  predicate: TableScanReadOptions['predicate']
-): arrow.Table {
-  if (!predicate) return data;
-  const columnNames = new Set(data.schema.fields.map(field => field.name));
-  validateColumnarPredicate(predicate, columnNames);
-  const columns = Object.fromEntries(
-    data.schema.fields.map(field => [field.name, Array.from(data.getChild(field.name)!)])
-  );
-  const rowIndices = filterColumnarRowIndices(predicate as never, columns as never, data.numRows);
-  if (rowIndices.length === data.numRows) return data;
-  const filteredColumns = Object.fromEntries(
-    data.schema.fields.map(field => {
-      const vector = data.getChild(field.name)!;
-      return [
-        field.name,
-        arrow.vectorFromArray(
-          rowIndices.map(rowIndex => vector.get(rowIndex)),
-          field.type
-        )
-      ];
-    })
-  );
-  return new arrow.Table(data.schema, filteredColumns);
-}
-
-/** Applies the Arrow-native residual predicate while retaining the table-batch envelope. */
+/** Applies an Arrow-native residual predicate to a decoded IPC chunk. */
 function filterArrowBatch(
-  batch: TableBatch,
-  predicate: TableScanReadOptions['predicate']
-): TableBatch {
-  const arrowBatch = batch as ArrowTableBatch;
-  const data = filterArrowData(arrowBatch.data, predicate);
-  return {
-    ...batch,
-    data,
-    length: data.numRows,
-    schema: convertArrowToSchema(data.schema)
-  } as TableBatch;
+  batch: Table,
+  predicate: TableScanReadOptions['predicate'],
+  signal?: AbortSignal
+): Table {
+  return predicate ? filterArrowTable(batch, predicate, {signal}) : batch;
 }
 
-/** Projects Arrow columns and updates the portable schema in one format-specific kernel. */
-function projectArrowBatch(batch: TableBatch, columns?: readonly string[]): TableBatch {
-  const arrowBatch = batch as ArrowTableBatch;
-  const data = columns === undefined ? arrowBatch.data : arrowBatch.data.select([...columns]);
-  return {
-    ...batch,
-    data,
-    length: data.numRows,
-    schema: convertArrowToSchema(data.schema)
-  } as TableBatch;
+/** Projects columns in a decoded IPC chunk. */
+function projectArrowBatch(batch: Table, columns?: readonly string[]): Table {
+  return columns === undefined ? batch : projectArrowTable(batch, columns);
 }
 
 async function* readResponseChunks(
@@ -184,18 +147,11 @@ async function* readStreamChunks(
 }
 
 /** Metadata-only Arrow IPC source loader. */
-export const ArrowSourceLoader = {
-  ...ArrowFormat,
-  name: 'ArrowSourceLoader',
-  type: 'arrow-source',
-  version: '1.0.0',
-  dataType: null as unknown as ArrowTableSource,
-  batchType: null as never,
-  fromUrl: true,
-  fromBlob: true,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.(?:arrow|feather|ipc)(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: DataSourceOptions, coreApi?: CoreAPI) =>
-    new ArrowTableSource(data, options, coreApi)
-} as const satisfies SourceLoader<ArrowTableSource>;
+/** Creates a reusable Arrow source. */
+export function createArrowSource(
+  data: string | Blob,
+  options: DataSourceOptions,
+  coreApi?: CoreAPI
+): ArrowTableSource {
+  return new ArrowTableSource(data, options, coreApi);
+}

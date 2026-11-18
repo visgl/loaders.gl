@@ -1,10 +1,10 @@
 import {expect, test} from 'vitest';
 import {load, isBrowser} from '@loaders.gl/core';
 import {PMTILESETS_VECTOR} from './data/tilesets';
-import {_PMTilesLoader as PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 test('PMTilesLoader#schemas', async () => {
   if (!isBrowser) {
-    console.log('PMTilesSourceLoader currently only supported in browser');
+    console.log('PMTilesLoaderWithParser currently only supported in browser');
     return;
   }
   for (const tilesetUrl of PMTILESETS_VECTOR) {

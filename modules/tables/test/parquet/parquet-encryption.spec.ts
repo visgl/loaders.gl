@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoaderWithParser as ParquetJSLoader} from '@loaders.gl/tables/parquet-js-loader';
-import {fetchFile, load} from '@loaders.gl/core';
+import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
+import {createDataSource, fetchFile, load} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {
   ParquetReader,
-  ParquetSourceLoader,
+  ParquetLoader,
   createParquetModuleAad,
   verifyParquetFooterSignature
-} from '@loaders.gl/tables/parquet/index';
-import type {ParquetSource} from '@loaders.gl/tables/parquet-source-loader';
+} from '@loaders.gl/tables/parquet';
+import type {ParquetSource} from '@loaders.gl/tables/parquet';
 import {createWorkerKeyRetriever} from '../../src/parquet/lib/parquet-source-worker-decoder';
 import {expect, test} from 'vitest';
 
@@ -85,13 +85,13 @@ test('ParquetJSLoader decrypts encrypted columns into an Arrow table', async () 
   const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
   const table = await load(url, ParquetJSLoader, {
     ...getEncryptedLoaderOptions(),
-    parquet: {...getEncryptedLoaderOptions().parquet, shape: 'arrow-table'}
+    parquet: {...getEncryptedLoaderOptions().parquet, shape: 'arrow'}
   });
 
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape === 'arrow-table') {
-    expect(table.data.numRows).toBe(50);
-    expect(table.data.schema.fields.map(field => field.name).sort()).toEqual([
+  expect(table).toHaveProperty('numRows');
+  if ('numRows' in table) {
+    expect(table.numRows).toBe(50);
+    expect(table.schema.fields.map(field => field.name).sort()).toEqual([
       'double_field',
       'float_field'
     ]);
@@ -121,7 +121,7 @@ test('ParquetJSLoader does not retrieve keys for unprojected encrypted columns',
 
 test('ParquetSource decrypts encrypted pages in a worker', async () => {
   const url = `${PARQUET_DIR}/encrypted/encrypt_columns_and_footer.parquet.encrypted`;
-  const source = (await load(url, ParquetSourceLoader, {
+  const source = (await createDataSource(url, ParquetLoader, {
     core: {worker: true, reuseWorkers: false, _workerType: 'test'},
     parquet: {
       columns: ['double_field'],
@@ -134,8 +134,8 @@ test('ParquetSource decrypts encrypted pages in a worker', async () => {
   }
   await source.close();
 
-  expect(batches.reduce((count, batch) => count + batch.rowCount, 0)).toBe(50);
-  expect(batches[0]?.data.getChild('double_field')?.toArray().length).toBeGreaterThan(0);
+  expect(batches.reduce((count, batch) => count + JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowCount, 0)).toBe(50);
+  expect(batches[0]?.getChild('double_field')?.toArray().length).toBeGreaterThan(0);
 });
 
 test('worker key lookup uses the encrypted column ordinal', async () => {

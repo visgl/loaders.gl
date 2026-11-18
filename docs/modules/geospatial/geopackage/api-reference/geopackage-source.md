@@ -32,7 +32,7 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
     {label: 'Open', value: 'GeoPackage URL or supported loaded data'},
     {label: 'Discover', value: 'Tables, geometry columns, and default selection'},
     {label: 'Read', value: 'One selected table with loader options'},
-    {label: 'Output', value: 'ArrowTable with GeoPackage metadata'}
+    {label: 'Output', value: 'Apache Arrow table with GeoPackage metadata'}
   ]}
 />
 
@@ -44,20 +44,20 @@ import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs
   tone="yellow"
 />
 
-`GeoPackageSource` is available from `@loaders.gl/geospatial/geopackage`. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
+Use `GeoPackageLoader` to open a reusable GeoPackage source. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
 
 ```typescript
-import {createDataSource} from '@loaders.gl/core';
-import {GeoPackageSource} from '@loaders.gl/geospatial/geopackage';
+import {createDataSourceSync} from '@loaders.gl/core';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
 
-const dataSource = createDataSource(url, [GeoPackageSource], {geopackage: {}});
+const dataSource = createDataSourceSync(url, [GeoPackageLoaderWithParser], {geopackage: {}});
 const metadata = await dataSource.getMetadata();
 const table = await dataSource.getTable(metadata.tables[0]?.name);
 ```
 
 `getMetadata()` returns available vector tables, including geometry column metadata and the selected default table.
 
-`getTable(tableName?)` returns the selected table as an `ArrowTable` using the same default-table heuristic as `GeoPackageLoader` with `geopackage.shape: 'arrow-table'`.
+`getTable(tableName?)` returns the selected table as an Apache Arrow `Table` using the same default-table heuristic as `GeoPackageLoader` with `geopackage.shape: 'arrow'`.
 
 ## Raster tile-table metadata
 

@@ -17,7 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['WMS', 'WMTS', 'WFS', 'ArcGIS']}
   links={[
     {label: 'WMS module', to: '/docs/modules/ogc/wms'},
-    {label: 'WMS source', to: '/docs/modules/ogc/wms/api-reference/wms-source-loader'},
+    {label: 'WMS source', to: '/docs/modules/ogc/wms/api-reference/wms-loader'},
     {label: 'Using sources', to: '/docs/developer-guide/using-sources'}
   ]}
 />

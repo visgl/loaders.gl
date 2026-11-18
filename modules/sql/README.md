@@ -27,10 +27,10 @@ Both DuckDB packages are optional peers and are dynamically imported only when a
 connects. Importing the SQL predicate parser does not load or install either runtime.
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 import {DuckDBSQLSource} from '@loaders.gl/sql';
 
-const dataSource = createDataSource('duckdb:///:memory:', [DuckDBSQLSource], {
+const dataSource = createDataSourceSync('duckdb:///:memory:', [DuckDBSQLSource], {
   duckdb: {}
 });
 

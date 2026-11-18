@@ -8,10 +8,10 @@ picking for hover/click feedback, a vector source for remote extent requests, an
 ## Load an extent from WFS
 
 ```ts
-import {createDataSource} from '@loaders.gl/core';
-import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
+import {createDataSourceSync} from '@loaders.gl/core';
+import {WFSLoader} from '@loaders.gl/ogc/wms';
 
-const source = createDataSource(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSLoader], {
   wfs: {wfsParameters: {version: '2.0.0', crs: 'EPSG:3857'}}
 });
 const controller = new AbortController();
@@ -90,12 +90,12 @@ rendered hover/click interactions.
 
 ## Use the common scan/query interface
 
-Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/core/scan`
+Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/core/query`
 package. WFS, OGC API Features, and other sources that honor `format: 'arrow'` can use the same
 interface. Bind the service layers, extent, and input/output CRS when creating the table view:
 
 ```ts
-import {VectorFeatureTableScanSource} from '@loaders.gl/core/scan';
+import {VectorFeatureTableScanSource} from '@loaders.gl/core/query';
 
 const scanSource = new VectorFeatureTableScanSource(source, {
   request: {
@@ -113,9 +113,9 @@ const query = {
 
 const metadata = await scanSource.getQueryMetadata();
 const explanation = await scanSource.explain(query);
-const result = await scanSource.query(query); // ArrowTable
+const result = await scanSource.query(query); // Apache Arrow Table
 for await (const batch of scanSource.scan(query)) {
-  // ArrowTableBatch; read(query) exposes the same batch interface.
+  // Apache Arrow RecordBatch
   console.log(batch.length, batch.data);
 }
 ```
@@ -142,8 +142,8 @@ needed.
 ```ts
 import {GeoArrowSpatialIndex, getGeoArrowFieldInfo} from '@loaders.gl/core/geoarrow';
 
-// `result` is an ArrowTable from WFS getFeatures() or the scan adapter query().
-const table = result.data;
+// `table` is the native Arrow Table from WFS getFeatures({format: 'arrow'}).
+// For a scan adapter query result, use its `data` field.
 const field = table.schema.fields.find(candidate => candidate.name === 'geometry');
 const encoding = field && getGeoArrowFieldInfo(field)?.encoding;
 if (!encoding) throw new Error('Missing GeoArrow geometry encoding');

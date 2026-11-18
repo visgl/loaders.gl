@@ -3,22 +3,22 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {LASLoaderWithParser} from '../las-loader';
+import {LASColumnLoader} from '../las-loader';
 
 createLoaderWorker({
-  ...LASLoaderWithParser,
+  ...LASColumnLoader,
   /** Decodes worker output as transferable columns; caller formatting follows hydration. */
   parse(input, options) {
-    return LASLoaderWithParser.parse(input, {
+    return LASColumnLoader.parse(input, {
       ...options,
-      las: {...options?.las, shape: 'arrow-table', colorFormat: 'uint8norm'}
+      las: {...options?.las, shape: 'arrow', colorFormat: 'uint8norm'}
     });
   },
   /** Keeps the primary TypeScript decoder alive for the full input stream. */
   parseInBatches(input, options) {
-    return LASLoaderWithParser.parseInBatches(input, {
+    return LASColumnLoader.parseInBatches(input, {
       ...options,
-      las: {...options?.las, shape: 'arrow-table', colorFormat: 'uint8norm'}
+      las: {...options?.las, shape: 'arrow', colorFormat: 'uint8norm'}
     });
   }
 });

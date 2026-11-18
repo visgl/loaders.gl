@@ -5,12 +5,14 @@
 import {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
+import {load} from '@loaders.gl/core';
 import type {RangeRequestEvent, RangeStats} from '@loaders.gl/core/loader-utils';
 import {createRangeStats, getRangeStats} from '@loaders.gl/core/loader-utils';
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
-import {MLTSourceLoader} from '@loaders.gl/tiles/mlt';
-import {MVTSourceLoader, ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
-import {GeoJSONLoader} from '@loaders.gl/tables/json/index';
+import {PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
+import {MLTLoaderWithParser} from '@loaders.gl/tiles/mlt-loader';
+import {ArrowTableTileLoader, TileJSONLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';
@@ -36,10 +38,10 @@ maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', impor
 
 /** Stable loader identities prevent metadata updates from restarting source resolution. */
 const TILE_LOADERS = [
-  PMTilesSourceLoader,
-  ArrowTableTileSourceLoader,
-  MVTSourceLoader,
-  MLTSourceLoader,
+  PMTilesLoaderWithParser,
+  ArrowTableTileLoader,
+  MVTLoaderWithParser,
+  MLTLoaderWithParser,
   GeoJSONLoader
 ] as const;
 
@@ -62,6 +64,7 @@ type AppState = {
 };
 
 export default function App(props: AppProps = {}) {
+  const exampleLoadSequenceReference = useRef(0);
   const rangeStatsObjectRef = useRef(createRangeStats('pmtiles-example-range-transport'));
   const [rangeStats, setRangeStats] = useState<RangeStats>(
     getRangeStats(rangeStatsObjectRef.current)
@@ -111,15 +114,15 @@ export default function App(props: AppProps = {}) {
       currentExample
         ? {
             tilejson: {maxValues: 10},
-            pmtiles: {shape: 'arrow-table'},
+            pmtiles: {shape: 'arrow'},
             rangeRequests: {
               batchDelayMs: 50,
               stats: rangeStatsObjectRef.current,
               onEvent: onTileRangeRequest
             },
             table: {coordinates: 'wgs84'},
-            mvt: {shape: 'arrow-table'},
-            mlt: {shape: 'arrow-table'},
+            mvt: {shape: 'arrow', metadataUrl: currentExample.metadataUrl},
+            mlt: {shape: 'arrow'},
             core: {
               worker: false,
               type: currentExample.sourceType,
@@ -167,7 +170,9 @@ export default function App(props: AppProps = {}) {
         id: 'tiles-example-sidebar',
         placement: 'top-right',
         side: 'right',
-        widthPx: 420,
+        widthPx: Math.min(420, window.innerWidth - 100, window.innerHeight - 100),
+        button: true,
+        defaultOpen: !window.matchMedia('(max-width: 996px) and (pointer: coarse)').matches,
         panel: new ColumnPanel({
           id: 'tiles-example-panel',
           title: '',
@@ -248,11 +253,20 @@ export default function App(props: AppProps = {}) {
   }) {
     const {categoryName, exampleName, example} = args;
     const url = example.data;
+    const exampleLoadSequence = ++exampleLoadSequenceReference.current;
 
     try {
       rangeStatsObjectRef.current = createRangeStats('pmtiles-example-range-transport');
       setRangeStats(getRangeStats(rangeStatsObjectRef.current));
-      setCurrentExample(example);
+      let resolvedExample = example;
+      if (example.sourceType === 'mvt' && example.metadataUrl) {
+        const tileJSON = await load(example.metadataUrl, TileJSONLoader, {core: {worker: false}});
+        const tileTemplate = tileJSON.tiles?.[0];
+        if (!tileTemplate) throw new Error('TileJSON does not provide a tile template.');
+        resolvedExample = {...example, data: tileTemplate};
+      }
+      if (exampleLoadSequence !== exampleLoadSequenceReference.current) return;
+      setCurrentExample(resolvedExample);
 
       setState((currentState) => ({
         ...currentState,
@@ -264,6 +278,7 @@ export default function App(props: AppProps = {}) {
       }));
 
     } catch (error) {
+      if (exampleLoadSequence !== exampleLoadSequenceReference.current) return;
       console.error('Failed to load data', url, error);
       setState((currentState) => ({
         ...currentState,

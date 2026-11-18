@@ -23,7 +23,7 @@ export type WKTLoaderOptions = LoaderOptions & {
  * Preloads the parser-bearing WKT loader implementation.
  */
 async function preload() {
-  const {WKTLoaderWithParser} = await import('@loaders.gl/geospatial/wkt-loader');
+  const {WKTLoaderWithParser} = await import('@loaders.gl/geospatial/wkt');
   return WKTLoaderWithParser;
 }
 
@@ -45,6 +45,3 @@ export const WKTLoader = {
   },
   preload
 } as const satisfies Loader<Geometry, never, WKTLoaderOptions>;
-
-/** @deprecated Use WKTLoader. */
-export const WKTWorkerLoader = WKTLoader;

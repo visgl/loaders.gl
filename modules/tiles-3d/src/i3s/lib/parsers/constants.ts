@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GL} from '@math.gl/geometry';
-
 export function getConstructorForDataFormat(dataType: string) {
   switch (dataType) {
     case 'UInt8':
@@ -21,13 +19,6 @@ export function getConstructorForDataFormat(dataType: string) {
   }
 }
 
-export const GL_TYPE_MAP: {[key: string]: number} = {
-  UInt8: GL.UNSIGNED_BYTE,
-  UInt16: GL.UNSIGNED_SHORT,
-  Float32: GL.FLOAT,
-  UInt32: GL.UNSIGNED_INT,
-  UInt64: GL.DOUBLE
-};
 /**
  * Returns how many bytes a type occupies
  * @param dataType

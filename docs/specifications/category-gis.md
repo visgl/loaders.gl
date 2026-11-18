@@ -54,13 +54,13 @@ Each loader reference documents its alternate shapes and format-specific fields.
 
 | Loader | Default result | Scope |
 | --- | --- | --- |
-| [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | `ArrowTable` | Features from XML documents. |
-| [`GeoJSONLoader`](/docs/modules/tables/json/api-reference/geojson-loader) | `ArrowTable` | GeoJSON features. |
-| [`ShapefileLoader`](/docs/modules/geospatial/shapefile/api-reference/shapefile-loader) | `ArrowTable` | Features joined from geometry and property files. |
-| `SHPLoader` | `ArrowTable` | Geometry-only shapefile records. |
-| [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader) | `ArrowTable` | Features from a FlatGeobuf file. |
-| [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader) | `ArrowTable` | Features from selected vector-tile layers. |
-| [`GeoPackageLoader`](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader) | `ArrowTable` | Features from a selected table. |
+| [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | Apache Arrow `Table` | Features from XML documents. |
+| [`GeoJSONLoader`](/docs/modules/tables/json/api-reference/geojson-loader) | Apache Arrow `Table` | GeoJSON features. |
+| [`ShapefileLoader`](/docs/modules/geospatial/shapefile/api-reference/shapefile-loader) | Apache Arrow `Table` | Features joined from geometry and property files. |
+| `SHPLoader` | Apache Arrow `Table` | Geometry-only shapefile records. |
+| [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader) | Apache Arrow `Table` | Features from a FlatGeobuf file. |
+| [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader) | Apache Arrow `Table` | Features from selected vector-tile layers. |
+| [`GeoPackageLoader`](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader) | Apache Arrow `Table` | Features from a selected table. |
 | [`WKBLoader`](/docs/modules/geospatial/wkt/api-reference/wkb-loader), [`WKTLoader`](/docs/modules/geospatial/wkt/api-reference/wkt-loader) | GeoJSON geometry | One geometry, without a feature/property wrapper. |
 
 ## Supported shapes
@@ -70,7 +70,7 @@ For loaders with shape selection, `options.core.shape` sets the default return s
 | Shape | Loaders | Notes |
 | --- | --- | --- |
 | `geojson-table` | `GeoJSONLoader`, [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader), [`GeoPackageLoader`](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader), [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader), `ShapefileLoader`, [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | Shared feature-table target. Loader-specific overrides stay under each loader id, e.g. `options.mvt.shape`. |
-| `arrow-table` | `GeoJSONLoader`, [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader), `ShapefileLoader`, `SHPLoader`, `DBFLoader`, [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader), [`MVTSourceLoader`](/docs/modules/tiles/mvt/api-reference/mvt-source-loader), [`GeoPackageLoader`](/docs/modules/geospatial/geopackage/api-reference/geopackage-loader) | GeoArrow-compatible Arrow table output with WKB or typed geometry metadata where supported. |
+| `arrow` | `GeoJSONLoader`, `FlatGeobufLoader`, `GeoPackageLoader`, `GMLLoader`, `GPXLoader`, `KMLLoader`, `TCXLoader`, `ShapefileLoader`, `SHPLoader`, `DBFLoader`, `MVTLoader`, `MLTLoader` | Native Apache Arrow tables. Geometry metadata is available for spatial output. |
 | `binary-feature-collection` | `GeoJSONLoader` | Deck.gl-style binary feature collection output selected with `options.geojson.shape`. |
 | `object-row-table` | [`GPXLoader`](/docs/modules/geospatial/kml/api-reference/gpx-loader), [`KMLLoader`](/docs/modules/geospatial/kml/api-reference/kml-loader), [`TCXLoader`](/docs/modules/geospatial/kml/api-reference/tcx-loader) | Feature rows as plain objects. |
 | `columnar-table` | [`FlatGeobufLoader`](/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader), [`MVTLoader`](/docs/modules/tiles/mvt/api-reference/mvt-loader) | Column-major geospatial output. |

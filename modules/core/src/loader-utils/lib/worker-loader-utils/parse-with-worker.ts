@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {NullLog} from '../log-utils/log';
 import {
   canProcessOnWorker,
   canProcessOnWorkerInBatches,
@@ -45,11 +46,7 @@ export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions
   )
     return false;
   // Multifile workers cannot transfer an application's custom fetch callback.
-  if (
-    loader.id === 'shapefile' &&
-    (typeof options?.fetch === 'function' || typeof options?.core?.fetch === 'function')
-  )
-    return false;
+  if (loader.id === 'shapefile' && typeof options?.core?.fetch === 'function') return false;
   const workerOptions = getWorkerOptions(options);
   const nodeWorkers = workerOptions._nodeWorkers;
   if (!isBrowser && !nodeWorkers) {
@@ -307,7 +304,7 @@ function resolveWorkerLoaders(
 }
 
 /**
- * Create worker options with deprecated top-level worker fields available to worker-utils.
+ * Prepares worker routing controls and serializable parser options.
  * @param options
  * @param loader Loader whose parser will handle the worker request.
  */
@@ -317,7 +314,15 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
     ...portableOptions,
     signal: undefined,
     onProgress: undefined,
-    ...(portableOptions.core ? {core: {...portableOptions.core, authentications: undefined}} : {})
+    ...(portableOptions.core
+      ? {
+          core: {
+            ...portableOptions.core,
+            authentications: undefined,
+            log: isDisabledLog(portableOptions.core.log) ? null : undefined
+          }
+        }
+      : {})
   };
   const serializedOptions = JSON.parse(
     JSON.stringify(optionsToSerialize, (_key, value) => {
@@ -328,19 +333,18 @@ function getWorkerOptions(options: StrictLoaderOptions = {}, loader?: Loader) {
     })
   );
   restoreBigIntOptions(optionsToSerialize, serializedOptions);
-  const workerOptions: Record<string, any> = {
-    ...serializedOptions.core,
-    ...serializedOptions
-  };
-  // The decision has already been made before dispatch, so worker runtimes should
-  // receive the established boolean form even when the caller selected `auto`.
-  if (workerOptions.worker === 'auto') {
-    workerOptions.worker = true;
+  // The decision has already been made before dispatch.
+  if (serializedOptions.core?.worker === 'auto') {
+    serializedOptions.core.worker = true;
   }
   if (loader) {
-    workerOptions._workerLoaderId = loader.id;
+    serializedOptions._workerLoaderId = loader.id;
   }
-  return workerOptions;
+  return {
+    ...serializedOptions,
+    ...serializedOptions.core,
+    parserOptions: serializedOptions
+  };
 }
 
 /** Restores exact bigint leaves after JSON removes callbacks; ordinary JSON values keep their shape. */
@@ -382,7 +386,7 @@ function getSerializableLoaderContext(context?: LoaderContext) {
  */
 function shouldParseCSVWithWorker(options?: StrictLoaderOptions): boolean {
   const csvOptions = options as {csv?: {shape?: string}; core?: {shape?: string}} | undefined;
-  return (csvOptions?.csv?.shape ?? csvOptions?.core?.shape) === 'arrow-table';
+  return (csvOptions?.csv?.shape ?? csvOptions?.core?.shape) === 'arrow';
 }
 
 /**
@@ -397,4 +401,9 @@ function isLoaderWithWorkerResultDeserializer(
     typeof (loader as Loader & {deserializeWorkerResult?: unknown}).deserializeWorkerResult ===
     'function'
   );
+}
+
+/** Preserves explicit log suppression when crossing the worker boundary. */
+function isDisabledLog(logger: unknown): boolean {
+  return logger === null || logger instanceof NullLog;
 }

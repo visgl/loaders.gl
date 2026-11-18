@@ -32,6 +32,8 @@ export type Converter<Shape extends string = string, Options = unknown> = {
   to: readonly Shape[];
   /** Optional runtime shape detector for raw inputs that do not expose a `shape` discriminator. */
   detectInputShape?: (input: unknown) => Shape | null;
+  /** Priority for a detector that identifies a more specific shape of the same input. */
+  inputShapePriority?: number;
   /** Optional guard to prune unsupported source/target pairs within the declared shape sets. */
   canConvert?: (sourceShape: Shape, targetShape: Shape) => boolean;
   /** Performs one direct conversion from the current shape to the requested target shape. */

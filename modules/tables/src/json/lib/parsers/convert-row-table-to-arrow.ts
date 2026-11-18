@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {updateNativeArrowTableMetadata} from '@loaders.gl/core/schema-utils';
+import {getJSONContainerMetadata} from './json-container-metadata';
 import type {
   ArrayRowTable,
-  ArrowTable,
-  ArrowTableBatch,
   Field,
   Feature,
   ObjectRowTable,
@@ -18,10 +18,10 @@ import {
   makeGeoArrowFeatureRows,
   makeGeoArrowFeatureSchema
 } from '@loaders.gl/core/arrow-geometry/feature-table';
-import {makeTableScanBatch} from '@loaders.gl/core/loader-utils';
 import {
   ArrowTableBuilder,
   convertArrowToSchema,
+  convertSchemaToArrow,
   type ArrowViewTypeMode
 } from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
@@ -110,15 +110,16 @@ const DEFAULT_ARROW_CONVERSION_OPTIONS: NormalizedArrowConversionOptions = {
   logRecoveries: true
 };
 
-/** Converts NDJSON row-table batches to Arrow table batches. */
+/** Streams native Arrow batches against the declared or first inferred NDJSON schema. */
 export async function* makeNDJSONArrowBatchIterator(
   batches: AsyncIterable<TableBatch>,
   options?: JSONArrowConversionOptions
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<arrow.RecordBatch> {
   let frozenSchema: Schema | null = options?.schema
     ? normalizeJSONArrowSchema(options.schema)
     : null;
 
+  let emitted = false;
   for await (const batch of batches) {
     const rowBatch = batch as ObjectRowTable | ArrayRowTable;
     const arrowTable = convertRowTableToArrowTable(rowBatch, {
@@ -126,12 +127,23 @@ export async function* makeNDJSONArrowBatchIterator(
       schema: frozenSchema || undefined
     });
 
-    if (!frozenSchema && arrowTable.data.numRows > 0) {
-      frozenSchema = arrowTable.schema!;
+    if (!frozenSchema && arrowTable.numRows > 0) {
+      frozenSchema = convertArrowToSchema(arrowTable.schema);
     }
 
-    const arrowBatch: ArrowTableBatch = {...batch, ...makeTableScanBatch(arrowTable)};
-    yield arrowBatch;
+    emitted = true;
+    if (arrowTable.batches.length) {
+      yield* arrowTable.batches;
+    } else {
+      yield new arrow.RecordBatch(arrowTable.schema, undefined);
+    }
+  }
+  if (!emitted) {
+    const data = convertRowTableToArrowTable(
+      {shape: 'object-row-table', data: []},
+      {...options, schema: frozenSchema || undefined}
+    );
+    yield data.batches[0] ?? new arrow.RecordBatch(data.schema, undefined);
   }
 }
 
@@ -139,20 +151,37 @@ export async function* makeNDJSONArrowBatchIterator(
 export async function* convertTableBatchesToArrow<TBatch extends {batchType?: string}>(
   batches: AsyncIterable<TableBatch | TBatch>,
   options?: JSONArrowConversionOptions
-): AsyncIterable<ArrowTableBatch | TBatch> {
+): AsyncIterable<arrow.RecordBatch | TBatch> {
   let frozenSchema: Schema | null = options?.schema
     ? normalizeJSONArrowSchema(options.schema)
     : null;
 
+  let containerMetadata: Record<string, string> = {};
+  let emittedMetadata: string | undefined;
   for await (const batch of batches) {
     if (batch.batchType !== 'data') {
+      const metadataBatch = batch as {container?: unknown; jsonpath?: string};
+      containerMetadata = {
+        ...containerMetadata,
+        ...getJSONContainerMetadata(metadataBatch.container, metadataBatch.jsonpath)
+      };
+      if (
+        batch.batchType === 'final-result' &&
+        emittedMetadata !== JSON.stringify(containerMetadata)
+      ) {
+        const emptyTable = convertRowTableToArrowTable(
+          {shape: 'object-row-table', data: []},
+          {...options, schema: frozenSchema || undefined}
+        );
+        yield* updateNativeArrowTableMetadata(emptyTable, containerMetadata).batches;
+      }
       yield batch as TBatch;
       continue;
     }
 
     const rowBatch = batch as unknown as ObjectRowTable | ArrayRowTable;
     if (rowBatch.shape !== 'object-row-table' && rowBatch.shape !== 'array-row-table') {
-      throw new Error('JSONLoader: arrow-table shape requires row-table data batches');
+      throw new Error('JSONLoader: Arrow output requires row-table data batches');
     }
 
     const arrowTable = convertRowTableToArrowTable(rowBatch, {
@@ -160,12 +189,17 @@ export async function* convertTableBatchesToArrow<TBatch extends {batchType?: st
       schema: frozenSchema || undefined
     });
 
-    if (!frozenSchema && arrowTable.data.numRows > 0) {
-      frozenSchema = arrowTable.schema!;
+    if (!frozenSchema && arrowTable.numRows > 0) {
+      frozenSchema = convertArrowToSchema(arrowTable.schema);
     }
 
-    const arrowBatch: ArrowTableBatch = {...batch, ...makeTableScanBatch(arrowTable)};
-    yield arrowBatch;
+    const refinedTable = updateNativeArrowTableMetadata(arrowTable, containerMetadata);
+    emittedMetadata = JSON.stringify(containerMetadata);
+    const jsonpath = (batch as {jsonpath?: string}).jsonpath;
+    for (const recordBatch of refinedTable.batches) {
+      if (jsonpath) recordBatch.metadata.set('jsonpath', String(jsonpath));
+      yield recordBatch;
+    }
   }
 }
 
@@ -173,7 +207,7 @@ export async function* convertTableBatchesToArrow<TBatch extends {batchType?: st
 export function convertGeoJSONFeaturesToArrowTable(
   features: Feature[],
   options?: GeoJSONArrowConversionOptions
-): ArrowTable {
+): arrow.Table {
   if (
     options?.geoarrow?.encodingPreference &&
     options.geoarrow.encodingPreference !== 'geoarrow.wkb'
@@ -226,7 +260,7 @@ export function convertGeoJSONFeaturesToArrowTable(
 export function convertRowTableToArrowTable(
   table: ObjectRowTable | ArrayRowTable,
   options?: JSONArrowConversionOptions
-): ArrowTable {
+): arrow.Table {
   const schema = options?.schema
     ? normalizeJSONArrowSchema(options.schema)
     : deduceJSONArrowSchema(table);
@@ -373,7 +407,7 @@ function validateEmptySchemaRowTable(
     if (table.shape === 'array-row-table') {
       for (let columnIndex = 0; columnIndex < row.length; columnIndex++) {
         handleExtraField(
-          `column-${columnIndex}`,
+          `column${columnIndex + 1}`,
           conversionOptions,
           conversionLogger,
           'JSONLoader: incompatible Arrow schema, unexpected column index 0'
@@ -393,17 +427,13 @@ function validateEmptySchemaRowTable(
   }
 }
 
-function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): ArrowTable {
-  const arrowSchema = new arrow.Schema([]);
+function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): arrow.Table {
+  const arrowSchema = convertSchemaToArrow(schema);
   const arrowData = new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, []);
   const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowData);
   Object.defineProperty(arrowRecordBatch, 'data', {value: arrowData});
 
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table([arrowRecordBatch])
-  };
+  return new arrow.Table(arrowSchema, [arrowRecordBatch]);
 }
 
 /** Builds a loaders.gl schema for nested JSON rows. */
@@ -428,7 +458,9 @@ function deduceJSONArrowSchema(table: ObjectRowTable | ArrayRowTable): Schema {
 
 /** Infers one synthetic struct field from an array row. */
 function inferArrayRowField(row: unknown[]): ArrowLikeField {
-  const fields = row.map((value, columnIndex) => inferValueField(`column-${columnIndex}`, value));
+  const fields = row.map((value, columnIndex) =>
+    inferValueField(`column${columnIndex + 1}`, value)
+  );
   return {
     name: 'row',
     type: {
@@ -694,7 +726,7 @@ function normalizeArrayRowForArrow(
   if (row.length > schema.fields.length) {
     for (let fieldIndex = schema.fields.length; fieldIndex < row.length; fieldIndex++) {
       handleExtraField(
-        `column-${fieldIndex}`,
+        `column${fieldIndex + 1}`,
         conversionOptions,
         conversionLogger,
         `JSONLoader: incompatible Arrow schema, unexpected column index ${fieldIndex}`

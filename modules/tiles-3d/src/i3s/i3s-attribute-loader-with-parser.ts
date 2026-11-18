@@ -79,7 +79,7 @@ async function loadAttribute(url: string, options: LoaderOptions): Promise<I3STi
 
 async function fetchAttribute(url: string, options: LoaderOptions): Promise<Response> {
   const resolvedUrl = resolvePath(url);
-  const fetchOptions = options.fetch ?? options.core?.fetch;
+  const fetchOptions = options.core?.fetch;
   const customFetch = typeof fetchOptions === 'function' ? fetchOptions : null;
   const requestInit =
     typeof fetchOptions === 'object' && fetchOptions !== null

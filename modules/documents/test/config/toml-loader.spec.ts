@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
-import {TOMLLoaderWithParser as BundledTOMLLoader} from '@loaders.gl/documents/toml-loader';
+import {TOMLLoaderWithParser as BundledTOMLLoader} from '@loaders.gl/documents/toml';
 import {TOMLLoader as UnbundledTOMLLoader} from '@loaders.gl/documents';
 import {TOMLFormat, TOMLLoader} from '@loaders.gl/documents';
 

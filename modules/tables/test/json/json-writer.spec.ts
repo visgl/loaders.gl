@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {JSONWriter} from '@loaders.gl/tables/json/index';
-import {GeoJSONLoader as BundledGeoJSONLoader} from '@loaders.gl/tables/json/bundled';
+import {JSONWriter} from '@loaders.gl/tables/json';
+import {GeoJSONLoader as BundledGeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 import {encodeTableAsText} from '@loaders.gl/core';
 import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
 import {emptyTable, tableWithData} from '@loaders.gl/core/schema-utils/test/shared-utils';
@@ -35,31 +35,23 @@ test('JSONWriter#encodeTableAsText - data table, row arrays', async () => {
   );
 });
 test('JSONWriter#encodeTableAsText - arrow table input, row objects', async () => {
-  const arrowTable = {
-    shape: 'arrow-table' as const,
-    schema: tableWithData.schema,
-    data: convertTableToArrow(tableWithData)
-  };
+  const arrowTable = convertTableToArrow(tableWithData);
   const encodedText = await encodeTableAsText(arrowTable, JSONWriter);
   expect(encodedText, 'got expected output').toBe(
     '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]'
   );
 });
-test('JSONWriter#encodeTableAsText - arrow table input, explicit arrow shape', async () => {
-  const arrowTable = {
-    shape: 'arrow-table' as const,
-    schema: tableWithData.schema,
-    data: convertTableToArrow(tableWithData)
-  };
-  const encodedText = await encodeTableAsText(arrowTable, JSONWriter, {
-    json: {shape: 'arrow-table'}
-  });
-  expect(encodedText, 'got expected output').toBe(
-    '[{"id":"a","val":1,"lat":10.1,"lng":-10.1},{"id":"b","val":2,"lat":20.2,"lng":-20.2},{"id":"c","val":3,"lat":30.3,"lng":-30.3}]'
-  );
+test('JSONWriter writes native Arrow as row arrays when requested', async () => {
+  const table = convertTableToArrow(tableWithData);
+  const text = await encodeTableAsText(table, JSONWriter, {json: {shape: 'array-row-table'}});
+  expect(JSON.parse(text)).toEqual([
+    ['a', 1, 10.1, -10.1],
+    ['b', 2, 20.2, -20.2],
+    ['c', 3, 30.3, -30.3]
+  ]);
 });
 test('JSONWriter#encodeTableAsText - GeoArrow WKB arrow table input', async () => {
-  const arrowTable = BundledGeoJSONLoader.parseTextSync?.(
+  const result = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
       features: [
@@ -71,16 +63,17 @@ test('JSONWriter#encodeTableAsText - GeoArrow WKB arrow table input', async () =
       ]
     }),
     {
-      geojson: {shape: 'arrow-table'}
+      geojson: {shape: 'arrow'}
     }
   );
-  const encodedText = await encodeTableAsText(arrowTable, JSONWriter);
+  if ('shape' in result) throw new Error('Expected Arrow output');
+  const encodedText = await encodeTableAsText(result, JSONWriter);
   expect(encodedText, 'got expected GeoJSON geometry output').toBe(
     '[{"name":"A","geometry":{"type":"Point","coordinates":[1,2]}}]'
   );
 });
 test('JSONWriter#encodeTableAsText - GeoArrow WKB decoding can be disabled', async () => {
-  const arrowTable = BundledGeoJSONLoader.parseTextSync?.(
+  const result = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify([
       {
         type: 'Feature',
@@ -89,10 +82,11 @@ test('JSONWriter#encodeTableAsText - GeoArrow WKB decoding can be disabled', asy
       }
     ]),
     {
-      geojson: {shape: 'arrow-table'}
+      geojson: {shape: 'arrow'}
     }
   );
-  const encodedText = await encodeTableAsText(arrowTable, JSONWriter, {
+  if ('shape' in result) throw new Error('Expected Arrow output');
+  const encodedText = await encodeTableAsText(result, JSONWriter, {
     json: {geoarrow: 'none'}
   });
   expect(encodedText.includes('"name":"A"'), 'preserves non-geometry columns').toBeTruthy();

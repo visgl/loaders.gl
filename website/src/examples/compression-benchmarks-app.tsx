@@ -18,10 +18,11 @@ import {DeflatePakoCompressor} from '@loaders.gl/compression/deflate-compressor-
 import {DeflatePakoDecompressor} from '@loaders.gl/compression/deflate-decompressor-pako';
 import {GZipPakoCompressor} from '@loaders.gl/compression/gzip-compressor-pako';
 import {GZipPakoDecompressor} from '@loaders.gl/compression/gzip-decompressor-pako';
-import {LZ4JSCompression} from '@loaders.gl/compression/lz4-lz4js';
-import {SnappyJSCompression} from '@loaders.gl/compression/snappy-snappyjs';
+import {LZ4JSCompressor} from '@loaders.gl/compression/lz4-compressor-lz4js';
+import {LZ4JSDecompressor} from '@loaders.gl/compression/lz4-decompressor-lz4js';
+import {SnappyJSCompressor} from '@loaders.gl/compression/snappy-compressor-snappyjs';
+import {SnappyJSDecompressor} from '@loaders.gl/compression/snappy-decompressor-snappyjs';
 import {ZstdFzstdDecompressor} from '@loaders.gl/compression/zstd-decompressor-fzstd';
-import {ZstdCodecCompression} from '@loaders.gl/compression/zstd-zstd-codec';
 import {BrotliCompressUtilsCompressor} from '@loaders.gl/compression/brotli-compressor-compress-utils';
 import {BrotliCompressUtilsDecompressor} from '@loaders.gl/compression/brotli-decompressor-compress-utils';
 import {BZip2CompressUtilsCompressor} from '@loaders.gl/compression/bzip2-compressor-compress-utils';
@@ -390,12 +391,6 @@ function getCompressionDependencyInfo(implementationName: string, groupId: strin
       dependencyUrl: 'https://github.com/101arrowz/fzstd',
       dependencyNpmUrl: 'https://www.npmjs.com/package/fzstd'
     },
-    'zstd-codec': {
-      dependency: 'zstd-codec 0.1.5',
-      dependencySize: '~2.0 MB package',
-      dependencyUrl: 'https://github.com/yoshihitoh/zstd-codec',
-      dependencyNpmUrl: 'https://www.npmjs.com/package/zstd-codec'
-    }
   };
   if (groupId.startsWith('Compression: ')) {
     if (implementationName === 'native') dependencyInfo.native.dependencyUrl = 'https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream';
@@ -452,9 +447,9 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
   const brotliData = await new BrotliCompressUtilsCompressor({compressUtils: {level: 4}}).compress(sampleData);
 
   const deflateData = await new DeflateFflateCompressor().compress(sampleData);
-  const snappyData = await new SnappyJSCompression().compress(sampleData);
-  const lz4Data = await new LZ4JSCompression().compress(sampleData);
-  const zstdData = await compressWithZstdCodec(sampleData);
+  const snappyData = await new SnappyJSCompressor().compress(sampleData);
+  const lz4Data = await new LZ4JSCompressor().compress(sampleData);
+  const zstdData = await new ZstdCompressUtilsCompressor().compress(sampleData);
   const bzip2Data = await new BZip2CompressUtilsCompressor().compress(sampleData);
   const xzData = await new XZCompressUtilsCompressor().compress(sampleData);
 
@@ -538,10 +533,6 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
           decompress: input => new ZstdFzstdDecompressor().decompress(input)
         },
         {
-          name: 'zstd-codec',
-          decompress: input => new ZstdCodecCompression().decompress(input)
-        },
-        {
           name: 'compress-utils',
           decompress: input => new ZstdCompressUtilsDecompressor().decompress(input)
         }
@@ -556,7 +547,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       externalCompressions: [
         {
           name: 'snappyjs',
-          decompress: input => new SnappyJSCompression().decompress(input)
+          decompress: input => new SnappyJSDecompressor().decompress(input)
         },
         {
           name: 'compress-utils',
@@ -573,7 +564,7 @@ async function createCompressionBenchmarkCases(): Promise<CompressionBenchmarkCa
       externalCompressions: [
         {
           name: 'lz4js',
-          decompress: input => new LZ4JSCompression().decompress(input)
+          decompress: input => new LZ4JSDecompressor().decompress(input)
         },
         {
           name: 'compress-utils',
@@ -716,17 +707,14 @@ async function addEncodingBenchmarks(
       'compress-utils': input => new BrotliCompressUtilsCompressor({compressUtils: {level: 4}}).compress(input)
     },
     Zstandard: {
-      ...(input.byteLength < 16 * 1024 * 1024 ? {
-        'zstd-codec': (input: ArrayBuffer) => new ZstdCodecCompression().compress(input)
-      } : {}),
       'compress-utils': input => new ZstdCompressUtilsCompressor().compress(input)
     },
     Snappy: {
-      snappyjs: input => new SnappyJSCompression().compress(input),
+      snappyjs: input => new SnappyJSCompressor().compress(input),
       'compress-utils': input => new SnappyCompressUtilsCompressor().compress(input)
     },
     LZ4: {
-      lz4js: input => new LZ4JSCompression().compress(input),
+      lz4js: input => new LZ4JSCompressor().compress(input),
       'compress-utils': input => new LZ4CompressUtilsCompressor().compress(input)
     },
     bzip2: {'compress-utils': input => new BZip2CompressUtilsCompressor().compress(input)},
@@ -742,9 +730,6 @@ async function addEncodingBenchmarks(
   const compressor = new DefaultCompressor({useNative: false, ...(format === 'Brotli' ? {compressUtils: {level: 4}} : {})});
   encoders[format]['loaders.gl'] = input => compressor.compress(input);
 
-  if (format === 'Zstandard' && input.byteLength >= 16 * 1024 * 1024) {
-    onWarning(`${benchmarkCase.name}: zstd-codec 0.1.5 whole-buffer encoding exceeds its WASM heap; 16 MB encoding is unavailable`);
-  }
   const nativeOutput = benchmarkCase.nativeFormat
     ? await compressWithNativeCompressionStream(input, benchmarkCase.nativeFormat)
     : null;
@@ -789,9 +774,4 @@ function validateOutput(
   if (verifyBytes && new Uint8Array(output).some((value, index) => value !== benchmarkCase.expectedData[index])) {
     throw new Error(`${benchmarkCase.name} ${implementation}: output bytes differ`);
   }
-}
-
-/** Creates a Zstandard fixture using the optional high-performance codec. */
-async function compressWithZstdCodec(input: ArrayBuffer): Promise<ArrayBuffer> {
-  return await new ZstdCodecCompression().compress(input);
 }

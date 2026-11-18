@@ -81,7 +81,9 @@ test('CommonJS scan entrypoints share backend registrations and public function 
   const engine = require('@loaders.gl/core/scan/scan-engine');
   expect(scan.registerScanBackend).toBe(engine.registerScanBackend);
   expect(scan.createScanEngine).toBe(engine.createScanEngine);
-  const query = () => ({shape: 'arrow-table'});
+  const {tableFromArrays} = require('apache-arrow');
+  const table = tableFromArrays({id: [1]});
+  const query = () => table;
   const explain = () => ({backend: 'test-shared-registry'});
   engine.registerScanBackend('test-shared-registry', () => ({
     name: 'test-shared-registry',
@@ -90,8 +92,56 @@ test('CommonJS scan entrypoints share backend registrations and public function 
   }));
   const registeredEngine = await scan.createScanEngine({backend: 'test-shared-registry'});
   expect(registeredEngine.name).toBe('test-shared-registry');
-  expect(registeredEngine.query()).toEqual({shape: 'arrow-table'});
+  expect(registeredEngine.query(table)).toBe(table);
   const geometry = require('@loaders.gl/core/arrow-geometry');
   const geoarrow = require('@loaders.gl/core/geoarrow');
   expect(geoarrow.GeoArrowBuilder).toBe(geometry.GeoArrowBuilder);
+});
+
+test.each([
+  'modules/core/src/index.ts',
+  'modules/core/src/schema-utils/index.ts',
+  'modules/core/src/loader-utils/index.ts',
+  'modules/tables/src/index.ts'
+])('ordinary entry point %s excludes eager Arrow query execution', async entryPoint => {
+  // The tables entry point can defer query kernels to a scan-only chunk.
+  const splitting = entryPoint === 'modules/tables/src/index.ts';
+  const result = await build({
+    entryPoints: [entryPoint],
+    outdir: 'dist/ordinary-entry-point-boundary',
+    bundle: true,
+    splitting,
+    platform: 'browser',
+    format: 'esm',
+    packages: 'external',
+    write: false,
+    metafile: true
+  });
+  const outputs = result.metafile!.outputs;
+  const entry = Object.keys(outputs).find(output => outputs[output].entryPoint === entryPoint)!;
+  expect(entry).toBeDefined();
+  const eager = new Set([entry]);
+  for (const output of eager) {
+    for (const dependency of outputs[output].imports) {
+      if (!dependency.external && dependency.kind === 'import-statement') {
+        eager.add(dependency.path);
+      }
+    }
+  }
+  const eagerOutputs = [...eager].map(output => outputs[output]);
+  expect(
+    eagerOutputs
+      .flatMap(output => output.imports)
+      .filter(dependency => dependency.path.startsWith('@loaders.gl/core/scan'))
+  ).toEqual([]);
+  expect(
+    eagerOutputs
+      .flatMap(output => Object.keys(output.inputs))
+      .filter(
+        filename =>
+          filename.includes('modules/core/src/scan/arrow-execution') ||
+          filename.endsWith('/filter-arrow-table.ts') ||
+          filename.endsWith('/project-arrow-table.ts')
+      )
+  ).toEqual([]);
 });

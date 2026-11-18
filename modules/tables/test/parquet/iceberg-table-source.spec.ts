@@ -1,3 +1,4 @@
+import {getParquetBatchProvenance} from '@loaders.gl/tables/parquet';
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';
@@ -163,11 +164,9 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
   ];
   const close = vi.fn();
   source.createParquetDataset = () => ({
-    async *read(options: any) {
-      options.onTelemetry({status: 'completed', rowsReturned: 4, sourceType: 'parquet'});
+    async *readWithProvenance(options: any) {
+      options.onQueryComplete({status: 'completed', rowsReturned: 4, sourceType: 'parquet'});
       yield {
-        shape: 'arrow-table',
-        schema: {fields: []},
         data: arrow.tableFromArrays({
           id: [1, 2, 3, 4],
           payload: arrow.vectorFromArray(
@@ -186,7 +185,6 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
             new Date('2020-01-04')
           ]
         }),
-        length: 4,
         rowCount: 4,
         rowOffset: 0,
         rowGroupRowOffset: 10,
@@ -194,7 +192,7 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
         sourceUrl: 'table/data.parquet',
         datasetPartitions: {region: 'west'},
         datasetFileMetadata: {iceberg: {dataSequenceNumber: 3}},
-        metadata: {rowCount: 4}
+        metadata: {rowCount: 4, datasetFileMetadata: {iceberg: {partition: [9007199254740993n], lowerBounds: [new Uint8Array([128, 255])]}}}
       };
     },
     close
@@ -204,15 +202,19 @@ test('IcebergTableSource applies delete variants, projection, and telemetry chea
   for await (const batch of source.read({
     applyDeletes: true,
     columns: ['id'],
-    onTelemetry: telemetry
+    onQueryComplete: telemetry
   })) {
     batches.push(batch);
   }
 
   expect(batches).toHaveLength(1);
-  expect(Array.from(batches[0].data.getChild('id')?.toArray() || [])).toEqual([2]);
-  expect(batches[0].rowIndices).toEqual([1]);
-  expect(batches[0].rowGroupRowIndices).toEqual([11]);
+  expect(Array.from(batches[0].getChild('id')?.toArray() || [])).toEqual([2]);
+  expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowIndices).toEqual([1]);
+  expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowIndices).toEqual([11]);
+  expect(getParquetBatchProvenance(arrow.tableFromArrays({id: [1]}).batches[0])).toBeUndefined();
+  expect(getParquetBatchProvenance(batches[0])?.datasetFileMetadata).toEqual({
+    iceberg: {partition: [9007199254740993n], lowerBounds: [new Uint8Array([128, 255])]}
+  });
   expect(telemetry).toHaveBeenCalledWith(expect.objectContaining({status: 'completed', rowsReturned: 1}));
   expect(close).toHaveBeenCalledOnce();
 });
@@ -536,8 +538,8 @@ test.each([
     source.getMetadata = async () => ({'format-version': 2, location: 'table'});
     source.getScanPlan = async () => ({dataFiles: [{data: 'data.parquet'}], deleteFiles: []});
     source.createParquetDataset = () => ({
-      async *read(options: any) {
-        options.onTelemetry({status: 'completed', rowsReturned: 0, sourceType: 'parquet'});
+      async *readWithProvenance(options: any) {
+        options.onQueryComplete({status: 'completed', rowsReturned: 0, sourceType: 'parquet'});
         throw new Error('delegated failure');
       },
       close: vi.fn()
@@ -546,7 +548,7 @@ test.each([
     if (aborted) abortController.abort();
     const telemetry = vi.fn();
     const consume = async () => {
-      for await (const _batch of source.scan({signal: abortController.signal, onTelemetry: telemetry})) {
+      for await (const _batch of source.scan({signal: abortController.signal, onQueryComplete: telemetry})) {
         // No batches are expected.
       }
     };

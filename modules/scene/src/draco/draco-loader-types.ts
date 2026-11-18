@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 import type {DracoMesh} from './lib/draco-types';
 import {
   deserializeArrowWorkerResult,
   serializeArrowWorkerResult
-} from '@loaders.gl/core/schema-utils/arrow-transport';
+} from '@loaders.gl/core/arrow-worker-transport';
 import {VERSION} from './lib/utils/version';
 import {DracoFormat} from './draco-format';
 import {
@@ -23,23 +23,21 @@ export type {DracoLoaderOptions} from './draco-loader-options';
 async function preload(
   _url: string,
   options?: Record<string, unknown>
-): Promise<LoaderWithParser<DracoMesh | ArrowTable, never, DracoLoaderOptions>> {
+): Promise<LoaderWithParser<DracoMesh | Table, never, DracoLoaderOptions>> {
   const dracoLoaderOptions = options as DracoLoaderOptions | undefined;
   switch (getDracoBackend(dracoLoaderOptions)) {
     case 'wasm': {
-      const {DracoWASMLoaderWithParser} = await import('@loaders.gl/scene/draco-wasm-loader');
+      const {DracoWASMLoaderWithParser} = await import('@loaders.gl/scene/draco');
       return DracoWASMLoaderWithParser;
     }
 
     case 'javascript': {
-      const {DracoJavaScriptLoaderWithParser} = await import(
-        '@loaders.gl/scene/draco-javascript-loader'
-      );
+      const {DracoJavaScriptLoaderWithParser} = await import('@loaders.gl/scene/draco');
       return DracoJavaScriptLoaderWithParser;
     }
 
     case 'draco3d': {
-      const {Draco3DLoaderWithParser} = await import('@loaders.gl/scene/draco3d-loader');
+      const {Draco3DLoaderWithParser} = await import('@loaders.gl/scene/draco');
       return Draco3DLoaderWithParser;
     }
 
@@ -50,7 +48,9 @@ async function preload(
 
 /** Metadata-only worker loader for Draco3D compressed geometries. */
 export const DracoLoader = {
-  dataType: null as unknown as DracoMesh | ArrowTable,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as DracoMesh | Table,
   batchType: null as never,
   ...DracoFormat,
   // shapes: ['mesh'],
@@ -64,10 +64,7 @@ export const DracoLoader = {
     draco: DRACO_LOADER_DEFAULT_OPTIONS
   },
   preload
-} as const satisfies Loader<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
-
-/** @deprecated Use DracoLoader. */
-export const DracoWorkerLoader = DracoLoader;
+} as const satisfies Loader<DracoMesh | Table, never, DracoLoaderOptions>;
 
 /** Resolves the Draco decoder backend from loader options. */
 function getDracoBackend(options?: DracoLoaderOptions): DracoDecoderBackend {

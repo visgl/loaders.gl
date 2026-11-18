@@ -16,7 +16,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   meta={['From v4.0', 'TileJSON', 'Metadata only']}
   links={[
     {label: 'TileJSON format', to: '/docs/modules/tiles/mvt/formats/tilejson'},
-    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source-loader'},
+    {label: 'MVT source', to: '/docs/modules/tiles/mvt/api-reference/mvt-source'},
     {label: 'MVT module', to: '/docs/modules/tiles/mvt'}
   ]}
 />
@@ -62,6 +62,8 @@ const tileJSON = await load(url, TileJSONLoader, options);
 ```
 
 ## Data Format
+
+The returned `tiles` array preserves the advertised URL templates, including `{z}`, `{x}`, and `{y}` placeholders. Use `tileJSON.tiles[0]` to obtain the current template from providers that publish versioned tile endpoints.
 
 See [TileJSON format](/docs/modules/tiles/mvt/formats/tilejson).
 

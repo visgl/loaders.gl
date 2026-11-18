@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {
   MeshArrowPointCloudLayer,
   type MeshArrowPointCloudLayerProps
 } from '../src/mesh-arrow-point-cloud-layer';
-import type {ArrowTableBatch, Mesh} from '@loaders.gl/core/schema';
-import {convertMeshToTable} from '@loaders.gl/core/schema-utils';
+import type {Mesh} from '@loaders.gl/core/schema';
+import {convertMeshToArrowTable} from '@loaders.gl/core/schema-utils';
 type ControlledAsyncIterable<T> = AsyncIterable<T> & {
   push: (value: T) => void;
   close: () => void;
@@ -37,16 +38,9 @@ function createPointCloudMesh(positions: number[]): Mesh {
     }
   };
 }
-/** Creates a loaders.gl Arrow table batch from point positions. */
-function createArrowTableBatch(positions: number[]): ArrowTableBatch {
-  const meshArrowTable = convertMeshToTable(createPointCloudMesh(positions), 'arrow-table');
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    schema: meshArrowTable.schema,
-    data: meshArrowTable.data,
-    length: meshArrowTable.data.numRows
-  };
+/** Creates one native record batch from point positions. */
+function createArrowTableBatch(positions: number[]): arrow.RecordBatch {
+  return convertMeshToArrowTable(createPointCloudMesh(positions)).batches[0];
 }
 /** Normalizes a layer render result to an array. */
 function asLayerArray(layerResult: ReturnType<MeshArrowPointCloudLayer['renderLayers']>) {
@@ -97,17 +91,14 @@ async function waitForAsyncIterator(): Promise<void> {
   await Promise.resolve();
 }
 test('MeshArrowPointCloudLayer renders a static Mesh Arrow table', () => {
-  const meshArrowTable = convertMeshToTable(
-    createPointCloudMesh([0, 0, 0, 1, 2, 3]),
-    'arrow-table'
-  );
+  const meshArrowTable = convertMeshToArrowTable(createPointCloudMesh([0, 0, 0, 1, 2, 3]));
   const layer = createLayer({data: meshArrowTable});
   const [sublayer] = asLayerArray(layer.renderLayers());
   expect(sublayer.constructor.layerName, 'creates a PointCloudLayer').toBe('PointCloudLayer');
   expect((sublayer.props.data as any).length, 'passes one rendered object per point').toBe(2);
 });
 test('MeshArrowPointCloudLayer applies defaultPointColor without table colors', () => {
-  const meshArrowTable = convertMeshToTable(createPointCloudMesh([0, 0, 0]), 'arrow-table');
+  const meshArrowTable = convertMeshToArrowTable(createPointCloudMesh([0, 0, 0]));
   const layer = createLayer({
     data: meshArrowTable,
     defaultPointColor: [1, 2, 3]
@@ -116,7 +107,7 @@ test('MeshArrowPointCloudLayer applies defaultPointColor without table colors', 
   expect(sublayer.props.getColor, 'passes defaultPointColor to PointCloudLayer').toEqual([1, 2, 3]);
 });
 test('MeshArrowPointCloudLayer incrementally renders Arrow table batches', async () => {
-  const pointCloudBatches = createControlledAsyncIterable<ArrowTableBatch>();
+  const pointCloudBatches = createControlledAsyncIterable<arrow.RecordBatch>();
   const layer = createLayer({data: pointCloudBatches});
   layer.state = {};
   layer.initializeState();
@@ -142,7 +133,7 @@ test('MeshArrowPointCloudLayer incrementally renders Arrow table batches', async
   pointCloudBatches.close();
 });
 test('MeshArrowPointCloudLayer reports invalid async batch shapes', async () => {
-  const pointCloudBatches = createControlledAsyncIterable<ArrowTableBatch>();
+  const pointCloudBatches = createControlledAsyncIterable<arrow.RecordBatch>();
   const layer = createLayer({data: pointCloudBatches});
   layer.state = {};
   layer.initializeState();
@@ -156,6 +147,6 @@ test('MeshArrowPointCloudLayer reports invalid async batch shapes', async () => 
   expect(
     () => layer.renderLayers(),
     'throws a stable error for invalid async batch values'
-  ).toThrow(/requires ArrowTableBatch values/);
+  ).toThrow(/requires Arrow RecordBatch values/);
   pointCloudBatches.close();
 });

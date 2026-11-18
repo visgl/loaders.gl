@@ -25,7 +25,7 @@ export function mergeImageSourceLoaderProps<Props extends {loadOptions?: any}>(
     ...props,
     loadOptions: {
       ...props.loadOptions,
-      fetch: getFetchFunction(props.loadOptions)
+      core: {...props.loadOptions?.core, fetch: getFetchFunction(props.loadOptions)}
     }
   };
 }

@@ -6,7 +6,7 @@ import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {VERSION} from './lib/version';
 
 import {VectorSourceInfo, ImageSourceInfo} from './source-info';
-import type {PMTilesSourceLoaderOptions} from './pmtiles-source-loader';
+import type {PMTilesSourceLoaderOptions} from './pmtiles-source';
 import {PMTilesFormat} from './pmtiles-format';
 
 export type PMTilesLoaderOptions = LoaderOptions & {
@@ -26,5 +26,7 @@ export const PMTilesLoader = {
   options: {
     pmtiles: {}
   },
+  fromUrl: true,
+  fromBlob: true,
   preload
 } as const satisfies Loader<VectorSourceInfo | ImageSourceInfo, never, PMTilesLoaderOptions>;

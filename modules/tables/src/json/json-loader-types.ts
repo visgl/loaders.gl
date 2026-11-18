@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {RecordBatch} from 'apache-arrow';
 import type {Batch, TableBatch} from '@loaders.gl/core/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {JSON_WORKER_URL} from './json-worker-url';
@@ -29,7 +30,7 @@ export type JSONLoaderOptions = LoaderOptions & {
   json?: {
     /** Selects the streaming JSON parser backend. */
     backend?: 'clarinet' | 'fast';
-    /** Requested row-table output shape. Omitting shape preserves the default JSON result. */
+    /** Explicit row output. Batched table mode defaults to Arrow when shape is omitted. */
     shape?: 'object-row-table' | 'array-row-table';
     /** Whether non-streaming JSON should be interpreted as table rows. */
     table?: boolean;
@@ -40,14 +41,14 @@ export type JSONLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing JSON loader implementation. */
 async function preload() {
-  const {JSONLoaderWithParser} = await import('@loaders.gl/tables/json-loader');
+  const {JSONLoaderWithParser} = await import('@loaders.gl/tables/json');
   return JSONLoaderWithParser;
 }
 
 /** Metadata-only loader for JSON documents, including tabular JSON and streaming table extraction. */
 export const JSONLoader = {
   dataType: null as unknown,
-  batchType: null as unknown as TableBatch | MetadataBatch | JSONBatch,
+  batchType: null as unknown as TableBatch | RecordBatch | MetadataBatch | JSONBatch,
 
   ...JSONFormat,
   version: VERSION,
@@ -66,4 +67,8 @@ export const JSONLoader = {
     }
   },
   preload
-} as const satisfies Loader<unknown, TableBatch | MetadataBatch | JSONBatch, JSONLoaderOptions>;
+} as const satisfies Loader<
+  unknown,
+  TableBatch | RecordBatch | MetadataBatch | JSONBatch,
+  JSONLoaderOptions
+>;

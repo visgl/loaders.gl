@@ -12,7 +12,7 @@ import type {
   TilesetSourceMetadata,
   TilesetSpatialReference
 } from '@loaders.gl/tiles-3d';
-import type {DracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
+import type {DracoLibraryOptions} from '@loaders.gl/scene/draco';
 import {
   createBrowserTilesetConversionSource,
   selectBrowserTilesetContent,
@@ -367,9 +367,8 @@ export function measureMeshBytes(resource: MeshSourceResource): number {
       resource.features.batches.reduce(
         (bytes, batch) =>
           bytes +
-          batch.data.schema.fields.reduce(
-            (columnBytes, field) =>
-              columnBytes + (batch.data.getChild(field.name)?.byteLength ?? 0),
+          batch.schema.fields.reduce(
+            (columnBytes, field) => columnBytes + (batch.getChild(field.name)?.byteLength ?? 0),
             0
           ),
         0

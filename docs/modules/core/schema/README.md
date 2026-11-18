@@ -84,23 +84,24 @@ execution or IPC.
 | `object-row-table` | Fields should be addressed by name | `data` is an array of objects |
 | `geojson-table` | The result needs GeoJSON feature compatibility | `features` contains the rows |
 | `columnar-table` | Typed columns are useful but Arrow is not required | `data` is a map of array-like columns |
-| `arrow-table` | The next step is columnar processing, scanning, or IPC | `data` contains an Apache Arrow table |
+| `arrow` | The next step is columnar processing, scanning, or IPC | Native Apache Arrow table |
 
-Every wrapped result uses `shape` as its discriminant, so application code can select the correct
-branch without guessing from the payload:
+### Generated names for positional columns
 
-```typescript
-function getRowCount(table: Table): number {
-  switch (table.shape) {
-    case 'geojson-table':
-      return table.features.length;
-    case 'arrow-table':
-      return table.data.numRows;
-    default:
-      return table.data.length;
-  }
-}
-```
+When tabular rows contain values but no field names, loaders.gl assigns the SQL-friendly,
+**one-based** names `column1`, `column2`, `column3`, and so on. This convention is shared by
+headerless CSV (default `csv.columnPrefix: 'column'`) and positional JSON row arrays.
+The first array element remains at JavaScript index `0` but has logical field name `column1`.
+The convention applies when inferring a schema or adapting positional rows to object rows or
+Arrow; it does not rename keys of JSON object rows.
+
+Explicit field names, including names from a supplied schema or a CSV header, take precedence.
+CSV continues to allow an alternate prefix via `csv.columnPrefix`.
+
+For example, positional rows `[[12.5, 34.2], [15.1, 35.8]]` can be queried as
+`SELECT column1 AS longitude, column2 AS latitude` after conversion to a table source.
+
+Use `getTableLength(table)` from `@loaders.gl/core/schema-utils` to count rows across native Arrow and loaders.gl table layouts.
 
 ## Shapes in loaders
 

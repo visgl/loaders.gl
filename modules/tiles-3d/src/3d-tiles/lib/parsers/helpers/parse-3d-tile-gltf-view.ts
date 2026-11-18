@@ -11,6 +11,7 @@
 // - Do we add an option to control this?
 // - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
 
+import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {GLTFLoader, _getMemoryUsageGLTF} from '@loaders.gl/scene/gltf';
 import {LoaderContext, sliceArrayBuffer, parseFromContext} from '@loaders.gl/core/loader-utils';
 import {Tiles3DTileContent} from '../../../types';
@@ -56,8 +57,8 @@ export function parse3DTileGLTFViewSync(
     // tile.gltfByteLength = gltfByteLength;
   } else {
     // Create a copy of the glb so that it is 4-byte aligned
-    // eslint-disable-next-line
-    console.warn(`${tile.type}: embedded glb is not aligned to a 4-byte boundary.`);
+
+    getLoaderLog(options).warn(`${tile.type}: embedded glb is not aligned to a 4-byte boundary.`)();
   }
 
   // Entire tile is consumed

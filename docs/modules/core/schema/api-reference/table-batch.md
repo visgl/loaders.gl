@@ -29,7 +29,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   items={[
     {label: 'Rows', value: 'RowTableBatch for object or array records'},
     {label: 'Columns', value: 'ColumnarTableBatch for column data'},
-    {label: 'Arrow', value: 'ArrowTableBatch for record batches'},
+    {label: 'Arrow', value: 'Native Apache Arrow RecordBatch'},
     {label: 'Progress', value: 'Optional byte and record progress metadata'}
   ]}
 />
@@ -42,4 +42,5 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 - RowTableBatch
 - ColumnarTableBatch
-- ArrowTableBatch
+
+Arrow streams yield native Apache Arrow `RecordBatch` objects. The batch schema carries table-level metadata and `batch.metadata` carries batch-local information.

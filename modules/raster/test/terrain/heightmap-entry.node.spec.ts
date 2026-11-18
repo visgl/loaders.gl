@@ -14,12 +14,7 @@ test('heightmap subpath declares an emitted ESM entry point and public types', a
   const esm = await import(/* @vite-ignore */ entryUrl.href);
   expect(Object.keys(esm).sort()).toEqual([
     'TERRARIUM_ELEVATION_DECODER',
-    'TerrainHeightField',
-    'createTerrainHeightGrid',
-    'decodeTerrainHeightmap',
-    'resampleTerrainNodes',
-    'sampleTerrainHeightGrid',
-    'sampleTerrainNeighborhood'
+    'decodeTerrainHeightmap'
   ]);
   expect(
     existsSync(new URL(`../../${manifest.exports['./terrain/heightmap'].types}`, import.meta.url))

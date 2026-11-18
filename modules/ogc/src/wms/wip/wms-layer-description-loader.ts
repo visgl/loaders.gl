@@ -24,5 +24,8 @@ export const WMSLayerDescriptionLoader = {
   format: 'wms-layer-description',
 
   /** Loads the parser-bearing WMS DescribeLayer loader implementation. */
-  preload: async () => (await import('./wms-layer-description-loader-with-parser')).WMSLayerDescriptionLoaderWithParser
+  preload: async () => {
+    const loaderModule = await import('./wms-layer-description-loader-with-parser');
+    return loaderModule.WMSLayerDescriptionLoaderWithParser;
+  }
 } as const satisfies Loader<WMSLayerDescription, never, XMLLoaderOptions>;

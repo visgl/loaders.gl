@@ -2,21 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table, type RecordBatch} from 'apache-arrow';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {
-  COORDINATE_SYSTEM,
   FirstPersonView,
   type FirstPersonViewState,
   OrbitView,
   type OrbitViewState
 } from '@deck.gl/core';
-import {webgpuAdapter} from '@luma.gl/webgpu';
+import {webgpuAdapter} from '@luma.gl/core/webgpu';
 import {loadInBatches} from '@loaders.gl/core';
 import {SplatLayer} from '@loaders.gl/deck-layers';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
-import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/core/schema';
 import {FullscreenWidget, _StatsWidget as StatsWidget} from '@deck.gl/widgets';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
 import type {Example} from '../pointcloud/examples';
@@ -57,9 +56,9 @@ type ControllerMode = (typeof CONTROLLER_MODES)[number];
 
 type GaussianSplatsAppState = {
   /** Loaded Arrow table wrapper or streaming loaders.gl Arrow table batches. */
-  data: MeshArrowTable | AsyncIterable<ArrowTableBatch> | null;
+  data: Table | AsyncIterable<RecordBatch> | null;
   /** First loaded table used for schema and row previews. */
-  previewTable: MeshArrowTable | null;
+  previewTable: Table | null;
   /** Number of splat rows loaded so far. */
   loadedSplatCount: number;
   /** Current deck.gl view state. */
@@ -120,7 +119,7 @@ export default function GaussianSplatsApp() {
             if (loadRequestIndex !== loadRequestIndexRef.current) {
               return;
             }
-            const table = getMeshArrowTableFromBatch(arrowTableBatch);
+            const table = new Table(arrowTableBatch.schema, [arrowTableBatch]);
             setState((currentState) => ({
               ...currentState,
               previewTable: currentState.previewTable || table,
@@ -195,7 +194,7 @@ export default function GaussianSplatsApp() {
         ? [
             new SplatLayer({
               id: 'gaussian-splats-webgpu',
-              coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+              coordinateSystem: 'cartesian',
               data: state.data as any,
               pickable: false,
               opacity: SPLAT_LAYER_OPACITY,
@@ -309,7 +308,7 @@ function getInitialViewState(controllerMode: ControllerMode): OrbitViewState | F
 
 /** Build a Z-up initial view from loaded Gaussian splat bounds. */
 function getGaussianSplatViewState(
-  table: MeshArrowTable,
+  table: Table,
   controllerMode: ControllerMode
 ): OrbitViewState | FirstPersonViewState {
   const bounds = getPositionBounds(table);
@@ -336,12 +335,12 @@ function getGaussianSplatViewState(
 }
 
 /** Return POSITION column bounds for a Mesh Arrow table. */
-function getPositionBounds(table: MeshArrowTable): {mins: [number, number, number]; maxs: [number, number, number]} {
-  const positions = table.data.getChild('POSITION');
+function getPositionBounds(table: Table): {mins: [number, number, number]; maxs: [number, number, number]} {
+  const positions = table.getChild('POSITION');
   const mins: [number, number, number] = [Infinity, Infinity, Infinity];
   const maxs: [number, number, number] = [-Infinity, -Infinity, -Infinity];
 
-  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
+  for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
     const position = positions?.get(rowIndex) as ArrayLike<number> | null;
     if (!position) {
       continue;
@@ -401,25 +400,24 @@ function getOrbitZoom(horizontalSize: number): number {
 async function* trackGaussianSplatBatches(
   sourceUrls: string[],
   callbacks: {
-    onBatch: (arrowTableBatch: ArrowTableBatch, loadedSplatCount: number) => void;
+    onBatch: (arrowTableBatch: RecordBatch, loadedSplatCount: number) => void;
     onComplete: () => void;
     onError: (error: unknown) => void;
   }
-): AsyncIterable<ArrowTableBatch> {
+): AsyncIterable<RecordBatch> {
   let loadedSplatCount = 0;
 
   try {
     for (const sourceUrl of sourceUrls) {
       const sourceBatches = (await loadInBatches(sourceUrl, PLYLoader, {
-        worker: false,
-        ply: {shape: 'arrow-table'}
-      })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
+        core: {worker: false},
+        ply: {shape: 'arrow'}
+      })) as AsyncIterable<RecordBatch>;
 
       for await (const sourceBatch of sourceBatches) {
-        const arrowTableBatch = normalizeArrowTableBatch(sourceBatch);
-        loadedSplatCount += arrowTableBatch.length;
-        callbacks.onBatch(arrowTableBatch, loadedSplatCount);
-        yield arrowTableBatch;
+        loadedSplatCount += sourceBatch.numRows;
+        callbacks.onBatch(sourceBatch, loadedSplatCount);
+        yield sourceBatch;
       }
     }
     callbacks.onComplete();
@@ -427,33 +425,6 @@ async function* trackGaussianSplatBatches(
     callbacks.onError(error);
     throw error;
   }
-}
-
-/**
- * Normalizes current PLY streaming output to the loaders.gl Arrow table batch wrapper.
- */
-function normalizeArrowTableBatch(sourceBatch: ArrowTableBatch | MeshArrowTable): ArrowTableBatch {
-  if ('batchType' in sourceBatch && sourceBatch.batchType === 'data') {
-    return sourceBatch;
-  }
-
-  return {
-    shape: 'arrow-table',
-    batchType: 'data',
-    schema: sourceBatch.schema,
-    data: sourceBatch.data,
-    length: sourceBatch.data.numRows
-  };
-}
-
-/** Returns a Mesh Arrow table wrapper for one Arrow table batch. */
-function getMeshArrowTableFromBatch(arrowTableBatch: ArrowTableBatch): MeshArrowTable {
-  return {
-    shape: 'arrow-table',
-    topology: 'point-list',
-    schema: arrowTableBatch.schema,
-    data: arrowTableBatch.data
-  };
 }
 
 type ArrowTablePreview = {
@@ -484,14 +455,14 @@ function getGaussianSplatUrlOptions(): UrlOption<Example>[] {
 
 /** Build a compact schema and row preview from the first Mesh Arrow table batch. */
 function getArrowTablePreview(
-  table: MeshArrowTable | null,
+  table: Table | null,
   loadedSplatCount: number
 ): ArrowTablePreview | null {
   if (!table) {
     return null;
   }
 
-  const arrowTable = table.data;
+  const arrowTable = table;
   const fields = arrowTable.schema.fields.slice(0, PREVIEW_COLUMN_COUNT);
   const columns = fields.map((field) => ({name: field.name, type: String(field.type)}));
   const rows: string[][] = [];

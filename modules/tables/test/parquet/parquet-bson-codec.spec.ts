@@ -8,7 +8,7 @@ import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {ParquetEncoder, ParquetEnvelopeWriter} from '../../src/parquet/parquetjs/encoder/parquet-encoder';
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 import {ParquetSchema} from '../../src/parquet/parquetjs/schema/schema';
-import {ParquetJSLoaderWithParser} from '../../src/parquet/parquet-js-loader';
+import {ParquetJSLoaderWithParser} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {BSONObjectId, createBSONValue, parseBSONSync} from '@loaders.gl/documents/bson-codec';
 
 test.each([false, true])('Parquet BSON read/write and Arrow byte preservation, Data Page V2=%s', async useDataPageV2 => {
@@ -38,10 +38,10 @@ test.each([false, true])('Parquet BSON read/write and Arrow byte preservation, D
     expect(rows).toEqual([...documents.map(payload => ({payload})), {}]);
   } finally {reader.close();}
 
-  const table = await parse(bytes.buffer, ParquetJSLoaderWithParser, {core: {worker: false}, parquet: {shape: 'arrow-table'}});
-  expect(table.shape).toBe('arrow-table');
-  if (table.shape !== 'arrow-table') throw new Error('Expected an Arrow table');
-  const payloads = table.data.getChild('payload')!;
+  const table = await parse(bytes.buffer, ParquetJSLoaderWithParser, {core: {worker: false}, parquet: {shape: 'arrow'}});
+  expect(table).toHaveProperty('numRows');
+  if (!('numRows' in table)) throw new Error('Expected an Arrow table');
+  const payloads = table.getChild('payload')!;
   expect(payloads.get(2)).toBeNull();
   for (let index = 0; index < documents.length; index++) {
     const payload = payloads.get(index) as Uint8Array;

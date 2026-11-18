@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  CompositeImageManifestSchema,
-  ImageTextureManifestSchema
-} from '@loaders.gl/images/texture-manifest-schema';
+import {CompositeImageManifestSchema, ImageTextureManifestSchema} from '@loaders.gl/images/texture';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 

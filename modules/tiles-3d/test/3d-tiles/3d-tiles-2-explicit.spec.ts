@@ -41,7 +41,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         })
       ),
       Tiles3DLoader,
-      {worker: false}
+      {core: {worker: false}}
     );
 
     expect(tileset.formatVersion).toBe('2.0-draft');
@@ -94,9 +94,9 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       return new Response(JSON.stringify(json), {status: 200});
     };
 
-    const rootTileset = await load(parentUrl, Tiles3DLoader, {worker: false, fetch});
+    const rootTileset = await load(parentUrl, Tiles3DLoader, {core: {worker: false, fetch}});
     expect(requestedUrls).toEqual([parentUrl]);
-    const source = new Tiles3DSource({...rootTileset, coreApi}, {worker: false, fetch});
+    const source = new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false, fetch}});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
     const result = await tileset.root!.loadContent();
@@ -126,7 +126,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       throw new Error(`unexpected eager request: ${url}`);
     };
 
-    const tileset = await load(rootUrl, Tiles3DLoader, {worker: false, fetch});
+    const tileset = await load(rootUrl, Tiles3DLoader, {core: {worker: false, fetch}});
 
     expect(tileset.formatVersion).toBe('2.0-draft');
     expect(requestedUrls).toEqual([rootUrl]);
@@ -221,10 +221,14 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         }
       ]
     });
-    const rootTileset = await parse(encodeGlb(parent, binary), Tiles3DLoader, {worker: false});
+    const rootTileset = await parse(encodeGlb(parent, binary), Tiles3DLoader, {
+      core: {worker: false}
+    });
     expect(rootTileset.root.content._resource.files[1].data).toBeInstanceOf(ArrayBuffer);
 
-    const tileset = new Tileset3D(new Tiles3DSource({...rootTileset, coreApi}, {worker: false}));
+    const tileset = new Tileset3D(
+      new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}})
+    );
     await tileset.tilesetInitializationPromise;
     await tileset.root!.loadContent();
 
@@ -301,9 +305,11 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         }
       ]
     });
-    const rootTileset = await parse(encodeGlb(parent, binary), Tiles3DLoader, {worker: false});
+    const rootTileset = await parse(encodeGlb(parent, binary), Tiles3DLoader, {
+      core: {worker: false}
+    });
     const rootRuntime = new Tileset3D(
-      new Tiles3DSource({...rootTileset, coreApi}, {worker: false})
+      new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}})
     );
     await rootRuntime.tilesetInitializationPromise;
     const nestedTileset = (await rootRuntime.root!.loadContent()).nestedTileset!;
@@ -314,7 +320,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     });
 
     const nestedRuntime = new Tileset3D(
-      new Tiles3DSource({...nestedTileset, coreApi}, {worker: false})
+      new Tiles3DSource({...nestedTileset, coreApi}, {core: {worker: false}})
     );
     await nestedRuntime.tilesetInitializationPromise;
     await nestedRuntime.root!.loadContent();
@@ -343,8 +349,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       },
       extensionsUsed: ['3DTILES_content_gltf_vector']
     };
-    const rootTileset = await parse(encodeJson(tilesetJson), Tiles3DLoader, {worker: false});
-    const tileset = new Tileset3D(new Tiles3DSource({...rootTileset, coreApi}, {worker: false}));
+    const rootTileset = await parse(encodeJson(tilesetJson), Tiles3DLoader, {
+      core: {worker: false}
+    });
+    const tileset = new Tileset3D(
+      new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}})
+    );
     await tileset.tilesetInitializationPromise;
     await tileset.root!.loadContent();
 
@@ -364,11 +374,13 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           })
         ),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/Unsupported required 3D Tiles extension: VENDOR_required/);
     await expect(
-      parse(encodeJson(createTilesetGltf({extensionsRequired: []})), Tiles3DLoader, {worker: false})
+      parse(encodeJson(createTilesetGltf({extensionsRequired: []})), Tiles3DLoader, {
+        core: {worker: false}
+      })
     ).rejects.toThrow(/3DTILES_tileset must be declared in extensionsRequired/);
     await expect(
       parse(
@@ -381,12 +393,12 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           })
         ),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/3DTILES_tileset_vectors: clip must be boolean/);
     await expect(
       parse(encodeJson(createTilesetGltf({scenes: [{nodes: [0, 1]}]})), Tiles3DLoader, {
-        worker: false
+        core: {worker: false}
       })
     ).rejects.toThrow(/one scene with one root node/);
   });
@@ -411,7 +423,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           })
         ),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/3DTILES_tileset_vectors must define an extension object/);
   });
@@ -529,9 +541,11 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       ),
       Tiles3DLoader,
       {
-        worker: false,
-        fetch: async () => {
-          throw new Error('subtree package files must stay lazy');
+        core: {
+          worker: false,
+          fetch: async () => {
+            throw new Error('subtree package files must stay lazy');
+          }
         },
         '3d-tiles': {isSubtree: true, loadGLTF: false}
       }
@@ -594,7 +608,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         binary
       ),
       Tiles3DLoader,
-      {worker: false, '3d-tiles': {isSubtree: true}}
+      {core: {worker: false}, '3d-tiles': {isSubtree: true}}
     );
 
     expect(subtree.tileAttributes.TILE_GEOMETRIC_ERROR).toEqual(new Float64Array([0, 42]));
@@ -640,8 +654,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     };
 
     const subtree = await load(subtreeUrl, Tiles3DLoader, {
-      worker: false,
-      fetch,
+      core: {worker: false, fetch},
       '3d-tiles': {isSubtree: true, loadGLTF: false}
     });
 
@@ -688,8 +701,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     };
 
     const subtree = await load(subtreeUrl, Tiles3DLoader, {
-      worker: false,
-      fetch,
+      core: {worker: false, fetch},
       '3d-tiles': {loadGLTF: false}
     });
 
@@ -784,8 +796,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     };
 
     const subtree = await load(subtreeUrl, Tiles3DLoader, {
-      worker: false,
-      fetch,
+      core: {worker: false, fetch},
       '3d-tiles': {loadGLTF: false}
     });
 
@@ -842,14 +853,14 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       return new Response(JSON.stringify(url === rootUrl ? rootJson : subtreeJson));
     };
 
-    const rootTileset = await load(rootUrl, Tiles3DLoader, {worker: false, fetch});
+    const rootTileset = await load(rootUrl, Tiles3DLoader, {core: {worker: false, fetch}});
     expect(requestedUrls).toEqual([rootUrl]);
     expect(rootTileset.root.content).toBeUndefined();
     expect(rootTileset.root.contentUrls).toEqual([]);
     expect(rootTileset.root.implicitSubtree.descriptor.contentHeader._vectorContent).toEqual({
       clip: true
     });
-    const source = new Tiles3DSource({...rootTileset, coreApi}, {worker: false, fetch});
+    const source = new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false, fetch}});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
     const rootHeader = {...rootTileset.root, children: []};
@@ -933,9 +944,9 @@ describe('experimental explicit 3D Tiles 2.0', () => {
       ]
     });
     const rootTileset = await parse(encodeGlb(packagedTileset, binary), Tiles3DLoader, {
-      worker: false
+      core: {worker: false}
     });
-    const source = new Tiles3DSource({...rootTileset, coreApi}, {worker: false});
+    const source = new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}});
     const tileset = new Tileset3D(source);
     await tileset.tilesetInitializationPromise;
 
@@ -1028,9 +1039,11 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         }
       ]
     });
-    const rootTileset = await parse(encodeGlb(parent, binary), Tiles3DLoader, {worker: false});
+    const rootTileset = await parse(encodeGlb(parent, binary), Tiles3DLoader, {
+      core: {worker: false}
+    });
     const rootRuntime = new Tileset3D(
-      new Tiles3DSource({...rootTileset, coreApi}, {worker: false})
+      new Tiles3DSource({...rootTileset, coreApi}, {core: {worker: false}})
     );
     await rootRuntime.tilesetInitializationPromise;
     const result = await rootRuntime.root!.loadContent();
@@ -1039,7 +1052,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     expect(nestedTileset.root.implicitSubtree.subtreeUrl).toBe(
       'gltf-package://0/0/nested/subtrees/0/0/0.gltf'
     );
-    const nestedSource = new Tiles3DSource({...nestedTileset, coreApi}, {worker: false});
+    const nestedSource = new Tiles3DSource({...nestedTileset, coreApi}, {core: {worker: false}});
     const nestedRuntime = new Tileset3D(nestedSource);
     await nestedRuntime.tilesetInitializationPromise;
     await nestedSource.loadTileChildren(nestedRuntime.root!, {} as never);
@@ -1062,7 +1075,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           }
         }),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/3DTILES_subtree must be declared in extensionsRequired/);
     await expect(
@@ -1080,7 +1093,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           }
         }),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/Unsupported required 3D Tiles subtree extension: 3DTILES_tileset_vectors/);
     await expect(
@@ -1099,7 +1112,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           accessors: [{componentType: 5126, count: 1, type: 'SCALAR'}]
         }),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/TILE_GEOMETRIC_ERROR requires SCALAR\/5130/);
   });
@@ -1191,7 +1204,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         })
       ),
       Tiles3DLoader,
-      {worker: false}
+      {core: {worker: false}}
     );
 
     expect(tileset.root.boundingVolume.region).toEqual([-1, -0.5, 1, 0.5, 10, 20]);
@@ -1228,7 +1241,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           }
         }),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/3DTILES_content_gltf_vector: vector must be true/);
 
@@ -1247,7 +1260,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           extensionsRequired: ['3DTILES_content_gltf_vector']
         }),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/3DTILES_content_gltf_vector must designate content/);
   });
@@ -1273,7 +1286,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
         extensionsRequired: ['3DTILES_content_gltf_vector']
       }),
       Tiles3DLoader,
-      {worker: false}
+      {core: {worker: false}}
     );
 
     expect(tileset.root.contentUrls).toEqual(['/vector.glb', '/metadata.json']);
@@ -1300,7 +1313,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           extensionsRequired: ['3DTILES_content_gltf_vector']
         }),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(/must not define both content and contents/);
   });
@@ -1328,7 +1341,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
           }
         }),
         Tiles3DLoader,
-        {worker: false}
+        {core: {worker: false}}
       )
     ).rejects.toThrow(message);
   });
@@ -1337,7 +1350,7 @@ describe('experimental explicit 3D Tiles 2.0', () => {
     const result = await parse(
       encodeGlb(createTilesetGltf({buffers: [{byteLength: 4}]}), new Uint8Array(4)),
       Tiles3DLoader,
-      {worker: true}
+      {core: {worker: true}}
     );
     const serializedResult = Tiles3DLoader.serializeWorkerResult!(result);
     const transferredResult = Tiles3DLoader.deserializeWorkerResult!(

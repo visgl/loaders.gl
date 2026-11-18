@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
+import type {Schema} from '@loaders.gl/core/schema';
 import type {CoreAPI, DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import type {SQLTableQuery} from './compile-table-query';
 
@@ -90,7 +91,7 @@ export interface SQLAdapter {
   executeRows(sql: string, options?: SQLQueryOptions): Promise<Record<string, unknown>[]>;
   /** Uploads an Arrow IPC stream without passing Arrow runtime objects. */
   insertArrowIPC?(bytes: Uint8Array, options: SQLArrowInsertOptions): Promise<void>;
-  executeArrow?(sql: string, options?: SQLQueryOptions): Promise<ArrowTable>;
+  executeArrow?(sql: string, options?: SQLQueryOptions): Promise<Table>;
 }
 
 /** Context passed to SQL adapter factories during source initialization. */

@@ -26,7 +26,7 @@ describe('I3S Point profile', () => {
     const tileset = await I3SLoaderWithParser.parse(
       new TextEncoder().encode(JSON.stringify(fixture)).buffer,
       {
-        fetch: nodePageFetch,
+        core: {fetch: nodePageFetch},
         i3s: {isTileset: true, useDracoGeometry: true}
       } as any,
       {url: LAYER_URL} as any
@@ -99,7 +99,7 @@ describe('I3S Point profile', () => {
       },
       33554435,
       {
-        fetch: async () => new Response(decodeBase64(fixture.testResources.attributeBase64))
+        core: {fetch: async () => new Response(decodeBase64(fixture.testResources.attributeBase64))}
       }
     );
     expect(attributes).toEqual({FID: '33554435'});

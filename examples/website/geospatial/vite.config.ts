@@ -1,5 +1,8 @@
 import {defineConfig} from 'vite';
 import fs from 'fs';
+import {createRequire} from 'node:module';
+
+const require = createRequire(import.meta.url);
 
 /** Run against local source */
 const getAliases = async (frameworkName, frameworkRootDir) => {
@@ -14,13 +17,12 @@ const getAliases = async (frameworkName, frameworkRootDir) => {
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
-  const {default: stdLibBrowser} = await import('node-stdlib-browser');
   return {
     resolve: {extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'], alias: {
         ...(await getAliases('@loaders.gl', `${__dirname}/../../..`)),
-        fs: stdLibBrowser.fs,
-        path: stdLibBrowser.path,
-        process: stdLibBrowser.process,
+        fs: require.resolve('./empty-fs.js'),
+        path: require.resolve('path-browserify'),
+        process: require.resolve('process/browser'),
       }
     },
     server: {open: true}

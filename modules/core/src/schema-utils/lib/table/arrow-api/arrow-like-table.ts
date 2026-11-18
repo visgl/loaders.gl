@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type * as arrow from 'apache-arrow';
 import type {Table} from '@loaders.gl/core/schema';
 
 import {ArrowLikeSchema} from './arrow-like-schema';
@@ -20,10 +21,10 @@ import {
 } from '../tables/table-accessors';
 
 class ArrowLikeVector {
-  table: Table;
+  table: Table | arrow.Table;
   columnName: string;
 
-  constructor(table: Table, columnName: string) {
+  constructor(table: Table | arrow.Table, columnName: string) {
     this.table = table;
     this.columnName = columnName;
   }
@@ -33,10 +34,8 @@ class ArrowLikeVector {
   }
 
   toArray(): ArrayLike<unknown> {
+    if (!('shape' in this.table)) return this.table.getChild(this.columnName)?.toArray();
     switch (this.table.shape) {
-      case 'arrow-table':
-        const arrowTable = this.table.data as any;
-        return arrowTable.getChild(this.columnName)?.toArray();
       case 'columnar-table':
         return this.table.data[this.columnName];
       default:
@@ -51,12 +50,13 @@ class ArrowLikeVector {
  */
 export class ArrowLikeTable {
   schema: ArrowLikeSchema;
-  table: Table;
+  table: Table | arrow.Table;
 
-  constructor(table: Table) {
-    const schema = table.schema || deduceTableSchema(table);
+  constructor(table: Table | arrow.Table) {
+    const schema =
+      'shape' in table ? table.schema || deduceTableSchema(table) : deduceTableSchema(table);
     this.schema = new ArrowLikeSchema(schema.fields, schema.metadata);
-    this.table = {...table, schema};
+    this.table = 'shape' in table ? {...table, schema} : table;
   }
 
   // get schema() {
@@ -64,6 +64,7 @@ export class ArrowLikeTable {
   // }
 
   get data() {
+    if (!('shape' in this.table)) return this.table;
     return this.table.shape === 'geojson-table' ? this.table.features : this.table.data;
   }
 

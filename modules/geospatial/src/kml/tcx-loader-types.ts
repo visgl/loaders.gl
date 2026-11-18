@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table as ArrowTable} from 'apache-arrow';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {
   GeoJSONTable,
   ObjectRowTable,
   BinaryFeatureCollection,
-  ArrowTable,
   GeoArrowEncodingPreference
 } from '@loaders.gl/core/schema';
 import {TCXFormat} from './kml-format';
@@ -20,7 +20,7 @@ export type TCXLoaderOptions = LoaderOptions & {
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   tcx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow' | 'binary-geometry' | 'raw';
     geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
   };
 };
@@ -33,13 +33,15 @@ async function preloadTCXLoader() {
 
 /** Metadata-only loader for TCX (Training Center XML). */
 export const TCXLoader = {
+  supportsNativeArrow: true,
+  defaultShape: 'arrow',
   dataType: null as unknown as ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   batchType: null as never,
 
   ...TCXFormat,
   version: VERSION,
   options: {
-    tcx: {shape: 'arrow-table'},
+    tcx: {shape: 'arrow'},
     gis: {}
   },
   preload: preloadTCXLoader

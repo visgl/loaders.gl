@@ -63,3 +63,25 @@ test.each([
 ])('PDB rejects invalid model/connectivity structure %#', text => {
   expect(() => PDBLoaderWithParser.parseTextSync(text)).toThrow(/PDB/);
 });
+
+test('PDB retains optional fields and isolates model-local connectivity', () => {
+  const atomWithoutOptionalFields = first.slice(0, 54);
+  const structure = PDBLoaderWithParser.parseTextSync(atomWithoutOptionalFields);
+  expect(structure.models[0].atoms[0]).toMatchObject({
+    occupancy: undefined,
+    temperatureFactor: undefined,
+    element: '',
+    charge: ''
+  });
+  expect(structure.models[0].bonds).toEqual([]);
+  const models = PDBLoaderWithParser.parseTextSync(
+    `MODEL        1\n${first}\n${second}\n${bonds}\nENDMDL\nMODEL        2\n${first}\n${second}\nENDMDL`
+  ).models;
+  expect(models.map(model => model.bonds)).toEqual([[[0, 1]], []]);
+});
+
+test('PDB rejects an explicit MODEL after implicit atoms', () => {
+  expect(() => PDBLoaderWithParser.parseTextSync(`${first}\nMODEL        2`)).toThrow(
+    /model nesting/
+  );
+});

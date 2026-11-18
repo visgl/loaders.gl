@@ -8,7 +8,7 @@ import type {ImageSource as ImageSourceContract} from '@loaders.gl/core/loader-u
 export type ImageSource = ImageSourceContract;
 
 /**
- * Structural compatibility guard for deck.gl 9.x `instanceof ImageSource` checks.
+ * Structural compatibility guard for deck.gl 10.0.0-alpha.1 `instanceof ImageSource` checks.
  *
  * @deprecated `ImageSource` is a type-only capability contract. Do not construct or extend this
  * value; use it only for compatibility with deck.gl versions that still perform the legacy check.

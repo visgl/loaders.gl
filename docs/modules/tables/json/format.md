@@ -58,7 +58,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
     <span className="docs-api-card__kind">Loader</span>
     <strong>JSONTableLoader</strong>
     <span>Loads JSON row arrays as loaders.gl row tables or Apache Arrow tables.</span>
-    <span className="docs-api-card__meta">Output: ObjectRowTable, ArrayRowTable, ArrowTable</span>
+    <span className="docs-api-card__meta">Output: ObjectRowTable, ArrayRowTable, Apache Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync, parseInBatches</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/tables/json/api-reference/json-writer">

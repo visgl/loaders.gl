@@ -3,23 +3,24 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
+import {Table} from 'apache-arrow';
+import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {encode, parse} from '@loaders.gl/core';
 import {
-  GPXLoader,
   KMLLoader,
   KMZLoader,
-  KMZSourceLoader,
   KMZVectorSource,
   KMZWriter,
   KMLWriter,
-  TCXLoader,
-  openKMZArchive,
-  parseKMLDocument,
-  resolveKMZResourcePath
-} from '@loaders.gl/geospatial/kml/index';
+  _openKMZArchive,
+  _parseKMLDocument,
+  _resolveKMZResourcePath
+} from '@loaders.gl/geospatial/kml';
+import {GPXLoader} from '@loaders.gl/geospatial/gpx';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
+import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
 import {ZipWriter, ZipFileSystem} from '@loaders.gl/archives/zip';
 import {validateLoader, validateWriter} from 'test/common/conformance';
-import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz-loader';
 
 const SAMPLE_KML = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -56,11 +57,10 @@ test('KMZ loader and writer conformance', () => {
 });
 
 test('KML-family table loaders default to Arrow tables', () => {
-  expect(KMLLoader.options.kml.shape).toBe('arrow-table');
-  expect(KMZLoader.options.kmz.shape).toBe('arrow-table');
-  expect(GPXLoader.options.gpx.shape).toBe('arrow-table');
-  expect(TCXLoader.options.tcx.shape).toBe('arrow-table');
-  expect(KMZSourceLoader.defaultOptions.kmz.format).toBe('arrow');
+  expect(KMLLoader.options.kml.shape).toBe('arrow');
+  expect(KMZLoader.options.kmz.shape).toBe('arrow');
+  expect(GPXLoader.options.gpx.shape).toBe('arrow');
+  expect(TCXLoader.options.tcx.shape).toBe('arrow');
 });
 
 test('KMZ parser is available through its package subpath', () => {
@@ -75,7 +75,7 @@ test('KMZ archive reads the primary KML and relative resources', async () => {
     },
     ZipWriter
   );
-  const archive = await openKMZArchive(kmz);
+  const archive = await _openKMZArchive(kmz);
 
   expect(archive.kmlFileName).toBe('doc.kml');
   expect(archive.fileNames).toEqual(['doc.kml', 'images/map.png']);
@@ -86,6 +86,20 @@ test('KMZ archive reads the primary KML and relative resources', async () => {
     new Uint8Array([1, 2, 3])
   );
   await archive.close();
+});
+
+test('KMZ defaults to native Arrow with geometry metadata', async () => {
+  const kmz = await encode({'doc.kml': SAMPLE_KML}, ZipWriter);
+  const table = await parse(kmz, KMZLoader);
+
+  expect(table).toBeInstanceOf(Table);
+  expect(convertGeoArrowTableToGeoJSON(table).features).toEqual([
+    {
+      type: 'Feature',
+      geometry: {type: 'Point', coordinates: [1, 2, 3]},
+      properties: {name: 'Point A', kind: 'marker'}
+    }
+  ]);
 });
 
 test('KMZ loader preserves the KML compatibility table shape', async () => {
@@ -102,7 +116,7 @@ test('KMZ loader preserves the KML compatibility table shape', async () => {
 
 test('KMZ vector source exposes metadata, resources, and spatial filtering', async () => {
   const kmz = await encode({'doc.kml': SAMPLE_KML, 'images/map.png': 'image'}, ZipWriter);
-  const source = KMZSourceLoader.createDataSource(
+  const source = KMZLoaderWithParser.createDataSourceSync(
     new Blob([kmz], {type: 'application/vnd.google-earth.kmz'}),
     {}
   );
@@ -125,8 +139,8 @@ test('KMZ vector source exposes metadata, resources, and spatial filtering', asy
       [2, 3]
     ]
   });
-  expect(features.shape).toBe('arrow-table');
-  if (features.shape === 'arrow-table') expect(features.data.numRows).toBe(1);
+  expect(features).toBeInstanceOf(Table);
+  expect((features as Table).numRows).toBe(1);
   expect(new TextDecoder().decode(await source.getResource('images/map.png'))).toBe('image');
   await source.close();
 });
@@ -138,21 +152,21 @@ test('KML and KMZ writers round-trip feature geometry and properties', async () 
   const kmz = await encode(SAMPLE_FEATURE_COLLECTION, KMZWriter, {
     kmz: {files: {'images/icon.txt': 'icon'}}
   });
-  const archive = await openKMZArchive(kmz);
+  const archive = await _openKMZArchive(kmz);
   expect(archive.document.features[0].properties).toEqual({name: 'Written', category: 'test'});
   expect(new TextDecoder().decode(await archive.getResource('images/icon.txt'))).toBe('icon');
   await archive.close();
 });
 
 test('KMZ resource paths reject external URLs and traversal', () => {
-  expect(resolveKMZResourcePath('doc.kml', 'images/map.png')).toBe('images/map.png');
-  expect(resolveKMZResourcePath('maps/doc.kml', '../images/map.png')).toBe('images/map.png');
-  expect(resolveKMZResourcePath('doc.kml', 'https://example.com/map.png')).toBeNull();
-  expect(resolveKMZResourcePath('doc.kml', '../map.png')).toBeNull();
+  expect(_resolveKMZResourcePath('doc.kml', 'images/map.png')).toBe('images/map.png');
+  expect(_resolveKMZResourcePath('maps/doc.kml', '../images/map.png')).toBe('images/map.png');
+  expect(_resolveKMZResourcePath('doc.kml', 'https://example.com/map.png')).toBeNull();
+  expect(_resolveKMZResourcePath('doc.kml', '../map.png')).toBeNull();
 });
 
 test('KML parser resolves styles declared after Placemarks and preserves KML metadata', () => {
-  const document = parseKMLDocument(`
+  const document = _parseKMLDocument(`
     <kml xmlns="http://www.opengis.net/kml/2.2"><Document>
       <Placemark><styleUrl>#line</styleUrl><LineString>
         <altitudeMode>absolute</altitudeMode><extrude>1</extrude>
@@ -172,7 +186,7 @@ test('KML parser resolves styles declared after Placemarks and preserves KML met
 });
 
 test('KML parser collects models from placemarks', () => {
-  const document = parseKMLDocument(`
+  const document = _parseKMLDocument(`
     <kml xmlns="http://www.opengis.net/kml/2.2"><Document>
       <Placemark><name>Building</name><Model>
         <Location><longitude>1</longitude><latitude>2</latitude><altitude>3</altitude></Location>
@@ -193,7 +207,7 @@ test('KML parser collects models from placemarks', () => {
 });
 
 test('KML parser uses the normal StyleMap pair', () => {
-  const document = parseKMLDocument(`
+  const document = _parseKMLDocument(`
     <kml xmlns="http://www.opengis.net/kml/2.2"><Document>
       <Style id="normal"><LineStyle><color>ff0000ff</color></LineStyle></Style>
       <Style id="highlight"><LineStyle><color>ffff0000</color></LineStyle></Style>
@@ -212,7 +226,7 @@ test('KMZ opens compressed nested documents and closes failed initialization', a
   const bytes = await encode({'maps/doc.kml': SAMPLE_KML, 'images/map.png': 'image'}, ZipWriter, {
     zip: {compression: 'deflate'}
   });
-  const archive = await openKMZArchive(bytes);
+  const archive = await _openKMZArchive(bytes);
   expect(archive.kmlFileName).toBe('maps/doc.kml');
   expect(new TextDecoder().decode(await archive.getResource('../images/map.png?token=local'))).toBe(
     'image'
@@ -221,7 +235,7 @@ test('KMZ opens compressed nested documents and closes failed initialization', a
   await archive.close();
   const destroy = vi.spyOn(ZipFileSystem.prototype, 'destroy');
   try {
-    await expect(openKMZArchive(await encode({'image.txt': 'no KML'}, ZipWriter))).rejects.toThrow(
+    await expect(_openKMZArchive(await encode({'image.txt': 'no KML'}, ZipWriter))).rejects.toThrow(
       'KML document'
     );
     expect(destroy).toHaveBeenCalledTimes(1);

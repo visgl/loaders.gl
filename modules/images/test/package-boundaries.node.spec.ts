@@ -20,8 +20,8 @@ test.each([
     const require = createRequire(import.meta.url);
     const metadata = ${format === 'esm' ? "await import('@loaders.gl/images')" : "require('@loaders.gl/images')"};
     const packageVersion = require('./modules/images/package.json').version;
-    const parser = ${format === 'esm' ? "await import('@loaders.gl/images/image-loader')" : "require('@loaders.gl/images/image-loader')"};
-    for (const name of ['ImageLoader', 'LegacyImageLoader', 'BasisLoader', 'TextureLoader', 'VideoLoader']) {
+    const parser = ${format === 'esm' ? "await import('@loaders.gl/images/image')" : "require('@loaders.gl/images/image')"};
+    for (const name of ['ImageLoader', 'BasisLoader', 'TextureLoader', 'VideoLoader']) {
       assert.equal(metadata[name].module, 'images');
       assert.equal(metadata[name].version, packageVersion);
       assert.equal(metadata[name].parse, undefined);
@@ -30,7 +30,9 @@ test.each([
     assert.equal(metadata.ImageBitmapLoader, undefined);
     assert.equal(metadata.ImageLoaderWithParser, undefined);
     assert.equal(typeof parser.ImageLoaderWithParser.parse, 'function');
-    assert.equal(parser.ImageLoader, undefined);
+    assert.equal(parser.ImageLoader.parse, undefined);
+    assert.equal(typeof parser.GIFBuilder, 'function');
+
     const implementation = await metadata.ImageLoader.preload();
     assert.equal(typeof implementation.parse, 'function');
     console.log('Image package boundaries verified');

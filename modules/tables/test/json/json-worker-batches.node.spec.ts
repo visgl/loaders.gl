@@ -3,11 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table} from 'apache-arrow';
+import {RecordBatch} from 'apache-arrow';
 import {parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {NDJSONLoader} from '@loaders.gl/tables/json';
-import {NDJSONLoaderWithParser} from '@loaders.gl/tables/ndjson-loader';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json';
 
 afterEach(() => destroyWorkerTasks());
 
@@ -24,6 +24,6 @@ test('NDJSON batches use the packaged CommonJS worker with explicit Node opt-in'
   for await (const batch of batches) results.push(batch);
   expect(mainParser).not.toHaveBeenCalled();
   expect(results).toHaveLength(1);
-  expect(results[0].data).toBeInstanceOf(Table);
-  expect(results[0].data.getChild('id')?.get(0)).toBe(1);
+  expect(results[0]).toBeInstanceOf(RecordBatch);
+  expect(results[0].getChild('id')?.get(0)).toBe(1);
 });

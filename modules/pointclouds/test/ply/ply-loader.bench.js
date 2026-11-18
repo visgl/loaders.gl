@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, load, parse} from '@loaders.gl/core';
-import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/pointclouds/ply';
+import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
 const ASCII_PLY_URL = '@loaders.gl/pointclouds/ply/test/data/cube_att.ply';
 const BINARY_PLY_URL = '@loaders.gl/pointclouds/ply/test/data/bunny.ply';
@@ -30,7 +30,7 @@ export default async function PLYLoaderBench(bench) {
         // Duplicate it here to avoid breaking other tests
         const response = await fetchFile(ASCII_PLY_URL);
         const arrayBuffer = await response.arrayBuffer();
-        await load(arrayBuffer, PLYWorkerLoader);
+        await load(arrayBuffer, PLYLoader);
       })
       // .addAsync('Stream parsing', async () => {
       //   const stream = await createReadStream('@loaders.gl/pointclouds/ply/test/data/cube_att.ply');
@@ -44,13 +44,13 @@ export default async function PLYLoaderBench(bench) {
       .addAsync('PLYLoader Binary Worker parsing', async () => {
         const response = await fetchFile(BINARY_PLY_URL);
         const arrayBuffer = await response.arrayBuffer();
-        await load(arrayBuffer, PLYWorkerLoader);
+        await load(arrayBuffer, PLYLoader);
       })
 
       .group('PLYLoader (Gaussian Splat Binary Arrow)')
-      .addAsync('parse arrow-first arrow-table', {multiplier: 1000, unit: 'splats'}, async () => {
+      .addAsync('parse native Arrow', {multiplier: 1000, unit: 'splats'}, async () => {
         await parse(gaussianSplatArrayBuffer, PLYLoader, {
-          ply: {shape: 'arrow-table'}
+          ply: {shape: 'arrow'}
         });
       })
       .addAsync('parse arrow-first mesh', {multiplier: 1000, unit: 'splats'}, async () => {
@@ -64,11 +64,11 @@ export default async function PLYLoaderBench(bench) {
         });
       })
       .addAsync(
-        'parse legacy mesh conversion to arrow-table',
+        'parse legacy mesh conversion to native Arrow',
         {multiplier: 1000, unit: 'splats'},
         async () => {
           await parse(gaussianSplatArrayBuffer, PLYLoader, {
-            ply: {shape: 'arrow-table', _useLegacyParser: true}
+            ply: {shape: 'arrow', _useLegacyParser: true}
           });
         }
       )

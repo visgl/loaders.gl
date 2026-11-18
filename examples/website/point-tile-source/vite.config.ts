@@ -13,12 +13,9 @@ const DEDUPED_PACKAGES = [
   '@deck.gl/layers',
   '@deck.gl/mesh-layers',
   '@deck.gl/react',
-  '@luma.gl/constants',
   '@luma.gl/core',
   '@luma.gl/engine',
-  '@luma.gl/gltf',
-  '@luma.gl/shadertools',
-  '@luma.gl/webgl',
+  '@luma.gl/shaders',
   'react',
   'react-dom'
 ];
@@ -68,26 +65,15 @@ export default defineConfig(async () => {
       alias: [
         {
           find: /^@loaders\.gl\/([^/]+)\/(.+)$/,
-          replacement: path.resolve(__dirname, '../../../modules/$1/src/$2.ts')
+          replacement: path.resolve(__dirname, '../../../modules/$1/src/$2')
         },
         {
           find: /^@loaders\.gl\/([^/]+)$/,
           replacement: path.resolve(__dirname, '../../../modules/$1/src/index.ts')
         },
         {
-          find: /^@loaders\.gl\/arrow\/transport$/,
-          replacement: path.resolve(__dirname, '../../../modules/tables/src/arrow/transport.ts')
-        },
-        {
           find: /^@loaders\.gl\/compression\/(.+)$/,
           replacement: path.resolve(__dirname, '../../../modules/compression/src/$1.ts')
-        },
-        {
-          find: /^@luma\.gl\/webgl\/constants$/,
-          replacement: path.resolve(
-            resolvePackageDirectory(__dirname, '@luma.gl/webgl'),
-            'dist/constants/index.js'
-          )
         },
         {
           find: /^fs$/,
@@ -101,8 +87,8 @@ export default defineConfig(async () => {
           find: /^laz-perf$/,
           replacement: path.resolve(__dirname, './laz-perf-with-wasm.js')
         },
-        ...Object.entries(aliases).map(([find, replacement]) => ({
-          find,
+        ...Object.entries(aliases).map(([packageName, replacement]) => ({
+          find: new RegExp(`^${packageName.replaceAll('.', '\\.')}$`),
           replacement
         }))
       ],

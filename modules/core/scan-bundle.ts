@@ -7,7 +7,6 @@ export {
   registerScanBackend,
   executeTableScanBatches,
   filterTableBatch,
-  makeTableScanBatch,
   projectTableBatch,
   projectTableSchema,
   truncateTableBatch,
@@ -21,7 +20,7 @@ export {
   AddressedVectorTableScanSource,
   VectorFeatureTableScanSource,
   VectorTileTableScanSource
-} from './src/scan/index';
+} from './src/scan';
 export type {
   TableScanBatchReader,
   TableScanBatchOperators,
@@ -35,6 +34,9 @@ export type {
   RelationalAggregate,
   RelationalExpression,
   RelationalOrderKey,
+  TableQuery,
+  TableSelection,
+  TableQueryExecutionOptions,
   TableQueryOptions,
   CreateScanQueryMetadataOptions,
   PointCloudQueryBounds,
@@ -50,10 +52,10 @@ export type {
   ScanColumnMetadata,
   ScanColumnRole,
   ScanExecutionMethod,
-  ScanExecutionTelemetry,
-  ScanExecutionTelemetryCallback,
-  ScanExecutionTelemetryStatus,
-  ScanSourceExecutionTelemetry,
+  TableQueryExecutionSummary,
+  TableQueryCompleteCallback,
+  TableQueryExecutionStatus,
+  TableQuerySourceExecutionSummary,
   ScanExecutionSupport,
   ScanQueryCapabilities,
   ScanQueryMetadata,
@@ -75,4 +77,22 @@ export type {
   VectorFeatureTableScanSourceOptions,
   VectorTableScanSourceOptions,
   VectorTileTableScanSourceOptions
-} from './src/scan/index';
+} from './src/scan';
+
+export {normalizeTableQuery, planLogicalTableQuery} from './src/scan';
+export type {
+  NormalizedTableSelection,
+  NormalizedTableQuery,
+  LogicalTableQueryProjectStep,
+  LogicalTableQueryPlan
+} from './src/scan';
+
+export {queryArrowTableInBatches} from './src/scan';
+
+export {projectArrowTable, filterArrowTable} from './src/scan/arrow-execution';
+export type {ArrowFilterOptions} from './src/scan/arrow-execution';
+
+export {query, queryInBatches} from './src/scan/query';
+export type {Query, QueryOptions, SQLQueryParser} from './src/scan/query';
+
+export type {TableReference, TableSourceCollection} from './src/scan';

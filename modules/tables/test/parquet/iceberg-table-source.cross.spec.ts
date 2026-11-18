@@ -5,13 +5,13 @@
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 
-import {ArrowTableSource} from '@loaders.gl/tables/arrow/index';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import {encode} from '@loaders.gl/core';
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {FederatedTableScanSource} from '@loaders.gl/core/scan';
+import {FederatedTableScanSource, getFederatedTableBatchProvenance} from '@loaders.gl/core/scan';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';
-import {AvroWriter} from '@loaders.gl/tables/avro/index';
-import {ParquetJSWriter} from '../../src/parquet/parquet-js-writer';
+import {AvroWriter} from '@loaders.gl/tables/avro';
+import {ParquetWriter} from '../../src/parquet/parquet-writer';
 
 function createMetadataUrl(metadata: unknown): string {
   return `data:application/json,${encodeURIComponent(JSON.stringify(metadata))}`;
@@ -80,13 +80,10 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
   const deleteManifestUrl = 'https://example.com/table/metadata/delete-manifest.avro';
   const dataFileUrl = 'https://example.com/table/data/part-000.parquet';
   const manifestList = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({
+    arrow.tableFromArrays({
         manifest_path: [manifestUrl, deleteManifestUrl],
         content: [0, 1]
-      })
-    },
+      }),
     {
       avro: {
         schema: {
@@ -101,9 +98,7 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
     }
   );
   const manifest = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromJSON([
+    arrow.tableFromJSON([
         {
           status: 1,
           data_file: {
@@ -114,8 +109,7 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
             upper_bounds: {value: 1}
           }
         }
-      ])
-    },
+      ]),
     {
       avro: {
         schema: {
@@ -164,9 +158,7 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
     }
   );
   const deleteManifest = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromJSON([
+    arrow.tableFromJSON([
         {
           status: 1,
           data_file: {
@@ -176,8 +168,7 @@ test('IcebergTableSource reads Parquet data files from the current snapshot mani
             referenced_data_file: dataFileUrl
           }
         }
-      ])
-    },
+      ]),
     {
       avro: {
         schema: {
@@ -273,10 +264,7 @@ test('IcebergTableSource resolves equality delete field IDs during opt-in scans'
   const deleteManifestUrl = 'https://example.com/table/metadata/equality-manifest.avro';
   const deleteFileUrl = 'https://example.com/table/deletes/equality.avro';
   const manifestList = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({manifest_path: [deleteManifestUrl], content: [1]})
-    },
+    arrow.tableFromArrays({manifest_path: [deleteManifestUrl], content: [1]}),
     {
       avro: {
         schema: {
@@ -291,9 +279,7 @@ test('IcebergTableSource resolves equality delete field IDs during opt-in scans'
     }
   );
   const deleteManifest = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromJSON([
+    arrow.tableFromJSON([
         {
           status: 1,
           data_file: {
@@ -303,8 +289,7 @@ test('IcebergTableSource resolves equality delete field IDs during opt-in scans'
             equality_ids: 1
           }
         }
-      ])
-    },
+      ]),
     {
       avro: {
         schema: {
@@ -331,10 +316,7 @@ test('IcebergTableSource resolves equality delete field IDs during opt-in scans'
     }
   );
   const equalityDelete = await AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromArrays({value: [7]})
-    },
+    arrow.tableFromArrays({value: [7]}),
     {
       avro: {
         schema: {
@@ -382,13 +364,10 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
   const deleteFileUrl = 'https://example.com/table/deletes/part-000.avro';
   const [manifestList, dataManifest, deleteManifest, positionDelete] = await Promise.all([
     AvroWriter.encode(
-      {
-        shape: 'arrow-table',
-        data: arrow.tableFromArrays({
+      arrow.tableFromArrays({
           manifest_path: [dataManifestUrl, deleteManifestUrl],
           content: [0, 1]
-        })
-      },
+        }),
       {
         avro: {
           schema: {
@@ -405,10 +384,7 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
     createManifestEntry(dataFileUrl, 'PARQUET'),
     createManifestEntry(deleteFileUrl, 'AVRO', 1),
     AvroWriter.encode(
-      {
-        shape: 'arrow-table',
-        data: arrow.tableFromArrays({file_path: [dataFileUrl], pos: [1]})
-      },
+      arrow.tableFromArrays({file_path: [dataFileUrl], pos: [1]}),
       {
         avro: {
           schema: {
@@ -465,15 +441,15 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
     for await (const batch of source.scan({
       applyDeletes: true,
       batchSize: 3,
-      onTelemetry: value => {
+      onQueryComplete: value => {
         telemetry = value;
       }
     }))
       batches.push(batch);
     expect(batches).toHaveLength(1);
-    expect([...batches[0].data.getChild('id')!.toArray()]).toEqual([1, 3]);
-    expect([...batches[0].data.getChild('value')!.toArray()]).toEqual(['one', 'three']);
-    expect(batches[0].rowIndices).toEqual([0, 2]);
+    expect([...batches[0].getChild('id')!.toArray()]).toEqual([1, 3]);
+    expect([...batches[0].getChild('value')!.toArray()]).toEqual(['one', 'three']);
+    expect(JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowIndices).toEqual([0, 2]);
     expect(telemetry).toMatchObject({status: 'completed', rowsReturned: 2});
 
     const liveTable = new arrow.Table({
@@ -498,10 +474,10 @@ test('IcebergTableSource applies position deletes to decoded Parquet rows', asyn
     });
     const historyBatches = [];
     for await (const batch of history.read({limit: 4})) historyBatches.push(batch);
-    expect(historyBatches.flatMap(batch => [...batch.data.getChild('id')!.toArray()])).toEqual([
+    expect(historyBatches.flatMap(batch => [...batch.getChild('id')!.toArray()])).toEqual([
       1, 2, 3, 4
     ]);
-    expect(historyBatches.map(batch => batch.sourceId)).toEqual(['snapshot', 'live']);
+    expect(historyBatches.map(batch => getFederatedTableBatchProvenance(batch).sourceId)).toEqual(['snapshot', 'live']);
     expect((await history.explain()).sources.map(entry => entry.sourceType)).toEqual([
       'iceberg',
       'arrow'
@@ -519,9 +495,7 @@ async function createManifestEntry(
   content?: number
 ): Promise<ArrayBuffer> {
   return AvroWriter.encode(
-    {
-      shape: 'arrow-table',
-      data: arrow.tableFromJSON([
+    arrow.tableFromJSON([
         {
           status: 1,
           data_file: {
@@ -530,8 +504,7 @@ async function createManifestEntry(
             ...(content === undefined ? {} : {content})
           }
         }
-      ])
-    },
+      ]),
     {
       avro: {
         schema: {
@@ -576,7 +549,7 @@ async function createParquetFixture(): Promise<ArrayBuffer> {
         {id: 3, value: 'three'}
       ]
     },
-    ParquetJSWriter
+    ParquetWriter
   );
 }
 

@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {MeshArrowTable, MeshAttributes} from '@loaders.gl/core/schema';
+import {
+  makeArrowMetadataBatch,
+  updateNativeArrowTableMetadata
+} from '@loaders.gl/core/schema-utils';
+import * as arrow from 'apache-arrow';
+import {makeMetadataFromLasHeader} from '../get-las-schema';
+import type {MeshAttributes} from '@loaders.gl/core/schema';
 import {makeMeshArrowTable, type MeshArrowAttributes} from '@loaders.gl/core/schema-utils';
 import {
   BinaryChunkReader,
@@ -43,7 +49,9 @@ import type {
 } from '../las-types';
 
 /** Arrow table returned by the TypeScript LAS parser with LAS loader metadata attached. */
-export type LASArrowTable = MeshArrowTable & {
+export type LASArrowTable = {
+  /** Native point columns paired with the typed source header for mesh output. */
+  data: arrow.Table;
   /** Loader identifier preserved for mesh compatibility conversion. */
   loader: 'las';
   /** Parsed LAS header and metadata for the batch. */
@@ -375,6 +383,7 @@ export async function* parseLASInBatches(
   let header: LASHeader | null = null;
   let sourcePointIndex = 0;
   let totalRead = 0;
+  let lastTable: LASArrowTable | undefined;
 
   while (true) {
     const next = await inputIterator.next();
@@ -385,6 +394,7 @@ export async function* parseLASInBatches(
     pending = concatenateUint8Arrays(pending, toUint8Array(chunk));
     if (!header) {
       header = tryParseHeader(pending, absoluteOffset);
+      if (header && pending.byteLength < header.pointsOffset) header = null;
       if (header) {
         header.totalToRead = header.pointsCount;
       }
@@ -393,7 +403,68 @@ export async function* parseLASInBatches(
       continue;
     }
     if (header.isCompressed) {
-      yield* parseLAZInBatches(pending, inputIterator, header, options);
+      const extendedOffset = header.metadata?.evlrOffset;
+      let inputOffset = pending.byteLength;
+      const extendedChunks: Uint8Array<ArrayBufferLike>[] = [];
+      if (extendedOffset && extendedOffset < inputOffset) {
+        extendedChunks.push(pending.subarray(extendedOffset));
+      }
+      const trackedIterator: AsyncIterator<ArrayBufferLike | ArrayBufferView> = {
+        async next() {
+          const next = await inputIterator.next();
+          if (!next.done && extendedOffset) {
+            const bytes = toUint8Array(next.value);
+            const start = Math.max(extendedOffset - inputOffset, 0);
+            if (start < bytes.byteLength) extendedChunks.push(bytes.slice(start));
+            inputOffset += bytes.byteLength;
+          }
+          return next;
+        }
+      };
+      if (header.pointsCount === 0) {
+        const {laszip} = await readLASZipVLRFromInput(pending, trackedIterator, header);
+        validateTypeScriptLAZSupport(header, laszip);
+        lastTable = makeEmptyLASBatch(header, options);
+      } else {
+        for await (const table of parseLAZInBatches(pending, trackedIterator, header, options)) {
+          lastTable = updateLASArrowMetadata(
+            table,
+            makeMetadataFromLasHeader({
+              ...header,
+              totalRead: table.loaderData.totalRead,
+              metadata: table.loaderData.metadata || header.metadata
+            })
+          );
+          yield lastTable;
+        }
+      }
+      if (
+        extendedOffset &&
+        lastTable &&
+        header.metadata?.evlrCount &&
+        (lastTable.loaderData.metadata?.evlrs.length ?? 0) < header.metadata.evlrCount
+      ) {
+        while (!(await trackedIterator.next()).done) {
+          // Finish reading trailing records if the decoder stopped at its chunk table.
+        }
+        // The tracked iterator retains only the extended-record suffix.
+        const suffix = extendedChunks.reduce<Uint8Array<ArrayBufferLike>>(
+          concatenateUint8Arrays,
+          new Uint8Array(0)
+        );
+        const update = makeLASMetadataUpdate(
+          lastTable,
+          header,
+          suffix,
+          extendedOffset,
+          lastTable.loaderData.totalRead
+        );
+        if (update) {
+          yield update;
+          return;
+        }
+      }
+      if (header.pointsCount === 0 && lastTable) yield lastTable;
       return;
     }
 
@@ -409,7 +480,11 @@ export async function* parseLASInBatches(
       totalRead = batch.totalRead;
       pending = batch.pending;
       absoluteOffset = batch.absoluteOffset;
-      yield parseLASArrowTableBatch(batch.arrayBuffer, batch.header, options);
+      lastTable = updateLASArrowMetadata(
+        parseLASArrowTableBatch(batch.arrayBuffer, batch.header, options),
+        makeMetadataFromLasHeader({...header, totalRead})
+      );
+      yield lastTable;
     }
   }
 
@@ -419,6 +494,69 @@ export async function* parseLASInBatches(
   if (totalRead < header.totalToRead) {
     throw new Error('LASLoader: truncated LAS point data');
   }
+  if (!lastTable) {
+    lastTable = makeEmptyLASBatch(header, options);
+    yield lastTable;
+  }
+  const update = makeLASMetadataUpdate(lastTable, header, pending, absoluteOffset, totalRead);
+  if (update) yield update;
+}
+
+/** Creates the declared point schema and original header metadata for a zero-point stream. */
+export function makeEmptyLASBatch(header: LASHeader, options: LASLoaderOptions): LASArrowTable {
+  const table = parseLASArrowTableBatch(
+    new ArrayBuffer(0),
+    {...header, pointsCount: 0, pointsOffset: 0},
+    options
+  );
+  return updateLASArrowMetadata({...table, loaderData: header}, makeMetadataFromLasHeader(header));
+}
+
+/** Builds a schema-only batch carrying late extended records and their absolute offsets. */
+function makeLASMetadataUpdate(
+  lastTable: LASArrowTable,
+  header: LASHeader,
+  pending: Uint8Array,
+  absoluteOffset: number,
+  totalRead: number
+): LASArrowTable | undefined {
+  const metadata = header.metadata;
+  if (metadata?.evlrOffset && metadata.evlrCount) {
+    const relativeOffset = metadata.evlrOffset - absoluteOffset;
+    const records = parseLASExtendedVariableLengthRecords(
+      new DataView(pending.buffer, pending.byteOffset, pending.byteLength),
+      relativeOffset,
+      metadata.evlrCount
+    ).map(record => ({...record, offset: record.offset + absoluteOffset}));
+    const finalMetadata = {
+      ...metadata,
+      evlrs: records,
+      extraBytes: [...metadata.extraBytes],
+      waveformPacketDescriptors: [...metadata.waveformPacketDescriptors]
+    };
+    for (const record of records)
+      parseTypedLASMetadataRecord(
+        {...record, data: record.data || new Uint8Array()},
+        finalMetadata
+      );
+    resolveLASGeoTIFFKeyDirectory(finalMetadata);
+    const finalHeader = {...header, totalRead, metadata: finalMetadata};
+    if (records.length > 0) {
+      const data = new arrow.Table([makeArrowMetadataBatch(lastTable.data.schema)]);
+      return updateLASArrowMetadata(
+        {...lastTable, data, loaderData: finalHeader},
+        makeMetadataFromLasHeader(finalHeader)
+      );
+    }
+  }
+}
+
+/** Applies a schema metadata snapshot to decoded LAS point columns. */
+function updateLASArrowMetadata(
+  table: LASArrowTable,
+  metadata: Record<string, string>
+): LASArrowTable {
+  return {...table, data: updateNativeArrowTableMetadata(table.data, metadata)};
 }
 
 /** Decode LAS data into raw point chunks. */
@@ -1017,7 +1155,7 @@ function* parseLAZChunkedIterator(
   if (header.pointsFormatId <= 5 || laszip.variableChunks) {
     yield* decodeLAZFileFromCompleteBytes(new Uint8Array(arrayBuffer), header, laszip, {
       ...options,
-      batchSize
+      core: {...options.core, batchSize}
     });
     return;
   }
@@ -1052,7 +1190,11 @@ function* decodeLAZFileFromCompleteBytes(
   options: LASLoaderOptions = {}
 ): Iterable<LASDecodedChunk> {
   const batchSize = getBatchSize(options);
-  const outputHeader = {...header, totalToRead: header.pointsCount};
+  const outputHeader = {
+    ...header,
+    metadata: parseLASMetadata(bytes, header),
+    totalToRead: header.pointsCount
+  };
   const state = createRawPointBatchState(
     batchSize,
     header.pointsStructSize,
@@ -1207,8 +1349,12 @@ function hasCompleteLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader)
   return arrayBuffer.byteLength >= Math.max(vlrEnd, header.pointsOffset);
 }
 
-function parseLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): LASMetadata {
-  const dataView = new DataView(arrayBuffer);
+function parseLASMetadata(
+  arrayBuffer: ArrayBufferLike | ArrayBufferView,
+  header: LASHeader
+): LASMetadata {
+  const dataView = makeDataView(arrayBuffer);
+  const bytes = new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength);
   const version = header.versionAsString || '1.0';
   const versionParts = version.split('.').map(Number);
   const isAtLeast14 = versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 4);
@@ -1223,9 +1369,9 @@ function parseLASMetadata(arrayBuffer: ArrayBufferLike, header: LASHeader): LASM
       versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 3)
         ? dataView.getBigUint64(227, true)
         : undefined,
-    projectId: formatLASProjectId(new Uint8Array(arrayBuffer, 8, 16)),
-    systemIdentifier: readLASString(new Uint8Array(arrayBuffer), 26, 32),
-    generatingSoftware: readLASString(new Uint8Array(arrayBuffer), 58, 32),
+    projectId: formatLASProjectId(bytes.subarray(8, 24)),
+    systemIdentifier: readLASString(bytes, 26, 32),
+    generatingSoftware: readLASString(bytes, 58, 32),
     creationDayOfYear: dataView.getUint16(90, true),
     creationYear: dataView.getUint16(92, true),
     headerSize: header.headerSize!,
@@ -1287,7 +1433,7 @@ function parseLASExtendedVariableLengthRecords(
   evlrOffset: number,
   evlrCount: number
 ): LASExtendedVariableLengthRecord[] {
-  if (!evlrOffset || !evlrCount || evlrOffset >= dataView.byteLength) {
+  if (evlrOffset < 0 || !evlrCount || evlrOffset >= dataView.byteLength) {
     return [];
   }
   const bytes = new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength);
@@ -1481,7 +1627,7 @@ function readFloat64Array(bytes: Uint8Array): Float64Array {
 }
 
 /**
- * Parse raw LAS point records into a MeshArrowTable batch.
+ * Parse raw LAS point records into native Arrow columns.
  * @param arrayBuffer Raw point record data or a complete LAS file buffer.
  * @param lasHeader LAS header describing the point record layout.
  * @param options LAS loader options.
@@ -1676,7 +1822,7 @@ function makeLASArrowTableFromAttributes(
   if (extraBytes) {
     attributes.EXTRA_BYTES = {
       value: extraBytes,
-      size: extraBytes.length / Math.max(lasHeader.pointsCount, 1)
+      size: lasHeader.pointsStructSize - getLAZPointDataRecordBaseLength(lasHeader.pointsFormatId)
     };
   }
   if (typedExtraBytes) {
@@ -1696,7 +1842,7 @@ function makeLASArrowTableFromAttributes(
   }
   const schema = getLASSchema(lasHeader, numericAttributes);
   return {
-    ...makeMeshArrowTable(attributes, {
+    data: makeMeshArrowTable(attributes, {
       schema,
       topology: 'point-list',
       mode: 0,
@@ -2011,7 +2157,7 @@ function detectTwoByteColors(
 }
 
 function getBatchSize(options: LASLoaderOptions): number {
-  const batchSize = options.batchSize ?? options.core?.batchSize;
+  const batchSize = options.core?.batchSize;
   return typeof batchSize === 'number' ? batchSize : DEFAULT_BATCH_SIZE;
 }
 

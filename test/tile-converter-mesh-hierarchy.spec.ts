@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core';
 import {parse} from '@loaders.gl/core';
@@ -800,7 +801,7 @@ test('hierarchy retains materials, scene placements and exact feature IDs for ev
     features: {
       metadataClass: 'building',
       sourceFeatureIdProperty: 'feature_id',
-      schema: features.batches[0].schema
+      schema: convertArrowToSchema(features.batches[0].schema)
     },
     source: rawSource,
     fetcher,

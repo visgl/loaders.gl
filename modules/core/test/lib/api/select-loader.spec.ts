@@ -3,12 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {fetchFile, selectLoader, selectLoaderSync, isBrowser} from '@loaders.gl/core';
-import {LegacyImageLoader} from '@loaders.gl/images';
+import {
+  fetchFile,
+  registerLoaders,
+  selectLoader,
+  selectLoaderSync,
+  isBrowser
+} from '@loaders.gl/core';
+import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/scene';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {KMLLoader} from '@loaders.gl/geospatial/kml/index';
+import {KMLLoader} from '@loaders.gl/geospatial/kml';
+import {JSONTableLoader} from '@loaders.gl/tables/json';
+import {getRegisteredLoaders} from '../../../src/lib/api/register-loaders';
+import {getLoaderContext} from '../../../src/lib/loader-utils/loader-context';
 
 const KML_URL = '@loaders.gl/geospatial/kml/test/data/kml/KML_Samples.kml';
 const DRACO_URL = '@loaders.gl/scene/draco/test/data/bunny.drc';
@@ -23,64 +32,59 @@ test('selectLoaderSync#urls', async () => {
   expect(() => selectLoaderSync(null), 'selectedLoader throws if no loader found').toThrow();
   expect(
     // @ts-ignore
-    selectLoaderSync('.', null, {nothrow: true}),
+    selectLoaderSync('.', null, {core: {nothrow: true}}),
     'selectedLoader({nothrow: true}) returns null instead of throwing'
   ).toBe(null);
   expect(
-    selectLoaderSync('data.laz', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    selectLoaderSync('data.laz', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader by url extension'
   ).toBe(LASLoader);
   expect(
     selectLoaderSync(
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=',
-      [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
+      [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
     ),
     'find loader by data url mime type'
-  ).toBe(LegacyImageLoader);
+  ).toBe(ImageLoader);
   expect(
-    selectLoaderSync(URL_WITH_QUERYSTRING, [
-      LegacyImageLoader,
-      Tiles3DLoader,
-      DracoLoader,
-      LASLoader
-    ]),
+    selectLoaderSync(URL_WITH_QUERYSTRING, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader from URL with query params'
-  ).toBe(LegacyImageLoader);
+  ).toBe(ImageLoader);
 
   const response = await fetchFile(DRACO_URL_QUERYSTRING);
   expect(response.url.endsWith(DRACO_URL_QUERYSTRING.slice(-20)), 'URL ends with ').toBeTruthy();
   expect(
-    selectLoaderSync(response, [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    selectLoaderSync(response, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader from response with query params'
   ).toBe(DracoLoader);
   expect(
-    () => selectLoaderSync('data.obj', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    () => selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find no loaders by url extension'
   ).toThrow();
   expect(
-    selectLoaderSync('data.obj', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      fallbackMimeType: 'image/png'
+    selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+      core: {fallbackMimeType: 'image/png'}
     }),
     'options.fallbackMimeType can resolve loader using provided mimeType'
-  ).toBe(LegacyImageLoader);
+  ).toBe(ImageLoader);
   expect(
-    selectLoaderSync('data.obj', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      fallbackMimeType: 'application/x.image'
+    selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+      core: {fallbackMimeType: 'application/x.imagebitmap'}
     }),
     'options.fallbackMimeType can resolve loader using provided `application/x.<loaderId>` mimeType'
-  ).toBe(LegacyImageLoader);
+  ).toBe(ImageLoader);
   expect(
-    selectLoaderSync('data.las', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      mimeType: 'image/png'
+    selectLoaderSync('data.las', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+      core: {mimeType: 'image/png'}
     }),
     'options.mimeType can override loader using provided mimeType'
-  ).toBe(LegacyImageLoader);
+  ).toBe(ImageLoader);
   expect(
-    selectLoaderSync('data.las', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      mimeType: 'application/x.image'
+    selectLoaderSync('data.las', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+      core: {mimeType: 'application/x.imagebitmap'}
     }),
     'options.mimeType can override loader using provided `application/x.<loaderId>` mimeType'
-  ).toBe(LegacyImageLoader);
+  ).toBe(ImageLoader);
 });
 
 test('selectLoader#urls', async () => {
@@ -91,38 +95,33 @@ test('selectLoader#urls', async () => {
   ).rejects.toBeDefined();
   expect(
     // @ts-ignore
-    await selectLoader('.', null, {nothrow: true}),
+    await selectLoader('.', null, {core: {nothrow: true}}),
     'selectedLoader({nothrow: true}) returns null instead of throwing'
   ).toBe(null);
   expect(
-    await selectLoader('data.laz', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    await selectLoader('data.laz', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader by url extension'
   ).toBe(LASLoader);
   expect(
     await selectLoader(
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=',
-      [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
+      [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]
     ),
     'find loader by data url mime type'
-  ).toBe(LegacyImageLoader);
+  ).toBe(ImageLoader);
   expect(
-    await selectLoader(URL_WITH_QUERYSTRING, [
-      LegacyImageLoader,
-      Tiles3DLoader,
-      DracoLoader,
-      LASLoader
-    ]),
+    await selectLoader(URL_WITH_QUERYSTRING, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader from URL with query params'
-  ).toBe(LegacyImageLoader);
+  ).toBe(ImageLoader);
 
   const response = await fetchFile(DRACO_URL_QUERYSTRING);
   expect(response.url.endsWith(DRACO_URL_QUERYSTRING.slice(-20)), 'URL ends with ').toBeTruthy();
   expect(
-    await selectLoader(response, [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    await selectLoader(response, [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find loader from response with query params'
   ).toBe(DracoLoader);
   await expect(
-    selectLoader('data.obj', [LegacyImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
+    selectLoader('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find no loaders by url extension'
   ).rejects.toBeDefined();
 });
@@ -186,6 +185,77 @@ test.runIf(isBrowser)('selectLoader#Blob data sniffing', async () => {
   let loader = await selectLoader(blob, [Tiles3DLoader, DracoLoader, LASLoader]);
   expect(loader, 'selectLoader find loader by Blob content sniffing').toBe(DracoLoader);
 
-  loader = selectLoaderSync(blob, [Tiles3DLoader, DracoLoader, LASLoader], {nothrow: true});
+  loader = selectLoaderSync(blob, [Tiles3DLoader, DracoLoader, LASLoader], {core: {nothrow: true}});
   expect(loader, 'selectLoaderSync does not find loader by Blob content sniffing').toBe(null);
+});
+
+test.each([
+  false,
+  true
+])('selectLoader#unmatched text Response preserves its body (nothrow=%s)', async nothrow => {
+  const text = 'unrecognized loader data';
+  const response = new Response(text, {headers: {'content-type': 'text/plain'}});
+  const selection = selectLoader(response, [KMLLoader], {
+    core: {ignoreRegisteredLoaders: true, nothrow}
+  });
+
+  if (nothrow) {
+    expect(await selection).toBe(null);
+  } else {
+    await expect(selection).rejects.toThrow(/No valid loader found/);
+  }
+
+  expect(response.bodyUsed).toBe(false);
+  expect(await response.text()).toBe(text);
+});
+
+test('selectLoader#explicit loaders take priority over registered loaders', async () => {
+  const body = '[{"loaderPriorityTest":true}]';
+  const registeredLoader = {
+    ...JSONTableLoader,
+    id: 'loader-priority-test',
+    mimeTypes: ['text/plain'],
+    testText: (text: string) => text === body
+  };
+  const response = () => new Response(body, {headers: {'Content-Type': 'text/plain'}});
+  const registry = getRegisteredLoaders();
+  registerLoaders(registeredLoader);
+
+  try {
+    const jsonContext = getLoaderContext({url: 'https://example.test/data.json'}, {}, null);
+    expect(await selectLoader(response(), [JSONTableLoader], {}, jsonContext)).toBe(
+      JSONTableLoader
+    );
+    const explicitTextLoader = {...registeredLoader, id: 'explicit-text', extensions: []};
+    expect(selectLoaderSync(response(), [explicitTextLoader], {}, jsonContext)).toBe(
+      explicitTextLoader
+    );
+    expect(await selectLoader(response(), [DracoLoader])).toBe(registeredLoader);
+    expect(selectLoaderSync(body, [DracoLoader])).toBe(registeredLoader);
+  } finally {
+    registry.splice(registry.indexOf(registeredLoader), 1);
+  }
+});
+
+test('loader selection ignores empty HTTP responses even with a MIME override', async () => {
+  const response = new Response(null, {status: 204});
+  const options = {core: {mimeType: 'image/png'}};
+  expect(selectLoaderSync(response, [ImageLoader], options)).toBeNull();
+  await expect(selectLoader(response, [ImageLoader], options)).resolves.toBeNull();
+});
+
+test('source selection honors an explicit type under core', async () => {
+  const source = {
+    ...JSONTableLoader,
+    type: 'test-source',
+    fromUrl: true,
+    testURL: () => false,
+    createDataSourceSync: () => {
+      throw new Error('selection must not create the source');
+    }
+  };
+  const options = {core: {type: 'test-source', ignoreRegisteredLoaders: true}};
+  await expect(
+    selectLoader('opaque-resource', [JSONTableLoader, source], options, undefined, 'source')
+  ).resolves.toBe(source);
 });

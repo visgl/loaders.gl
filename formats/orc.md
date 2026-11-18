@@ -16,8 +16,8 @@ Apache ORC is a self-describing, stripe-oriented columnar format. A complete ORC
 | ORC file magic, PostScript, and footer parsing | Supported |
 | Stripe locations and stream metadata | Supported |
 | Multiple stripes | Supported |
-| Arrow-table output | Supported |
-| Arrow-table input to `ORCWriter` | Supported |
+| Apache Arrow table output | Supported |
+| Apache Arrow table input to `ORCWriter` | Supported |
 | Primitive boolean, integer, date, float, double, string, and binary columns | Supported |
 | ZLIB, Snappy, LZ4, and ZSTD-compressed ORC streams | Supported for framed footer, stripe-footer, and primitive data streams when codecs are available |
 | Flat-column null PRESENT streams | Supported |

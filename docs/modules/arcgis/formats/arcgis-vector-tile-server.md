@@ -25,7 +25,7 @@ import {ArcGISDocsTabs} from '@site/src/components/docs/arcgis-docs-tabs';
 
 | Type | API |
 | --- | --- |
-| Source loader | [`ArcGISVectorTileServerSourceLoader`](../api-reference/arcgis.md) |
+| Source loader | [`ArcGISVectorTileServerLoader`](../api-reference/arcgis.md) |
 
 <ArcGISDocsTabs service="arcgis-vector-tile-server" />
 

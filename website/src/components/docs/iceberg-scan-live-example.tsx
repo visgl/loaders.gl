@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import type {Table as ArrowTable} from 'apache-arrow';
+import type {RecordBatch} from 'apache-arrow';
 import type {ParquetPredicate} from '@loaders.gl/tables/parquet';
-import type {ScanQueryMetadata} from '@loaders.gl/core/scan';
+import type {ScanQueryMetadata} from '@loaders.gl/core/query';
 import {ExampleUrlInputCard, type UrlOption} from 'examples/website/shared/url-input-card';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 
@@ -87,7 +87,7 @@ export function IcebergScanLiveExample(): JSX.Element {
 
     const runDemo = async (): Promise<void> => {
       try {
-        const {IcebergTableSource} = await import('@loaders.gl/tables/iceberg-table-source');
+        const {IcebergTableSource} = await import('@loaders.gl/tables/iceberg');
         const {metadataUrl, metadataVersion} = await resolveIcebergMetadata(selectedTableUrl);
         const source = new IcebergTableSource(metadataUrl, {
           core: {fetch: fetchWithExposedContentRange, worker: false}
@@ -107,8 +107,8 @@ export function IcebergScanLiveExample(): JSX.Element {
           columns: submittedQueryState.columns,
           limit: submittedQueryState.limit
         })) {
-          preview ||= createIcebergTablePreview(batch.data);
-          rowsScanned += batch.length;
+          preview ||= createIcebergTablePreview(batch);
+          rowsScanned += batch.numRows;
         }
         await source.close();
         if (isMounted) {
@@ -298,7 +298,7 @@ function DataPreview({preview}: {preview: IcebergTablePreview}): JSX.Element {
 }
 
 /** Extracts a bounded, display-safe preview from one Arrow table batch. */
-function createIcebergTablePreview(table: ArrowTable): IcebergTablePreview {
+function createIcebergTablePreview(table: RecordBatch): IcebergTablePreview {
   const columns = table.schema.fields.map(field => field.name);
   const rows: string[][] = [];
   const rowCount = Math.min(table.numRows, 6);

@@ -360,15 +360,15 @@ describe('geospatial metadata', () => {
     expect(applied.schema.metadata.get('geo')).toBe(geo);
     expect(applied.schema.fields[0].metadata.get('ARROW:extension:name')).toBe('geoarrow.wkb');
 
-    const normalized = normalizeArrowTableGeoMetadata(
-      {shape: 'arrow-table', data: table},
-      new Map([['geo', geo]])
-    );
-    expect(normalized.schema.metadata.geo).toBe(geo);
-    expect(normalized.data.schema.fields[0].metadata.get('ARROW:extension:name')).toBe(
+    const normalized = normalizeArrowTableGeoMetadata(table, new Map([['geo', geo]]));
+    expect(normalized.schema.metadata.get('geo')).toBe(geo);
+    expect(normalized.schema.fields[0].metadata.get('ARROW:extension:name')).toBe(
       'geoarrow.wkb'
     );
-    expect(ensureGeoParquetMetadataOnArrowTable(normalized).schema).toBe(normalized.schema);
+    const encoded = ensureGeoParquetMetadataOnArrowTable(normalized);
+    expect(JSON.parse(encoded.schema.metadata.get('geo')!).columns).toEqual({
+      wkb: {encoding: 'wkb', geometry_types: [], crs_type: 'projjson', crs: {type: 'GeographicCRS'}}
+    });
   });
 
   it('returns the parquet-wasm key/value metadata map unchanged', () => {

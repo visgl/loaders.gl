@@ -14,7 +14,6 @@ import {createScanQueryMetadata, DataSource} from '@loaders.gl/core/loader-utils
 import {ParquetDatasetSource} from './parquet-dataset-source';
 import {PARQUET_TABLE_QUERY_CAPABILITIES} from './parquet-source-capabilities';
 import type {
-  ParquetDatasetBatch,
   ParquetDatasetExplain,
   ParquetDatasetReadOptions,
   ParquetPredicate,
@@ -61,7 +60,7 @@ export type HudiScanOptions = ParquetDatasetReadOptions;
 export class HudiTableSource
   extends DataSource<string | Blob, HudiSourceOptions>
   implements
-    TableScanSource<ParquetDatasetBatch, ParquetPredicate>,
+    TableScanSource<import('apache-arrow').RecordBatch, ParquetPredicate>,
     ScanFragmentProvider<ParquetPredicate>
 {
   private descriptorPromise: Promise<HudiSnapshotDescriptor> | null = null;
@@ -131,12 +130,12 @@ export class HudiTableSource
   }
 
   /** Reads the selected Hudi snapshot through the shared Parquet executor. */
-  read(options: HudiScanOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+  read(options: HudiScanOptions = {}): AsyncIterable<import('apache-arrow').RecordBatch> {
     return this.createDatasetFromOptions(options).read(options);
   }
 
   /** Alias for `read()` used by scan-aware consumers. */
-  scan(options: HudiScanOptions = {}): AsyncIterable<ParquetDatasetBatch> {
+  scan(options: HudiScanOptions = {}): AsyncIterable<import('apache-arrow').RecordBatch> {
     return this.read(options);
   }
 

@@ -27,6 +27,8 @@ export type ConversionDumpOptions = {
   metadataClass: string;
   analyze: boolean;
   outputVersion: string;
+  /** Invalidates resumable output when the I3S attribute schema or encoding changes. */
+  attributeEncodingVersion?: number;
 };
 
 type NodeDoneStatus = {
@@ -41,6 +43,8 @@ type TilesConverted = {
 };
 
 export type DumpMetadata = {
+  /** Texture owner persisted so resumed nodes retain shared references. */
+  textureOwnerId?: number;
   boundingVolumes: BoundingVolumes | null;
   attributesCount?: number;
   featureCount: number | null;
@@ -93,7 +97,8 @@ export class ConversionDump {
       mergeMaterials = true,
       metadataClass,
       analyze = false,
-      outputVersion = '1.1'
+      outputVersion = '1.1',
+      attributeEncodingVersion
     } = currentOptions;
     this.options = {
       tilesetName,
@@ -109,7 +114,8 @@ export class ConversionDump {
       mergeMaterials,
       metadataClass,
       analyze,
-      outputVersion
+      outputVersion,
+      ...(attributeEncodingVersion === undefined ? {} : {attributeEncodingVersion})
     };
 
     const dumpFilename = join(

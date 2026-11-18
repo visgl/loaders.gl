@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table as NativeArrowTable} from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
 import {ManagedVectorSource, type ManagedVectorSourceOptions} from '@loaders.gl/ogc/wms';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
@@ -180,8 +181,8 @@ test('typed IDs deduplicate newest data and absent IDs remain; Arrow and binary 
   })) as GeoJSONTable;
   expect(result.features.map(feature => feature.properties?.coordinate)).toEqual([5, 5, 4, 5]);
   const arrow = await managed.getFeatures({...parameters, format: 'arrow'});
-  expect(arrow.shape).toBe('arrow-table');
-  if (arrow.shape === 'arrow-table') expect(arrow.data.numRows).toBe(4);
+  expect(arrow).toBeInstanceOf(NativeArrowTable);
+  expect((arrow as NativeArrowTable).numRows).toBe(4);
   const binary = await managed.getFeatures({...parameters, format: 'binary'});
   expect(binary.shape).toBe('binary-feature-collection');
   expect(source.getFeatures).toHaveBeenCalledTimes(2);

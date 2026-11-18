@@ -4,10 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
-import {DBFLoader} from '@loaders.gl/geospatial/shapefile/index';
-setLoaderOptions({
-  _workerType: 'test'
-});
+import {DBFLoader} from '@loaders.gl/geospatial/shapefile';
+setLoaderOptions({core: {_workerType: 'test'}});
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = [
   'boolean-property',
@@ -24,28 +22,28 @@ const SHAPEFILE_JS_TEST_FILES = [
   'string-property',
   'utf8-property'
 ];
-test('DBFLoader#parse arrow-table', async () => {
+test('DBFLoader#parse native Arrow', async () => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     const encoding = testFileName === 'latin1-property' ? 'latin1' : 'utf8';
-    const options = {worker: false, dbf: {encoding, shape: 'arrow-table' as const}};
+    const options = {core: {worker: false}, dbf: {encoding, shape: 'arrow' as const}};
     let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const {features} = await response.json();
     response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
     const body = await response.arrayBuffer();
     const table = await parse(body, DBFLoader, options);
     for (let i = 0; i < features.length; i++) {
-      const row = table.data.get(i)!.toJSON();
+      const row = table.get(i)!.toJSON();
       expect(row, testFileName).toEqual(features[i].properties);
     }
   }
 });
 
-test('DBFLoader#defaults to arrow-table output', async () => {
+test('DBFLoader#defaults to native Arrow output', async () => {
   const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/points.dbf`);
   const table = await parse(await response.arrayBuffer(), DBFLoader, {
-    worker: false,
+    core: {worker: false},
     dbf: {encoding: 'utf8'}
   });
-  expect(table.shape).toBe('arrow-table');
-  expect(table.data.numRows).toBeGreaterThan(0);
+  expect(table).toHaveProperty('numRows');
+  expect(table.numRows).toBeGreaterThan(0);
 });

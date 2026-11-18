@@ -1,0 +1,53 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
+import type {PointCloudTileSource} from './point-cloud-tile-source';
+import type {
+  PointCloudTileSourceInput,
+  PointCloudTileLoaderOptions
+} from './point-cloud-tile-source-types';
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+/** Loads the optional authoring runtime through an explicit package subpath. */
+async function preloadPointCloudTileSource(): Promise<
+  typeof import('./point-cloud-tile-loader').PointCloudTileLoaderWithParser
+> {
+  const {PointCloudTileLoaderWithParser} = await import(
+    '@loaders.gl/tiles-3d/point-cloud-tile-loader'
+  );
+  return PointCloudTileLoaderWithParser;
+}
+
+/** Metadata-only loader for creating an additive point source from decoded Mesh/Arrow input. */
+export const PointCloudTileLoader = {
+  dataType: null as unknown as PointCloudTileSource,
+  batchType: null as never,
+  name: 'PointCloudTiler',
+  id: 'point-cloud-tiler',
+  module: 'tiles',
+  version: VERSION,
+  extensions: [],
+  mimeTypes: [],
+  type: 'point-cloud',
+  fromUrl: false,
+  fromBlob: false,
+  testURL: () => false,
+  options: {pointCloudTiler: {}},
+  defaultOptions: {pointCloudTiler: {}},
+  preload: preloadPointCloudTileSource,
+  /** Direct construction requires the runtime rather than this metadata export. */
+  createDataSourceSync(
+    _input: PointCloudTileSourceInput | string | Blob,
+    _options: PointCloudTileLoaderOptions = {},
+    _coreApi?: CoreAPI
+  ): PointCloudTileSource {
+    throw new Error(
+      'PointCloudTileLoader requires preload() or @loaders.gl/tiles-3d/point-cloud-tile-loader'
+    );
+  }
+} as const satisfies SourceLoader<PointCloudTileSource>;

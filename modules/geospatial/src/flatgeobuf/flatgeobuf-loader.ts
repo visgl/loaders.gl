@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoJSONTable,
-  BinaryFeatureCollection
-} from '@loaders.gl/core/schema';
+import {createFlatGeobufSource} from './flatgeobuf-source';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {GeoJSONTable, ColumnarTable, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseFlatGeobuf, ParseFlatGeobufOptions} from './lib/parse-flatgeobuf';
 import {
-  FlatGeobufWorkerLoader as FlatGeobufWorkerLoaderMetadata,
+  FlatGeobufLoader as FlatGeobufWorkerLoaderMetadata,
   FlatGeobufLoader as FlatGeobufLoaderMetadata,
   type FlatGeobufLoaderOptions
 } from './flatgeobuf-loader-types';
@@ -31,20 +28,21 @@ export type {FlatGeobufLoaderOptions} from './flatgeobuf-loader-types';
 export const FlatGeobufWorkerLoaderWithParser = {
   ...FlatGeobufWorkerLoaderMetadataWithoutPreload
 } as const satisfies Loader<
-  GeoJSONTable | ArrowTable | BinaryFeatureCollection,
-  ArrowTableBatch | any,
+  GeoJSONTable | ColumnarTable | Table | BinaryFeatureCollection,
+  RecordBatch,
   FlatGeobufLoaderOptions
 >;
 
 /** Parser-bearing loader for FlatGeobuf files. */
 export const FlatGeobufLoaderWithParser = {
+  createDataSourceSync: createFlatGeobufSource,
   ...FlatGeobufLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) =>
     parseSync(arrayBuffer, options),
   parseSync,
   serializeWorkerResult: serializeFlatGeobufWorkerResult,
   deserializeWorkerResult: deserializeFlatGeobufWorkerResult
-} as const satisfies LoaderWithParser<any, any, FlatGeobufLoaderOptions>;
+} as const satisfies LoaderWithParser<GeoJSONTable | ColumnarTable | Table | BinaryFeatureCollection, RecordBatch, FlatGeobufLoaderOptions>;
 
 function parseSync(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) {
   return parseFlatGeobuf(arrayBuffer, getOptions(options));
@@ -57,7 +55,7 @@ function getOptions(options: FlatGeobufLoaderOptions): ParseFlatGeobufOptions {
     gis: {...FlatGeobufLoaderWithParser.options.gis, ...options?.gis}
   };
   return {
-    shape: options?.flatgeobuf?.shape ?? 'arrow-table',
+    shape: options?.flatgeobuf?.shape ?? 'arrow',
     boundingBox: options?.flatgeobuf?.boundingBox,
     targetCrs: options?.gis?.targetCrs || 'WGS84',
     reproject: options?.gis?.reproject || false,

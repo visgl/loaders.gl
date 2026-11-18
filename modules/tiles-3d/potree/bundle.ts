@@ -9,6 +9,7 @@ export {
   readArrayBuffer,
   setLoaderOptions,
   getLoaderOptions,
+  compareLoaderOptions,
   registerLoaders,
   selectLoader,
   selectLoaderSync,
@@ -31,6 +32,7 @@ export {
   encodeText,
   encodeTextSync,
   createDataSource,
+  createDataSourceSync,
   _selectSource,
   setPathPrefix,
   getPathPrefix,
@@ -63,8 +65,7 @@ export {
   isIterator,
   isResponse,
   isReadableStream,
-  isWritableStream,
-  NullWorkerLoader
+  isWritableStream
 } from '@loaders.gl/core';
 export type {
   Loader,
@@ -91,7 +92,6 @@ export {
   PotreeLoader,
   PotreeHierarchyChunkLoader,
   PotreeBinLoader,
-  PotreeSourceLoader,
   PotreeWriter,
   encodePotreeDataset
 } from '@loaders.gl/tiles-3d/potree';
@@ -102,7 +102,7 @@ export type {
   PotreeBoundingBox,
   PotreeMetadata,
   POTreeNode,
-  PotreeSourceLoaderOptions,
+  PotreeLoaderOptions,
   Potree2Metadata,
   Potree2Attribute,
   Potree2AttributeType,

@@ -20,7 +20,7 @@ test('getDeckBinaryDataFromArrowMesh#converts Float16 colors to byte colors', ()
     COLOR_0: {value: colors, size: 3, componentType: 'float16'}
   });
 
-  const binaryData = getDeckBinaryDataFromArrowMesh(table.data);
+  const binaryData = getDeckBinaryDataFromArrowMesh(table);
   expect(binaryData.attributes.getColor).toEqual({
     size: 3,
     value: new Uint8Array([0, 128, 255, 255, 64, 191])
@@ -33,7 +33,7 @@ test('getDeckBinaryDataFromArrowMesh#converts Float32 colors to byte colors', ()
     COLOR_0: {value: new Float32Array([0, 0.5, 1]), size: 3}
   });
 
-  const binaryData = getDeckBinaryDataFromArrowMesh(table.data);
+  const binaryData = getDeckBinaryDataFromArrowMesh(table);
   expect(binaryData.attributes.getColor).toEqual({
     size: 3,
     value: new Uint8Array([0, 128, 255])
@@ -46,7 +46,7 @@ test('getDeckBinaryDataFromArrowMesh#preserves byte colors', () => {
     COLOR_0: {value: new Uint8Array([10, 20, 30]), size: 3}
   });
 
-  const binaryData = getDeckBinaryDataFromArrowMesh(table.data);
+  const binaryData = getDeckBinaryDataFromArrowMesh(table);
   expect(binaryData.attributes.getColor).toEqual({
     size: 3,
     value: new Uint8Array([10, 20, 30])

@@ -47,6 +47,21 @@ The `@loaders.gl/tables/json` module parses JSON, tabular JSON, and geospatial f
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
 to avoid blocking for tens of seconds.
 
+## Convert rows already in memory
+
+[`convertJSONToArrow`](./api-reference/convert-json-to-arrow.md) converts application-built arrays
+or already-parsed JSON into a native Apache Arrow table synchronously. It uses the same nested
+schema inference and conversion policies as `JSONTableLoader`, without serializing your data.
+
+```typescript
+import {convertJSONToArrow} from '@loaders.gl/tables/json';
+
+const table = convertJSONToArrow([{name: 'Oslo', population: 717710}]);
+```
+
+See the [converter reference](./api-reference/convert-json-to-arrow.md) for supported inputs,
+schemas, recovery options, and Arrow-compatible deck.gl `dataTransform` examples.
+
 ## Parsing batches in workers
 
 `JSONLoader`, `JSONTableLoader`, and `NDJSONLoader` support incremental worker parsing.
@@ -63,12 +78,12 @@ import {NDJSONLoader} from '@loaders.gl/tables/json';
 const controller = new AbortController();
 const batches = await loadInBatches('records.ndjson', NDJSONLoader, {
   core: {worker: true, batchSize: 1024},
-  ndjson: {shape: 'arrow-table'},
+  ndjson: {shape: 'arrow'},
   signal: controller.signal,
   onProgress: ({phase, completed, unit}) => console.log(phase, completed, unit)
 });
 for await (const batch of batches) {
-  consume(batch.data); // Hydrated Apache Arrow Table for arrow-table output.
+  consume(batch); // Hydrated Apache Arrow RecordBatch.
 }
 ```
 

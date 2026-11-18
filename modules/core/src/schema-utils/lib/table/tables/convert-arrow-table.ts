@@ -9,58 +9,54 @@ import type {
   ColumnarTable,
   ObjectRowTable,
   GeoJSONTable,
-  ArrowTable,
   Feature
 } from '@loaders.gl/core/schema';
 
 import {convertTable} from './convert-table';
-import {convertArrowToSchema} from '../../schema/convert-arrow-schema';
-import {makeArrowRecordBatchIterator} from '../batches/make-arrow-batch-iterator';
+import {deduceTableSchema} from '../../schema/deduce-table-schema';
+import {convertArrowToSchema, convertSchemaToArrow} from '../../schema/convert-arrow-schema';
+import {makePortableTableRecordBatchIterator} from '../batches/make-arrow-batch-iterator';
 
 /**
- * * Convert a loaders.gl Table to an Apache Arrow Table
- * @param mesh
- * @param metadata
- * @param batchSize
- * @returns
+ * Converts a loaders.gl table to native Arrow and preserves the schema on empty input.
+ * Native Arrow inputs retain their identity.
  */
-export function convertTableToArrow(table: Table, options?: {batchSize?: number}): arrow.Table {
-  switch (table.shape) {
-    case 'arrow-table':
-      return table.data;
-
-    case 'columnar-table':
-    // TODO - optimized implementation is possible
-    // return convertColumnarTableToArrow(table, options);
-
-    // fall through
-
-    default:
-      const arrowBatchIterator = makeArrowRecordBatchIterator(table, options);
-      return new arrow.Table(arrowBatchIterator);
-  }
+export function convertTableToArrow(
+  table: Table | arrow.Table,
+  options?: {batchSize?: number}
+): arrow.Table {
+  if (!('shape' in table)) return table;
+  const schema = table.schema ?? deduceTableSchema(table);
+  return new arrow.Table(convertSchemaToArrow(schema), [
+    ...makePortableTableRecordBatchIterator({...table, schema}, options)
+  ]);
 }
+
+/** Loader table layouts produced when converting from Arrow. */
+type NonArrowTableShape = Table['shape'];
 
 /**
  * Convert an Apache Arrow table to a loaders.gl Table
  * @note Currently does not convert schema
  */
-export function convertArrowToTable(arrow: arrow.Table, shape: 'arrow-table'): ArrowTable;
+export function convertArrowToTable(arrow: arrow.Table, shape: 'arrow'): arrow.Table;
 export function convertArrowToTable(arrow: arrow.Table, shape: 'columnar-table'): ColumnarTable;
 export function convertArrowToTable(arrow: arrow.Table, shape: 'object-row-table'): ObjectRowTable;
 export function convertArrowToTable(arrow: arrow.Table, shape: 'array-row-table'): ArrayRowTable;
 export function convertArrowToTable(arrow: arrow.Table, shape: 'geojson-table'): GeoJSONTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: 'columnar-table'): ColumnarTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: Table['shape']): Table;
+export function convertArrowToTable(arrow: arrow.Table, shape: NonArrowTableShape): Table;
 
 /**
  * Convert an Apache Arrow table to a loaders.gl Table
  * @note Currently does not convert schema
  */
-export function convertArrowToTable(arrowTable: arrow.Table, shape: Table['shape']): Table {
+export function convertArrowToTable(
+  arrowTable: arrow.Table,
+  shape: NonArrowTableShape | 'arrow'
+): Table | arrow.Table {
   switch (shape) {
-    case 'arrow-table':
-      return convertArrowToArrowTable(arrowTable);
+    case 'arrow':
+      return arrowTable;
     case 'array-row-table':
       return convertArrowToArrayRowTable(arrowTable);
     case 'object-row-table':
@@ -74,26 +70,12 @@ export function convertArrowToTable(arrowTable: arrow.Table, shape: Table['shape
   }
 }
 
-/**
- * Wrap an apache arrow table in a loaders.gl table wrapper.
- * From this additional conversions are available.
- * @param arrowTable
- * @returns
- */
-function convertArrowToArrowTable(arrowTable: arrow.Table): ArrowTable {
-  return {
-    shape: 'arrow-table',
-    schema: convertArrowToSchema(arrowTable.schema),
-    data: arrowTable
-  };
-}
-
-function convertArrowToArrayRowTable(arrowTable: arrow.Table): Table {
+function convertArrowToArrayRowTable(arrowTable: arrow.Table): ArrayRowTable {
   const columnarTable = convertArrowToColumnarTable(arrowTable);
   return convertTable(columnarTable, 'array-row-table');
 }
 
-function convertArrowToObjectRowTable(arrowTable: arrow.Table): Table {
+function convertArrowToObjectRowTable(arrowTable: arrow.Table): ObjectRowTable {
   const columnarTable = convertArrowToColumnarTable(arrowTable);
   return convertTable(columnarTable, 'object-row-table');
 }
@@ -111,7 +93,8 @@ function convertArrowToColumnarTable(arrowTable: arrow.Table): ColumnarTable {
   for (const field of arrowTable.schema.fields) {
     // This (is intended to) coalesce all record batches into a single typed array
     const arrowColumn = arrowTable.getChild(field.name);
-    const values = arrowColumn?.toArray();
+    // Typed value buffers omit the validity bitmap; materialize nullable columns through Arrow.
+    const values = arrowColumn?.nullCount ? Array.from(arrowColumn) : arrowColumn?.toArray();
     columns[field.name] = values;
   }
 
@@ -146,53 +129,3 @@ function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
     features
   };
 }
-
-// /**
-//  * Wrap an apache arrow table in a loaders.gl table wrapper.
-//  * From this additional conversions are available.
-//  * @param arrowTable
-//  * @returns
-//  */
-// function convertArrowToArrowTable(arrowTable: arrow.Table): ArrowTable {
-//   return {
-//     shape: 'arrow-table',
-//     schema: convertArrowToSchema(arrowTable.schema),
-//     data: arrowTable
-//   };
-// }
-
-// function convertArrowToArrayRowTable(arrowTable: arrow.Table): Table {
-//   const columnarTable = convertArrowToColumnarTable(arrowTable);
-//   return convertTable(columnarTable, 'array-row-table');
-// }
-
-// function convertArrowToObjectRowTable(arrowTable: arrow.Table): Table {
-//   const columnarTable = convertArrowToColumnarTable(arrowTable);
-//   return convertTable(columnarTable, 'object-row-table');
-// }
-
-// /**
-//  * Convert an Apache Arrow table to a ColumnarTable
-//  * @note Currently does not convert schema
-//  */
-// function convertArrowToColumnarTable(arrowTable: arrow.Table): ColumnarTable {
-//   // TODO - avoid calling `getColumn` on columns we are not interested in?
-//   // Add options object?
-
-//   const columns: ColumnarTable['data'] = {};
-
-//   for (const field of arrowTable.schema.fields) {
-//     // This (is intended to) coalesce all record batches into a single typed array
-//     const arrowColumn = arrowTable.getChild(field.name);
-//     const values = arrowColumn?.toArray();
-//     columns[field.name] = values;
-//   }
-
-//   const schema = convertArrowToSchema(arrowTable.schema);
-
-//   return {
-//     shape: 'columnar-table',
-//     schema,
-//     data: columns
-//   };
-// }

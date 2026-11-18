@@ -4,6 +4,7 @@
 
 // A GIFBuilder based on the gifshot module
 // @ts-nocheck
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {assert} from './lib/utils/assert';
 import gifshot from './lib/gifshot/gifshot'; // TODO - load dynamically to avoid bloating
 
@@ -151,7 +152,7 @@ export default class GIFBuilder {
   // Remove some gifshot options
   _cleanOptions(options): void {
     if (options.video || options.images || options.gifWidth || options.gifHeight) {
-      console.warn('GIFBuilder: ignoring options'); // eslint-disable-line
+      loaderLog.warn('GIFBuilder: ignoring options')();
     }
 
     // We control these through options.source instead

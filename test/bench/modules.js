@@ -68,6 +68,16 @@ export async function addModuleBenchmarksToSuite(suite, filters = [], fixtureAli
     await csvBench(suite);
   }
 
+  if (shouldRunBenchmark('scale-query')) {
+    const {default: scaleQueryBench} = await import('../../modules/tables/test/scale-query.bench');
+    await scaleQueryBench(suite);
+  }
+
+  if (shouldRunBenchmark('query')) {
+    const {default: queryBench} = await import('../../modules/tables/test/query.bench');
+    await queryBench(suite);
+  }
+
   if (shouldRunBenchmark('core')) {
     const {default: coreBench} = await import('../../modules/core/test/core.bench');
     await coreBench(suite);
@@ -97,7 +107,7 @@ export async function addModuleBenchmarksToSuite(suite, filters = [], fixtureAli
   // await mvtBench(suite);
   if (shouldRunBenchmark('loader-utils')) {
     const {default: loaderUtilsBench} = await import(
-      '../../modules/core/test/loader-utils-package/loader-utils.bench'
+      '../../modules/core/test/loader-utils/loader-utils.bench'
     );
     await loaderUtilsBench(suite);
   }

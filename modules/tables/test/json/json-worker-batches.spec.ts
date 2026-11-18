@@ -3,14 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import {afterEach, expect, test, vi} from 'vitest';
-import {Field, Int32, Schema, Table, Utf8} from 'apache-arrow';
+import {Field, Int32, RecordBatch, Schema, Table, Utf8} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {destroyWorkerTasks, getWorkerURL} from '@loaders.gl/core/worker-utils';
 import {JSONLoader, JSONTableLoader, NDJSONLoader} from '@loaders.gl/tables/json';
-import {JSONLoaderWithParser} from '@loaders.gl/tables/json-loader';
-import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json-table-loader';
-import {NDJSONLoaderWithParser} from '@loaders.gl/tables/ndjson-loader';
+import {JSONLoaderWithParser} from '@loaders.gl/tables/json';
+import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json';
 
 const encoder = new TextEncoder();
 afterEach(() => destroyWorkerTasks());
@@ -49,10 +49,16 @@ test.each([
       closed = true;
     }
   })();
-  const batches = await parseInBatches(input, loader, {core: {worker: true, batchSize: 1}});
+  const batches = await parseInBatches(input, loader, {
+    core: {
+      worker: true,
+      batchSize: 1,
+      ...(metadata.id === 'json-table' ? {shape: 'arrow'} : {})
+    }
+  });
   const iterator = batches[Symbol.asyncIterator]();
   const first = await iterator.next();
-  expect(first.value.length).toBe(1);
+  expect(first.value.numRows ?? first.value.length).toBe(1);
   expect(pulls).toBe(1);
   expect(closed).toBe(false);
   expect(mainParser).not.toHaveBeenCalled();
@@ -61,10 +67,15 @@ test.each([
   expect(pulls).toBe(1);
   const replacement = await collectBatches(
     await parseInBatches([encoder.encode(firstChunk + lastChunk)], loader, {
-      core: {worker: true, maxConcurrency: 1, batchSize: 1}
+      core: {
+        worker: true,
+        maxConcurrency: 1,
+        batchSize: 1,
+        ...(metadata.id === 'json-table' ? {shape: 'arrow'} : {})
+      }
     })
   );
-  expect(replacement.reduce((total, batch) => total + batch.length, 0)).toBe(2);
+  expect(replacement.reduce((total, batch) => total + (batch.numRows ?? batch.length), 0)).toBe(2);
 });
 
 test.each([
@@ -86,19 +97,24 @@ test.each([
     namespace === 'json' ? JSON.stringify(rows) : rows.map(row => JSON.stringify(row)).join('\n');
   const bytes = encoder.encode(text);
   const onProgress = vi.fn();
-  const options = {core: {worker: true, batchSize: 1}, [namespace]: {schema}, onProgress};
+  const options = {
+    core: {worker: true, batchSize: 1},
+    [namespace]: {schema, shape: 'arrow'},
+    onProgress
+  };
   const {loader, mainParser} = observeLoader(metadata, implementation);
   const chunks = Array.from(bytes, byte => new Uint8Array([byte]));
   const batches = await collectBatches(await parseInBatches(chunks, loader, options));
   expect(mainParser).not.toHaveBeenCalled();
   expect(batches).toHaveLength(2);
-  expect(batches.every(batch => batch.data instanceof Table)).toBe(true);
-  expect(batches.flatMap(batch => Array.from(batch.data, (row: any) => row.toJSON()))).toEqual(
+  const arrowBatches = batches;
+  expect(arrowBatches.every(batch => batch instanceof RecordBatch)).toBe(true);
+  expect(arrowBatches.flatMap(batch => Array.from(batch, (row: any) => row.toJSON()))).toEqual(
     rows
   );
-  expect(batches[0].data.schema.fields[0].type).toMatchObject({isSigned: true, bitWidth: 32});
-  expect(batches[0].schema.metadata.origin).toBe('worker-test');
-  expect(batches[0].data.schema.fields[0].metadata.get('meaning')).toBe('identifier');
+  expect(arrowBatches[0].schema.fields[0].type).toMatchObject({isSigned: true, bitWidth: 32});
+  expect(arrowBatches[0].schema.metadata.get('origin')).toBe('worker-test');
+  expect(arrowBatches[0].schema.fields[0].metadata.get('meaning')).toBe('identifier');
   expect(onProgress).toHaveBeenLastCalledWith({phase: 'decode', completed: 2, unit: 'rows'});
   expect(schema).toBeInstanceOf(Schema);
   expect(schema.metadata.get('origin')).toBe('worker-test');
@@ -110,8 +126,35 @@ test.each([
       workerUrl: new URL('/modules/tables/dist/json-worker.js', location.href).href
     }
   });
-  expect(atomic.data).toBeInstanceOf(Table);
-  expect(Array.from(atomic.data, (row: any) => row.toJSON())).toEqual(rows);
+  const arrowTable = atomic;
+  expect(arrowTable).toBeInstanceOf(Table);
+  expect(Array.from(arrowTable, (row: any) => row.toJSON())).toEqual(rows);
+});
+
+test('NDJSON worker retains the declared schema for empty input', async () => {
+  const schema = new Schema([new Field('id', new Int32())], new Map([['origin', 'empty']]));
+  const batches = await collectBatches(
+    await parseInBatches([encoder.encode('')], NDJSONLoader, {
+      core: {worker: true},
+      ndjson: {schema}
+    })
+  );
+  expect(batches).toHaveLength(1);
+  expect(batches[0]).toBeInstanceOf(RecordBatch);
+  expect(batches[0].numRows).toBe(0);
+  expect(batches[0].schema.fields[0].name).toBe('id');
+  expect(batches[0].schema.metadata.get('origin')).toBe('empty');
+});
+
+test('NDJSON worker preserves row counts for records with no fields', async () => {
+  const input = encoder.encode('{}\n{}\n');
+  const options = {core: {worker: true, batchSize: 1}};
+  const table = await parse(input.slice(), NDJSONLoader, options);
+  expect(table).toBeInstanceOf(Table);
+  expect(table.numRows).toBe(2);
+  expect(table.numCols).toBe(0);
+  const batches = await collectBatches(await parseInBatches([input], NDJSONLoader, options));
+  expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
 });
 
 test.each([
@@ -237,13 +280,15 @@ test('JSONTable transfers binary container metadata alongside Arrow output', asy
   const {loader, mainParser} = observeLoader(JSONTableLoader, JSONTableLoaderWithParser);
   const batches = await collectBatches(
     await parseInBatches([encoder.encode('{"label":"before","rows":[{"id":1}]}')], loader, {
-      core: {worker: true, metadata: true},
-      json: {shape: 'arrow-table', jsonpaths: ['$.rows']}
+      core: {worker: true},
+      json: {shape: 'arrow', jsonpaths: ['$.rows']}
     })
   );
   expect(mainParser).not.toHaveBeenCalled();
-  expect(batches.find(batch => batch.batchType === 'data').data).toBeInstanceOf(Table);
-  expect(batches.at(-1)).toMatchObject({batchType: 'final-result', container: {label: 'before'}});
+  expect(batches[0]).toBeInstanceOf(RecordBatch);
+  expect(JSON.parse(batches.at(-1).schema.metadata.get('loaders.gl.containerJson'))).toMatchObject({
+    label: 'before'
+  });
 });
 
 test('JSON documents use binary results with a self-hosted worker URL', async () => {
@@ -268,4 +313,15 @@ test('JSON documents use binary results with a self-hosted worker URL', async ()
     transport: 'json-utf8',
     data: expect.any(Uint8Array)
   });
+});
+
+test.each([false, true])('JSON table batches default to Arrow with worker=%s', async worker => {
+  const batches = await collectBatches(
+    await parseInBatches([encoder.encode('[{"id":1},{"id":2}]')], JSONLoader, {
+      core: {worker, batchSize: 1},
+      json: {table: true}
+    })
+  );
+  expect(batches).toEqual([expect.any(RecordBatch), expect.any(RecordBatch)]);
+  expect(batches.map(batch => batch.getChild('id').get(0))).toEqual([1, 2]);
 });

@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {Table, RecordBatch} from 'apache-arrow';
+import {parse, parseInBatches} from '@loaders.gl/core';
 
 import {LanceFormat} from '../../src/lance/lance-format';
 import {LanceLoader} from '../../src/lance/lance-loader-types';
@@ -18,7 +20,6 @@ import {
   LANCE_SOURCE_CAPABILITIES,
   type LanceSourceCapabilities
 } from '../../src/lance/lance-source-capabilities';
-import {LanceSourceLoader} from '../../src/lance/lance-source-loader';
 import {
   readLanceRemoteCoordinatesToArrow,
   readLanceRemoteFileToArrow
@@ -84,9 +85,9 @@ const COORDINATE_FILE_FIXTURE = createCoordinateFileFixture();
 test('Lance scaffold exposes read-only metadata', () => {
   expect(LanceFormat.format).toBe('lance');
   expect(LanceLoader.id).toBe('lance');
-  expect(LanceSourceLoader.type).toBe('lance');
-  expect(LanceSourceLoader.fromUrl).toBe(true);
-  expect(LanceSourceLoader.fromBlob).toBe(true);
+  expect(LanceLoaderWithParser.type).toBe('lance');
+  expect(LanceLoaderWithParser.fromUrl).toBe(true);
+  expect(LanceLoaderWithParser.fromBlob).toBe(true);
 });
 
 test('Lance scaffold advertises deferred capabilities', () => {
@@ -124,7 +125,7 @@ test('Lance MVP decodes length-prefixed manifest sections', () => {
 });
 
 test('Lance MVP caches Blob manifest metadata', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([MANIFEST_FIXTURE]), {});
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([MANIFEST_FIXTURE]), {});
   const firstMetadata = await source.getMetadata();
   const secondMetadata = await source.getMetadata();
 
@@ -251,21 +252,21 @@ test('Lance loader returns an Arrow table for a flat Lance file', async () => {
     lance: {columnTypes: ['int32'], columnNames: ['id']}
   });
 
-  expect(result.shape).toBe('arrow-table');
-  expect(result.data.numRows).toBe(3);
-  expect(Array.from(result.data.getChild('id').toArray())).toEqual([10, 20, 30]);
+  expect(result).toBeInstanceOf(Table);
+  expect(result.numRows).toBe(3);
+  expect(Array.from(result.getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
 test('Lance source emits an Arrow batch for a flat Lance file', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([FLAT_FILE_FIXTURE]), {
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([FLAT_FILE_FIXTURE]), {
     lance: {columnTypes: ['int32'], columnNames: ['id']}
   });
   const batches = [];
   for await (const batch of source.readBatches()) batches.push(batch);
 
   expect(batches).toHaveLength(1);
-  expect(batches[0].shape).toBe('arrow-table');
-  expect(Array.from(batches[0].data.getChild('id').toArray())).toEqual([10, 20, 30]);
+  expect(batches[0]).toHaveProperty('numRows');
+  expect(Array.from(batches[0].getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
 test('Lance loader emits Arrow batches from an input iterator', async () => {
@@ -277,12 +278,12 @@ test('Lance loader emits Arrow batches from an input iterator', async () => {
   }
 
   expect(batches).toHaveLength(1);
-  expect(batches[0].length).toBe(3);
-  expect(Array.from(batches[0].data.getChild('id').toArray())).toEqual([10, 20, 30]);
+  expect(batches[0].numRows).toBe(3);
+  expect(Array.from(batches[0].getChild('id').toArray())).toEqual([10, 20, 30]);
 });
 
 test('Lance source reads file metadata directly from a Blob', async () => {
-  const source = LanceSourceLoader.createDataSource(new Blob([FILE_FIXTURE]), {});
+  const source = LanceLoaderWithParser.createDataSourceSync(new Blob([FILE_FIXTURE]), {});
   const metadata = await source.getFileMetadata();
 
   expect(metadata.majorVersion).toBe(2);
@@ -290,10 +291,11 @@ test('Lance source reads file metadata directly from a Blob', async () => {
 });
 
 test('Lance source loader identifies dataset and data-file URLs', async () => {
-  expect(LanceSourceLoader.testURL('https://example.com/table.lance')).toBe(true);
-  expect(LanceSourceLoader.testURL('https://example.com/table.lance/data/part.lance')).toBe(true);
-  expect(LanceSourceLoader.testURL('https://example.com/table.parquet')).toBe(false);
-  await expect(LanceSourceLoader.preload()).resolves.toBe(LanceSourceLoader);
+  expect(LanceLoaderWithParser.testURL('https://example.com/table.lance')).toBe(true);
+  expect(LanceLoaderWithParser.testURL('https://example.com/table.lance/data/part.lance')).toBe(
+    true
+  );
+  expect(LanceLoaderWithParser.testURL('https://example.com/table.parquet')).toBe(false);
 });
 
 test('Lance scaffold uses an explicit decoder error', async () => {
@@ -315,7 +317,7 @@ test('Lance remote reader projects and slices flat primitive columns', async () 
     fetchFunction
   );
 
-  expect(Array.from(table.data.getChild('id').toArray())).toEqual([20]);
+  expect(Array.from(table.getChild('id').toArray())).toEqual([20]);
 
   const emptyTable = await readLanceRemoteFileToArrow(
     'https://example.com/part.lance',
@@ -325,7 +327,7 @@ test('Lance remote reader projects and slices flat primitive columns', async () 
     0,
     fetchFunction
   );
-  expect(emptyTable.data.numRows).toBe(0);
+  expect(emptyTable.numRows).toBe(0);
 });
 
 test('Lance remote coordinate reader extracts interleaved float pairs', async () => {
@@ -338,8 +340,8 @@ test('Lance remote coordinate reader extracts interleaved float pairs', async ()
     createRangeFetch(COORDINATE_FILE_FIXTURE)
   );
 
-  expect(Array.from(table.data.getChild('x').toArray())).toEqual([2, 3]);
-  expect(Array.from(table.data.getChild('y').toArray())).toEqual([20, 30]);
+  expect(Array.from(table.getChild('x').toArray())).toEqual([2, 3]);
+  expect(Array.from(table.getChild('y').toArray())).toEqual([20, 30]);
 });
 
 test('Lance remote readers reject invalid requests and responses', async () => {
@@ -456,7 +458,7 @@ test('Lance remote readers reject invalid requests and responses', async () => {
       0,
       async () => new Response(null, {status: 500})
     )
-  ).rejects.toThrow('Failed to read Lance byte range');
+  ).rejects.toThrow('requires 206');
   await expect(
     readLanceRemoteFileToArrow(
       url,
@@ -466,7 +468,7 @@ test('Lance remote readers reject invalid requests and responses', async () => {
       0,
       async () => new Response(new Uint8Array(0), {status: 206})
     )
-  ).rejects.toThrow('range response returned 0 bytes');
+  ).rejects.toThrow('range body has truncated length');
 });
 
 function createRangeFetch(bytes: Uint8Array) {
@@ -508,3 +510,17 @@ function createCoordinateFileFixture(): Uint8Array {
   bytes.set([0x4c, 0x41, 0x4e, 0x43], footerOffset + 36);
   return bytes;
 }
+
+test('Lance returns native tables and batches', async () => {
+  const options = {lance: {columnTypes: ['int32' as const]}};
+  const table = await parse(FLAT_FILE_FIXTURE, LanceLoader, options);
+  expect(table).toBeInstanceOf(Table);
+  expect(table.numRows).toBe(3);
+
+  const batches = [];
+  for await (const batch of await parseInBatches([FLAT_FILE_FIXTURE], LanceLoader, options)) {
+    batches.push(batch);
+  }
+  expect(batches).toHaveLength(1);
+  expect(batches[0]).toBeInstanceOf(RecordBatch);
+});

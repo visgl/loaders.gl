@@ -1,18 +1,15 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {TerrainLoader, TerrainWorkerLoader} from '@loaders.gl/raster/terrain/index';
+import {TerrainLoader} from '@loaders.gl/raster/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 // Should be possible to remove this
 import {ImageLoader} from '@loaders.gl/images';
 registerLoaders([ImageLoader]);
 const MAPBOX_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/mapbox.png';
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/terrarium.png';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('TerrainLoader#loader objects', async () => {
   validateLoader(TerrainLoader, 'TerrainLoader');
-  validateLoader(TerrainWorkerLoader, 'TerrainWorkerLoader');
 });
 test('TerrainLoader#parse mapbox martini', async () => {
   const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
@@ -158,12 +155,12 @@ test('TerrainLoader#parse terrarium delatin', async () => {
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBe(3071 * 3);
   expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
-test('TerrainWorkerLoader#parse terrarium martini', async () => {
+test('TerrainLoader#parse terrarium martini', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, {
+  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 256,
@@ -188,12 +185,12 @@ test('TerrainWorkerLoader#parse terrarium martini', async () => {
   expect(data.attributes.POSITION.value.length, 'POSITION attribute was found').toBeGreaterThan(0);
   expect(data.attributes.POSITION.size, 'POSITION attribute was found').toBe(3);
 });
-test('TerrainWorkerLoader#parse terrarium delatin', async () => {
+test('TerrainLoader#parse terrarium delatin', async () => {
   if (typeof Worker === 'undefined') {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, {
+  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 256,

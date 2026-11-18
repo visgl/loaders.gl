@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {scanWKB} from '@math.gl/geospatial';
-import type {WellKnownDimension, WKBGeometryType} from '@math.gl/geospatial';
+import {scanWKB} from '@math.gl/core/arrow';
+import type {WellKnownDimension, WKBGeometryType} from '@math.gl/core/arrow';
 
 /** Coordinate bounds extracted directly from one WKB geometry. */
 export type WKBGeometryBoundingBox = {

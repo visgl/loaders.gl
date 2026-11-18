@@ -1,9 +1,7 @@
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {expect, test} from 'vitest';
-import {
-  NetCDFSource,
-  NetCDFSourceLoaderWithParser as NetCDFSourceLoader
-} from '../../src/netcdf/netcdf-source-loader';
+import {NetCDFSource} from '../../src/netcdf/netcdf-source';
+import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
 
 const NETCDF_FIXTURE = '@loaders.gl/scientific/test/netcdf/data/madis-sao.nc';
 
@@ -116,9 +114,9 @@ test('NetCDF source validates cheap query options before loading data', async ()
   await expect(source.getRaster({level: 1})).rejects.toThrow('levels are not supported');
   await expect(source.getRaster({width: 1})).rejects.toThrow('resampling is not supported');
   await expect(source.getRaster({channels: [0]})).rejects.toThrow('named variables');
-  expect(NetCDFSourceLoader.testURL('data/file.nc?download=1')).toBe(true);
-  expect(NetCDFSourceLoader.testURL('data/file.bin')).toBe(false);
-  expect(NetCDFSourceLoader.createDataSource(new Blob(), {})).toBeInstanceOf(NetCDFSource);
+  expect(NetCDFLoaderWithParser.testURL('data/file.nc?download=1')).toBe(true);
+  expect(NetCDFLoaderWithParser.testURL('data/file.bin')).toBe(false);
+  expect(NetCDFLoaderWithParser.createDataSourceSync(new Blob(), {})).toBeInstanceOf(NetCDFSource);
 });
 
 test('NetCDF source materializes every supported numeric type and slice form', async () => {
@@ -329,3 +327,40 @@ test.runIf(isBrowser)(
     await expect(source.getRaster({variables: ['wmoId']})).rejects.toThrow('status 503');
   }
 );
+
+test('NetCDF hidden range metadata discovers total size through HEAD', async () => {
+  const bytes = await (await fetchFile(NETCDF_FIXTURE)).arrayBuffer();
+  let heads = 0;
+  const source = new NetCDFSource('https://example.invalid/data.nc', {
+    core: {
+      fetch: async (_url, options) => {
+        if (options?.method === 'HEAD') {
+          heads++;
+          return new Response(null, {headers: {'Content-Length': String(bytes.byteLength)}});
+        }
+        return new Response(bytes.slice(0, 65536), {
+          status: 206,
+          headers: {'Content-Length': '65536'}
+        });
+      }
+    }
+  });
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.statistics?.byteLength).toBe(bytes.byteLength);
+  expect(heads).toBeGreaterThan(0);
+});
+
+test('NetCDF complete short range response does not require HEAD', async () => {
+  const bytes = new Uint8Array(32);
+  bytes.set([67, 68, 70, 1]);
+  const source = new NetCDFSource('https://example.invalid/signed.nc', {
+    core: {
+      fetch: async (_url, options) => {
+        expect(options?.method).not.toBe('HEAD');
+        return new Response(bytes, {status: 206});
+      }
+    }
+  });
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.statistics?.byteLength).toBe(bytes.byteLength);
+});

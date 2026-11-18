@@ -22,11 +22,11 @@ import {
 } from '@deck.gl/core';
 import type {BufferLayout} from '@luma.gl/core';
 import {Geometry, Model} from '@luma.gl/engine';
-import type {ShaderModule} from '@luma.gl/shadertools';
-import type {ArrowTableBatch, MeshArrowTable, TypedArray} from '@loaders.gl/core/schema';
+import type {ShaderModule} from '@luma.gl/shaders';
+import type {TypedArray} from '@loaders.gl/core/schema';
 import {CullingVolume, Plane} from '@math.gl/geometry/culling';
 import {SplatEngine, type SplatSortMode} from './splat/splat-engine';
-import {getArrowTable, getGaussianSplatDataFromArrowTable} from './splat/splat-data';
+import {getGaussianSplatDataFromArrowTable} from './splat/splat-data';
 
 const DEFAULT_COLOR = [255, 255, 255, 255] as const;
 
@@ -38,8 +38,8 @@ export type PublicSplatSortMode = 'none' | 'global' | 'tile';
 
 /** Props for {@link SplatLayer}. */
 export type SplatLayerProps = CompositeLayerProps & {
-  /** Gaussian splat table or loaders.gl Arrow table batches produced by `PLYLoader` with `ply.shape: 'arrow-table'`. */
-  data: MeshArrowTable | arrow.Table | AsyncIterable<ArrowTableBatch> | null;
+  /** Gaussian splat table or a stream of loaders.gl Arrow table batches. */
+  data: arrow.Table | AsyncIterable<arrow.RecordBatch> | null;
   /** Units used by decoded splat radii. */
   sizeUnits?: Unit;
   /** Radius multiplier applied after decoding `scale_*` columns. */
@@ -360,7 +360,7 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
     /** Last fallback color uploaded to the WebGPU engine. */
     engineFallbackColor?: Color;
     /** Arrow table batches loaded so far from async data. */
-    arrowTableBatches: ArrowTableBatch[];
+    arrowTableBatches: arrow.RecordBatch[];
     /** WebGPU engines matching `arrowTableBatches`, when the GPU path is active. */
     streamEngines: (SplatEngine | null)[];
     /** Fallback color used to upload current stream engines. */
@@ -370,7 +370,7 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
     /** Error raised while consuming the current async data stream. */
     streamError: Error | null;
     /** Async iterable currently being consumed. */
-    streamingData: AsyncIterable<ArrowTableBatch> | null;
+    streamingData: AsyncIterable<arrow.RecordBatch> | null;
     /** Version incremented when the engine loads another async batch. */
     engineDataVersion: number;
   };
@@ -415,7 +415,7 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       return;
     }
 
-    const arrowTable = getArrowTable(this.props.data);
+    const arrowTable = this.props.data;
     const fallbackColor = this.props.getColor || DEFAULT_COLOR;
     const splatEngine = this.getOrCreateSplatEngine();
     splatEngine.setProps(this.getSplatEngineProps());
@@ -455,7 +455,7 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
         : null;
     }
 
-    const arrowTable = getArrowTable(this.props.data);
+    const arrowTable = this.props.data;
     return this.renderSplatPrimitiveLayer(arrowTable, 'splats', this.state?.splatEngine || null);
   }
 
@@ -750,9 +750,9 @@ function getCullingVolume(viewport: any): CullingVolume | undefined {
 }
 
 /** Returns true when data can be consumed as async Arrow table batches. */
-function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> {
+function isAsyncIterable(data: unknown): data is AsyncIterable<arrow.RecordBatch> {
   return Boolean(
-    data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
+    data && typeof (data as AsyncIterable<arrow.RecordBatch>)[Symbol.asyncIterator] === 'function'
   );
 }
 

@@ -735,7 +735,6 @@ export default class App extends PureComponent<AppProps, AppState> {
       if (ionAssetId && ionAccessToken) {
         // Vite does not inject a published loaders.gl version into nested worker URLs. Decode the
         // showcase's Draco point tiles with the locally bundled parser instead of `@latest` on CDN.
-        loadOptions.worker = false;
         let ionCredential = this._ionCredentials.get(ionAssetId);
         if (!ionCredential) {
           ionCredential = createCesiumIonCredential({
@@ -744,7 +743,7 @@ export default class App extends PureComponent<AppProps, AppState> {
           });
           this._ionCredentials.set(ionAssetId, ionCredential);
         }
-        loadOptions.core = {credentials: [ionCredential]};
+        loadOptions.core = {worker: false, credentials: [ionCredential]};
       }
       if (maximumScreenSpaceError) {
         loadOptions.tileset = {maximumScreenSpaceError};

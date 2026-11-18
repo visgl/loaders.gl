@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {GetTileParameters, TileGrid, TileGridMatrix, TileGridLimits} from './tile-source';
-import {getTileBounds, getTileRanges, validateTileMatrix} from '@math.gl/geospatial';
+import {resolveTileIndex, validateTileMatrix, validateTileMatrixSet} from '@math.gl/geospatial';
 import type {TileMatrix, TileMatrixSet, VariableMatrixWidth} from '@math.gl/geospatial';
 
 /**
@@ -300,6 +300,17 @@ export function getTileGridValidation(grid: TileGridValidationInput): TileGridVa
       message: error instanceof Error ? error.message : 'Invalid tile grid limits.'
     });
   }
+  // math.gl owns the complete-set contract; it must agree before geometry is called complete.
+  if (matrixSet && !issues.length) {
+    try {
+      validateTileMatrixSet(matrixSet, grid.limits);
+    } catch (error) {
+      issues.push({
+        code: 'invalid-matrix',
+        message: error instanceof Error ? error.message : 'Invalid tile matrix set.'
+      });
+    }
+  }
   const invalid = issues.some(
     issue => issue.code !== 'missing-crs' && issue.code !== 'missing-geometry'
   );
@@ -320,28 +331,39 @@ export function validateTileGrid(grid: TileGridValidationInput): void {
     throw new RangeError('Complete tile matrix geometry requires a CRS.');
 }
 
-/** Validates inclusive base-grid coverage even when resolution or CRS is unknown. */
+/**
+ * Validates inclusive base-grid coverage even when resolution or CRS is unknown. Each malformed
+ * rectangle throws a `RangeError` that names the reason: a missing or repeated matrix ID, an
+ * unknown matrix, an index that is not a nonnegative safe integer, reversed bounds, or bounds
+ * beyond the advertised matrix dimensions.
+ */
 export function validateTileGridLimits(grid: TileGridValidationInput): void {
   if (grid.limits === undefined) return;
   if (!Array.isArray(grid.limits)) throw new RangeError('Tile matrix limits require an array.');
   const identifiers = new Set<string>();
   const matrices = grid.tileMatrixSet?.matrices ?? grid.matrices;
+  const matrixById = Array.isArray(matrices)
+    ? new Map(matrices.map(matrix => [matrix?.id, matrix]))
+    : undefined;
   for (const limit of grid.limits) {
     if (
       !limit ||
       typeof limit.tileMatrix !== 'string' ||
       !limit.tileMatrix ||
-      identifiers.has(limit.tileMatrix) ||
+      identifiers.has(limit.tileMatrix)
+    )
+      throw new RangeError('Tile matrix limits require unique nonempty matrix identifiers.');
+    identifiers.add(limit.tileMatrix);
+    if (
       ![limit.minTileColumn, limit.maxTileColumn, limit.minTileRow, limit.maxTileRow].every(
         value => Number.isSafeInteger(value) && value >= 0
-      ) ||
-      limit.minTileColumn > limit.maxTileColumn ||
-      limit.minTileRow > limit.maxTileRow
+      )
     )
-      throw new RangeError('Invalid tile matrix limits.');
-    identifiers.add(limit.tileMatrix);
-    const matrix = matrices?.find(candidate => candidate.id === limit.tileMatrix);
-    if (matrices && !matrix)
+      throw new RangeError('Tile matrix limits require nonnegative safe integers.');
+    if (limit.minTileColumn > limit.maxTileColumn || limit.minTileRow > limit.maxTileRow)
+      throw new RangeError('Tile matrix limits have reversed bounds.');
+    const matrix = matrixById?.get(limit.tileMatrix);
+    if (matrixById && !matrix)
       throw new RangeError('Tile matrix limits reference an unknown matrix.');
     if (
       matrix?.matrixSize &&
@@ -391,14 +413,8 @@ export function resolveTileGridTile<
   )
     return null;
   if (matrix && grid.tileMatrixSet) {
-    const geometry = matrix as TileMatrix;
-    const ranges = getTileRanges(
-      geometry,
-      getTileBounds(geometry, parameters.x, parameters.y),
-      limits
-    );
-    if (!ranges.length) return null;
-    return {...parameters, x: ranges[0].minTileColumn, tileMatrix};
+    const index = resolveTileIndex(matrix as TileMatrix, parameters.x, parameters.y, limits);
+    return index ? {...parameters, x: index[0], tileMatrix} : null;
   }
   if (matrix?.variableMatrixWidths?.length)
     throw new RangeError('Coalesced tile requests require complete geometry.');

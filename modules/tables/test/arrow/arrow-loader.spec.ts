@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as arrow from 'apache-arrow';
 import lz4js from 'lz4js';
 import {ZstdCodec} from 'zstd-codec';
-import {ArrowLoader} from '@loaders.gl/tables/arrow/index';
+import {ArrowLoader} from '@loaders.gl/tables/arrow';
 import {registerArrowCompressionCodecs} from '../../src/arrow/lib/parsers/arrow-compression';
 import {
   makeIterator,
@@ -25,15 +25,13 @@ import {
   ARROW_STRUCT,
   ARROW_BIOGRID_NODES
 } from './data/arrow/test-cases';
-const ArrowWorkerLoader = ArrowLoader;
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 test('ArrowLoader#loader conformance', () => {
   validateLoader(ArrowLoader, 'ArrowLoader');
 });
 test('ArrowLoader#parseSync(simple.arrow)', async () => {
   const arrowTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
+    arrow: {shape: 'columnar-table'},
     core: {worker: false}
   });
   // Check loader specific results
@@ -78,6 +76,7 @@ test('ArrowLoader#parseSync(simple.arrow) loader shape overrides core.shape', as
 // https://github.com/apache/arrow/blob/f1d2fc92f9d898fc067d46a0d032d9b117a2d7fc/js/src/ipc/metadata/message.ts#L389
 test('ArrowLoader#parseSync(dictionary.arrow)', async () => {
   const columnarTable = await parse(fetchFile(ARROW_DICTIONARY), ArrowLoader, {
+    arrow: {shape: 'columnar-table'},
     core: {worker: false}
   });
   expect(columnarTable.shape).toBe('columnar-table');
@@ -144,7 +143,9 @@ test('ArrowLoader compression registration tolerates Apache Arrow JS 17', () => 
   expect(registerArrowCompressionCodecs({})).toBe(false);
 });
 test('ArrowLoader#parse(fetchFile(struct).arrow)', async () => {
-  const columns = await parse(fetchFile(ARROW_STRUCT), ArrowLoader);
+  const columns = await parse(fetchFile(ARROW_STRUCT), ArrowLoader, {
+    arrow: {shape: 'columnar-table'}
+  });
   // Check loader specific results
   expect(columns.shape).toBe('columnar-table');
   if (columns.shape === 'columnar-table') {
@@ -157,7 +158,7 @@ test('ArrowLoader#parse (WORKER)', async () => {
     console.log('Worker is not usable in non-browser environments');
     return;
   }
-  const data = await parse(fetchFile(ARROW_SIMPLE), ArrowWorkerLoader);
+  const data = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader);
   expect(data, 'Data returned').toBeTruthy();
 });
 test('ArrowLoader#parseInBatches(async input)', async () => {

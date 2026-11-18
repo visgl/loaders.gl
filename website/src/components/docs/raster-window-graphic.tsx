@@ -23,7 +23,7 @@ const RASTER_CONTENT = {
     output: 'Typed raster result',
     outputNote: 'Pixels, dimensions, transform, and CRS stay available to the application.',
     outputTags: ['pixels', 'transform', 'CRS'],
-    link: '/docs/modules/raster/geotiff/api-reference/geotiff-source-loader'
+    link: '/docs/modules/raster/geotiff/api-reference/geotiff-source'
   },
   zarr: {
     source: 'Zarr / GeoZarr / OME-Zarr',
@@ -35,7 +35,7 @@ const RASTER_CONTENT = {
     output: 'Typed array result',
     outputNote: 'Values return with dimension metadata and coordinate meaning intact.',
     outputTags: ['values', 'dimensions', 'metadata'],
-    link: '/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader'
+    link: '/docs/modules/scientific/zarr/api-reference/geo-zarr-loader'
   }
 } as const;
 

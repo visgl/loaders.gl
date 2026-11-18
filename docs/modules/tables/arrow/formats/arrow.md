@@ -33,7 +33,7 @@ import apacheLogo from '../../../../images/logos/apache-logo.png';
 | --- | --- |
 | Loader | [`ArrowLoader`](../api-reference/arrow-loader.md) |
 | Writer | [`ArrowWriter`](../api-reference/arrow-writer.md) |
-| Source loader | `ArrowSourceLoader` |
+| Source loader | `ArrowLoader` |
 | Source | `ArrowTableSource` |
 | Utility | [Arrow Schema Utilities](../api-reference/arrow-schema-utils.md) |
 | Utility | [Arrow table transport](../api-reference/arrow-table-transport.md) |

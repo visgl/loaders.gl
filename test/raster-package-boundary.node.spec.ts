@@ -11,9 +11,10 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
   const imports =
     format === 'esm'
       ? `import {sampleRaster} from '@loaders.gl/core/loader-utils';
-       import {GeoTIFFSourceLoader, discoverGeoTIFF} from '@loaders.gl/raster/geotiff/index';`
+       import {discoverGeoTIFF} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';`
       : `const {sampleRaster} = require('@loaders.gl/core/loader-utils');
-       const {GeoTIFFSourceLoader, discoverGeoTIFF} = require('@loaders.gl/raster/geotiff/index');`;
+       const {GeoTIFFLoaderWithParser, discoverGeoTIFF} = require('@loaders.gl/raster/geotiff');`;
   const result = spawnSync(
     process.execPath,
     [
@@ -23,7 +24,7 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
     const raster = {data: new Float32Array([4]), width: 1, height: 1, bandCount: 1,
       dtype: 'float32', interleaved: true};
     if (sampleRaster(raster, [0, 0]).values[0] !== 4 ||
-        typeof discoverGeoTIFF !== 'function' || typeof GeoTIFFSourceLoader.createDataSource !== 'function')
+        typeof discoverGeoTIFF !== 'function' || typeof GeoTIFFLoaderWithParser.createDataSourceSync !== 'function')
       throw new Error('Raster package exports failed');`
     ],
     {cwd: process.cwd(), encoding: 'utf8', timeout: 30000}
@@ -35,7 +36,7 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
 test('published raster declarations support additive mixed regions and legacy common rasters', () => {
   const filename = path.join(process.cwd(), 'test/raster-consumer.mts');
   const source = `import type {RasterData, RasterMixedData, NumericRasterData, RasterRegionSource, RasterDeclaredBandStatistics} from '@loaders.gl/core/loader-utils';
-    import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/index';
+    import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff';
     const source: RasterRegionSource = new GeoTIFFRasterSource(new Blob([]), {});
     const region: Promise<NumericRasterData> = source.getRasterForRegion({bounds: [[0, 0], [1, 1]],
       crs: 'EPSG:4326', width: 1, height: 1});

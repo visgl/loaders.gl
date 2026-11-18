@@ -42,7 +42,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 `RangeRequestScheduler` is a low-level utility for coalescing nearby byte-range requests.
 It can be composed with [`RangeRequestCache`](./range-request-cache) when completed ranges should
 also be retained for reuse.
-It is used by `PMTilesSourceLoader` and can be reused by other byte-range-addressable Sources.
+It is used by `PMTilesLoader` and can be reused by other byte-range-addressable Sources.
 
 <ReferenceBoundary
   title="Scheduling and transport details"

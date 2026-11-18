@@ -4,7 +4,7 @@
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {isBrowser} from '@loaders.gl/core/loader-utils';
-import {ConsoleLog} from './loggers';
+import {probeLog} from './loggers';
 
 export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   searchParams: undefined,
@@ -17,7 +17,7 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
     ignoreRegisteredLoaders: undefined,
     nothrow: false,
     shape: undefined,
-    log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
+    log: probeLog,
     useLocalLibraries: false,
     subloaders: undefined,
 
@@ -31,18 +31,17 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
     _nodeWorkers: false, // By default do not support node workers
     _workerType: '', // 'test' to use locally generated workers
 
-    limit: 0,
-    _limitMB: 0,
     batchSize: 'auto',
-    batchDebounceMs: 0,
+    batchMaxRowsPerSecond: 0,
     metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
     transforms: []
   }
 };
 
 export const REMOVED_LOADER_OPTIONS = {
-  // deprecated top-level alias
+  // Removed top-level aliases
   baseUri: 'core.baseUrl',
+  baseUrl: 'core.baseUrl',
   fetch: 'core.fetch',
   mimeType: 'core.mimeType',
   fallbackMimeType: 'core.fallbackMimeType',
@@ -53,18 +52,18 @@ export const REMOVED_LOADER_OPTIONS = {
 
   CDN: 'core.CDN',
   worker: 'core.worker',
+  workerThreshold: 'core.workerThreshold',
+  workerTransferBufferCopy: 'core.workerTransferBufferCopy',
   maxConcurrency: 'core.maxConcurrency',
   maxMobileConcurrency: 'core.maxMobileConcurrency',
   reuseWorkers: 'core.reuseWorkers',
-  _nodeWorkers: 'core.nodeWorkers',
+  _nodeWorkers: 'core._nodeWorkers',
   _workerType: 'core._workerType',
   _worker: 'core._workerType',
 
-  limit: 'core.limit',
-  _limitMB: 'core._limitMB',
   shape: 'core.shape',
   batchSize: 'core.batchSize',
-  batchDebounceMs: 'core.batchDebounceMs',
+  batchDebounceMs: '(removed; use core.batchMaxRowsPerSecond)',
   metadata: 'core.metadata',
   transforms: 'core.transforms',
 

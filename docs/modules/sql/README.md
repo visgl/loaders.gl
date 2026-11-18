@@ -50,7 +50,7 @@ SQL data sources provide `createDataSource()` integration for external and embed
 ## Core methods
 
 - `queryRows(sqlText, options)` returns object rows.
-- `queryArrow(sqlText, options)` returns a loaders.gl Arrow table.
+- `queryArrow(sqlText, options)` returns an Apache Arrow `Table`.
 - `getMetadata()` returns catalogs, schemas, tables, and adapter capabilities.
 
 ## DuckDB Arrow interoperability
@@ -60,8 +60,8 @@ Arrow 17 dependency; loaders.gl decodes query results with Arrow 21. Do not forc
 DuckDB's Arrow dependency to a different major through package-manager resolutions
 or bundler deduplication. IPC results are materialized in memory before decoding.
 
-`DuckDBSQLDataSource.insertArrowTable(table, options)` uploads a loaders.gl Arrow
-table by serializing it as an IPC stream. `options.tableName` identifies the
+`DuckDBSQLDataSource.insertArrowTable(table, options)` uploads an Apache Arrow
+`Table` by serializing it as an IPC stream. `options.tableName` identifies the
 destination, `schemaName` optionally selects a schema, and `create` defaults to
 `true`. Set `create: false` to append to an existing table. Uploads currently
 require the browser DuckDB-Wasm adapter; the Node adapter reports an unsupported
@@ -78,3 +78,23 @@ const result = await source.queryArrow('SELECT * FROM events');
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/sql/THIRD-PARTY-NOTICES.md)
 and the project-wide [Attributions and Credits](/docs/references-and-credits).
+
+### Common queries on DuckDB tables
+
+Resolve a DuckDB table once with `await source.getTable(name)` and pass the handle as
+`source` to `query` or `queryInBatches` from `@loaders.gl/core/query`. You can also
+use a structured `from: {source, table}` reference with a registered DuckDB source.
+Reuse the table handle for adjacent pages to avoid repeating schema and table discovery.
+
+For base tables with an accessible DuckDB `rowid`, the reader uses row ID order and
+passes `OFFSET` and `LIMIT` into SQL. Page boundaries assume the underlying table
+stays unchanged between calls. Deep offsets can still cost work inside DuckDB.
+
+The planner accepts signed integer identity and widening casts that preserve Arrow
+semantics. Other casts run in Arrow. For example, Arrow truncates fractional values
+when casting to integers, while DuckDB can round them. The common reader currently
+supports signed integer, floating-point, Boolean, and VARCHAR columns.
+
+DuckDB also pushes down signed integer casts to `DOUBLE PRECISION` for input widths up to 32 bits,
+whose full range is exactly representable. In a mixed projection, a safe cast can run
+in DuckDB while other SELECT expressions run in Arrow on the same filtered and paged rows.

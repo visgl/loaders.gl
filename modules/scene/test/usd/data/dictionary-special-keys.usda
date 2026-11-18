@@ -1,0 +1,9 @@
+#usda 1.0
+# SPDX-License-Identifier: MIT
+# Copyright (c) vis.gl contributors
+def Xform "World" (
+customData = {
+string __proto__ = "retained"
+string constructor = "ordinary data"
+}
+) {}

@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/core/schema';
+import type {RecordBatch, Table} from 'apache-arrow';
+import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {isArrowTable} from '../lib/loader-utils/native-arrow';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {
   GetFeaturesParameters,
@@ -14,7 +16,7 @@ import type {
   VectorSource,
   VectorTileSource
 } from '@loaders.gl/core/loader-utils';
-import {createScanQueryMetadata, makeTableScanBatch} from '@loaders.gl/core/loader-utils';
+import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
 import {explainArrowTableQuery, queryArrowTable, type ArrowQueryOptions} from './query-arrow-table';
 import {type SQLPredicate} from './sql-predicate-types';
@@ -59,7 +61,7 @@ export abstract class AddressedVectorTableScanSource {
   /** Spatial extent of the bound physical selection. */
   readonly spatial?: ScanSpatialMetadata;
 
-  private tablePromise: Promise<ArrowTable> | null = null;
+  private tablePromise: Promise<Table> | null = null;
 
   /** Creates a table-scan view over one immutable physical selection. */
   protected constructor(
@@ -77,12 +79,12 @@ export abstract class AddressedVectorTableScanSource {
   }
 
   /** Loads the physically addressed data as one Arrow table. */
-  protected abstract loadTable(signal?: AbortSignal): Promise<ArrowTable | null>;
+  protected abstract loadTable(signal?: AbortSignal): Promise<Table | null>;
 
   /** Discovers the addressed result schema and portable residual-query capabilities. */
   async getQueryMetadata(options: ScanQueryMetadataOptions = {}): Promise<ScanQueryMetadata> {
     const table = await this.getTable(options.signal);
-    const schema = table.schema || convertArrowToSchema(table.data.schema);
+    const schema = convertArrowToSchema(table.schema);
     return createScanQueryMetadata({
       sourceType: this.sourceType,
       queryType: 'table',
@@ -97,12 +99,12 @@ export abstract class AddressedVectorTableScanSource {
       },
       columnRoles: inferVectorColumnRoles(schema.fields.map(field => field.name)),
       spatial: this.spatial,
-      statistics: {rowCount: table.data.numRows}
+      statistics: {rowCount: table.numRows}
     });
   }
 
   /** Applies the portable Arrow query to the addressed feature table. */
-  async query(options: ArrowQueryOptions = {}): Promise<ArrowTable> {
+  async query(options: ArrowQueryOptions = {}): Promise<Table> {
     const table = await this.getTable(options.signal);
     return queryArrowTable(table, options);
   }
@@ -114,29 +116,25 @@ export abstract class AddressedVectorTableScanSource {
   }
 
   /** Emits the portable query result as one bounded Arrow batch. */
-  async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
-    const result = await this.query(options);
-    yield makeTableScanBatch(result);
+  async *read(options: ArrowQueryOptions = {}): AsyncIterableIterator<RecordBatch> {
+    const data = await this.query(options);
+    if (data.batches.length) yield* data.batches;
+    else yield makeArrowMetadataBatch(data.schema);
   }
 
   /** Scans the addressed query result through the same batch contract as `read()`. */
-  scan(options: ArrowQueryOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  scan(options: ArrowQueryOptions = {}): AsyncIterableIterator<RecordBatch> {
     return this.read(options);
   }
 
   /** Resolves and caches the addressed table while allowing failed loads to be retried. */
-  private async getTable(signal?: AbortSignal): Promise<ArrowTable> {
+  private async getTable(signal?: AbortSignal): Promise<Table> {
     throwIfAborted(signal);
     if (!this.tablePromise) {
       this.tablePromise = this.loadTable()
         .then(table => {
           if (!table) {
             throw new Error('The addressed vector selection did not return a feature table.');
-          }
-          if (table.shape !== 'arrow-table') {
-            throw new Error(
-              'The addressed vector selection must return an Arrow table. Configure the source with shape "arrow-table".'
-            );
           }
           return table;
         })
@@ -152,7 +150,7 @@ export abstract class AddressedVectorTableScanSource {
 /**
  * Portable table-query view over one explicitly addressed vector tile.
  *
- * MVT and vector PMTiles sources participate when configured to return `shape: 'arrow-table'`.
+ * MVT and vector PMTiles sources participate when configured to return `shape: 'arrow'`.
  * Tile coordinates and layer selection remain source parameters rather than relational operators.
  */
 export class VectorTileTableScanSource extends AddressedVectorTableScanSource {
@@ -180,8 +178,12 @@ export class VectorTileTableScanSource extends AddressedVectorTableScanSource {
   }
 
   /** Loads the bound vector tile using the source's requested Arrow output shape. */
-  protected loadTable(signal?: AbortSignal): Promise<ArrowTable | null> {
-    return this.source.getVectorTile({...this.tile, signal}) as Promise<ArrowTable | null>;
+  protected async loadTable(signal?: AbortSignal): Promise<Table | null> {
+    const tile = await this.source.getVectorTile({...this.tile, signal});
+    if (tile === null || isArrowTable(tile)) return tile;
+    throw new Error(
+      'The addressed vector selection must return an Arrow table. Configure the source with shape "arrow".'
+    );
   }
 }
 
@@ -225,12 +227,9 @@ export class VectorFeatureTableScanSource extends AddressedVectorTableScanSource
   }
 
   /** Loads the bound service request through the source's Arrow feature output. */
-  protected loadTable(signal?: AbortSignal): Promise<ArrowTable | null> {
-    return this.source.getFeatures({
-      ...this.request,
-      format: 'arrow',
-      signal
-    }) as Promise<ArrowTable | null>;
+  protected async loadTable(signal?: AbortSignal): Promise<Table | null> {
+    const data = await this.source.getFeatures({...this.request, format: 'arrow', signal});
+    return isArrowTable(data) ? data : null;
   }
 }
 

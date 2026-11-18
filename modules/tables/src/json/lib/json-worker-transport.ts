@@ -2,16 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table, RecordBatch} from 'apache-arrow';
+import {
+  deserializeNativeArrowWorkerResult,
+  serializeNativeArrowWorkerResult
+} from '@loaders.gl/core/arrow-worker-transport';
 import {
   serializeBinaryJSON,
   deserializeBinaryJSON,
   type BinaryJSONResult
 } from './json-binary-transport';
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import {
-  serializeArrowTableResult,
-  deserializeArrowTableBatch
-} from '../../arrow/lib/arrow-worker-transport';
 import {normalizeJSONArrowSchema, type JSONArrowSchema} from './parsers/convert-row-table-to-arrow';
 
 /** Converts Arrow Schema instances to portable schemas without changing caller-owned options. */
@@ -31,9 +32,10 @@ export function serializeJSONWorkerOptions(options: LoaderOptions): LoaderOption
 
 /** Owns all outgoing Arrow buffers so retained parser state cannot be detached by a transfer. */
 export function serializeJSONWorkerBatch(batch: unknown): unknown {
-  return (batch as {shape?: string})?.shape === 'arrow-table'
-    ? serializeArrowTableResult(batch)
-    : serializeBinaryJSON(batch);
+  if (batch instanceof Table || batch instanceof RecordBatch) {
+    return serializeNativeArrowWorkerResult(batch);
+  }
+  return serializeBinaryJSON(batch);
 }
 
 /** Hydrates transferred columns or decodes binary JSON on the caller. */
@@ -41,5 +43,5 @@ export function deserializeJSONWorkerResult(result: unknown) {
   if ((result as BinaryJSONResult)?.transport === 'json-utf8') {
     return deserializeBinaryJSON(result as BinaryJSONResult);
   }
-  return deserializeArrowTableBatch(result);
+  return deserializeNativeArrowWorkerResult(result);
 }

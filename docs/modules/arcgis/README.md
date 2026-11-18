@@ -37,7 +37,7 @@ If your data is already in ArcGIS, start with its item page or REST service URL.
 feature layer, display a published map, read imagery values, or connect to vector tiles and scenes.
 Your data stays in ArcGIS; loaders.gl reads the subset your application requests.
 
-Use async `load()` to create a source. Feature, image and tile sources can feed deck.gl's
+Use async `createDataSource()` to create a source. Feature, image and tile sources can feed deck.gl's
 `SourceLayer`; SceneServer needs a compatible I3S rendering path. Existing ArcGIS sharing and
 service permissions continue to apply.
 
@@ -71,7 +71,7 @@ includes unsupported operations and service families.
 
 The root exports lightweight service loaders. Authentication and discovery have dedicated
 `/authentication` and `/discovery` entrypoints. Async `load()`
-imports the selected implementation. For synchronous `createDataSource()` or direct source
+imports the selected implementation. For synchronous `createDataSourceSync()` or direct source
 classes, use `@loaders.gl/arcgis/bundled`; see
 [import patterns](/docs/developer-guide/arcgis#how-imports-work).
 
@@ -95,12 +95,12 @@ source layer. Begin with [the user guide](/docs/developer-guide/arcgis) for a co
 
 | Service | Source loader | Runtime contract | Primary output | deck.gl | Documentation |
 | --- | --- | --- | --- | --- | --- |
-| ArcGIS FeatureServer | `ArcGISFeatureServerSourceLoader` | `VectorSource` | Complete bounded GeoJSON, binary or Arrow queries; explicit page API | `SourceLayer` | [FeatureServer](/docs/modules/arcgis/arcgis-feature-server) |
-| ArcGIS ImageServer | `ArcGISImageServerSourceLoader` | `ImageSource` | Rendered image or decoded LERC raster | `SourceLayer` for rendered images | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
-| ArcGIS ImageServer tiles | `ArcGISImageTileSourceLoader` | `TileSource` | Image tiles or decoded LERC tiles | `SourceLayer` for image tiles | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
-| ArcGIS MapServer | `ArcGISMapTileSourceLoader` | `TileSource` | Cached or dynamically exported image tiles | `SourceLayer` | [MapServer](/docs/modules/arcgis/arcgis-map-server) |
-| ArcGIS VectorTileServer | `ArcGISVectorTileServerSourceLoader` | `VectorTileSource` | Raw MVT or decoded WGS84 features | `SourceLayer` | [VectorTileServer](/docs/modules/arcgis/arcgis-vector-tile-server) |
-| ArcGIS SceneServer | `ArcGISSceneServerSourceLoader` | `Tileset3DSource` or `PointCloudTilesetSource` | I3S mesh, Point, or Point Cloud tiles | Application-specific 3D renderer | [SceneServer](/docs/modules/arcgis/arcgis-scene-server) |
+| ArcGIS FeatureServer | `ArcGISFeatureServerLoader` | `VectorSource` | Complete bounded GeoJSON, binary or Arrow queries; explicit page API | `SourceLayer` | [FeatureServer](/docs/modules/arcgis/arcgis-feature-server) |
+| ArcGIS ImageServer | `ArcGISImageServerLoader` | `ImageSource` | Rendered image or decoded LERC raster | `SourceLayer` for rendered images | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
+| ArcGIS ImageServer tiles | `ArcGISImageTileLoader` | `TileSource` | Image tiles or decoded LERC tiles | `SourceLayer` for image tiles | [ImageServer](/docs/modules/arcgis/arcgis-image-server) |
+| ArcGIS MapServer | `ArcGISMapTileLoader` | `TileSource` | Cached or dynamically exported image tiles | `SourceLayer` | [MapServer](/docs/modules/arcgis/arcgis-map-server) |
+| ArcGIS VectorTileServer | `ArcGISVectorTileServerLoader` | `VectorTileSource` | Raw MVT or decoded WGS84 features | `SourceLayer` | [VectorTileServer](/docs/modules/arcgis/arcgis-vector-tile-server) |
+| ArcGIS SceneServer | `ArcGISSceneServerLoader` | `Tileset3DSource` or `PointCloudTilesetSource` | I3S mesh, Point, or Point Cloud tiles | Application-specific 3D renderer | [SceneServer](/docs/modules/arcgis/arcgis-scene-server) |
 | ArcGIS service directory | Capability graph utilities | Discovery graph | First matching service endpoint | Not directly visual | [Capability discovery](#capability-discovery) |
 
 ## Installation
@@ -134,10 +134,10 @@ const metadata = await source.getMetadata();
 Use `load` when the application already knows the service type:
 
 ```ts
-import {load} from '@loaders.gl/core';
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {createDataSource} from '@loaders.gl/core';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
-const source = await load(serviceUrl, [ArcGISFeatureServerSourceLoader]);
+const source = await createDataSource(serviceUrl, [ArcGISFeatureServerLoader]);
 const features = await source.getFeatures({
   layers: ['0'],
   boundingBox: [[-123, 37], [-121, 39]]

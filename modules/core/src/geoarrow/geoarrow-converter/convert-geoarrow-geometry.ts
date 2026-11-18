@@ -3,12 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {
-  convertGeoArrowColumn,
-  decodeGeoArrowWKB,
-  encodeGeoArrowWKB
-} from '@math.gl/geospatial/geoarrow';
-import type {DecodeGeoArrowWKBOptions} from '@math.gl/geospatial/geoarrow';
+import {convertGeoArrowColumn, decodeGeoArrowWKB, encodeGeoArrowWKB} from '@math.gl/core/arrow';
+import type {DecodeGeoArrowWKBOptions} from '@math.gl/core/arrow';
 import {
   convertGeometryToWKB,
   convertGeometryToWKT
@@ -35,7 +31,7 @@ import {assertGeoArrowResourceLimits} from '../geoarrow-resource-limits';
 import {
   makeArrowVectorFromGeoArrowColumn,
   makeGeoArrowColumnFromArrowVector
-} from '../lib/arrow-geoarrow-adapter';
+} from '@math.gl/core/arrow';
 import {getGeoArrowUnionGeometryKind} from '../lib/kernels/geoarrow-union';
 
 type GeoArrowGeometryKind =

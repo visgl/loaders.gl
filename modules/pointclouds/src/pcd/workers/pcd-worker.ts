@@ -11,14 +11,14 @@ createLoaderWorker({
   parse(input, options) {
     return PCDLoaderWithParser.parse(input, {
       ...options,
-      pcd: {...options?.pcd, shape: 'arrow-table'}
+      pcd: {...options?.pcd, shape: 'arrow'}
     });
   },
   /** Keeps one columnar parser alive for the entire worker input stream. */
   parseInBatches(input, options) {
     return PCDLoaderWithParser.parseInBatches(input, {
       ...options,
-      pcd: {...options?.pcd, shape: 'arrow-table'}
+      pcd: {...options?.pcd, shape: 'arrow'}
     });
   }
 });

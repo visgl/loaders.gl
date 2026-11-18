@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {setLoaderOptions, load, fetchFile} from '@loaders.gl/core';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import {SHPLoader} from '@loaders.gl/geospatial/shapefile/index';
+import {SHPLoader} from '@loaders.gl/geospatial/shapefile';
 const SHAPEFILE_POLYGON_PATH =
   '@loaders.gl/geospatial/shapefile/test/data/shapefile-js/polygons.shp';
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
@@ -13,19 +13,17 @@ const SHAPEFILE_JS_POINT_TEST_FILES = ['points', 'multipoints'];
 const SHAPEFILE_JS_POLYLINE_TEST_FILES = ['polylines'];
 const SHAPEFILE_JS_POLYGON_TEST_FILES = ['polygons', 'multipolygon_with_holes'];
 const POINT_Z_TEST_FILE = 'point-z';
-setLoaderOptions({
-  _workerType: 'test'
-});
+setLoaderOptions({core: {_workerType: 'test'}});
 const WKB_OPTIONS = {shp: {shape: 'wkb' as const}};
 test('SHPLoader#load polygons', async () => {
   const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader, WKB_OPTIONS);
   expect(result.header, 'A header received').toBeTruthy();
   expect(result.geometries.length, 'Correct number of rows received').toBe(3);
 });
-test('SHPLoader#defaults to arrow-table output', async () => {
+test('SHPLoader#defaults to native Arrow output', async () => {
   const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader, {core: {worker: false}});
-  expect(result.shape).toBe('arrow-table');
-  expect(result.data.numRows).toBe(3);
+  expect(result).toHaveProperty('numRows');
+  expect(result.numRows).toBe(3);
 });
 test('Shapefile JS Point tests', async () => {
   for (const testFileName of SHAPEFILE_JS_POINT_TEST_FILES) {

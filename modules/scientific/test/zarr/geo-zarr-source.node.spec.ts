@@ -4,11 +4,11 @@
 import {pathToFileURL} from 'node:url';
 import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
-import {createDataSource, resolvePath} from '@loaders.gl/core';
+import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
 import {
   GeoZarrRasterSource,
-  GeoZarrSourceLoader,
-  type GeoZarrSourceLoaderOptions
+  GeoZarrLoader,
+  type GeoZarrLoaderOptions
 } from '@loaders.gl/scientific/zarr';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 const CONTENT_BASE = resolvePath('@loaders.gl/scientific/test/zarr/data');
@@ -32,15 +32,15 @@ function createViewport(
     unprojectPosition: position => [position[0], position[1], position[2] || 0]
   };
 }
-test('GeoZarrSourceLoader creates a source via createDataSource()', () => {
-  const source = createDataSource(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+test('GeoZarrLoader creates a source via createDataSourceSync()', () => {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0'}
   });
   expect(source instanceof GeoZarrRasterSource).toBeTruthy();
 });
 test('GeoZarrRasterSource reads GeoZarr proj and spatial metadata', async () => {
-  const source = createDataSource(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0', defaultSelection: {c: 1}}
   });
@@ -61,7 +61,7 @@ test('GeoZarrRasterSource reads GeoZarr proj and spatial metadata', async () => 
   expect(metadata.tileSize).toEqual({width: 439, height: 167});
 });
 test('GeoZarrRasterSource reads a native spatial window and named dimension selection', async () => {
-  const source = createDataSource(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0'}
   });
@@ -89,7 +89,7 @@ test('GeoZarrRasterSource reads a native spatial window and named dimension sele
 test('GeoZarrRasterSource derives georeferencing from regular CF coordinate arrays', async () => {
   const baseUrl = 'https://example.com/cf.zarr';
   const fetcher = createCFZarrFetcher(baseUrl);
-  const options: GeoZarrSourceLoaderOptions = {
+  const options: GeoZarrLoaderOptions = {
     zarr: {requireConsolidatedMetadata: false},
     geozarr: {array: 'temperature', defaultSelection: {time: 1}},
     core: {fetch: fetcher as typeof fetch}
@@ -118,7 +118,7 @@ test('GeoZarrRasterSource derives georeferencing from regular CF coordinate arra
   expect(Array.from(raster.data as Uint8Array)).toEqual([12, 13, 15, 16]);
 });
 test('GeoZarrRasterSource validates CRS and named selections', async () => {
-  const source = createDataSource(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrSourceLoader], {
+  const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [GeoZarrLoader], {
     zarr: {path: 'images/example-image'},
     geozarr: {array: '0'}
   });

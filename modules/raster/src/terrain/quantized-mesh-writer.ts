@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/core/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
+import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
+import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {VERSION} from './lib/utils/version';
 import {QuantizedMeshFormat} from './terrain-format';
 
@@ -27,18 +28,18 @@ export type QuantizedMeshWriterOptions = WriterOptions & {
 export const QuantizedMeshWriter = {
   ...QuantizedMeshFormat,
   version: VERSION,
-  dataType: null as unknown as Mesh | MeshArrowTable,
+  dataType: null as unknown as Mesh | Table,
   batchType: null as never,
   options: {
     'quantized-mesh': {}
   },
   encode: async (data, options) => encodeQuantizedMeshSync(data, options),
   encodeSync: encodeQuantizedMeshSync
-} as const satisfies WriterWithEncoder<Mesh | MeshArrowTable, never, QuantizedMeshWriterOptions>;
+} as const satisfies WriterWithEncoder<Mesh | Table, never, QuantizedMeshWriterOptions>;
 
 /** Encode mesh category data as quantized mesh terrain bytes. */
 function encodeQuantizedMeshSync(
-  data: Mesh | MeshArrowTable,
+  data: Mesh | Table,
   options: QuantizedMeshWriterOptions = {}
 ): ArrayBuffer {
   const mesh = convertTableToMesh(normalizeMeshArrowTable(data));
@@ -87,12 +88,12 @@ function encodeQuantizedMeshSync(
   return arrayBuffer;
 }
 
-/** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
-function normalizeMeshArrowTable(data: Mesh | MeshArrowTable): MeshArrowTable {
-  if ('shape' in data && data.shape === 'arrow-table') {
+/** Return mesh data as a native Arrow table, converting plain Mesh data first. */
+function normalizeMeshArrowTable(data: Mesh | Table): Table {
+  if (!('attributes' in data)) {
     return data;
   }
-  return convertMeshToTable(data as Mesh, 'arrow-table');
+  return convertMeshToArrowTable(data as Mesh);
 }
 
 /** Return a required mesh attribute or throw a format-specific error. */

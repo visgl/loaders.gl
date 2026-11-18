@@ -243,7 +243,7 @@ formats, benchmark a cached synchronous codec as well as the built-in stream pat
 optional peer dependencies: package managers do not automatically install them for this package.
 Default codecs still work without these packages. Install the corresponding package explicitly
 before importing its backend-specific entry point, for example `npm install pako` for
-`@loaders.gl/compression/gzip-pako`. Injectable `brotli` and `zstd-codec` implementations also
+`@loaders.gl/compression/gzip-decompressor-pako`. Injectable `brotli` and `zstd-codec` implementations also
 require explicit installation and registration through `modules`; installing them alone does not
 select them. The fflate implementation and Brotli decoder
 shim are vendored and do not require an external package.

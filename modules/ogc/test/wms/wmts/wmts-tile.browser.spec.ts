@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {createDataSource} from '@loaders.gl/core';
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {createDataSourceSync} from '@loaders.gl/core';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 import {IMAGE_DATA_URL} from '../../../../images/test/lib/test-cases';
 
 test('WMTS valid tiles still decode through the public source loader and forward cancellation', async () => {
-  const source = createDataSource('https://example.com/wmts', [WMTSSourceLoader], {
+  const source = createDataSourceSync('https://example.com/wmts', [WMTSLoader], {
     wmts: {
       capabilities: {
         contents: {
@@ -38,6 +38,7 @@ test('WMTS valid tiles still decode through the public source loader and forward
     return new Response(bytes, {headers: {'content-type': 'image/png'}});
   });
   const image = await source.getTile({x: 2, y: 1, z: 1, signal: controller.signal});
+  expect(image).toBeInstanceOf(ImageBitmap);
   expect(image).toMatchObject({width: 2, height: 2});
   expect(source.fetch).toHaveBeenCalledTimes(1);
 });

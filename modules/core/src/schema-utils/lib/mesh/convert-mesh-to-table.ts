@@ -3,24 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {getFloat16Storage, isNativeFloat16Array} from '@loaders.gl/core/schema';
-import type {
-  BigTypedArray,
-  Mesh,
-  MeshAttribute,
-  MeshArrowTable,
-  MeshTable,
-  ArrowTable,
-  ColumnarTable,
-  Schema
-} from '@loaders.gl/core/schema';
+import type {BigTypedArray, Mesh, MeshAttribute, MeshTable, Schema} from '@loaders.gl/core/schema';
 import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListVector} from '../arrow-utils/arrow-fixed-size-list-utils';
-import {
-  deserializeArrowField,
-  deserializeArrowMetadata,
-  serializeArrowSchema
-} from '../schema/convert-arrow-schema';
+import {deserializeArrowField, deserializeArrowMetadata} from '../schema/convert-arrow-schema';
 
 /** Arrow column inputs, including exact 64-bit integers that are not GPU attributes. */
 export type MeshArrowAttributes = Record<
@@ -57,7 +44,7 @@ export type MeshArrowTableOptions = {
 /** Convert a mesh to a columnar table. */
 export function convertMeshToTable(mesh: Mesh, shape: 'columnar-table'): MeshTable;
 /** Convert a mesh to an Apache Arrow table. */
-export function convertMeshToTable(mesh: Mesh, shape: 'arrow-table'): MeshArrowTable;
+export function convertMeshToTable(mesh: Mesh, shape: 'arrow'): arrow.Table;
 
 /**
  * Convert a mesh to a specific table shape.
@@ -67,12 +54,12 @@ export function convertMeshToTable(mesh: Mesh, shape: 'arrow-table'): MeshArrowT
  */
 export function convertMeshToTable(
   mesh: Mesh,
-  shape: 'columnar-table' | 'arrow-table'
-): Mesh | ColumnarTable | ArrowTable | MeshArrowTable {
+  shape: 'columnar-table' | 'arrow'
+): MeshTable | arrow.Table {
   switch (shape) {
     case 'columnar-table':
       return convertMeshToColumnarTable(mesh);
-    case 'arrow-table':
+    case 'arrow':
       return convertMeshToArrowTable(mesh);
     default:
       throw new Error(shape);
@@ -101,13 +88,8 @@ export function convertMeshToColumnarTable(mesh: Mesh): MeshTable {
   };
 }
 
-/**
- * Convert a loaders.gl Mesh to an Apache Arrow table.
- * @param mesh Mesh to convert.
- * @param batchSize Reserved for future chunked Arrow conversion.
- * @returns Mesh data as an Apache Arrow table wrapper.
- */
-export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): MeshArrowTable {
+/** Builds a native Apache Arrow mesh table, including topology, indices, and bounds. */
+export function convertMeshToArrowTable(mesh: Mesh): arrow.Table {
   return makeMeshArrowTable(mesh.attributes, {
     schema: mesh.schema,
     topology: mesh.topology,
@@ -118,15 +100,15 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): MeshArr
 }
 
 /**
- * Create a MeshArrowTable directly from mesh attribute typed arrays.
+ * Creates a native Apache Arrow mesh table from typed attributes.
  * @param attributes Mesh attributes to expose as Arrow columns.
  * @param options Mesh table metadata and optional schema.
- * @returns Mesh data as an Apache Arrow table wrapper.
+ * @returns The Arrow table with mesh topology, bounds, and optional indices.
  */
 export function makeMeshArrowTable(
   attributes: MeshArrowAttributes,
   options: MeshArrowTableOptions = {}
-): MeshArrowTable {
+): arrow.Table {
   const fields: arrow.Field[] = [];
   const columns: {[columnName: string]: arrow.Vector} = {};
   const attributeNames = getOrderedAttributeNames(attributes);
@@ -141,7 +123,7 @@ export function makeMeshArrowTable(
       getAttributeArrowField(options.schema, attributeName, column, attribute.componentType)
     );
 
-    if (attributeName === 'POSITION' && options.indices?.value?.length) {
+    if (attributeName === attributeNames[0] && options.indices?.value?.length) {
       const indicesField = indexedMeshArrowSchema.fields.find(field => field.name === 'indices')!;
       columns.indices = getIndicesVector(options.indices.value, column.length, indicesField.type);
       fields.push(indicesField);
@@ -151,19 +133,9 @@ export function makeMeshArrowTable(
   const arrowSchema = new arrow.Schema(fields, getMeshArrowMetadata(options));
   // Arrow's column-object constructor synthesizes an incompatible batch schema for empty
   // fixed-size-list vectors. A schema-only table preserves the declared mesh fields instead.
-  const table =
-    columns[attributeNames[0]]?.length === 0
-      ? new arrow.Table(arrowSchema)
-      : new arrow.Table(arrowSchema, columns);
-  const schema = serializeArrowSchema(table.schema);
-
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: table,
-    topology: options.topology || 'point-list',
-    indices: options.indices
-  };
+  return columns[attributeNames[0]]?.length === 0
+    ? new arrow.Table(arrowSchema)
+    : new arrow.Table(arrowSchema, columns);
 }
 
 /** Return an Arrow vector for a mesh attribute. */

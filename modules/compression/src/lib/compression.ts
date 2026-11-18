@@ -101,35 +101,3 @@ export abstract class Decompressor extends CompressionTransform {
     yield this.decompress(input);
   }
 }
-
-/**
- * Combined compression and decompression compatibility base class.
- *
- * @deprecated Import a direction-specific `Compressor` or `Decompressor` implementation so
- * applications only bundle the codec direction they use.
- */
-export abstract class Compression extends Compressor implements Decompressor {
-  constructor(options?: CompressionOptions) {
-    super(options);
-    this.decompressBatches = this.decompressBatches.bind(this);
-  }
-
-  /** Asynchronously decompresses data. */
-  async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
-    await this.preload();
-    return this.decompressSync(input, size);
-  }
-
-  /** Synchronously decompresses data. */
-  decompressSync(input: ArrayBuffer, size?: number): ArrayBuffer {
-    throw new Error(`${this.name}: sync decompression not supported`);
-  }
-
-  /** Decompresses batches. */
-  async *decompressBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-  ): AsyncIterable<ArrayBuffer> {
-    const input = await this.concatenate(asyncIterator);
-    yield this.decompress(input);
-  }
-}

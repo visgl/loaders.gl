@@ -18,3 +18,7 @@ const dataset = await parse(bytes, NetCDFLoader);
   [HDF5](../hdf5/README.md); the classic metadata loader does not select it automatically.
 
 Use `NetCDFLoaderWithParser` from the format subpath when calling `parseSync`.
+
+Remote prefix reads use Content-Range for total file size when visible. If CORS hides
+that header, the source uses HEAD Content-Length; the partial GET Content-Length is
+never interpreted as the full size. Missing or invalid HEAD size fails explicitly.

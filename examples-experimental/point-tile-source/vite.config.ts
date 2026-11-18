@@ -14,12 +14,9 @@ const DEDUPED_PACKAGES = [
   '@deck.gl/mesh-layers',
   '@deck.gl/react',
   '@deck.gl/widgets',
-  '@luma.gl/constants',
   '@luma.gl/core',
   '@luma.gl/engine',
-  '@luma.gl/gltf',
-  '@luma.gl/shadertools',
-  '@luma.gl/webgl',
+  '@luma.gl/shaders',
   'react',
   'react-dom'
 ];
@@ -29,7 +26,6 @@ const getAliases = async (frameworkName, frameworkRootDir) => {
   const modules = await fs.promises.readdir(`${frameworkRootDir}/modules`);
   const aliases = {};
   modules.forEach((module) => {
-    // TODO: schema wasn't compatible with @deck.gl v9.0.32
     if (module !== 'schema') {
       aliases[`${frameworkName}/${module}`] = `${frameworkRootDir}/modules/${module}/src/index.ts`;
     }

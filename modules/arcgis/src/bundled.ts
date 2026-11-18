@@ -2,38 +2,38 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ArcGISFeatureServerSourceLoaderWithParser as ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader';
+import {ArcGISFeatureServerLoaderWithParser as ArcGISFeatureServerLoader} from './arcgis/arcgis-feature-server-loader';
 export {
-  ArcGISFeatureServerSourceLoaderWithParser as ArcGISFeatureServerSourceLoader,
+  ArcGISFeatureServerLoaderWithParser as ArcGISFeatureServerLoader,
   ArcGISVectorSource,
   ArcGISFeatureQueryError
-} from './arcgis/arcgis-feature-server-source-loader';
-import {ArcGISImageServerSourceLoaderWithParser as ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
+} from './arcgis/arcgis-feature-server-loader';
+import {ArcGISImageServerLoaderWithParser as ArcGISImageServerLoader} from './arcgis/arcgis-image-server-loader';
 export {
-  ArcGISImageServerSourceLoaderWithParser as ArcGISImageServerSourceLoader,
+  ArcGISImageServerLoaderWithParser as ArcGISImageServerLoader,
   ArcGISImageSource
-} from './arcgis/arcgis-image-server-source-loader';
-import {ArcGISImageTileSourceLoaderWithParser as ArcGISImageTileSourceLoader} from './arcgis/arcgis-image-tile-source-loader';
+} from './arcgis/arcgis-image-server-loader';
+import {ArcGISImageTileLoaderWithParser as ArcGISImageTileLoader} from './arcgis/arcgis-image-tile-loader';
 export {
-  ArcGISImageTileSourceLoaderWithParser as ArcGISImageTileSourceLoader,
+  ArcGISImageTileLoaderWithParser as ArcGISImageTileLoader,
   ArcGISImageTileSource
-} from './arcgis/arcgis-image-tile-source-loader';
-import {ArcGISMapTileSourceLoaderWithParser as ArcGISMapTileSourceLoader} from './arcgis/arcgis-map-tile-source-loader';
+} from './arcgis/arcgis-image-tile-loader';
+import {ArcGISMapTileLoaderWithParser as ArcGISMapTileLoader} from './arcgis/arcgis-map-tile-loader';
 export {
-  ArcGISMapTileSourceLoaderWithParser as ArcGISMapTileSourceLoader,
+  ArcGISMapTileLoaderWithParser as ArcGISMapTileLoader,
   ArcGISMapTileSource
-} from './arcgis/arcgis-map-tile-source-loader';
-import {ArcGISSceneServerSourceLoaderWithParser as ArcGISSceneServerSourceLoader} from './arcgis/arcgis-scene-server-source-loader';
+} from './arcgis/arcgis-map-tile-loader';
+import {ArcGISSceneServerLoaderWithParser as ArcGISSceneServerLoader} from './arcgis/arcgis-scene-server-loader';
 export {
-  ArcGISSceneServerSourceLoaderWithParser as ArcGISSceneServerSourceLoader,
+  ArcGISSceneServerLoaderWithParser as ArcGISSceneServerLoader,
   ArcGISSceneServerSource,
   ArcGISSceneServerQueryError
-} from './arcgis/arcgis-scene-server-source-loader';
-import {ArcGISVectorTileServerSourceLoaderWithParser as ArcGISVectorTileServerSourceLoader} from './arcgis/arcgis-vector-tile-server-source-loader';
+} from './arcgis/arcgis-scene-server-loader';
+import {ArcGISVectorTileServerLoaderWithParser as ArcGISVectorTileServerLoader} from './arcgis/arcgis-vector-tile-server-loader';
 export {
-  ArcGISVectorTileServerSourceLoaderWithParser as ArcGISVectorTileServerSourceLoader,
+  ArcGISVectorTileServerLoaderWithParser as ArcGISVectorTileServerLoader,
   ArcGISVectorTileServerSource
-} from './arcgis/arcgis-vector-tile-server-source-loader';
+} from './arcgis/arcgis-vector-tile-server-loader';
 
 export type {
   ArcGISService,
@@ -42,14 +42,14 @@ export type {
   ArcGISServiceCapabilities,
   ArcGISServiceSelection,
   ArcGISFeatureServiceQueryOptions,
-  ArcGISFeatureServerSourceLoaderOptions,
+  ArcGISFeatureServerLoaderOptions,
   ArcGISExportImageParameters,
-  ArcGISImageSourceLoaderProps,
-  ArcGISImageTileSourceLoaderOptions,
-  ArcGISMapTileSourceLoaderOptions,
+  ArcGISImageServerLoaderOptions,
+  ArcGISImageTileLoaderOptions,
+  ArcGISMapTileLoaderOptions,
   ArcGISVectorTileServiceMetadata,
-  ArcGISVectorTileServerSourceLoaderOptions,
-  ArcGISSceneServerSourceOptions,
+  ArcGISVectorTileServerLoaderOptions,
+  ArcGISSceneServerLoaderOptions,
   ArcGISSceneQueryOptions,
   ArcGISSceneQueryResult,
   ArcGISSceneAggregationOperation,
@@ -67,7 +67,7 @@ export type {
   ArcGISItemLayer,
   ArcGISItemResolution,
   ArcGISItemOptions
-} from './index';
+} from '.';
 export {
   getArcGISServices,
   discoverArcGISCapabilities,
@@ -81,12 +81,12 @@ export type ArcGISLoader = (typeof ARCGIS_LOADERS)[number];
 
 /** All runtime ArcGIS loaders, in the same selection order as the package root. */
 export const ARCGIS_LOADERS = [
-  ArcGISFeatureServerSourceLoader,
-  ArcGISImageServerSourceLoader,
-  ArcGISImageTileSourceLoader,
-  ArcGISMapTileSourceLoader,
-  ArcGISVectorTileServerSourceLoader,
-  ArcGISSceneServerSourceLoader
+  ArcGISFeatureServerLoader,
+  ArcGISImageServerLoader,
+  ArcGISImageTileLoader,
+  ArcGISMapTileLoader,
+  ArcGISVectorTileServerLoader,
+  ArcGISSceneServerLoader
 ];
 
 /** Finds a runtime source loader by its canonical identifier or service type. */

@@ -4,14 +4,14 @@
 
 import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {afterEach, expect, test, vi} from 'vitest';
-import {Table, tableFromArrays, tableToIPC} from 'apache-arrow';
+import {RecordBatch, Table, tableFromArrays, tableToIPC} from 'apache-arrow';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ArrowLoader} from '../../src/arrow/arrow-loader-types';
 import {GeoArrowLoader} from '../../src/arrow/geoarrow-loader-types';
 import {
   serializeArrowTableResult,
-  deserializeArrowTableBatch
+  deserializeIPCWorkerBatch
 } from '../../src/arrow/lib/arrow-worker-transport';
 
 afterEach(() => destroyWorkerTasks());
@@ -26,13 +26,16 @@ test.each([
   const parser = await metadata.preload();
   const mainParser = vi.fn(parser.parseInBatches);
   const loader = {...metadata, preload: async () => ({...parser, parseInBatches: mainParser})};
-  const batches = await parseInBatches([bytes], loader, {core: {worker: true}});
+  const batches = await parseInBatches([bytes], loader, {
+    core: {worker: true},
+    arrow: {shape: 'arrow'}
+  });
   const results: number[] = [];
   const labels: string[] = [];
   for await (const batch of batches) {
-    expect(batch.data).toBeInstanceOf(Table);
-    results.push(...Array.from(batch.data.getChild('id')!));
-    labels.push(...Array.from(batch.data.getChild('label')!));
+    expect(batch).toBeInstanceOf(RecordBatch);
+    results.push(...Array.from(batch.getChild('id')!));
+    labels.push(...Array.from(batch.getChild('label')!));
   }
   expect(mainParser).not.toHaveBeenCalled();
   expect(results).toEqual([1, 2]);
@@ -53,25 +56,20 @@ test('Arrow atomic worker returns columns before caller-side row conversion', as
   );
   expect(deserialize).toHaveBeenCalledOnce();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
   expect(result).toMatchObject({shape: 'object-row-table', data: [{id: 1}, {id: 2}]});
 });
 
 test('Arrow batch serialization transfers owned column buffers without detaching parser state', () => {
   const table = tableFromArrays({label: ['first', 'second']});
-  const serialized = serializeArrowTableResult({
-    shape: 'arrow-table',
-    batchType: 'data',
-    length: 1,
-    data: table.slice(0, 1)
-  });
+  const serialized = serializeArrowTableResult(table.batches[0].slice(0, 1));
   const transferred = structuredClone(serialized, {
     transfer: getTransferList(serialized)
   });
-  const received = deserializeArrowTableBatch(transferred);
-  expect(received.data.getChild('label')?.get(0)).toBe('first');
+  const received = deserializeIPCWorkerBatch(transferred);
+  expect(received.getChild('label')?.get(0)).toBe('first');
   expect(table.getChild('label')?.get(1)).toBe('second');
   expect(() => serializeArrowTableResult({shape: 'object-row-table', data: [{id: 1}]})).toThrow(
     'Arrow table output'
@@ -93,8 +91,8 @@ test('GeoArrow atomic feature conversion happens after transferring extension me
   );
   expect(deserialize).toHaveBeenCalledOnce();
   expect(deserialize.mock.calls[0][0]).toMatchObject({
-    shape: 'arrow-table',
-    data: {transport: 'arrow-js'}
+    transport: 'arrow-table-columns',
+    columns: {data: {transport: 'arrow-js'}}
   });
   expect(result).toMatchObject({
     shape: 'geojson-table',

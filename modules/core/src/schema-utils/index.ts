@@ -49,10 +49,7 @@ export {
   makeTableBatchIterator,
   makeBatchFromTable
 } from './lib/table/batches/make-table-batch-iterator';
-export {
-  makeArrowTableBatchIterator,
-  makeArrowRecordBatchIterator
-} from './lib/table/batches/make-arrow-batch-iterator';
+export {makeArrowRecordBatchIterator} from './lib/table/batches/make-arrow-batch-iterator';
 export {
   selectArrowTableRows,
   queryArrowTable,
@@ -65,8 +62,7 @@ export {
   isArrayRowTable,
   isObjectRowTable,
   isColumnarTable,
-  isGeoJSONTable,
-  isArrowTable
+  isGeoJSONTable
 } from './lib/table/tables/table-types';
 
 export {
@@ -88,16 +84,17 @@ export {
 // Table batch builders
 
 export {TableBatchBuilder} from './lib/table/batch-builder/table-batch-builder';
-export type {TableBatchAggregator} from './lib/table/batch-builder/table-batch-aggregator';
-export {RowTableBatchAggregator} from './lib/table/batch-builder/row-table-batch-aggregator';
-export {ColumnarTableBatchAggregator} from './lib/table/batch-builder/columnar-table-batch-aggregator';
 
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 
 // MESH CATEGORY
 
 export {getMeshSize, getMeshBoundingBox} from './lib/mesh/mesh-utils';
-export {convertMeshToTable, makeMeshArrowTable} from './lib/mesh/convert-mesh-to-table';
+export {
+  convertMeshToTable,
+  convertMeshToArrowTable,
+  makeMeshArrowTable
+} from './lib/mesh/convert-mesh-to-table';
 export type {MeshArrowTableOptions} from './lib/mesh/convert-mesh-to-table';
 export {convertTableToMesh} from './lib/mesh/convert-table-to-mesh';
 export {
@@ -144,7 +141,7 @@ export {
   // IntervalYearMonth,
   // FixedSizeList,
   // Struct
-} from './lib/table/arrow-api/index';
+} from './lib/table/arrow-api';
 
 // EXPERIMENTAL APIs
 export {ArrowTableBuilder} from './lib/table/batch-builder/arrow-table-builder';
@@ -163,3 +160,15 @@ export type {
   PointCloudTilerNode,
   PointCloudTileBounds
 } from './lib/mesh/point-cloud-tiler';
+
+export {
+  snapshotArrowSchema,
+  mergeArrowSchemas,
+  updateArrowTableSchema,
+  updateNativeArrowTableMetadata,
+  makeArrowMetadataBatch,
+  makeArrowTableFromBatches
+} from './lib/arrow/arrow-metadata';
+export {refineArrowTableBatches} from './lib/arrow/arrow-metadata';
+
+export {isArrowRecordBatch, isArrowTable} from '../lib/loader-utils/native-arrow';

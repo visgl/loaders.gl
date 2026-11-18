@@ -2,33 +2,25 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import type {Table as ArrowTable} from 'apache-arrow';
+import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {convertGeojsonToBinaryFeatureCollection as geojsonToBinary} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import type {
   GeoJSONTable,
   FeatureCollection,
   ObjectRowTable,
-  BinaryFeatureCollection,
-  ArrowTable,
-  GeoArrowEncodingPreference
+  BinaryFeatureCollection
 } from '@loaders.gl/core/schema';
 import {
   buildFeatureTableSchema,
   convertFeatureCollectionToArrowTable
 } from './lib/feature-collection-to-arrow';
-import {GPXLoader as GPXLoaderMetadata} from './gpx-loader-types';
+import {GPXLoader as GPXLoaderMetadata, type GPXLoaderOptions} from './gpx-loader-types';
 import {parseGPXTextToFeatureCollection as parseGPXDocumentText} from './sports-track-parser';
 
-const {preload: _GPXLoaderPreload, ...GPXLoaderMetadataWithoutPreload} = GPXLoaderMetadata;
+export type {GPXLoaderOptions} from './gpx-loader-types';
 
-export type GPXLoaderOptions = LoaderOptions & {
-  /** Preferred encoding for Arrow geometry output. */
-  geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  gpx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
-    geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  };
-};
+const {preload: _GPXLoaderPreload, ...GPXLoaderMetadataWithoutPreload} = GPXLoaderMetadata;
 
 /**
  * Loader for GPX (GPS exchange format)
@@ -59,7 +51,7 @@ export function parseGPXTextToFeatureCollection(text: string): FeatureCollection
  *
  * @param text - GPX XML document text.
  * @param options - Loader options controlling the output shape.
- * @returns A GeoJSON table, object-row table, or binary feature collection.
+ * @returns A native Arrow table, GeoJSON table, object-row table, or binary feature collection.
  */
 function parseTextSync(
   text: string,
@@ -87,7 +79,7 @@ function parseTextSync(
       };
       return table;
     }
-    case 'arrow-table':
+    case 'arrow':
       return convertFeatureCollectionToArrowTable(
         geojson.features,
         options?.geoarrow || gpxOptions.geoarrow

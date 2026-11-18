@@ -8,7 +8,7 @@ import {
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {paceBatchIterator, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
 
 import type {OtlpTrace, OtlpTraceBatch} from './otlp-trace-arrow-schema';
 import {emitOtlpTraceBatches, normalizeOtlpBatchSize} from './otlp-trace-batches';
@@ -31,7 +31,15 @@ export const ZipkinTraceLoaderWithParser = {
   parseSync: (arrayBuffer: ArrayBuffer) => parseZipkinTraceJson(decodeBytes(arrayBuffer)),
   parseText: async (text: string) => parseZipkinTraceJson(text),
   parseTextSync: (text: string) => parseZipkinTraceJson(text),
-  parseInBatches: parseZipkinTraceInBatches
+  parseInBatches: (
+    iterator: Parameters<typeof parseZipkinTraceInBatches>[0],
+    options?: ZipkinTraceLoaderOptions
+  ) =>
+    paceBatchIterator(parseZipkinTraceInBatches(iterator, options), {
+      batchMaxRowsPerSecond: options?.core?.batchMaxRowsPerSecond,
+      getRowCount: batch => (batch.table === 'spans' ? batch.data.numRows : undefined),
+      signal: options?.signal
+    })
 } as const satisfies LoaderWithParser<OtlpTrace, OtlpTraceBatch, ZipkinTraceLoaderOptions>;
 
 /** Parses chunked Zipkin JSON into tagged Arrow batches. */

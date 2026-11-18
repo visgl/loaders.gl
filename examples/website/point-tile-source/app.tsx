@@ -11,8 +11,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import DeckGL from '@deck.gl/react';
 import {FlyToInterpolator, LinearInterpolator, OrbitView, TerrainController} from '@deck.gl/core';
 import type {PointCloudBoundingVolume, PointCloudTileset} from '@loaders.gl/tiles-3d';
-import {COPCSourceLoader} from '@loaders.gl/tiles-3d/copc';
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
 
@@ -329,7 +329,7 @@ export default function App({
         new SourceLayer({
           id: 'point-tile-source-layer',
           data: selectedUrl,
-          loaders: [COPCSourceLoader, PotreeSourceLoader],
+          loaders: [COPCLoader, PotreeLoader],
           sourceOptions: {
             core: {type: selectedExample.format},
             copc: {},

@@ -7,8 +7,7 @@ import type {
   ObjectRowTable,
   ArrayRowTable,
   ColumnarTable,
-  GeoJSONTable,
-  ArrowTable
+  GeoJSONTable
 } from '@loaders.gl/core/schema';
 
 /** Checks if a table is of array row layout */
@@ -29,9 +28,4 @@ export function isColumnarTable(table: Table): table is ColumnarTable {
 /** Checks if a table is of GeoJSON format */
 export function isGeoJSONTable(table: Table): table is GeoJSONTable {
   return table.shape === 'geojson-table';
-}
-
-/** Checks if table wraps an Apache Arrow table */
-export function isArrowTable(table: Table): table is ArrowTable {
-  return table.shape === 'arrow-table';
 }

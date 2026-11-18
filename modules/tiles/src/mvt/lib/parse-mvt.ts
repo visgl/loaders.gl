@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {ArrowTable, FlatFeature, BinaryFeatureCollection} from '@loaders.gl/core/schema';
+import type {FlatFeature, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
 import {
   convertFlatGeojsonToBinaryFeatureCollection as flatGeojsonToBinary,
@@ -29,21 +29,17 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
   const mvtOptions = checkOptions(options);
 
   const shape: string | undefined =
-    options?.mvt?.shape || (options as {shape?: string} | undefined)?.shape || 'arrow-table';
+    options?.mvt?.shape || (options as {shape?: string} | undefined)?.shape || 'arrow';
   switch (shape) {
     case 'columnar-table': // binary + some JS arrays
       return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions)};
     case 'geojson-table':
       return parseMVTGeoJSON(arrayBuffer, {mvt: mvtOptions});
-    case 'arrow-table': {
-      const table: ArrowTable = convertFeaturesToWKBArrowTable(
-        parseToGeoJSONFeatures(arrayBuffer, mvtOptions),
-        {
-          encodingPreference:
-            options?.geoarrow?.encodingPreference || mvtOptions.geoarrow?.encodingPreference
-        }
-      );
-      return table;
+    case 'arrow': {
+      return convertFeaturesToWKBArrowTable(parseToGeoJSONFeatures(arrayBuffer, mvtOptions), {
+        encodingPreference:
+          options?.geoarrow?.encodingPreference || mvtOptions.geoarrow?.encodingPreference
+      });
     }
     case 'binary-geometry':
       return parseToBinary(arrayBuffer, mvtOptions);

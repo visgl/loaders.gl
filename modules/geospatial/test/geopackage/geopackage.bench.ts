@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, load} from '@loaders.gl/core';
-import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage/index';
+import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 
 const GPKG_RIVERS = '@loaders.gl/geospatial/geopackage/test/data/rivers_small.gpkg';
 const ROW_BENCHMARK_OPTIONS = {multiplier: 1, unit: 'rows'};
@@ -15,12 +15,12 @@ export default async function geopackageLoaderBench(suite) {
   suite = suite.group('GeoPackageLoader');
 
   suite.addAsync(
-    'GeoPackageLoader load arrow-table geoarrow.wkb',
+    'GeoPackageLoader load native Arrow geoarrow.wkb',
     ROW_BENCHMARK_OPTIONS,
     async () => {
       await load(arrayBuffer.slice(0), GeoPackageLoader, {
         core: {worker: false},
-        geopackage: {shape: 'arrow-table'}
+        geopackage: {shape: 'arrow'}
       });
     }
   );

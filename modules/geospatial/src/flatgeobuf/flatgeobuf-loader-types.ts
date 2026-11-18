@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  GeoJSONTable,
-  BinaryFeatureCollection
-} from '@loaders.gl/core/schema';
+import type {FlatGeobufSourceLoaderOptions} from './flatgeobuf-source';
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {GeoJSONTable, ColumnarTable, BinaryFeatureCollection} from '@loaders.gl/core/schema';
 import type {CRSReprojectionOptions, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import {FlatGeobufFormat} from './flatgeobuf-format';
@@ -23,8 +20,8 @@ const FGB_MAGIC_NUMBER = [0x66, 0x67, 0x62, 0x03, 0x66, 0x67, 0x62, 0x01];
 export type FlatGeobufLoaderOptions = LoaderOptions & {
   /** Preferred encoding for Arrow geometry output. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};
-  flatgeobuf?: {
-    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+  flatgeobuf?: FlatGeobufSourceLoaderOptions['flatgeobuf'] & {
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
     boundingBox?: [[number, number], [number, number]];
@@ -37,23 +34,30 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing FlatGeobuf loader implementation. */
 async function preload() {
-  const {FlatGeobufLoaderWithParser} = await import('@loaders.gl/geospatial/flatgeobuf-loader');
+  const {FlatGeobufLoaderWithParser} = await import('@loaders.gl/geospatial/flatgeobuf');
   return FlatGeobufLoaderWithParser;
 }
 
 /** Metadata-only FlatGeobuf worker loader. */
 export const FlatGeobufLoader = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.fgb($|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: false,
+  type: 'flatgeobuf',
   ...FlatGeobufFormat,
 
-  dataType: null as any,
-  batchType: null as any,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as GeoJSONTable | ColumnarTable | Table | BinaryFeatureCollection,
+  batchType: null as unknown as RecordBatch,
   version: VERSION,
   worker: true,
   binary: true,
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],
   options: {
     flatgeobuf: {
-      shape: 'arrow-table'
+      shape: 'arrow'
     },
     gis: {
       reproject: false
@@ -61,10 +65,7 @@ export const FlatGeobufLoader = {
   },
   preload
 } as const satisfies Loader<
-  GeoJSONTable | ArrowTable | BinaryFeatureCollection,
-  ArrowTableBatch | any,
+  GeoJSONTable | ColumnarTable | Table | BinaryFeatureCollection,
+  RecordBatch,
   FlatGeobufLoaderOptions
 >;
-
-/** @deprecated Use FlatGeobufLoader. */
-export const FlatGeobufWorkerLoader = FlatGeobufLoader;

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles",
-  "version": "5.0.0-beta.4",
+  "version": "5.0.0-beta.12",
   "description": "2D tileset runtime and MLT, MVT, TileJSON, and PMTiles loaders and writers",
   "license": "MIT",
   "type": "module",
@@ -32,14 +32,23 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./terrain": {
+      "types": "./dist/terrain/index.d.ts",
+      "import": "./dist/terrain/index.js",
+      "require": "./dist/terrain/index.cjs"
+    },
+    "./mlt-loader": {
+      "types": "./dist/mlt-loader.d.ts",
+      "import": "./dist/mlt-loader.js"
+    },
+    "./mvt-loader": {
+      "types": "./dist/mvt-loader.d.ts",
+      "import": "./dist/mvt-loader.js"
+    },
     "./mlt": {
       "types": "./dist/mlt/index.d.ts",
       "import": "./dist/mlt/index.js",
       "require": "./dist/mlt/index.cjs"
-    },
-    "./mlt/unbundled": {
-      "types": "./dist/mlt/unbundled.d.ts",
-      "import": "./dist/mlt/unbundled.js"
     },
     "./mlt/bundled": {
       "types": "./dist/mlt/bundled.d.ts",
@@ -50,19 +59,15 @@
       "import": "./dist/mvt/index.js",
       "require": "./dist/mvt/index.cjs"
     },
-    "./arrow-table-tile-source-loader": {
-      "types": "./dist/arrow-table-tile-source-loader.d.ts",
-      "import": "./dist/arrow-table-tile-source-loader.js",
-      "require": "./dist/arrow-table-tile-source-loader.cjs"
+    "./arrow-table-tile-loader": {
+      "types": "./dist/arrow-table-tile-loader.d.ts",
+      "import": "./dist/arrow-table-tile-loader.js",
+      "require": "./dist/arrow-table-tile-loader.cjs"
     },
     "./mvt/tilejson-zod-schema": {
       "types": "./dist/mvt/tilejson-zod-schema.d.ts",
       "import": "./dist/mvt/tilejson-zod-schema.js",
       "require": "./dist/mvt/tilejson-zod-schema.cjs"
-    },
-    "./mvt/unbundled": {
-      "types": "./dist/mvt/unbundled.d.ts",
-      "import": "./dist/mvt/unbundled.js"
     },
     "./mvt-geojson-loader": {
       "types": "./dist/mvt-geojson-loader.d.ts",
@@ -81,10 +86,6 @@
       "types": "./dist/pmtiles/index.d.ts",
       "import": "./dist/pmtiles/index.js",
       "require": "./dist/pmtiles/index.cjs"
-    },
-    "./pmtiles/unbundled": {
-      "types": "./dist/pmtiles/unbundled.d.ts",
-      "import": "./dist/pmtiles/unbundled.js"
     },
     "./pmtiles/bundled": {
       "types": "./dist/pmtiles/bundled.d.ts",
@@ -132,13 +133,14 @@
     "build-worker-mvt": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0-beta.4",
-    "@loaders.gl/images": "5.0.0-beta.4",
-    "@loaders.gl/tables": "5.0.0-beta.4",
-    "@loaders.gl/tiles-3d": "5.0.0-beta.4",
+    "@loaders.gl/compression": "5.0.0-beta.12",
+    "@loaders.gl/images": "5.0.0-beta.12",
+    "@loaders.gl/tables": "5.0.0-beta.12",
+    "@loaders.gl/tiles-3d": "5.0.0-beta.12",
     "@maplibre/mlt": "^1.1.6",
-    "@math.gl/geometry": "5.0.0-beta.4",
-    "@math.gl/geospatial": "5.0.0-beta.4",
+    "@math.gl/core": "5.0.0-beta.12",
+    "@math.gl/geometry": "5.0.0-beta.12",
+    "@math.gl/geospatial": "5.0.0-beta.12",
     "apache-arrow": "^21.2.0",
     "pbf": "^3.2.1",
     "pmtiles": "^4.5.0",
@@ -146,7 +148,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@deck.gl/core": "^9.4.0",
+    "@deck.gl/core": "10.0.0-alpha.1",
     "@types/pbf": "^3.0.2"
   },
   "peerDependencies": {

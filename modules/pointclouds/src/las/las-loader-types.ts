@@ -2,16 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/core/schema';
+import type {LASSource, LASSourceOptions} from './las-source';
+import type {CoreAPI, Loader} from '@loaders.gl/core/loader-utils';
+import type {Table, RecordBatch} from 'apache-arrow';
 import type {LASMesh} from './lib/las-types';
-import {LAS_LOADER_METADATA, type LASLoaderOptions} from './las-loader-shared';
+import {LAS_LOADER_METADATA, LAS_SOURCE_METADATA, type LASLoaderOptions} from './las-loader-shared';
+
+export type {LASSourceOptions} from './las-source';
 
 export type {LASColumnName, LASLoaderOptions} from './las-loader-shared';
 
 /** Preloads the parser-bearing primary TypeScript LAS loader implementation. */
 async function preload() {
-  const {LASLoaderWithParser} = await import('@loaders.gl/pointclouds/las-loader');
+  const {LASLoaderWithParser} = await import('@loaders.gl/pointclouds/las');
   return LASLoaderWithParser;
 }
 
@@ -20,8 +23,14 @@ export const LASLoader = {
   ...LAS_LOADER_METADATA,
   worker: true,
   workerInBatches: true,
-  preload
-} as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;
-
-/** @deprecated Use LASLoader. */
-export const LASWorkerLoader = LASLoader;
+  preload,
+  ...LAS_SOURCE_METADATA,
+  /** Creates a source after the parser implementation has been preloaded. */
+  createDataSourceSync(
+    _data: string | Blob,
+    _options: LASSourceOptions,
+    _coreApi?: CoreAPI
+  ): LASSource {
+    throw new Error('Call preload(LASLoader) before creating a source synchronously.');
+  }
+} as const satisfies Loader<LASMesh | Table, LASMesh | RecordBatch, LASLoaderOptions, LASSource>;

@@ -2,12 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {tableFromIPC, tableToIPC} from 'apache-arrow';
+import {tableFromIPC, tableToIPC, type Table} from 'apache-arrow';
 import type {AsyncDuckDBConnection} from '@duckdb/duckdb-wasm';
-import type {ArrowTable, Schema} from '@loaders.gl/core/schema';
-import type {SourceLoader, CoreAPI} from '@loaders.gl/core/loader-utils';
+import type {Schema} from '@loaders.gl/core/schema';
+import type {
+  SourceLoader,
+  CoreAPI,
+  TableQuerySource,
+  TableMetadata
+} from '@loaders.gl/core/loader-utils';
 import {convertArrowToTable} from '@loaders.gl/core/schema-utils';
 
+import {makeDuckDBTableQuerySource, isDuckDBQuerySchema} from './duckdb-table-query';
 import {SQLDataSource, SQL_SOURCE_DEFAULT_OPTIONS} from './sql-source';
 import type {
   SQLAdapter,
@@ -69,7 +75,7 @@ export const DuckDBSQLSource = {
   },
   defaultOptions: SQL_SOURCE_DEFAULT_OPTIONS,
   testURL: (url: string): boolean => /^duckdb:\/\//i.test(url),
-  createDataSource: (
+  createDataSourceSync: (
     data: string,
     options: SQLSourceOptions,
     coreApi?: CoreAPI
@@ -78,9 +84,36 @@ export const DuckDBSQLSource = {
 
 /** SQLDataSource specialization for DuckDB. */
 export class DuckDBSQLDataSource extends SQLDataSource {
+  /** Resolves a reusable common query handle for a named DuckDB table. */
+  async getTable(name: string, options: {signal?: AbortSignal} = {}): Promise<TableQuerySource> {
+    const table = await this.resolveTable(name, options.signal);
+    const schema = await this.getTableSchema(table);
+    options.signal?.throwIfAborted();
+    return makeDuckDBTableQuerySource(this, table, schema);
+  }
+
+  /** Reports whether the table's schema can be represented exactly by the common reader. */
+  override async getTableMetadata(
+    name: string,
+    options: {signal?: AbortSignal} = {}
+  ): Promise<TableMetadata> {
+    const metadata = await super.getTableMetadata(name, options);
+    return {
+      ...metadata,
+      queryable: Boolean(metadata.schema && isDuckDBQuerySchema(metadata.schema))
+    };
+  }
+
+  /** Lists table names without claiming compatibility before schema discovery. */
+  override async getTablesMetadata(
+    options: {signal?: AbortSignal} = {}
+  ): Promise<readonly TableMetadata[]> {
+    return (await super.getTablesMetadata(options)).map(({name}) => ({name}));
+  }
+
   /** Uploads an Arrow table through IPC. Supported by the browser DuckDB-Wasm adapter. */
-  async insertArrowTable(table: ArrowTable, options: SQLArrowInsertOptions): Promise<void> {
-    await this.insertArrowIPC(tableToIPC(table.data, 'stream'), options);
+  async insertArrowTable(table: Table, options: SQLArrowInsertOptions): Promise<void> {
+    await this.insertArrowIPC(tableToIPC(table, 'stream'), options);
   }
 
   /** Uploads a complete Arrow IPC stream to a browser DuckDB-Wasm table. */
@@ -380,7 +413,7 @@ async function createDuckDBBrowserAdapter(context: SQLAdapterFactoryContext): Pr
     },
     async executeArrow(sqlText: string, options: SQLQueryOptions = {}) {
       const result = await executeDuckDBBrowserQuery(connection, sqlText, options.parameters);
-      return convertArrowToTable(tableFromIPC(result), 'arrow-table');
+      return tableFromIPC(result);
     }
   };
 }

@@ -26,9 +26,9 @@ test.each([
     expect.arrayContaining([
       'loadZarr',
       'ZarrArraySource',
-      'OMEZarrSourceLoader',
-      'GeoZarrSourceLoader',
-      'SpatialDataSourceLoader'
+      'OMEZarrLoader',
+      'GeoZarrLoader',
+      'SpatialDataLoader'
     ])
   );
 });

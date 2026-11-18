@@ -24,8 +24,9 @@
 //     diffuse_blue: 'blue'
 //   }
 // });
-import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/core/schema';
+import type {MeshAttribute, MeshAttributes} from '@loaders.gl/core/schema';
 import * as arrow from 'apache-arrow';
+import {getMeshBoundingBox} from '@loaders.gl/core/schema-utils';
 import type {
   PLYMesh,
   PLYHeader,
@@ -49,7 +50,7 @@ export type ParsePLYOptions = {
   propertyNameMapping?: Record<string, string>;
   /** Treat PLY data as a point cloud by reading only the leading vertex element. */
   pointCloud?: boolean;
-  shape?: 'mesh' | 'arrow-table';
+  shape?: 'mesh' | 'arrow';
   /** Color storage format. Defaults to uint8norm for backwards compatibility. */
   colorFormat?: 'uint8norm' | 'float16' | 'float32';
 };
@@ -86,7 +87,7 @@ export function parsePLY(data: ArrayBuffer | string, options: ParsePLYOptions = 
 export function parsePLYToArrowTable(
   data: ArrayBuffer | string,
   options: ParsePLYOptions = {}
-): MeshArrowTable | null {
+): arrow.Table | null {
   if (!(data instanceof ArrayBuffer)) {
     return null;
   }
@@ -115,7 +116,7 @@ export function parsePLYBinaryPointCloudToArrowTable(
   data: ArrayBuffer,
   header: PLYHeader,
   options: ParsePLYOptions = {}
-): MeshArrowTable | null {
+): arrow.Table | null {
   const attributes = parseBinaryPointCloud(data, header, options);
   return attributes ? makePLYArrowTable(header, attributes) : null;
 }
@@ -133,7 +134,7 @@ export function parsePLYBinaryPointCloudRecordsToArrowTable(
   header: PLYHeader,
   options: ParsePLYOptions = {},
   plan?: PLYBinaryPointCloudParsePlan
-): MeshArrowTable | null {
+): arrow.Table | null {
   const attributes = parseBinaryPointCloudRecords(records, header, options, plan);
   return attributes ? makePLYArrowTable(header, attributes) : null;
 }
@@ -632,11 +633,13 @@ export type PLYBinaryPointCloudParsePlan = {
 };
 
 /** Build an Arrow table from normalized PLY attribute arrays. */
-function makePLYArrowTable(header: PLYHeader, attributes: PLYAttributes): MeshArrowTable {
+function makePLYArrowTable(header: PLYHeader, attributes: PLYAttributes): arrow.Table {
   const meshAttributes = getPLYMeshAttributes(attributes);
   const schema = getPLYSchema(header, meshAttributes);
   schema.metadata.topology = 'point-list';
   schema.metadata.mode = '0';
+  const boundingBox = getMeshBoundingBox(meshAttributes);
+  if (boundingBox) schema.metadata.boundingBox = JSON.stringify(boundingBox);
 
   const columns: Record<string, arrow.Vector> = {};
   const fields: arrow.Field[] = [];
@@ -652,12 +655,9 @@ function makePLYArrowTable(header: PLYHeader, attributes: PLYAttributes): MeshAr
   }
 
   const arrowSchema = new arrow.Schema(fields, getArrowMetadata(schema.metadata));
-  return {
-    shape: 'arrow-table',
-    schema,
-    data: new arrow.Table(arrowSchema, columns),
-    topology: 'point-list'
-  };
+  return fields.length && columns[fields[0].name].length
+    ? new arrow.Table(arrowSchema, columns)
+    : new arrow.Table(arrowSchema);
 }
 
 /** Convert normalized PLY attributes into mesh-style attribute descriptors. */
@@ -667,22 +667,22 @@ function getPLYMeshAttributes(attributes: PLYAttributes): MeshAttributes {
   for (const attributeName of Object.keys(attributes)) {
     switch (attributeName) {
       case 'vertices':
-        if (attributes.vertices.length > 0) {
+        if (ArrayBuffer.isView(attributes.vertices)) {
           meshAttributes.POSITION = {value: getFloat32Array(attributes.vertices), size: 3};
         }
         break;
       case 'normals':
-        if (attributes.normals.length > 0) {
+        if (ArrayBuffer.isView(attributes.normals)) {
           meshAttributes.NORMAL = {value: getFloat32Array(attributes.normals), size: 3};
         }
         break;
       case 'uvs':
-        if (attributes.uvs.length > 0) {
+        if (ArrayBuffer.isView(attributes.uvs)) {
           meshAttributes.TEXCOORD_0 = {value: getFloat32Array(attributes.uvs), size: 2};
         }
         break;
       case 'colors':
-        if (attributes.colors.length > 0) {
+        if (ArrayBuffer.isView(attributes.colors)) {
           meshAttributes.COLOR_0 = {
             value: getUint8Array(attributes.colors),
             size: 3,
@@ -693,7 +693,7 @@ function getPLYMeshAttributes(attributes: PLYAttributes): MeshAttributes {
       case 'indices':
         break;
       default:
-        if (attributes[attributeName].length > 0) {
+        if (ArrayBuffer.isView(attributes[attributeName])) {
           meshAttributes[attributeName] = {
             value: getFloat32Array(attributes[attributeName]),
             size: 1

@@ -13,14 +13,14 @@ import {parse} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
 const table = await parse(arrayBuffer, PLYLoader, {
-  ply: {shape: 'arrow-table'}
+  ply: {shape: 'arrow'}
 });
 
-console.log(table.data.schema.metadata.get('loaders_gl.semantic_type'));
-console.log(table.data.getChild('scale_0'));
-console.log(table.data.getChild('rot_0'));
-console.log(table.data.getChild('opacity'));
-console.log(table.data.getChild('f_dc_0'));
+console.log(table.schema.metadata.get('loaders_gl.semantic_type'));
+console.log(table.getChild('scale_0'));
+console.log(table.getChild('rot_0'));
+console.log(table.getChild('opacity'));
+console.log(table.getChild('f_dc_0'));
 ```
 
 GraphDECO-style Gaussian Splat PLY files are identified with

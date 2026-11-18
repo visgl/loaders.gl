@@ -16,8 +16,6 @@ export {MTLFormat} from './mtl-format';
 export type {MTLLoaderOptions} from './mtl-loader-types';
 export {MTLLoader} from './mtl-loader-types';
 
-// DEPRECATED EXPORTS
-/** @deprecated Use OBJLoader. */
-export {OBJWorkerLoader} from './obj-loader-types';
-/** @deprecated Use MTLLoader. */
-export {MTLWorkerLoader} from './mtl-loader-types';
+export {type OBJMeshBatch, type OBJParsedBatch} from './obj-loader-types';
+
+export {OBJLoaderWithParser} from '../obj-loader';

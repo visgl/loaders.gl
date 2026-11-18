@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {PotreeSourceLoaderOptions} from '../potree-source-loader';
+import {log as loaderLog} from '@loaders.gl/core/loader-utils';
+import type {PotreeLoaderOptions} from '../potree-source-options';
 import type {PotreeDatasetMetadata} from '../potree-loader-types';
 import type {Potree2Source} from '../potree2-source';
 import type {
@@ -25,15 +26,8 @@ import {
   type PointCloudQueryCapabilities
 } from '@loaders.gl/core/loader-utils';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
-import type {
-  ArrowTableBatch,
-  DataType,
-  Field,
-  Mesh,
-  MeshArrowTable,
-  Schema
-} from '@loaders.gl/core/schema';
-import {ArrowTableBuilder, convertMeshToTable} from '@loaders.gl/core/schema-utils';
+import type {DataType, Field, Mesh, MeshArrowTable, Schema} from '@loaders.gl/core/schema';
+import {ArrowTableBuilder, makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {
   POTreeNode,
@@ -74,8 +68,8 @@ export interface PotreeNodeMesh extends LASMesh {
  * @note Point cloud nodes tile source
  */
 export class PotreeNodesSource
-  extends DataSource<string, PotreeSourceLoaderOptions>
-  implements PointCloudScanSource<ArrowTableBatch>
+  extends DataSource<string, PotreeLoaderOptions>
+  implements PointCloudScanSource<import('apache-arrow').RecordBatch>
 {
   /** Common point-cloud scan capabilities exposed by Potree metadata and hierarchy nodes. */
   readonly pointCloudQueryCapabilities: PointCloudQueryCapabilities = Object.freeze({
@@ -125,7 +119,7 @@ export class PotreeNodesSource
    *              - if Blob - single file data
    * @param options - data source properties
    */
-  constructor(data: string, options: PotreeSourceLoaderOptions, coreApi?: CoreAPI) {
+  constructor(data: string, options: PotreeLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, undefined, coreApi);
     this.makeBaseUrl(this.data);
 
@@ -245,7 +239,9 @@ export class PotreeNodesSource
    * Node bounds, hierarchy levels, and target spacing avoid unrelated node reads. Attribute
    * predicates and exact point bounds are evaluated residually after each selected node decode.
    */
-  async *scan(options: PointCloudScanReadOptions = {}): AsyncIterableIterator<ArrowTableBatch> {
+  async *scan(
+    options: PointCloudScanReadOptions = {}
+  ): AsyncIterableIterator<import('apache-arrow').RecordBatch> {
     await this.initPromise;
     if (this.modernSource || !this.isSupported()) {
       throw new Error('This Potree version or point-attribute layout is not supported.');
@@ -904,14 +900,14 @@ export class PotreeNodesSource
     }
 
     this.invalidBoundsWarningIds.add(tileId);
-    console.warn('PotreeNodesSource derived an invalid child bounding box.', {
+    loaderLog.warn('PotreeNodesSource derived an invalid child bounding box.', {
       tileId,
       parentTileId,
       parentBounds,
       childBounds,
       isDegenerate,
       exceedsParent
-    });
+    })();
   }
 
   /**
@@ -992,9 +988,9 @@ export class PotreeNodesSource
       // TypeScript LAS loader to use its packaged worker by default.
       const loaderOptions: LoaderOptions = {
         las: {
+          shape: 'mesh',
           colorDepth: 'auto',
-          colorFormat:
-            (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
+          colorFormat: (this.loadOptions as PotreeLoaderOptions).potree?.colorFormat || 'uint8norm'
         }
       };
       if (this.loadOptions.core) {
@@ -1012,13 +1008,13 @@ export class PotreeNodesSource
 
     return {
       potree: {
+        shape: 'mesh',
         pointAttributes: this.metadata.pointAttributes,
         version: this.metadata.version,
         scale: this.metadata.scale,
         positionOrigin,
         nodeBoundingBox: tileBoundingBox,
-        colorFormat:
-          (this.loadOptions as PotreeSourceLoaderOptions).potree?.colorFormat || 'uint8norm'
+        colorFormat: (this.loadOptions as PotreeLoaderOptions).potree?.colorFormat || 'uint8norm'
       }
     };
   }
@@ -1073,23 +1069,7 @@ export class PotreeNodesSource
       attributes.NORMAL = mesh.attributes.normals;
     }
 
-    return convertMeshToTable(
-      {
-        topology: 'point-list',
-        mode: 0,
-        header: {
-          vertexCount:
-            mesh.header?.vertexCount ||
-            mesh.attributes.positions.value.length / mesh.attributes.positions.size
-        },
-        schema: {
-          fields: [],
-          metadata: {}
-        },
-        attributes
-      },
-      'arrow-table'
-    );
+    return makeMeshArrowTable(attributes, {topology: 'point-list'});
   }
 
   /**

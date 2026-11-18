@@ -141,7 +141,9 @@ test('point conversion integrates target RTC precision with tileset packaging', 
   });
   expect(report).toMatchObject({state: 'completed', inputResources: 1, outputResources: 1});
   const files = sink.getFiles();
-  const parsed = await parse(await files[0].blob.arrayBuffer(), Tiles3DLoader, {worker: false});
+  const parsed = await parse(await files[0].blob.arrayBuffer(), Tiles3DLoader, {
+    core: {worker: false}
+  });
   expect(parsed.rtcCenter![0]).toBeGreaterThan(5000000);
   expect(Array.from(parsed.attributes.positions!).slice(0, 3)).toEqual([0, 0, 0]);
   expect(JSON.parse(await files[1].blob.text()).root.children[0].transform).toBeUndefined();
@@ -365,7 +367,7 @@ test('projected I3S geometry writes GLB and I3S without intermediate float32 off
   });
   const output = (await (await codec.convert(resource, undefined))[Symbol.asyncIterator]().next())
     .value!;
-  const parsed = await parse(output.glb, GLTFLoader, {worker: false});
+  const parsed = await parse(output.glb, GLTFLoader, {core: {worker: false}});
   const positions = new GLTFScenegraph(parsed).getTypedArrayForAccessor(0);
   expect(Math.abs(positions[0])).toBeLessThan(1e-8);
   expect(output.origin[0] + positions[0]).toBeCloseTo(6378137 + 33.5280003048, 8);
@@ -624,7 +626,7 @@ test('native local normals work through mesh and point preparation without proje
   };
   const output = (await (await codec.convert(resource, undefined))[Symbol.asyncIterator]().next())
     .value!;
-  const parsed = await parse(output.glb, GLTFLoader, {worker: false});
+  const parsed = await parse(output.glb, GLTFLoader, {core: {worker: false}});
   const scenegraph = new GLTFScenegraph(parsed);
   const normalAccessor = scenegraph.json.meshes![0].primitives[0].attributes.NORMAL;
   expect(Array.from(scenegraph.getTypedArrayForAccessor(normalAccessor))).toEqual(

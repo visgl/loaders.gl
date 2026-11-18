@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Table as NativeArrowTable} from 'apache-arrow';
 import {beforeAll, expect, test} from 'vitest';
 import {
   ClusterSource,
   convertFeaturesToGeoArrowTable,
   convertGeoArrowGeometry
 } from '@loaders.gl/core/geoarrow';
-import type {ArrowTable, GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
+import type {GeoJSONTable, Geometry} from '@loaders.gl/core/schema';
 import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 const TABLE: GeoJSONTable = {
@@ -51,7 +52,7 @@ const REQUEST: GetFeaturesParameters = {
   ],
   zoom: 0
 };
-let arrowTable: ArrowTable;
+let arrowTable: NativeArrowTable;
 let source: ClusterSource;
 beforeAll(() => {
   arrowTable = convertFeaturesToGeoArrowTable(TABLE.features);
@@ -80,11 +81,11 @@ test('source keeps original feature identity and geometries while returning clus
 });
 
 test('GeoJSON, binary, WKB, native and union outputs agree and empty schemas retain fields', async () => {
-  const table = (await source.getFeatures(REQUEST)) as ArrowTable;
-  expect(table.data.getChild('pointCount')!.get(0)).toBe(2);
-  expect(table.data.getChild('total')!.get(0)).toBe(5);
+  const table = (await source.getFeatures(REQUEST)) as NativeArrowTable;
+  expect(table.getChild('pointCount')!.get(0)).toBe(2);
+  expect(table.getChild('total')!.get(0)).toBe(5);
   expect(
-    table.data.schema.fields
+    table.schema.fields
       .find(field => field.name === 'geometry')!
       .metadata.get('ARROW:extension:name')
   ).toBe('geoarrow.wkb');
@@ -94,10 +95,10 @@ test('GeoJSON, binary, WKB, native and union outputs agree and empty schemas ret
     const encoded = (await source.getFeatures({
       ...REQUEST,
       geoarrow: {encodingPreference: preference}
-    })) as ArrowTable;
-    expect(encoded.data.getChild('pointCount')!.get(0)).toBe(2);
+    })) as NativeArrowTable;
+    expect(encoded.getChild('pointCount')!.get(0)).toBe(2);
     expect(
-      encoded.data.schema.fields
+      encoded.schema.fields
         .find(field => field.name === 'geometry')!
         .metadata.get('ARROW:extension:name')
     ).toBe(preference === 'optimized' ? 'geoarrow.point' : 'geoarrow.geometry');
@@ -108,14 +109,14 @@ test('GeoJSON, binary, WKB, native and union outputs agree and empty schemas ret
       [80, 30],
       [90, 40]
     ]
-  })) as ArrowTable;
-  expect(empty.data.numRows).toBe(0);
-  expect(empty.data.schema.fields.map(field => field.name)).toEqual(
-    table.data.schema.fields.map(field => field.name)
+  })) as NativeArrowTable;
+  expect(empty.numRows).toBe(0);
+  expect(empty.schema.fields.map(field => field.name)).toEqual(
+    table.schema.fields.map(field => field.name)
   );
   const schema = await source.getSchema();
   expect(schema.fields.map(field => field.name)).toEqual(
-    table.data.schema.fields.map(field => field.name)
+    table.schema.fields.map(field => field.name)
   );
   schema.fields.length = 0;
   expect((await source.getSchema()).fields.length).toBeGreaterThan(0);
@@ -140,9 +141,9 @@ test('Arrow geometry extraction handles mixed geometries, custom positions and a
 
 test('native point input preserves null rows, chunk and slice offsets without feature objects', () => {
   const pointTable = convertFeaturesToGeoArrowTable(TABLE.features.slice(0, 3));
-  const native = convertGeoArrowGeometry(pointTable.data, 'geoarrow.point');
+  const native = convertGeoArrowGeometry(pointTable, 'geoarrow.point');
   const chunked = native.concat(native).slice(1, 5);
-  const points = new ClusterSource({shape: 'arrow-table', data: chunked});
+  const points = new ClusterSource(chunked);
   expect(points.indexedRowCount).toBe(2);
   expect(points.index.getNode(0).rowIndex).toBe(1);
   expect(points.index.getNode(1).rowIndex).toBe(2);
@@ -182,5 +183,5 @@ test('source requires zoom, validates layer/CRS and honors cancellation', async 
     features: []
   });
   expect(empty.indexedRowCount).toBe(0);
-  expect(((await empty.getFeatures(REQUEST)) as ArrowTable).data.numRows).toBe(0);
+  expect(((await empty.getFeatures(REQUEST)) as NativeArrowTable).numRows).toBe(0);
 });

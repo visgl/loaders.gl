@@ -10,7 +10,6 @@ import type {
   VectorSource,
   VectorTileSource
 } from '@loaders.gl/core/loader-utils';
-import type {ArrowTable} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {OGCAPIFeaturesSource, WFSVectorSource} from '@loaders.gl/ogc/wms';
 import {
@@ -18,7 +17,7 @@ import {
   VectorTileTableScanSource
 } from '../../src/scan/vector-table-scan-source';
 
-test('VectorTileTableScanSource binds tile addressing outside the portable query', async () => {
+test('VectorTileTableScanSource reads native Arrow tiles and keeps addressing outside the query', async () => {
   const sourceTable = makeArrowTable({id: [1, 2, 3], value: [10, 20, 30]});
   const requestedTiles: GetTileParameters[] = [];
   const tileLayers = ['roads'];
@@ -33,7 +32,7 @@ test('VectorTileTableScanSource binds tile addressing outside the portable query
       return null;
     },
     async getSchema() {
-      return sourceTable.schema;
+      return convertArrowToSchema(sourceTable.schema);
     },
     async getVectorTile(parameters: GetTileParameters) {
       requestedTiles.push(parameters);
@@ -70,8 +69,12 @@ test('VectorTileTableScanSource binds tile addressing outside the portable query
   })) {
     batches.push(batch);
   }
-  expect(batches.map(batch => batch.length)).toEqual([1]);
-  expect(Array.from(batches[0].data.getChild('id')?.toArray() || [])).toEqual([2]);
+  expect(batches.map(batch => batch.numRows)).toEqual([1]);
+  expect(Array.from(batches[0].getChild('id')?.toArray() || [])).toEqual([2]);
+  const empty = await scanSource.read({columns: ['id'], limit: 0}).next();
+  expect(empty.value?.numRows).toBe(0);
+  expect(empty.value?.schema.names).toEqual(['id']);
+
   expect(requestedTiles).toHaveLength(1);
   expect(requestedTiles[0]).toMatchObject({x: 2, y: 1, z: 2, layers: ['roads']});
   expect(Object.isFrozen(scanSource.tile.layers)).toBe(true);
@@ -82,7 +85,7 @@ test('VectorFeatureTableScanSource binds service controls and requests Arrow out
   const requests: GetFeaturesParameters[] = [];
   const source = {
     async getSchema() {
-      return sourceTable.schema;
+      return convertArrowToSchema(sourceTable.schema);
     },
     async getMetadata() {
       return {name: 'features', keywords: [], layers: []};
@@ -169,14 +172,13 @@ test('addressed vector scans propagate cancellation and reject non-Arrow output'
   await expect(emptySource.getQueryMetadata()).rejects.toThrow('did not return a feature table');
 
   const invalidSource = new VectorTileTableScanSource(source, {tile: {x: 0, y: 0, z: 0}});
-  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow-table"');
-  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow-table"');
+  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow"');
+  await expect(invalidSource.getQueryMetadata()).rejects.toThrow('shape "arrow"');
   expect(requestCount).toBe(2);
 });
 
 test('addressed vector scans infer missing schema and optional service metadata', async () => {
   const data = arrow.tableFromArrays({id: [1]});
-  const sourceTable = {shape: 'arrow-table', data} as ArrowTable;
   const requests: GetFeaturesParameters[] = [];
   const source = {
     async getSchema() {
@@ -187,7 +189,7 @@ test('addressed vector scans infer missing schema and optional service metadata'
     },
     async getFeatures(parameters: GetFeaturesParameters) {
       requests.push(parameters);
-      return sourceTable;
+      return data;
     }
   } as VectorSource;
   const layers = ['roads', 'buildings'];
@@ -223,7 +225,7 @@ test('addressed vector scans infer missing schema and optional service metadata'
 
 test('addressed vector scans isolate shared loads from caller cancellation', async () => {
   const sourceTable = makeArrowTable({id: [1]});
-  let resolveLoad!: (table: ArrowTable) => void;
+  let resolveLoad!: (table: arrow.Table) => void;
   let loadCount = 0;
   let physicalSignal: AbortSignal | undefined;
   const source = {
@@ -237,12 +239,12 @@ test('addressed vector scans isolate shared loads from caller cancellation', asy
       return null;
     },
     async getSchema() {
-      return sourceTable.schema;
+      return convertArrowToSchema(sourceTable.schema);
     },
     getVectorTile(parameters: GetTileParameters) {
       loadCount++;
       physicalSignal = parameters.signal;
-      return new Promise<ArrowTable>(resolve => {
+      return new Promise<arrow.Table>(resolve => {
         resolveLoad = resolve;
       });
     }
@@ -257,17 +259,16 @@ test('addressed vector scans isolate shared loads from caller cancellation', asy
 
   await expect(cancelledMetadata).rejects.toMatchObject({name: 'AbortError'});
   resolveLoad(sourceTable);
-  await expect(successfulQuery).resolves.toMatchObject({shape: 'arrow-table'});
+  await expect(successfulQuery).resolves.toBeInstanceOf(arrow.Table);
   expect(loadCount).toBe(1);
   expect(physicalSignal).toBeUndefined();
 });
 
-/** Creates a loaders.gl Arrow table from ordinary named arrays. */
+/** Creates an Apache Arrow table from ordinary named arrays. */
 function makeArrowTable(
   columns: Record<string, arrow.TypedArray | readonly unknown[]>
-): ArrowTable {
-  const data = arrow.tableFromArrays(columns);
-  return {shape: 'arrow-table', schema: convertArrowToSchema(data.schema), data};
+): arrow.Table {
+  return arrow.tableFromArrays(columns);
 }
 
 test.each([
@@ -317,17 +318,17 @@ test.each([
     limit: 1
   } as const;
   const result = await scanSource.query(queryOptions);
-  expect(result.data.getChild('name')?.get(0)).toBe('road.2');
-  expect(result.data.numRows).toBe(1);
-  expect(result.data.schema.fields.map(field => field.name)).toEqual(['name', 'geometry']);
-  expect(result.data.schema.fields[1].metadata.get('ARROW:extension:name')).toBe('geoarrow.wkb');
+  expect(result.getChild('name')?.get(0)).toBe('road.2');
+  expect(result.numRows).toBe(1);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['name', 'geometry']);
+  expect(result.schema.fields[1].metadata.get('ARROW:extension:name')).toBe('geoarrow.wkb');
   const explanation = await scanSource.explain(queryOptions);
   expect(explanation.plan.map(step => step.kind)).toEqual(['scan', 'filter', 'project', 'limit']);
   const scannedBatches = [];
   for await (const batch of scanSource.scan(queryOptions)) scannedBatches.push(batch);
   expect(scannedBatches).toHaveLength(1);
-  expect(scannedBatches[0].length).toBe(1);
-  expect(scannedBatches[0].data.getChild('name')?.get(0)).toBe('road.2');
+  expect(scannedBatches[0].numRows).toBe(1);
+  expect(scannedBatches[0].getChild('name')?.get(0)).toBe('road.2');
   expect(requestedUrls).toHaveLength(1);
   const searchParameters = new URL(requestedUrls[0]).searchParams;
   if (sourceType === 'wfs') {
@@ -339,4 +340,61 @@ test.each([
     expect(searchParameters.get('bbox-crs')).toBe('CRS:84');
     expect(searchParameters.get('crs')).toBe('EPSG:3857');
   }
+});
+
+test.each([
+  {name: 'missing data', data: null},
+  {name: 'GeoJSON output', data: {shape: 'geojson-table', type: 'FeatureCollection', features: []}}
+])('VectorFeatureTableScanSource rejects $name for an Arrow request', async ({data}) => {
+  const source = {
+    async getSchema() {
+      return {fields: []};
+    },
+    async getMetadata() {
+      return {name: 'features', keywords: [], layers: []};
+    },
+    async getFeatures() {
+      return data;
+    }
+  } as VectorSource;
+  const scanSource = new VectorFeatureTableScanSource(source, {
+    request: {
+      layers: 'features',
+      boundingBox: [
+        [0, 0],
+        [1, 1]
+      ]
+    }
+  });
+  await expect(scanSource.query()).rejects.toThrow('did not return a feature table');
+});
+
+test('addressed scans retain schema when a query returns no physical batches', async () => {
+  const data = new arrow.Table(new arrow.Schema([new arrow.Field('id', new arrow.Int32())]));
+  const source = new VectorFeatureTableScanSource(
+    {
+      async getSchema() {
+        return convertArrowToSchema(data.schema);
+      },
+      async getMetadata() {
+        return {keywords: [], layers: []};
+      },
+      async getFeatures() {
+        return data;
+      }
+    },
+    {
+      request: {
+        layers: 'features',
+        boundingBox: [
+          [0, 0],
+          [1, 1]
+        ]
+      }
+    }
+  );
+  source.query = async () => data;
+  const {value} = await source.read().next();
+  expect(value.numRows).toBe(0);
+  expect(value.schema.names).toEqual(['id']);
 });

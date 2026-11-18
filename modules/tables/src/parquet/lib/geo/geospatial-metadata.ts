@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {updateArrowTableSchema} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import {
@@ -183,29 +184,25 @@ export function applyGeoParquetToFieldMetadata(schema: Schema): Schema {
  */
 export function applyLoadersSchemaToArrowTable(table: arrow.Table, schema: Schema): arrow.Table {
   const arrowSchema = createArrowJsSchema(table.schema, schema);
-  return new arrow.Table(arrowSchema, table.batches);
+  return updateArrowTableSchema(table, arrowSchema);
 }
 
 /**
- * Normalizes an Arrow wrapper so GeoParquet metadata is preserved and GeoArrow field metadata is attached.
+ * Normalizes an Apache Arrow table so GeoParquet metadata is preserved and GeoArrow field metadata is attached.
  *
- * @param arrowTable - loaders.gl Arrow table wrapper.
+ * @param arrowTable - Apache Arrow table.
  * @param schemaMetadata - Optional schema metadata override from the Parquet footer.
- * @returns Arrow table wrapper with synchronized schema metadata.
+ * @returns Arrow table with synchronized schema metadata.
  */
 export function normalizeArrowTableGeoMetadata(
-  arrowTable: {shape: 'arrow-table'; data: arrow.Table; schema?: Schema},
+  arrowTable: arrow.Table,
   schemaMetadata?: Map<string, string> | Record<string, string>
-): {shape: 'arrow-table'; data: arrow.Table; schema: Schema} {
-  const schema = convertArrowToSchema(arrowTable.data.schema);
+): arrow.Table {
+  const schema = convertArrowToSchema(arrowTable.schema);
   mergeSchemaMetadata(schema, schemaMetadata);
   applyGeoParquetToFieldMetadata(schema);
 
-  return {
-    shape: 'arrow-table',
-    data: applyLoadersSchemaToArrowTable(arrowTable.data, schema),
-    schema
-  };
+  return applyLoadersSchemaToArrowTable(arrowTable, schema);
 }
 
 /**
@@ -256,25 +253,11 @@ export function ensureGeoParquetMetadata(schema: Schema): Schema {
   return schema;
 }
 
-/**
- * Ensures an Arrow table wrapper carries valid GeoParquet schema metadata when GeoArrow fields are present.
- *
- * @param arrowTable - Arrow table wrapper to inspect and update.
- * @returns Updated Arrow table wrapper.
- */
-export function ensureGeoParquetMetadataOnArrowTable(arrowTable: {
-  shape: 'arrow-table';
-  data: arrow.Table;
-  schema?: Schema;
-}): {shape: 'arrow-table'; data: arrow.Table; schema: Schema} {
-  const schema = arrowTable.schema || convertArrowToSchema(arrowTable.data.schema);
+/** Adds GeoParquet metadata for GeoArrow fields while preserving Arrow column buffers. */
+export function ensureGeoParquetMetadataOnArrowTable(table: arrow.Table): arrow.Table {
+  const schema = convertArrowToSchema(table.schema);
   ensureGeoParquetMetadata(schema);
-
-  return {
-    shape: 'arrow-table',
-    data: applyLoadersSchemaToArrowTable(arrowTable.data, schema),
-    schema
-  };
+  return applyLoadersSchemaToArrowTable(table, schema);
 }
 
 /**

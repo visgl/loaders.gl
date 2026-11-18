@@ -5,10 +5,11 @@
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ParquetKeyRetriever} from './lib/parquet-encryption';
 
-/** Shared row-level options supported by both Parquet backends. */
+/** Row-level options supported by the TypeScript Parquet reader. */
 type ParquetCommonLoaderOptions = {
-  /** @deprecated Use `_scan.limit` instead. */
+  /** @deprecated Put the limit in a logical query or pass it to `ParquetSource.read()`. */
   limit?: number;
+  /** @deprecated Put the offset in a logical query or pass it to `ParquetSource.read()`. */
   offset?: number;
   batchSize?: number;
   /** @deprecated Use `_scan.columns` instead for logical projection. */
@@ -24,8 +25,8 @@ type ParquetCommonLoaderOptions = {
   int96AsTimestamp?: boolean;
 };
 
-/** Reader selection, cancellation, and optional WASM backend settings. */
-type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
+/** Reader selection and cancellation settings. */
+type ParquetReaderOptions = ParquetCommonLoaderOptions & {
   /** Zero-based row groups to read, in output order. */
   rowGroups?: number[];
   concurrency?: number;
@@ -33,25 +34,14 @@ type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
   signal?: AbortSignal;
   /** Overrides the packaged Parquet worker asset URL. */
   workerUrl?: string;
-  /** Overrides the package-local parquet-wasm binary URL. */
-  wasmUrl?: string;
 };
 
 /** Public options for the TypeScript-backed `ParquetLoader` and `GeoParquetLoader`. */
 export type ParquetLoaderOptions = LoaderOptions & {
   parquet?: {
-    shape?: 'object-row-table' | 'arrow-table';
+    shape?: 'arrow' | 'object-row-table';
   } & {
-    [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
-  };
-};
-
-/** Public options for the experimental parquetjs-backed `ParquetJSLoader`. */
-export type ParquetJSLoaderOptions = LoaderOptions & {
-  parquet?: {
-    shape?: 'object-row-table' | 'arrow-table';
-  } & {
-    [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
+    [Key in keyof ParquetReaderOptions]?: ParquetReaderOptions[Key];
   };
 };
 
@@ -59,5 +49,5 @@ export type ParquetJSLoaderOptions = LoaderOptions & {
 export const PARQUET_LOADER_DEFAULT_OPTIONS = {
   columns: undefined,
   preserveBinary: false,
-  shape: 'arrow-table'
+  shape: 'arrow'
 } as const;
