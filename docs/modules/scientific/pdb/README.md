@@ -78,7 +78,7 @@ An empty bond list means there were no usable authored CONECT pairs. It does not
 
 Atom rows retain serial, ATOM/HETATM category, name, alternateLocation, residueName, chain, residueNumber, insertionCode, XYZ position, authored element and charge, and optional occupancy and temperatureFactor. Missing optional numeric fields remain absent. Element names are not inferred from atom names.
 
-Without MODEL records, atoms form implicit model 1. Global CONECT records apply to each model. Reciprocal and repeated pairs are deduplicated; repeat count is not interpreted as bond order. Serial references are resolved within the relevant model.
+Without MODEL records, atoms form implicit model 1. Global CONECT records apply to each model. Blank and zero-filled unused CONECT target slots are ignored. Reciprocal and repeated pairs are deduplicated; repeat count is not interpreted as bond order. Serial references are resolved within the relevant model.
 
 ## Supported features and limits
 

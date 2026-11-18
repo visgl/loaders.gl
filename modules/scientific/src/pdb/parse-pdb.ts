@@ -104,13 +104,20 @@ export function parsePDB(text: string): PDBStructure {
       serialMaps.set(active, serials);
       active.atoms.push(atom);
     } else if (record === 'CONECT') {
-      const serials: number[] = [];
-      for (let offset = 6; offset < 31; offset += 5) {
+      const serials = [readNumber(line.slice(6, 11), true)];
+      let hasTargetField = false;
+      for (let offset = 11; offset < 31; offset += 5) {
         const value = line.slice(offset, offset + 5);
-        if (value.trim()) serials.push(readNumber(value, true));
+        if (!value.trim()) continue;
+        hasTargetField = true;
+        const serial = readNumber(value, true);
+        // Some writers use zero instead of blanks for unused target slots.
+        if (serial !== 0) serials.push(serial);
       }
-      if (serials.length < 2) throw new Error('PDB: incomplete CONECT');
-      connections.push({model: explicitModels ? active : undefined, serials});
+      if (!hasTargetField) throw new Error('PDB: incomplete CONECT');
+      if (serials.length > 1) {
+        connections.push({model: explicitModels ? active : undefined, serials});
+      }
     } else {
       records.push(line);
     }

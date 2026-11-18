@@ -85,3 +85,13 @@ test('PDB rejects an explicit MODEL after implicit atoms', () => {
     /model nesting/
   );
 });
+
+test('PDB ignores zero-padded unused CONECT target slots', () => {
+  const structure = PDBLoaderWithParser.parseTextSync(
+    `${first}\n${second}\nCONECT    1    0    2    0    0\nCONECT    2    0    0    0    0`
+  );
+  expect(structure.models[0].bonds).toEqual([[0, 1]]);
+  expect(() => PDBLoaderWithParser.parseTextSync(`${first}\nCONECT    0    1`)).toThrow(
+    /missing atom/
+  );
+});
