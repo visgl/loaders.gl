@@ -56,6 +56,8 @@ export type {NPYLoaderOptions} from './npy-loader-types';
 export type {NPYTile} from './lib/parsers/parse-npy';
 export {NPYFormat} from './npy-format';
 
+export {PDBLoader} from './pdb-loader-types';
+export type {PDBAtom, PDBModel, PDBStructure} from './pdb/parse-pdb';
 export {NRRDLoader} from './nrrd-loader-types';
 export type {NRRDData} from './nrrd/parse-nrrd';
 export type {NRRDArray} from './nrrd/parse-nrrd';

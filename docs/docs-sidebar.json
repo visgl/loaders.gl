@@ -1297,6 +1297,7 @@
               "modules/scientific/formats/npy",
               "modules/scientific/netcdf/formats/netcdf",
               "modules/scientific/zarr/formats/zarr",
+              "modules/scientific/pdb/README",
               "modules/scientific/vtk/README",
               "modules/scientific/nrrd/README"
             ],
