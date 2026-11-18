@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import type {SQLQuery} from '@math.gl/sql/parser';
 import type {TableQuery} from '@loaders.gl/core/loader-utils';
 import {queryInBatches, type QueryOptions} from './query';
 
@@ -22,7 +23,7 @@ export type ProgressiveAggregate = Readonly<{
  */
 export type ProgressiveAggregateQuery = Readonly<{
   from?: TableQuery['from'];
-  where?: TableQuery['where'];
+  where?: TableQuery['where'] | {expression: import('@math.gl/sql/expressions').Expression};
   groupBy?: string;
   aggregates: readonly ProgressiveAggregate[];
 }>;
@@ -74,7 +75,7 @@ export async function* executeProgressiveQuery(
   // A COUNT(*) request can have no input columns, but the query pipeline still needs
   // a source column to preserve row counts. The absence of select means all source
   // columns are read; no source data is retained beyond each batch.
-  const tableQuery: TableQuery = {
+  const tableQuery: TableQuery | SQLQuery = {
     ...(query.from === undefined ? {} : {from: query.from}),
     ...(query.where === undefined ? {} : {where: query.where}),
     ...(columns.length ? {select: columns} : {})

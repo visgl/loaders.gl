@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {queryProgressive, queryInBatches} from '@loaders.gl/core/scan';
+import {queryProgressive, queryInBatches, queryGroupedSQL} from '@loaders.gl/core/scan';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {TableScanSource} from '@loaders.gl/core/loader-utils';
@@ -217,4 +217,31 @@ test('queryOutput batches emits plain append-only Arrow RecordBatches', async ()
     {country: 'US'},
     {country: 'SE'}
   ]);
+});
+
+test('grouped SQL returns a single filtered result across batches', async () => {
+  const result = await queryGroupedSQL(
+    'SELECT country, SUM(temperature) AS total, COUNT(*) AS rows FROM data WHERE temperature > 15 GROUP BY country',
+    {source: makeSource()}
+  );
+  expect(result.toArray().map(row => row.toJSON())).toEqual([
+    {country: 'US', total: 50, rows: 2},
+    {country: 'SE', total: 50, rows: 1}
+  ]);
+});
+
+test.each([
+  ['SELECT country, SUM(temperature) AS total FROM data', /single-key GROUP BY/],
+  [
+    'SELECT temperature, SUM(temperature) AS total FROM data GROUP BY country',
+    /grouping column first/
+  ],
+  ['SELECT country, SUM(temperature) FROM data GROUP BY country', /output alias/],
+  [
+    'SELECT country, ABS(temperature) AS n FROM data GROUP BY country',
+    /Unsupported grouped aggregate/
+  ],
+  ['SELECT country, SUM(temperature + 1) AS n FROM data GROUP BY country', /aggregate column/]
+])('grouped scan rejects unsupported SQL before opening the source: %s', async (sql, message) => {
+  await expect(queryGroupedSQL(sql, {source: makeSource()})).rejects.toThrow(message);
 });

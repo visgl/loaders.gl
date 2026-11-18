@@ -348,3 +348,20 @@ into their output Arrow buffers. Other casts and queries with filters use the
 portable Arrow evaluator. Casts run after filtering and the row window. The
 loader's input schema still controls how it decodes the original values.
 `FLOAT16` expressions require a runtime with native `Float16Array` support.
+
+### Grouped SQL scans
+
+Use `queryGroupedSQL` from `@loaders.gl/core/scan` to return the final grouped table
+from a URL, table scan source, or Arrow table. The scan accumulates each group across
+input batches. For example:
+
+```ts
+const totals = await queryGroupedSQL(
+  'SELECT hex, SUM(count) AS visits FROM data GROUP BY hex',
+  {source: url, loaders: [CSVLoader]}
+);
+```
+
+Select one grouping column first, followed by named `COUNT`, `SUM`, `AVG`, `MIN`, or
+`MAX` aggregates. An optional `WHERE` filters rows before grouping. Use
+`queryProgressive` when intermediate replacement snapshots are needed.
