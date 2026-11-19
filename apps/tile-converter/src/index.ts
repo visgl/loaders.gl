@@ -1,4 +1,5 @@
-export {
-  I3SConverter,
-  Tiles3DConverter
-} from './v4/index.js';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+export * from './v5/index.js';

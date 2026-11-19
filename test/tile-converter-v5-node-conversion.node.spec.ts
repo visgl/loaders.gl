@@ -391,6 +391,114 @@ test.each([
   expect(tileset.root.children[0].geometricError).toBeCloseTo(0.01);
 });
 
+test.each([
+  'explicit',
+  'inherited'
+] as const)('CLI writes parent and child placements with %s ADD refinement as independent SLPK leaves', async refinement => {
+  const original = JSON.parse(await readFile(join(directory, 'input', 'hierarchy.json'), 'utf8'));
+  const input = join(directory, 'input', refinement + '-additive.json');
+  original.root.refine = 'ADD';
+  original.root.children[0].transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 5, 0, 0, 1];
+  let parent = 'tile-root-content-0';
+  let child = 'tile-0-content-0';
+  if (refinement === 'inherited') {
+    const {content, children} = original.root;
+    // Move the selected parent one level down, omitting its refine value.
+    original.root.content = undefined;
+    original.root.children = [
+      {boundingVolume: original.root.boundingVolume, geometricError: 2, content, children}
+    ];
+    parent = 'tile-0-content-0';
+    child = 'tile-0-0-content-0';
+  }
+  await writeFile(input, JSON.stringify(original));
+
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  const destinations = {
+    stdout: (output: string) => stdout.push(output),
+    stderr: (output: string) => stderr.push(output)
+  };
+  const selections = [input, '--resource', parent, '--resource', child, '--output-format', 'slpk'];
+  const before = await readdir(directory);
+  expect(
+    await runTileConverterCLI(['validate', ...selections], destinations),
+    stderr.join('\n')
+  ).toBe(0);
+  expect(JSON.parse(stdout.pop()!).report).toMatchObject({
+    state: 'completed',
+    inputResources: 2,
+    outputResources: 2
+  });
+  expect(await readdir(directory)).toEqual(before);
+
+  const output = join(directory, refinement + '-additive.slpk');
+  expect(
+    await runTileConverterCLI(['convert', ...selections, '--output', output], destinations),
+    stderr.join('\n')
+  ).toBe(0);
+  expect(stderr).toEqual([]);
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    const nodePage = JSON.parse(
+      new TextDecoder().decode(await archive.getFile('nodepages/0.json'))
+    );
+    expect(nodePage.nodes).toMatchObject([
+      {index: 0, children: [1, 2]},
+      {index: 1, parentIndex: 0, children: [], mesh: {geometry: {resource: 1, vertexCount: 3}}},
+      {index: 2, parentIndex: 0, children: [], mesh: {geometry: {resource: 2, vertexCount: 3}}}
+    ]);
+    expect(nodePage.nodes[2].obb.center[2] - nodePage.nodes[1].obb.center[2]).toBeCloseTo(5);
+    for (const resource of [1, 2])
+      expect(
+        (await archive.getFile(`nodes/${resource}/geometries/0.bin`)).byteLength
+      ).toBeGreaterThan(0);
+  } finally {
+    await archive.close();
+  }
+});
+
+test.each([
+  'REPLACE parent',
+  'REPLACE intermediate',
+  'unqualified parent'
+] as const)('CLI refuses to flatten an SLPK selection with %s', async refinement => {
+  const original = JSON.parse(await readFile(join(directory, 'input', 'hierarchy.json'), 'utf8'));
+  const input = join(directory, 'input', refinement + '.json');
+  let descendant = 'tile-0-content-0';
+  if (refinement === 'unqualified parent') delete original.root.refine;
+  if (refinement === 'REPLACE intermediate') {
+    original.root.refine = 'ADD';
+    const leaf = original.root.children[0];
+    original.root.children = [
+      {...leaf, geometricError: 1, refine: 'REPLACE', content: undefined, children: [leaf]}
+    ];
+    descendant = 'tile-0-0-content-0';
+  }
+  await writeFile(input, JSON.stringify(original));
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  expect(
+    await runTileConverterCLI(
+      [
+        'validate',
+        input,
+        '--resource',
+        'tile-root-content-0',
+        '--resource',
+        descendant,
+        '--output-format',
+        'slpk'
+      ],
+      {stdout: text => stdout.push(text), stderr: text => stderr.push(text)}
+    )
+  ).toBe(1);
+  expect(stdout).toEqual([]);
+  expect(JSON.parse(stderr[0])).toMatchObject({code: 'MESH_SELECTION_REFINEMENT_UNSUPPORTED'});
+});
+
 test('CLI exposes opt-in hierarchy validation and rejects unsupported output and partial selections', async () => {
   const stdout: string[] = [];
   const stderr: string[] = [];

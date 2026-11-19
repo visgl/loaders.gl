@@ -21,6 +21,8 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## v5.0 (In Development)
 
+- The default `tile-converter` command and package import now use the v5 engine. Legacy workflows remain available through `tile-converter-v4` and `@loaders.gl/tile-converter/v4`. See the [migration guide](./upgrade-guide.md#tile-converter-defaults-to-v5).
+
 - Clean format entry points expose metadata loaders and writers together, for example `ParquetLoader` and `ParquetWriter` from `@loaders.gl/tables/parquet`.
 - Parquet writing now uses the native TypeScript encoder, including its encoding, indexing, statistics, and encryption options. Alternative Parquet and LAS implementations are confined to website benchmarks and interoperability tests.
 

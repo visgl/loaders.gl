@@ -26,7 +26,7 @@ export interface TileConverterCLIOutput {
 }
 
 /** Usage for bounded metadata inspection and selected static mesh conversion. */
-const HELP = `Usage: tile-converter-v5 inspect|convert|validate <input path or URL> [options]
+const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL> [options]
 
   --input-format 3d-tiles|3tz|i3s|slpk  Explicit input format (default: 3d-tiles)
   --geometric-error N        Required source error in meters for I3S to 3D Tiles

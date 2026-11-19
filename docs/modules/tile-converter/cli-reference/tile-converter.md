@@ -1,5 +1,5 @@
 ---
-title: Tile Converter CLI
+title: Legacy v4 Tile Converter CLI
 description: Convert I3S and 3D Tiles datasets from URLs or local sources with a repeatable command-line workflow.
 hide_title: true
 page_style: designed
@@ -9,12 +9,13 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
 
 <DocPageHeader
-  eyebrow="Tile converter / CLI"
+  eyebrow="Tile converter / Legacy v4 CLI"
   title="Put tiled-data conversion in the build pipeline."
   description="The tile-converter CLI converts supported I3S and 3D Tiles datasets from URLs or local files. Use it for data preparation, format migration, and repeatable output generation outside the browser."
   tone="orange"
   meta={['I3S ↔ 3D Tiles', 'Node.js and Docker', 'Batch conversion']}
   links={[
+    {label: 'Default v5 CLI', to: '/docs/modules/tile-converter/cli-reference/tile-converter-v5'},
     {label: 'Tile converter module', to: '/docs/modules/tile-converter'},
     {label: 'Supported features', to: '/docs/modules/tile-converter/cli-reference/supported-features'},
     {label: 'JavaScript APIs', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'}
@@ -50,13 +51,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   </a>
 </p>
 
-The `tile-converter` is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both are OGC community standards. It can load tilesets to be converted directly from a URL or file based formats. I3S and 3DTiles are large formats that include different layer types and data formats. See [Supported Features](/docs/modules/tile-converter/cli-reference/supported-features) page which describes what tile-converter supports.
+This page describes the legacy `tile-converter-v4` command. The plain `tile-converter` command
+now runs the [v5 CLI](./tile-converter-v5.md). The legacy command is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both are OGC community standards. It can load tilesets to be converted directly from a URL or file based formats. I3S and 3DTiles are large formats that include different layer types and data formats. See [Supported Features](/docs/modules/tile-converter/cli-reference/supported-features) page which describes what tile-converter supports.
 
 ## Installation
 
 The tile-converter is published as an npm module and as a [docker image](#docker-image).
 
-Installing `@loaders.gl/tile-converter` from npm makes the `tile-converter` command line tool available.
+Installing `@loaders.gl/tile-converter` from npm makes the `tile-converter-v4` command line tool available.
 
 ```bash
 npm i @loaders.gl/tile-converter
@@ -69,25 +71,25 @@ Tile Converter can be run using `npx`.
 Aknowledge available options:
 
 ```bash
-npx tile-converter --help
+npx tile-converter-v4 --help
 ```
 
 Install dependencies:
 
 ```bash
-npx tile-converter --install-dependencies
+npx tile-converter-v4 --install-dependencies
 ```
 
 Run conversion:
 
 ```bash
-npx tile-converter --input-type \<I3S\|3DTILES\> --tileset \<tileset\> --name <tileset name> [--output <output folder>] [--no-draco] [--max-depth 4] [--slpk] [--7zExe <path/to/7z.exe>] [--token <ION token>] [--egm <pat/to/*.pgm|none>] [--split-nodes] [--instant-node-writing] [--generate-textures] [--generate-bounding-volumes]
+npx tile-converter-v4 --input-type \<I3S\|3DTILES\> --tileset \<tileset\> --name <tileset name> [--output <output folder>] [--no-draco] [--max-depth 4] [--slpk] [--7zExe <path/to/7z.exe>] [--token <ION token>] [--egm <pat/to/*.pgm|none>] [--split-nodes] [--instant-node-writing] [--generate-textures] [--generate-bounding-volumes]
 ```
 
 Alternatively, you can use syntax with the equal sign:
 
 ```bash
-npx tile-converter --input-type=\<I3S\|3DTILES\> --tileset=<tileset> --splk=true|false ...
+npx tile-converter-v4 --input-type=\<I3S\|3DTILES\> --tileset=<tileset> --splk=true|false ...
 ```
 
 Alternatively, there is a docker image to run:
@@ -172,7 +174,7 @@ In case when the input 3DTiles dataset has multiple metadata classes, the tile-c
 If the wanted class is known before the conversion it is possible to skip the prompt with setting `metadata-class` option. For example:
 
 ```bash
-npx tile-converter --input-type 3DTILES --tileset ..... --metadata-class bridges
+npx tile-converter-v4 --input-type 3DTILES --tileset ..... --metadata-class bridges
 ```
 
 ## Quiet mode
@@ -180,7 +182,7 @@ npx tile-converter --input-type 3DTILES --tileset ..... --metadata-class bridges
 Use `--quiet` option to avoid user prompts during conversion. In some cases, tile-converter stops and waits for an input from a user, for example, it can ask whether to resume conversion or start a new conversion.
 
 ```bash
-npx tile-converter ..... --quiet
+npx tile-converter-v4 ..... --quiet
 ```
 
 With `--quiet` option present, tile-converter will not ask a user to make a decision, it will do a default action instead.
@@ -221,7 +223,7 @@ open https://loaders.gl/examples/i3s?url=http://localhost:8080/NewLayerName/Scen
 
 ## Docker image
 
-The tile converter is available as a docker image in the [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter/tags) dockerhub repo. The advantage of docker image is that it has dependencies pre-installed so it is not necessary to call `npx tile-converter --install-dependencies`.
+The tile converter is available as a docker image in the [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter/tags) dockerhub repo. The advantage of docker image is that it has dependencies pre-installed so it is not necessary to call `npx tile-converter-v4 --install-dependencies`.
 
 To download the tile-converter docker image, run:
 

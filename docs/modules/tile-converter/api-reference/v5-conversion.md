@@ -764,8 +764,8 @@ infer CRS or qualify content formats. Set `maxTilesetDocuments` (up to 32) to en
 Node imports.
 
 The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) exposes this
-metadata inspection as `tile-converter-v5 inspect` and adds bounded selected-mesh `convert`
-and write-free target-profile `validate` commands. The original `tile-converter` command uses v4.
+metadata inspection as `tile-converter inspect` and adds bounded selected-mesh `convert`
+and write-free target-profile `validate` commands. The original v4 workflow is available via `tile-converter-v4`. The `tile-converter-v5` name remains an alias for the default command.
 
 The Node entrypoint also exports `convertNodeTileset`:
 
@@ -1107,7 +1107,7 @@ the sum of named stages because orchestration, byte measurement, progress callba
 cleanup are not separate stages. Completed timings are attached to the returned report only
 after finalization; failed/cancelled operations reject as before.
 
-Use `tile-converter-v5 convert ... --profile` or `validate ... --profile` to include these
+Use `tile-converter convert ... --profile` or `validate ... --profile` to include these
 values in the existing JSON output. The boolean option does not add callback or worker
 transport requirements. Repeat measurements with identical input, limits, hardware and
 cache conditions. These timings do not measure peak memory or independently qualify

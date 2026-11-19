@@ -87,7 +87,7 @@ legacy dependency installer; CRS and height preparation are explicit. See the
 4. Install default Earth Gravity Model dependency:
 
 ```
-npx tile-converter --install-dependencies
+npx tile-converter-v4 --install-dependencies
 ```
 
 The dependency installer downloads workers and runtime libraries from the matching package version. If a download fails, the error includes the resource URL and HTTP status to help diagnose unavailable artifacts.
@@ -98,8 +98,8 @@ You can use custom Earth Gravity Model or disable it using `--egm` option.
    Examples:
 
 ```
-npx tile-converter --input-type 3dtiles --tileset ./modules/tiles-3d/test/3d-tiles/data/Batched/BatchedTextured/tileset.json --name BatchedTextured
-npx tile-converter --input-type 3dtiles --tileset https://assets.ion.cesium.com/29328/tileset.json --name CairoLayer --max-depth 10
+npx tile-converter-v4 --input-type 3dtiles --tileset ./modules/tiles-3d/test/3d-tiles/data/Batched/BatchedTextured/tileset.json --name BatchedTextured
+npx tile-converter-v4 --input-type 3dtiles --tileset https://assets.ion.cesium.com/29328/tileset.json --name CairoLayer --max-depth 10
 ```
 
 Notice "--max-depth" option. It means that the converter will load and convert only first 'n' (10 in example) levels of tiles. Use it for big tilesets when full conversion could take a lot of time. If you want to convert all the tileset, omit this option.

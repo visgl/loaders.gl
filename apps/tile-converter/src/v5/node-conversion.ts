@@ -150,6 +150,7 @@ export async function convertNodeTileset(
             {
               resourceIds: options.resourceIds,
               preserveHierarchy: options.preserveHierarchy,
+              allowAdditiveNonLeaves: options.outputFormat === 'slpk',
               features: options.features,
               signal,
               source: rawSource,

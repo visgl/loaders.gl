@@ -20,12 +20,18 @@
     "SLPK",
     "3TZ"
   ],
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
+  "main": "dist/v5/index.cjs",
+  "module": "dist/v5/index.js",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/v5/index.d.ts",
+      "import": "./dist/v5/index.js",
+      "require": "./dist/v5/index.cjs"
+    },
+    "./v4": {
+      "types": "./dist/v4/index.d.ts",
+      "import": "./dist/v4/index.js",
+      "require": "./dist/v4/index.cjs"
     },
     "./v5": {
       "types": "./dist/v5/index.d.ts",
@@ -57,7 +63,8 @@
   "bin": {
     "i3s-server": "./bin/i3s-server.js",
     "tile-converter": "./bin/converter.js",
-    "tile-converter-v5": "./bin/converter-v5.js"
+    "tile-converter-v5": "./bin/converter-v5.js",
+    "tile-converter-v4": "./bin/converter-v4.js"
   },
   "files": [
     "src",
@@ -75,12 +82,13 @@
   },
   "scripts": {
     "pre-build": "npm run build-package-entrypoints && npm run build-converter-bundle && npm run build-i3s-server-bundle && npm run copy-certificates",
-    "build-package-entrypoints": "esbuild src/index.ts --bundle --packages=external --platform=node --format=esm --outfile=dist/index.js && esbuild src/index.ts --bundle --packages=external --platform=node --format=cjs --outfile=dist/index.cjs && npm run build-v5-entrypoints && npm run build-v5-declarations",
+    "build-package-entrypoints": "npm run build-v5-entrypoints && npm run build-v5-declarations && npm run build-v4-entrypoints",
     "build-v5-declarations": "tsc --project tsconfig.v5.json",
     "build-converter-bundle": "esbuild src/v4/converter-cli.ts --outfile=dist/converter.min.cjs --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-i3s-server-bundle": "esbuild src/v4/i3s-server/bin/www.ts --outfile=dist/i3s-server/bin/i3s-server.min.cjs --platform=node --target=esnext,node14 --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "copy-certificates": "cp -R src/v4/i3s-server/certs dist/i3s-server",
-    "build-v5-entrypoints": "esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=esm && esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs && esbuild src/v5/node.ts src/v5/converter-cli.ts --bundle --packages=external --external:@loaders.gl/* --platform=node --outdir=dist/v5 --format=esm && esbuild src/v5/node.ts --bundle --packages=external --external:@loaders.gl/* --platform=node --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs"
+    "build-v5-entrypoints": "esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=esm && esbuild src/v5/core.ts src/v5/adapters.ts src/v5/index.ts src/v5/browser.ts --bundle --packages=external --external:@loaders.gl/* --platform=browser --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs && esbuild src/v5/node.ts src/v5/converter-cli.ts --bundle --packages=external --external:@loaders.gl/* --platform=node --outdir=dist/v5 --format=esm && esbuild src/v5/node.ts --bundle --packages=external --external:@loaders.gl/* --platform=node --outdir=dist/v5 --format=cjs --out-extension:.js=.cjs",
+    "build-v4-entrypoints": "esbuild src/v4/index.ts --bundle --packages=external --platform=node --format=esm --outfile=dist/v4/index.js && esbuild src/v4/index.ts --bundle --packages=external --alias:@loaders.gl/tiles-3d/3d-tiles/bundled=../../modules/tiles-3d/src/3d-tiles/bundled.ts --platform=node --format=cjs --outfile=dist/v4/index.cjs && tsc --project tsconfig.v4.json && node scripts/fix-v4-declaration-imports.mjs"
   },
   "dependencies": {
     "@loaders.gl/archives": "5.0.0-beta.12",
@@ -95,6 +103,7 @@
     "@math.gl/earth": "5.0.0-beta.12",
     "@math.gl/geometry": "5.0.0-beta.12",
     "@math.gl/geospatial": "5.0.0-beta.12",
+    "@types/inquirer": "^9.0.7",
     "ajv": "^8.12.0",
     "apache-arrow": ">= 17.0.0",
     "cors": "^2.8.5",
@@ -109,11 +118,11 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.17",
-    "@types/inquirer": "^9.0.7",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "types": "dist/v5/index.d.ts"
 }

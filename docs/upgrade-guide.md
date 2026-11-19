@@ -18,6 +18,40 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Upgrading to v5.0
 
+### Tile converter defaults to v5
+
+The default command and package root now use the v5 converter. To keep the same v4
+behavior, change the command or import, **not** the existing v4 flags.
+
+| Before | Now |
+| --- | --- |
+| `tile-converter --input-type 3DTILES --tileset … --name …` | `tile-converter-v4 --input-type 3DTILES --tileset … --name …` |
+| `tile-converter --install-dependencies` | `tile-converter-v4 --install-dependencies` |
+| `I3SConverter` or `Tiles3DConverter` from `@loaders.gl/tile-converter` | Import the same class from `@loaders.gl/tile-converter/v4` |
+| `tile-converter-v5 inspect\|validate\|convert …` | `tile-converter inspect\|validate\|convert …`; the `tile-converter-v5` alias still works |
+| `@loaders.gl/tile-converter/v5` | The package root or the unchanged `/v5` import; `/v5/*` subpaths are unchanged |
+
+The separately shipped `i3s-server` command is unchanged. The new CLI does not
+accept v4 flags or automatically convert every tile. It starts from explicit
+resources reported by `inspect`. For a supported feature-bearing B3DM input, prepare
+a [batch-table feature schema](./modules/tile-converter/cli-reference/tile-converter-v5.md#feature-schema-controls)
+and replace the resource ID below with one from your inspection report. Run the
+commands in a project that has installed the updated `@loaders.gl/tile-converter` package:
+
+```sh
+npx tile-converter inspect ./dataset/tileset.json
+npx tile-converter validate ./dataset/tileset.json \
+  --resource tile-root-content-0 --output-format slpk --feature-schema ./features.json
+npx tile-converter convert ./dataset/tileset.json \
+  --resource tile-root-content-0 --output-format slpk --feature-schema ./features.json \
+  --output ./selected.slpk
+```
+
+For input without features, omit `--feature-schema`. See the
+[v5 CLI reference](./modules/tile-converter/cli-reference/tile-converter-v5.md)
+for supported profiles and [legacy v4 CLI reference](./modules/tile-converter/cli-reference/tile-converter.md)
+for v4 options.
+
 ### Math.gl beta.12 imports
 
 Arrow transport, table utilities, WKB, and GeoArrow helpers now use

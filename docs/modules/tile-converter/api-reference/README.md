@@ -9,7 +9,20 @@ Use the tile-converter APIs to make dataset conversion part of a JavaScript appl
 
 ## Package API
 
-The root package exports the legacy Node.js converter classes:
+The package root exports the portable v5 API. Existing `/v5` imports remain aliases.
+
+```typescript
+import {inspectTileset, convertTileset, validateTileset} from '@loaders.gl/tile-converter';
+```
+
+The [v5 conversion reference](./v5-conversion.md) shows how to supply a conversion source,
+codec, and output sink. Use `@loaders.gl/tile-converter/v5/node` for the Node.js adapters.
+
+## Legacy v4 API
+
+The explicit `@loaders.gl/tile-converter/v4` entry point exports the original Node.js converter
+classes. See the [upgrade guide](../../../upgrade-guide.md#tile-converter-defaults-to-v5)
+if you previously imported them from the package root.
 
 | Export | Conversion |
 | --- | --- |
@@ -17,7 +30,7 @@ The root package exports the legacy Node.js converter classes:
 | [`Tiles3DConverter`](./3d-tiles-converter.md) | Convert an I3S dataset to 3D Tiles. |
 
 ```typescript
-import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
+import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter/v4';
 ```
 
 ## Experimental v5 APIs
