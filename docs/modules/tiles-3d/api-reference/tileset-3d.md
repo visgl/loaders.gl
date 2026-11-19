@@ -100,6 +100,7 @@ By default it calls the viewport constructor with `longitude`, `latitude`, `zoom
 options, such as a viewport in a projected CRS, can supply `getTopDownViewport()`, which returns
 the same camera with zero pitch in the same projection. When the viewport has no `longitude` and
 `latitude`, `maximumTilesSelected` measures tile distances from the unprojected viewport `center`.
+The exported `TraversalViewport` type describes the viewports that traversal accepts.
 
 ## Constructor
 

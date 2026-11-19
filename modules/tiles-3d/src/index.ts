@@ -118,6 +118,7 @@ export {
 
 export {getFrameState} from './tileset-3d/helpers/frame-state';
 export type {FrameState, GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
+export type {TraversalViewport} from './types';
 export {getLodStatus} from './tileset-3d/helpers/i3s-lod';
 
 export {

@@ -48,22 +48,36 @@ export type GeospatialViewport = Viewport & {
   cameraUp: [number, number, number];
   /** Camera target offset in meters from longitude/latitude, including elevation. */
   position?: number[];
-  /**
-   * Camera target longitude in degrees. Viewports in a projected CRS can leave it undefined;
-   * traversal then unprojects `center`.
-   */
+  /** Camera target longitude in degrees. */
   longitude: number;
-  /**
-   * Camera target latitude in degrees. Viewports in a projected CRS can leave it undefined;
-   * traversal then unprojects `center`.
-   */
+  /** Camera target latitude in degrees. */
   latitude: number;
   bearing: number;
+  /** See `TraversalViewport.getTopDownViewport`. */
+  getTopDownViewport?: () => GeospatialViewport;
+};
+
+/**
+ * Viewport accepted by tileset traversal. Unlike `GeospatialViewport`, it admits deck.gl viewports
+ * as they are, including a viewport in a projected CRS, which has no `longitude` and `latitude`.
+ * Every `GeospatialViewport` is one.
+ */
+export type TraversalViewport = Omit<
+  GeospatialViewport,
+  'cameraDirection' | 'cameraUp' | 'longitude' | 'latitude' | 'getTopDownViewport'
+> & {
+  /** Without it, traversal takes the view direction from the near frustum plane. */
+  cameraDirection?: [number, number, number];
+  cameraUp?: [number, number, number];
+  /** Camera target longitude in degrees. Without it, traversal unprojects `center`. */
+  longitude?: number;
+  /** Camera target latitude in degrees. Without it, traversal unprojects `center`. */
+  latitude?: number;
   /**
    * Returns a viewport with the same camera target, zoom, bearing, size and projection as this
    * viewport, but with zero pitch. Traversal uses it to measure the projected size of I3S tiles.
    * Viewports that cannot be rebuilt from `longitude`, `latitude` and `zoom`, such as a viewport in
    * a projected CRS, must supply it. Without it, traversal calls the viewport constructor.
    */
-  getTopDownViewport?: () => GeospatialViewport;
+  getTopDownViewport?: () => TraversalViewport;
 };

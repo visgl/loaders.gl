@@ -10,7 +10,7 @@ import {
   updateCameraMotionState,
   type FrameState
 } from '../../../src/tileset-3d/helpers/frame-state';
-import type {GeospatialViewport} from '../../../src/types';
+import type {TraversalViewport} from '@loaders.gl/tiles-3d';
 import {
   _CustomProjectionViewport as CustomProjectionViewport,
   WebMercatorViewport,
@@ -322,11 +322,10 @@ test('getFrameState uses the top-down viewport supplied by a projected-CRS viewp
     pitch: 45,
     bearing: 20
   });
-  expect(
-    (viewport as unknown as {longitude?: number}).longitude,
-    'the viewport has no longitude field'
-  ).toBeUndefined();
-  const frameState = getFrameState(viewport as unknown as GeospatialViewport, 1);
+  // A projected-CRS viewport is a traversal viewport as it is, with no longitude field.
+  const traversalViewport: TraversalViewport = viewport;
+  expect(traversalViewport.longitude, 'the viewport has no longitude field').toBeUndefined();
+  const frameState = getFrameState(viewport, 1);
   const topDownViewport = frameState.topDownViewport as unknown as CustomProjectionViewport;
   expect(topDownViewport).toBeInstanceOf(CustomProjectionViewport);
   expect(topDownViewport.crs).toBe(utmZone18North);

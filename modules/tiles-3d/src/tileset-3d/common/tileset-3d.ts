@@ -20,7 +20,7 @@ import {
 import {interpolateLinearly} from '../helpers/tiles-3d-request-priority';
 import type {FoveatedInterpolationCallback} from '../helpers/tiles-3d-request-priority';
 
-import type {GeospatialViewport, Viewport} from '../../types';
+import type {TraversalViewport, Viewport} from '../../types';
 import {Tile3D} from './tile-3d';
 import {TILESET_TYPE} from '../../constants';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '../../spatial/spatial-types';
@@ -668,7 +668,7 @@ export class Tileset3D {
       if (!viewportsToTraverse.includes(id)) {
         continue;
       }
-      const frameState = getFrameState(viewport as GeospatialViewport, this._frameNumber);
+      const frameState = getFrameState(viewport as TraversalViewport, this._frameNumber);
       const root = this.roots[id];
       const cameraMotionUpdate = updateCameraMotionState(
         this._cameraMotionStates[id],
