@@ -26,14 +26,19 @@ export function getMetersPerUnit(
   return getServiceCRSMetersPerUnit(crs) ?? metersPerUnit ?? undefined;
 }
 
-/** Converts an OGC scale denominator to CRS units per pixel, or undefined when it cannot. */
+/**
+ * Converts an OGC scale denominator to CRS units per pixel. The result is undefined for an absent
+ * scale, and for a valid scale in a CRS whose unit is unknown. A scale that is not positive and
+ * finite gives a resolution that is not positive and finite either (NaN when the unit is unknown),
+ * so that grid validation reports the level as invalid, not as missing its resolution.
+ */
 export function getScaleDenominatorResolution(
   scaleDenominator: number | undefined,
   metersPerUnit: number | undefined
 ): number | undefined {
-  return metersPerUnit && Number.isFinite(scaleDenominator) && scaleDenominator! > 0
-    ? (scaleDenominator! * OGC_PIXEL_SIZE_METERS) / metersPerUnit
-    : undefined;
+  if (scaleDenominator === undefined) return undefined;
+  if (metersPerUnit) return (scaleDenominator * OGC_PIXEL_SIZE_METERS) / metersPerUnit;
+  return Number.isFinite(scaleDenominator) && scaleDenominator > 0 ? undefined : NaN;
 }
 
 /** Rejects a `metersPerUnit` option that is set but not a positive finite number. */
