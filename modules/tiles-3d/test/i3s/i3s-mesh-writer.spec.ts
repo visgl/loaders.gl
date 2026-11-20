@@ -536,11 +536,7 @@ beforeAll(async () => {
     expect(encoded.maximumPositionError).toBe(rawLayer.maximumPositionError);
     expect(encoded.decimalStringFields).toEqual(rawLayer.decimalStringFields);
     for (const name of Object.keys(encoded.files)) {
-      if (
-        !['3dSceneLayer.json.gz', 'nodepages/0.json.gz', 'nodes/1/geometries/1.bin.gz'].includes(
-          name
-        )
-      )
+      if (!['3dSceneLayer.json.gz', 'nodes/1/geometries/1.bin.gz'].includes(name))
         expect(encoded.files[name]).toEqual(rawLayer.files[name]);
     }
     expect(mesh.attributes.POSITION.value).toEqual(originalPositions);
@@ -600,17 +596,17 @@ test.each(
     );
   }
   expect(triangles.sort()).toEqual(['0,1,2', '3,4,5']);
-  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(content.vertexCount);
+  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(6);
 });
 
-test('I3S Draco records decoded vertex counts for shared indexed vertices', async () => {
+test('I3S node pages report raw vertex counts when Draco deduplicates vertices', async () => {
   const mesh = createMesh();
   mesh.indices = {value: new Uint16Array([0, 1, 2, 0, 2, 3]), size: 1};
   const encoded = await encodeI3SMeshLayerWithDraco(mesh, OPTIONS, {useLocalLibraries: true});
   const decoded = await decodeDracoLayer(encoded);
   expect(decoded.content.indices!.length).toBe(6);
   expect(decoded.content.vertexCount).toBe(4);
-  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(4);
+  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(6);
   expect(Array.from(decoded.content.featureIds)).toEqual([0, 0, 0, 0]);
   expect(encoded.maximumPositionError).toBeLessThanOrEqual(OPTIONS.maxPositionError);
 });

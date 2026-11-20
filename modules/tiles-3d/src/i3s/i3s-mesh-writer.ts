@@ -191,11 +191,8 @@ export async function encodeI3SMeshLayerWithDraco(
       ]
     }
   });
-  const page = JSON.parse(new TextDecoder().decode(prepared.files['nodepages/0.json.gz']));
-  page.nodes[1].mesh.geometry.vertexCount = decoded.attributes.POSITION.value.length / 3;
   prepared.files['nodes/1/geometries/1.bin.gz'] = encoded.data;
   prepared.files['3dSceneLayer.json.gz'] = new TextEncoder().encode(JSON.stringify(layer)).buffer;
-  prepared.files['nodepages/0.json.gz'] = new TextEncoder().encode(JSON.stringify(page)).buffer;
   return compressMeshLayer(prepared, maxResourceBytes);
 }
 

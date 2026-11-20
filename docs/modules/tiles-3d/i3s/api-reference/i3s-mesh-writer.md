@@ -101,9 +101,8 @@ exported by the same root and `i3s-mesh-writer` entrypoints. It reuses the raw w
 geographic preparation and precision limits, then encodes geometry with Draco Edge Breaker
 without quantization. Normals and triangle feature ownership are preserved, with the required
 I3S feature-index metadata. Decoded oriented attribute/feature tuples are verified before
-publishing resources, including duplicate triangles and winding. Node-page vertex counts
-reflect Draco's decoded vertex count. The raw geometry is retained at buffer index 0 for
-legacy clients, and Draco is written at buffer index 1. Other layer, material and feature resources retain
+publishing resources, including duplicate triangles and winding. The raw geometry is retained at buffer index 0, and Draco is written at buffer index 1.
+Node pages report the raw vertex count. Draco stores its own count in the bitstream.
 their encoding; geometry, attributes and JSON remain individually GZIP compressed.
 
 ```ts
