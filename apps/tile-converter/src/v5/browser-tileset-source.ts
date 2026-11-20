@@ -294,8 +294,10 @@ export function selectBrowserTilesetContent(
   let transform = [...(placement?.parentTransform ?? identityMatrix())];
   let maximum = placement?.parentGeometricError ?? 0;
   let tile = originalRoot;
+  /** Accumulated effective modes from the declaring root, retaining unknown refinement as undefined. */
   const refinementPath: (TileRefinement | undefined)[] = [];
   for (let depth = 0; ; depth++) {
+    /** Current tile’s explicit mode, or its inherited parent mode when omitted. */
     const refinement = tile.refine === undefined ? refinementPath.at(-1) : tile.refine;
     refinementPath.push(refinement === 'ADD' || refinement === 'REPLACE' ? refinement : undefined);
     transform = multiplyMatrices(transform, normalizeMatrix(tile.transform));

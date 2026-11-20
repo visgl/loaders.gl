@@ -336,8 +336,16 @@ normalized by the glTF loader. Draco-compressed primitives are normalized to tri
 before source extraction. Vertex attributes and source buffers remain unchanged. Degenerate
 strip connectors are retained and advance winding parity. Repeated-index connectors use the
 first corner's feature row; nondegenerate mixed-feature triangles still fail.
-Draco output may reject them, so select `draco: false` on the GLB or I3S codec when needed. Points, lines and primitive-restart indices remain unsupported. A region bounding volume or explicit CRS metadata
-must establish the ECEF source frame; sphere/box bounds alone do not imply a CRS.
+Draco output may reject them, so select `draco: false` on the GLB or I3S codec when needed.
+Points, lines and primitive-restart indices remain unsupported. A root region bounding volume
+or a supported explicit CRS declaration must establish the ECEF source frame; sphere/box
+bounds alone do not imply a CRS.
+Recognition of that frame is separate from mesh metadata qualification: tileset `metadata`
+and nonempty `groups` are rejected with `MESH_SOURCE_METADATA_UNSUPPORTED`, even when the
+only metadata property declares `TILESET_CRS_GEOCENTRIC: EPSG:4978`. Feature mappings do not
+map this dataset metadata. A correctly enclosing WGS84 root `region` can establish the
+format-default frame without it; placeholder bounds are not a CRS conversion. See the
+[CLI native-ECEF caveat](../cli-reference/tile-converter-v5.md#native-ecef-input-caveat).
 
 ```ts
 import {

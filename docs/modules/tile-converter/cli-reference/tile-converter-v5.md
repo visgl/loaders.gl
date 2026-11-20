@@ -11,6 +11,22 @@ Install `@loaders.gl/tile-converter` to use it; `tile-converter-v5` remains an a
 The original flag-based workflow now uses [`tile-converter-v4`](./tile-converter.md).
 See the [migration table](../../../upgrade-guide.md#tile-converter-defaults-to-v5) for existing scripts.
 
+## Native-ECEF input caveat
+
+For 3D Tiles, recognition of a native EPSG:4978 frame does not by itself qualify a mesh source.
+The loader can resolve an inline `TILESET_CRS_GEOCENTRIC` semantic with value `EPSG:4978`,
+but the current mesh adapter rejects tileset `metadata` and nonempty `groups`, including
+metadata used only to declare that CRS. Conversion and target-profile validation then fail with
+`MESH_SOURCE_METADATA_UNSUPPORTED: Tileset/group metadata requires a separate mapping`.
+`--feature-schema` maps mesh features; it does not map tileset or group metadata.
+
+A correctly enclosing WGS84 root `boundingVolume.region` can establish the format's global
+ellipsoidal frame without tileset metadata. Its bounds must describe the actual dataset;
+adding a placeholder region is not a CRS conversion. Sphere/box-only inputs without a
+supported explicit frame declaration remain unsupported: coordinates are never guessed to
+be ECEF from their magnitude. See the [mesh source profile](../api-reference/v5-conversion.md#source-mesh-to-i3sslpk)
+for the other conversion restrictions.
+
 ## Inspect and select
 
 `inspect` reads metadata only. It accepts a JSON path/file URL, HTTP(S) JSON URL, or local
