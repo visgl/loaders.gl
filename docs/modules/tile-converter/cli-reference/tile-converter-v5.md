@@ -141,7 +141,7 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--output` | | New destination; required only for convert |
 | `--max-input-bytes` | `16777216` | Lower transport/physical-read and decoded mesh budgets |
 | `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
-| `--max-documents` | `32` | Lower the root/external document-placement limit |
+| `--max-documents` | `32` | Set the root/external document-placement limit (max 256) |
 | `--max-output-bytes` | `33554432` | Lower retained file bytes and, separately, archive bytes |
 | `--profile` | `false` | Include elapsed stage timings in the JSON conversion report; convert/validate only |
 | `--help` | | Show usage |
