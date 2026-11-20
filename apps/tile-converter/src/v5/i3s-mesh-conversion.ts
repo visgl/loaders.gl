@@ -33,13 +33,18 @@ export interface I3SMeshConversionResource extends EncodedI3SMeshLayer {
 
 /** Spatial preparation and required authoring limits for the I3S codec. */
 export interface I3SMeshConversionCodecOptions
-  extends Pick<I3SMeshWriterOptions, 'name' | 'maxPositionError' | 'maxResourceBytes'> {
+  extends Pick<
+    I3SMeshWriterOptions,
+    'name' | 'maxPositionError' | 'maxResourceBytes' | 'omitFeatureIdAttribute'
+  > {
   /** Shared source-to-ECEF context, applied exactly once before I3S geographic encoding. */
   readonly spatialContext: Tiles3DConversionSpatialContext | I3SConversionSpatialContext;
   /** I3S vector frame when using an I3S context; defaults to earth-centered. */
   readonly normalReferenceFrame?: 'earth-centered' | 'vertex-reference-frame';
   /** Lossless Edge Breaker geometry by default; false retains raw I3S geometry. */
   readonly draco?: boolean;
+  /** Share IDs for legacy batch-table rows across parts of one content placement. */
+  readonly shareSourceObjectIds?: boolean;
   /** Explicitly authorize IntegratedMesh input to become 3DObject output; omission rejects it. */
   readonly integratedMeshPolicy?: 'as-3d-object';
   /** Full Draco encoder/decoder runtime URLs or injected modules. */
@@ -78,6 +83,8 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       'I3S mesh authoring requires resolved ECEF coordinates and ellipsoidal heights'
     );
   let objectIdOffset = 0;
+  /** Each content placement owns its own legacy row namespace. */
+  const objectIdsByContent = new Map<string, Map<number, number>>();
   return {
     /** Places a source mesh in ECEF and authors one layer without modifying source arrays. */
     async *convert(resource, _inspection, signal) {
@@ -113,11 +120,39 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       let layer: EncodedI3SMeshLayer;
       try {
         await preloadI3SMeshCompression();
+        /** Original row indices retain identity when each primitive selects a different subset. */
+        const rows = resource.features?.sourceBatchRows;
+        /** Selection supplies a distinct identifier even for repeated payload URLs. */
+        const contentId = resource.contentResourceId;
+        /** Explicit row-to-ID mapping for the current primitive. */
+        let objectIds: number[] | undefined;
+        if (options.shareSourceObjectIds && contentId && rows) {
+          /** Persistent row mapping for the current placement. */
+          const contentIds = objectIdsByContent.get(contentId) ?? new Map<number, number>();
+          objectIdsByContent.set(contentId, contentIds);
+          objectIds = rows.map(row => {
+            /** Reuse an allocated ID even when the current node has a different row order. */
+            const existing = contentIds.get(row);
+            if (existing !== undefined) return existing;
+            /** This row has never appeared in the conversion. */
+            const id = objectIdOffset++;
+            contentIds.set(row, id);
+            return id;
+          });
+        } else {
+          objectIds = Array.from(
+            {
+              length:
+                resource.features?.batches.reduce((total, batch) => total + batch.numRows, 0) ?? 1
+            },
+            () => objectIdOffset++
+          );
+        }
         const writerOptions = {
           ...options,
           material: resource.material,
           features: resource.features,
-          objectIdOffset
+          objectIds
         };
         layer =
           options.draco === false
@@ -130,8 +165,6 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
         );
       }
       signal?.throwIfAborted();
-      objectIdOffset +=
-        resource.features?.batches.reduce((total, batch) => total + batch.numRows, 0) ?? 1;
       yield {id: resource.id, ...layer, sourceLayerType: resource.sourceLayerType};
     },
     /** Reports measured precision and explicitly authorized integer representation changes. */

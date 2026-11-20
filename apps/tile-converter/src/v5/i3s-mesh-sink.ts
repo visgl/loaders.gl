@@ -20,6 +20,8 @@ export interface I3SMeshSinkOptions {
   readonly maxTotalBytes: number;
   /** Maximum primitive placements, from one through 64. */
   readonly maxMeshes: number;
+  /** Trust codec-assigned feature identities across material nodes. */
+  readonly shareSourceObjectIds?: boolean;
   /** Maximum decompressed or generated metadata/attribute resource bytes. */
   readonly maxResourceBytes: number;
 }
@@ -191,14 +193,19 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       if (
         objectIds.byteLength !== 4 + count * 4 ||
         !count ||
-        objectIdRanges.some(([start, end]) => first < end && first + count > start) ||
-        Array.from({length: count}, (_, index) => objectIds.getUint32(4 + index * 4, true)).some(
-          (value, index) => value !== first + index
-        )
+        (!options.shareSourceObjectIds &&
+          (objectIdRanges.some(([start, end]) => first < end && first + count > start) ||
+            Array.from({length: count}, (_, index) =>
+              objectIds.getUint32(4 + index * 4, true)
+            ).some((value, index) => value !== first + index))) ||
+        (options.shareSourceObjectIds &&
+          new Set(
+            Array.from({length: count}, (_, index) => objectIds.getUint32(4 + index * 4, true))
+          ).size !== count)
       )
         throw new TileConversionError(
           'I3S_COLLECTION_IDS_INVALID',
-          'Generated object IDs must be contiguous and disjoint across nodes'
+          'Invalid generated object IDs for the selected collection policy'
         );
       const index = leaves.length + 1;
       const node = (await readJson<{nodes: MeshNode[]}>(resource, 'nodepages/0.json.gz')).nodes[1];
@@ -305,7 +312,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       }
       leaves.push({node, legacy: {...legacy, id: String(index)}});
       identifiers.add(resource.id);
-      objectIdRanges.push([first, first + count]);
+      if (!options.shareSourceObjectIds) objectIdRanges.push([first, first + count]);
       state = 'open';
     },
     /** Rebuilds both indices and layer bounds only after every leaf has completed. */

@@ -14,6 +14,8 @@ export interface I3SMeshFeatures {
   readonly triangleFeatureIndices: Uint32Array;
   /** Non-null stable identifier column; geometry uses separate local OIDs. */
   readonly featureIdField: string;
+  /** Original legacy batch-table row for each retained feature. */
+  readonly sourceBatchRows?: readonly number[];
   /** Explicit authorization to represent int64/uint64 values as exact decimal strings. */
   readonly integer64Encoding?: 'decimal-string';
 }
@@ -35,7 +37,8 @@ export interface EncodedI3SMeshAttributes {
 /** Encodes scalar Arrow features with explicit null and 64-bit policies, without coercion. */
 export function encodeI3SMeshAttributes(
   features: I3SMeshFeatures | undefined,
-  maxResourceBytes: number
+  maxResourceBytes: number,
+  omitFeatureIdAttribute = false
 ): EncodedI3SMeshAttributes {
   const batches = features?.batches || [];
   const schema = batches[0]?.schema && convertArrowToSchema(batches[0].schema);
@@ -89,6 +92,7 @@ export function encodeI3SMeshAttributes(
     }
   }
   for (const field of schema.fields) {
+    if (omitFeatureIdAttribute && field.name === features.featureIdField) continue;
     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(field.name) || field.name.toUpperCase() === 'OBJECTID') {
       throw new Error('I3S fields require unique identifiers other than reserved OBJECTID');
     }

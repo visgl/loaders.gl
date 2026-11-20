@@ -37,6 +37,8 @@ export interface NodeTileConversionOptions
   extends Omit<NodeTilesetConversionSourceOptions, 'format'> {
   /** Include portable stages and Node setup/output elapsed milliseconds in the report. */
   readonly profile?: boolean;
+  /** Omit the feature identifier attribute from SLPK output. */
+  readonly omitFeatureIdAttribute?: boolean;
   /** Explicit 3D Tiles, I3S layer or indexed archive source. */
   readonly format?: '3d-tiles' | '3tz' | 'i3s' | 'slpk';
   /** Explicit I3S attribute mapping, also supplied by the CLI feature-schema file. */
@@ -180,6 +182,7 @@ export async function convertNodeTileset(
     };
     if (options.outputFormat === 'slpk') {
       const sink = createI3SMeshSink({
+        shareSourceObjectIds: true,
         maxTotalBytes: maxOutputBytes,
         maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
         maxResourceBytes: maxOutputBytes
@@ -187,7 +190,12 @@ export async function convertNodeTileset(
       report = await convertTileset({
         ...common,
         sink,
-        codec: createI3SMeshConversionCodec({...codecOptions, maxResourceBytes: maxOutputBytes}),
+        codec: createI3SMeshConversionCodec({
+          ...codecOptions,
+          shareSourceObjectIds: true,
+          omitFeatureIdAttribute: options.omitFeatureIdAttribute,
+          maxResourceBytes: maxOutputBytes
+        }),
         measureOutputBytes: resource =>
           Object.values(resource.files).reduce((total, bytes) => total + bytes.byteLength, 0)
       });

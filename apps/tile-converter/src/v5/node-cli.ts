@@ -40,6 +40,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --max-resources N            Lower the 1,000 content-declaration limit
   --max-documents N            Lower the 32 metadata-document limit
   --max-output-bytes N         Lower the 32 MiB output/archive budget
+  --omit-feature-id           Omit the feature identifier attribute in SLPK
   --profile                   Include elapsed conversion stage timings in JSON
   --help                      Show this help
 
@@ -65,6 +66,7 @@ export async function runTileConverterCLI(
       options: {
         help: {type: 'boolean'},
         profile: {type: 'boolean'},
+        'omit-feature-id': {type: 'boolean'},
         'preserve-hierarchy': {type: 'boolean'},
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
@@ -105,6 +107,11 @@ export async function runTileConverterCLI(
       maxTilesetDocuments: parseLimit(values['max-documents']),
       inspectNestedTilesets: true
     };
+    if (
+      values['omit-feature-id'] &&
+      (operation === 'inspect' || values['output-format'] !== 'slpk')
+    )
+      throw new TileConversionError('CLI_USAGE_ERROR', '--omit-feature-id requires SLPK output');
     if (operation !== 'inspect') {
       if (
         !values.resource?.length ||
@@ -137,6 +144,7 @@ export async function runTileConverterCLI(
         ...features,
         resourceIds: values.resource,
         profile: values.profile,
+        omitFeatureIdAttribute: values['omit-feature-id'],
         preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,
