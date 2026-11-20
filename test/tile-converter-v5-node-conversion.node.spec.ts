@@ -872,3 +872,48 @@ test('CLI applies an explicit Node 3D Tiles input budget above the default', asy
     await runTileConverterCLI([...argumentsList, '--max-input-bytes', '268435457'], callbacks)
   ).toBe(1);
 });
+
+test('CLI subtracts EGM2008 undulation before authoring SLPK geometry and bounds', async () => {
+  const grid = join(directory, 'constant-geoid.pgm');
+  const output = join(directory, 'corrected-heights.slpk');
+  const header = new TextEncoder().encode('P5\n# Offset 0\n# Scale 1\n4 3\n65535\n');
+  const bytes = new Uint8Array(header.length + 24);
+  bytes.set(header);
+  for (let offset = header.length; offset < bytes.length; offset += 2)
+    new DataView(bytes.buffer).setUint16(offset, 20, false);
+  await writeFile(grid, bytes);
+
+  const errors: string[] = [];
+  expect(
+    await runTileConverterCLI(
+      [
+        'convert',
+        rootPath,
+        '--all-contents',
+        '--output-format',
+        'slpk',
+        '--output',
+        output,
+        '--no-draco',
+        '--egm2008-grid',
+        grid
+      ],
+      {stdout: () => {}, stderr: line => errors.push(line)}
+    ),
+    errors.join('\n')
+  ).toBe(0);
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    const layer = JSON.parse(new TextDecoder().decode(await archive.getFile('3dSceneLayer.json')));
+    expect(layer.spatialReference.vcsWkid).toBe(3855);
+    const page = JSON.parse(new TextDecoder().decode(await archive.getFile('nodepages/0.json')));
+    const height = page.nodes[1].obb.center[2];
+    expect(height).toBeCloseTo(-19.5, 4);
+    const geometry = new DataView(await archive.getFile('nodes/1/geometries/0.bin'));
+    expect(height + geometry.getFloat32(16, true)).toBeCloseTo(-20, 4);
+  } finally {
+    await archive.close();
+  }
+});

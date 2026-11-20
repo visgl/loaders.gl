@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Ellipsoid} from '@math.gl/geospatial';
 import {
   encodeI3SMeshLayer,
   encodeI3SMeshLayerWithDraco,
@@ -53,6 +54,8 @@ export interface I3SMeshConversionCodecOptions
   readonly shareSourceObjectIds?: boolean;
   /** Explicitly authorize IntegratedMesh input to become 3DObject output; omission rejects it. */
   readonly integratedMeshPolicy?: 'as-3d-object';
+  /** EGM2008 undulation in meters for a latitude and longitude in degrees. */
+  readonly egm2008Geoid?: {getHeight(latitude: number, longitude: number): number};
   /** Full Draco encoder/decoder runtime URLs or injected modules. */
   readonly dracoLibraryOptions?: I3SDracoLibraryOptions;
 }
@@ -121,7 +124,12 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
                 : undefined
             };
       signal?.throwIfAborted();
-      mesh.attributes.POSITION = {value: transformed.positions, size: 3};
+      mesh.attributes.POSITION = {
+        value: options.egm2008Geoid
+          ? subtractEgm2008Undulation(transformed.positions, options.egm2008Geoid)
+          : transformed.positions,
+        size: 3
+      };
       if (mesh.attributes.NORMAL) mesh.attributes.NORMAL = {value: transformed.normals!, size: 3};
       let layer: EncodedI3SMeshLayer;
       try {
@@ -156,6 +164,7 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
         }
         const writerOptions = {
           ...options,
+          declareEgm2008Heights: Boolean(options.egm2008Geoid) || options.declareEgm2008Heights,
           material: resource.material,
           features: resource.features,
           objectIds
@@ -281,4 +290,26 @@ export function createSingleMeshI3SSink(options: {
       await memory.abort(error);
     }
   };
+}
+
+/** Returns ECEF-like positions whose derived height is orthometric, leaving input data intact. */
+function subtractEgm2008Undulation(
+  positions: Float64Array | Float32Array,
+  geoid: NonNullable<I3SMeshConversionCodecOptions['egm2008Geoid']>
+): Float64Array {
+  const corrected = new Float64Array(positions.length);
+  for (let offset = 0; offset < positions.length; offset += 3) {
+    const geographic = Ellipsoid.WGS84.cartesianToCartographic(
+      positions.subarray(offset, offset + 3)
+    );
+    const undulation = geoid.getHeight(geographic[1], geographic[0]);
+    if (!Number.isFinite(undulation))
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 grid returned an invalid height'
+      );
+    geographic[2] -= undulation;
+    corrected.set(Ellipsoid.WGS84.cartographicToCartesian(geographic), offset);
+  }
+  return corrected;
 }

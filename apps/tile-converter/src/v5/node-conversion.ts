@@ -44,6 +44,8 @@ export interface NodeTileConversionOptions
   readonly omitFeatureIdAttribute?: boolean;
   /** Declare already orthometric input heights as EGM2008 in 3D Tiles/3TZ to SLPK output. */
   readonly declareEgm2008Heights?: boolean;
+  /** Local GeographicLib EGM2008 PGM grid used to correct ellipsoidal input heights. */
+  readonly egm2008Grid?: string;
   /** Name of the authored SLPK scene layer. */
   readonly name?: string;
   /** Set to false to write raw SLPK geometry. */
@@ -108,11 +110,23 @@ async function convertNodeTilesetWithStorage(
       'Select a supported output profile and a positive safe integer output budget (at most 32 MiB for directory output)'
     );
   const i3s = options.format === 'i3s' || options.format === 'slpk';
-  if (options.declareEgm2008Heights && (i3s || options.outputFormat !== 'slpk'))
+  if (
+    (options.declareEgm2008Heights || options.egm2008Grid !== undefined) &&
+    (i3s || options.outputFormat !== 'slpk')
+  )
     throw new TileConversionError(
       'INVALID_NODE_CONVERSION_OPTIONS',
-      'Declaring EGM2008 heights requires 3D Tiles/3TZ to SLPK conversion'
+      'EGM2008 height options require 3D Tiles/3TZ to SLPK conversion'
     );
+  if (options.declareEgm2008Heights && options.egm2008Grid !== undefined)
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'Choose either existing EGM2008 heights or an EGM2008 grid'
+    );
+  const egm2008Geoid =
+    options.egm2008Grid === undefined
+      ? undefined
+      : await loadEgm2008Grid(options.egm2008Grid, signal);
   if (options.allContents && (i3s || options.resourceIds.length)) {
     throw new TileConversionError(
       'INVALID_NODE_CONVERSION_OPTIONS',
@@ -245,6 +259,7 @@ async function convertNodeTilesetWithStorage(
           shareSourceObjectIds: true,
           omitFeatureIdAttribute: options.omitFeatureIdAttribute,
           declareEgm2008Heights: options.declareEgm2008Heights,
+          egm2008Geoid,
           name: options.name,
           draco: options.draco,
           maxResourceBytes
@@ -475,4 +490,36 @@ function createNodeArchiveResourceSink(
       files.clear();
     }
   };
+}
+
+/** Reads a finite, local GeographicLib grid before conversion starts. */
+async function loadEgm2008Grid(path: string, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const handle = await open(path, 'r');
+  try {
+    const status = await handle.stat();
+    const {size} = status;
+    if (!status.isFile() || !Number.isSafeInteger(size) || size < 1 || size > 128 * 1024 * 1024)
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 PGM must be a regular file between 1 byte and 128 MiB'
+      );
+    const data = new Uint8Array(size);
+    let offset = 0;
+    while (offset < size) {
+      signal.throwIfAborted();
+      const {bytesRead} = await handle.read(data, offset, size - offset, offset);
+      if (!bytesRead)
+        throw new TileConversionError(
+          'INVALID_EGM2008_GRID',
+          'EGM2008 PGM ended before its stated size'
+        );
+      offset += bytesRead;
+    }
+    const {parsePGM} = await import('@math.gl/earth');
+    signal.throwIfAborted();
+    return parsePGM(data, {cubic: false});
+  } finally {
+    await handle.close();
+  }
 }
