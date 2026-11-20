@@ -26,7 +26,6 @@ import {
   decodeWKTUnionVector
 } from '../lib/kernels/decode-wkt-native';
 import {encodeGeoArrowBoxVector} from '../lib/kernels/encode-geoarrow-box';
-import {encodeGeoArrowWKTVector} from '../lib/kernels/encode-geoarrow-wkt';
 import {assertGeoArrowResourceLimits} from '../geoarrow-resource-limits';
 import {
   makeArrowVectorFromGeoArrowColumn,
@@ -360,10 +359,6 @@ function convertGeometryColumn(
     options
   );
   if (mathGeoArrowVector) return mathGeoArrowVector;
-  if (targetEncoding === 'geoarrow.wkt') {
-    const directWKTVector = encodeGeoArrowWKTVector(column, sourceEncoding, options?.dimension);
-    if (directWKTVector) return directWKTVector;
-  }
   if (sourceEncoding === 'geoarrow.wkt' && isConcreteNativeEncoding(targetEncoding)) {
     const directWKTVector = decodeWKTNativeVector(
       column,
@@ -471,7 +466,7 @@ function convertGeometryColumnWithMath(
   const targetIsNative = isMathGeoArrowNativeEncoding(targetEncoding);
   const supportsConversion =
     (sourceEncoding === 'geoarrow.wkb' && targetIsNative) ||
-    (sourceIsNative && targetEncoding === 'geoarrow.wkb') ||
+    (sourceIsNative && (targetEncoding === 'geoarrow.wkb' || targetEncoding === 'geoarrow.wkt')) ||
     (sourceIsNative && targetIsNative);
   if (!supportsConversion) return null;
 
@@ -506,9 +501,13 @@ function convertGeometryColumnWithMath(
       throw error;
     }
   }
-  if (targetEncoding === 'geoarrow.wkb') {
+  if (targetEncoding === 'geoarrow.wkb' || targetEncoding === 'geoarrow.wkt') {
+    const nativeColumn =
+      targetEncoding === 'geoarrow.wkt' && options?.dimension
+        ? convertGeoArrowColumn(sourceColumn, {dimension: options.dimension})
+        : sourceColumn;
     return makeArrowVectorFromGeoArrowColumn(
-      convertGeoArrowColumn(sourceColumn, {encoding: targetEncoding})
+      convertGeoArrowColumn(nativeColumn, {encoding: targetEncoding})
     );
   }
 

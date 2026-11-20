@@ -167,7 +167,7 @@ test('queryArrowTable requires named parameters to be bound immediately before e
   const predicate = parseSQLPredicate('value >= :minimum', {preserveParameters: true});
   const table = makeArrowTable({value: [1, 2, 3]});
 
-  expect(() => queryArrowTable(table, {predicate})).toThrow(/must be bound/);
+  expect(() => queryArrowTable(table, {predicate})).toThrow(/requires a value/);
   expect(
     toRows(queryArrowTable(table, {predicate: bindSQLPredicate(predicate, {minimum: 2})}))
   ).toEqual([{value: 2}, {value: 3}]);

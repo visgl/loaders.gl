@@ -8,6 +8,7 @@ import {
   compareArrowQueryNumbers as compareNumbers,
   getArrowQueryValueType as getValueType
 } from './arrow-execution/filter-arrow-table';
+import type {SQLPredicate} from './sql-predicate-types';
 import type {TableSelection} from '@loaders.gl/core/loader-utils';
 import {convertRowsToArrowTable} from './rows-to-arrow';
 
@@ -99,11 +100,20 @@ export function explainArrowTableQuery(
 /** Executes a validated linear query after portable predicates have been applied. */
 type ExecuteLinearArrowQuery = (
   table: arrow.Table,
-  options: Readonly<{select?: readonly string[]; limit?: number; signal?: AbortSignal}>
+  options: Readonly<{
+    select?: readonly string[];
+    where?: SQLPredicate;
+    limit?: number;
+    signal?: AbortSignal;
+  }>
 ) => arrow.Table;
 
 /** Projects and limits Arrow rows for the lightweight scan sources. */
-const executePortableArrowQuery: ExecuteLinearArrowQuery = (table, {select, limit}) => {
+const executePortableArrowQuery: ExecuteLinearArrowQuery = (
+  table,
+  {select, where, limit, signal}
+) => {
+  if (where) table = filterArrowTable(table, where, {limit, signal});
   const projected = select ? projectArrowTable(table, select) : table;
   return projected.numRows === 0 || limit === undefined ? projected : projected.slice(0, limit);
 };
@@ -157,14 +167,8 @@ export function queryArrowTable(
     options
   );
   const projection = plan.find(step => step.kind === 'project');
-  // Portable source predicates retain Date, binary and mixed numeric comparison semantics.
-  const filtered = options.predicate
-    ? filterArrowTable(sourceTable, options.predicate, {
-        limit: options.limit,
-        signal: options.signal
-      })
-    : sourceTable;
-  return executeLinear(filtered, {
+  return executeLinear(sourceTable, {
+    where: options.predicate,
     select: projection?.columns,
     limit: options.limit,
     signal: options.signal

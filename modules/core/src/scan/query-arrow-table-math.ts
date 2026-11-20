@@ -11,5 +11,12 @@ import {
 
 /** Executes a validated Arrow query with math.gl as the linear executor. */
 export function queryArrowTable(source: Table, options?: ArrowQueryOptions): Table {
-  return planAndQueryArrowTable(source, options, executeArrowQuery);
+  const predicate = options?.predicate;
+  return planAndQueryArrowTable(
+    source,
+    options,
+    predicate && needsPortablePredicateCompatibility(source.schema, predicate)
+      ? undefined
+      : executeArrowQuery
+  );
 }

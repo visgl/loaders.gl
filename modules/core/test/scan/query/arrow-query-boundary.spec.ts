@@ -52,7 +52,7 @@ test('queryArrowTable covers null truth tables and scalar comparison families', 
     queryArrowTable(makeArrowTable({value: ['1']}), {
       predicate: {op: '=', args: [{property: 'value'}, 1]}
     })
-  ).toThrow(/cannot compare string with number/);
+  ).toThrow(/Invalid value|operand types must match/);
 });
 
 test('queryArrowTable compares Date and binary predicate values', () => {

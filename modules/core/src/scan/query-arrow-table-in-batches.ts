@@ -7,6 +7,7 @@ import {createRecordBatchWithMetadata, getRecordBatchMetadata} from '@math.gl/co
 import {queryArrowTableInBatches as executeArrowQueryInBatches} from '@math.gl/sql/query';
 import {validateTableQueryLimit} from '@loaders.gl/core/loader-utils';
 import {filterArrowTable} from './arrow-execution/filter-arrow-table';
+import {needsPortablePredicateCompatibility} from './arrow-execution/portable-predicate-compatibility';
 import type {ArrowQueryOptions} from './query-arrow-table';
 
 /**
@@ -37,7 +38,12 @@ export async function* queryArrowTableInBatches(
   try {
     const first = await iterator.next();
     if (first.done) return;
-    /** Applies portable filtering within the remaining limit, before math.gl projects rows. */
+    const predicate = options.predicate;
+    const compatiblePredicate =
+      predicate && needsPortablePredicateCompatibility(first.value.schema, predicate)
+        ? predicate
+        : undefined;
+    /** Replays the first batch and adapts predicate shapes RC.2 cannot bind. */
     async function* readBatches(): AsyncIterable<arrow.RecordBatch> {
       let remaining = options.limit;
       for (
@@ -46,14 +52,17 @@ export async function* queryArrowTableInBatches(
         next = await iterator.next()
       ) {
         const batch = next.value;
-        if (!options.predicate) {
+        if (!compatiblePredicate) {
           yield batch;
           continue;
         }
         const filtered = filterArrowTable(
           new arrow.Table(batch.schema, [batch]),
-          options.predicate,
-          {limit: remaining, signal: options.signal}
+          compatiblePredicate,
+          {
+            limit: remaining,
+            signal: options.signal
+          }
         );
         if (filtered.numRows) yield* filtered.batches;
         else
@@ -62,14 +71,12 @@ export async function* queryArrowTableInBatches(
             new arrow.RecordBatch(batch.schema, undefined).data,
             getRecordBatchMetadata(batch)
           );
-        if (remaining !== undefined) {
-          remaining -= filtered.numRows;
-          if (remaining === 0) return;
-        }
+        if (remaining !== undefined) remaining -= filtered.numRows;
       }
     }
     yield* executeArrowQueryInBatches(readBatches(), first.value.schema, {
       select: options.select ?? options.columns,
+      where: compatiblePredicate ? undefined : predicate,
       limit: options.limit,
       signal: options.signal,
       emitEmptyBatches: true
