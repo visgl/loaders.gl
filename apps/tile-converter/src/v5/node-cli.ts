@@ -41,6 +41,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --max-input-bytes N          Set input/read budget (default 16 MiB, max 256 MiB for 3D Tiles/3TZ)
   --max-resources N            Lower the 1,000 content-declaration limit
   --max-documents N            Set the 3D Tiles document budget (default 32, max 256)
+  --max-meshes N               Set content and primitive limits for 3D Tiles/3TZ to SLPK (default 64, max 1000)
   --max-output-bytes N         Set the output/archive budget (default: 32 MiB)
   --declare-egm2008-heights   Declare already orthometric heights for 3D Tiles/3TZ to SLPK
   --omit-feature-id           Omit the feature identifier attribute in SLPK
@@ -80,6 +81,7 @@ export async function runTileConverterCLI(
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
         'max-resources': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputResources)},
         'max-documents': {type: 'string', default: '32'},
+        'max-meshes': {type: 'string'},
         'max-output-bytes': {type: 'string', default: String(32 * 1024 * 1024)},
         'output-format': {type: 'string', default: '3tz'},
         output: {type: 'string'},
@@ -175,6 +177,8 @@ export async function runTileConverterCLI(
         preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,
+        maxMeshes:
+          values['max-meshes'] === undefined ? undefined : parseLimit(values['max-meshes']),
         maxOutputBytes: parseLimit(values['max-output-bytes']),
         geometricError:
           values['geometric-error'] === undefined
@@ -198,6 +202,7 @@ export async function runTileConverterCLI(
       values['all-contents'] ||
       values.output ||
       values['output-format'] !== '3tz' ||
+      values['max-meshes'] !== undefined ||
       values['max-output-bytes'] !== String(32 * 1024 * 1024)
     )
       throw new TileConversionError(

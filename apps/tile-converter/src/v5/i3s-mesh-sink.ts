@@ -21,7 +21,7 @@ export interface I3SMeshSinkOptions {
   readonly resourceSink?: BoundedMemoryTileConversionSink;
   /** Maximum compressed bytes retained, including final layer/index metadata. */
   readonly maxTotalBytes: number;
-  /** Maximum primitive placements, from one through 64. */
+  /** Maximum primitive placements, capped at 64 for the in-memory store. */
   readonly maxMeshes: number;
   /** Trust codec-assigned feature identities across material nodes. */
   readonly shareSourceObjectIds?: boolean;
@@ -107,15 +107,15 @@ interface MeshLayer {
 export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
   const {maxMeshes, maxResourceBytes} = options;
   if (
-    !Number.isInteger(maxMeshes) ||
+    !Number.isSafeInteger(maxMeshes) ||
     maxMeshes < 1 ||
-    maxMeshes > 64 ||
+    (!options.resourceSink && maxMeshes > 64) ||
     !Number.isSafeInteger(maxResourceBytes) ||
     maxResourceBytes < 1
   )
     throw new TileConversionError(
       'I3S_COLLECTION_OPTIONS_INVALID',
-      'I3S collections require 1–64 meshes and a positive resource byte limit'
+      'I3S collections require a positive mesh count and resource byte limit (at most 64 meshes in memory)'
     );
   const memory = options.resourceSink ?? createBoundedMemoryTileConversionSink(options);
   const compressor = new GZipCompressor({useNative: false});
