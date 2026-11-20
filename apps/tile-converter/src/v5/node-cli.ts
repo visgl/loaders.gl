@@ -28,10 +28,11 @@ export interface TileConverterCLIOutput {
 /** Usage for bounded metadata inspection and selected static mesh conversion. */
 const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL> [options]
 
+  --draft-feature-schema       Inspect legacy B3DM tables and draft a feature mapping
   --input-format 3d-tiles|3tz|i3s|slpk  Explicit input format (default: 3d-tiles)
   --geometric-error N        Required source error in meters for I3S to 3D Tiles
   --integrated-mesh-policy as-3d-object  Authorize I3S layer-type change
-  --preserve-hierarchy        Retain a complete explicit 3D Tiles tree (3D Tiles/3TZ only)
+  --preserve-hierarchy        Retain a complete explicit 3D Tiles tree
   --feature-schema PATH       Local JSON feature class/schema mapping (at most 64 KiB)
   --all-contents               Select every inspected 3D Tiles content placement
   --resource ID               Selected content placement; repeat for multiple selections
@@ -42,6 +43,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --max-documents N            Set the 3D Tiles document budget (default 32, max 256)
   --max-meshes N               Set content and primitive limits for 3D Tiles/3TZ to SLPK (default 64, max 1000)
   --max-output-bytes N         Set the output/archive budget (default: 32 MiB)
+  --slpk-lod-threshold N      Explicit I3S maxScreenThresholdSQ for replacement hierarchy
   --egm2008-grid PATH         Correct ellipsoidal heights with a local EGM2008 PGM grid
   --declare-egm2008-heights   Declare already orthometric heights for 3D Tiles/3TZ to SLPK
   --omit-feature-id           Omit the feature identifier attribute in SLPK
@@ -77,6 +79,7 @@ export async function runTileConverterCLI(
         'omit-feature-id': {type: 'boolean'},
         'no-draco': {type: 'boolean'},
         name: {type: 'string'},
+        'slpk-lod-threshold': {type: 'string'},
         'preserve-hierarchy': {type: 'boolean'},
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
@@ -88,6 +91,7 @@ export async function runTileConverterCLI(
         output: {type: 'string'},
         resource: {type: 'string', multiple: true},
         'all-contents': {type: 'boolean'},
+        'draft-feature-schema': {type: 'boolean'},
         'feature-schema': {type: 'string'},
         'geometric-error': {type: 'string'},
         'integrated-mesh-policy': {type: 'string'}
@@ -128,6 +132,14 @@ export async function runTileConverterCLI(
         '--name, --no-draco and --omit-feature-id require SLPK output'
       );
     }
+    if (
+      values['draft-feature-schema'] &&
+      (operation !== 'inspect' || format === 'i3s' || format === 'slpk')
+    )
+      throw new TileConversionError(
+        'CLI_USAGE_ERROR',
+        '--draft-feature-schema requires 3D Tiles or 3TZ inspect'
+      );
     if (operation !== 'inspect') {
       if (
         Boolean(values.resource?.length) === Boolean(values['all-contents']) ||
@@ -167,6 +179,10 @@ export async function runTileConverterCLI(
         omitFeatureIdAttribute: values['omit-feature-id'],
         name: values.name,
         draco: values['no-draco'] ? false : undefined,
+        slpkLodThreshold:
+          values['slpk-lod-threshold'] === undefined
+            ? undefined
+            : parseGeometricError(values['slpk-lod-threshold']),
         preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,
@@ -189,6 +205,7 @@ export async function runTileConverterCLI(
       values['declare-egm2008-heights'] !== undefined ||
       values.profile !== undefined ||
       values['feature-schema'] !== undefined ||
+      values['slpk-lod-threshold'] !== undefined ||
       values['preserve-hierarchy'] !== undefined ||
       values['geometric-error'] !== undefined ||
       values['integrated-mesh-policy'] !== undefined ||
@@ -203,6 +220,20 @@ export async function runTileConverterCLI(
         'CLI_USAGE_ERROR',
         'Inspect does not accept conversion/output options'
       );
+    if (values['draft-feature-schema'] && (format === '3d-tiles' || format === '3tz')) {
+      const {draftLegacyFeatureSchema} = await import('./node-schema-draft.js');
+      const source = await createNodeTilesetConversionSource({...sourceOptions, format});
+      try {
+        const inspection = await source.inspect(signal);
+        const draft = await draftLegacyFeatureSchema(source, inspection, signal);
+        output.stdout(
+          `${JSON.stringify({converter: CONVERTER_IDENTITY, operation, input: positionals[1], inputFormat: format, ...inspection, ...draft}, null, 2)}\n`
+        );
+        return 0;
+      } finally {
+        await source.close();
+      }
+    }
     const source =
       format === 'i3s' || format === 'slpk'
         ? await (await import('./node-i3s-source.js')).createNodeI3SConversionSource({
