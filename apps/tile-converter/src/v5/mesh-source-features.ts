@@ -37,6 +37,8 @@ export interface MeshSourceFeatureOptions extends FeatureArrowBatchOptions {
   readonly integer64Encoding?: 'decimal-string';
   /** Explicit SLPK field names keyed by source Arrow column name. */
   readonly i3sFieldNames?: Readonly<Record<string, string>>;
+  /** Explicit replacements for null values in nullable I3S int32 and float64 source columns. */
+  readonly i3sNumericNullValues?: Readonly<Record<string, number>>;
 }
 
 /** Extracts legacy batch tables or one decoded modern property table and validates geometry ownership. */
@@ -388,6 +390,7 @@ export function extractMeshFeatures(
     sourceBatchRows: declarations ? undefined : selectedRows,
     featureIdField: options.featureIdField || 'feature_id',
     i3sFieldNames: options.i3sFieldNames,
+    i3sNumericNullValues: options.i3sNumericNullValues,
     integer64Encoding: options.integer64Encoding
   };
 }
