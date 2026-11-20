@@ -1021,7 +1021,10 @@ test('SLPK replacement hierarchy retains parent geometry, child links and explic
     expect(parent).toMatchObject({
       level: 1,
       children: [{id: '2', href: '../2'}],
-      lodSelection: [{metricType: 'maxScreenThresholdSQ', maxError: 400}]
+      lodSelection: [
+        {metricType: 'maxScreenThresholdSQ', maxError: 400},
+        {metricType: 'maxScreenThreshold', maxError: expect.closeTo(40 / Math.sqrt(Math.PI))}
+      ]
     });
     const child = JSON.parse(
       new TextDecoder().decode(await archive.getFile('nodes/2/3dNodeIndexDocument.json'))

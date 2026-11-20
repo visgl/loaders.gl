@@ -227,6 +227,8 @@ REPLACE hierarchy with at most one content per tile and one primitive per conten
 It uses the existing hierarchy limits of 32 document placements, 256 tiles, and 64 meshes.
 Contentless ancestors collapse to their nearest geometry-bearing ancestor or the
 synthetic root. Internal meshes retain their geometry and use the supplied threshold.
+Legacy node documents also carry the equivalent screen-diameter threshold.
+
 Source geometric errors are preserved for 3D Tiles/3TZ output. SLPK uses the explicit
 screen threshold and the source’s existing meshes.
 

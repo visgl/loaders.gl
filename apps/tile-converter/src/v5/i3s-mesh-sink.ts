@@ -400,7 +400,17 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
                 level: levels[node.index],
                 obb: node.obb,
                 mbs: [...node.obb.center, Math.hypot(...node.obb.halfSize)],
-                lodSelection: [{metricType: 'maxScreenThresholdSQ', maxError: node.lodThreshold}],
+                lodSelection: [
+                  {metricType: 'maxScreenThresholdSQ', maxError: node.lodThreshold},
+                  ...(node.lodThreshold > 0
+                    ? [
+                        {
+                          metricType: 'maxScreenThreshold',
+                          maxError: Math.sqrt(node.lodThreshold / (Math.PI * 0.25))
+                        }
+                      ]
+                    : [])
+                ],
                 children: node.children.map(index => describeMeshNode(leaves[index - 1].node))
               }
             : {}),
