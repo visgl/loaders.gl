@@ -30,7 +30,10 @@ for the other conversion restrictions.
 Use `--name` to name the SLPK layer and `--no-draco` to write raw geometry.
 For 3D Tiles or 3TZ input whose derived heights already represent EGM2008 orthometric
 meters, use `--declare-egm2008-heights` to declare EPSG:3855 in the SLPK. This changes
-layer metadata only. It applies no geoid correction. The default is ellipsoidal.
+layer metadata only. To convert ellipsoidal input instead, pass `--egm2008-grid /path/to/egm2008-5.pgm`.
+Use a local GeographicLib EGM2008 PGM grid up to 128 MiB. The converter subtracts the
+interpolated undulation before encoding positions and building bounds. The two options
+are mutually exclusive. The default is ellipsoidal.
 SLPK package metadata is stored as plain `metadata.json`.
 
 ## Inspect and select
@@ -52,6 +55,14 @@ tile-converter inspect https://example.com/layers/0 --input-format i3s
 tile-converter inspect ./dataset.slpk --input-format slpk
 ```
 
+Use `tile-converter inspect ./tileset.json --draft-feature-schema` to scan bounded legacy
+B3DM batch tables without decoding mesh geometry. Save the report’s `featureSchema`
+object as a schema file, review inferred types and field aliases, and pass it to
+`convert --feature-schema`. The report lists skipped contents, omitted properties, and
+nullable numeric fields that need an explicit I3S null replacement policy. The draft’s
+`omitSourceProperties` list explicitly excludes unsupported legacy source columns.
+
+
 ## Convert and validate
 
 Copy placement IDs from inspection and repeat `--resource` for multiple selections.
@@ -61,7 +72,7 @@ output, an explicit selection may also include content on an ADD parent with chi
 declaring tileset document. Each selected nonleaf and each edge from it to a selected descendant
 must use effective ADD refinement; REPLACE or mixed refinement paths are rejected. The selected
 primitives become independent I3S leaves, not a copy of the source LOD tree. The
-`--preserve-hierarchy` option still applies only to 3D Tiles/3TZ output.
+`--preserve-hierarchy` supports SLPK replacement LOD with an explicit screen threshold.
 A selected content may contain multiple static
 primitives, up to 64 meshes in total. Declaring-document glTF axes, composed placement and
 relative URLs are retained during extraction. Feature-bearing contents require an explicit
@@ -134,7 +145,8 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `--preserve-hierarchy` | `false` | Require a complete explicit hierarchy across inspected documents for 3D Tiles/3TZ output |
+| `--preserve-hierarchy` | `false` | Require a complete explicit hierarchy across inspected documents |
+| `--slpk-lod-threshold` | | Positive I3S `maxScreenThresholdSQ` for SLPK replacement hierarchy |
 | `--input-format` | `3d-tiles` | `3d-tiles`, `3tz`, `i3s` or `slpk` |
 | `--geometric-error` | | Required metric source error for I3S to 3D Tiles |
 | `--integrated-mesh-policy` | | `as-3d-object` authorizes IntegratedMesh to SLPK |
@@ -145,7 +157,10 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--max-input-bytes` | `16777216` | Set transport/physical-read and decoded mesh budgets (max 256 MiB for 3D Tiles/3TZ) |
 | `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
 | `--max-documents` | `32` | Set the root/external document-placement limit (max 256) |
+| `--max-meshes` | `64` | Set the content and primitive placement limits for 3D Tiles/3TZ to SLPK (max 1000) |
+
 | `--max-output-bytes` | `33554432` | Limit combined resource bytes and, separately, archive bytes. Archives can opt in to a larger budget. |
+| `--egm2008-grid` | | Convert ellipsoidal heights using a local GeographicLib EGM2008 PGM grid (max 128 MiB) |
 | `--declare-egm2008-heights` | `false` | Declare existing EGM2008 orthometric heights in 3D Tiles/3TZ to SLPK output |
 | `--profile` | `false` | Include elapsed stage timings in the JSON conversion report; convert/validate only |
 | `--help` | | Show usage |
@@ -154,7 +169,7 @@ For 3TZ and SLPK, the Node CLI stages encoded resources in the system temporary 
 and streams the indexed archive from those files. Allow space for both the staged resources
 and the final archive during packaging. Archive validation also uses temporary disk space.
 Node SLPK writes textured nodes independently, so repeated textures can increase archive size.
-The 32 MiB default, 3D Tiles directory output cap, and input and selection limits still apply.
+The 32 MiB default, 3D Tiles directory output cap, and independent input limits still apply.
 
 Limits must be positive decimal integers within those ceilings. Archive file size and aggregate
 indexed physical reads are also capped by the input limit. Metadata, raw meshes and their buffers
@@ -178,6 +193,8 @@ qualification remain follow-ups. See the
 
 
 ## Preserve a complete explicit hierarchy
+
+### 3D Tiles and 3TZ output
 
 After inspecting an explicit 3D Tiles dataset, including declared `.json` external tilesets, select every content placement and
 add `--preserve-hierarchy` to `convert` or `validate`:
@@ -205,11 +222,23 @@ every content and child; distant contents that cannot meet the 1 cm float32 prec
 fail explicitly. Arrays with one entry are normalized to `content`. External JSON references
 continue to require a single `content`, with no siblings or source children.
 It rejects 1.0 `contents` arrays, contentless leaves,
-unmapped metadata/extensions/request volumes, I3S/SLPK input and SLPK output.
+unmapped metadata/extensions/request volumes, and I3S/SLPK input.
 See the [complete hierarchy profile](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile)
 for the shared browser/service API and remaining qualification. Nested content IDs include
 the complete external-reference chain, such as `tile-root-content-0/tile-root-content-0`.
 
+### SLPK output
+
+For replacement LOD, use `--preserve-hierarchy --slpk-lod-threshold N` with a
+positive I3S `maxScreenThresholdSQ` value. This profile requires a complete explicit
+REPLACE hierarchy with at most one content per tile and one primitive per content.
+It uses the existing hierarchy limits of 32 document placements, 256 tiles, and 64 meshes.
+Contentless ancestors collapse to their nearest geometry-bearing ancestor or the
+synthetic root. Internal meshes retain their geometry and use the supplied threshold.
+Legacy node documents also carry the equivalent screen-diameter threshold.
+
+Source geometric errors are preserved for 3D Tiles/3TZ output. SLPK uses the explicit
+screen threshold and the source’s existing meshes.
 
 ## Feature-schema controls
 

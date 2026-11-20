@@ -29,6 +29,7 @@ import type {
   MeshSourceFeatureOptions
 } from '@loaders.gl/tile-converter/v5/adapters';
 import {createNodeTilesetConversionSource} from './node-source.js';
+import {prepareMeshHierarchy} from './mesh-hierarchy.js';
 import {createNodeI3SConversionSource} from './node-i3s-source.js';
 import type {NodeTilesetConversionSourceOptions} from './node-source.js';
 
@@ -44,6 +45,8 @@ export interface NodeTileConversionOptions
   readonly omitFeatureIdAttribute?: boolean;
   /** Declare already orthometric input heights as EGM2008 in 3D Tiles/3TZ to SLPK output. */
   readonly declareEgm2008Heights?: boolean;
+  /** Local GeographicLib EGM2008 PGM grid used to correct ellipsoidal input heights. */
+  readonly egm2008Grid?: string;
   /** Name of the authored SLPK scene layer. */
   readonly name?: string;
   /** Set to false to write raw SLPK geometry. */
@@ -56,9 +59,13 @@ export interface NodeTileConversionOptions
   readonly geometricError?: number;
   /** Retain a complete explicit 3D Tiles tree, including inspected external documents in 3D Tiles/3TZ output. */
   readonly preserveHierarchy?: boolean;
+  /** Explicit I3S maxScreenThresholdSQ for replacement hierarchy output. */
+  readonly slpkLodThreshold?: number;
   /** Authorizes IntegratedMesh to 3DObject output with a reported semantic warning. */
   readonly integratedMeshPolicy?: 'as-3d-object';
-  /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
+  /** Maximum content and primitive placements for 3D Tiles/3TZ to SLPK (default 64, max 1000). */
+  readonly maxMeshes?: number;
+  /** Inspected content placement identifiers. */
   readonly resourceIds: readonly string[];
   /** Select every inspected 3D Tiles placement. Supply an empty resourceIds array. */
   readonly allContents?: boolean;
@@ -108,11 +115,37 @@ async function convertNodeTilesetWithStorage(
       'Select a supported output profile and a positive safe integer output budget (at most 32 MiB for directory output)'
     );
   const i3s = options.format === 'i3s' || options.format === 'slpk';
-  if (options.declareEgm2008Heights && (i3s || options.outputFormat !== 'slpk'))
+  const maxMeshes = options.maxMeshes ?? SELECTED_MESH_LIMITS.maxMeshResources;
+  if (
+    options.maxMeshes !== undefined &&
+    (i3s ||
+      options.outputFormat !== 'slpk' ||
+      !Number.isSafeInteger(maxMeshes) ||
+      maxMeshes < 1 ||
+      maxMeshes > 1000)
+  )
     throw new TileConversionError(
       'INVALID_NODE_CONVERSION_OPTIONS',
-      'Declaring EGM2008 heights requires 3D Tiles/3TZ to SLPK conversion'
+      'maxMeshes requires 3D Tiles/3TZ to SLPK conversion and an integer from 1 to 1000'
     );
+
+  if (
+    (options.declareEgm2008Heights || options.egm2008Grid !== undefined) &&
+    (i3s || options.outputFormat !== 'slpk')
+  )
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'EGM2008 height options require 3D Tiles/3TZ to SLPK conversion'
+    );
+  if (options.declareEgm2008Heights && options.egm2008Grid !== undefined)
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'Choose either existing EGM2008 heights or an EGM2008 grid'
+    );
+  const egm2008Geoid =
+    options.egm2008Grid === undefined
+      ? undefined
+      : await loadEgm2008Grid(options.egm2008Grid, signal);
   if (options.allContents && (i3s || options.resourceIds.length)) {
     throw new TileConversionError(
       'INVALID_NODE_CONVERSION_OPTIONS',
@@ -121,11 +154,19 @@ async function convertNodeTilesetWithStorage(
   }
   if (
     (options.preserveHierarchy !== undefined && typeof options.preserveHierarchy !== 'boolean') ||
-    (options.preserveHierarchy && (i3s || options.outputFormat === 'slpk'))
+    (options.preserveHierarchy && i3s) ||
+    (options.preserveHierarchy &&
+      options.outputFormat === 'slpk' &&
+      options.slpkLodThreshold === undefined) ||
+    (options.slpkLodThreshold !== undefined &&
+      (!options.preserveHierarchy ||
+        options.outputFormat !== 'slpk' ||
+        !Number.isFinite(options.slpkLodThreshold) ||
+        options.slpkLodThreshold <= 0))
   )
     throw new TileConversionError(
       'MESH_HIERARCHY_UNSUPPORTED',
-      'Hierarchy preservation requires 3D Tiles/3TZ input and output'
+      'Hierarchy preservation requires 3D Tiles/3TZ input; SLPK requires a positive explicit LOD threshold'
     );
   if (
     i3s &&
@@ -175,6 +216,16 @@ async function convertNodeTilesetWithStorage(
           resource => resource.resourceId
         )
       : options.resourceIds;
+    const slpkHierarchy =
+      options.slpkLodThreshold === undefined
+        ? undefined
+        : {
+            parents: prepareSlpkHierarchy(
+              inspection as BrowserTilesetConversionInspection,
+              resourceIds
+            ),
+            lodThreshold: options.slpkLodThreshold
+          };
     await import('@loaders.gl/core/polyfills');
     const {getDracoLibraryOptions} = await import('@loaders.gl/scene/draco');
     const dracoLibraryOptions = getDracoLibraryOptions({
@@ -197,6 +248,7 @@ async function convertNodeTilesetWithStorage(
             {
               resourceIds,
               preserveHierarchy: options.preserveHierarchy,
+              maxMeshes: options.maxMeshes,
               allowAdditiveNonLeaves: options.outputFormat === 'slpk',
               features: options.features,
               signal,
@@ -215,8 +267,8 @@ async function convertNodeTilesetWithStorage(
       measureInputBytes: measureMeshBytes,
       maxInputBytes: options.maxInputBytes ?? SELECTED_MESH_LIMITS.maxInputBytes,
       maxOutputBytes,
-      maxInputResources: SELECTED_MESH_LIMITS.maxMeshResources,
-      maxOutputResources: SELECTED_MESH_LIMITS.maxMeshResources
+      maxInputResources: maxMeshes,
+      maxOutputResources: maxMeshes
     };
     const codecOptions = {
       spatialContext,
@@ -231,10 +283,11 @@ async function convertNodeTilesetWithStorage(
     const maxResourceBytes = Math.min(maxOutputBytes, SELECTED_MESH_LIMITS.maxOutputBytes);
     if (options.outputFormat === 'slpk') {
       const sink = createI3SMeshSink({
+        hierarchy: slpkHierarchy,
         shareSourceObjectIds: true,
         maxTotalBytes: maxOutputBytes,
         resourceSink,
-        maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
+        maxMeshes,
         maxResourceBytes
       });
       report = await convertTileset({
@@ -245,6 +298,7 @@ async function convertNodeTilesetWithStorage(
           shareSourceObjectIds: true,
           omitFeatureIdAttribute: options.omitFeatureIdAttribute,
           declareEgm2008Heights: options.declareEgm2008Heights,
+          egm2008Geoid,
           name: options.name,
           draco: options.draco,
           maxResourceBytes
@@ -475,4 +529,76 @@ function createNodeArchiveResourceSink(
       files.clear();
     }
   };
+}
+
+/** Qualifies replacement-only tiles and links each mesh to its nearest mesh ancestor. */
+function prepareSlpkHierarchy(
+  inspection: BrowserTilesetConversionInspection,
+  resourceIds: readonly string[]
+): ReadonlyMap<string, string | null> {
+  const hierarchy = prepareMeshHierarchy(inspection, resourceIds);
+  if (
+    hierarchy.coordinateEpoch !== undefined ||
+    hierarchy.nodes.some(node => node.refine !== 'REPLACE' || node.resourceIds.length > 1)
+  )
+    throw new TileConversionError(
+      'I3S_HIERARCHY_UNSUPPORTED',
+      'SLPK hierarchy requires REPLACE tiles with at most one content and no coordinate epoch'
+    );
+  const parents = new Map<string, string | null>();
+  const ancestors: (string | null)[] = [null];
+  for (const [index, node] of hierarchy.nodes.entries()) {
+    const content = node.resourceIds[0];
+    const ancestor = ancestors[index];
+    if (content) parents.set(content, ancestor);
+    for (const child of node.children) ancestors[child] = content ?? ancestor;
+  }
+  return parents;
+}
+
+/** Reads a finite, local GeographicLib grid before conversion starts. */
+async function loadEgm2008Grid(path: string, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const handle = await open(path, 'r');
+  try {
+    const status = await handle.stat();
+    const {size} = status;
+    if (!status.isFile() || !Number.isSafeInteger(size) || size < 1 || size > 128 * 1024 * 1024)
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 PGM must be a regular file between 1 byte and 128 MiB'
+      );
+    const data = new Uint8Array(size);
+    let offset = 0;
+    while (offset < size) {
+      signal.throwIfAborted();
+      const {bytesRead} = await handle.read(data, offset, size - offset, offset);
+      if (!bytesRead)
+        throw new TileConversionError(
+          'INVALID_EGM2008_GRID',
+          'EGM2008 PGM ended before its stated size'
+        );
+      offset += bytesRead;
+    }
+    const {parsePGM} = await import('@math.gl/earth');
+    signal.throwIfAborted();
+    const geoid = parsePGM(data, {cubic: false});
+    // Validate the complete raster until math.gl enforces it at parse time.
+    const {_width, _height, _datastart, _offset, _scale} = geoid.options;
+    const rasterBytes = _width * _height * 2;
+    if (
+      !Number.isSafeInteger(rasterBytes) ||
+      data.byteLength - _datastart !== rasterBytes ||
+      !Number.isFinite(_offset) ||
+      !Number.isFinite(_scale) ||
+      _scale <= 0
+    )
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 PGM raster or scale metadata is invalid'
+      );
+    return geoid;
+  } finally {
+    await handle.close();
+  }
 }

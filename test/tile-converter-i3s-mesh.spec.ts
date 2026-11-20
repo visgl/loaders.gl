@@ -206,10 +206,10 @@ test('browser/root APIs agree and real source mesh conversion creates a readable
   expect(converted.sink.getFiles().length).toBeGreaterThan(5);
   const layer = JSON.parse(new TextDecoder().decode(await converted.reader.getFile('', 'http')));
   expect(layer.layerType).toBe('3DObject');
-  expect(layer.geometryDefinitions[0].geometryBuffers[0].compressedAttributes.encoding).toBe(
+  expect(layer.geometryDefinitions[0].geometryBuffers[1].compressedAttributes.encoding).toBe(
     'draco'
   );
-  const geometry = await converted.reader.getFile('nodes/1/geometries/0', 'http');
+  const geometry = await converted.reader.getFile('nodes/1/geometries/1', 'http');
   expect(new TextDecoder().decode(geometry.slice(0, 5))).toBe('DRACO');
   expect(new Uint8Array(geometry)[8]).toBe(1);
   expect(layer.description).toBe('Source feature metadata class: building');

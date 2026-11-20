@@ -184,7 +184,7 @@ test('browser SLPK mapping preserves exact IDs, Unicode, material factors and tr
     ]);
     const page = JSON.parse(new TextDecoder().decode(await reader.getFile('nodepages/0', 'http')));
     const content = (await parse(
-      await reader.getFile('nodes/1/geometries/0', 'http'),
+      await reader.getFile('nodes/1/geometries/1', 'http'),
       I3SContentLoader,
       {
         core: {worker: false, useLocalLibraries: true},

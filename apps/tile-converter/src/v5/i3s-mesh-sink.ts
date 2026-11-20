@@ -17,11 +17,18 @@ import type {I3SMeshConversionResource} from './i3s-mesh-conversion.js';
 
 /** Bounded flat collection of mesh nodes sharing one I3S feature/geometry schema. */
 export interface I3SMeshSinkOptions {
+  /** Optional qualified replacement hierarchy with one mesh per source placement. */
+  readonly hierarchy?: {
+    /** Each content and its nearest ancestor with geometry, or null at the top. */
+    readonly parents: ReadonlyMap<string, string | null>;
+    /** Explicit I3S maxScreenThresholdSQ for internal mesh nodes. */
+    readonly lodThreshold: number;
+  };
   /** Optional storage for encoded files; defaults to bounded in-memory storage. */
   readonly resourceSink?: BoundedMemoryTileConversionSink;
   /** Maximum compressed bytes retained, including final layer/index metadata. */
   readonly maxTotalBytes: number;
-  /** Maximum primitive placements, from one through 64. */
+  /** Maximum primitive placements, capped at 64 for the in-memory store. */
   readonly maxMeshes: number;
   /** Trust codec-assigned feature identities across material nodes. */
   readonly shareSourceObjectIds?: boolean;
@@ -44,7 +51,9 @@ interface MeshBounds {
 /** Generated paged mesh node, retaining geometry/material/attribute references. */
 interface MeshNode {
   /** Index in the flat collection. */ index: number;
-  /** Contentless root index. */ parentIndex: number;
+  /** Index of the immediate parent. */ parentIndex: number;
+  /** Immediate children in the authored hierarchy. */ children: number[];
+  /** I3S screen threshold for refinement. */ lodThreshold: number;
   /** Writer bounds. */ obb: MeshBounds;
   /** Leaf resources and their shared definitions. */ mesh: {
     /** Material and optional texture resource. */ material: {
@@ -101,27 +110,28 @@ interface MeshLayer {
  * Leaves retain geographic placements, compressed geometry and attributes. A shared schema is
  * required; generated object IDs must be disjoint (the conversion codec allocates them).
  * Finalization rebuilds legacy indices, paged indices and enclosing ECEF bounds, including a
- * second page for the 64th leaf. No source LOD hierarchy is implied. Byte gates bound retained
+ * second page for the 64th leaf. The collection defaults to a flat hierarchy. Byte gates bound retained
  * resources and metadata, not peak decoder/compressor memory.
  */
 export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
-  const {maxMeshes, maxResourceBytes} = options;
+  const {maxMeshes, maxResourceBytes, hierarchy} = options;
   if (
-    !Number.isInteger(maxMeshes) ||
+    !Number.isSafeInteger(maxMeshes) ||
     maxMeshes < 1 ||
-    maxMeshes > 64 ||
+    (!options.resourceSink && maxMeshes > 64) ||
     !Number.isSafeInteger(maxResourceBytes) ||
     maxResourceBytes < 1
   )
     throw new TileConversionError(
       'I3S_COLLECTION_OPTIONS_INVALID',
-      'I3S collections require 1–64 meshes and a positive resource byte limit'
+      'I3S collections require a positive mesh count and resource byte limit (at most 64 meshes in memory)'
     );
   const memory = options.resourceSink ?? createBoundedMemoryTileConversionSink(options);
   const compressor = new GZipCompressor({useNative: false});
   const decompressor = new GZipDecompressor({useNative: false});
   const leaves: {node: MeshNode; legacy: Record<string, unknown>}[] = [];
   const identifiers = new Set<string>();
+  const placements = new Map<string, MeshNode>();
   const textureOwners: {
     /** First node owning this complete encoded texture set. */ index: number;
     /** Serialized texture-set definition. */ definition: string;
@@ -212,6 +222,15 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
         );
       const index = leaves.length + 1;
       const node = (await readJson<{nodes: MeshNode[]}>(resource, 'nodepages/0.json.gz')).nodes[1];
+      if (hierarchy) {
+        const placement = resource.contentResourceId;
+        if (!placement || !hierarchy.parents.has(placement) || placements.has(placement))
+          throw new TileConversionError(
+            'I3S_HIERARCHY_UNSUPPORTED',
+            'SLPK hierarchy requires one mesh primitive per source content'
+          );
+        placements.set(placement, node);
+      }
       const legacy = await readJson<Record<string, unknown>>(
         resource,
         'nodes/1/3dNodeIndexDocument.json.gz'
@@ -330,6 +349,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
           'Finalization requires successfully written mesh nodes'
         );
       state = 'writing';
+      if (hierarchy) linkMeshHierarchy(placements, hierarchy);
       const minimum = [Infinity, Infinity, Infinity];
       const maximum = [-Infinity, -Infinity, -Infinity];
       for (const {node} of leaves) {
@@ -359,12 +379,8 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
           'Collection bounds cannot be represented'
         );
       const mbs = [...obb.center, Math.hypot(...obb.halfSize)];
-      const children = leaves.map(({node}) => ({
-        id: String(node.index),
-        href: `../${node.index}`,
-        obb: node.obb,
-        mbs: [...node.obb.center, Math.hypot(...node.obb.halfSize)]
-      }));
+      const rootChildren = leaves.filter(({node}) => node.parentIndex === 0);
+      const children = rootChildren.map(({node}) => describeMeshNode(node));
       await writeJson('nodes/root/3dNodeIndexDocument.json.gz', {
         id: 'root',
         level: 0,
@@ -374,13 +390,38 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
         lodSelection: [{metricType: 'maxScreenThresholdSQ', maxError: 0}],
         children
       });
-      for (const {node, legacy} of leaves)
+      const levels = [0];
+      for (const {node, legacy} of leaves) {
+        levels[node.index] = levels[node.parentIndex] + 1;
         await writeJson(`nodes/${node.index}/3dNodeIndexDocument.json.gz`, {
           ...legacy,
-          parentNode: {id: 'root', href: '../root', obb, mbs}
+          ...(hierarchy
+            ? {
+                level: levels[node.index],
+                obb: node.obb,
+                mbs: [...node.obb.center, Math.hypot(...node.obb.halfSize)],
+                lodSelection: [
+                  {metricType: 'maxScreenThresholdSQ', maxError: node.lodThreshold},
+                  ...(node.lodThreshold > 0
+                    ? [
+                        {
+                          metricType: 'maxScreenThreshold',
+                          maxError: Math.sqrt(node.lodThreshold / (Math.PI * 0.25))
+                        }
+                      ]
+                    : [])
+                ],
+                children: node.children.map(index => describeMeshNode(leaves[index - 1].node))
+              }
+            : {}),
+          parentNode:
+            node.parentIndex === 0
+              ? {id: 'root', href: '../root', obb, mbs}
+              : describeMeshNode(leaves[node.parentIndex - 1].node)
         });
+      }
       const nodes = [
-        {index: 0, obb, lodThreshold: 0, children: leaves.map(({node}) => node.index)},
+        {index: 0, obb, lodThreshold: 0, children: rootChildren.map(({node}) => node.index)},
         ...leaves.map(({node}) => node)
       ];
       for (let page = 0; page * 64 < nodes.length; page++)
@@ -413,4 +454,49 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       await memory.abort(error);
     }
   };
+}
+
+/** Serializes the legacy reference to one mesh node. */
+function describeMeshNode(node: MeshNode) {
+  return {
+    id: String(node.index),
+    href: `../${node.index}`,
+    obb: node.obb,
+    mbs: [...node.obb.center, Math.hypot(...node.obb.halfSize)]
+  };
+}
+
+/** Links parent-before-child meshes and expands parent bounds around their fixed geometry origins. */
+function linkMeshHierarchy(
+  placements: ReadonlyMap<string, MeshNode>,
+  hierarchy: NonNullable<I3SMeshSinkOptions['hierarchy']>
+): void {
+  if (
+    placements.size !== hierarchy.parents.size ||
+    !Number.isFinite(hierarchy.lodThreshold) ||
+    hierarchy.lodThreshold <= 0
+  )
+    throw new TileConversionError(
+      'I3S_HIERARCHY_UNSUPPORTED',
+      'SLPK hierarchy needs every mesh and a positive screen threshold'
+    );
+  for (const [placement, node] of [...placements].reverse()) {
+    const parentId = hierarchy.parents.get(placement);
+    if (parentId === null) continue;
+    const parent = parentId === undefined ? undefined : placements.get(parentId);
+    if (!parent || parent.index >= node.index)
+      throw new TileConversionError(
+        'I3S_HIERARCHY_UNSUPPORTED',
+        'SLPK hierarchy requires parents before children'
+      );
+    node.parentIndex = parent.index;
+    parent.children.unshift(node.index);
+    parent.lodThreshold = hierarchy.lodThreshold;
+    const parentCenter = Ellipsoid.WGS84.cartographicToCartesian(parent.obb.center);
+    const childCenter = Ellipsoid.WGS84.cartographicToCartesian(node.obb.center);
+    for (let axis = 0; axis < 3; axis++) {
+      const halfSize = Math.abs(parentCenter[axis] - childCenter[axis]) + node.obb.halfSize[axis];
+      parent.obb.halfSize[axis] = Math.max(parent.obb.halfSize[axis], halfSize);
+    }
+  }
 }
