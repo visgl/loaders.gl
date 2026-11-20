@@ -11,21 +11,41 @@ Install `@loaders.gl/tile-converter` to use it; `tile-converter-v5` remains an a
 The original flag-based workflow now uses [`tile-converter-v4`](./tile-converter.md).
 See the [migration table](../../../upgrade-guide.md#tile-converter-defaults-to-v5) for existing scripts.
 
-## Native-ECEF input caveat
+## Native-ECEF source metadata
 
-For 3D Tiles, recognition of a native EPSG:4978 frame does not by itself qualify a mesh source.
-The loader can resolve an inline `TILESET_CRS_GEOCENTRIC` semantic with value `EPSG:4978`,
-but the current mesh adapter rejects tileset `metadata` and nonempty `groups`, including
-metadata used only to declare that CRS. Conversion and target-profile validation then fail with
-`MESH_SOURCE_METADATA_UNSUPPORTED: Tileset/group metadata requires a separate mapping`.
-`--feature-schema` maps mesh features; it does not map tileset or group metadata.
+For 3D Tiles, the mesh adapter accepts native EPSG:4978 XYZ coordinates in meters with
+ellipsoidal heights. A correctly enclosing WGS84 root `boundingVolume.region` can establish
+the format-default frame. A box/sphere-bounded dataset can instead declare its actual frame
+through an inline metadata class:
 
-A correctly enclosing WGS84 root `boundingVolume.region` can establish the format's global
-ellipsoidal frame without tileset metadata. Its bounds must describe the actual dataset;
-adding a placeholder region is not a CRS conversion. Sphere/box-only inputs without a
-supported explicit frame declaration remain unsupported: coordinates are never guessed to
-be ECEF from their magnitude. See the [mesh source profile](../api-reference/v5-conversion.md#source-mesh-to-i3sslpk)
-for the other conversion restrictions.
+```json
+{
+  "schema": {
+    "classes": {
+      "frame": {
+        "properties": {
+          "crs": {"type": "STRING", "semantic": "TILESET_CRS_GEOCENTRIC"}
+        }
+      }
+    }
+  },
+  "metadata": {"class": "frame", "properties": {"crs": "EPSG:4978"}}
+}
+```
+
+Add these declaration fields to the existing 3D Tiles 1.1 document; retain its real bounds,
+transforms and contents. Declaring a CRS does not reproject geometry, and coordinates are
+never guessed to be ECEF from their magnitude.
+
+The selected class must contain only an explicit `STRING` CRS property and an optional explicit
+`SCALAR` / `FLOAT64` property with semantic `TILESET_CRS_COORDINATE_EPOCH`. Both values
+must agree with the loader's resolved spatial reference. Defaults, arrays, value transforms,
+entity extras/extensions, unresolved/external schemas, duplicate semantics, unrelated
+properties and nonempty `groups` remain outside this profile. They fail with
+`MESH_SOURCE_METADATA_UNSUPPORTED`; `--feature-schema` maps mesh features, not dataset metadata.
+Undeclared or non-ECEF frames remain rejected. Hierarchy-preserving output keeps its separate
+restriction on dataset schemas/metadata; this exception applies to selected mesh conversion. See the
+[mesh source profile](../api-reference/v5-conversion.md#source-mesh-to-i3sslpk) for the other restrictions.
 
 Use `--name` to name the SLPK layer and `--no-draco` to write raw geometry.
 For 3D Tiles or 3TZ input whose derived heights already represent EGM2008 orthometric
