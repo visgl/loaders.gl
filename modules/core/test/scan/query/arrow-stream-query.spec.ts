@@ -259,3 +259,20 @@ test('streaming preserves fractional predicates against Int64 columns', async ()
   }
   expect(values).toEqual([2n, 3n]);
 });
+
+test('streaming retains portable comparisons for Arrow time columns', async () => {
+  const table = new arrow.Table({
+    value: arrow.vectorFromArray([1, 2, 3], new arrow.TimeSecond())
+  });
+  /** Streams a table containing a time column. */
+  async function* input() {
+    yield* table.batches;
+  }
+  const values: number[] = [];
+  for await (const batch of queryArrowTableInBatches(input(), {
+    predicate: {op: '>', args: [{property: 'value'}, 1]}
+  })) {
+    values.push(...batch.getChild('value')!);
+  }
+  expect(values).toEqual([2, 3]);
+});
