@@ -771,6 +771,8 @@ test('CLI names a raw SLPK and writes plain package metadata', async () => {
         '--output',
         output,
         '--no-draco',
+        '--max-output-bytes',
+        String(128 * 1024 * 1024),
         '--name',
         'Buildings'
       ],

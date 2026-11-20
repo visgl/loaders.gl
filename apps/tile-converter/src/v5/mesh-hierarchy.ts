@@ -9,6 +9,7 @@ import {
   createBoundedMemoryTileConversionSink,
   createTiles3DConversionSpatialContext
 } from '@loaders.gl/tile-converter/v5/core';
+import type {BoundedMemoryTileConversionSink} from './browser-sink.js';
 import type {BrowserTilesetConversionInspection} from '@loaders.gl/tile-converter/v5/core';
 import {createMeshTileset} from './mesh-tileset-sink.js';
 import type {MeshTilesetSink} from './mesh-tileset-sink.js';
@@ -108,6 +109,8 @@ interface MeshHierarchy {
 
 /** Input and retained-byte policy for complete explicit hierarchy conversion. */
 export interface MeshHierarchyTilesetSinkOptions {
+  /** Optional storage for encoded files; defaults to bounded in-memory storage. */
+  readonly resourceSink?: BoundedMemoryTileConversionSink;
   /** Expanded inspection (inspectNestedTilesets: true) used by the selected source; at most 32 document placements. */
   readonly inspection: BrowserTilesetConversionInspection;
   /** Every inspected content placement, with no duplicates or omissions; at most 64. */
@@ -436,7 +439,7 @@ export function createMeshHierarchyTilesetSink(
       'MESH_GEOMETRIC_ERROR_INVALID',
       'Hierarchy position allowance and resulting errors must be finite nonnegative meters'
     );
-  const memory = createBoundedMemoryTileConversionSink(options);
+  const memory = options.resourceSink ?? createBoundedMemoryTileConversionSink(options);
   const placements = new Map<
     string,
     {
