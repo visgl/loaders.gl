@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table} from 'apache-arrow';
-import {queryArrowTable as executeArrowQuery} from '@math.gl/sql';
+import {queryArrowTable as executeArrowQuery} from '@math.gl/sql/query';
 import {
   queryArrowTable as planAndQueryArrowTable,
   type ArrowQueryOptions

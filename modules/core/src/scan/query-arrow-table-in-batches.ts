@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {createRecordBatchWithMetadata, getRecordBatchMetadata} from '@math.gl/core/arrow';
-import {queryArrowTableInBatches as executeArrowQueryInBatches} from '@math.gl/sql';
+import {queryArrowTableInBatches as executeArrowQueryInBatches} from '@math.gl/sql/query';
 import {validateTableQueryLimit} from '@loaders.gl/core/loader-utils';
 import {filterArrowTable} from './arrow-execution/filter-arrow-table';
 import type {ArrowQueryOptions} from './query-arrow-table';

@@ -23,7 +23,7 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 Import `queryArrowTableInBatches` from `@loaders.gl/core/scan/arrow-query`.
 For native GeoArrow row decoding, use the row views and materializer in `@math.gl/core/arrow`.
 
-With math.gl 5.0.0-rc.1, import matrix and vector APIs from `@math.gl/core/matrix`
+With math.gl 5.0.0-rc.2, import matrix and vector APIs from `@math.gl/core/matrix`
 and typed arrays and their helpers from `@math.gl/core/types`. Import geoid
 utilities from `@math.gl/earth/geoid` and S2 helpers from `@math.gl/dggs/s2`.
 These focused imports replace the earlier beta guidance for those APIs.
