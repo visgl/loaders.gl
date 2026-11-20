@@ -96,7 +96,10 @@ beforeAll(() => {
   });
   const decompressor = new GZipDecompressor({useNative: false});
   raw = Object.fromEntries(
-    Object.entries(layer.files).map(([name, bytes]) => [name, decompressor.decompressSync(bytes)])
+    Object.entries(layer.files).map(([name, bytes]) => [
+      name,
+      name.endsWith('.gz') ? decompressor.decompressSync(bytes) : bytes
+    ])
   );
   metadata = JSON.parse(new TextDecoder().decode(raw['3dSceneLayer.json.gz']));
   page = JSON.parse(new TextDecoder().decode(raw['nodepages/0.json.gz']));
@@ -490,7 +493,7 @@ async function decodeDracoLayer(encoded: Awaited<ReturnType<typeof encodeI3SMesh
   const resources = Object.fromEntries(
     Object.entries(encoded.files).map(([name, buffer]) => [
       name,
-      decompressor.decompressSync(buffer)
+      name.endsWith('.gz') ? decompressor.decompressSync(buffer) : buffer
     ])
   );
   const layerMetadata = JSON.parse(new TextDecoder().decode(resources['3dSceneLayer.json.gz']));
