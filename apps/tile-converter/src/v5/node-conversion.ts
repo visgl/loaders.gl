@@ -42,6 +42,8 @@ export interface NodeTileConversionOptions
   readonly profile?: boolean;
   /** Omit the feature identifier attribute from SLPK output. */
   readonly omitFeatureIdAttribute?: boolean;
+  /** Declare already orthometric input heights as EGM2008 in 3D Tiles/3TZ to SLPK output. */
+  readonly declareEgm2008Heights?: boolean;
   /** Name of the authored SLPK scene layer. */
   readonly name?: string;
   /** Set to false to write raw SLPK geometry. */
@@ -120,6 +122,12 @@ async function convertNodeTilesetWithStorage(
     throw new TileConversionError(
       'INVALID_NODE_CONVERSION_OPTIONS',
       'maxMeshes requires 3D Tiles/3TZ to SLPK conversion and an integer from 1 to 1000'
+    );
+
+  if (options.declareEgm2008Heights && (i3s || options.outputFormat !== 'slpk'))
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'Declaring EGM2008 heights requires 3D Tiles/3TZ to SLPK conversion'
     );
   if (options.allContents && (i3s || options.resourceIds.length)) {
     throw new TileConversionError(
@@ -253,6 +261,7 @@ async function convertNodeTilesetWithStorage(
           ...codecOptions,
           shareSourceObjectIds: true,
           omitFeatureIdAttribute: options.omitFeatureIdAttribute,
+          declareEgm2008Heights: options.declareEgm2008Heights,
           name: options.name,
           draco: options.draco,
           maxResourceBytes
