@@ -76,7 +76,7 @@ export interface SelectedMeshSourceOptions {
   >;
   /** Explicit feature mapping, or the qualified inline structural metadata profile. */
   readonly features?: MeshSourceFeatureOptions;
-  /** Lower the shared 16 MiB transport and decoded mesh limit. */
+  /** Transport and decoded mesh budget. An injected source can supply a larger budget. */
   readonly maxInputBytes?: number;
 }
 
@@ -108,11 +108,11 @@ export async function createSelectedMeshConversionSource(
   if (
     !Number.isSafeInteger(maxInputBytes) ||
     maxInputBytes < 1 ||
-    maxInputBytes > SELECTED_MESH_LIMITS.maxInputBytes
+    (!options.source && maxInputBytes > SELECTED_MESH_LIMITS.maxInputBytes)
   )
     throw new TileConversionError(
       'INVALID_SELECTED_MESH_OPTIONS',
-      'Selected mesh input budget must be a positive safe integer at most 16 MiB'
+      'Selected mesh input budget must be positive and within the source profile limits'
     );
   const maxMeshes = options.maxMeshes ?? SELECTED_MESH_LIMITS.maxMeshResources;
   if (

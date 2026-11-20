@@ -139,7 +139,7 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--resource` | | Required selected placement ID for convert/validate; repeatable |
 | `--output-format` | `3tz` | `3d-tiles`, `3tz` or `slpk` |
 | `--output` | | New destination; required only for convert |
-| `--max-input-bytes` | `16777216` | Lower transport/physical-read and decoded mesh budgets |
+| `--max-input-bytes` | `16777216` | Set transport/physical-read and decoded mesh budgets (max 256 MiB for 3D Tiles/3TZ) |
 | `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
 | `--max-documents` | `32` | Set the root/external document-placement limit (max 256) |
 | `--max-meshes` | `64` | Set the content and primitive placement limits for 3D Tiles/3TZ to SLPK (max 1000) |

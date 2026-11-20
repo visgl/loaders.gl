@@ -37,7 +37,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --resource ID               Selected content placement; repeat for multiple selections
   --output-format 3d-tiles|3tz|slpk  Target profile (default: 3tz)
   --output PATH               New destination (required for convert, forbidden for validate)
-  --max-input-bytes N          Lower the 16 MiB input/read budget
+  --max-input-bytes N          Set input/read budget (default 16 MiB, max 256 MiB for 3D Tiles/3TZ)
   --max-resources N            Lower the 1,000 content-declaration limit
   --max-documents N            Set the 3D Tiles document budget (default 32, max 256)
   --max-meshes N               Set content and primitive limits for 3D Tiles/3TZ to SLPK (default 64, max 1000)
