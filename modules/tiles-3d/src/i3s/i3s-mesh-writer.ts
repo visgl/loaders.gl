@@ -153,8 +153,14 @@ export async function encodeI3SMeshLayerWithDraco(
       ...runtimeOptions,
       draco: {
         method: 'MESH_EDGEBREAKER_ENCODING',
-        attributeNameEntry: 'i3s-attribute-type',
-        attributesMetadata: {'feature-index': {'i3s-feature-ids': featureIdentifiers}}
+        // Standard Draco semantics identify positions, normals and UVs. I3S metadata names
+        // only the generic feature attribute so clients do not override those semantics.
+        attributesMetadata: {
+          'feature-index': {
+            'i3s-attribute-type': 'feature-index',
+            'i3s-feature-ids': featureIdentifiers
+          }
+        }
       }
     }
   );
