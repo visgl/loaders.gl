@@ -347,7 +347,8 @@ test('conversion rejects missing selections, invalid budgets and failed inputs w
     {resourceIds: ['missing']},
     {maxOutputBytes: 0},
     {maxInputBytes: 1},
-    {maxTilesetDocuments: 1}
+    {maxTilesetDocuments: 1},
+    {declareEgm2008Heights: true}
   ])
     await expect(
       convertNodeTileset({
@@ -761,7 +762,7 @@ test('CLI converts ordered multi-content and multi-primitive tiles into indexed 
   }
 });
 
-test('CLI names a raw SLPK and writes plain package metadata', async () => {
+test('CLI names a raw SLPK and declares its EGM2008 heights', async () => {
   /** Destination for the existing tiny nested triangle fixture. */
   const output = join(directory, 'named-raw.slpk');
   expect(
@@ -776,6 +777,7 @@ test('CLI names a raw SLPK and writes plain package metadata', async () => {
         '--output',
         output,
         '--no-draco',
+        '--declare-egm2008-heights',
         '--max-output-bytes',
         String(128 * 1024 * 1024),
         '--name',
@@ -794,7 +796,15 @@ test('CLI names a raw SLPK and writes plain package metadata', async () => {
     ).toMatchObject({nodeCount: 2});
     expect(
       JSON.parse(new TextDecoder().decode(await archive.getFile('3dSceneLayer.json')))
-    ).toMatchObject({name: 'Buildings'});
+    ).toMatchObject({
+      name: 'Buildings',
+      spatialReference: {wkid: 4326, vcsWkid: 3855, latestVcsWkid: 3855},
+      heightModelInfo: {
+        heightModel: 'gravity_related_height',
+        heightUnit: 'meter',
+        vertCRS: 'EGM2008_Geoid'
+      }
+    });
     expect((await archive.getFile('nodes/1/geometries/0.bin')).byteLength).toBeGreaterThan(0);
   } finally {
     await archive.close();

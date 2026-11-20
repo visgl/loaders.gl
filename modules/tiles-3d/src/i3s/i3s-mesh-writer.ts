@@ -44,6 +44,8 @@ export interface I3SMeshWriterOptions {
   readonly maxPositionError: number;
   /** Maximum bytes for each geometry, attribute, or JSON resource before GZIP. */
   readonly maxResourceBytes: number;
+  /** Declare derived heights as already EGM2008 orthometric meters, without a geoid transform. */
+  readonly declareEgm2008Heights?: boolean;
   /** Optional layer name. */
   readonly name?: string;
   /** Optional material and encoded PNG/JPEG base-color texture. */
@@ -151,8 +153,14 @@ export async function encodeI3SMeshLayerWithDraco(
       ...runtimeOptions,
       draco: {
         method: 'MESH_EDGEBREAKER_ENCODING',
-        attributeNameEntry: 'i3s-attribute-type',
-        attributesMetadata: {'feature-index': {'i3s-feature-ids': featureIdentifiers}}
+        // Standard Draco semantics identify positions, normals and UVs. I3S metadata names
+        // only the generic feature attribute so clients do not override those semantics.
+        attributesMetadata: {
+          'feature-index': {
+            'i3s-attribute-type': 'feature-index',
+            'i3s-feature-ids': featureIdentifiers
+          }
+        }
       }
     }
   );
@@ -474,8 +482,12 @@ function prepareMeshLayer(
     name: options.name || 'Converted mesh',
     description: featureClass ? `Source feature metadata class: ${featureClass}` : undefined,
     layerType: '3DObject',
-    spatialReference: {wkid: 4326},
-    heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},
+    spatialReference: options.declareEgm2008Heights
+      ? {wkid: 4326, vcsWkid: 3855, latestVcsWkid: 3855}
+      : {wkid: 4326},
+    heightModelInfo: options.declareEgm2008Heights
+      ? {heightModel: 'gravity_related_height', heightUnit: 'meter', vertCRS: 'EGM2008_Geoid'}
+      : {heightModel: 'ellipsoidal', heightUnit: 'meter'},
     capabilities: ['View'],
     fields: attributes.fields,
     attributeStorageInfo: attributes.storage,
