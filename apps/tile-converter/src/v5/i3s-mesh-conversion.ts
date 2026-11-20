@@ -28,6 +28,8 @@ import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core
 export interface I3SMeshConversionResource extends EncodedI3SMeshLayer {
   /** Source placement identifier used for diagnostics. */
   readonly id: string;
+  /** Source content placement shared by all its emitted mesh primitives. */
+  readonly contentResourceId?: string;
   /** Whether a source outline was omitted. */
   readonly omittedPrimitiveOutline?: boolean;
   /** Original I3S layer type when authoring from an I3S source. */
@@ -182,6 +184,7 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       signal?.throwIfAborted();
       yield {
         id: resource.id,
+        contentResourceId: resource.contentResourceId,
         ...layer,
         sourceLayerType: resource.sourceLayerType,
         omittedPrimitiveOutline: resource.omittedPrimitiveOutline

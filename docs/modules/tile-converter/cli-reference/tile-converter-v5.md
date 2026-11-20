@@ -64,7 +64,7 @@ output, an explicit selection may also include content on an ADD parent with chi
 declaring tileset document. Each selected nonleaf and each edge from it to a selected descendant
 must use effective ADD refinement; REPLACE or mixed refinement paths are rejected. The selected
 primitives become independent I3S leaves, not a copy of the source LOD tree. The
-`--preserve-hierarchy` option still applies only to 3D Tiles/3TZ output.
+`--preserve-hierarchy` supports SLPK replacement LOD with an explicit screen threshold.
 A selected content may contain multiple static
 primitives, up to 64 meshes in total. Declaring-document glTF axes, composed placement and
 relative URLs are retained during extraction. Feature-bearing contents require an explicit
@@ -137,7 +137,8 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `--preserve-hierarchy` | `false` | Require a complete explicit hierarchy across inspected documents for 3D Tiles/3TZ output |
+| `--preserve-hierarchy` | `false` | Require a complete explicit hierarchy across inspected documents |
+| `--slpk-lod-threshold` | | Positive I3S `maxScreenThresholdSQ` for SLPK replacement hierarchy |
 | `--input-format` | `3d-tiles` | `3d-tiles`, `3tz`, `i3s` or `slpk` |
 | `--geometric-error` | | Required metric source error for I3S to 3D Tiles |
 | `--integrated-mesh-policy` | | `as-3d-object` authorizes IntegratedMesh to SLPK |
@@ -185,6 +186,8 @@ qualification remain follow-ups. See the
 
 ## Preserve a complete explicit hierarchy
 
+### 3D Tiles and 3TZ output
+
 After inspecting an explicit 3D Tiles dataset, including declared `.json` external tilesets, select every content placement and
 add `--preserve-hierarchy` to `convert` or `validate`:
 
@@ -211,11 +214,23 @@ every content and child; distant contents that cannot meet the 1 cm float32 prec
 fail explicitly. Arrays with one entry are normalized to `content`. External JSON references
 continue to require a single `content`, with no siblings or source children.
 It rejects 1.0 `contents` arrays, contentless leaves,
-unmapped metadata/extensions/request volumes, I3S/SLPK input and SLPK output.
+unmapped metadata/extensions/request volumes, and I3S/SLPK input.
 See the [complete hierarchy profile](../api-reference/v5-conversion.md#complete-explicit-hierarchy-profile)
 for the shared browser/service API and remaining qualification. Nested content IDs include
 the complete external-reference chain, such as `tile-root-content-0/tile-root-content-0`.
 
+### SLPK output
+
+For replacement LOD, use `--preserve-hierarchy --slpk-lod-threshold N` with a
+positive I3S `maxScreenThresholdSQ` value. This profile requires a complete explicit
+REPLACE hierarchy with at most one content per tile and one primitive per content.
+It uses the existing hierarchy limits of 32 document placements, 256 tiles, and 64 meshes.
+Contentless ancestors collapse to their nearest geometry-bearing ancestor or the
+synthetic root. Internal meshes retain their geometry and use the supplied threshold.
+Legacy node documents also carry the equivalent screen-diameter threshold.
+
+Source geometric errors are preserved for 3D Tiles/3TZ output. SLPK uses the explicit
+screen threshold and the source’s existing meshes.
 
 ## Feature-schema controls
 

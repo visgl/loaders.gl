@@ -31,7 +31,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --input-format 3d-tiles|3tz|i3s|slpk  Explicit input format (default: 3d-tiles)
   --geometric-error N        Required source error in meters for I3S to 3D Tiles
   --integrated-mesh-policy as-3d-object  Authorize I3S layer-type change
-  --preserve-hierarchy        Retain a complete explicit 3D Tiles tree (3D Tiles/3TZ only)
+  --preserve-hierarchy        Retain a complete explicit 3D Tiles tree
   --feature-schema PATH       Local JSON feature class/schema mapping (at most 64 KiB)
   --all-contents               Select every inspected 3D Tiles content placement
   --resource ID               Selected content placement; repeat for multiple selections
@@ -42,6 +42,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --max-documents N            Set the 3D Tiles document budget (default 32, max 256)
   --max-meshes N               Set content and primitive limits for 3D Tiles/3TZ to SLPK (default 64, max 1000)
   --max-output-bytes N         Set the output/archive budget (default: 32 MiB)
+  --slpk-lod-threshold N      Explicit I3S maxScreenThresholdSQ for replacement hierarchy
   --egm2008-grid PATH         Correct ellipsoidal heights with a local EGM2008 PGM grid
   --declare-egm2008-heights   Declare already orthometric heights for 3D Tiles/3TZ to SLPK
   --omit-feature-id           Omit the feature identifier attribute in SLPK
@@ -77,6 +78,7 @@ export async function runTileConverterCLI(
         'omit-feature-id': {type: 'boolean'},
         'no-draco': {type: 'boolean'},
         name: {type: 'string'},
+        'slpk-lod-threshold': {type: 'string'},
         'preserve-hierarchy': {type: 'boolean'},
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
@@ -167,6 +169,10 @@ export async function runTileConverterCLI(
         omitFeatureIdAttribute: values['omit-feature-id'],
         name: values.name,
         draco: values['no-draco'] ? false : undefined,
+        slpkLodThreshold:
+          values['slpk-lod-threshold'] === undefined
+            ? undefined
+            : parseGeometricError(values['slpk-lod-threshold']),
         preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,
@@ -189,6 +195,7 @@ export async function runTileConverterCLI(
       values['declare-egm2008-heights'] !== undefined ||
       values.profile !== undefined ||
       values['feature-schema'] !== undefined ||
+      values['slpk-lod-threshold'] !== undefined ||
       values['preserve-hierarchy'] !== undefined ||
       values['geometric-error'] !== undefined ||
       values['integrated-mesh-policy'] !== undefined ||
