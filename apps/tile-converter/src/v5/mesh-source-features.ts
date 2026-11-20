@@ -31,6 +31,8 @@ export interface MeshSourceFeatureOptions extends FeatureArrowBatchOptions {
   readonly metadataClass: string;
   /** Optional source property providing stable identifiers; otherwise row indices are stable within the content. */
   readonly sourceFeatureIdProperty?: string;
+  /** Legacy batch-table columns explicitly excluded from the mapping. */
+  readonly omitSourceProperties?: readonly string[];
   /** Accept decimal strings in legacy batch-table numeric properties. */
   readonly coerceNumericStrings?: boolean;
   /** Explicit I3S representation for 64-bit integers; omission rejects those target fields. */
@@ -86,6 +88,20 @@ export function extractMeshFeatures(
     );
   const mapping =
     'schema' in options ? options : createMeshSourceFeatureOptions(gltf.json, options);
+  const omitted = new Set(options.omitSourceProperties);
+  if (
+    omitted.size &&
+    (declarations ||
+      mapping.schema.fields.some(
+        field => field.name !== (options.featureIdField ?? 'feature_id') && omitted.has(field.name)
+      ) ||
+      (options.sourceFeatureIdProperty !== undefined &&
+        omitted.has(options.sourceFeatureIdProperty)))
+  )
+    throw new TileConversionError(
+      'MESH_FEATURE_MAPPING_UNSUPPORTED',
+      'Only unmapped legacy properties may be explicitly omitted'
+    );
   const propertyMappings = new Map<string, MeshSourcePropertyMapping>();
   let count: number;
   let attributeReference = legacy;
@@ -289,6 +305,7 @@ export function extractMeshFeatures(
       'Additional feature ID sets require separate mappings'
     );
   for (const [name, values] of Object.entries(properties)) {
+    if (omitted.has(name)) continue;
     if (
       !values ||
       (!Array.isArray(values) && !ArrayBuffer.isView(values)) ||
@@ -362,7 +379,7 @@ export function extractMeshFeatures(
   };
   const propertyNames = [
     ...new Set([...Object.keys(properties), ...propertyMappings.keys()])
-  ].filter(name => name !== sourceIdentifier);
+  ].filter(name => name !== sourceIdentifier && !omitted.has(name));
   /** Look up declared types only for the legacy batch-table coercion path. */
   const numericTypes =
     !declarations && options.coerceNumericStrings
