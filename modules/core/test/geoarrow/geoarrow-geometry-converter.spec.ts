@@ -928,7 +928,7 @@ test.each([
   ['geoarrow.point', 'POINT (1 2)'],
   ['geoarrow.linestring', 'LINESTRING (0 0, 3 4)'],
   ['geoarrow.polygon', 'POLYGON ((0 0, 0 2, 2 2, 0 0))'],
-  ['geoarrow.multipoint', 'MULTIPOINT ((1 2), (3 4))'],
+  ['geoarrow.multipoint', 'MULTIPOINT (1 2, 3 4)'],
   ['geoarrow.multilinestring', 'MULTILINESTRING ((0 0, 1 1), (2 2, 3 3))'],
   ['geoarrow.multipolygon', 'MULTIPOLYGON (((0 0, 0 2, 2 2, 0 0)), ((3 3, 3 4, 4 4, 3 3)))']
 ] as const)('GeoArrow writes %s to WKT without a GeoJSON bridge', (encoding, wkt) => {
@@ -965,7 +965,7 @@ test('GeoArrow writes dense unions and nested collections directly to WKT', () =
   );
 
   expect(convertedCollection.toArray()).toEqual([
-    'GEOMETRYCOLLECTION (POINT Z (1 2 3), LINESTRING M (0 0 7, 3 4 8))'
+    'GEOMETRYCOLLECTION ZM (POINT Z (1 2 3), LINESTRING M (0 0 7, 3 4 8))'
   ]);
 });
 
@@ -1189,7 +1189,7 @@ test('GeoArrow native union promotion preserves XYM semantics from child names',
   const wkt = convertGeoArrowVector(promoted, 'geoarrow.multipoint', 'geoarrow.wkt', {
     dimension: 'xym'
   });
-  expect(wkt.toArray()).toEqual(['MULTIPOINT M ((1 2 9))', 'MULTIPOINT M ((3 4 8), (5 6 7))']);
+  expect(wkt.toArray()).toEqual(['MULTIPOINT M (1 2 9)', 'MULTIPOINT M (3 4 8, 5 6 7)']);
 });
 
 test('GeoArrowGeometryConverter converts geometry collections to geoarrow.geometrycollection', () => {
