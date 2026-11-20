@@ -28,6 +28,7 @@ export interface TileConverterCLIOutput {
 /** Usage for bounded metadata inspection and selected static mesh conversion. */
 const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL> [options]
 
+  --draft-feature-schema       Inspect legacy B3DM tables and draft a feature mapping
   --input-format 3d-tiles|3tz|i3s|slpk  Explicit input format (default: 3d-tiles)
   --geometric-error N        Required source error in meters for I3S to 3D Tiles
   --integrated-mesh-policy as-3d-object  Authorize I3S layer-type change
@@ -84,6 +85,7 @@ export async function runTileConverterCLI(
         output: {type: 'string'},
         resource: {type: 'string', multiple: true},
         'all-contents': {type: 'boolean'},
+        'draft-feature-schema': {type: 'boolean'},
         'feature-schema': {type: 'string'},
         'geometric-error': {type: 'string'},
         'integrated-mesh-policy': {type: 'string'}
@@ -124,6 +126,14 @@ export async function runTileConverterCLI(
         '--name, --no-draco and --omit-feature-id require SLPK output'
       );
     }
+    if (
+      values['draft-feature-schema'] &&
+      (operation !== 'inspect' || format === 'i3s' || format === 'slpk')
+    )
+      throw new TileConversionError(
+        'CLI_USAGE_ERROR',
+        '--draft-feature-schema requires 3D Tiles or 3TZ inspect'
+      );
     if (operation !== 'inspect') {
       if (
         Boolean(values.resource?.length) === Boolean(values['all-contents']) ||
@@ -194,6 +204,20 @@ export async function runTileConverterCLI(
         'CLI_USAGE_ERROR',
         'Inspect does not accept conversion/output options'
       );
+    if (values['draft-feature-schema'] && (format === '3d-tiles' || format === '3tz')) {
+      const {draftLegacyFeatureSchema} = await import('./node-schema-draft.js');
+      const source = await createNodeTilesetConversionSource({...sourceOptions, format});
+      try {
+        const inspection = await source.inspect(signal);
+        const draft = await draftLegacyFeatureSchema(source, inspection, signal);
+        output.stdout(
+          `${JSON.stringify({converter: CONVERTER_IDENTITY, operation, input: positionals[1], inputFormat: format, ...inspection, ...draft}, null, 2)}\n`
+        );
+        return 0;
+      } finally {
+        await source.close();
+      }
+    }
     const source =
       format === 'i3s' || format === 'slpk'
         ? await (await import('./node-i3s-source.js')).createNodeI3SConversionSource({

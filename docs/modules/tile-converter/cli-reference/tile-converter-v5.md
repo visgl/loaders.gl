@@ -52,6 +52,13 @@ tile-converter inspect https://example.com/layers/0 --input-format i3s
 tile-converter inspect ./dataset.slpk --input-format slpk
 ```
 
+Use `tile-converter inspect ./tileset.json --draft-feature-schema` to scan bounded legacy
+B3DM batch tables without decoding mesh geometry. Save the report’s `featureSchema`
+object as a schema file, review inferred types and field aliases, and pass it to
+`convert --feature-schema`. The report lists skipped contents, omitted properties, and
+nullable numeric fields that need an explicit I3S null replacement policy.
+
+
 ## Convert and validate
 
 Copy placement IDs from inspection and repeat `--resource` for multiple selections.

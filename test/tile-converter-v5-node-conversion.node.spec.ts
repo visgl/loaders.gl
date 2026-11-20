@@ -14,7 +14,11 @@ import {
 } from '@loaders.gl/tile-converter/v5/adapters';
 import {GLTFLoader, GLTFScenegraph, GLTFWriter} from '@loaders.gl/scene/gltf';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {parse3DTilesArchive, Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles';
+import {
+  parse3DTilesArchive,
+  Tile3DWriter,
+  Tiles3DArchiveWriter
+} from '@loaders.gl/tiles-3d/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {
   convertNodeTileset,
@@ -871,4 +875,55 @@ test('CLI applies an explicit Node 3D Tiles input budget above the default', asy
   expect(
     await runTileConverterCLI([...argumentsList, '--max-input-bytes', '268435457'], callbacks)
   ).toBe(1);
+});
+
+test('CLI inspects B3DM feature tables and drafts a separate mapping', async () => {
+  const triangle = Uint8Array.from(
+    await readFile(join(directory, 'input', 'nested', 'triangle.glb'))
+  );
+  const input = join(directory, 'input', 'schema-draft.json');
+  await writeFile(
+    join(directory, 'input', 'schema-draft.b3dm'),
+    new Uint8Array(
+      Tile3DWriter.encodeSync!({
+        type: 'b3dm',
+        gltfEncoded: triangle.buffer,
+        featuresLength: 2,
+        batchTable: {'gml:id': ['B0', 'B1'], height: [10.5, null], count: [1, 2], mixed: [2, '3']}
+      })
+    )
+  );
+  await writeFile(
+    input,
+    JSON.stringify({...root, root: {...root.root, content: {uri: 'schema-draft.b3dm'}}})
+  );
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  expect(
+    await runTileConverterCLI(['inspect', input, '--draft-feature-schema'], {
+      stdout: line => stdout.push(line),
+      stderr: line => stderr.push(line)
+    }),
+    stderr.join('\n')
+  ).toBe(0);
+  expect(JSON.parse(stdout[0])).toMatchObject({
+    featureSchema: {
+      metadataClass: 'features',
+      schema: {
+        fields: [
+          {name: 'feature_id', type: 'int32', nullable: false},
+          {name: 'gml:id', type: 'utf8', nullable: false},
+          {name: 'height', type: 'float64', nullable: true},
+          {name: 'count', type: 'int32', nullable: false}
+        ]
+      },
+      i3sFieldNames: {'gml:id': 'gml_id'}
+    },
+    schemaDraft: {
+      sampledTables: 1,
+      skippedContents: 0,
+      omittedProperties: ['mixed'],
+      numericNullProperties: ['height']
+    }
+  });
 });
