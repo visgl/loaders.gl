@@ -860,6 +860,52 @@ test('Node CLI can raise the inspection budget above 32 document placements', as
   expect(JSON.parse(output[0]).resources).toHaveLength(32);
 });
 
+test('Node CLI raises the SLPK content and primitive budget above 64', async () => {
+  const input = join(directory, 'input', 'mesh-budget.json');
+  const output = join(directory, 'mesh-budget.slpk');
+  await writeFile(
+    input,
+    JSON.stringify({
+      ...root,
+      root: {
+        ...root.root,
+        content: undefined,
+        children: Array.from({length: 65}, () => ({
+          ...nested.root,
+          boundingVolume: root.root.boundingVolume,
+          content: {uri: 'nested/triangle.glb'}
+        }))
+      }
+    })
+  );
+  const argumentsList = [
+    'convert',
+    input,
+    '--all-contents',
+    '--output-format',
+    'slpk',
+    '--output',
+    output,
+    '--no-draco'
+  ];
+  const errors: string[] = [];
+  const callbacks = {stdout: () => {}, stderr: (line: string) => errors.push(line)};
+  expect(await runTileConverterCLI(argumentsList, callbacks)).toBe(1);
+  expect(errors.pop()).toContain('1 and 64');
+  expect(await runTileConverterCLI([...argumentsList, '--max-meshes', '65'], callbacks)).toBe(0);
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    expect(
+      JSON.parse(new TextDecoder().decode(await archive.getFile('metadata.json')))
+    ).toMatchObject({nodeCount: 66});
+    expect((await archive.getFile('nodes/65/geometries/0.bin')).byteLength).toBeGreaterThan(0);
+  } finally {
+    await archive.close();
+  }
+});
+
 test('CLI applies an explicit Node 3D Tiles input budget above the default', async () => {
   /** Keep the regression small by testing option propagation with existing geometry. */
   const callbacks = {stdout: () => {}, stderr: () => {}};
