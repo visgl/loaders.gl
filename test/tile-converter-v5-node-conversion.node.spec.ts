@@ -849,3 +849,16 @@ test('Node CLI can raise the inspection budget above 32 document placements', as
   expect(await runTileConverterCLI(['inspect', input, '--max-documents', '33'], callbacks)).toBe(0);
   expect(JSON.parse(output[0]).resources).toHaveLength(32);
 });
+
+test('CLI applies an explicit Node 3D Tiles input budget above the default', async () => {
+  /** Keep the regression small by testing option propagation with existing geometry. */
+  const callbacks = {stdout: () => {}, stderr: () => {}};
+  /** Select the existing nested geometry and qualify the output. */
+  const argumentsList = ['validate', rootPath, '--all-contents', '--output-format', 'slpk'];
+  expect(
+    await runTileConverterCLI([...argumentsList, '--max-input-bytes', '67108864'], callbacks)
+  ).toBe(0);
+  expect(
+    await runTileConverterCLI([...argumentsList, '--max-input-bytes', '268435457'], callbacks)
+  ).toBe(1);
+});
