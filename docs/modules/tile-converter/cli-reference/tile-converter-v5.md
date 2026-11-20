@@ -260,3 +260,9 @@ For legacy B3DM inputs, SLPK uses one OBJECTID per original batch-table row
 within each selected content placement, including across material nodes.
 Use `--omit-feature-id` to hide the feature identifier attribute while keeping
 OBJECTID available for picking and queries.
+
+For 3D Tiles to SLPK, add `"i3sFieldNames": {"gml:id": "gml_id"}` alongside
+`schema` in the feature mapping file. Keep the original column name in
+`schema.fields`. The output uses `gml_id` as its field name and `gml:id` as
+its display alias. Output names must be unique ignoring case and cannot use
+the reserved `OBJECTID` name.

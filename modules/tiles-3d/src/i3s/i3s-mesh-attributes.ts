@@ -18,6 +18,8 @@ export interface I3SMeshFeatures {
   readonly sourceBatchRows?: readonly number[];
   /** Explicit authorization to represent int64/uint64 values as exact decimal strings. */
   readonly integer64Encoding?: 'decimal-string';
+  /** Explicit SLPK field names keyed by source Arrow column name. */
+  readonly i3sFieldNames?: Readonly<Record<string, string>>;
 }
 
 /** Binary attribute resources and their target schema. */
@@ -48,11 +50,6 @@ export function encodeI3SMeshAttributes(
   }
   if (!Number.isSafeInteger(count) || count > Math.floor((maxResourceBytes - 4) / 4))
     throw new Error('I3S object IDs exceed maxResourceBytes');
-  if (
-    schema &&
-    new Set(schema.fields.map(field => field.name.toUpperCase())).size !== schema.fields.length
-  )
-    throw new Error('I3S fields must have unique names ignoring case');
   const fields: object[] = [{name: 'OBJECTID', alias: 'OBJECTID', type: 'esriFieldTypeOID'}];
   const storage: object[] = [makeStorage('f_0', 'OBJECTID', 'Oid32')];
   const buffers: ArrayBuffer[] = [
@@ -91,11 +88,25 @@ export function encodeI3SMeshAttributes(
       identifiers.add(identifier);
     }
   }
+  /** Tracks case-insensitive output names, including the reserved object ID. */
+  const outputNames = new Set(['OBJECTID']);
   for (const field of schema.fields) {
     if (omitFeatureIdAttribute && field.name === features.featureIdField) continue;
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(field.name) || field.name.toUpperCase() === 'OBJECTID') {
-      throw new Error('I3S fields require unique identifiers other than reserved OBJECTID');
+    /** Explicit rename applies only to the output field and storage descriptor. */
+    const outputName = Object.hasOwn(features.i3sFieldNames ?? {}, field.name)
+      ? features.i3sFieldNames![field.name]
+      : field.name;
+    if (typeof outputName !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(outputName)) {
+      throw new Error(
+        `I3S source field "${field.name}" needs an output name matching [A-Za-z_][A-Za-z0-9_]*`
+      );
     }
+    if (outputNames.has(outputName.toUpperCase())) {
+      throw new Error(
+        `I3S output field "${outputName}" for "${field.name}" is reserved or duplicates another field`
+      );
+    }
+    outputNames.add(outputName.toUpperCase());
     const values = batches.flatMap(batch => {
       const column = batch.getChild(field.name);
       if (!column) throw new Error(`Missing Arrow column ${field.name}`);
@@ -121,7 +132,7 @@ export function encodeI3SMeshAttributes(
     const valueType = isString ? 'String' : field.type === 'int32' ? 'Int32' : 'Float64';
     if (isInteger64) decimalStringFields.push(field.name);
     fields.push({
-      name: field.name,
+      name: outputName,
       alias: field.name,
       type: isString
         ? 'esriFieldTypeString'
@@ -129,7 +140,7 @@ export function encodeI3SMeshAttributes(
           ? 'esriFieldTypeInteger'
           : 'esriFieldTypeDouble'
     });
-    storage.push(makeStorage(`f_${buffers.length}`, field.name, valueType));
+    storage.push(makeStorage(`f_${buffers.length}`, outputName, valueType));
     buffers.push(buffer);
   }
   return {count, fields, storage, buffers, decimalStringFields};
