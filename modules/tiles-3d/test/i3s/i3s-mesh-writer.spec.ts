@@ -105,6 +105,29 @@ beforeAll(() => {
   page = JSON.parse(new TextDecoder().decode(raw['nodepages/0.json.gz']));
 });
 
+test('I3S can declare EGM2008 heights without changing geometry or node bounds', () => {
+  const mesh = createMesh();
+  const ellipsoidal = encodeI3SMeshLayer(mesh, OPTIONS);
+  const orthometric = encodeI3SMeshLayer(mesh, {...OPTIONS, declareEgm2008Heights: true});
+  for (const [name, bytes] of Object.entries(ellipsoidal.files)) {
+    if (name !== '3dSceneLayer.json.gz') expect(orthometric.files[name]).toEqual(bytes);
+  }
+  const layer = JSON.parse(
+    new TextDecoder().decode(
+      new GZipDecompressor({useNative: false}).decompressSync(
+        orthometric.files['3dSceneLayer.json.gz']
+      )
+    )
+  );
+  expect(I3SSceneLayerSchema.safeParse(layer).success).toBe(true);
+  expect(layer.spatialReference).toEqual({wkid: 4326, vcsWkid: 3855, latestVcsWkid: 3855});
+  expect(layer.heightModelInfo).toEqual({
+    heightModel: 'gravity_related_height',
+    heightUnit: 'meter',
+    vertCRS: 'EGM2008_Geoid'
+  });
+});
+
 test('I3S authoring is exported and generates schema-valid metadata with an empty root and bounded mesh leaf', () => {
   expect(encodeRoot).toBe(encodeI3SMeshLayer);
   expect(I3SSceneLayerSchema.safeParse(metadata).success).toBe(true);
