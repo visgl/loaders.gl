@@ -566,7 +566,7 @@ function prepareMeshLayer(
     'nodes/root/3dNodeIndexDocument.json.gz': root,
     'nodes/1/3dNodeIndexDocument.json.gz': leaf,
     'nodepages/0.json.gz': page,
-    'metadata.json.gz': {
+    'metadata.json': {
       folderPattern: 'BASIC',
       archiveCompressionType: 'STORE',
       resourceCompressionType: 'GZIP',

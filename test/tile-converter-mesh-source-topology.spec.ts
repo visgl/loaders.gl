@@ -10,6 +10,7 @@ import {Tiles3DLoader, type Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-ti
 import {
   GLTFLoader,
   GLTFScenegraph,
+  getGLTFPrimitiveOutline,
   GLTFWriter,
   getGLTFAccessor,
   getGLTFAccessorValue,
@@ -391,3 +392,45 @@ function replaceAccessor(payload: Tiles3DTileContent, reference: number, values:
   accessor.count = values.length / components;
   setGLTFAccessorValue(payload.gltf!, reference, values);
 }
+
+test('optional primitive outlines and empty material extensions preserve the triangle mesh', async () => {
+  /** Reuses a parsed mesh while keeping modifications local to this test. */
+  const {payload, primitive} = cloneStrip();
+  primitive.extensions = {CESIUM_primitive_outline: {indices: 0}};
+  payload.gltf!.json.materials = [{extensions: {}}];
+  primitive.material = 0;
+  /** Optional outlines are diagnosed by the output codec. */
+  const resource = await readResource(payload);
+  expect(resource.omittedPrimitiveOutline).toBe(true);
+  expect(Array.from(resource.mesh.indices!.value)).toEqual(expectedStrip);
+  payload.gltf!.json.extensionsRequired = ['CESIUM_primitive_outline'];
+  /** Required outlines cannot be silently omitted. */
+  const source = await createSource(payload);
+  await expect(
+    source
+      .read(await source.inspect())
+      [Symbol.asyncIterator]()
+      .next()
+  ).rejects.toMatchObject({
+    code: 'MESH_SOURCE_PRIMITIVE_UNSUPPORTED'
+  });
+});
+
+test('reads Cesium outline index pairs from a glTF accessor', () => {
+  /** A triangle with the first edge explicitly marked for outlining. */
+  const scene = new GLTFScenegraph({json: {asset: {version: '2.0'}}});
+  /** Triangle containing the referenced edge. */
+  const meshIndex = scene.addMesh({
+    attributes: {POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3}}
+  });
+  /** An independent accessor supplies outline endpoints. */
+  const indices = scene.addBinaryBuffer(new Uint16Array([0, 1]), {size: 1});
+  /** Keep outline data attached to the authored primitive. */
+  const primitive = scene.gltf.json.meshes![meshIndex].primitives[0];
+  primitive.extensions = {CESIUM_primitive_outline: {indices}};
+  scene.createBinaryChunk();
+  expect(getGLTFPrimitiveOutline(scene.gltf, primitive)).toEqual(new Uint16Array([0, 1]));
+  expect(() => getGLTFPrimitiveOutline(scene.gltf, {...primitive, mode: 5})).toThrow(
+    /outline accessor/
+  );
+});

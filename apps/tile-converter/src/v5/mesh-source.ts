@@ -199,6 +199,10 @@ export function createMeshTilesetConversionSource(
             yield {
               ...resource,
               features,
+              omittedPrimitiveOutline: Object.hasOwn(
+                selected.primitive.extensions ?? {},
+                'CESIUM_primitive_outline'
+              ),
               contentPrimitive: {index: primitiveIndex - 1, last: Boolean(next.done)}
             };
             current = next;
@@ -272,7 +276,11 @@ async function extractPrimitive(
 ): Promise<MeshSourceResource> {
   if (
     primitive.targets?.length ||
-    Object.keys(primitive.extensions || {}).some(name => name !== 'EXT_mesh_features')
+    Object.keys(primitive.extensions || {}).some(
+      name =>
+        name !== 'EXT_mesh_features' &&
+        (name !== 'CESIUM_primitive_outline' || gltf.json.extensionsRequired?.includes(name))
+    )
   )
     throw new TileConversionError(
       'MESH_SOURCE_PRIMITIVE_UNSUPPORTED',
@@ -371,6 +379,7 @@ export async function mapMeshSourceMaterial(
     Object.entries(material).some(
       ([name, value]) =>
         value !== undefined &&
+        !(name === 'extensions' && value && Object.keys(value).length === 0) &&
         ![
           'id',
           'name',

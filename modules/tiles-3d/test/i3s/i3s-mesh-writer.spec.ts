@@ -96,7 +96,10 @@ beforeAll(() => {
   });
   const decompressor = new GZipDecompressor({useNative: false});
   raw = Object.fromEntries(
-    Object.entries(layer.files).map(([name, bytes]) => [name, decompressor.decompressSync(bytes)])
+    Object.entries(layer.files).map(([name, bytes]) => [
+      name,
+      name.endsWith('.gz') ? decompressor.decompressSync(bytes) : bytes
+    ])
   );
   metadata = JSON.parse(new TextDecoder().decode(raw['3dSceneLayer.json.gz']));
   page = JSON.parse(new TextDecoder().decode(raw['nodepages/0.json.gz']));
@@ -128,7 +131,7 @@ test('I3S authoring is exported and generates schema-valid metadata with an empt
   expect(root.children[0].href).toBe('../1');
   expect(leaf.geometryData[0].href).toBe('./geometries/0');
   expect(leaf.attributeData).toHaveLength(5);
-  expect(JSON.parse(new TextDecoder().decode(raw['metadata.json.gz']))).toMatchObject({
+  expect(JSON.parse(new TextDecoder().decode(raw['metadata.json']))).toMatchObject({
     I3SVersion: '1.7',
     nodeCount: 2
   });
@@ -490,7 +493,7 @@ async function decodeDracoLayer(encoded: Awaited<ReturnType<typeof encodeI3SMesh
   const resources = Object.fromEntries(
     Object.entries(encoded.files).map(([name, buffer]) => [
       name,
-      decompressor.decompressSync(buffer)
+      name.endsWith('.gz') ? decompressor.decompressSync(buffer) : buffer
     ])
   );
   const layerMetadata = JSON.parse(new TextDecoder().decode(resources['3dSceneLayer.json.gz']));

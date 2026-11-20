@@ -41,6 +41,8 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --max-documents N            Lower the 32 metadata-document limit
   --max-output-bytes N         Lower the 32 MiB output/archive budget
   --omit-feature-id           Omit the feature identifier attribute in SLPK
+  --no-draco                  Write raw SLPK geometry
+  --name NAME                 Set the SLPK layer name
   --profile                   Include elapsed conversion stage timings in JSON
   --help                      Show this help
 
@@ -67,6 +69,8 @@ export async function runTileConverterCLI(
         help: {type: 'boolean'},
         profile: {type: 'boolean'},
         'omit-feature-id': {type: 'boolean'},
+        'no-draco': {type: 'boolean'},
+        name: {type: 'string'},
         'preserve-hierarchy': {type: 'boolean'},
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
@@ -108,10 +112,14 @@ export async function runTileConverterCLI(
       inspectNestedTilesets: true
     };
     if (
-      values['omit-feature-id'] &&
+      (values.name !== undefined || values['no-draco'] || values['omit-feature-id']) &&
       (operation === 'inspect' || values['output-format'] !== 'slpk')
-    )
-      throw new TileConversionError('CLI_USAGE_ERROR', '--omit-feature-id requires SLPK output');
+    ) {
+      throw new TileConversionError(
+        'CLI_USAGE_ERROR',
+        '--name, --no-draco and --omit-feature-id require SLPK output'
+      );
+    }
     if (operation !== 'inspect') {
       if (
         !values.resource?.length ||
@@ -145,6 +153,8 @@ export async function runTileConverterCLI(
         resourceIds: values.resource,
         profile: values.profile,
         omitFeatureIdAttribute: values['omit-feature-id'],
+        name: values.name,
+        draco: values['no-draco'] ? false : undefined,
         preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,

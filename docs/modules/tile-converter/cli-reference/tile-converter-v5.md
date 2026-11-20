@@ -27,6 +27,9 @@ supported explicit frame declaration remain unsupported: coordinates are never g
 be ECEF from their magnitude. See the [mesh source profile](../api-reference/v5-conversion.md#source-mesh-to-i3sslpk)
 for the other conversion restrictions.
 
+Use `--name` to name the SLPK layer and `--no-draco` to write raw geometry.
+SLPK package metadata is stored as plain `metadata.json`.
+
 ## Inspect and select
 
 `inspect` reads metadata only. It accepts a JSON path/file URL, HTTP(S) JSON URL, or local

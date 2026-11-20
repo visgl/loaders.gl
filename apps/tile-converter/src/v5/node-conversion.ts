@@ -39,6 +39,10 @@ export interface NodeTileConversionOptions
   readonly profile?: boolean;
   /** Omit the feature identifier attribute from SLPK output. */
   readonly omitFeatureIdAttribute?: boolean;
+  /** Name of the authored SLPK scene layer. */
+  readonly name?: string;
+  /** Set to false to write raw SLPK geometry. */
+  readonly draco?: boolean;
   /** Explicit 3D Tiles, I3S layer or indexed archive source. */
   readonly format?: '3d-tiles' | '3tz' | 'i3s' | 'slpk';
   /** Explicit I3S attribute mapping, also supplied by the CLI feature-schema file. */
@@ -194,6 +198,8 @@ export async function convertNodeTileset(
           ...codecOptions,
           shareSourceObjectIds: true,
           omitFeatureIdAttribute: options.omitFeatureIdAttribute,
+          name: options.name,
+          draco: options.draco,
           maxResourceBytes: maxOutputBytes
         }),
         measureOutputBytes: resource =>
