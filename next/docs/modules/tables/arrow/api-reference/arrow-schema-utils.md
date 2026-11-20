@@ -67,7 +67,7 @@ Validates that an Arrow table matches an expected schema by field order, field n
 ```
 import * as arrow from 'apache-arrow';
 
-import {validateArrowTableSchema} from '@loaders.gl/tables/arrow';
+import {validateArrowTableSchema} from '@math.gl/core/arrow';
 
 
 
@@ -125,7 +125,7 @@ This is useful for converting wire-format field names such as `record_id` and `i
 ```
 import * as arrow from 'apache-arrow';
 
-import {renameArrowColumns} from '@loaders.gl/tables/arrow';
+import {renameArrowColumns} from '@math.gl/core/arrow';
 
 
 

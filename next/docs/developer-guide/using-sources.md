@@ -30,9 +30,9 @@ Sources model datasets that need discovery, metadata, tiles, ranges, or repeated
 
 Vector TilesImage TilesVectorImagesRaster3D TilesSQLCatalog
 
-SourceLoaders
+Loaders
 
-[GeoTIFF​Source​LoaderCloud Archive↗](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+[GeoTIFF​LoaderCloud Archive↗](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
 Raster​Source
 
@@ -88,10 +88,7 @@ Return
 
 Expose a shared source result or a format-specific data object
 
-loaders.gl provides `SourceLoader` exports for multi-step data loading. **SourceLoaders** are different from parser **loaders**:
-
-* loaders are designed for one complete result or a stream of parsed batches;
-* a `SourceLoader` owns the metadata, resource discovery, and repeated requests required by a dataset or service.
+Loaders can open a reusable data source for metadata, selective reads, and repeated requests. Use `createDataSource()` to open a source through the loader for the format or service.
 
 Detailed guide
 
@@ -99,7 +96,7 @@ Detailed guide
 
 The reference below covers SourceLoader and DataSource contracts, metadata, adapters, auto-selection, raster sources, and source-specific options.
 
-**SourceLoaders** encapsulate the following data access models:
+Data sources support the following data access models:
 
 | Data Access Model           | Description                                                                     |
 | --------------------------- | ------------------------------------------------------------------------------- |
@@ -108,9 +105,37 @@ The reference below covers SourceLoader and DataSource contracts, metadata, adap
 | **archive files**           | Read individual assets from a (very large) multi-asset archive files.           |
 | **dynamic data generation** | Generate data (tiles, images etc) dynamically based on application requests.    |
 
-## SourceLoader[​](#sourceloader "Direct link to SourceLoader")
+## Format loaders with source support[​](#format-loaders-with-source-support "Direct link to Format loaders with source support")
 
-A `SourceLoader` provides general information about the supported resource format, and the capability to create a `DataSource` for that format.
+Use the same format loader for parsing and source creation. For example, `load(url, PMTilesLoader)` reads archive metadata, and `createDataSource(url, PMTilesLoader)` opens an archive for repeated tile requests. The same pattern applies to Arrow IPC, FlatGeobuf, GeoPackage, GeoTIFF, KMZ, Lance, MLT, MVT, NetCDF, ORC, Parquet, and RAD.
+
+```
+import {createDataSource, load} from '@loaders.gl/core';
+
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
+
+
+
+const metadata = await load(url, PMTilesLoader);
+
+const source = await createDataSource(url, PMTilesLoader);
+```
+
+## Source-only loaders[​](#source-only-loaders "Direct link to Source-only loaders")
+
+Source-only loaders such as `ArcGISFeatureServerLoader`, `WMSLoader`, and `STACLoader` use the same `Loader` suffix and the same `createDataSource()` API. The **Data source** row in a loader's API reference names the runtime type returned by the factory.
+
+```
+import {createDataSource} from '@loaders.gl/core';
+
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+
+
+
+const source = await createDataSource(url, ArcGISFeatureServerLoader);
+
+const metadata = await source.getMetadata();
+```
 
 ## DataSource[​](#datasource "Direct link to DataSource")
 
@@ -120,13 +145,19 @@ A `DataSource` can (and sometimes must) expose a completely unique API. However 
 
 This means that applications written against that interface can now support the new source without any changes to existing logic.
 
-| Source Interface   | Data access model                         | Examples                                           |
-| ------------------ | ----------------------------------------- | -------------------------------------------------- |
-| `ImageSource`      | Loads image covering a region             | `WMSSourceLoader`, `ArcGISImageServerSourceLoader` |
-| `RasterSource`     | Loads typed raster samples for a viewport | `GeoTIFFSourceLoader`, `OMETiffSourceLoader`       |
-| `VectorSource`     | Load "features" in a region               | WFS (N/A), ArcGIS FeatureServer                    |
-| `ImageTileSource`  | Load image covering a specific tile index | WMTS (N/A)                                         |
-| `VectorTileSource` | Load "features" in a specific tile index  | Mapbox Vector Tiles, `PMTilesSourceLoader`         |
+| Source Interface        | Data access model                         | Examples                               |
+| ----------------------- | ----------------------------------------- | -------------------------------------- |
+| `ImageSource`           | Loads image covering a region             | `WMSLoader`, `ArcGISImageServerLoader` |
+| `RasterSource`          | Loads typed raster samples for a viewport | `GeoTIFFLoader`, `OMETiffLoader`       |
+| `VectorSource`          | Load "features" in a region               | WFS (N/A), ArcGIS FeatureServer        |
+| `TableScanSource`       | Streams ordered table batches             | CSV, Arrow IPC, Parquet                |
+| `TableSourceCollection` | Resolves tables by name                   | GeoPackage                             |
+| `ImageTileSource`       | Load image covering a specific tile index | WMTS (N/A)                             |
+| `VectorTileSource`      | Load "features" in a specific tile index  | Mapbox Vector Tiles, `PMTilesLoader`   |
+
+## Querying named tables[​](#querying-named-tables "Direct link to Querying named tables")
+
+Table sources can be queried through the optional `@loaders.gl/core/query` APIs. Assign `core.name` when creating a source, register it in `sources`, and select it with `from`. Multi-table sources expose `getTable(name)` for qualified lookup. See [Querying tables](https://loaders.gl/next/docs/developer-guide/querying-tables.md) for examples and ownership rules.
 
 ## Metadata[​](#metadata "Direct link to Metadata")
 
@@ -206,14 +237,14 @@ Automatic consumers still choose one view at a time. For example, `SourceLayer` 
 
 ## Adapter Sources[​](#adapter-sources "Direct link to Adapter Sources")
 
-While most `SourceLoader` implementations provide an interface for interacting with a specific web service or cloud archive file format (e.g. `PMTilesSourceLoader`), it is also possible to create adapters:
+While most `SourceLoader` implementations provide an interface for interacting with a specific web service or cloud archive file format (e.g. `PMTilesLoader`), it is also possible to create adapters:
 
-* that provide a `SourceLoader` interface to local data (`ArrowTableTileSourceLoader`)
+* that provide a `SourceLoader` interface to local data (`ArrowTableTileLoader`)
 * that adapt one type of source to another (e.g. `ImageTileSource` calling an `ImageSource` to generate each tile).
 
 ## Source auto-selection[​](#source-auto-selection "Direct link to Source auto-selection")
 
-Just like the appropriate parser loader can be selected automatically from a list of `Loader` objects, `createDataSource()`, `selectSource()`, and `load()` can accept `SourceLoader` objects and attempt to select the correct one based on URL pattern matching, extensions, and root file bytes.
+Pass one or more source-capable loaders to `createDataSource()` or `createDataSourceSync()`. Multiple candidates are matched using URL patterns, extensions, MIME types, or content tests.
 
 ## Creating new Sources[​](#creating-new-sources "Direct link to Creating new Sources")
 
@@ -230,7 +261,7 @@ Use it when a source needs to:
 * select named non-spatial dimensions such as time or vertical level
 * preserve band count, dtype, bounds, and CRS metadata for styling or texture upload
 
-`GeoTIFFSourceLoader` and `GeoZarrSourceLoader` are built-in `RasterSource` implementations. Both accept a `RasterViewport` and return `RasterData`. GeoTIFF requests can select numeric bands, while GeoZarr requests can use the common `selection` map for named dimensions declared by the source.
+`GeoTIFFLoader` and `GeoZarrLoader` are built-in `RasterSource` implementations. Both accept a `RasterViewport` and return `RasterData`. GeoTIFF requests can select numeric bands, while GeoZarr requests can use the common `selection` map for named dimensions declared by the source.
 
 `RasterSource` is generic over its raster data, request parameters, and metadata. Higher-level managers such as `RasterSet` preserve those source-specific types while retaining defaults for applications that only need the common raster contract.
 
@@ -247,11 +278,11 @@ For a single source and parser, use the same namespace for both:
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
 
 
-const source = createDataSource(url, [MVTSourceLoader], {
+const source = await createDataSource(url, [MVTLoader], {
 
   core: {worker: false},
 
@@ -269,15 +300,15 @@ const source = createDataSource(url, [MVTSourceLoader], {
 For multiple candidate sources or multiple internal parsers, add their namespaces side by side:
 
 ```
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
 
 
-const source = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
+const source = await createDataSource(url, [PMTilesLoader, MVTLoader], {
 
   core: {worker: false, fetch: {headers: {Authorization: 'Bearer …'}}},
 
-  pmtiles: {shape: 'arrow-table'},
+  pmtiles: {shape: 'arrow'},
 
   mvt: {layerProperty: 'sourceLayer', layers: ['roads']},
 
@@ -302,7 +333,7 @@ const source = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
 
 `core.fetch` and `core.credentials` apply to source requests and parser subresources. A source forwards parser namespaces unchanged unless it must supply request-specific settings such as tile coordinates. Explicit source output settings, such as `pmtiles.shape`, take precedence over parser settings. When a source and its parser use the same namespace (for example `mvt`), their options are combined there. Source selection still uses `core.type`.
 
-This convention also applies to `load(url, SourceLoader, options)` and direct source constructors. The `core.loadOptions` and top-level source `loadOptions` wrappers are no longer accepted. Known parser namespaces are typed; additional namespaces remain extensible for dynamically chosen loaders. An unknown namespace is therefore not guaranteed to produce a TypeScript error.
+This convention also applies to direct source constructors. The `core.loadOptions` and top-level source `loadOptions` wrappers are no longer accepted. Known parser namespaces are typed; additional namespaces remain extensible for dynamically chosen loaders. An unknown namespace is therefore not guaranteed to produce a TypeScript error.
 
 ### Source-backed layer options[​](#source-backed-layer-options "Direct link to Source-backed layer options")
 
@@ -310,20 +341,20 @@ When using `ImageSourceLayer` or `Tile2DSourceLayer`, put this flat options obje
 
 ## Example[​](#example "Direct link to Example")
 
-An advanced source loader is `ArrowTableTileSourceLoader`, which dynamically generates clipped, simplified GeoArrow WKB tiles from an Arrow table. GeoJSONLoader returns Arrow by default in 5.0. These are Arrow tables, not encoded MVT bytes; the separate `TableTileSourceLoader` retains its GeoJSON interface.
+An advanced source loader is `ArrowTableTileLoader`, which dynamically generates clipped, simplified GeoArrow WKB tiles from an Arrow table. GeoJSONLoader returns Arrow by default in 5.0. These are Arrow tables, not encoded MVT bytes; the separate `TableTileLoader` retains its GeoJSON interface.
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArrowTableTileSourceLoader} from '@loaders.gl/tiles/mvt';
+import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
 
-import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 
 
 
 // build an initial index of tiles.
 
-const tileSource = await load(url, ArrowTableTileSourceLoader, {
+const tileSource = await createDataSource(url, ArrowTableTileLoader, {
 
   core: {
 

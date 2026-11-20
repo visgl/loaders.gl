@@ -10,11 +10,11 @@ The WMS module preserves each service’s native response while exposing common 
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/wms.md)[WMS source](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/wms.md)[WMS source](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-loader.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-source-loader.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-loader.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
 
 <!-- -->
 

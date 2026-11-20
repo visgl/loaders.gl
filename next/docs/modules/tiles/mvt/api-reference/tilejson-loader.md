@@ -8,11 +8,11 @@ Read TileJSON and tilestats metadata into one typed description of a tile servic
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/formats/tilejson.md)[MVT source](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/formats/tilejson.md)[MVT source](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)[MVT module](https://loaders.gl/next/docs/modules/tiles/mvt.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source.md)[MVT module](https://loaders.gl/next/docs/modules/tiles/mvt.md)
 
 <!-- -->
 
@@ -79,6 +79,8 @@ const tileJSON = await load(url, TileJSONLoader, options);
 ```
 
 ## Data Format[​](#data-format "Direct link to Data Format")
+
+The returned `tiles` array preserves the advertised URL templates, including `{z}`, `{x}`, and `{y}` placeholders. Use `tileJSON.tiles[0]` to obtain the current template from providers that publish versioned tile endpoints.
 
 See [TileJSON format](https://loaders.gl/next/docs/modules/tiles/mvt/formats/tilejson.md).
 

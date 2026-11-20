@@ -24,7 +24,7 @@ typed columnszero-copyArrow IPC
 | ------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | Loader        | [`ArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)                  |
 | Writer        | [`ArrowWriter`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)                  |
-| Source loader | `ArrowSourceLoader`                                                                                                    |
+| Source loader | `ArrowLoader`                                                                                                          |
 | Source        | `ArrowTableSource`                                                                                                     |
 | Utility       | [Arrow Schema Utilities](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-schema-utils.md)   |
 | Utility       | [Arrow table transport](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-table-transport.md) |

@@ -40,7 +40,7 @@ Object-row table for inspection
 
 Columns
 
-ArrowTable with WKB geometry
+Arrow Table with WKB geometry
 
 04
 
@@ -59,7 +59,7 @@ The `TCXLoader` parses [TCX files](https://en.wikipedia.org/wiki/Training_Center
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {TCXLoader} from '@loaders.gl/geospatial/kml';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 
 import {load} from '@loaders.gl/core';
 
@@ -70,20 +70,20 @@ const data = await load(url, TCXLoader, options);
 
 ## Shapes[​](#shapes "Direct link to Shapes")
 
-`TCXLoader` returns loaders.gl `ArrowTable` objects by default. Set `tcx.shape` to select another table representation.
+`TCXLoader` returns Apache Arrow `Table` objects by default. Set `tcx.shape` to select another table representation.
 
 | Shape              | Output                                     |
 | ------------------ | ------------------------------------------ |
 | `geojson-table`    | loaders.gl GeoJSON table                   |
 | `object-row-table` | loaders.gl row table with GeoJSON features |
-| `arrow-table`      | loaders.gl `ArrowTable` with WKB geometry  |
+| `arrow`            | Apache Arrow `Table` with WKB geometry     |
 | `binary-geometry`  | loaders.gl binary feature collection       |
 
 ## Options[​](#options "Direct link to Options")
 
-| Option      | Type   | Default         | Description                       |
-| ----------- | ------ | --------------- | --------------------------------- |
-| `tcx.shape` | string | `'arrow-table'` | Selects the returned table shape. |
+| Option      | Type   | Default   | Description                       |
+| ----------- | ------ | --------- | --------------------------------- |
+| `tcx.shape` | string | `'arrow'` | Selects the returned table shape. |
 
 ## Limitations[​](#limitations "Direct link to Limitations")
 

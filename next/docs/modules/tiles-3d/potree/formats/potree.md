@@ -20,13 +20,13 @@ Potree datasets separate metadata, octree hierarchy, and point payloads. Applica
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                                     |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Loader        | [`PotreeLoader`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)              |
-| Source loader | [`PotreeSourceLoader`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) |
-| Writer        | [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md)              |
+| Type          | API                                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Loader        | [`PotreeLoader`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)        |
+| Source loader | [`PotreeLoader`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) |
+| Writer        | [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md)        |
 
-[Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
+[Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[Data Source](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
 
 The dataset layout
 
@@ -106,7 +106,7 @@ These symbols describe implemented support within the stated profile; they do no
 | Exact 64-bit attribute values          | ✅ 2.0 | ✅ 2.0 | Point values stay exact; JSON min/max statistics can be approximate above Number's exact integer range                                         |
 | Custom normalization metadata          | ✅ 2.0 | ✅ 2.0 | A loaders.gl metadata extension; independent viewer behavior requires qualification                                                            |
 | CRS declaration                        | ✅     | ✅     | Modern native coordinates retain the declaration; writers do not infer or apply a CRS transformation                                           |
-| Progressive tile traversal             | ✅     | —      | One `PotreeSourceLoader` exposes the shared point-cloud tile methods                                                                           |
+| Progressive tile traversal             | ✅     | —      | One `PotreeLoader` exposes the shared point-cloud tile methods                                                                                 |
 | Query scans and Arrow batches          | ⚠️     | —      | Compatible legacy layouts support `scan()`; modern sources report metadata-only query support                                                  |
 | Mesh/Arrow dataset authoring           | —      | ✅     | Accepts a decoded point Mesh, MeshArrowTable, or explicitly owned additive octree nodes                                                        |
 | Automatic sampling and LOD generation  | —      | ✕      | Applications supply node ownership; the writer does not sample or duplicate points                                                             |
@@ -117,7 +117,7 @@ Modern point decoding returns Float64 XYZ using the declared scale and offset. L
 ## Loaders, sources, and writers[​](#loaders-sources-and-writers "Direct link to Loaders, sources, and writers")
 
 * [PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md) parses metadata for both layouts. The package root is metadata-only; direct parser access uses `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree-loader`.
-* [PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) traverses hierarchy and decodes requested point tiles. Pass `cloud.js` for 1.x or `metadata.json` for 2.0; directory inputs retain the legacy `cloud.js` default.
+* [PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) traverses hierarchy and decodes requested point tiles. Pass `cloud.js` for 1.x or `metadata.json` for 2.0; directory inputs retain the legacy `cloud.js` default.
 * [PotreeWriter](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md) writes a metadata document through `encode` or `encodeSync`. `encodePotreeDataset` produces the complete collection of relative filenames and typed byte buffers from decoded Mesh/Arrow data.
 
 Modern source tile content uses Mesh Arrow tables. Compatible legacy queries yield ordered Arrow point batches. The dataset writer accepts decoded, unindexed point data with finite XYZ and representable numeric attributes; unsupported attributes require an explicit application mapping.

@@ -576,3 +576,7 @@ When this extension is declared, it must appear in both `extensionsUsed` and `ex
 This validation follows the [review draft at revision 8611bc8933493865380e68fadf555dbbc2cf1180](https://github.com/lexaknyazev/glTF/blob/8611bc8933493865380e68fadf555dbbc2cf1180/extensions/2.0/Khronos/KHR_accessor_float64/README.md). It is not a claim of complete semantic validation: the loader does not check every accessor usage site against the extension's permitted semantics. Existing handling of undeclared component type `5130` is unchanged.
 
 GPU upload, float32 conversion, high/low splitting and animation interpolation are consumer responsibilities. Successfully decoding an asset does not establish that a renderer supports its double-precision attributes. The draft requires double-precision interpolation for double-precision animation data.
+
+### Cesium primitive outlines[​](#cesium-primitive-outlines "Direct link to Cesium primitive outlines")
+
+`getGLTFPrimitiveOutline(gltf, primitive)` from `@loaders.gl/scene/gltf` reads the vertex-index pairs declared by `CESIUM_primitive_outline`. It returns `undefined` for a primitive without outlines. Applications can use the decoded pairs to draw outlines with their renderer's edge rendering technique.

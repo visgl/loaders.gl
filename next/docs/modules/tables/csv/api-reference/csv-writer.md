@@ -61,7 +61,7 @@ The sections below document imports, encoding forms, and writer options.
 ```
 import {encode} from '@loaders.gl/core';
 
-import type {Table} from '@loaders.gl/core/schema';
+import type {Table} from 'apache-arrow';
 
 import {CSVWriter} from '@loaders.gl/tables/csv';
 
@@ -76,7 +76,7 @@ const data = await encode(table, CSVWriter); // ArrayBuffer
 const text = CSVWriter.encodeTextSync(table, {csv: options}); // string
 ```
 
-`CSVWriter` can also encode Arrow-backed tables returned by `CSVLoader` with `csv.shape: 'arrow-table'`.
+`CSVWriter` accepts the Apache Arrow table returned by `CSVLoader` and loaders.gl row or columnar tables.
 
 ## CSVWriter Options[​](#csvwriter-options "Direct link to CSVWriter Options")
 

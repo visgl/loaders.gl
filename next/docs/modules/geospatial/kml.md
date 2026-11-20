@@ -4,7 +4,7 @@ KML module
 
 # Bring map and track files into one data path.
 
-`@loaders.gl/geospatial/kml` reads KML, GPX, and TCX documents and converts their geographic content into application-ready data. The formats differ in origin, but share an XML boundary and a geospatial use case.
+`@loaders.gl/geospatial/kml` reads KML and KMZ documents and converts their geographic content into application-ready data. GPX and TCX use their own format entry points.
 
 [KML format](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md)
 
@@ -56,7 +56,7 @@ Detailed guide
 
 The reference below covers installation, individual format pages, loader entry points, external references, and attribution.
 
-The `@loaders.gl/geospatial/kml` module supports the KML, KMZ, GPX, and TCX formats.
+The `@loaders.gl/geospatial/kml` entry point supports KML and KMZ. Import GPX and TCX loaders from `@loaders.gl/geospatial/gpx` and `@loaders.gl/geospatial/tcx`.
 
 KML (Keyhole Markup Language) is an XML-based file format used to display geographic data in an Earth browser such as Google Earth (originally named "Keyhole Earth Viewer"). It can be used with any 2D or 3D maps.
 

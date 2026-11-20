@@ -14,7 +14,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->3<!-- -->)
+All exported subpaths (<!-- -->2<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -22,4 +22,3 @@ These are the package's public exports, including format entry points, parsers, 
 | ------ | ------------------------------------- |
 |        | `@loaders.gl/services/authentication` |
 |        | `@loaders.gl/services/bundled`        |
-|        | `@loaders.gl/services/unbundled`      |

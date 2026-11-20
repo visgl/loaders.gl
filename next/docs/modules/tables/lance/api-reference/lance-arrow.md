@@ -8,11 +8,11 @@ The Lance Arrow helpers perform focused reads from Lance data files. They keep t
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tables/lance.md)[Lance source](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tables/lance.md)[Lance source](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source-loader.md)[Apache Arrow](https://loaders.gl/next/docs/developer-guide/apache-arrow.md)
+[ ↗](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source.md)[Apache Arrow](https://loaders.gl/next/docs/developer-guide/apache-arrow.md)
 
 <!-- -->
 
@@ -58,4 +58,4 @@ The detailed reference covers helper signatures, supported physical types, coord
 
 The Lance Arrow helpers perform bounded reads from a local or remote Lance data file. `readLanceRemoteFileToArrow()` supports selected fixed-width primitive columns. `readLanceRemoteCoordinatesToArrow()` supports two-dimensional fixed-size float columns such as PushT's `observation_state`.
 
-Both APIs are Work In Progress and currently require physical column indexes, explicit names, and known Lance encodings.
+Both helpers return native Apache Arrow tables. The APIs are Work In Progress and currently require physical column indexes, explicit names, and known Lance encodings.

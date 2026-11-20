@@ -50,7 +50,7 @@ Mesh Arrow table plus SPZ loader metadata
 
 ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)
 
-`SPZLoader` parses Niantic Spatial `.spz` Gaussian splat files and returns a [Mesh Arrow table](https://loaders.gl/next/docs/specifications/category-mesh.md#mesh-arrow-tables).
+`SPZLoader` parses Niantic Spatial `.spz` Gaussian splat files and returns a native Apache Arrow `Table`.
 
 Detailed guide
 
@@ -64,7 +64,7 @@ The reference below covers runtime codec selection, supported SPZ versions, deco
 | Extensions   | `.spz`                                                                    |
 | Worker       | ❌ No                                                                     |
 | Input type   | `ArrayBuffer`                                                             |
-| Output shape | `arrow-table`                                                             |
+| Output shape | `arrow`                                                                   |
 
 ## Usage[​](#usage "Direct link to Usage")
 
@@ -117,7 +117,7 @@ Legacy SPZ versions 1 through 3 use a gzip-compressed single-stream layout and a
 
 ## Output[​](#output "Direct link to Output")
 
-The loader returns a [Mesh Arrow table](https://loaders.gl/next/docs/specifications/category-mesh.md#mesh-arrow-tables) with the existing Gaussian splat columns:
+The loader returns a native Apache Arrow `Table` with the existing Gaussian splat columns:
 
 * `POSITION`
 * `f_dc_0`, `f_dc_1`, `f_dc_2`
@@ -128,11 +128,11 @@ The loader returns a [Mesh Arrow table](https://loaders.gl/next/docs/specificati
 
 Schema metadata includes `loaders_gl.semantic_type = gaussian-splats` and `loaders_gl.gaussian_splats.source_format = spz`.
 
-`loaderData` includes the SPZ header fields, `antialiased`, `extensionByteLength`, and `extensionBytes` when plaintext extension records are present.
+Arrow schema metadata stores the SPZ header, `antialiased`, and `extensionByteLength` as JSON under `loaders_gl.gaussian_splats.loader_data`. When plaintext extension records are present, `loaders_gl.gaussian_splats.extension_bytes` contains their base64 encoding.
 
 ## Options[​](#options "Direct link to Options")
 
-| Option         | Type            | Default         | Description                                                                        |
-| -------------- | --------------- | --------------- | ---------------------------------------------------------------------------------- |
-| `splats.shape` | `'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table output. V1 only supports `arrow-table`.                   |
-| `modules`      | `object`        | `{}`            | Include `{'zstd-codec': ZstdCodec}` for broad SPZ version 4 runtime compatibility. |
+| Option         | Type      | Default   | Description                                                                        |
+| -------------- | --------- | --------- | ---------------------------------------------------------------------------------- |
+| `splats.shape` | `'arrow'` | `'arrow'` | Returns a native Arrow table.                                                      |
+| `modules`      | `object`  | `{}`      | Include `{'zstd-codec': ZstdCodec}` for broad SPZ version 4 runtime compatibility. |

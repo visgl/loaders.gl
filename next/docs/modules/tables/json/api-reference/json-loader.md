@@ -85,7 +85,7 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, JSONLoader, {json: options});
 ```
 
-For larger files, `JSONLoader` supports streaming JSON parsing. It yields batches of rows from one array. To parse a stream of GeoJSON, specify `options.json.jsonpaths` to stream the `features` array.
+For larger files, `JSONLoader` supports streaming JSON parsing. It yields batches of rows from one array. Set `json.table: true` and omit `json.shape` to receive native Apache Arrow `RecordBatch` objects for the rows. When container metadata is requested, a zero-row batch may carry refinements discovered at the end of the stream. To parse a stream of GeoJSON, specify `options.json.jsonpaths` to stream the `features` array.
 
 ```
 import {JSONLoader} from '@loaders.gl/tables/json';

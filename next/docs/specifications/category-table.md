@@ -38,7 +38,7 @@ Decode
 
 Data
 
-[Arrow table datashape: 'arrow-table'↗](https://loaders.gl/next/docs/specifications/category-table.md)
+[Arrow table datashape: 'arrow'↗](https://loaders.gl/next/docs/specifications/category-table.md)
 
 Encode
 
@@ -96,12 +96,12 @@ The reference below defines supported loaders, row and column representations, A
 
 | Shape              | Loaders                                                                                                                                                                                                                                                                                                    | Notes                                                                                           |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `arrow-table`      | [`ArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)                                                                                                                                                                                                      | Default for Arrow IPC parsing can still be overridden with `options.arrow.shape`.               |
+| `arrow`            | [`ArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)                                                                                                                                                                                                      | Returns a native Arrow table.                                                                   |
 | `columnar-table`   | [`ArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)                                                                                                                                                                                                      | Column-major output for Arrow data.                                                             |
 | `array-row-table`  | [`ArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md), [`CSVLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md), [`JSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md) | Row arrays. Scoped overrides: `options.arrow.shape`, `options.csv.shape`, `options.json.shape`. |
 | `object-row-table` | [`ArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md), [`CSVLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md), [`JSONLoader`](https://loaders.gl/next/docs/modules/tables/json/api-reference/json-loader.md) | Row objects. Default for CSV.                                                                   |
 
-`GeoJSONLoader` uses `options.geojson.shape` for GIS-specific output shapes such as `geojson-table`, `binary-feature-collection`, and `arrow-table`.
+`GeoJSONLoader` uses `options.geojson.shape` for GIS-specific output shapes such as `geojson-table`, `binary-feature-collection`, and `arrow`.
 
 ## Data Structure[​](#data-structure "Direct link to Data Structure")
 
@@ -118,7 +118,6 @@ The reference below defines supported loaders, row and column representations, A
 | `'object-row-table'` | loaders.gl table wrapper storing rows as JavaScript objects        |
 | `'array-row-table'`  | loaders.gl table wrapper storing rows as JavaScript arrays         |
 | `'columnar-table'`   | loaders.gl table wrapper storing one column array per field        |
-| `'arrow-table'`      | loaders.gl table wrapper whose `data` field is an Arrow table      |
 | `'geojson-table'`    | loaders.gl GIS-oriented table wrapper storing features plus schema |
 | `'arrow'`            | raw Apache Arrow table value                                       |
 | `'geoarrow'`         | raw Arrow table value with GeoArrow geometry metadata              |
@@ -182,7 +181,11 @@ It is of course possible to work with the underlying IPC data structure.
 A JavaScript table has the freedom that a column can contain any type.
 
 ```
-const arrowTable = makeArrowTable(table).data;
+import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
+
+
+
+const arrowTable = convertTableToArrow(table);
 ```
 
 ## Serialized table representation[​](#serialized-table-representation "Direct link to Serialized table representation")

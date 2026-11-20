@@ -69,7 +69,7 @@ Use it when an Arrow table has a stable application-level key, such as an id col
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {MappedArrowTable} from '@loaders.gl/tables/arrow';
+import {MappedArrowTable} from '@math.gl/core/arrow';
 
 
 

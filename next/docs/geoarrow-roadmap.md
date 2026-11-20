@@ -44,7 +44,7 @@ Recursive GeometryCollections remain valid in serialized WKB and WKT. Native con
 * The GIS compatibility package is removed; see the [replacement import map](https://loaders.gl/next/docs/modules/core/geoarrow/gis-migration.md).
 * `@loaders.gl/core/geoarrow` owns conversion, layout inspection, validation, bounds, coordinate iteration, canonicalization, and metadata operations.
 * `@loaders.gl/tables/parquet` owns GeoParquet I/O and remains independent of GeoArrow processing code.
-* `@loaders.gl/tables/arrow/transport` owns worker transfer and sliced-buffer isolation.
+* `@math.gl/core/arrow` owns worker transfer and sliced-buffer isolation.
 
 These boundaries are part of the foundation review. Moving more code between packages requires a measured bundle or ownership benefit, not just conceptual neatness.
 
@@ -92,7 +92,7 @@ Complete versioned GeoParquet metadata and geometry-column support, including mu
 
 ### Tranche 4: Deliberate loader adoption and stabilization[​](#tranche-4-deliberate-loader-adoption-and-stabilization "Direct link to Tranche 4: Deliberate loader adoption and stabilization")
 
-Adopt GeoArrow-compliant `arrow-table` output one loader at a time without changing established default return values. Each adoption needs a compatibility review, focused integration tests, and a bundle-cost check. Finish with documentation, performance baselines, migration guidance where needed, and the Gate D release decision.
+Adopt GeoArrow-compliant native Arrow output one loader at a time without changing established default return values. Each adoption needs a compatibility review, focused integration tests, and a bundle-cost check. Finish with documentation, performance baselines, migration guidance where needed, and the Gate D release decision.
 
 ## Completion Rules[​](#completion-rules "Direct link to Completion Rules")
 

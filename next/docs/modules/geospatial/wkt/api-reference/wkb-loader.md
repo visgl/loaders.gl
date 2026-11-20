@@ -79,7 +79,7 @@ npm install @loaders.gl/core
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {WKBLoader} from '@loaders.gl/geospatial/wkt/bundled';
+import {WKBLoader} from '@loaders.gl/geospatial/wkb/bundled';
 
 import {parseSync} from '@loaders.gl/core';
 
@@ -103,7 +103,7 @@ const data = parseSync(buffer, WKBLoader);
 ```
 
 ```
-import {WKBLoader} from '@loaders.gl/geospatial/wkt';
+import {WKBLoader} from '@loaders.gl/geospatial/wkb';
 
 import {load} from '@loaders.gl/core';
 
@@ -119,7 +119,7 @@ import WKT_WORKER_URL from '@loaders.gl/geospatial/wkt-worker.js?url';
 
 import {parse} from '@loaders.gl/core';
 
-import {WKBLoader} from '@loaders.gl/geospatial/wkt';
+import {WKBLoader} from '@loaders.gl/geospatial/wkb';
 
 
 

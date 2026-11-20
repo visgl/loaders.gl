@@ -62,10 +62,10 @@ The sections below document format metadata, usage, batch parsing, output shapes
 
 Set `pcd.shape: 'mesh'` when a legacy [PointCloud](https://loaders.gl/next/docs/specifications/category-mesh.md) object is required.
 
-| Shape         | Output             | Use when                                  |
-| ------------- | ------------------ | ----------------------------------------- |
-| `arrow-table` | `Mesh Arrow table` | You want columnar point cloud attributes. |
-| `mesh`        | `PointCloud`       | You need the legacy point cloud object.   |
+| Shape   | Output             | Use when                                  |
+| ------- | ------------------ | ----------------------------------------- |
+| `arrow` | `Mesh Arrow table` | You want columnar point cloud attributes. |
+| `mesh`  | `PointCloud`       | You need the legacy point cloud object.   |
 
 Note: Currently supports `ascii`, `binary` and compressed binary files.
 
@@ -80,12 +80,12 @@ import {load} from '@loaders.gl/core';
 
 const data = await load(url, PCDLoader, options);
 
-const table = await load(url, PCDLoader, {pcd: {shape: 'arrow-table'}});
+const table = await load(url, PCDLoader, {pcd: {shape: 'arrow'}});
 ```
 
 ## Batched Parsing[​](#batched-parsing "Direct link to Batched Parsing")
 
-`PCDLoader` supports `loadInBatches` and `parseInBatches` for ASCII and uncompressed binary PCD data. When `pcd.shape: 'arrow-table'` is set, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow-table'`, `batchType: 'data'`, and `data` containing an Apache Arrow table. Compressed binary PCD files fall back to a single parsed batch.
+`PCDLoader` supports `loadInBatches` and `parseInBatches` for ASCII and uncompressed binary PCD data. When `pcd.shape: 'arrow'` is set, the loader yields native Apache Arrow `RecordBatch` objects. Compressed binary PCD files fall back to a single parsed batch.
 
 ```
 import {loadInBatches} from '@loaders.gl/core';
@@ -98,7 +98,7 @@ const batches = await loadInBatches(url, PCDLoader, {
 
   batchSize: 100_000,
 
-  pcd: {shape: 'arrow-table'}
+  pcd: {shape: 'arrow'}
 
 });
 
@@ -113,9 +113,9 @@ for await (const batch of batches) {
 
 ## Options[​](#options "Direct link to Options")
 
-| Option      | Type                      | Default         | Description                                    |
-| ----------- | ------------------------- | --------------- | ---------------------------------------------- |
-| `pcd.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects PointCloud or Mesh Arrow table output. |
+| Option      | Type                | Default   | Description                                    |
+| ----------- | ------------------- | --------- | ---------------------------------------------- |
+| `pcd.shape` | `'mesh' \| 'arrow'` | `'arrow'` | Selects PointCloud or Mesh Arrow table output. |
 
 ## Worker batches[​](#worker-batches "Direct link to Worker batches")
 
@@ -126,7 +126,7 @@ const batches = await parseInBatches(input, PCDLoader, {
 
   core: {worker: true, batchSize: 1000},
 
-  pcd: {shape: 'arrow-table'}
+  pcd: {shape: 'arrow'}
 
 });
 
@@ -139,4 +139,4 @@ for await (const batch of batches) {
 
 PCD currently collects the complete input before decoding. ASCII and uncompressed binary output is split by `core.batchSize`; compressed input may produce a single batch.
 
-Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/pointclouds/pcd-loader`.
+Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/pointclouds/pcd`.

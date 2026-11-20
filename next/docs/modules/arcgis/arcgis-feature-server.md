@@ -104,7 +104,11 @@ Detailed guide
 
 The sections below cover support, scan table views, authentication, request options, and source behavior.
 
-ArcGIS FeatureServer endpoints expose queryable vector feature layers through the ArcGIS REST API. `ArcGISFeatureServerSourceLoader` adapts a service or layer endpoint to the loaders.gl `VectorSource` contract.
+ArcGIS FeatureServer endpoints expose queryable vector feature layers through the ArcGIS REST API. `ArcGISFeatureServerLoader` adapts a service or layer endpoint to the loaders.gl `VectorSource` contract.
+
+| Property    | Value                |
+| ----------- | -------------------- |
+| Data source | `ArcGISVectorSource` |
 
 ## Feature support[​](#feature-support "Direct link to Feature support")
 
@@ -144,17 +148,17 @@ Use ArcGIS request parameters for server-side reduction whenever possible. The t
 ## Create and query a source[​](#create-and-query-a-source "Direct link to Create and query a source")
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
 
 
-const source = await load(
+const source = await createDataSource(
 
   'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
 
-  [ArcGISFeatureServerSourceLoader]
+  [ArcGISFeatureServerLoader]
 
 );
 
@@ -176,7 +180,7 @@ Feature coordinates and `boundingBox` use canonical `xy` order. Set `requestCrs`
 When the URL points to the FeatureServer root, `layers` chooses the layer used for the query:
 
 ```
-const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader]);
+const source = await createDataSource(featureServerUrl, [ArcGISFeatureServerLoader]);
 
 const trails = await source.getFeatures({layers: ['3']});
 ```
@@ -220,7 +224,7 @@ The [feature query guide](https://loaders.gl/next/docs/developer-guide/arcgis/fe
 ArcGIS query defaults live under `arcgis-feature-server`. Per-request viewport and layer values are combined with these parameters.
 
 ```
-const source = await load(featureServerUrl, [ArcGISFeatureServerSourceLoader], {
+const source = await createDataSource(featureServerUrl, [ArcGISFeatureServerLoader], {
 
   'arcgis-feature-server': {
 

@@ -24,17 +24,17 @@ const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 
 ## Format entry points[​](#format-entry-points "Direct link to Format entry points")
 
-| Logo                                                                                                                                 | Entry point                                | Implementation                                    |
-| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ | ------------------------------------------------- |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff`               | GeoTIFF image and numeric raster parsers          |
-| —                                                                                                                                    | `@loaders.gl/raster/lerc`                  | LERC parser                                       |
-| —                                                                                                                                    | `@loaders.gl/raster/terrain`               | Image-encoded elevation to terrain mesh           |
-| —                                                                                                                                    | `@loaders.gl/raster/quantized-mesh`        | Quantized mesh parser                             |
-| —                                                                                                                                    | `@loaders.gl/raster/terrain/heightmap`     | Heightmap decoding, sampling, and surface helpers |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff-source-loader` | Synchronous GeoTIFF/COG source constructor        |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/ometiff-source-loader` | Synchronous OME-TIFF source constructor           |
+| Logo                                                                                                                                 | Entry point                            | Implementation                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- | ------------------------------------------------- |
+| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff`           | GeoTIFF image and numeric raster parsers          |
+| —                                                                                                                                    | `@loaders.gl/raster/lerc`              | LERC parser                                       |
+| —                                                                                                                                    | `@loaders.gl/raster/terrain`           | Image-encoded elevation to terrain mesh           |
+| —                                                                                                                                    | `@loaders.gl/raster/quantized-mesh`    | Quantized mesh parser                             |
+| —                                                                                                                                    | `@loaders.gl/raster/terrain/heightmap` | Heightmap decoding, sampling, and surface helpers |
+| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff`           | Synchronous GeoTIFF/COG source constructor        |
+| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff`           | Synchronous OME-TIFF source constructor           |
 
-GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronous `load()` with metadata or import an explicit source implementation for synchronous `createDataSource()`. Use the named source, discovery, and heightmap subpaths for advanced APIs; their references list the exported constructors and helpers.
+GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronous `createDataSource()` with metadata or import an explicit source implementation for synchronous `createDataSourceSync()`. Use the named source, discovery, and heightmap subpaths for advanced APIs; their references list the exported constructors and helpers.
 
 ## Optional decoder packages[​](#optional-decoder-packages "Direct link to Optional decoder packages")
 
@@ -67,24 +67,15 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->72<!-- -->)
+All exported subpaths (<!-- -->45<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format                                                                                                                               | Import subpath                                                |
 | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff`                                  |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff-loader`                           |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff-loader-types`                     |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff-raster-loader`                    |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff-raster-loader-types`              |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff-source-loader`                    |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff-source-loader-types`              |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/bundled`                          |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/discover-geotiff`                 |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/geotiff-format`                   |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/geotiff-raster-types`             |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/index`                            |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/lib/load-geotiff`                 |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/lib/ome/load-ome-tiff`            |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/lib/ome/ome-indexers`             |
@@ -105,43 +96,25 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/lib/utils/tiff-utils`             |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/loaders`                          |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/types`                            |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/unbundled`                        |
-|                                                                                                                                      | `@loaders.gl/raster/index`                                    |
 |                                                                                                                                      | `@loaders.gl/raster/lerc`                                     |
-|                                                                                                                                      | `@loaders.gl/raster/lerc-loader`                              |
-|                                                                                                                                      | `@loaders.gl/raster/lerc-loader-types`                        |
+|                                                                                                                                      | `@loaders.gl/raster/lerc-wasm-url`                            |
 |                                                                                                                                      | `@loaders.gl/raster/lerc/bundled`                             |
-|                                                                                                                                      | `@loaders.gl/raster/lerc/index`                               |
-|                                                                                                                                      | `@loaders.gl/raster/lerc/lerc-format`                         |
-|                                                                                                                                      | `@loaders.gl/raster/lerc/lerc-wasm-url`                       |
 |                                                                                                                                      | `@loaders.gl/raster/lerc/lerc-wasm.wasm`                      |
 |                                                                                                                                      | `@loaders.gl/raster/lerc/lib/parsers/lerc/lerc-types`         |
-|                                                                                                                                      | `@loaders.gl/raster/lerc/unbundled`                           |
-|                                                                                                                                      | `@loaders.gl/raster/ometiff-source-loader`                    |
-|                                                                                                                                      | `@loaders.gl/raster/ometiff-source-loader-types`              |
 |                                                                                                                                      | `@loaders.gl/raster/quantized-mesh`                           |
-|                                                                                                                                      | `@loaders.gl/raster/quantized-mesh-loader`                    |
-|                                                                                                                                      | `@loaders.gl/raster/quantized-mesh-loader-types`              |
 |                                                                                                                                      | `@loaders.gl/raster/quantized-mesh-worker.js`                 |
-|                                                                                                                                      | `@loaders.gl/raster/quantized-mesh-writer`                    |
+|                                                                                                                                      | `@loaders.gl/raster/quantized-mesh/bundled`                   |
 |                                                                                                                                      | `@loaders.gl/raster/terrain`                                  |
-|                                                                                                                                      | `@loaders.gl/raster/terrain-loader`                           |
-|                                                                                                                                      | `@loaders.gl/raster/terrain-loader-types`                     |
 |                                                                                                                                      | `@loaders.gl/raster/terrain-worker.js`                        |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/bundled`                          |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/heightmap`                        |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/index`                            |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/decode-quantized-mesh`        |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/decode-terrain-heightmap`     |
-|                                                                                                                                      | `@loaders.gl/raster/terrain/lib/delatin/index`                |
+|                                                                                                                                      | `@loaders.gl/raster/terrain/lib/delatin`                      |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/helpers/skirt`                |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/parse-quantized-mesh`         |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/parse-terrain`                |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/terrain-contracts`            |
-|                                                                                                                                      | `@loaders.gl/raster/terrain/lib/terrain-height-field`         |
-|                                                                                                                                      | `@loaders.gl/raster/terrain/lib/terrain-height-grid`          |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/terrain-heightmap-types`      |
-|                                                                                                                                      | `@loaders.gl/raster/terrain/lib/terrain-neighborhood`         |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/utils/version`                |
-|                                                                                                                                      | `@loaders.gl/raster/terrain/terrain-format`                   |
-|                                                                                                                                      | `@loaders.gl/raster/terrain/unbundled`                        |

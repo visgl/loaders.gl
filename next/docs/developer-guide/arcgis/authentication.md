@@ -24,15 +24,15 @@ Use Esri's [authentication comparison](https://developers.arcgis.com/documentati
 ## Static token or API key[​](#static-token-or-api-key "Direct link to Static token or API key")
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
 import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 
 
 
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {
 
   core: {
 
@@ -54,7 +54,7 @@ Replace the example origin with the exact trusted service origin, including any 
 The descriptors also register `ArcGISAuthentication`, so declarative credentials work with async `load()` and `SourceLayer`:
 
 ```
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {
 
   core: {credentials: [{type: 'arcgis', origins: ['https://services.example.com'], token: accessToken}]}
 
@@ -82,7 +82,7 @@ const authentication = new ArcGISAuthentication({
 
 
 
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {
 
   core: {credentials: [authentication]}
 
@@ -98,7 +98,7 @@ Explicit URL tokens and request headers take precedence. Remove an expired token
 ## Use an existing Enterprise transport[​](#use-an-existing-enterprise-transport "Direct link to Use an existing Enterprise transport")
 
 ```
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader, {
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {
 
   core: {fetch: enterpriseFetch}
 
@@ -154,7 +154,7 @@ const transport = authentication.createFetch();
 
 // resolveArcGISItem(itemId, {fetch: transport})
 
-// load(layerUrl, ArcGISFeatureServerSourceLoader, {core: {fetch: transport}})
+// load(layerUrl, ArcGISFeatureServerLoader, {core: {fetch: transport}})
 ```
 
 Reuse this transport across discovery, metadata and service requests. `createFetch()` creates a separate credential for each trusted origin, isolating concurrent refresh tokens between hosts. It accepts optional `fetch` and `fetchOptions` to wrap an application transport or supply defaults. A single-origin auth object can also be passed directly in `core.credentials`. The lower-level `createArcGISCredential` factory remains available at `@loaders.gl/arcgis/authentication`.

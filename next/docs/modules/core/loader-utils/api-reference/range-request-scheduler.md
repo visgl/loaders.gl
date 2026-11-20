@@ -50,7 +50,7 @@ Track logical, merged, fetched, and failed ranges
 
 ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![experimental](https://img.shields.io/badge/experimental-yellow.svg?style=flat-square)
 
-`RangeRequestScheduler` is a low-level utility for coalescing nearby byte-range requests. It can be composed with [`RangeRequestCache`](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/range-request-cache.md) when completed ranges should also be retained for reuse. It is used by `PMTilesSourceLoader` and can be reused by other byte-range-addressable Sources.
+`RangeRequestScheduler` is a low-level utility for coalescing nearby byte-range requests. It can be composed with [`RangeRequestCache`](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/range-request-cache.md) when completed ranges should also be retained for reuse. It is used by `PMTilesLoader` and can be reused by other byte-range-addressable Sources.
 
 Detailed guide
 

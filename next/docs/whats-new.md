@@ -16,7 +16,59 @@ loaders.gl 5 brings catalog discovery, columnar queries, raster access, and tile
 
 ## v5.0 (In Development)[​](#v50-in-development "Direct link to v5.0 (In Development)")
 
+* The v5 mesh converter accepts inline `TILESET_CRS_GEOCENTRIC` declarations of native EPSG:4978, with an optional coordinate epoch, for box/sphere-bounded 3D Tiles. Unmapped metadata remains rejected. See [native-ECEF source metadata](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md#native-ecef-source-metadata).
+
+* The default `tile-converter` command and package import now use the v5 engine. Legacy workflows remain available through `tile-converter-v4` and `@loaders.gl/tile-converter/v4`. See the [migration guide](https://loaders.gl/next/docs/upgrade-guide.md#tile-converter-defaults-to-v5).
+
+* Clean format entry points expose metadata loaders and writers together, for example `ParquetLoader` and `ParquetWriter` from `@loaders.gl/tables/parquet`.
+
+* Parquet writing now uses the native TypeScript encoder, including its encoding, indexing, statistics, and encryption options. Alternative Parquet and LAS implementations are confined to website benchmarks and interoperability tests.
+
 Version 5 is in prerelease development; its API is still being finalized. Start with the highlights below, or use the [upgrade guide](https://loaders.gl/next/docs/upgrade-guide.md#upgrading-to-v50) to migrate an application. The [release tracker](https://github.com/visgl/loaders.gl/issues/3316) records remaining work.
+
+### Molecular structures[​](#molecular-structures "Direct link to Molecular structures")
+
+Scientific adds fixed-column PDB atom/model decoding and explicit bond connectivity, without inferred display styling. See [PDB](https://loaders.gl/next/docs/modules/scientific/pdb.md).
+
+### Compare loader options[​](#compare-loader-options "Direct link to Compare loader options")
+
+Core exports `compareLoaderOptions` for deep comparison of option records and arrays. Callbacks compare by reference. See [LoaderOptions](https://loaders.gl/next/docs/modules/core/api-reference/loader-options.md#compareloaderoptions).
+
+### Convert parsed JSON directly to Arrow[​](#convert-parsed-json-directly-to-arrow "Direct link to Convert parsed JSON directly to Arrow")
+
+[`convertJSONToArrow`](https://loaders.gl/next/docs/modules/tables/json/api-reference/convert-json-to-arrow.md) turns application-built row arrays and already-parsed JSON into native Apache Arrow tables, with the same schema inference and recovery policies as `JSONTableLoader`. Use it directly or as a whole-dataset `dataTransform` for Arrow-compatible deck.gl layers.
+
+### Native Apache Arrow output[​](#native-apache-arrow-output "Direct link to Native Apache Arrow output")
+
+Tabular loaders support `shape: 'arrow'` through the core loading and parsing APIs, returning Apache Arrow `Table` objects or streaming native `RecordBatch` objects. See [native Arrow output](https://loaders.gl/next/docs/modules/core/schema/table-guide.md#native-apache-arrow-output).
+
+### Multidimensional NRRD arrays[​](#multidimensional-nrrd-arrays "Direct link to Multidimensional NRRD arrays")
+
+Scientific adds attached raw, ASCII, and gzip NRRD decoding, retaining typed samples and spatial metadata. See [NRRD](https://loaders.gl/next/docs/modules/scientific/nrrd.md).
+
+### VTK loader entry point[​](#vtk-loader-entry-point "Direct link to VTK loader entry point")
+
+Existing scientific VTK readers are available through a metadata-only VTKLoader and a direct parser subpath, with stronger legacy topology validation. See [VTK](https://loaders.gl/next/docs/modules/scientific/vtk.md).
+
+### Color lookup tables[​](#color-lookup-tables "Direct link to Color lookup tables")
+
+Images adds 1D/3D cube, grid-first 3dl, and explicitly arranged PNG lookup-table decoding with renderer-independent samples. See [color LUTs](https://loaders.gl/next/docs/modules/images/color-lut.md).
+
+### STL mesh loading[​](#stl-mesh-loading "Direct link to STL mesh loading")
+
+Scene adds an ASCII/binary STL loader returning triangle meshes with authored normals and source metadata. See [STL](https://loaders.gl/next/docs/modules/scene/stl.md).
+
+### Measured lighting profiles[​](#measured-lighting-profiles "Direct link to Measured lighting profiles")
+
+Images adds bounded Type C IES profile decoding that retains measured angles, intensities, and lamp metadata. See [IES](https://loaders.gl/next/docs/modules/images/ies.md).
+
+### Initial binary USD support[​](#initial-binary-usd-support "Direct link to Initial binary USD support")
+
+The scene USD loader adds a documented crate 0.8.0 subset, including binary-root USDZ and renderer-independent prim/property values. See [USDC scope](https://loaders.gl/next/docs/modules/scene/usd/formats/usd.md#binary-usdc-reference).
+
+### OpenEXR channel planes[​](#openexr-channel-planes "Direct link to OpenEXR channel planes")
+
+Images adds single-part scanline OpenEXR decoding with NONE/RLE/ZIPS/ZIP compression and renderer-independent named channels. See [OpenEXR](https://loaders.gl/next/docs/modules/images/openexr.md).
 
 ### Draco joins scene[​](#draco-joins-scene "Direct link to Draco joins scene")
 
@@ -48,15 +100,15 @@ The [Arrow query example](https://loaders.gl/next/examples/table/arrow-scan) dem
 
 Read selected regions of GeoTIFF and cloud-optimized GeoTIFF with overview selection, validity masks, and decoded-memory budgets through [raster sources](https://loaders.gl/next/docs/modules/raster.md). GeoPackage can read encoded tile payloads by table and matrix ID. [Scientific formats](https://loaders.gl/next/docs/modules/scientific.md) bring NetCDF and Zarr together, including OME-Zarr bioimaging sources.
 
-[Images](https://loaders.gl/next/docs/modules/images.md) now includes compressed textures, HDR, texture manifests, and browser video loading. `ImageLoader` returns `ImageBitmap`; `LegacyImageLoader` retains older output modes. Node image decoding and encoding use an optional, lazy-loaded Sharp backend, including WebP and AVIF support. See the [image migration guide](https://loaders.gl/next/docs/upgrade-guide.md#image-texture-and-video-consolidation) for renamed loaders, flat implementation imports, and explicit codec installation.
+[Images](https://loaders.gl/next/docs/modules/images.md) now includes compressed textures, HDR, texture manifests, and browser video loading. `ImageLoader` returns `ImageBitmap`. Node image decoding and encoding use an optional, lazy-loaded Sharp backend, including WebP and AVIF support. See the [image migration guide](https://loaders.gl/next/docs/upgrade-guide.md#image-texture-and-video-consolidation) for renamed loaders, flat implementation imports, and explicit codec installation.
 
-[Tile matrix support](https://loaders.gl/next/docs/developer-guide/tile-matrices.md) preserves native identifiers, coordinate systems, and coverage limits across OGC and ArcGIS services. Applications can select tiles in an explicit native frame without treating every grid as Web Mercator; renderer support remains separate.
+[Tile matrix support](https://loaders.gl/next/docs/developer-guide/tile-matrices.md) preserves native identifiers, coordinate systems, and coverage limits across OGC and ArcGIS services. Applications can select tiles in an explicit native frame without treating every grid as Web Mercator; renderer support remains separate. WMTS, OGC TileMatrixSet 2.0 and OGC API Tiles sources now reject duplicate matrix IDs and malformed limits in the same way, and limit errors name their reason.
 
 ### Build tile archives and 3D content[​](#build-tile-archives-and-3d-content "Direct link to Build tile archives and 3D content")
 
 Export selected vector or byte-imagery tiles as PMTiles in the [browser authoring example](https://loaders.gl/next/examples/tiles/pmtiles-authoring). MVT, MLT, and PNG output share bounded processing with progress and cancellation. The [3D tile converter](https://loaders.gl/next/examples/tiles/3d-tiles-conversion) packages supported mesh content into SLPK or 3TZ, with explicit [conversion profiles and limits](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md).
 
-[3D Tiles traversal](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/tile-hierarchy-and-refinement.md) keeps ready coverage while replacement content loads, and uses byte-based cache budgets. [Scene tools](https://loaders.gl/next/docs/modules/scene.md) provide indexed glTF access, writing, and best-effort glTF 1 conversion; unsupported features remain explicit rather than being presented as fully converted scenes. Experimental [OpenUSD loading](https://loaders.gl/next/docs/modules/scene/usd/api-reference/usd-loader.md) and [Gaussian splats](https://loaders.gl/next/docs/modules/splats.md) extend the kinds of 3D data applications can explore.
+[3D Tiles traversal](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/concepts/tile-hierarchy-and-refinement.md) keeps ready coverage while replacement content loads, and uses byte-based cache budgets. [Scene tools](https://loaders.gl/next/docs/modules/scene.md) provide indexed glTF access, writing, and best-effort glTF 1 conversion; unsupported features remain explicit rather than being presented as fully converted scenes. Experimental [OpenUSD loading](https://loaders.gl/next/docs/modules/scene/usd/api-reference/usd-loader.md) and [Gaussian splats](https://loaders.gl/next/docs/modules/splats.md) extend the kinds of 3D data applications can explore. USDZ loading also exposes embedded texture and other package files as encoded, renderer-independent buffers. See [embedded USDZ assets](https://loaders.gl/next/docs/modules/scene/usd/api-reference/usd-loader.md#embedded-usdz-assets) for package-relative lookup and ownership details.
 
 ### Load the implementations you need[​](#load-the-implementations-you-need "Direct link to Load the implementations you need")
 
@@ -89,7 +141,7 @@ v4.5 adds experimental Gaussian splat and TypeScript Parquet support, Chrome Tra
 
 **Highlights**
 
-* **@loaders.gl/splats** - New loaders for raw SPLAT, KSPLAT, SPZ, and Spark RAD Gaussian-splat data. `RADSourceLoader` supports progressive chunk loading for paged RAD scenes.
+* **@loaders.gl/splats** - New loaders for raw SPLAT, KSPLAT, SPZ, and Spark RAD Gaussian-splat data. `RADLoader` supports progressive chunk loading for paged RAD scenes.
 * **@loaders.gl/parquet** - New experimental `ParquetJSLoader` makes the TypeScript Parquet backend available through an explicit loader import.
 * **@loaders.gl/traces** - New `ChromeTraceLoader` parses Chrome Trace Event JSON as normalized JSON or Arrow tables. Streaming helpers support incremental event, Arrow-batch, and file parsing.
 * **@loaders.gl/tiles/mvt** - New [`MapStyleLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/map-style-loader.md) parses Mapbox/MapLibre style JSON, resolves relative source and TileJSON URLs, preserves metadata, and supports custom fetch and base URL options.
@@ -104,7 +156,7 @@ Release Date: March 31, 2026
 
 **Highlights**
 
-* **@loaders.gl/tiles/mlt** - New [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md) and [`MLTSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md) add support for the [`MapLibre Tile`](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md) format, with a new [MLT website example](https://loaders.gl/next/examples/tiles/mlt).
+* **@loaders.gl/tiles/mlt** - New [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md) and [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md) add support for the [`MapLibre Tile`](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md) format, with a new [MLT website example](https://loaders.gl/next/examples/tiles/mlt).
 * **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-loader.md), [`TextureArrayLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-array-loader.md), and [`TextureCubeLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-cube-loader.md), and support Radiance HDR textures through [`RadianceHDRLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/radiance-hdr-loader.md).
 * **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](https://loaders.gl/next/docs/developer-guide/apache-arrow.md).
 * **@loaders.gl/tiles/mvt** - New experimental [`MVTWriter`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-writer.md) allows GeoJSON to be written in binary MVT tile format.
@@ -164,7 +216,7 @@ A minor release that includes:
 
 **@loaders.gl/tiles/mvt**
 
-* [`TableTileSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-source-loader.md) - Geospatial tables can now be vector tiled dynamically in the browser.
+* [`TableTileLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-loader.md) - Geospatial tables can now be vector tiled dynamically in the browser.
 
 **@loaders.gl/textures**
 
@@ -234,8 +286,8 @@ A minor release that includes:
 
 **@loaders.gl/tiles/pmtiles**
 
-* `PMTilesSourceLoader` - now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
-* `PMTilesSourceLoader` - Now refreshes the already loaded index if the underlying PMTiles file being loaded from is changed.
+* `PMTilesLoader` - now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
+* `PMTilesLoader` - Now refreshes the already loaded index if the underlying PMTiles file being loaded from is changed.
 
 **@loaders.gl/parquet**
 
@@ -309,7 +361,7 @@ A major release that brings:
 
 **@loaders.gl/tiles/pmtiles** - NEW
 
-* New [`PMTilesSourceLoader`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md) supports the [PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md) format.
+* New [`PMTilesLoader`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md) supports the [PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md) format.
 * New [PMTiles example](https://loaders.gl/next/examples/tiles/pmtiles).
 
 **@loaders.gl/parquet**
@@ -472,7 +524,7 @@ Release Date: May 16, 2023.
 
 **@loaders.gl/ogc/wms**
 
-* [`WMSService`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-source-loader.md)
+* [`WMSService`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-loader.md)
 
   * WMS version 1.3.0 is now the default. When connecting to older servers, version dependent parameters, coordinate conventions etc are remapped under the hood.
   * HTTP Authentication: `loadOptions` now enables overriding fetch options, including supplying an HTTP `Authentication` header.
@@ -484,7 +536,7 @@ Release Date: May 16, 2023.
   * Now handles version 1.3.0, and when loading older capabilities, fields and parameters that have changed across WMS versions are automatically remapped to 1.3.0 equivalents (`CRS` vs `SRS` etc).
   * Extracts more information (such as `version`, `abstract` fields, layer bounding boxes, available `dimensions` (time etc) and flags (`opaque`, `queryable`, `cascaded`), MIME types for `exceptions`) etc.
 
-* [`CSWService`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-source-loader.md)
+* [`CSWService`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-loader.md)
 
   * New service supporting the [**CSW (Catalog Services for the Web)**](https://loaders.gl/next/docs/modules/ogc/wms/formats/csw.md) protocol.
   * Enables applications to discover available services (including WMS).
@@ -1108,3 +1160,9 @@ Helper functions for loaders have been broken out from `@loaders.gl/core`. Indiv
 Release Date: April 2019
 
 First Official Release
+
+### Query capability discovery[​](#query-capability-discovery "Direct link to Query capability discovery")
+
+`@loaders.gl/core/query` is now an alias for the optional scan runtime. Sources expose `queryCapabilities`, formats can provide advisory `queryPushdownCapabilityHints`, and the runtime supports exact-query pushdown negotiation for CAST-capable sources. Offset-capable sources receive native row windows; other sources retain the safe residual offset and limit path. Existing scan imports and metadata remain compatible.
+
+DuckDB tables can now be queried through `@loaders.gl/core/query` with source-side paging and native signed integer widening casts. Other casts use Arrow.

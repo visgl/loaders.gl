@@ -58,10 +58,18 @@ The detailed reference covers construction, conversion options, generated resour
 
 The `I3SConverter` class converts a 3D Tiles tileset to I3S layer.
 
+## Batch-table attributes[​](#batch-table-attributes "Direct link to Batch-table attributes")
+
+The legacy converter collects batch-table fields during preprocessing, before writing node attributes. Each node uses the same field order, with I3S null values for missing columns. Empty strings and numeric zero remain distinct from null. Numeric columns widen to double precision when needed across tiles; mixed numeric and text columns are stored as strings. A tile read failure during preprocessing stops conversion rather than writing nodes against an incomplete schema.
+
+This applies to the legacy `I3SConverter` path, not the separate v5 conversion API. Attribute rows follow the original batch IDs in geometry feature order, including when triangles are out of order or materials split a tile into several nodes. Generated OBJECTIDs are based on each feature's own batch-table row, not its position in the node. The existing property-based identity policy is unchanged: matching metadata can share an OBJECTID across nodes.
+
+Reconvert existing outputs to correct attribute values written by earlier versions. Older conversion checkpoints are not resumed, because their attribute buffers may use the previous field order, feature-row order, or null encoding.
+
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {I3SConverter} from '@loaders.gl/tile-converter';
+import {I3SConverter} from '@loaders.gl/tile-converter/v4';
 
 
 

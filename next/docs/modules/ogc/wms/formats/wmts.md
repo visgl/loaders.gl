@@ -20,7 +20,7 @@ WMTS describes discrete tile matrix sets, layers, styles, image formats, and res
 
 | Type          | API                                                                                                                   |
 | ------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Source loader | `WMTSSourceLoader`                                                                                                    |
+| Source loader | `WMTSLoader`                                                                                                          |
 | Loader        | [`WMTSCapabilitiesLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wmts-capability-loader.md) |
 
 WMTS tile service exampleEnter fullscreen
@@ -59,7 +59,7 @@ Render
 
 Visible image tiles through TileSource
 
-WMTS serves map imagery on discrete, advertised tile matrix sets. `WMTSSourceLoader` implements a loaders.gl `TileSource` and negotiates the layer, style, format, and grid from capabilities.
+WMTS serves map imagery on discrete, advertised tile matrix sets. `WMTSLoader` implements a loaders.gl `TileSource` and negotiates the layer, style, format, and grid from capabilities.
 
 Detailed guide
 
@@ -115,13 +115,13 @@ The adapter derives request configuration from advertised capabilities rather th
 ## Create a tile source[​](#create-a-tile-source "Direct link to Create a tile source")
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
 
   wmts: {
 
@@ -157,7 +157,7 @@ import {getTileBounds} from '@math.gl/geospatial';
 
 
 
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
 
   // A UTM matrix set: one CRS unit is one meter.
 
@@ -183,7 +183,7 @@ Pass `tileMatrix` to request a matrix by identifier. It is used verbatim, and a 
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 
 
 
@@ -193,7 +193,7 @@ const layer = new SourceLayer({
 
   data: wmtsUrl,
 
-  loaders: [WMTSSourceLoader],
+  loaders: [WMTSLoader],
 
   sourceOptions: {
 
@@ -211,7 +211,7 @@ const layer = new SourceLayer({
 ## Configure from capabilities[​](#configure-from-capabilities "Direct link to Configure from capabilities")
 
 ```
-const source = createDataSource(wmtsUrl, [WMTSSourceLoader], {
+const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
 
   wmts: {
 
@@ -242,7 +242,7 @@ These metadata do not reproject image tiles or make arbitrary grids compatible w
 
 ## Coverage limits and dimensions[​](#coverage-limits-and-dimensions "Direct link to Coverage limits and dimensions")
 
-The source uses the selected layer's `TileMatrixSetLink` limits for both KVP and REST requests. Row and column bounds are inclusive. If a limits list is present, a matrix without an entry is unavailable; an explicitly empty list permits no tiles. Without layer limits, full matrix sizes constrain each level independently. Incomplete matrix size metadata is not extrapolated. Malformed limits (missing/duplicate identifiers, negative or noninteger indices, reversed bounds, or limits exceeding the selected matrix's dimensions) fail explicitly.
+The source uses the selected layer's `TileMatrixSetLink` limits for both KVP and REST requests. Row and column bounds are inclusive. If a limits list is present, a matrix without an entry is unavailable; an explicitly empty list permits no tiles. Without layer limits, full matrix sizes constrain each level independently. Incomplete matrix size metadata is not extrapolated. Malformed limits (missing/duplicate identifiers, an unknown matrix, negative or noninteger indices, reversed bounds, or limits exceeding the selected matrix's dimensions) fail explicitly. Duplicate matrix identifiers also fail, because a request could not name one level. Metadata and tile requests apply the shared [grid validation](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/tile-grid.md) rules, so these cases behave as they do for OGC TileMatrixSet 2.0 and OGC API Tiles sources. A malformed level value, such as a zero tile width, stays in `tileGrid.matrices` for inspection and `getTileGridValidation()` reports it as invalid; every tile request for that set then rejects.
 
 ```
 import {WMTSImageTileSource} from '@loaders.gl/ogc/wms';

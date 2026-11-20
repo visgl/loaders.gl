@@ -107,9 +107,9 @@ const arrayBuffer = await encode(geojson, MVTWriter, {
 
 ## GeoArrow WKB tiles (from v5.0)[​](#geoarrow-wkb-tiles-from-v50 "Direct link to GeoArrow WKB tiles (from v5.0)")
 
-`MVTWriter` also accepts a loaders.gl ArrowTable or Apache Arrow Table with a GeoArrow WKB geometry column. Attributes are read directly from Arrow vectors at the protobuf boundary, including sliced and multi-batch tables and dictionaries. It does not construct GeoJSON property rows.
+`MVTWriter` also accepts an Apache Arrow table with a GeoArrow WKB geometry column. Attributes are read directly from Arrow vectors at the protobuf boundary, including sliced and multi-batch tables and dictionaries. It does not construct GeoJSON property rows.
 
-Use the [Arrow tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md) for geographic, native GeoArrow or WKT input. Its normalized local WKB tiles can be encoded directly:
+Use the [Arrow tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader.md) for geographic, native GeoArrow or WKT input. Its normalized local WKB tiles can be encoded directly:
 
 ```
 const tile = await arrowTileSource.getTile({z: 1, x: 0, y: 0});

@@ -59,7 +59,7 @@ This is useful before sending Arrow data across a worker boundary. The transferr
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {splitArrowBuffers} from '@loaders.gl/tables/arrow/transport';
+import {splitArrowBuffers} from '@math.gl/core/arrow';
 
 
 

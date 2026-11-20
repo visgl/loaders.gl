@@ -2,7 +2,7 @@ Data conversion
 
 # Keep the table shape explicit as data moves.
 
-The table and Arrow converters bridge loaders.gl wrappers and raw Apache Arrow tables. They let an application choose a convenient shape at each boundary without confusing a wrapper with the underlying table data.
+The table and Arrow converters bridge native Apache Arrow tables and loaders.gl row, columnar, and GeoJSON tables.
 
 [Arrow format](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)
 
@@ -18,7 +18,7 @@ Shape is part of the contract
 
 ## Convert at the boundary, not by accident.
 
-A raw Arrow table, a loaders.gl Arrow wrapper, a columnar table, and an array of row objects can all describe the same records. The converters make the transition deliberate.
+A native Arrow table, a columnar table, and an array of row objects can all describe the same records. The converters make the transition deliberate.
 
 01
 
@@ -28,9 +28,9 @@ shape: 'arrow' for Apache Arrow JS tables
 
 02
 
-Arrow wrapper
+Arrow output
 
-shape: 'arrow-table' for loaders.gl APIs
+shape: 'arrow' returns a native table
 
 03
 
@@ -44,7 +44,7 @@ Use it for
 
 Normalization before rendering, scanning, or writing
 
-These converters move between loaders.gl table wrappers and Apache Arrow tables.
+These converters move between loaders.gl row, columnar, and GeoJSON table shapes and native Apache Arrow tables.
 
 Detailed guide
 
@@ -54,34 +54,33 @@ The sections below document the two converter families and their supported shape
 
 ## TableConverter[​](#tableconverter "Direct link to TableConverter")
 
-| Field       | Value                                                                          |
-| ----------- | ------------------------------------------------------------------------------ |
-| Package     | `@loaders.gl/core/schema-utils`                                                |
-| `id`        | `'table'`                                                                      |
-| `from`      | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'` |
-| `to`        | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'` |
-| Detection   | Reads `input.shape` on loaders.gl table wrappers                               |
-| Typical use | Normalize one loaders.gl wrapper into another                                  |
+| Field       | Value                                                                         |
+| ----------- | ----------------------------------------------------------------------------- |
+| Package     | `@loaders.gl/core/schema-utils`                                               |
+| `id`        | `'table'`                                                                     |
+| `from`      | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow'`      |
+| `to`        | `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow'`      |
+| Detection   | Recognizes native tables and reads `input.shape` on loaders.gl table wrappers |
+| Typical use | Convert between native Arrow and loaders.gl row or column tables              |
 
-`TableConverter` is the wrapper-to-wrapper bridge. It does not deal with raw Apache Arrow `Table` instances.
+`TableConverter` can convert native Arrow directly to row or column tables and back.
 
 ## ArrowConverter[​](#arrowconverter "Direct link to ArrowConverter")
 
-| Field       | Value                                                                                                        |
-| ----------- | ------------------------------------------------------------------------------------------------------------ |
-| Package     | `@loaders.gl/tables/arrow`                                                                                   |
-| `id`        | `'arrow'`                                                                                                    |
-| `from`      | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
-| `to`        | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
-| Detection   | Treats raw Apache Arrow `Table` instances as `'arrow'`                                                       |
-| Typical use | Bridge raw Arrow tables into loaders.gl wrappers, or write wrappers back to Arrow                            |
+| Field       | Value                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Package     | `@loaders.gl/tables/arrow`                                                                  |
+| `id`        | `'arrow'`                                                                                   |
+| `from`      | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
+| `to`        | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
+| Detection   | Treats raw Apache Arrow `Table` instances as `'arrow'`                                      |
+| Typical use | Convert between native Arrow and row, columnar, or GeoJSON tables                           |
 
 ## Shape Mapping[​](#shape-mapping "Direct link to Shape Mapping")
 
 | Shape                | Meaning                                                    |
 | -------------------- | ---------------------------------------------------------- |
 | `'arrow'`            | Raw Apache Arrow `Table`                                   |
-| `'arrow-table'`      | loaders.gl wrapper around Arrow table data                 |
 | `'object-row-table'` | Array of row objects                                       |
 | `'array-row-table'`  | Array of row arrays                                        |
 | `'columnar-table'`   | Column-oriented loaders.gl wrapper                         |
@@ -92,13 +91,9 @@ The sections below document the two converter families and their supported shape
 ```
 import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
 
-import {ArrowConverter} from '@loaders.gl/tables/arrow';
+const objectRows = convert(arrowTable, 'object-row-table', TableConverter);
 
-
-
-const objectRows = convert(arrowTable, 'object-row-table', [ArrowConverter, TableConverter]);
-
-const rawArrow = convert(objectRows, 'arrow', [TableConverter, ArrowConverter]);
+const rawArrow = convert(objectRows, 'arrow', TableConverter);
 ```
 
 ## When To Stop At Arrow[​](#when-to-stop-at-arrow "Direct link to When To Stop At Arrow")

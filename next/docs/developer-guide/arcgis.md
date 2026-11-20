@@ -40,9 +40,9 @@ import {Deck} from '@deck.gl/core';
 
 import {GeoJsonLayer} from '@deck.gl/layers';
 
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
 
 
@@ -52,7 +52,7 @@ const serviceUrl =
 
 
 
-const source = await load(serviceUrl, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader);
 
 const features = await source.getFeatures({
 
@@ -137,26 +137,26 @@ const source = await load(serviceUrl, ARCGIS_LOADERS, {
 For synchronous construction, import the same loader name from `/bundled`:
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis/bundled';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/bundled';
 
 
 
-const source = createDataSource(serviceUrl, [ArcGISFeatureServerSourceLoader], {});
+const source = createDataSourceSync(serviceUrl, [ArcGISFeatureServerLoader], {});
 ```
 
 Source construction is synchronous in this example; network methods remain asynchronous. Authentication, discovery and scene aggregation have dedicated entrypoints so applications can import these helpers without retaining service implementations. `/bundled` also exports them for applications already using runtime source classes.
 
-| Import                                                   | Use                                                                                               |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `@loaders.gl/arcgis`                                     | Async `load()`, deck.gl `SourceLayer`, lightweight registry and shared types                      |
-| `@loaders.gl/arcgis/bundled`                             | Synchronous `createDataSource()`, runtime registry, direct source classes and helpers             |
-| `@loaders.gl/arcgis/authentication`                      | `ArcGISAuthentication` and `createArcGISCredential`                                               |
-| `@loaders.gl/arcgis/discovery`                           | `getArcGISServices`, `discoverArcGISCapabilities` and `selectArcGISService`                       |
-| `@loaders.gl/arcgis/scene-aggregation`                   | `aggregateArcGISSceneFeatures`                                                                    |
-| `@loaders.gl/arcgis/arcgis-feature-server-source-loader` | One explicit implementation: `ArcGISFeatureServerSourceLoaderWithParser` and `ArcGISVectorSource` |
+| Import                                            | Use                                                                                         |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `@loaders.gl/arcgis`                              | Async `load()`, deck.gl `SourceLayer`, lightweight registry and shared types                |
+| `@loaders.gl/arcgis/bundled`                      | Synchronous `createDataSourceSync()`, runtime registry, direct source classes and helpers   |
+| `@loaders.gl/arcgis/authentication`               | `ArcGISAuthentication` and `createArcGISCredential`                                         |
+| `@loaders.gl/arcgis/discovery`                    | `getArcGISServices`, `discoverArcGISCapabilities` and `selectArcGISService`                 |
+| `@loaders.gl/arcgis/scene-aggregation`            | `aggregateArcGISSceneFeatures`                                                              |
+| `@loaders.gl/arcgis/arcgis-feature-server-loader` | One explicit implementation: `ArcGISFeatureServerLoaderWithParser` and `ArcGISVectorSource` |
 
-Each service loader has an equivalent implementation subpath. Named ESM imports from `/bundled` can still be tree-shaken; importing its entire registry intentionally includes all six clients. The package-root loaders require async `load()` and report a helpful error if passed directly to synchronous `createDataSource()`.
+Each service loader has an equivalent implementation subpath. Named ESM imports from `/bundled` can still be tree-shaken; importing its entire registry intentionally includes all six clients. The package-root loaders require async `createDataSource()` and report a helpful error if passed directly to synchronous `createDataSourceSync()`.
 
 Lazy imports defer download and initialization; they do not eliminate the implementation's bytes when that service is used. The result depends on the application's bundler and whether ESM code splitting is enabled. CommonJS or single-file bundles may include all implementations eagerly.

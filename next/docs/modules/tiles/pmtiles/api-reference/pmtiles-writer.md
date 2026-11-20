@@ -8,11 +8,11 @@ Package encoded MVT, MLT or image tiles into one range-readable PMTiles v3 file.
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md)[PMTiles source](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md)[PMTiles source](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md)[PMTiles module](https://loaders.gl/next/docs/modules/tiles/pmtiles.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md)[PMTiles module](https://loaders.gl/next/docs/modules/tiles/pmtiles.md)
 
 <!-- -->
 
@@ -103,4 +103,4 @@ Cancellation closes the input iterator when the writer detects an abort. A produ
 
 ## Scope[​](#scope "Direct link to Scope")
 
-This API packages existing tile payloads. [GeoArrow-to-MVT/MLT authoring](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/geoarrow-pmtiles.md) composes the existing tiler with this writer. Raster reprojection, resampling and overview generation, source adapters, CLI export, browser download UI, deduplication, and streaming file sinks are separate follow-up work. The existing [Arrow table tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md) can supply Arrow tiles to a future encoding/export pipeline.
+This API packages existing tile payloads. [GeoArrow-to-MVT/MLT authoring](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/geoarrow-pmtiles.md) composes the existing tiler with this writer. Raster reprojection, resampling and overview generation, source adapters, CLI export, browser download UI, deduplication, and streaming file sinks are separate follow-up work. The existing [Arrow table tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader.md) can supply Arrow tiles to a future encoding/export pipeline.

@@ -1,6 +1,6 @@
 # MLTWriter
 
-From v5.0. `MLTWriter` encodes an Apache Arrow `Table` or loaders.gl `ArrowTable` into one MapLibre Tile v1 layer. It runs in browsers and Node.js, reads attribute columns directly, and uses portable VarInt streams and componentwise delta vertices. It does not require a native encoder.
+From v5.0. `MLTWriter` encodes an Apache Arrow `Table` into one MapLibre Tile v1 layer. It runs in browsers and Node.js, reads attribute columns directly, and uses portable VarInt streams and componentwise delta vertices. It does not require a native encoder.
 
 ```
 import {encode} from '@loaders.gl/core';

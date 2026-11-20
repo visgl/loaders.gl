@@ -12,11 +12,11 @@ MLT module
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md)[MLT source](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md)[MLT source](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md)
 
 The MLT module boundary
 
@@ -68,11 +68,11 @@ npm install @loaders.gl/core
 
 ## Loaders and Sources[​](#loaders-and-sources "Direct link to Loaders and Sources")
 
-| Loader / Source                                                                                             | Description                                                              |
-| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| [`MLTWriter`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-writer.md)              | Encodes tile-local GeoArrow WKB and scalar columns as MLT v1. From v5.0. |
-| [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md)              | Loads MapLibre Tile vector tiles.                                        |
-| [`MLTSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md) | Loads MapLibre Tile data as a tile source.                               |
+| Loader / Source                                                                                | Description                                                              |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [`MLTWriter`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-writer.md) | Encodes tile-local GeoArrow WKB and scalar columns as MLT v1. From v5.0. |
+| [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md) | Loads MapLibre Tile vector tiles.                                        |
+| [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md) | Loads MapLibre Tile data as a tile source.                               |
 
 ## Examples[​](#examples "Direct link to Examples")
 

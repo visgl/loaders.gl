@@ -101,7 +101,7 @@ The reference below lists the loaders, writers, IPC behavior, metadata, and rela
 
 ## Loaders and Writers[​](#loaders-and-writers "Direct link to Loaders and Writers")
 
-[Loader**ArrowLoader**Loads Apache Arrow IPC files and streams as loaders.gl tables.Output: ArrowTable, table shapesAPIs: load, parse, parseSync, parseInBatches](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader)[Loader**GeoArrowLoader**Loads Arrow data and interprets GeoArrow geometry columns.Output: Geometry tableAPIs: load, parse, parseSync, parseInBatches](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader)[Writer**ArrowWriter**Writes arrays as Apache Arrow IPC data.Input: arraysAPIs: encode, encodeSync](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer)
+[Loader**ArrowLoader**Loads Apache Arrow IPC files and streams as loaders.gl tables.Output: Apache Arrow table, table shapesAPIs: load, parse, parseSync, parseInBatches](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader)[Loader**GeoArrowLoader**Loads Arrow data and interprets GeoArrow geometry columns.Output: Geometry tableAPIs: load, parse, parseSync, parseInBatches](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader)[Writer**ArrowWriter**Writes arrays as Apache Arrow IPC data.Input: arraysAPIs: encode, encodeSync](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer)
 
 ## IPC[​](#ipc "Direct link to IPC")
 

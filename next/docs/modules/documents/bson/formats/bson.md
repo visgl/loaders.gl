@@ -117,7 +117,7 @@ BSON contains types not present in JSON, such as datetimes, byte arrays, and typ
 
 ## loaders.gl support[​](#loadersgl-support-1 "Direct link to loaders.gl support")
 
-Use `BSONLoader` from `@loaders.gl/documents` and `BSONWriter` from `@loaders.gl/documents/bson-writer`, or call `parseBSONSync()` and `encodeBSONSync()` directly. BSON-specific scalars use `BSONObjectId` or values constructed with `createBSONValue()`. Code and regular expressions are preserved as data and are never evaluated while decoding.
+Use `BSONLoader` from `@loaders.gl/documents` and `BSONWriter` from `@loaders.gl/documents/bson`, or call `parseBSONSync()` and `encodeBSONSync()` directly. BSON-specific scalars use `BSONObjectId` or values constructed with `createBSONValue()`. Code and regular expressions are preserved as data and are never evaluated while decoding.
 
 All binary subtypes are preserved, including opaque compressed, encrypted, and vector payloads; preserving their bytes does not decode the subtype-specific content. Parquet's BSON columns use the same codec for document materialization. Arrow output retains the BSON bytes for explicit decoding. See the [Documents · BSON](https://loaders.gl/next/docs/modules/documents/bson.md) and [migration guide](https://loaders.gl/next/docs/upgrade-guide.md#native-bson-value-contract).
 

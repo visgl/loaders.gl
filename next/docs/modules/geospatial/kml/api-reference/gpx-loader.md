@@ -40,7 +40,7 @@ Object-row table for inspection
 
 Columns
 
-ArrowTable with WKB geometry
+Arrow Table with WKB geometry
 
 04
 
@@ -59,7 +59,7 @@ The `GPXLoader` parses [GPX files](https://en.wikipedia.org/wiki/GPS_Exchange_Fo
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {GPXLoader} from '@loaders.gl/geospatial/kml';
+import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 
 import {load} from '@loaders.gl/core';
 
@@ -70,20 +70,20 @@ const data = await load(url, GPXLoader, options);
 
 ## Shapes[​](#shapes "Direct link to Shapes")
 
-`GPXLoader` returns loaders.gl `ArrowTable` objects by default. Set `gpx.shape` to select another table representation.
+`GPXLoader` returns Apache Arrow `Table` objects by default. Set `gpx.shape` to select another table representation.
 
 | Shape              | Output                                     |
 | ------------------ | ------------------------------------------ |
 | `geojson-table`    | loaders.gl GeoJSON table                   |
 | `object-row-table` | loaders.gl row table with GeoJSON features |
-| `arrow-table`      | loaders.gl `ArrowTable` with WKB geometry  |
+| `arrow`            | Apache Arrow `Table` with WKB geometry     |
 | `binary-geometry`  | loaders.gl binary feature collection       |
 
 ## Options[​](#options "Direct link to Options")
 
-| Option      | Type   | Default         | Description                       |
-| ----------- | ------ | --------------- | --------------------------------- |
-| `gpx.shape` | string | `'arrow-table'` | Selects the returned table shape. |
+| Option      | Type   | Default   | Description                       |
+| ----------- | ------ | --------- | --------------------------------- |
+| `gpx.shape` | string | `'arrow'` | Selects the returned table shape. |
 
 ## Limitations[​](#limitations "Direct link to Limitations")
 

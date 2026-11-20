@@ -100,4 +100,4 @@ Strings are strictly validated as UTF-8. Invalid lengths, terminators, array ind
 
 See the [native BSON value contract](https://loaders.gl/next/docs/modules/documents/bson.md#native-value-representations).
 
-For synchronous parsing, import `BSONLoaderWithParser` from `@loaders.gl/documents/bson-loader` and pass it to `parseSync`.
+For synchronous parsing, import `BSONLoaderWithParser` from `@loaders.gl/documents/bson` and pass it to `parseSync`.

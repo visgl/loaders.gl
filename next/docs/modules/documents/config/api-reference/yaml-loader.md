@@ -31,4 +31,4 @@ Parser options are passed as `options.yaml`. The options include YAML version se
 
 Anchors can be declared in block mappings. Aliases to previously declared anchors work in both block mappings and flow collections. An unquoted `<<` mapping key merges one mapping or a sequence of mappings; earlier mappings in a sequence take precedence. Explicit keys override merged values regardless of their position. `uniqueKeys: true` rejects repeated explicit keys, not explicit overrides of merged values. A quoted `"<<"` is a literal key, not a merge directive.
 
-For synchronous parsing, import `YAMLLoaderWithParser` from `@loaders.gl/documents/yaml-loader` and pass it to `parseSync`.
+For synchronous parsing, import `YAMLLoaderWithParser` from `@loaders.gl/documents/yaml` and pass it to `parseSync`.

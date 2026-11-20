@@ -22,7 +22,7 @@ GeoTIFF raster source exampleEnter fullscreen
 
 See [Coordinate Reference Systems](https://loaders.gl/next/docs/developer-guide/coordinate-reference-systems.md) for raster CRS discovery, current native-CRS behavior, and the raster-warping roadmap.
 
-[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFLoaderWithParser](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)[OMETiffLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-loader.md)
 
 Windowed raster access
 
@@ -50,13 +50,13 @@ bboxoverviewband
 
 rea&#x64;**→**
 
-[03 · application result](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+[03 · application result](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
-### [Typed raster result](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+### [Typed raster result](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
-[Pixels, dimensions, transform, and CRS stay available to the application.<!-- --> ↗](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+[Pixels, dimensions, transform, and CRS stay available to the application.<!-- --> ↗](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
-[pixelstransformCRS](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+[pixelstransformCRS](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
 A local file may use direct offsets; a cloud source may use HTTP ranges or object-store chunks. The application-facing selection remains the same.
 
@@ -116,13 +116,13 @@ npm install @loaders.gl/core @loaders.gl/raster geotiff
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | [`GeoTIFFLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)              | Loads georeferenced GeoTIFF images.                                                                          |
 | [`GeoTIFFRasterLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md) | Loads original typed numeric bands and per-image / per-band metadata for geoid grids and scientific rasters. |
-| [`GeoTIFFSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md) | Provides viewport-driven access to geospatial raster data.                                                   |
-| [`OMETiffSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md) | Provides typed non-geospatial OME-TIFF planes selected by level, time, z, and channel.                       |
+| [`GeoTIFFLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)              | Provides viewport-driven access to geospatial raster data.                                                   |
+| [`OMETiffLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-loader.md)              | Provides typed non-geospatial OME-TIFF planes selected by level, time, z, and channel.                       |
 
 ## Additional APIs[​](#additional-apis "Direct link to Additional APIs")
 
-* [`GeoTIFFSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md) returns `RasterData` payloads for viewport requests.
-* [`OMETiffSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md) returns typed OME-TIFF planes for non-geospatial image pyramids.
+* [`GeoTIFFLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md) returns `RasterData` payloads for viewport requests.
+* [`OMETiffLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-loader.md) returns typed OME-TIFF planes for non-geospatial image pyramids.
 
 ## Attributions[​](#attributions "Direct link to Attributions")
 

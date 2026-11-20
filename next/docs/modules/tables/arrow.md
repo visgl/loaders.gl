@@ -107,7 +107,7 @@ See [Using with Apache Arrow](https://loaders.gl/next/docs/developer-guide/apach
 Use `@loaders.gl/tables/arrow/types` for types exported by the module and types available in Apache Arrow 17, including classes exported as types:
 
 ```
-import type {Table, Vector, ArrowLoaderOptions, IndexedArrowTable} from '@loaders.gl/tables/arrow/types';
+import type {Table, Vector, ArrowLoaderOptions} from '@loaders.gl/tables/arrow/types';
 ```
 
 Types added in newer Apache Arrow releases, such as `Utf8View` and `BinaryView`, should be imported directly from the installed `apache-arrow` package.
@@ -119,13 +119,12 @@ Type-only imports are erased by TypeScript and add no runtime code or memory cos
 | Loader / Writer                                                                                             | Description                                                    |
 | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | [`ArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md)       | Loads Apache Arrow IPC files and streams as loaders.gl tables. |
-| [`ArrowWorkerLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-loader.md) | Deprecated alias for `ArrowLoader`.                            |
 | [`GeoArrowLoader`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/geoarrow-loader.md) | Loads Arrow data and interprets GeoArrow geometry columns.     |
 | [`ArrowWriter`](https://loaders.gl/next/docs/modules/tables/arrow/api-reference/arrow-writer.md)       | Writes arrays as Apache Arrow IPC data.                        |
 
 ## Additional APIs[​](#additional-apis "Direct link to Additional APIs")
 
-`@loaders.gl/tables/arrow` also provides utilities for working with Apache Arrow JS tables after loading or when integrating Arrow-backed data sources. Arrow worker transport helpers are available from the focused `@loaders.gl/tables/arrow/transport` subpath as well as the root export.
+`@loaders.gl/tables/arrow` also provides utilities for working with Apache Arrow JS tables after loading or when integrating Arrow-backed data sources. Arrow worker transport helpers are available from `@math.gl/core/arrow` directly.
 
 | Utility                                                                                                                                   | Description                                                              |
 | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |

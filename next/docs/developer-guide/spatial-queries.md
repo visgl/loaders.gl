@@ -5,13 +5,13 @@ Picking identifies rendered objects under screen coordinates. Data queries opera
 ## Load an extent from WFS[​](#load-an-extent-from-wfs "Direct link to Load an extent from WFS")
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSLoader], {
 
   wfs: {wfsParameters: {version: '2.0.0', crs: 'EPSG:3857'}}
 
@@ -84,10 +84,10 @@ Pass the managed source as `data` to `SourceLayer` or `VectorSourceLayer`; selec
 
 ## Use the common scan/query interface[​](#use-the-common-scanquery-interface "Direct link to Use the common scan/query interface")
 
-Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/core/scan` package. WFS, OGC API Features, and other sources that honor `format: 'arrow'` can use the same interface. Bind the service layers, extent, and input/output CRS when creating the table view:
+Wrap a `VectorSource` in `VectorFeatureTableScanSource` from the optional `@loaders.gl/core/query` package. WFS, OGC API Features, and other sources that honor `format: 'arrow'` can use the same interface. Bind the service layers, extent, and input/output CRS when creating the table view:
 
 ```
-import {VectorFeatureTableScanSource} from '@loaders.gl/core/scan';
+import {VectorFeatureTableScanSource} from '@loaders.gl/core/query';
 
 
 
@@ -123,11 +123,11 @@ const metadata = await scanSource.getQueryMetadata();
 
 const explanation = await scanSource.explain(query);
 
-const result = await scanSource.query(query); // ArrowTable
+const result = await scanSource.query(query); // Apache Arrow Table
 
 for await (const batch of scanSource.scan(query)) {
 
-  // ArrowTableBatch; read(query) exposes the same batch interface.
+  // Apache Arrow RecordBatch
 
   console.log(batch.length, batch.data);
 
@@ -147,9 +147,9 @@ import {GeoArrowSpatialIndex, getGeoArrowFieldInfo} from '@loaders.gl/core/geoar
 
 
 
-// `result` is an ArrowTable from WFS getFeatures() or the scan adapter query().
+// `table` is the native Arrow Table from WFS getFeatures({format: 'arrow'}).
 
-const table = result.data;
+// For a scan adapter query result, use its `data` field.
 
 const field = table.schema.fields.find(candidate => candidate.name === 'geometry');
 

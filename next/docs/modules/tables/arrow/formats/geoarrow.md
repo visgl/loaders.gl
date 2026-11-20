@@ -191,7 +191,7 @@ The [GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geo
 Arrow-capable geospatial loaders accept a common encoding preference. The option is placed at `geoarrow.encodingPreference` alongside the loader-specific options:
 
 ```
-import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 
 import {load} from '@loaders.gl/core';
 
@@ -199,7 +199,7 @@ import {load} from '@loaders.gl/core';
 
 const table = await load('cities.geojson', GeoJSONLoader, {
 
-  geojson: {shape: 'arrow-table'},
+  geojson: {shape: 'arrow'},
 
   geoarrow: {encodingPreference: 'optimized'}
 
@@ -246,15 +246,15 @@ The preference does not discard table information. Geometry field metadata, CRS 
 
 The preference is available on the Arrow-producing vector loaders and sources below. The loader-specific option controls the output shape; the common option controls only the geometry encoding.
 
-| Loader or source             | Arrow output                                                     | Preference location                                                             |
-| ---------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| GeoJSON                      | `geojson.shape: 'arrow-table'`                                   | `geoarrow.encodingPreference`                                                   |
-| CSV                          | `csv.shape: 'arrow-table'` and `csv.detectGeometryColumns: true` | `geoarrow.encodingPreference`                                                   |
-| Shapefile                    | `shp.shape: 'arrow-table'` or `shapefile.shape: 'arrow-table'`   | `geoarrow.encodingPreference` (legacy `shp.geoarrowEncoding` is also supported) |
-| FlatGeobuf, GeoPackage       | Loader-specific Arrow shape                                      | `geoarrow.encodingPreference`                                                   |
-| KML, GPX, TCX                | Loader-specific Arrow shape                                      | `geoarrow.encodingPreference`                                                   |
-| MVT, MLT, PMTiles/TableTiler | Tile or source Arrow table                                       | `geoarrow.encodingPreference`                                                   |
-| ArcGIS, WFS, OGC API         | Feature or streamed Arrow table                                  | `geoarrow.encodingPreference`                                                   |
+| Loader or source             | Arrow output                                               | Preference location                                                             |
+| ---------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| GeoJSON                      | `geojson.shape: 'arrow'`                                   | `geoarrow.encodingPreference`                                                   |
+| CSV                          | `csv.shape: 'arrow'` and `csv.detectGeometryColumns: true` | `geoarrow.encodingPreference`                                                   |
+| Shapefile                    | `shp.shape: 'arrow'` or `shapefile.shape: 'arrow'`         | `geoarrow.encodingPreference` (legacy `shp.geoarrowEncoding` is also supported) |
+| FlatGeobuf, GeoPackage       | Loader-specific Arrow shape                                | `geoarrow.encodingPreference`                                                   |
+| KML, GPX, TCX                | Loader-specific Arrow shape                                | `geoarrow.encodingPreference`                                                   |
+| MVT, MLT, PMTiles/TableTiler | Tile or source Arrow table                                 | `geoarrow.encodingPreference`                                                   |
+| ArcGIS, WFS, OGC API         | Feature or streamed Arrow table                            | `geoarrow.encodingPreference`                                                   |
 
 For CSV geometry detection, use `csv.detectGeometryColumns: true` together with the common preference. For Shapefile, the legacy `shp.geoarrowEncoding: 'geoarrow'` option remains supported and means `optimized`.
 
@@ -264,7 +264,7 @@ Use `convertGeoArrowGeometry(table, 'native')` when a table will be processed or
 
 Direct Arrow-buffer kernels cover the primary native, WKB, WKT, union, and box paths. Conversions without a direct kernel retain the compatibility GeoJSON bridge by default. Set `fallback: 'error'` to require a direct kernel in performance-sensitive code and fail instead of materializing objects.
 
-WKB/WKT scalar columns may use standard, large, or Arrow view storage (`Binary`, `LargeBinary`, `BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@loaders.gl/tables/arrow/transport` to isolate sliced Arrow buffers and prepare tables for worker transfer.
+WKB/WKT scalar columns may use standard, large, or Arrow view storage (`Binary`, `LargeBinary`, `BinaryView`, `Utf8`, `LargeUtf8`, or `Utf8View`). Use `@math.gl/core/arrow` to isolate sliced Arrow buffers and prepare tables for worker transfer.
 
 WKB remains the compact interchange and persistence representation. WKT columns use direct state-machine and native-buffer paths in both directions: parsing numeric tokens into the GeoArrow builder and writing native coordinates without creating one GeoJSON object per feature. Mixed WKT columns and GeometryCollections use typed union kernels as well, without a GeoJSON materialization bridge. Recursive GeometryCollections remain valid in serialized WKB/WKT, but the GeoArrow native schema forbids them and native conversion rejects them.
 
@@ -272,6 +272,6 @@ Recursive collection decoding is bounded by `maxGeometryCollectionDepth` (64 by 
 
 The same options expose opt-in resource budgets for ingestion boundaries. `maxGeometryBytes` limits the total WKB/WKT payload bytes in one converted vector, while `maxGeometryVertices` limits the total coordinate vertices in one vector. Both budgets are checked before identity returns and before native allocation, including when the requested target already matches the source. They are useful for service and worker boundaries that accept untrusted geometry; normal in-memory conversions remain unlimited unless a caller supplies a budget.
 
-For streaming Arrow batches, `convertGeoArrowBatches()` preserves record-batch boundaries and checks cancellation between batches. If a WKB/WKT stream has no trusted `geometry_types` metadata, `native` conversion selects a stable dense union seeded with all seven geometry families and all four dimensions. A later batch can therefore introduce a new family without changing the stream schema or forcing an earlier batch through a row-object bridge.
+For streaming Arrow data, `convertGeoArrowBatches()` accepts and yields native Arrow `RecordBatch` values. It preserves batch-local metadata and checks cancellation between batches. If a WKB/WKT stream has no trusted `geometry_types` metadata, `native` conversion selects a stable dense union seeded with all seven geometry families and all four dimensions. A later batch can therefore introduce a new family without changing the stream schema or forcing an earlier batch through a row-object bridge.
 
 `mergeGeoArrowSchemas()` provides the corresponding schema-evolution boundary for concatenation, rechunking, projection, and derived columns. It checks physical Arrow compatibility, merges field and GeoParquet metadata deterministically, and reports conflicts under `strict`, `permissive`, or `repair` policy. Strict and repair modes remove conflicting extension claims instead of retaining metadata that no longer describes the merged physical field.

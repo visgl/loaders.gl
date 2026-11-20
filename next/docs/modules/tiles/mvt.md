@@ -80,9 +80,9 @@ Encode compatible feature data as MVT
 
 The `@loaders.gl/tiles/mvt` module handles the [Mapbox Vector Tile](https://loaders.gl/next/docs/modules/tiles/mvt/formats/mvt.md) format, a protobuf-encoded format that defines geospatial geometries.
 
-The module also provides `TableTileSourceLoader` for generating dynamic tiles from an in-memory GeoJSON table.
+The module also provides `TableTileLoader` for generating dynamic tiles from an in-memory GeoJSON table.
 
-For Arrow input, `ArrowTableTileSourceLoader` generates GeoArrow WKB tiles while preserving typed attribute columns without a GeoJSON property round-trip.
+For Arrow input, `ArrowTableTileLoader` generates GeoArrow WKB tiles while preserving typed attribute columns without a GeoJSON property round-trip.
 
 Detailed guide
 
@@ -100,15 +100,15 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers[​](#loaders-and-writers "Direct link to Loaders and Writers")
 
-| Loader / Writer / Source                                                                                                            | Description                                               |
-| ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| [`MapStyleLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/map-style-loader.md)                           | Parses MapLibre and Mapbox style JSON.                    |
-| [`MVTLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-loader.md)                                      | Parses Mapbox Vector Tiles.                               |
-| [`TileJSONLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/tilejson-loader.md)                            | Parses TileJSON metadata and tilestats.                   |
-| [`MVTWriter`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-writer.md)                                      | Writes Mapbox Vector Tile data.                           |
-| [`MVTSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)                         | Dynamically loads tiles from pre-tiled MVT hierarchies.   |
-| [`TableTileSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-source-loader.md)            | Generates vector tiles from geospatial tables on the fly. |
-| [`ArrowTableTileSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md) | Generates Arrow vector tiles from in-memory Arrow tables. |
+| Loader / Writer / Source                                                                                               | Description                                               |
+| ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| [`MapStyleLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/map-style-loader.md)              | Parses MapLibre and Mapbox style JSON.                    |
+| [`MVTLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-loader.md)                         | Parses Mapbox Vector Tiles.                               |
+| [`TileJSONLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/tilejson-loader.md)               | Parses TileJSON metadata and tilestats.                   |
+| [`MVTWriter`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-writer.md)                         | Writes Mapbox Vector Tile data.                           |
+| [`MVTLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source.md)                         | Dynamically loads tiles from pre-tiled MVT hierarchies.   |
+| [`TableTileLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-loader.md)            | Generates vector tiles from geospatial tables on the fly. |
+| [`ArrowTableTileLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader.md) | Generates Arrow vector tiles from in-memory Arrow tables. |
 
 ## Formats[​](#formats "Direct link to Formats")
 

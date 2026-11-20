@@ -8,11 +8,11 @@ A shared runtime for source-backed 2D tile loading, separating reusable fetched 
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles.md)[MVT source](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles.md)[MVT source](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
 
 <!-- -->
 
@@ -178,7 +178,7 @@ Subscribe with `subscribe({onStatsChange})` and call the returned function to un
 Failed tile requests are cached as settled tile entries with:
 
 * `content = null`
-* `error` set on the corresponding `SharedTile2DHeader`
+* `error` set on the corresponding `Tile2DHeader`
 
 This prevents repeated requests for the same failing tile until the tileset is explicitly reloaded, for example with `reloadAll()`.
 

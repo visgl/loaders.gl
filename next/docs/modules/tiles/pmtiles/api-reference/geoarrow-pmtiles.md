@@ -4,11 +4,11 @@ PMTiles module · authoring API
 
 Reuse the Arrow table tiler, encode selected tiles as MVT v2 or MLT v1, and download a bounded PMTiles archive.
 
-[Arrow tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md)
+[Arrow tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md)[MVT writer](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-writer.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader.md)[MVT writer](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-writer.md)
 
 <!-- -->
 
@@ -18,7 +18,7 @@ Reuse the Arrow table tiler, encode selected tiles as MVT v2 or MLT v1, and down
 
 [ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md)
 
-`encodeGeoArrowPMTiles` accepts a loaders.gl `ArrowTable` or Apache Arrow `Table` and an explicit finite selection of XYZ tile addresses. It uses the existing `ArrowTableVectorTileSource` for indexing, clipping, simplification and geometry collection expansion. The tiler returns GeoArrow WKB with normalized tile-local coordinates; `MVTWriter` or `MLTWriter` reads those geometries and scalar attributes without converting attribute rows to GeoJSON feature objects. `encodePMTiles` packages the encoded bytes.
+`encodeGeoArrowPMTiles` accepts an Apache Arrow `Table` and an explicit finite selection of XYZ tile addresses. It uses the existing `ArrowTableVectorTileSource` for indexing, clipping, simplification and geometry collection expansion. The tiler returns GeoArrow WKB with normalized tile-local coordinates; `MVTWriter` or `MLTWriter` reads those geometries and scalar attributes without converting attribute rows to GeoJSON feature objects. `encodePMTiles` packages the encoded bytes.
 
 The implementation lives at `@loaders.gl/tiles/pmtiles/geoarrow`, keeping export orchestration outside the package root's runtime imports.
 
@@ -91,7 +91,7 @@ const archive = await encodeGeoArrowPMTiles(geoArrowTable, {
 | `maxInputRows`        | `100000`                            | Input row limit checked before indexing                                                                                                        |
 | `pmtiles`             | Writer defaults                     | Archive output/metadata budgets, bounds, center, auxiliary JSON metadata, internal compression and AbortSignal                                 |
 
-See [tiler options](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md#options) and [archive options](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md#options) for details. When lowering `table.maxZoom` below 5, also lower `table.indexMaxZoom`.
+See [tiler options](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader.md#options) and [archive options](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md#options) for details. When lowering `table.maxZoom` below 5, also lower `table.indexMaxZoom`.
 
 The helper writes MVT v2 or MLT v1 with the tiler's extent (4096 by default), uncompressed tile payloads, and PMTiles v3. Internal directory/metadata compression may be none or gzip. These format choices are fixed for this authoring profile; the separate packaging API also supports already encoded raster tiles.
 

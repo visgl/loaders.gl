@@ -17,7 +17,7 @@ import {parse, parseSync} from '@loaders.gl/core';
 
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
-import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply-loader';
+import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply';
 
 
 
@@ -42,43 +42,18 @@ See the [pointclouds notice inventory](https://github.com/visgl/loaders.gl/blob/
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->34<!-- -->)
+All exported subpaths (<!-- -->9<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
-| Format | Import subpath                                  |
-| ------ | ----------------------------------------------- |
-|        | `@loaders.gl/pointclouds/las`                   |
-|        | `@loaders.gl/pointclouds/las-copc-loader`       |
-|        | `@loaders.gl/pointclouds/las-copc-loader-types` |
-|        | `@loaders.gl/pointclouds/las-loader`            |
-|        | `@loaders.gl/pointclouds/las-loader-types`      |
-|        | `@loaders.gl/pointclouds/las-worker.js`         |
-|        | `@loaders.gl/pointclouds/las-writer`            |
-|        | `@loaders.gl/pointclouds/las/bundled`           |
-|        | `@loaders.gl/pointclouds/las/index`             |
-|        | `@loaders.gl/pointclouds/las/las-format`        |
-|        | `@loaders.gl/pointclouds/las/las-loader-shared` |
-|        | `@loaders.gl/pointclouds/las/unbundled`         |
-|        | `@loaders.gl/pointclouds/laz-rs-loader`         |
-|        | `@loaders.gl/pointclouds/laz-rs-loader-types`   |
-|        | `@loaders.gl/pointclouds/lazperf-loader`        |
-|        | `@loaders.gl/pointclouds/lazperf-loader-types`  |
-|        | `@loaders.gl/pointclouds/pcd`                   |
-|        | `@loaders.gl/pointclouds/pcd-loader`            |
-|        | `@loaders.gl/pointclouds/pcd-loader-types`      |
-|        | `@loaders.gl/pointclouds/pcd-worker.js`         |
-|        | `@loaders.gl/pointclouds/pcd-writer`            |
-|        | `@loaders.gl/pointclouds/pcd/bundled`           |
-|        | `@loaders.gl/pointclouds/pcd/index`             |
-|        | `@loaders.gl/pointclouds/pcd/pcd-format`        |
-|        | `@loaders.gl/pointclouds/pcd/unbundled`         |
-|        | `@loaders.gl/pointclouds/ply`                   |
-|        | `@loaders.gl/pointclouds/ply-loader`            |
-|        | `@loaders.gl/pointclouds/ply-loader-types`      |
-|        | `@loaders.gl/pointclouds/ply-worker.js`         |
-|        | `@loaders.gl/pointclouds/ply-writer`            |
-|        | `@loaders.gl/pointclouds/ply/bundled`           |
-|        | `@loaders.gl/pointclouds/ply/index`             |
-|        | `@loaders.gl/pointclouds/ply/ply-format`        |
-|        | `@loaders.gl/pointclouds/ply/unbundled`         |
+| Format | Import subpath                          |
+| ------ | --------------------------------------- |
+|        | `@loaders.gl/pointclouds/las`           |
+|        | `@loaders.gl/pointclouds/las-worker.js` |
+|        | `@loaders.gl/pointclouds/las/bundled`   |
+|        | `@loaders.gl/pointclouds/pcd`           |
+|        | `@loaders.gl/pointclouds/pcd-worker.js` |
+|        | `@loaders.gl/pointclouds/pcd/bundled`   |
+|        | `@loaders.gl/pointclouds/ply`           |
+|        | `@loaders.gl/pointclouds/ply-worker.js` |
+|        | `@loaders.gl/pointclouds/ply/bundled`   |

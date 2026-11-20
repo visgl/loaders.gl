@@ -14,13 +14,13 @@ FlatGeobuf stores geospatial features in a compact binary layout and can include
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)[Remote source](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)[Remote source](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source.md)
 
-[![](/next/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Try It](https://loaders.gl/next/examples/geospatial/flatgeobuf)[Overview](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Format](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/format.md)[FlatGeobufLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)[FlatGeobufSourceLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader.md)
+[![](/next/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Try It](https://loaders.gl/next/examples/geospatial/flatgeobuf)[Overview](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Format](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/format.md)[FlatGeobufLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)[FlatGeobufLoaderWithParser](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source.md)
 
 Indexed feature data
 
@@ -72,12 +72,12 @@ The reference below covers the binary layout, spatial index, feature encodings, 
 
 ## Loaders and Sources[​](#loaders-and-sources "Direct link to Loaders and Sources")
 
-[Loader**FlatGeobufLoader**Loads FlatGeobuf files as GeoJSON, Arrow, columnar, or binary geometry data.Output: GeoJSONTable, ArrowTable, ColumnarTable, BinaryFeatureCollectionAPIs: load, parse, parseSync, parseInBatches](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader)[Source**FlatGeobufSourceLoader**Creates an indexed vector source for remote FlatGeobuf datasets.Output: VectorSourceAPIs: createDataSource, getFeatures](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader)
+[Loader**FlatGeobufLoader**Loads FlatGeobuf files as GeoJSON, Arrow, columnar, or binary geometry data.Output: GeoJSONTable, Apache Arrow table, ColumnarTable, BinaryFeatureCollectionAPIs: load, parse, parseSync, parseInBatches](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader)[Source**FlatGeobufLoader**Creates an indexed vector source for remote FlatGeobuf datasets.Output: VectorSourceAPIs: createDataSource, getFeatures](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source)
 
 ## Spatial Indexes[​](#spatial-indexes "Direct link to Spatial Indexes")
 
-FlatGeobuf files can include a packed spatial index for range-request access. `FlatGeobufSourceLoader` uses that index when present to fetch viewport-sized feature subsets from remote files.
+FlatGeobuf files can include a packed spatial index for range-request access. `FlatGeobufLoader` uses that index when present to fetch viewport-sized feature subsets from remote files.
 
 ## Arrow[​](#arrow "Direct link to Arrow")
 
-Set `flatgeobuf.shape: 'arrow-table'` to preserve FlatGeobuf property columns in an Arrow table and append a WKB `geometry` column with geospatial metadata.
+Set `flatgeobuf.shape: 'arrow'` to preserve FlatGeobuf property columns in an Arrow table and append a WKB `geometry` column with geospatial metadata.

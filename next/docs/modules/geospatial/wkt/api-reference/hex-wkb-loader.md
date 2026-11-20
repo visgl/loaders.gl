@@ -81,7 +81,7 @@ npm install @loaders.gl/core
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {HexWKBLoader} from '@loaders.gl/geospatial/wkt/bundled';
+import {HexWKBLoader} from '@loaders.gl/geospatial/wkb/bundled';
 
 import {parseSync} from '@loaders.gl/core';
 
@@ -95,7 +95,7 @@ const data = parseSync(hexWkb, HexWKBLoader);
 ```
 
 ```
-import {HexWKBLoader} from '@loaders.gl/geospatial/wkt';
+import {HexWKBLoader} from '@loaders.gl/geospatial/wkb';
 
 import {load} from '@loaders.gl/core';
 

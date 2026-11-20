@@ -18,22 +18,22 @@ import {MarkdownLoader} from '@loaders.gl/documents';
 const document = await load('README.md', MarkdownLoader);
 ```
 
-| Logo                                                                                                                           | Format                                                                                   | Metadata loader  | Parser import                           | Output                                   |
-| ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ---------------- | --------------------------------------- | ---------------------------------------- |
-| —                                                                                                                              | [XML](https://loaders.gl/next/docs/modules/documents/xml/formats/xml.md)            | `XMLLoader`      | `@loaders.gl/documents/xml-loader`      | JavaScript object                        |
-| —                                                                                                                              | [HTML](https://loaders.gl/next/docs/modules/documents/xml/formats/html.md)          | `HTMLLoader`     | `@loaders.gl/documents/html-loader`     | XML-style object                         |
-| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)      | [JSON](https://loaders.gl/next/docs/modules/documents/api-reference/json-loader.md) | `JSONLoader`     | `@loaders.gl/documents/json-loader`     | Any JSON value, without table extraction |
-| [![](/next/images/format-logos/yaml-logo.svg)](https://loaders.gl/next/docs/modules/documents/config/formats/yaml.md)     | [YAML](https://loaders.gl/next/docs/modules/documents/config/formats/yaml.md)       | `YAMLLoader`     | `@loaders.gl/documents/yaml-loader`     | Objects, arrays, scalars                 |
-| [![](/next/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/next/docs/modules/documents/config/formats/toml.md) | [TOML](https://loaders.gl/next/docs/modules/documents/config/formats/toml.md)       | `TOMLLoader`     | `@loaders.gl/documents/toml-loader`     | JavaScript object                        |
-| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | [BSON](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)         | `BSONLoader`     | `@loaders.gl/documents/bson-loader`     | JavaScript object                        |
-| —                                                                                                                              | [Markdown](https://loaders.gl/next/docs/modules/documents/formats/markdown.md)      | `MarkdownLoader` | `@loaders.gl/documents/markdown-loader` | `MarkdownDocument` syntax tree           |
+| Logo                                                                                                                           | Format                                                                                   | Metadata loader  | Parser import                    | Output                                   |
+| ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ---------------- | -------------------------------- | ---------------------------------------- |
+| —                                                                                                                              | [XML](https://loaders.gl/next/docs/modules/documents/xml/formats/xml.md)            | `XMLLoader`      | `@loaders.gl/documents/xml`      | JavaScript object                        |
+| —                                                                                                                              | [HTML](https://loaders.gl/next/docs/modules/documents/xml/formats/html.md)          | `HTMLLoader`     | `@loaders.gl/documents/html`     | XML-style object                         |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)      | [JSON](https://loaders.gl/next/docs/modules/documents/api-reference/json-loader.md) | `JSONLoader`     | `@loaders.gl/documents/json`     | Any JSON value, without table extraction |
+| [![](/next/images/format-logos/yaml-logo.svg)](https://loaders.gl/next/docs/modules/documents/config/formats/yaml.md)     | [YAML](https://loaders.gl/next/docs/modules/documents/config/formats/yaml.md)       | `YAMLLoader`     | `@loaders.gl/documents/yaml`     | Objects, arrays, scalars                 |
+| [![](/next/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/next/docs/modules/documents/config/formats/toml.md) | [TOML](https://loaders.gl/next/docs/modules/documents/config/formats/toml.md)       | `TOMLLoader`     | `@loaders.gl/documents/toml`     | JavaScript object                        |
+| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | [BSON](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)         | `BSONLoader`     | `@loaders.gl/documents/bson`     | JavaScript object                        |
+| —                                                                                                                              | [Markdown](https://loaders.gl/next/docs/modules/documents/formats/markdown.md)      | `MarkdownLoader` | `@loaders.gl/documents/markdown` | `MarkdownDocument` syntax tree           |
 
 Each parser subpath exports the corresponding `*LoaderWithParser`. Use it for sync parsing:
 
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown-loader';
+import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown';
 
 
 
@@ -42,7 +42,7 @@ const document = parseSync('# Hello', MarkdownLoaderWithParser);
 
 ## BSON and Parquet[​](#bson-and-parquet "Direct link to BSON and Parquet")
 
-`@loaders.gl/documents/bson-codec` exports `encodeBSONSync`, `parseBSONSync`, `BSONObjectId`, and `createBSONValue`. Import `BSONWriter` from `@loaders.gl/documents/bson-writer`. The codec preserves the existing BSON wire behavior and Parquet BSON logical-type read/write support. It does not install the MongoDB `bson` package. See the [BSON reference](https://loaders.gl/next/docs/modules/documents/bson.md).
+`@loaders.gl/documents/bson-codec` exports `encodeBSONSync`, `parseBSONSync`, `BSONObjectId`, and `createBSONValue`. Import `BSONWriter` from `@loaders.gl/documents/bson`. The codec preserves the existing BSON wire behavior and Parquet BSON logical-type read/write support. It does not install the MongoDB `bson` package. See the [BSON reference](https://loaders.gl/next/docs/modules/documents/bson.md).
 
 ## XML utilities[​](#xml-utilities "Direct link to XML utilities")
 
@@ -58,31 +58,27 @@ XML is strict by default, with one root element, bounded nesting (default 256), 
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->22<!-- -->)
+All exported subpaths (<!-- -->18<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
-| Format                                                                                                                         | Import subpath                                |
-| ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
-| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson-codec`            |
-| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson-loader`           |
-| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson-loader-types`     |
-| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson-types`            |
-| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson-writer`           |
-|                                                                                                                                | `@loaders.gl/documents/html-loader`           |
-|                                                                                                                                | `@loaders.gl/documents/html-loader-types`     |
-| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)      | `@loaders.gl/documents/json-loader`           |
-| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)      | `@loaders.gl/documents/json-loader-types`     |
-|                                                                                                                                | `@loaders.gl/documents/markdown-loader`       |
-|                                                                                                                                | `@loaders.gl/documents/markdown-loader-types` |
-|                                                                                                                                | `@loaders.gl/documents/markdown-types`        |
-|                                                                                                                                | `@loaders.gl/documents/sax-parser`            |
-| [![](/next/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/next/docs/modules/documents/config/formats/toml.md) | `@loaders.gl/documents/toml-loader`           |
-| [![](/next/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/next/docs/modules/documents/config/formats/toml.md) | `@loaders.gl/documents/toml-loader-types`     |
-|                                                                                                                                | `@loaders.gl/documents/xml-loader`            |
-|                                                                                                                                | `@loaders.gl/documents/xml-loader-types`      |
-|                                                                                                                                | `@loaders.gl/documents/xml-options`           |
-|                                                                                                                                | `@loaders.gl/documents/xml-parser`            |
-|                                                                                                                                | `@loaders.gl/documents/xml-utils`             |
-| [![](/next/images/format-logos/yaml-logo.svg)](https://loaders.gl/next/docs/modules/documents/config/formats/yaml.md)     | `@loaders.gl/documents/yaml-loader`           |
-| [![](/next/images/format-logos/yaml-logo.svg)](https://loaders.gl/next/docs/modules/documents/config/formats/yaml.md)     | `@loaders.gl/documents/yaml-loader-types`     |
+| Format                                                                                                                         | Import subpath                           |
+| ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson`             |
+| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson-codec`       |
+| [![](/next/images/format-logos/bson-logo.png)](https://loaders.gl/next/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson/bundled`     |
+|                                                                                                                                | `@loaders.gl/documents/html`             |
+|                                                                                                                                | `@loaders.gl/documents/html/bundled`     |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)      | `@loaders.gl/documents/json`             |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)      | `@loaders.gl/documents/json/bundled`     |
+|                                                                                                                                | `@loaders.gl/documents/markdown`         |
+|                                                                                                                                | `@loaders.gl/documents/markdown/bundled` |
+|                                                                                                                                | `@loaders.gl/documents/sax-parser`       |
+| [![](/next/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/next/docs/modules/documents/config/formats/toml.md) | `@loaders.gl/documents/toml`             |
+| [![](/next/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/next/docs/modules/documents/config/formats/toml.md) | `@loaders.gl/documents/toml/bundled`     |
+|                                                                                                                                | `@loaders.gl/documents/xml`              |
+|                                                                                                                                | `@loaders.gl/documents/xml-parser`       |
+|                                                                                                                                | `@loaders.gl/documents/xml-utils`        |
+|                                                                                                                                | `@loaders.gl/documents/xml/bundled`      |
+| [![](/next/images/format-logos/yaml-logo.svg)](https://loaders.gl/next/docs/modules/documents/config/formats/yaml.md)     | `@loaders.gl/documents/yaml`             |
+| [![](/next/images/format-logos/yaml-logo.svg)](https://loaders.gl/next/docs/modules/documents/config/formats/yaml.md)     | `@loaders.gl/documents/yaml/bundled`     |

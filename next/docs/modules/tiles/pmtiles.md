@@ -8,11 +8,11 @@ The PMTiles module connects a single HTTP range-readable archive to tiled data s
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md)[PMTiles source](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md)[PMTiles source](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md)
 
 Cloud-native reads
 
@@ -88,7 +88,7 @@ The sections below list the source and writer APIs and the underlying PMTiles li
 
 | API                                                                                                                          | Description                                                                                                           |
 | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| [`PMTilesSourceLoader`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md)      | Loads tiled data from PMTiles archives.                                                                               |
+| [`PMTilesLoader`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md)                   | Loads tiled data from PMTiles archives.                                                                               |
 | [`PMTilesWriter`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md) / `encodePMTiles` | Packages existing MVT, MLT and raster tile payloads into bounded PMTiles v3 archives. From v5.0.                      |
 | [`encodeGeoArrowPMTiles`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/geoarrow-pmtiles.md)         | Reuses the GeoArrow tiler and MVT/MLT writers for bounded selected-tile authoring. From v5.0.                         |
 | [`encodeRasterPMTiles`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/raster-pmtiles.md)             | Exports selected byte-imagery regions as PNG tiles, reusing numeric raster sources and the shared sampler. From v5.0. |

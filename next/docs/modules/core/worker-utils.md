@@ -82,15 +82,15 @@ The `@loaders.gl/core/worker-utils` module provides the shared worker runtime us
 
 ## Task feature support[​](#task-feature-support "Direct link to Task feature support")
 
-| Feature                    | Support and limits                                                                                                                                                                                   |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Atomic and streaming tasks | One handle per atomic request; one retained handle for an entire batch stream.                                                                                                                       |
-| Cancellation and progress  | Signals reach worker tasks and caller-thread callbacks; late callback results are discarded after shutdown.                                                                                          |
-| Binary ownership           | Loader inputs transfer by default; opt into copy or shared storage. Callback ports transfer independently, and serializable caller context is copied.                                                |
-| Worker URLs                | Factories, local module URLs, and cross-origin HTTP(S) module shims. Remote modules require CORS and compatible CSP.                                                                                 |
-| Concurrency and cleanup    | Bounded active handles per descriptor; `destroyWorkerTasks()` terminates active and queued work and lets math.gl release worker-owned module shims. Queue memory must be bounded by the application. |
-| Custom typed tasks         | Public math.gl `TaskRunner` and `createTypedTaskDispatcher` APIs with named object payloads and typed operations.                                                                                    |
-| Initialization ownership   | Direct task runs accept `initializationOwnership` separately from input/output ownership. Loader callback ports transfer independently of payloads.                                                  |
+| Feature                    | Support and limits                                                                                                                                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Atomic and streaming tasks | One handle per atomic request; one retained handle for an entire batch stream.                                                                                                                                                 |
+| Cancellation and progress  | Signals reach worker tasks and caller-thread callbacks; late callback results are discarded after shutdown.                                                                                                                    |
+| Binary ownership           | Loader inputs transfer by default; opt into copy or shared storage. Callback ports transfer independently, and serializable caller context is copied.                                                                          |
+| Worker URLs                | Factories, local module URLs, and cross-origin HTTP(S) module shims. Remote modules require CORS and compatible CSP.                                                                                                           |
+| Concurrency and cleanup    | `@math.gl/tasks` supplies bounded active handles per descriptor; `destroyWorkerTasks()` terminates active and queued work and lets math.gl release worker-owned module shims. Queue memory must be bounded by the application. |
+| Custom typed tasks         | Public math.gl `TaskRunner` and `createTypedTaskDispatcher` APIs with named object payloads and typed operations.                                                                                                              |
+| Initialization ownership   | Direct task runs accept `initializationOwnership` separately from input/output ownership. Loader callback ports transfer independently of payloads.                                                                            |
 
 ## Installation[​](#installation "Direct link to Installation")
 

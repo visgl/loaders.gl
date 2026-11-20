@@ -12,11 +12,11 @@ MLTLoader parses a MapLibre Tile payload and exposes its feature tables as an Ar
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md)[MLT source](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md)[MLT source](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md)
 
 The MLT loader path
 
@@ -65,6 +65,7 @@ Loader for the [MapLibre Tile (MLT)](https://loaders.gl/next/docs/modules/tiles/
 | File Format    | [MapLibre Tile](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md) |
 | MIME Types     | `application/vnd.maplibre-tile`                                                     |
 | Data Format    | [Geometry](https://loaders.gl/next/docs/specifications/category-gis.md)        |
+| Data source    | `MLTTileSource`                                                                     |
 | Supported APIs | `load`, `parse`, `parseSync`                                                        |
 | Worker Thread  | Not available for this loader                                                       |
 
@@ -136,33 +137,33 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 ### Output shapes[​](#output-shapes "Direct link to Output shapes")
 
-| `shape` option            | Output                             |
-| ------------------------- | ---------------------------------- |
-| `'arrow-table'` (default) | Arrow table with GeoArrow geometry |
-| `'binary-geometry'`       | binary feature collection          |
-| `'geojson-table'`         | `GeoJSONTable`                     |
+| `shape` option      | Output                             |
+| ------------------- | ---------------------------------- |
+| `'arrow'` (default) | Arrow table with GeoArrow geometry |
+| `'binary-geometry'` | binary feature collection          |
+| `'geojson-table'`   | `GeoJSONTable`                     |
 
 ## Options[​](#options "Direct link to Options")
 
-| Option                        | Type                                                    | Default                         | Description                                        |
-| ----------------------------- | ------------------------------------------------------- | ------------------------------- | -------------------------------------------------- |
-| `mlt.shape`                   | `'geojson-table' \| 'binary-geometry' \| 'arrow-table'` | `arrow-table`                   | Output shape                                       |
-| `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'`  | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference                 |
-| `mlt.coordinates`             | `'local' \| 'wgs84'`                                    | `local`                         | Coordinate system for returned geometries          |
-| `mlt.tileIndex`               | `{x: number, y: number, z: number}`                     | N/A                             | Required when `coordinates` is `wgs84`             |
-| `mlt.layerProperty`           | `string`                                                | `layerName`                     | Name of layer property added to feature properties |
-| `mlt.layers`                  | `string[]`                                              | N/A                             | Restrict parsing to specific tile layers           |
+| Option                        | Type                                                   | Default                         | Description                                        |
+| ----------------------------- | ------------------------------------------------------ | ------------------------------- | -------------------------------------------------- |
+| `mlt.shape`                   | `'geojson-table' \| 'binary-geometry' \| 'arrow'`      | `arrow`                         | Output shape                                       |
+| `geoarrow.encodingPreference` | `'geoarrow.wkb' \| 'geoarrow.geometry' \| 'optimized'` | `geoarrow.wkb` for Arrow output | Arrow geometry encoding preference                 |
+| `mlt.coordinates`             | `'local' \| 'wgs84'`                                   | `local`                         | Coordinate system for returned geometries          |
+| `mlt.tileIndex`               | `{x: number, y: number, z: number}`                    | N/A                             | Required when `coordinates` is `wgs84`             |
+| `mlt.layerProperty`           | `string`                                               | `layerName`                     | Name of layer property added to feature properties |
+| `mlt.layers`                  | `string[]`                                             | N/A                             | Restrict parsing to specific tile layers           |
 
 `mlt.tileIndex` is required for WGS84 output.
 
-When `mlt.shape` is `'arrow-table'` (the default), the decoder writes directly from MLT's decoded geometry and property columns. It does not materialize an intermediate GeoJSON feature collection. Use `geoarrow.encodingPreference` to select WKB, dense-union GeoArrow, or the optimized native GeoArrow encoding.
+When `mlt.shape` is `'arrow'` (the default), the decoder writes directly from MLT's decoded geometry and property columns. It does not materialize an intermediate GeoJSON feature collection. Use `geoarrow.encodingPreference` to select WKB, dense-union GeoArrow, or the optimized native GeoArrow encoding.
 
 To preserve the legacy GeoJSON default, set `mlt.shape: 'geojson-table'` explicitly.
 
 ## Additional examples[​](#additional-examples "Direct link to Additional examples")
 
 * [loaders.gl MLT website example](https://loaders.gl/next/examples/tiles/mlt).
-* [MLTSourceLoader](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md) for URL tile sets.
+* [MLTLoader](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md) for URL tile sets.
 
 ## Attribution[​](#attribution "Direct link to Attribution")
 

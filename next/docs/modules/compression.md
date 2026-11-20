@@ -237,7 +237,7 @@ Prefer the async methods unless a synchronous call is required. Async methods ca
 
 Built-in streams are not automatically the fastest choice for every workload. Creating a `CompressionStream` or `DecompressionStream` and scheduling its asynchronous reads has a fixed cost. That cost is usually amortized for large payloads and genuine streams, but it can dominate formats such as Parquet that process many small, independently compressed blocks. For block-based formats, benchmark a cached synchronous codec as well as the built-in stream path; `useNative: false` selects compress-utils on the balanced GZIP, DEFLATE, Brotli, and Zstandard classes.
 
-`compress-utils` is a required runtime dependency. The external reference backends (`fzstd`, `hysnappy`, `snappyjs`, Pako, `lz4js`, `zstd-codec`, and the injectable `brotli` package) are optional peer dependencies: package managers do not automatically install them for this package. Default codecs still work without these packages. Install the corresponding package explicitly before importing its backend-specific entry point, for example `npm install pako` for `@loaders.gl/compression/gzip-pako`. Injectable `brotli` and `zstd-codec` implementations also require explicit installation and registration through `modules`; installing them alone does not select them. The fflate implementation and Brotli decoder shim are vendored and do not require an external package.
+`compress-utils` is a required runtime dependency. The external reference backends (`fzstd`, `hysnappy`, `snappyjs`, Pako, `lz4js`, `zstd-codec`, and the injectable `brotli` package) are optional peer dependencies: package managers do not automatically install them for this package. Default codecs still work without these packages. Install the corresponding package explicitly before importing its backend-specific entry point, for example `npm install pako` for `@loaders.gl/compression/gzip-decompressor-pako`. Injectable `brotli` and `zstd-codec` implementations also require explicit installation and registration through `modules`; installing them alone does not select them. The fflate implementation and Brotli decoder shim are vendored and do not require an external package.
 
 The deprecated `zstd-compression` entry point still uses `fzstd` for asynchronous fallback when `zstd-codec` has not been injected. Install `fzstd` explicitly for that path, or migrate to the default `ZstdDecompressor`, whose fallback uses the required `compress-utils` package.
 
@@ -310,7 +310,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->65<!-- -->)
+All exported subpaths (<!-- -->39<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -322,62 +322,36 @@ These are the package's public exports, including format entry points, parsers, 
 |        | `@loaders.gl/compression/*-decompressor-compress-utils`   |
 |        | `@loaders.gl/compression/*-decompressor-fflate`           |
 |        | `@loaders.gl/compression/*-decompressor-pako`             |
-|        | `@loaders.gl/compression/brotli-compress-utils`           |
-|        | `@loaders.gl/compression/brotli-compression`              |
 |        | `@loaders.gl/compression/brotli-compressor`               |
 |        | `@loaders.gl/compression/brotli-decode`                   |
 |        | `@loaders.gl/compression/brotli-decompressor`             |
 |        | `@loaders.gl/compression/brotli-decompressor-shim`        |
-|        | `@loaders.gl/compression/brotli-shim`                     |
-|        | `@loaders.gl/compression/bzip2-compress-utils`            |
-|        | `@loaders.gl/compression/bzip2-compression`               |
 |        | `@loaders.gl/compression/bzip2-compressor`                |
 |        | `@loaders.gl/compression/bzip2-decompressor`              |
 |        | `@loaders.gl/compression/compression-worker-node.js`      |
 |        | `@loaders.gl/compression/compression-worker.js`           |
-|        | `@loaders.gl/compression/deflate-compress-utils`          |
-|        | `@loaders.gl/compression/deflate-compression`             |
 |        | `@loaders.gl/compression/deflate-compressor`              |
 |        | `@loaders.gl/compression/deflate-decompressor`            |
-|        | `@loaders.gl/compression/deflate-fflate`                  |
-|        | `@loaders.gl/compression/deflate-pako`                    |
-|        | `@loaders.gl/compression/gzip-compress-utils`             |
-|        | `@loaders.gl/compression/gzip-compression`                |
 |        | `@loaders.gl/compression/gzip-compressor`                 |
 |        | `@loaders.gl/compression/gzip-decompressor`               |
-|        | `@loaders.gl/compression/gzip-fflate`                     |
-|        | `@loaders.gl/compression/gzip-pako`                       |
-|        | `@loaders.gl/compression/lz4-compress-utils`              |
-|        | `@loaders.gl/compression/lz4-compression`                 |
 |        | `@loaders.gl/compression/lz4-compressor`                  |
 |        | `@loaders.gl/compression/lz4-compressor-lz4js`            |
 |        | `@loaders.gl/compression/lz4-decompressor`                |
 |        | `@loaders.gl/compression/lz4-decompressor-lz4js`          |
-|        | `@loaders.gl/compression/lz4-lz4js`                       |
 |        | `@loaders.gl/compression/lzo-decompressor`                |
 |        | `@loaders.gl/compression/lzo-decompressor-compress-utils` |
 |        | `@loaders.gl/compression/native-compression`              |
 |        | `@loaders.gl/compression/native-decompression`            |
-|        | `@loaders.gl/compression/no-compression`                  |
 |        | `@loaders.gl/compression/no-compressor`                   |
 |        | `@loaders.gl/compression/no-decompressor`                 |
-|        | `@loaders.gl/compression/snappy-compress-utils`           |
-|        | `@loaders.gl/compression/snappy-compression`              |
 |        | `@loaders.gl/compression/snappy-compressor`               |
 |        | `@loaders.gl/compression/snappy-compressor-snappyjs`      |
 |        | `@loaders.gl/compression/snappy-decompressor`             |
 |        | `@loaders.gl/compression/snappy-decompressor-hysnappy`    |
 |        | `@loaders.gl/compression/snappy-decompressor-snappyjs`    |
-|        | `@loaders.gl/compression/snappy-snappyjs`                 |
-|        | `@loaders.gl/compression/xz-compress-utils`               |
-|        | `@loaders.gl/compression/xz-compression`                  |
 |        | `@loaders.gl/compression/xz-compressor`                   |
 |        | `@loaders.gl/compression/xz-decompressor`                 |
-|        | `@loaders.gl/compression/zstd-compress-utils`             |
-|        | `@loaders.gl/compression/zstd-compression`                |
 |        | `@loaders.gl/compression/zstd-compressor`                 |
 |        | `@loaders.gl/compression/zstd-decompressor`               |
 |        | `@loaders.gl/compression/zstd-decompressor-fzstd`         |
 |        | `@loaders.gl/compression/zstd-fallback`                   |
-|        | `@loaders.gl/compression/zstd-fzstd`                      |
-|        | `@loaders.gl/compression/zstd-zstd-codec`                 |

@@ -186,7 +186,7 @@ async function loadWithoutWorker(url1) {
 
 Worker options are a request, not a guarantee. loaders.gl uses the calling thread when the selected loader has no worker descriptor, the runtime cannot create workers, Node workers were not enabled, or a configured worker URL/factory is unavailable. This fallback preserves the loader result and API shape; it only changes where the work runs. Worker construction or task execution errors are reported to the caller. Custom worker URLs and factories must install the current task protocol.
 
-If a worker-specific result shape is not supported across the structured-clone boundary, the loader may deliberately disable worker execution for that shape. Check the loader reference when an option such as `shape: 'arrow-table'` changes transport or hydration requirements.
+If a worker-specific result shape is not supported across the structured-clone boundary, the loader may deliberately disable worker execution for that shape. Check the loader reference when an option such as `shape: 'arrow'` changes transport or hydration requirements.
 
 ## Releasing worker state[​](#releasing-worker-state "Direct link to Releasing worker state")
 
@@ -311,14 +311,14 @@ Cancellation also reaches fetch and nested parsing through loader context where 
 
 `parseInBatches()` and `loadInBatches()` use a worker when the selected parser implements `parseInBatches`, the loader declares `workerInBatches: true`, and the ordinary worker-selection checks permit it. The worker stays leased for the iterator lifetime. Input is requested on demand; output batches are acknowledged before more output is produced.
 
-Built-in support includes CSV Arrow-table output, canonical Parquet Arrow/object-row batches, incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches, and OBJ, PLY, and PCD mesh batches. OBJ point-cloud and PLY vertex paths support incremental input; PCD currently collects the complete input before returning output batches. Loader authors can enable other loaders by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`, and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs need transport conversion. Metadata entry points stay free of parser implementations.
+Built-in support includes native Arrow output for CSV, canonical Parquet Arrow/object-row batches, incremental Arrow, GeoArrow, JSON, JSONTable, and NDJSON batches, and OBJ, PLY, and PCD mesh batches. OBJ point-cloud and PLY vertex paths support incremental input; PCD currently collects the complete input before returning output batches. Loader authors can enable other loaders by declaring `workerInBatches` in metadata, providing a worker created with `createLoaderWorker`, and implementing compatible `serializeWorkerBatch` / `deserializeWorkerBatch` hooks when outputs need transport conversion. Metadata entry points stay free of parser implementations.
 
 ```
 const batches = await parseInBatches(input, CSVLoader, {
 
   core: {worker: true},
 
-  csv: {shape: 'arrow-table'}
+  csv: {shape: 'arrow'}
 
 });
 

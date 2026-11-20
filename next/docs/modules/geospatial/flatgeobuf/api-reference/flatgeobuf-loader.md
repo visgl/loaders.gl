@@ -18,7 +18,7 @@ FlatGeobufLoader reads binary feature records and lets applications choose a fam
 
 ![From-v3.1](https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square)![arrow output from v5.0](https://img.shields.io/badge/arrow_output-From_v5.0-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)
 
-[![](/next/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Try It](https://loaders.gl/next/examples/geospatial/flatgeobuf)[Overview](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Format](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/format.md)[FlatGeobufLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)[FlatGeobufSourceLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader.md)
+[![](/next/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Try It](https://loaders.gl/next/examples/geospatial/flatgeobuf)[Overview](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)[Format](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/format.md)[FlatGeobufLoader](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)[FlatGeobufLoaderWithParser](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source.md)
 
 Choose the boundary
 
@@ -30,7 +30,7 @@ The default result is an Arrow table for typed columns and direct table interope
 
 Default
 
-ArrowTable with typed columns and WKB geometry
+Apache Arrow table with typed columns and WKB geometry
 
 02
 
@@ -58,6 +58,10 @@ Detailed guide
 
 The sections below cover usage, result shapes, GeoJSON and Arrow output, reprojection, and option details.
 
+| Property    | Value                    |
+| ----------- | ------------------------ |
+| Data source | `FlatGeobufVectorSource` |
+
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
@@ -80,14 +84,14 @@ const geojsonTable = await load(url, FlatGeobufLoader, {
 
 ### Shapes[​](#shapes "Direct link to Shapes")
 
-`FlatGeobufLoader` returns loaders.gl `ArrowTable` objects by default. Set `flatgeobuf.shape` to select another representation.
+`FlatGeobufLoader` returns native Apache Arrow `Table` objects by default. Set `flatgeobuf.shape` to select another representation.
 
-| Shape             | Output                                    |
-| ----------------- | ----------------------------------------- |
-| `geojson-table`   | loaders.gl GeoJSON table                  |
-| `arrow-table`     | loaders.gl `ArrowTable` with WKB geometry |
-| `columnar-table`  | loaders.gl columnar table                 |
-| `binary-geometry` | loaders.gl binary feature collection      |
+| Shape             | Output                                 |
+| ----------------- | -------------------------------------- |
+| `geojson-table`   | loaders.gl GeoJSON table               |
+| `arrow`           | Apache Arrow `Table` with WKB geometry |
+| `columnar-table`  | loaders.gl columnar table              |
+| `binary-geometry` | loaders.gl binary feature collection   |
 
 ### GeoJSONTable[​](#geojsontable "Direct link to GeoJSONTable")
 
@@ -95,15 +99,15 @@ The parser will return an array of [GeoJSON `features`](https://tools.ietf.org/h
 
 ### Arrow[​](#arrow "Direct link to Arrow")
 
-By default, `FlatGeobufLoader` returns an Apache Arrow table that preserves FlatGeobuf property columns and appends a WKB `geometry` column annotated with geospatial schema metadata. Set `flatgeobuf.shape` to `'arrow-table'` explicitly when using another default or shared option bag. ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
+By default, `FlatGeobufLoader` returns an Apache Arrow table that preserves FlatGeobuf property columns and appends a WKB `geometry` column annotated with geospatial schema metadata. Set `flatgeobuf.shape` to `'arrow'` explicitly when using another default or shared option bag. ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
 
 ## Options[​](#options "Direct link to Options")
 
-| Option           | Type            | Default                                | Description                                                                                   |
-| ---------------- | --------------- | -------------------------------------- | --------------------------------------------------------------------------------------------- |
-| flatgeobuf.shape | `string`        | `'arrow-table'`                        | Output shape: `'geojson-table'`, `'arrow-table'`, `'columnar-table'`, or `'binary-geometry'`. |
-| gis.reproject    | boolean         | `false`                                | Whether to transform input data into `gis.targetCrs` (WGS84 when omitted).                    |
-| gis.targetCrs    | `CRSDefinition` | `'WGS84'` when reprojection is enabled | Output CRS for transformed coordinates.                                                       |
+| Option           | Type            | Default                                | Description                                                                             |
+| ---------------- | --------------- | -------------------------------------- | --------------------------------------------------------------------------------------- |
+| flatgeobuf.shape | `string`        | `'arrow'`                              | Output shape: `'geojson-table'`, `'arrow'`, `'columnar-table'`, or `'binary-geometry'`. |
+| gis.reproject    | boolean         | `false`                                | Whether to transform input data into `gis.targetCrs` (WGS84 when omitted).              |
+| gis.targetCrs    | `CRSDefinition` | `'WGS84'` when reprojection is enabled | Output CRS for transformed coordinates.                                                 |
 
 ## Remarks[​](#remarks "Direct link to Remarks")
 

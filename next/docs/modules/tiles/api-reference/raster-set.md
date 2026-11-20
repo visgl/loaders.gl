@@ -65,13 +65,13 @@ See [Coordinate Reference Systems](https://loaders.gl/next/docs/developer-guide/
 ```
 import {RasterSet} from '@loaders.gl/tiles';
 
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {GeoTIFFSourceLoader} from '@loaders.gl/raster/geotiff-source-loader';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';
 
 
 
-const rasterSource = createDataSource('example.tif', [GeoTIFFSourceLoader], {
+const rasterSource = createDataSourceSync('example.tif', [GeoTIFFLoaderWithParser], {
 
   core: {type: 'geotiff'}
 

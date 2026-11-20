@@ -8,21 +8,21 @@ MapLibre Tile (MLT) is a compact binary tile format for feature tables addressed
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt.md)[MLT source](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt.md)[MLT source](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md)
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                         |
-| ------------- | ----------------------------------------------------------------------------------------------------------- |
-| Loader        | [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md)              |
-| Source loader | [`MLTSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md) |
-| Writer        | [`MLTWriter`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-writer.md)              |
+| Type          | API                                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| Loader        | [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md) |
+| Source loader | [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md) |
+| Writer        | [`MLTWriter`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-writer.md) |
 
-[Try MVT](https://loaders.gl/next/examples/tiles/mvt)[Try PMTiles](https://loaders.gl/next/examples/tiles/pmtiles)[Create PMTiles](https://loaders.gl/next/examples/tiles/pmtiles-authoring)[Try Arrow Tiler](https://loaders.gl/next/examples/tiles/table-tiler)[Try MLT](https://loaders.gl/next/examples/tiles/mlt)[MVT](https://loaders.gl/next/docs/modules/tiles/mvt/formats/mvt.md)[PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md)[Arrow Table Tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md)[TableTileSourceLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-source-loader.md)[MLT](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md)
+[Try MVT](https://loaders.gl/next/examples/tiles/mvt)[Try PMTiles](https://loaders.gl/next/examples/tiles/pmtiles)[Create PMTiles](https://loaders.gl/next/examples/tiles/pmtiles-authoring)[Try Arrow Tiler](https://loaders.gl/next/examples/tiles/table-tiler)[Try MLT](https://loaders.gl/next/examples/tiles/mlt)[MVT](https://loaders.gl/next/docs/modules/tiles/mvt/formats/mvt.md)[PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md)[Arrow Table Tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader.md)[TableTileLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-loader.md)[MLT](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md)
 
 The tile boundary
 
@@ -57,7 +57,7 @@ Render, analyze, or pass data to another stage
 * *[MapLibre Tile format](https://github.com/maplibre/mlt)*
 * *[@loaders.gl/tiles/mlt](https://loaders.gl/next/docs/modules/tiles/mlt.md)*
 * *[MLTLoader](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md)*
-* *[MLTSourceLoader](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source-loader.md)*
+* *[MLTLoader](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md)*
 * *[MLT example](https://loaders.gl/next/examples/tiles/mlt)*
 
 A MapLibre Tile (MLT) file is a binary geospatial tile format used by vector tile services and tooling.
@@ -146,7 +146,7 @@ These are distinct from compression support: a tile may use a supported compress
 
 ## Arrow output choices[​](#arrow-output-choices "Direct link to Arrow output choices")
 
-Arrow output uses `mlt.shape: 'arrow-table'`, which is the default. The default geometry column is WKB-compatible GeoArrow. Applications can request native GeoArrow with `geoarrow.encodingPreference`:
+Arrow output uses `mlt.shape: 'arrow'`, which is the default. The default geometry column is WKB-compatible GeoArrow. Applications can request native GeoArrow with `geoarrow.encodingPreference`:
 
 | Preference          | Result                                                                                      |
 | ------------------- | ------------------------------------------------------------------------------------------- |

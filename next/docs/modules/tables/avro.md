@@ -20,9 +20,9 @@ const table = await load('records.avro', AvroLoader);
 const bytes = await encode(table, AvroWriter);
 ```
 
-The returned table has `shape: 'arrow-table'` and an Apache Arrow table in `data`. Avro binary fields without a recognized logical type use Arrow `Binary` for `bytes` and `FixedSizeBinary` for `fixed`. Each value retains its own length, including empty byte arrays and nullable values. These types also apply inside records, arrays, and maps.
+`load` returns an Apache Arrow `Table`, and `loadInBatches` yields Apache Arrow `RecordBatch` objects.
 
-Use `loadInBatches` with `AvroLoader` for Arrow table batches.
+Avro binary fields without a recognized logical type use Arrow `Binary` for `bytes` and `FixedSizeBinary` for `fixed`. Each value retains its own length, including empty byte arrays and nullable values. These types also apply inside records, arrays, and maps.
 
 ## Loader options[​](#loader-options "Direct link to Loader options")
 
@@ -30,6 +30,7 @@ Pass these options inside `avro`:
 
 | Option         | Description                                                                           |
 | -------------- | ------------------------------------------------------------------------------------- |
+| `shape`        | `'arrow'`                                                                             |
 | `encoding`     | `'auto'` detects OCF and single-object encoding; `'raw'` requires an external schema. |
 | `schema`       | External Avro schema for raw datum or single-object input.                            |
 | `readerSchema` | Reader schema for projection and compatible schema evolution.                         |
@@ -37,6 +38,6 @@ Pass these options inside `avro`:
 | `batchSize`    | Maximum rows per batch.                                                               |
 | `blockIndices` | Optional zero-based OCF block selection.                                              |
 
-For standalone `.avsc` schema parsing, import `AvroSchemaLoaderWithParser` from `@loaders.gl/tables/avro-schema-loader` and pass it to `load` or `parse`. The package-root `AvroSchemaLoader` contains metadata only.
+For standalone `.avsc` schema parsing, import `AvroSchemaLoaderWithParser` from `@loaders.gl/tables/avro` and pass it to `load` or `parse`. The package-root `AvroSchemaLoader` contains metadata only.
 
 See [table representations](https://loaders.gl/next/docs/specifications/category-table.md) and [streaming loaders](https://loaders.gl/next/docs/developer-guide/using-streaming-loaders.md).

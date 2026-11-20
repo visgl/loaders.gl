@@ -2,21 +2,21 @@ Potree source
 
 # Traverse an octree as the view moves.
 
-PotreeSourceLoader turns supported Potree metadata and node payloads into a source that can be traversed progressively. It shares the point-cloud runtime model with COPC while respecting Potree's own layouts.
+PotreeLoader turns supported Potree metadata and node payloads into a source that can be traversed progressively. It shares the point-cloud runtime model with COPC while respecting Potree's own layouts.
 
 [Potree module](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[COPC source](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[COPC source](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-loader.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-loader.md)
 
 ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Work-In-Progress](https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square)
 
-[Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
+[Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[Data Source](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
 
 What this loader does
 
@@ -48,7 +48,7 @@ Return
 
 Normalized point tiles and Arrow point batches
 
-`PotreeSourceLoader` creates a point-cloud tile source for Potree datasets rooted at `cloud.js` (1.x), `metadata.json` (2.0), or a legacy dataset directory.
+`PotreeLoader` creates a point-cloud tile source for Potree datasets rooted at `cloud.js` (1.x), `metadata.json` (2.0), or a legacy dataset directory.
 
 Detailed guide
 
@@ -56,22 +56,24 @@ Detailed guide
 
 The sections below document source creation, returned tile methods, supported payloads, and compatibility notes.
 
+| Property    | Value                                |
+| ----------- | ------------------------------------ |
+| Data source | `PotreeNodesSource`, `Potree2Source` |
+
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync, preload} from '@loaders.gl/core';
 
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
 
 
-const dataSource = createDataSource(url, [PotreeSourceLoader], {
+await preload(PotreeLoader);
 
-  potree: {}
-
-});
+const dataSource = createDataSourceSync(url, PotreeLoader);
 
 
 
@@ -100,13 +102,15 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 Progressively reads Potree 2.0 datasets (`metadata.json`, `hierarchy.bin`, `octree.bin`). PotreeConverter 2.x, including 2.1.5, writes the **2.0 dataset format**; converter release numbers and viewer release numbers are distinct from dataset versions.
 
 ```
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {createDataSource} from '@loaders.gl/core';
+
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
 
 
-const source = PotreeSourceLoader.createDataSource('https://example.com/cloud/metadata.json', {});
+const source = await createDataSource('https://example.com/cloud/metadata.json', PotreeLoader);
 
 await source.initialize();
 

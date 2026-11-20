@@ -71,7 +71,7 @@ import {ChromeTraceLoader, ChromeTraceWriter} from '@loaders.gl/traces';
 
 const table = await load('input.json', ChromeTraceLoader, {
 
-  chromeTrace: {shape: 'arrow-table'}
+  chromeTrace: {shape: 'arrow'}
 
 });
 

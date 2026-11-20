@@ -64,10 +64,10 @@ The reference below covers output shapes, attributes, batched parsing, and loade
 
 Set `ply.shape: 'mesh'` to return the legacy [Mesh](https://loaders.gl/next/docs/specifications/category-mesh.md) object.
 
-| Shape         | Output             | Use when                           |
-| ------------- | ------------------ | ---------------------------------- |
-| `mesh`        | `Mesh`             | You want the legacy mesh object.   |
-| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| Shape   | Output             | Use when                           |
+| ------- | ------------------ | ---------------------------------- |
+| `mesh`  | `Mesh`             | You want the legacy mesh object.   |
+| `arrow` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 ## Usage[​](#usage "Direct link to Usage")
 
@@ -80,12 +80,12 @@ import {load} from '@loaders.gl/core';
 
 const data = await load(url, PLYLoader, options);
 
-const table = await load(url, PLYLoader, {ply: {shape: 'arrow-table'}});
+const table = await load(url, PLYLoader, {ply: {shape: 'arrow'}});
 ```
 
 ## Batched Parsing[​](#batched-parsing "Direct link to Batched Parsing")
 
-`PLYLoader` supports `loadInBatches` and `parseInBatches`. When `ply.shape: 'arrow-table'` is set, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow-table'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
+`PLYLoader` supports `loadInBatches` and `parseInBatches`. When `ply.shape: 'arrow'` is set, the loader yields native Apache Arrow `RecordBatch` objects. Their schema metadata carries cumulative bounds. Read the bounds for an individual batch from `batch.metadata.get('boundingBox')`.
 
 ```
 import {loadInBatches} from '@loaders.gl/core';
@@ -96,7 +96,7 @@ import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
 const batches = await loadInBatches(url, PLYLoader, {
 
-  ply: {shape: 'arrow-table'}
+  ply: {shape: 'arrow'}
 
 });
 
@@ -111,9 +111,9 @@ for await (const batch of batches) {
 
 ## Options[​](#options "Direct link to Options")
 
-| Option      | Type                      | Default         | Description                                     |
-| ----------- | ------------------------- | --------------- | ----------------------------------------------- |
-| `ply.shape` | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table or legacy Mesh output. |
+| Option      | Type                | Default   | Description                                     |
+| ----------- | ------------------- | --------- | ----------------------------------------------- |
+| `ply.shape` | `'mesh' \| 'arrow'` | `'arrow'` | Selects Mesh Arrow table or legacy Mesh output. |
 
 ## Worker batches[​](#worker-batches "Direct link to Worker batches")
 
@@ -124,7 +124,7 @@ const batches = await parseInBatches(input, PLYLoader, {
 
   core: {worker: true, batchSize: 1000},
 
-  ply: {shape: 'arrow-table', pointCloud: true}
+  ply: {shape: 'arrow', pointCloud: true}
 
 });
 
@@ -137,4 +137,4 @@ for await (const batch of batches) {
 
 Use `ply.pointCloud: true` for incremental vertex batches in ASCII and binary PLY. General meshes may require the remaining elements before they can be returned.
 
-Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/pointclouds/ply-loader`.
+Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/pointclouds/ply`.

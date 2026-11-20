@@ -306,22 +306,22 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 After content is loaded, the following fields are guaranteed. But different tiles may have different extra content fields.
 
-| Field                | Type                   | Contents                                                                                                                             |
-| -------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `cartesianOrigin`    | `Number[3]`            | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                           |
-| `cartographicOrigin` | `Number[3]`            | "Origin" in lng/lat (center of tile's bounding volume)                                                                               |
-| `modelMatrix`        | `Number[16]`           | Transforms tile geometry positions to fixed frame coordinates                                                                        |
-| `attributes`         | `Object`               | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor) properties |
-| `featureIds`         | `Uint32Array`          | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                   |
-| `vectorContent`      | `Tiles3DVectorContent` | Experimental point, polyline, and polygon topology plus the source `clip` flag when content is designated as vector data.            |
+| Field                | Type                   | Contents                                                                                                                  |
+| -------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `cartesianOrigin`    | `Number[3]`            | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                |
+| `cartographicOrigin` | `Number[3]`            | "Origin" in lng/lat (center of tile's bounding volume)                                                                    |
+| `modelMatrix`        | `Number[16]`           | Transforms tile geometry positions to fixed frame coordinates                                                             |
+| `attributes`         | `Object`               | Typed arrays and attribute descriptors for decoded geometry.                                                              |
+| `featureIds`         | `Uint32Array`          | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.        |
+| `vectorContent`      | `Tiles3DVectorContent` | Experimental point, polyline, and polygon topology plus the source `clip` flag when content is designated as vector data. |
 
-`attributes` contains following fields
+Decoded point clouds expose `topology: 'point-list'`. Their attributes use the typed array to identify scalar storage.
 
-| Field                  | Type     | Contents                          |
-| ---------------------- | -------- | --------------------------------- |
-| `attributes.positions` | `Object` | `{value, type, size, normalized}` |
-| `attributes.normals`   | `Object` | `{value, type, size, normalized}` |
-| `attributes.colors`    | `Object` | `{value, type, size, normalized}` |
+| Field                  | Contents                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `attributes.positions` | XYZ typed array or a `{value, size, normalized}` descriptor for quantized positions.                       |
+| `attributes.normals`   | XYZ typed array or a `{value, size}` descriptor.                                                           |
+| `attributes.colors`    | RGB or RGBA `{value, size, normalized}` descriptor, with `componentType: 'float16'` for half-float colors. |
 
 PointCloud Fields
 

@@ -91,8 +91,6 @@ const view = new MapView({
 
 Keep ArcGIS SDK imports and lifecycle in the application. The loaders.gl ArcGIS module does not acquire an Esri SDK dependency. The shared [example map host](https://github.com/visgl/loaders.gl/blob/master/examples/website/shared/arcgis-map.tsx) loads the SDK after mount for server-rendered pages, releases SDK resources on unmount, and explicitly aligns 512-pixel map LODs with deck.gl. Programmatic fits round zoom down to an integer level so all requested data stays visible. This integration is 2D; it does not make SceneServer profiles renderable in this map.
 
-`@deck.gl/arcgis` 9.4.0 has an ESM packaging issue: one import references an unpublished sibling source file. The repository applies a small [Yarn patch](https://github.com/visgl/loaders.gl/blob/master/.yarn/patches/@deck.gl-arcgis-npm-9.4.0-4c40c78c8b.patch) that uses the public `@deck.gl/core` `MapView` export. Application builds using that release may need this fix until an upstream release corrects the import.
-
 ## Examples[​](#examples "Direct link to Examples")
 
 The [ArcGIS gallery](https://loaders.gl/next/examples/arcgis) links to the live applications, matching service pages and source code. Each implemented service page embeds its corresponding application. Numerical rasters and scene metadata are labeled according to what the example actually does.

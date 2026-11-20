@@ -102,6 +102,10 @@ The sections below document construction, metadata, layer selection, authenticat
 
 `ArcGISSceneServerSource` provides a thin service facade for I3S layers published through an ArcGIS `SceneServer` endpoint. It fetches and normalizes layer metadata, then delegates traversal and content decoding to the existing `I3SSource` (mesh and Point) or `I3SPointCloudSource` implementation.
 
+| Property    | Value                     |
+| ----------- | ------------------------- |
+| Data source | `ArcGISSceneServerSource` |
+
 ## Usage[​](#usage "Direct link to Usage")
 
 ```

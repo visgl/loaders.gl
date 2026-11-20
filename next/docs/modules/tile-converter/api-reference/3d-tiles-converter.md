@@ -61,7 +61,7 @@ The `Tiles3DConverter` class converts an I3S layer. It converts between the OGC 
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {Tiles3DConverter} from '@loaders.gl/tile-converter';
+import {Tiles3DConverter} from '@loaders.gl/tile-converter/v4';
 
 
 

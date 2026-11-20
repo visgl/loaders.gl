@@ -188,7 +188,7 @@ Arrow IPC files, streams, and compatible responses
 
 Default
 
-ArrowTable output with shape: 'arrow-table'
+Native Apache Arrow Table
 
 03
 
@@ -226,25 +226,25 @@ const data = await load(url, ArrowLoader, options);
 
 ## Shapes[​](#shapes "Direct link to Shapes")
 
-`ArrowLoader` returns loaders.gl `ArrowTable` objects by default. Set `arrow.shape` to select another table representation.
+`ArrowLoader` returns native Apache Arrow `Table` objects by default. Set `arrow.shape` to select another table representation.
 
 | Shape              | Output                                                 |
 | ------------------ | ------------------------------------------------------ |
-| `arrow-table`      | loaders.gl `ArrowTable` wrapping an Apache Arrow table |
+| `arrow`            | Apache Arrow `Table` or streamed `RecordBatch` objects |
 | `columnar-table`   | loaders.gl columnar table                              |
 | `array-row-table`  | loaders.gl row table with arrays                       |
 | `object-row-table` | loaders.gl row table with objects                      |
 
 ## Options[​](#options "Direct link to Options")
 
-| Option                  | Type                                                                           | Default         | Description                                        |
-| ----------------------- | ------------------------------------------------------------------------------ | --------------- | -------------------------------------------------- |
-| `arrow.shape`           | `'arrow-table' \| 'columnar-table' \| 'array-row-table' \| 'object-row-table'` | `'arrow-table'` | Selects the returned loaders.gl table shape.       |
-| `arrow.batchDebounceMs` | `number`                                                                       | `undefined`     | Adds an async delay between emitted Arrow batches. |
+| Option                       | Type                                                                     | Default   | Description                                                        |
+| ---------------------------- | ------------------------------------------------------------------------ | --------- | ------------------------------------------------------------------ |
+| `arrow.shape`                | `'arrow' \| 'columnar-table' \| 'array-row-table' \| 'object-row-table'` | `'arrow'` | Selects the output shape.                                          |
+| `core.batchMaxRowsPerSecond` | `number`                                                                 | `0`       | Paces delivery by row count while preserving IPC batch boundaries. |
 
 ## Worker parsing[​](#worker-parsing "Direct link to Worker parsing")
 
-Atomic parsing and `parseInBatches()` support workers with `core.worker: true`. Each batch session retains one Arrow IPC reader, requests input on demand, and waits for the consumer before advancing past an output batch. Batches retain the existing `arrow-table` output shape. Atomic parsing converts to the requested output shape on the caller after hydrating the transferred Arrow data.
+Atomic parsing and `parseInBatches()` support workers with `core.worker: true`. Each batch session retains one Arrow IPC reader, requests input on demand, and waits for the consumer before advancing past an output batch. Batched APIs yield native Apache Arrow `RecordBatch` objects by default. Atomic parsing converts to the requested output shape on the caller after hydrating the transferred Arrow data.
 
 Workers return owned Arrow column buffers, preserving dictionaries and extension metadata without transferring buffers still referenced by the reader. Decoded JSON rows and GeoJSON features are never structured-cloned across the worker boundary. Small table and protocol descriptors accompany the buffers. Input chunks can still be large; backpressure does not bound an individual input chunk.
 

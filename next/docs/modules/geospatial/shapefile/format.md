@@ -71,7 +71,7 @@ The reference below covers the file set, loaders, Arrow output, sidecar behavior
 
 ## Loaders[​](#loaders "Direct link to Loaders")
 
-[Loader**ShapefileLoader**Loads Shapefile geometries and DBF properties as loaders.gl geometry tables.Output: GeoJSONTable, ArrowTable, legacy Shapefile outputAPIs: load, parse, parseSync, parseInBatches](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader)[Subloader**SHPLoader**Loads the `.shp` geometry component of a Shapefile.Output: geometry recordsAPIs: load, parse, parseSync](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader)[Subloader**DBFLoader**Loads the `.dbf` attribute table component of a Shapefile.Output: object rowsAPIs: load, parse, parseSync](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader)
+[Loader**ShapefileLoader**Loads Shapefile geometries and DBF properties as loaders.gl geometry tables.Output: GeoJSONTable, Apache Arrow table, legacy Shapefile outputAPIs: load, parse, parseSync, parseInBatches](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader)[Subloader**SHPLoader**Loads the `.shp` geometry component of a Shapefile.Output: geometry recordsAPIs: load, parse, parseSync](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shp-loader)[Subloader**DBFLoader**Loads the `.dbf` attribute table component of a Shapefile.Output: object rowsAPIs: load, parse, parseSync](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader)
 
 ## Multi-File Datasets[​](#multi-file-datasets "Direct link to Multi-File Datasets")
 
@@ -79,4 +79,4 @@ A Shapefile dataset is normally a set of sidecar files. `.shp` stores geometry, 
 
 ## Arrow[​](#arrow "Direct link to Arrow")
 
-Set `shapefile.shape: 'arrow-table'` to return an Arrow table with DBF property columns and a WKB `geometry` column.
+Set `shapefile.shape: 'arrow'` to return an Arrow table with DBF property columns and a WKB `geometry` column.

@@ -81,7 +81,7 @@ npm install @loaders.gl/core
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {TWKBLoader} from '@loaders.gl/geospatial/wkt/bundled';
+import {TWKBLoader} from '@loaders.gl/geospatial/wkb/bundled';
 
 import {parseSync} from '@loaders.gl/core';
 
@@ -97,7 +97,7 @@ const data = parseSync(buffer, TWKBLoader);
 ```
 
 ```
-import {TWKBLoader} from '@loaders.gl/geospatial/wkt';
+import {TWKBLoader} from '@loaders.gl/geospatial/wkb';
 
 import {load} from '@loaders.gl/core';
 

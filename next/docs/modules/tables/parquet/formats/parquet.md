@@ -20,12 +20,12 @@ ArrowParquetselective reads
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Loader        | [`ParquetLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)               |
-| Writer        | [`ParquetWriter`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)               |
-| Source loader | [`ParquetSourceLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md)  |
-| Source        | [`ParquetDatasetSource`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md) |
+| Type          | API                                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Loader        | [`ParquetLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)        |
+| Writer        | [`ParquetWriter`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)        |
+| Source loader | [`ParquetLoader`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source.md)        |
+| Source        | [`ParquetDatasetSource`](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source.md) |
 
 ## Try a range-aware read[​](#try-a-range-aware-read "Direct link to Try a range-aware read")
 
@@ -120,11 +120,11 @@ This page describes both the format and the current `@loaders.gl/tables/parquet`
 | ⚠️     | Partially supported, metadata-only, legacy, or dependent on an injected codec |
 | ✕      | Not currently supported                                                       |
 
-`ParquetLoader` and `ParquetWriter` use the separately maintained `parquet-wasm` implementation; their coverage can differ from the TypeScript `ParquetJSLoader`, `ParquetSourceLoader`, and `ParquetJSWriter` described in the matrices below.
+`ParquetLoader` and `ParquetWriter` use the TypeScript implementation described in the matrices below. The separately maintained `parquet-wasm` implementation is used only by unpublished website comparisons and interoperability tests.
 
 ## Scan support[​](#scan-support "Direct link to Scan support")
 
-`ParquetSourceLoader` is the selective scan API. It reads and caches the footer, plans physical ranges, emits Arrow batches, and explains which layers rejected work.
+`ParquetLoader` is the selective scan API. It reads and caches the footer, plans physical ranges, emits Arrow batches, and explains which layers rejected work.
 
 | Capability                      | Support      | Execution                                                              |
 | ------------------------------- | ------------ | ---------------------------------------------------------------------- |
@@ -176,7 +176,7 @@ The format has four important storage units:
 | Column chunk | Contiguous values for one leaf column within one row group           | Projection and range I/O            |
 | Page         | Independently encoded and compressed values within a column chunk    | Compression, decoding, page pruning |
 
-This hierarchy is why Parquet is random-access rather than a conventional streaming format. `ParquetSourceLoader` first reads and caches the footer, then issues ranges for selected row groups and column chunks. `parseInBatches` can yield row-group-sized batches incrementally, but the footer must normally be available before useful data ranges can be located.
+This hierarchy is why Parquet is random-access rather than a conventional streaming format. `ParquetLoader` first reads and caches the footer, then issues ranges for selected row groups and column chunks. `parseInBatches` can yield row-group-sized batches incrementally, but the footer must normally be available before useful data ranges can be located.
 
 ## Schema[​](#schema "Direct link to Schema")
 
@@ -252,15 +252,15 @@ The TypeScript Arrow path builds supported nested vectors directly from decoded 
 
 A column chunk contains page headers serialized with Thrift compact protocol followed by page bodies. Encoding is applied before optional compression. Compression is page-local, so a reader does not need to inflate an entire column chunk at once.
 
-| Page feature        | JS read     | JS write    | Notes                                                                                                                    |
-| ------------------- | ----------- | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Data Page V1        | ✅          | ✅          | Levels and values share one compressed payload                                                                           |
-| Data Page V2        | ✅          | ✅          | Levels remain uncompressed; value compression is independently declared                                                  |
-| Dictionary page     | ✅          | ✅          | One chunk-wide dictionary may be shared by multiple data pages                                                           |
-| Optional page CRC   | ✅ (opt-in) | ✅ (opt-in) | `ParquetReader`/`ParquetSource` can verify CRC-32 page bodies; `ParquetJSWriter` can emit them with `writePageChecksums` |
-| Legacy `INDEX_PAGE` | ✕           | ✕           | Deprecated and distinct from the modern page-index structures                                                            |
+| Page feature        | JS read     | JS write    | Notes                                                                                                                  |
+| ------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Data Page V1        | ✅          | ✅          | Levels and values share one compressed payload                                                                         |
+| Data Page V2        | ✅          | ✅          | Levels remain uncompressed; value compression is independently declared                                                |
+| Dictionary page     | ✅          | ✅          | One chunk-wide dictionary may be shared by multiple data pages                                                         |
+| Optional page CRC   | ✅ (opt-in) | ✅ (opt-in) | `ParquetReader`/`ParquetSource` can verify CRC-32 page bodies; `ParquetWriter` can emit them with `writePageChecksums` |
+| Legacy `INDEX_PAGE` | ✕           | ✕           | Deprecated and distinct from the modern page-index structures                                                          |
 
-`ParquetJSWriter` selects Data Page V2 with `parquet.useDataPageV2`. The reader accepts both versions within the same file. `parquet.pageSize` is a target number of shredded level entries per page. Page boundaries are aligned to top-level rows, so a repeated row is never split between pages; a single row larger than the target remains one page.
+`ParquetWriter` selects Data Page V2 with `parquet.useDataPageV2`. The reader accepts both versions within the same file. `parquet.pageSize` is a target number of shredded level entries per page. Page boundaries are aligned to top-level rows, so a repeated row is never split between pages; a single row larger than the target remains one page.
 
 ## Value Encodings[​](#value-encodings "Direct link to Value Encodings")
 
@@ -283,7 +283,7 @@ Encodings transform uncompressed values inside a page. A column chunk declares e
 The TypeScript writer can select stable non-dictionary encodings by top-level column name:
 
 ```
-const parquet = await encode(table, ParquetJSWriter, {
+const parquet = await encode(table, ParquetWriter, {
 
   parquet: {
 
@@ -331,17 +331,17 @@ The file footer contains the schema, row-group directory, column-chunk offsets a
 
 | Feature                                                                              | JS read       | JS write         | Current behavior                                                                                                                                                                                                                       |
 | ------------------------------------------------------------------------------------ | ------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| File and schema metadata                                                             | ✅            | ✅               | Footer is cached by `ParquetSourceLoader`                                                                                                                                                                                              |
+| File and schema metadata                                                             | ✅            | ✅               | Footer is cached by `ParquetLoader`                                                                                                                                                                                                    |
 | Row-group and column-chunk offsets                                                   | ✅            | ✅               | Drive byte-range projection and row-group selection                                                                                                                                                                                    |
-| Column-chunk min/max/null/distinct statistics                                        | ✅            | ✅ (opt-in)      | Drive conservative `ParquetSource` predicate pushdown; `ParquetJSWriter` emits min/max/null-count statistics with `writeStatistics`                                                                                                    |
-| Page statistics in page headers                                                      | ⚠️            | ✅ (opt-in)      | Thrift fields are decoded; `ParquetJSWriter` emits min/max/null-count page statistics with `writeStatistics`                                                                                                                           |
+| Column-chunk min/max/null/distinct statistics                                        | ✅            | ✅ (opt-in)      | Drive conservative `ParquetSource` predicate pushdown; `ParquetWriter` emits min/max/null-count statistics with `writeStatistics`                                                                                                      |
+| Page statistics in page headers                                                      | ⚠️            | ✅ (opt-in)      | Thrift fields are decoded; `ParquetWriter` emits min/max/null-count page statistics with `writeStatistics`                                                                                                                             |
 | [Column index](https://github.com/apache/parquet-format/blob/master/PageIndex.md)    | ✅            | ✅ (opt-in)      | Predicates use page min/max statistics to derive conservative candidate row ranges for primitive leaves, including canonical INT96 timestamps, nested struct children, and repeated leaves when selected columns share page boundaries |
 | [Offset index](https://github.com/apache/parquet-format/blob/master/PageIndex.md)    | ✅            | ✅ (opt-in)      | Selected columns use page locations and first-row indexes for selective byte reads; repeated values and continuation pages are decoded only from complete, mutually aligned row ranges                                                 |
-| [Bloom filters](https://github.com/apache/parquet-format/blob/master/BloomFilter.md) | ✅            | ✅               | TypeScript reads split-block Bloom filters for safe equality/`IN` row-group pruning; `ParquetJSWriter` can emit them opt-in                                                                                                            |
-| Size statistics                                                                      | ✅            | ✅ (opt-in)      | Byte-array sizes and repetition/definition histograms are decoded and exposed; `ParquetJSWriter` emits them with `writeSizeStatistics`                                                                                                 |
-| Column order and sorting columns                                                     | ✅ (metadata) | ✅ (declaration) | Row-group sort declarations are normalized as `sortingColumns`; `ParquetJSWriter` can emit declarations but does not sort rows or apply semantic pruning                                                                               |
+| [Bloom filters](https://github.com/apache/parquet-format/blob/master/BloomFilter.md) | ✅            | ✅               | TypeScript reads split-block Bloom filters for safe equality/`IN` row-group pruning; `ParquetWriter` can emit them opt-in                                                                                                              |
+| Size statistics                                                                      | ✅            | ✅ (opt-in)      | Byte-array sizes and repetition/definition histograms are decoded and exposed; `ParquetWriter` emits them with `writeSizeStatistics`                                                                                                   |
+| Column order and sorting columns                                                     | ✅ (metadata) | ✅ (declaration) | Row-group sort declarations are normalized as `sortingColumns`; `ParquetWriter` can emit declarations but does not sort rows or apply semantic pruning                                                                                 |
 
-`ParquetSourceLoader` accepts serializable logical predicates, prunes impossible row groups using footer statistics and split-block Bloom filters, and uses column/offset indexes to avoid irrelevant data pages for primitive leaves, including nested struct children. Filter-only columns are not returned in the projected Arrow schema. Candidate rows are still filtered exactly on the caller thread or worker. Repeated-leaf pruning is enabled when all selected leaves have compatible page boundaries, including pages that continue one logical row; files with incompatible boundaries conservatively use full column-chunk reads. Size statistics are available for memory and nested-value planning; semantic sorting pruning remains future format-completeness work. The TypeScript reader supports AES-GCM and AES-GCM-CTR encrypted column metadata, page indexes, Bloom filters, and page modules when a key retriever is provided. Encrypted source reads resolve selected data keys on the caller thread and transfer only the required key material to the worker. `ParquetJSWriter` can now emit an encrypted footer with caller-supplied key metadata and a key retriever; column metadata, pages, indexes, and Bloom filters can also be encrypted for selected columns or all columns. Per-column key metadata enables independent keys and rotation, while plaintext-footer signatures authenticate unencrypted footer metadata.
+`ParquetLoader` accepts serializable logical predicates, prunes impossible row groups using footer statistics and split-block Bloom filters, and uses column/offset indexes to avoid irrelevant data pages for primitive leaves, including nested struct children. Filter-only columns are not returned in the projected Arrow schema. Candidate rows are still filtered exactly on the caller thread or worker. Repeated-leaf pruning is enabled when all selected leaves have compatible page boundaries, including pages that continue one logical row; files with incompatible boundaries conservatively use full column-chunk reads. Size statistics are available for memory and nested-value planning; semantic sorting pruning remains future format-completeness work. The TypeScript reader supports AES-GCM and AES-GCM-CTR encrypted column metadata, page indexes, Bloom filters, and page modules when a key retriever is provided. Encrypted source reads resolve selected data keys on the caller thread and transfer only the required key material to the worker. `ParquetWriter` can now emit an encrypted footer with caller-supplied key metadata and a key retriever; column metadata, pages, indexes, and Bloom filters can also be encrypted for selected columns or all columns. Per-column key metadata enables independent keys and rotation, while plaintext-footer signatures authenticate unencrypted footer metadata.
 
 ## Integrity and Encryption[​](#integrity-and-encryption "Direct link to Integrity and Encryption")
 

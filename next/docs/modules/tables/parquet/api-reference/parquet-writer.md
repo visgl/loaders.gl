@@ -76,7 +76,7 @@ Wasm-backed writer with a TypeScript compatibility path
 
 ![From-v3.1](https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square)![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)
 
-`ParquetWriter` accepts loaders.gl tables, including Arrow tables, and encodes them through the wasm-backed Parquet writer path.
+`ParquetWriter` accepts loaders.gl tables, including Arrow tables, and encodes them with the native TypeScript Parquet encoder.
 
 Detailed guide
 
@@ -84,10 +84,10 @@ Detailed guide
 
 The sections below cover usage, geospatial metadata precedence, options, and writer compatibility.
 
-`ParquetJSWriter` is the plain-table writer for the experimental TypeScript parquetjs backend. The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
+`ParquetWriter` supports native Arrow tables and schema-bearing row tables. The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```
-import {ParquetWriter, ParquetJSWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 ```
 
 ## Geospatial Metadata[​](#geospatial-metadata "Direct link to Geospatial Metadata")
@@ -117,7 +117,7 @@ The writer does not invent `orientation`, `bbox`, `covering`, or `epoch` values.
 
 ### GeoParquet 2.0 with the TypeScript writer[​](#geoparquet-20-with-the-typescript-writer "Direct link to GeoParquet 2.0 with the TypeScript writer")
 
-When valid `geo` metadata declares version 2.x and a binary column with `encoding: "WKB"`, `ParquetJSWriter` writes that column as the native Parquet `GEOMETRY` logical type for planar edges or `GEOGRAPHY` for spherical, Vincenty, Thomas, Andoyer, or Karney edges. It carries inline PROJJSON into the logical type, uses Parquet's default `OGC:CRS84` when CRS is omitted, and writes `srid:0` when GeoParquet explicitly declares `crs: null`.
+When valid `geo` metadata declares version 2.x and a binary column with `encoding: "WKB"`, `ParquetWriter` writes that column as the native Parquet `GEOMETRY` logical type for planar edges or `GEOGRAPHY` for spherical, Vincenty, Thomas, Andoyer, or Karney edges. It carries inline PROJJSON into the logical type, uses Parquet's default `OGC:CRS84` when CRS is omitted, and writes `srid:0` when GeoParquet explicitly declares `crs: null`.
 
 Every row group receives native `GeospatialStatistics`: a bounding box with independent X, Y, Z, and M handling plus the unique ISO WKB codes for XY, XYZ, XYM, and XYZM geometry families.
 
@@ -132,11 +132,7 @@ import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 
 
 
-const arrowTable = await load(url, ParquetLoader, {
-
-  parquet: {shape: 'arrow-table'}
-
-});
+const arrowTable = await load(url, ParquetLoader);
 
 
 
@@ -151,10 +147,10 @@ const parquetBuffer = await encode(arrowTable, ParquetWriter, {
 
 ### TypeScript writer options[​](#typescript-writer-options "Direct link to TypeScript writer options")
 
-`ParquetJSWriter` accepts `parquet.columnEncodings`, keyed by top-level column name. It also supports adaptive or forced chunk dictionaries independently of the primary encoding. Unsupported encoding/type combinations and unknown column names are rejected instead of silently falling back.
+`ParquetWriter` accepts `parquet.columnEncodings`, keyed by top-level column name. It also supports adaptive or forced chunk dictionaries independently of the primary encoding. Unsupported encoding/type combinations and unknown column names are rejected instead of silently falling back.
 
 ```
-const parquet = await encode(table, ParquetJSWriter, {
+const parquet = await encode(table, ParquetWriter, {
 
   parquet: {
 
@@ -206,8 +202,7 @@ See the [Parquet format page](https://loaders.gl/next/docs/modules/tables/parque
 
 | Option                            | Type                                                                      | Default                | Description                                                                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `parquet.wasmUrl`                 | `string`                                                                  | bundled URL            | Overrides the `parquet-wasm` binary URL for `ParquetWriter`.                                                                          |
-| `parquet.columnEncodings`         | `Record<string, ParquetJSWriterEncoding>`                                 | `{}`                   | Selects the primary value encoding by top-level column name for `ParquetJSWriter`.                                                    |
+| `parquet.columnEncodings`         | `Record<string, ParquetWriterEncoding>`                                   | `{}`                   | Selects the primary value encoding by top-level column name for `ParquetWriter`.                                                      |
 | `parquet.dictionary`              | `boolean \| 'auto'`                                                       | `'auto'`               | Enables, disables, or adaptively selects a chunk-wide dictionary.                                                                     |
 | `parquet.columnDictionaries`      | `Record<string, boolean \| 'auto'>`                                       | `{}`                   | Overrides the dictionary policy by top-level column name.                                                                             |
 | `parquet.dictionaryPageSizeLimit` | `number`                                                                  | `1048576`              | Maximum uncompressed PLAIN dictionary payload in bytes; oversized dictionaries fall back for the complete chunk.                      |
@@ -218,16 +213,16 @@ See the [Parquet format page](https://loaders.gl/next/docs/modules/tables/parque
 | `parquet.int96AsTimestamp`        | `boolean`                                                                 | `false`                | Encodes INT96 input values as signed epoch-nanosecond timestamps using the canonical Julian-day representation.                       |
 | `parquet.writePageChecksums`      | `boolean`                                                                 | `false`                | Emits CRC-32 checksums for TypeScript writer data and dictionary pages.                                                               |
 | `parquet.writeSizeStatistics`     | `boolean`                                                                 | `false`                | Emits byte-array size totals and repetition/definition-level histograms for TypeScript writer column chunks.                          |
-| `parquet.rowGroupSize`            | `number`                                                                  | implementation default | Sets the target row count per row group for `ParquetJSWriter`.                                                                        |
+| `parquet.rowGroupSize`            | `number`                                                                  | implementation default | Sets the target row count per row group for `ParquetWriter`.                                                                          |
 | `parquet.pageSize`                | `number`                                                                  | `8192`                 | Sets the target shredded level-entry count per page. Boundaries remain aligned to top-level rows.                                     |
-| `parquet.useDataPageV2`           | `boolean`                                                                 | `false`                | Emits Data Page V2 from `ParquetJSWriter`.                                                                                            |
+| `parquet.useDataPageV2`           | `boolean`                                                                 | `false`                | Emits Data Page V2 from `ParquetWriter`.                                                                                              |
 
 ### Writer encryption[​](#writer-encryption "Direct link to Writer encryption")
 
-`ParquetJSWriter` can encrypt the footer and, optionally, selected column chunks with the same footer key. Column encryption covers column metadata, dictionary/data page headers and bodies, page indexes, and Bloom-filter modules. The existing `ParquetJSLoader` and `ParquetSourceLoader` can read these files, including selective range reads and worker decoding. Keys stay in the caller's `keyRetriever`; they are not serialized into the writer options.
+`ParquetWriter` can encrypt the footer and, optionally, selected column chunks with the same footer key. Column encryption covers column metadata, dictionary/data page headers and bodies, page indexes, and Bloom-filter modules. The existing `ParquetLoader` can read these files, including selective range reads and worker decoding. Keys stay in the caller's `keyRetriever`; they are not serialized into the writer options.
 
 ```
-const parquetBuffer = await encode(table, ParquetJSWriter, {
+const parquetBuffer = await encode(table, ParquetWriter, {
 
   core: {worker: false},
 
@@ -263,17 +258,16 @@ Per-column keys, key rotation, and plaintext-footer signatures are opt-in. The k
 
 ## Writer Variants[​](#writer-variants "Direct link to Writer Variants")
 
-* Use `ParquetWriter` for the default wasm-backed plain-table writer.
-* Use `ParquetJSWriter` for the experimental TypeScript parquetjs plain-table writer. It accepts plain loaders.gl tables and does not require Arrow input.
+* Use `ParquetWriter` for the native TypeScript writer. It accepts plain loaders.gl tables and does not require Arrow input.
 
 ```
 import {encode} from '@loaders.gl/core';
 
-import {ParquetJSWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
 
 
 
-const parquetBuffer = await encode(table, ParquetJSWriter, {
+const parquetBuffer = await encode(table, ParquetWriter, {
 
   core: {worker: false},
 
@@ -286,7 +280,7 @@ const parquetBuffer = await encode(table, ParquetJSWriter, {
 });
 ```
 
-`ParquetJSWriter` emits multiple pages when a column chunk exceeds `parquet.pageSize`. A repeated row larger than the target stays intact in one page. Dictionary pages are shared by all data pages in a column chunk, and footer offsets plus encoding statistics identify the dictionary and data-page regions for other readers.
+`ParquetWriter` emits multiple pages when a column chunk exceeds `parquet.pageSize`. A repeated row larger than the target stays intact in one page. Dictionary pages are shared by all data pages in a column chunk, and footer offsets plus encoding statistics identify the dictionary and data-page regions for other readers.
 
 The TypeScript writer emits Parquet 2.13 `LogicalType` metadata for Arrow-compatible integer, date/time/timestamp, decimal, FLOAT16, and string fields. Nanosecond and unsigned 64-bit values are written without conversion through JavaScript `number`.
 

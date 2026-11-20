@@ -18,11 +18,11 @@ Zarr stores typed multidimensional arrays in independently addressable chunks. O
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                                                |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Source loader | [`GeoZarrSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)         |
-| Source loader | [`OMEZarrSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader.md)         |
-| Source loader | [`SpatialDataSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/spatial-data-source-loader.md) |
+| Type          | API                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Source loader | [`GeoZarrLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)         |
+| Source loader | [`OMEZarrLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/ome-zarr-loader.md)         |
+| Source loader | [`SpatialDataLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/spatial-data-loader.md) |
 
 Windowed raster access
 
@@ -50,13 +50,13 @@ windowvariablelevel
 
 rea&#x64;**→**
 
-[03 · application result](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)
+[03 · application result](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)
 
-### [Typed array result](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)
+### [Typed array result](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)
 
-[Values return with dimension metadata and coordinate meaning intact.<!-- --> ↗](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)
+[Values return with dimension metadata and coordinate meaning intact.<!-- --> ↗](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)
 
-[valuesdimensionsmetadata](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)
+[valuesdimensionsmetadata](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)
 
 A local file may use direct offsets; a cloud source may use HTTP ranges or object-store chunks. The application-facing selection remains the same.
 
@@ -126,7 +126,7 @@ The sections below compare Zarr generations and conventions, then describe chunk
 | Shapes  | GeoParquet file             | Typed `geoparquet` descriptor and canonical payload URL      |
 | Tables  | AnnData-Zarr group          | Generic array access through `createTableArraySource()`      |
 
-`SpatialDataSourceLoader` discovers these elements from consolidated metadata without materializing pixel, geometry, or annotation payloads. It retains element axes, coordinate transformations, format versions, and original attributes for downstream interoperability.
+`SpatialDataLoader` discovers these elements from consolidated metadata without materializing pixel, geometry, or annotation payloads. It retains element axes, coordinate transformations, format versions, and original attributes for downstream interoperability.
 
 ## Scan support[​](#scan-support "Direct link to Scan support")
 

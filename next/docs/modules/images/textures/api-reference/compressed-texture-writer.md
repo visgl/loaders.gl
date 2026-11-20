@@ -89,7 +89,7 @@ import '@loaders.gl/core/polyfills'; // only if using under Node
 
 import {encodeURLtoURL} from '@loaders.gl/core';
 
-import {CompressedTextureWriter} from '@loaders.gl/images/compressed-texture-writer';
+import {CompressedTextureWriter} from '@loaders.gl/images/texture';
 
 
 

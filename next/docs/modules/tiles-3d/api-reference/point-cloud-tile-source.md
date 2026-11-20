@@ -2,16 +2,20 @@
 
 Creates a dynamic additive octree from a decoded point `Mesh` or `MeshArrowTable`. This is the point-cloud counterpart to dynamic vector tiling: it generates a hierarchy in memory and gathers content only when requested. It works in browsers and Node.js.
 
+| Property    | Value                  |
+| ----------- | ---------------------- |
+| Data source | `PointCloudTileSource` |
+
 ```
-import {PointCloudTileSourceLoader} from '@loaders.gl/tiles-3d';
+import {PointCloudTileLoader} from '@loaders.gl/tiles-3d';
 
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
 
 
-const runtime = await PointCloudTileSourceLoader.preload();
+const runtime = await PointCloudTileLoader.preload();
 
-const source = runtime.createDataSource(pointMesh, {
+const source = runtime.createDataSourceSync(pointMesh, {
 
   pointCloudTiler: {nodePointLimit: 10000, maximumDepth: 12}
 

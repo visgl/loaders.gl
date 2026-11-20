@@ -14,10 +14,11 @@ npm install @loaders.gl/core @loaders.gl/scientific
 | —                                                                                                                                     | `/hdf5`             | `openHDF5Source`, `HDF5Source`, experimental `HDF5TypeScriptFile`             | [HDF5](https://loaders.gl/next/docs/modules/scientific/hdf5.md)                          |
 | —                                                                                                                                     | `/grib2`            | `parseGRIB2`, `GRIB2Source`                                                   | [GRIB2](https://loaders.gl/next/docs/modules/scientific/grib2.md)                        |
 | [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `/vtk`              | `parseVTKLegacy`, `parseVTKXML`                                               | [VTK](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            |
+| —                                                                                                                                     | `/pdb`              | `PDBLoader`, `PDBLoaderWithParser`                                            | [PDB](https://loaders.gl/next/docs/modules/scientific/pdb.md)                            |
 | —                                                                                                                                     | `/scientific-array` | Common scientific-array interfaces and helpers                                | Shared source contracts                                                                       |
 | —                                                                                                                                     | `/vector-field`     | Vector-field processing helpers                                               | Explicit processing entrypoint                                                                |
 
-The root exports NetCDF and Zarr metadata loaders and shared types. It does not re-export every parser or experimental source. For direct NetCDF parsing:
+The root exports NetCDF, Zarr, NRRD, VTK and PDB metadata loaders and shared types. It does not re-export every parser or experimental source. For direct NetCDF parsing:
 
 ```
 import {parse, parseSync} from '@loaders.gl/core';
@@ -39,17 +40,25 @@ The package currently installs `h5wasm`, `zarr`, `zarrita`, and XML parsing supp
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scientific/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
 
-`NPYLoader` and `NPYFormat` are metadata exports from the lightweight package root. For parser access use the flat `@loaders.gl/scientific/npy-loader` subpath.
+`NPYLoader` and `NPYFormat` are metadata exports from the lightweight package root. For parser access use the flat `@loaders.gl/scientific/npy` subpath.
 
 ## Format guides[​](#format-guides "Direct link to Format guides")
 
+* [PDB](https://loaders.gl/next/docs/modules/scientific/pdb.md)
+
+* [NRRD](https://loaders.gl/next/docs/modules/scientific/nrrd.md)
+
+* [VTK](https://loaders.gl/next/docs/modules/scientific/vtk.md)
+
 * [NumPy NPY](https://loaders.gl/next/docs/modules/scientific/formats/npy.md)
+
 * [NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md)
+
 * [Zarr, GeoZarr, and OME-Zarr formats](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->12<!-- -->)
+All exported subpaths (<!-- -->17<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -58,12 +67,17 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                       | `@loaders.gl/scientific/grib2`            |
 |                                                                                                                                       | `@loaders.gl/scientific/hdf5`             |
 | [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf`           |
-| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/*`         |
-|                                                                                                                                       | `@loaders.gl/scientific/npy-loader`       |
-|                                                                                                                                       | `@loaders.gl/scientific/npy-loader-types` |
+| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/bundled`   |
+|                                                                                                                                       | `@loaders.gl/scientific/npy`              |
 |                                                                                                                                       | `@loaders.gl/scientific/npy-worker.js`    |
+|                                                                                                                                       | `@loaders.gl/scientific/npy/bundled`      |
+|                                                                                                                                       | `@loaders.gl/scientific/nrrd`             |
+|                                                                                                                                       | `@loaders.gl/scientific/nrrd/bundled`     |
+|                                                                                                                                       | `@loaders.gl/scientific/pdb`              |
+|                                                                                                                                       | `@loaders.gl/scientific/pdb/bundled`      |
 |                                                                                                                                       | `@loaders.gl/scientific/scientific-array` |
 |                                                                                                                                       | `@loaders.gl/scientific/vector-field`     |
 | [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk`              |
+| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/bundled`      |
 | [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr`             |
-| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/*`           |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/bundled`     |

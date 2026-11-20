@@ -91,7 +91,7 @@ import {HeightField, createTerrainGradientGrid} from '@math.gl/geospatial/terrai
 
 
 
-// grid comes from createTerrainHeightGrid; bounds are EPSG:3857 meters.
+// grid is a decoded heightmap with source-provided bounds, registration, validity and datum.
 
 const [west, south, east, north] = grid.bounds;
 

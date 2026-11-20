@@ -92,7 +92,7 @@ const data = await load(url, GMLLoader, options);
 
 ## Parsed Data Format[​](#parsed-data-format "Direct link to Parsed Data Format")
 
-The `GMLLoader` supports the standard geospatial subset of geometries (points, multipoints, lines, linestrings, polygons and multipolygons). By default, it returns `{shape: 'arrow-table', schema, data}`. Feature properties and IDs become columns and geometry uses `geoarrow.wkb`. A bare geometry becomes a one-row table; an empty result becomes an empty table. Coordinates are not reprojected, and CRS metadata is explicitly unknown (`crs: null`); this loader does not yet resolve GML `srsName` into Arrow CRS metadata.
+The `GMLLoader` supports the standard geospatial subset of geometries (points, multipoints, lines, linestrings, polygons and multipolygons). By default, it returns an Apache Arrow `Table`. Feature properties and IDs become columns and geometry uses `geoarrow.wkb`. A bare geometry becomes a one-row table; an empty result becomes an empty table. Coordinates are not reprojected, and CRS metadata is explicitly unknown (`crs: null`); this loader does not yet resolve GML `srsName` into Arrow CRS metadata.
 
 Set `gml.shape: 'geojson'` to retain the previous FeatureCollection, bare geometry, or null result. Arrow conversion rejects properties that collide with the output `geometry` column or a feature ID's `id` column; explicit GeoJSON retains both values. The root `GMLLoader` is metadata-only (`_GMLLoader` remains an alias). Synchronous parsing uses `GMLLoaderWithParser` from `@loaders.gl/ogc/gml-loader`.
 
@@ -111,7 +111,7 @@ for await (const batch of await parseInBatches(response.body, GMLLoader, {
 
 })) {
 
-  console.log(batch.data.numRows);
+  console.log(batch.numRows);
 
 }
 ```
@@ -120,9 +120,9 @@ The streaming path emits complete `featureMember` / `featureMembers` features as
 
 ## Options[​](#options "Direct link to Options")
 
-| Option                | Type                                     | Default         | Description                                           |
-| --------------------- | ---------------------------------------- | --------------- | ----------------------------------------------------- |
-| `gml.shape`           | `'arrow-table' \| 'geojson'`             | `'arrow-table'` | Whole-file and streaming output shape.                |
-| `gml.batchSize`       | `number`                                 | `1000`          | Feature count per streaming batch.                    |
-| `gml.propertyTypes`   | `Record<string, GMLPropertyType>`        | —               | XML Schema scalar types keyed by local property name. |
-| `gml.transformCoords` | `(...coordinates: number[]) => number[]` | Identity        | Optional coordinate transformation.                   |
+| Option                | Type                                     | Default   | Description                                           |
+| --------------------- | ---------------------------------------- | --------- | ----------------------------------------------------- |
+| `gml.shape`           | `'arrow' \| 'geojson'`                   | `'arrow'` | Whole-file and streaming output shape.                |
+| `gml.batchSize`       | `number`                                 | `1000`    | Feature count per streaming batch.                    |
+| `gml.propertyTypes`   | `Record<string, GMLPropertyType>`        | —         | XML Schema scalar types keyed by local property name. |
+| `gml.transformCoords` | `(...coordinates: number[]) => number[]` | Identity  | Optional coordinate transformation.                   |

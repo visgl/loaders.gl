@@ -348,20 +348,20 @@ type TableScanSource<BatchT, PredicateT extends ColumnarPredicate = ColumnarPred
 | -------------------------------- | ------------------------------------- | ------------------------------------------------------------------------- |
 | Portable values and predicates   | `@loaders.gl/core/loader-utils`       | AST types, paths, traversal, validation, immutable binding                |
 | Logical table query              | `@loaders.gl/core/loader-utils`       | query options, canonical plan, capability vocabulary                      |
-| Predicate parsing and validation | `@loaders.gl/core/scan`               | portable SQL predicate syntax, validation, and binding                    |
+| Predicate parsing and validation | `@loaders.gl/core/query`              | portable SQL predicate syntax, validation, and binding                    |
 | SQL compilation                  | `@loaders.gl/sql`                     | database query compilation, identifier quoting, placeholders and bindings |
-| In-memory execution              | `@loaders.gl/core/scan/arrow-query`   | exact Arrow semantics for the portable query                              |
+| In-memory execution              | `@loaders.gl/core/query/arrow-query`  | exact Arrow semantics for the portable query                              |
 | Physical columnar scans          | `@loaders.gl/tables/parquet`          | files, ranges, pruning, decoding, residual filtering, batches             |
 | Table-format planning            | `IcebergTableSource` and future peers | snapshots, manifests/logs, deletes, file selection                        |
 
-Keeping the common contracts in loader-utils avoids making Parquet or GPU code depend on a database adapter. Core provides the query helpers from `@loaders.gl/core/scan/table-query` while generic planners can import the lower-level contract directly.
+Keeping the common contracts in loader-utils avoids making Parquet or GPU code depend on a database adapter. Core provides the query helpers from `@loaders.gl/core/query/table-query` while generic planners can import the lower-level contract directly.
 
 ### Optional scan runtime[​](#optional-scan-runtime "Direct link to Optional scan runtime")
 
-Applications that want the shared planner and reference executor can opt into the single `@loaders.gl/core/scan` package:
+Applications that want the shared planner and reference executor can opt into the single `@loaders.gl/core/query` package:
 
 ```
-import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/query';
 
 
 
@@ -383,7 +383,7 @@ Arrow is the built-in reference backend. The factory is asynchronous so optional
 The same optional package is also the application-facing home for the source-neutral query state and metadata vocabulary:
 
 ```
-import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/core/scan';
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/core/query';
 
 
 
@@ -793,7 +793,7 @@ explanation.operators.predicate.support; // 'pushdown' | 'pushdown+residual' | '
 explanation.rowGroups?.prunedByStatistics;
 ```
 
-Plans must not contain bound secrets or backend handles. Values may be represented by named parameters, and telemetry remains the source of truth for what actually happened at execution time. Supply `onTelemetry` to receive one immutable terminal snapshot:
+Plans must not contain bound secrets or backend handles. Values may be represented by named parameters, and telemetry remains the source of truth for what actually happened at execution time. Supply `onQueryComplete` to receive one immutable terminal snapshot:
 
 ```
 let telemetry;
@@ -804,7 +804,7 @@ for await (const batch of source.read({
 
   limit: 100,
 
-  onTelemetry: value => {
+  onQueryComplete: value => {
 
     telemetry = value;
 
@@ -895,13 +895,13 @@ The roadmap is therefore format-support-first. Each tranche must ship three thin
 ### Tranche sequence[​](#tranche-sequence "Direct link to Tranche sequence")
 
 1. **Contract and reference implementation — landed.** Keep the generic predicates, immutable `TableQueryOptions`, point-cloud and raster siblings, canonical planning, late-bound parameters, capability vocabulary, ordered scan tasks, Arrow execution, and lazy DuckDB compilation stable.
-2. **Optional package boundary — implemented in this stack.** Keep query state, metadata contracts, and the reference runtime in `@loaders.gl/core/scan`, while format adapters retain lightweight `@loaders.gl/core/loader-utils` dependencies. No UI or GPU code crosses this boundary.
+2. **Optional package boundary — implemented in this stack.** Keep query state, metadata contracts, and the reference runtime in `@loaders.gl/core/query`, while format adapters retain lightweight `@loaders.gl/core/loader-utils` dependencies. No UI or GPU code crosses this boundary.
 3. **Panel everywhere — concluded for support signaling.** The shared panel consumes package-level metadata/query types, renders discovered raster overviews, and is exercised by FlatGeobuf, Parquet, Iceberg, CSV, and Arrow examples. It now shows the source's declared execution method and disables Apply with the source-provided reason for metadata-only adapters.
 4. **Existing tabular and vector adapters — concluded.** In-memory Arrow, Arrow IPC, ORC, CSV, NDJSON, GeoPackage, and FlatGeobuf expose common executors. GeoPackage now closes the last residual-execution gap in this set. Shapefile and MLT are explicitly not implemented rather than being left in a planned state. Physical stripe, row-index, packed-index, and byte-range pruning remain performance improvements and do not change the support conclusion.
 5. **Existing cloud and versioned tables — concluded.** Parquet, Iceberg, and Delta Lake read-only snapshots expose common execution. Delta replays versioned transaction logs and plans active Parquet fragments; checkpoint discovery, CDC, deletion-vector decoding, and writes remain separate format features. Lance is explicitly not implemented.
 6. **Point-cloud execution — concluded.** COPC and Potree execute the shared point-cloud query through `scan()`. A common breadth-first hierarchy planner applies bounds, levels, and target spacing; adapters then apply exact bounds, residual predicates, caller-ordered projection, and one global limit while emitting bounded Arrow point batches. LAS/LAZ, PLY, PCD, and splats remain explicitly not implemented rather than partially supported.
 7. **Existing raster adapters — concluded.** GeoTIFF/COG, OME-TIFF, GeoZarr, OME-Zarr, and NetCDF execute validated raster queries through `getRaster()`. NetCDF supports numeric variable reads and named dimension index or half-open range slices with typed output. Terrain and LERC remain explicitly not implemented.
-8. **Tiles and services bridge — feature-table slice landed.** MVT/PMTiles vector tiles and bounded WFS/ArcGIS feature requests can now be bound through opt-in `@loaders.gl/core/scan` adapters. The physical tile address, layers, bounds, and CRS remain outside `TableQuery`; the resolved Arrow feature table exposes shared metadata, explain, cancellation, residual predicates, projection, relational operators, and limits. 3D Tiles, I3S, WMS imagery, and STAC remain specialized while shared time, level-of-detail, and non-table discovery metadata are still open.
+8. **Tiles and services bridge — feature-table slice landed.** MVT/PMTiles vector tiles and bounded WFS/ArcGIS feature requests can now be bound through opt-in `@loaders.gl/core/query` adapters. The physical tile address, layers, bounds, and CRS remain outside `TableQuery`; the resolved Arrow feature table exposes shared metadata, explain, cancellation, residual predicates, projection, relational operators, and limits. 3D Tiles, I3S, WMS imagery, and STAC remain specialized while shared time, level-of-detail, and non-table discovery metadata are still open.
 9. **Portable relational growth — second slice landed.** Arrow and DuckDB now execute the shared ordering, scalar-expression, grouped-aggregate, `UNION ALL`, and equi-join request shapes. Ordered append federation now resolves named `TableScanSource` instances through the existing `DataSourceManager`, reconciles strict or union schemas with explicit column mappings, and enforces source order, one global limit, cancellation, early termination, and batch provenance. Managed multi-source joins remain outside this tranche.
 10. **GPU and acceleration — deferred.** Lower the same plan to luma.gl/WGSL masks or indices, add deferred or materialized compaction, and compare GPU/CPU explain telemetry. Add spatial predicates and nearest neighbor only when indexed CPU, GPU, and remote-source strategies have compatible semantics.
 

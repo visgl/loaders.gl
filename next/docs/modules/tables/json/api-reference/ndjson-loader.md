@@ -69,7 +69,7 @@ Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL)
 | Data Format    | [Tables](https://loaders.gl/next/docs/specifications/category-table.md)                                                        |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`                                                                                      |
 
-`NDJSONLoader` loads NDJSON data as loaders.gl `ArrowTable` batches by default. Set `ndjson.shape: 'object-row-table'` or `ndjson.shape: 'array-row-table'` for row-oriented batches.
+`NDJSONLoader` loads NDJSON data as native Apache Arrow `RecordBatch` objects when streaming. Set `ndjson.shape: 'object-row-table'` or `ndjson.shape: 'array-row-table'` for row-oriented batches.
 
 ## Usage[​](#usage "Direct link to Usage")
 
@@ -115,7 +115,7 @@ for await (const batch of batches) {
 }
 ```
 
-To request Arrow output explicitly, set `ndjson.shape: 'arrow-table'` (this is the default).
+Set `ndjson.shape: 'arrow'` for a native Arrow Table from atomic loads and native RecordBatches from batch loads.
 
 ```
 import {load, loadInBatches} from '@loaders.gl/core';
@@ -126,7 +126,7 @@ import {NDJSONLoader} from '@loaders.gl/tables/json';
 
 const table = await load(url, NDJSONLoader, {
 
-  ndjson: {shape: 'arrow-table'}
+  ndjson: {shape: 'arrow'}
 
 });
 
@@ -136,12 +136,16 @@ const batches = await loadInBatches('ndjson.ndjson', NDJSONLoader, {
 
   batchSize: 1000,
 
-  ndjson: {shape: 'arrow-table'}
+  ndjson: {shape: 'arrow'}
 
 });
 ```
 
-`NDJSONLoader` also accepts the deprecated `json.shape` alias for shape selection. `ndjson.shape` takes precedence, and schema/recovery options remain under `ndjson.*`. In Arrow mode, `ndjson.schema` accepts either a loaders.gl `Schema` or Apache Arrow `Schema`. `ndjson.arrowConversion` has the same strict-by-default recovery policy as `JSONTableLoader`: type mismatches, missing fields, and integer conversion issues throw unless configured to recover, and extra fields throw unless configured to drop. GeoJSON feature rows are converted as generic nested JSON rows; use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` for GeoArrow WKB output.
+`NDJSONLoader` also accepts the deprecated `json.shape` alias for shape selection. `ndjson.shape` takes precedence, and schema/recovery options remain under `ndjson.*`. In Arrow mode, `ndjson.schema` accepts either a loaders.gl `Schema` or Apache Arrow `Schema`. `ndjson.arrowConversion` has the same strict-by-default recovery policy as `JSONTableLoader`: type mismatches, missing fields, and integer conversion issues throw unless configured to recover, and extra fields throw unless configured to drop. GeoJSON feature rows are converted as generic nested JSON rows; use `GeoJSONLoader` with `geojson.shape: 'arrow'` for GeoArrow WKB output.
+
+## Data sources[​](#data-sources "Direct link to Data sources")
+
+Pass `NDJSONLoader` to [`createDataSource()`](https://loaders.gl/next/docs/modules/core/api-reference/create-data-source.md) to open a URL or Blob for table queries. Use `load()` to parse the input into a table.
 
 ## Data Format[​](#data-format "Direct link to Data Format")
 
@@ -167,13 +171,13 @@ Each element in the `data` array corresponds to a line (Object) in the NDJSON da
 
 Supports the table category options such as `batchSize`.
 
-| Option                             | Type                                                       | Default                | Description                                                                                                                              |
-| ---------------------------------- | ---------------------------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `ndjson.shape`                     | `string`                                                   | `'arrow-table'`        | Requested table shape. Supported values are `'object-row-table'`, `'array-row-table'`, and `'arrow-table'`.                              |
-| `ndjson.schema`                    | `Schema \| arrow.Schema`                                   | `undefined`            | Optional schema used when `ndjson.shape` is `'arrow-table'`.                                                                             |
-| `ndjson.arrowConversion`           | `object`                                                   | strict recovery policy | Optional Arrow conversion policy. Supports `onTypeMismatch`, `onMissingField`, `onExtraField`, `integerConversion`, and `logRecoveries`. |
-| `ndjson.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'`                         | `'never'`              | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode.                            |
-| `json.shape`                       | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `'arrow-table'`        | Deprecated alias for `ndjson.shape`; `ndjson.shape` takes precedence.                                                                    |
+| Option                             | Type                               | Default                | Description                                                                                                                              |
+| ---------------------------------- | ---------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `ndjson.shape`                     | `string`                           | `'arrow'`              | Requested table shape. Supported values are `'arrow'`, `'object-row-table'`, and `'array-row-table'`.                                    |
+| `ndjson.schema`                    | `Schema \| arrow.Schema`           | `undefined`            | Optional schema used when `ndjson.shape` is `'arrow'`.                                                                                   |
+| `ndjson.arrowConversion`           | `object`                           | strict recovery policy | Optional Arrow conversion policy. Supports `onTypeMismatch`, `onMissingField`, `onExtraField`, `integerConversion`, and `logRecoveries`. |
+| `ndjson.arrowConversion.viewTypes` | `'never' \| 'prefer' \| 'require'` | `'never'`              | Controls whether supported Arrow runtimes emit `BinaryView` and `Utf8View`, with fallback in `'prefer'` mode.                            |
+| `json.shape`                       | \`'arrow' \                        | 'object-row-table' \   | 'array-row-table'\`                                                                                                                      |
 
 ## Worker batches[​](#worker-batches "Direct link to Worker batches")
 

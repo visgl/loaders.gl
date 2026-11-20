@@ -106,9 +106,9 @@ npm install @loaders.gl/core @loaders.gl/images
 
 ## Imports and parser access[​](#imports-and-parser-access "Direct link to Imports and parser access")
 
-Import metadata loaders such as `BasisLoader`, `CompressedTextureLoader`, and `TextureLoader` from `@loaders.gl/images`. Async core APIs preload their parsers. For direct parsing, import `BasisLoaderWithParser` from `@loaders.gl/images/basis-loader` or `CompressedTextureLoaderWithParser` from `@loaders.gl/images/compressed-texture-loader`.
+Import metadata loaders such as `BasisLoader`, `CompressedTextureLoader`, and `TextureLoader` from `@loaders.gl/images`. Async core APIs preload their parsers. For direct parsing, import `BasisLoaderWithParser` from `@loaders.gl/images/basis` or `CompressedTextureLoaderWithParser` from `@loaders.gl/images/texture`.
 
-Writers use direct subpaths: `KTX2BasisWriter` comes from `@loaders.gl/images/ktx2-basis-writer`, and `CompressedTextureWriter` comes from `@loaders.gl/images/compressed-texture-writer`. Manifest validators use `@loaders.gl/images/texture-manifest-schema`; the exported JSON Schema is `@loaders.gl/images/texture-manifest.schema.json`.
+Writers use direct subpaths: `KTX2BasisWriter` comes from `@loaders.gl/images/basis`, and `CompressedTextureWriter` comes from `@loaders.gl/images/texture`. Manifest validators use `@loaders.gl/images/texture`; the exported JSON Schema is `@loaders.gl/images/texture-manifest.schema.json`.
 
 Texture worker bundles and Basis/Crunch libraries now ship in the images package. Default loading uses the new package identity. Custom worker/library URLs must use `@loaders.gl/images` instead of the removed textures package. Compressed texture parsing/transcoding does not require Sharp; only Node image decoding/encoding does.
 

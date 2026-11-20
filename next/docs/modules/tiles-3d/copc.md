@@ -54,7 +54,7 @@ bounded request
 
 The same source can serve progressive viewport tiles or a bounded scan without changing the underlying point representation.
 
-[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
+[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
 
 The COPC path
 
@@ -102,10 +102,10 @@ npm install @loaders.gl/core @loaders.gl/tiles-3d
 
 ## APIs[​](#apis "Direct link to APIs")
 
-| API                                                                                                                                                                                               | Description                                                             |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [`COPCSourceLoader`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md) ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square) | Loads viewport-selected point data from COPC files through byte ranges. |
-| [`COPCWriter`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)                                                                                              | Writes Mesh or Mesh Arrow table point clouds as COPC 1.0 data.          |
+| API                                                                                                                                                                                  | Description                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| [`COPCLoader`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-loader.md) ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square) | Loads viewport-selected point data from COPC files through byte ranges. |
+| [`COPCWriter`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)                                                                                 | Writes Mesh or Mesh Arrow table point clouds as COPC 1.0 data.          |
 
 ## Attribution[​](#attribution "Direct link to Attribution")
 

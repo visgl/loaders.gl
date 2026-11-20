@@ -117,7 +117,7 @@ Reusable scan, geometry construction, geometry processing, and codec APIs are av
 | [`@loaders.gl/core/schema`](https://loaders.gl/next/docs/modules/core/schema.md)                     | Shared schemas, table and geometry types.                                                            |
 | [`@loaders.gl/core/schema-utils`](https://loaders.gl/next/docs/modules/core/schema-utils.md)         | Schema conversion, table helpers, and Arrow transport.                                               |
 | [`@loaders.gl/core/polyfills`](https://loaders.gl/next/docs/modules/core/polyfills/api-reference.md) | Independent Node platform adapters.                                                                  |
-| `@loaders.gl/core/scan`                                                                                   | Scan planning and execution, Arrow queries, portable predicates, and format-neutral source wrappers. |
+| `@loaders.gl/core/query`                                                                                  | Scan planning and execution, Arrow queries, portable predicates, and format-neutral source wrappers. |
 | `@loaders.gl/core/arrow-geometry`                                                                         | Geometry builders and loader-facing conversion helpers.                                              |
 | `@loaders.gl/core/geoarrow`                                                                               | GeoArrow inspection, validation, conversion, coordinate operations, clustering, and spatial indexes. |
 | `@loaders.gl/core/wkt`                                                                                    | Geometry codec helpers; TWKB is also available from `@loaders.gl/core/wkt/twkb`.                     |
@@ -125,7 +125,7 @@ Reusable scan, geometry construction, geometry processing, and codec APIs are av
 Import these APIs through their subpaths. The core root entrypoint keeps its existing exports. Format loader and writer descriptors remain in their format modules, including `@loaders.gl/geospatial/wkt`; database adapters remain in `@loaders.gl/sql`.
 
 ```
-import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/query';
 
 import {GeoArrowBuilder} from '@loaders.gl/core/arrow-geometry';
 
@@ -140,7 +140,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->61<!-- -->)
+All exported subpaths (<!-- -->81<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -155,11 +155,11 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/geometry-codecs`             |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/geometry-field`              |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/legacy-binary`               |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/native-geometry`             |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/sampled-bounds`              |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/wkb-arrow-utils`             |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/wkb-statistics`              |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/wkb-table`                   |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-worker-transport`                     |
 |                                                                                                                                        | `@loaders.gl/core/cluster-source`                             |
 |                                                                                                                                        | `@loaders.gl/core/constants`                                  |
 |                                                                                                                                        | `@loaders.gl/core/federated-table-scan-source`                |
@@ -181,10 +181,31 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                        | `@loaders.gl/core/null-worker-node.js`                        |
 |                                                                                                                                        | `@loaders.gl/core/null-worker.js`                             |
 |                                                                                                                                        | `@loaders.gl/core/polyfills`                                  |
+|                                                                                                                                        | `@loaders.gl/core/query`                                      |
+|                                                                                                                                        | `@loaders.gl/core/query/arrow-execution`                      |
+|                                                                                                                                        | `@loaders.gl/core/query/arrow-query`                          |
+|                                                                                                                                        | `@loaders.gl/core/query/bind-sql-predicate`                   |
+|                                                                                                                                        | `@loaders.gl/core/query/parse-sql-predicate`                  |
+|                                                                                                                                        | `@loaders.gl/core/query/query`                                |
+|                                                                                                                                        | `@loaders.gl/core/query/query-arrow-table`                    |
+|                                                                                                                                        | `@loaders.gl/core/query/rows-to-arrow`                        |
+|                                                                                                                                        | `@loaders.gl/core/query/scan-engine`                          |
+|                                                                                                                                        | `@loaders.gl/core/query/scan-query`                           |
+|                                                                                                                                        | `@loaders.gl/core/query/sql-predicate`                        |
+|                                                                                                                                        | `@loaders.gl/core/query/sql-predicate-schema`                 |
+|                                                                                                                                        | `@loaders.gl/core/query/sql-predicate-types`                  |
+|                                                                                                                                        | `@loaders.gl/core/query/sql-predicate-zod`                    |
+|                                                                                                                                        | `@loaders.gl/core/query/table-query`                          |
+|                                                                                                                                        | `@loaders.gl/core/query/table-query-capabilities`             |
 |                                                                                                                                        | `@loaders.gl/core/scan`                                       |
+|                                                                                                                                        | `@loaders.gl/core/scan-scales`                                |
+|                                                                                                                                        | `@loaders.gl/core/scan/arrow-execution`                       |
 |                                                                                                                                        | `@loaders.gl/core/scan/arrow-query`                           |
+|                                                                                                                                        | `@loaders.gl/core/scan/arrow-query-worker`                    |
+|                                                                                                                                        | `@loaders.gl/core/scan/arrow-query-worker-entry.js`           |
 |                                                                                                                                        | `@loaders.gl/core/scan/bind-sql-predicate`                    |
 |                                                                                                                                        | `@loaders.gl/core/scan/parse-sql-predicate`                   |
+|                                                                                                                                        | `@loaders.gl/core/scan/query`                                 |
 |                                                                                                                                        | `@loaders.gl/core/scan/query-arrow-table`                     |
 |                                                                                                                                        | `@loaders.gl/core/scan/rows-to-arrow`                         |
 |                                                                                                                                        | `@loaders.gl/core/scan/scan-engine`                           |
@@ -197,7 +218,6 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                        | `@loaders.gl/core/scan/table-query-capabilities`              |
 |                                                                                                                                        | `@loaders.gl/core/schema`                                     |
 |                                                                                                                                        | `@loaders.gl/core/schema-utils`                               |
-|                                                                                                                                        | `@loaders.gl/core/schema-utils/arrow-transport`               |
 |                                                                                                                                        | `@loaders.gl/core/schema/geoarrow-metadata.schema.json`       |
 |                                                                                                                                        | `@loaders.gl/core/schema/geoparquet.schema.json`              |
 |                                                                                                                                        | `@loaders.gl/core/schema/geospatial-metadata-zod-schema`      |

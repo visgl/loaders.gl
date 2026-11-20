@@ -1,6 +1,6 @@
 # Worker processing
 
-`@loaders.gl/core/worker-utils` adapts loader and writer requests to the public `TaskRunner` API from `@math.gl/core/tasks`. Worker transport and pool internals are not exported. Atomic calls own one initialized task handle; a streaming call keeps one handle for the entire input iterator and releases it on completion or early return.
+`@loaders.gl/core/worker-utils` adapts loader and writer requests to the public `TaskRunner` API from `@math.gl/tasks`. Worker transport and pool internals are not exported. Atomic calls own one initialized task handle; a streaming call keeps one handle for the entire input iterator and releases it on completion or early return.
 
 ## processOnWorker[​](#processonworker "Direct link to processOnWorker")
 
@@ -82,7 +82,7 @@ The adapter installs `initializeTaskWorker`, wraps arbitrary loader values in na
 
 ## Task lifecycle[​](#task-lifecycle "Direct link to Task lifecycle")
 
-`TaskRunner`, `initializeTaskWorker`, `preloadTasks`, `createTypedTaskDispatcher`, and their public task types are also exported from this subpath. Use them directly for application-defined typed tasks; task input and output are plain objects with named fields.
+`TaskRunner`, `initializeTaskWorker`, `preloadTasks`, `createTypedTaskDispatcher`, and their public task types are imported directly from `@math.gl/tasks`. Use them for application-defined typed tasks; task input and output are plain objects with named fields.
 
 `maxConcurrency` limits active handles for one loader descriptor. Handles are closed after each atomic call or streaming session. The legacy `reuseWorkers`, `source`, `workerType`, debug callbacks, and direct pool controls are not task lifecycle controls. Inline `source` is rejected; provide a module-worker URL or factory instead.
 

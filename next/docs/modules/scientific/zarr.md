@@ -42,13 +42,13 @@ windowvariablelevel
 
 rea&#x64;**→**
 
-[03 · application result](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)
+[03 · application result](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)
 
-### [Typed array result](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)
+### [Typed array result](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)
 
-[Values return with dimension metadata and coordinate meaning intact.<!-- --> ↗](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)
+[Values return with dimension metadata and coordinate meaning intact.<!-- --> ↗](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)
 
-[valuesdimensionsmetadata](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md)
+[valuesdimensionsmetadata](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md)
 
 A local file may use direct offsets; a cloud source may use HTTP ranges or object-store chunks. The application-facing selection remains the same.
 
@@ -102,22 +102,22 @@ npm install @loaders.gl/core @loaders.gl/scientific
 
 ## APIs[​](#apis "Direct link to APIs")
 
-* [`OMEZarrSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/ome-zarr-source-loader.md) opens OME-Zarr v2 and v3 image groups through `createDataSource()` or `load()`.
-* [`GeoZarrSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-source-loader.md) opens one georeferenced Zarr data variable and reads native spatial windows with named time, vertical, or band selections.
-* [`SpatialDataSourceLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/spatial-data-source-loader.md) discovers named images, labels, points, shapes, and tables from a SpatialData root. It opens Zarr-backed raster and AnnData array elements directly and reports interoperable Parquet-dataset and GeoParquet URLs for points and shapes.
+* [`OMEZarrLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/ome-zarr-loader.md) opens OME-Zarr v2 and v3 image groups through `createDataSource()` or `load()`.
+* [`GeoZarrLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md) opens one georeferenced Zarr data variable and reads native spatial windows with named time, vertical, or band selections.
+* [`SpatialDataLoader`](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/spatial-data-loader.md) discovers named images, labels, points, shapes, and tables from a SpatialData root. It opens Zarr-backed raster and AnnData array elements directly and reports interoperable Parquet-dataset and GeoParquet URLs for points and shapes.
 * `loadZarrConsolidatedMetadata()` probes `.zmetadata`, `zmetadata`, and `zarr.json` documents and reports top-level arrays and groups.
 * `loadZarr()` and `ZarrPixelSource` provide the legacy Zarr v2 pixel-pyramid API.
 
 ## Example[​](#example "Direct link to Example")
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OMEZarrSourceLoader} from '@loaders.gl/scientific/zarr';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr';
 
 
 
-const source = createDataSource('https://example.com/spatialdata.zarr', [OMEZarrSourceLoader], {
+const source = createDataSourceSync('https://example.com/spatialdata.zarr', [OMEZarrLoader], {
 
   zarr: {path: 'images/example-image'}
 
@@ -132,7 +132,7 @@ const raster = await source.getRaster({level: 0, channels: [0, 1, 2]});
 
 The [OME-Zarr example](https://loaders.gl/next/examples/bioimaging/ome-zarr) demonstrates browsing a SpatialData-style root and selecting an image pyramid.
 
-For climate, weather, ocean, satellite, and other Earth-science stores, use `GeoZarrSourceLoader`. It recognizes the current GeoZarr `proj:` and `spatial:` conventions as well as the regular one-dimensional coordinate arrays commonly written by xarray/CF workflows. The [GeoZarr deck.gl example](https://loaders.gl/next/examples/geospatial/geo-zarr) reads a public NASA POWER climatology store directly from S3 and renders monthly solar irradiance on an interactive map.
+For climate, weather, ocean, satellite, and other Earth-science stores, use `GeoZarrLoader`. It recognizes the current GeoZarr `proj:` and `spatial:` conventions as well as the regular one-dimensional coordinate arrays commonly written by xarray/CF workflows. The [GeoZarr deck.gl example](https://loaders.gl/next/examples/geospatial/geo-zarr) reads a public NASA POWER climatology store directly from S3 and renders monthly solar irradiance on an interactive map.
 
 ## Feature matrix[​](#feature-matrix "Direct link to Feature matrix")
 
@@ -175,16 +175,16 @@ Query metadata is suitable for populating source-neutral controls before pixel d
 
 ## SpatialData containers[​](#spatialdata-containers "Direct link to SpatialData containers")
 
-`SpatialDataSourceLoader` normalizes the five standard SpatialData namespaces without loading element payloads. Each element retains its axes, coordinate transformations, format version, and original attributes. Image and label descriptors use `ome-zarr`; point descriptors use `parquet-dataset`; shape descriptors use `geoparquet`; and table descriptors use `anndata-zarr`.
+`SpatialDataLoader` normalizes the five standard SpatialData namespaces without loading element payloads. Each element retains its axes, coordinate transformations, format version, and original attributes. Image and label descriptors use `ome-zarr`; point descriptors use `parquet-dataset`; shape descriptors use `geoparquet`; and table descriptors use `anndata-zarr`.
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {SpatialDataSourceLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataLoader} from '@loaders.gl/scientific/zarr';
 
 
 
-const source = createDataSource(rootUrl, [SpatialDataSourceLoader]);
+const source = createDataSourceSync(rootUrl, [SpatialDataLoader]);
 
 const metadata = await source.getMetadata();
 

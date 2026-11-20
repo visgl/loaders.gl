@@ -54,7 +54,7 @@ Framework-independent loaders for GraphML, Graphviz DOT, and GEXF documents.
 
 ## Graph output shapes[​](#graph-output-shapes "Direct link to Graph output shapes")
 
-Graph loaders default to `graphml.shape: 'arrow-table'`, `dot.shape: 'arrow-table'`, or `gexf.shape: 'arrow-table'`. The result uses the standard table collection shape:
+Graph loaders default to `graphml.shape: 'arrow'`, `dot.shape: 'arrow'`, or `gexf.shape: 'arrow'`. The result uses the standard table collection shape:
 
 ```
 {
@@ -63,9 +63,9 @@ Graph loaders default to `graphml.shape: 'arrow-table'`, `dot.shape: 'arrow-tabl
 
   tables: [
 
-    {name: 'nodes', table: {shape: 'arrow-table', schema, data: nodes}},
+    {name: 'nodes', table: nodes},
 
-    {name: 'edges', table: {shape: 'arrow-table', schema, data: edges}}
+    {name: 'edges', table: edges}
 
   ]
 
@@ -77,11 +77,15 @@ Each `data` is an Apache Arrow `Table`; each `schema` is a loaders.gl schema. Th
 Application attributes live in a typed `attributes` struct, so keys such as `id` cannot replace structural columns. GraphML declarations determine Boolean, Int32, Int64, Float32, Float64, and Utf8 fields, including unused declarations on empty graphs. GraphML `long` values are parsed as exact integers and read as `bigint`. Invalid or out-of-range integer values make the affected attribute column Utf8, preserving values as strings. DOT scalar types are inferred across the whole column; numbers use Float64, booleans use Bool, and mixed scalar types use Utf8. Nested DOT subgraph membership uses List and Struct columns. Missing values become Arrow nulls. Empty undeclared attributes have a Struct with no child fields.
 
 ```
+import {Table} from 'apache-arrow';
+
+
+
 const graph = await load('network.graphml', GraphMLLoader);
 
-if (graph.shape === 'tables' && graph.tables[0].table.shape === 'arrow-table') {
+if (graph.shape === 'tables' && graph.tables[0].table instanceof Table) {
 
-  const nodes = graph.tables[0].table.data;
+  const nodes = graph.tables[0].table;
 
   console.log(nodes.getChild('id')?.get(0));
 
@@ -93,6 +97,10 @@ Select `'object-row-table'` for the same named table collection with object arra
 For compatibility with existing graph-layer consumers, request plain graph records:
 
 ```
+import {Table} from 'apache-arrow';
+
+
+
 const graph = await load('network.graphml', GraphMLLoader, {
 
   graphml: {shape: 'plain-graph-data'}
@@ -112,6 +120,10 @@ Plain output retains `shape: 'plain-graph-data'`, `nodes`, and `edges`, with ori
 import {load} from '@loaders.gl/core';
 
 import {GraphMLLoader} from '@loaders.gl/graphs';
+
+
+
+import {Table} from 'apache-arrow';
 
 
 

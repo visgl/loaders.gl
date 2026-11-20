@@ -12,7 +12,7 @@ import {MarkdownLoader} from '@loaders.gl/documents';
 const document = await parse('# Title\n\nA **bold** statement.', MarkdownLoader);
 ```
 
-For synchronous parsing, import `MarkdownLoaderWithParser` from `@loaders.gl/documents/markdown-loader` and use `parseSync`.
+For synchronous parsing, import `MarkdownLoaderWithParser` from `@loaders.gl/documents/markdown` and use `parseSync`.
 
 | Property   | Value               |
 | ---------- | ------------------- |

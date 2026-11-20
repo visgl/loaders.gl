@@ -4,7 +4,7 @@ Tile converter
 
 `@loaders.gl/tile-converter` provides command-line and JavaScript tools for converting I3S and 3D Tiles data. Use the APIs when conversion is part of an application, or the CLI when it belongs in a build or data-preparation workflow.
 
-[V5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)
+[Default v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)
 
 <!-- -->
 
@@ -28,7 +28,11 @@ Tile converter
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/build-instructions.md)
+[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/build-instructions.md)[Upgrade from v4](https://loaders.gl/next/docs/upgrade-guide.md#tile-converter-defaults-to-v5)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/upgrade-guide.md#tile-converter-defaults-to-v5)
 
 The conversion path
 
@@ -88,38 +92,32 @@ npm install @loaders.gl/tile-converter
 
 ## Choose a workflow[​](#choose-a-workflow "Direct link to Choose a workflow")
 
-| Workflow                 | Entry point                                                                                                              | Current scope                                                                                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Experimental v5 Node CLI | [`tile-converter-v5`](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)       | Inspect, validate and convert explicitly selected meshes; opt-in complete explicit hierarchy for 3D Tiles/3TZ |
-| Portable v5 API          | [`/v5/core` and `/v5/adapters`](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md) | Mesh/point processing, declared features and CRS operations, bounded archive output                           |
-| Browser application      | [Inline conversion app](https://loaders.gl/next/examples/tiles/3d-tiles-conversion)                                 | Inspect, select, convert and download partial SLPK/3TZ collections                                            |
-| Legacy v4 Node CLI       | [`tile-converter`](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter.md)             | Original I3S ↔ 3D Tiles workflow, filesystem/services and texture atlases                                     |
+| Workflow                           | Entry point                                                                                                              | Current scope                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Default v5 Node CLI (experimental) | [`tile-converter`](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)          | Inspect, validate and convert explicitly selected meshes; opt-in complete explicit hierarchy for 3D Tiles/3TZ |
+| Portable v5 API                    | [`/v5/core` and `/v5/adapters`](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md) | Mesh/point processing, declared features and CRS operations, bounded archive output                           |
+| Browser application                | [Inline conversion app](https://loaders.gl/next/examples/tiles/3d-tiles-conversion)                                 | Inspect, select, convert and download partial SLPK/3TZ collections                                            |
+| Legacy v4 Node CLI                 | [`tile-converter-v4`](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter.md)          | Original I3S ↔ 3D Tiles workflow, filesystem/services and texture atlases                                     |
 
-The documentation describes the current repository implementation. Check the installed package version before using experimental v5 capabilities.
+The documentation describes the current repository implementation. Check the installed package version with `npx tile-converter --version` before using experimental v5 capabilities. See the [migration table](https://loaders.gl/next/docs/upgrade-guide.md#tile-converter-defaults-to-v5) for existing scripts.
 
 ## Command line[​](#command-line "Direct link to Command line")
 
 Start with metadata inspection; conversion requires explicit content IDs from the result:
 
 ```
-npx tile-converter-v5 inspect ./tileset.json
+npx tile-converter inspect ./tileset.json
 
-npx tile-converter-v5 validate ./tileset.json --resource tile-root-content-0
+npx tile-converter validate ./tileset.json --resource tile-root-content-0
 
-npx tile-converter-v5 convert ./tileset.json --resource tile-root-content-0 --output ./converted.3tz
+npx tile-converter convert ./tileset.json --resource tile-root-content-0 --output ./converted.3tz
 ```
 
 See the [v5 CLI reference](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md) for output formats, feature-schema controls, geometric-error policy and protected destinations.
 
 ## API[​](#api "Direct link to API")
 
-A JavaScript API is also available:
-
-* `I3SConverter` class that converts 3DTiles to I3S
-* `Tiles3DConverter` class that converts I3S to 3DTiles
-* The experimental [`/v5/core` and `/v5/adapters` APIs](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md) for portable mesh/point conversion, explicit feature mapping and archive output.
-
-The `tile-converter-v5` command uses the shared v5 sources, codecs and sinks. The original `tile-converter` command uses the legacy converter classes.
+Import the v5 API from the package root or the unchanged `/v5` alias. The [API reference](https://loaders.gl/next/docs/modules/tile-converter/api-reference.md) explains the portable v5 APIs and their Node and browser subpaths. Legacy Node.js classes `I3SConverter` and `Tiles3DConverter` are available under `@loaders.gl/tile-converter/v4`.
 
 ### Runtime portability[​](#runtime-portability "Direct link to Runtime portability")
 
@@ -168,4 +166,4 @@ The tile-converter module represents a major development effort and was funded a
 
 MIT License.
 
-The legacy package-root v4 classes are JavaScript-only. TypeScript declarations are published for the experimental v5 entry points, including `@loaders.gl/tile-converter/v5` and its `/core`, `/adapters`, `/browser`, and `/node` subpaths.
+TypeScript declarations are provided for the package root, legacy `/v4`, and the `/v5`, `/v5/core`, `/v5/adapters`, `/v5/browser`, and `/v5/node` entry points.

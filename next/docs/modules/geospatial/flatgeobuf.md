@@ -98,10 +98,10 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers[​](#loaders-and-writers "Direct link to Loaders and Writers")
 
-| Loader / Source                                                                                                                                                                                                       | Description                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| [`FlatGeobufLoader`](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)                                                                                              | Loads FlatGeobuf files as geospatial tables.                          |
-| [`FlatGeobufSourceLoader`](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source-loader.md) ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square) | Streams features and spatially filtered data from FlatGeobuf sources. |
+| Loader / Source                                                                                                                                                                                          | Description                                                           |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [`FlatGeobufLoader`](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-loader.md)                                                                                 | Loads FlatGeobuf files as geospatial tables.                          |
+| [`FlatGeobufLoader`](https://loaders.gl/next/docs/modules/geospatial/flatgeobuf/api-reference/flatgeobuf-source.md) ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square) | Streams features and spatially filtered data from FlatGeobuf sources. |
 
 ## Attribution[​](#attribution "Direct link to Attribution")
 

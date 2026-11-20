@@ -100,7 +100,11 @@ Detailed guide
 
 The sections below cover support, authentication, cached tiles, dynamic exports, and source options.
 
-ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or both. `ArcGISMapTileSourceLoader` presents either mode through one loaders.gl `TileSource`.
+ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or both. `ArcGISMapTileLoader` presents either mode through one loaders.gl `TileSource`.
+
+| Property    | Value                 |
+| ----------- | --------------------- |
+| Data source | `ArcGISMapTileSource` |
 
 ## Feature support[​](#feature-support "Direct link to Feature support")
 
@@ -125,17 +129,17 @@ ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or
 ## Cached tiles[​](#cached-tiles "Direct link to Cached tiles")
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISMapTileSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISMapTileLoader} from '@loaders.gl/arcgis';
 
 
 
-const source = await load(
+const source = await createDataSource(
 
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
 
-  [ArcGISMapTileSourceLoader]
+  [ArcGISMapTileLoader]
 
 );
 
@@ -151,7 +155,7 @@ const image = await source.getTile({x: 2, y: 1, z: 2});
 Select export mode when a service is not cached or when dynamic layer, time, or rendering parameters are required:
 
 ```
-const source = await load(mapServerUrl, [ArcGISMapTileSourceLoader], {
+const source = await createDataSource(mapServerUrl, [ArcGISMapTileLoader], {
 
   'arcgis-map-server': {
 
@@ -223,7 +227,7 @@ const layer = new SourceLayer({
 
 ## Query vector features and tables[​](#query-vector-features-and-tables "Direct link to Query vector features and tables")
 
-For a queryable `/MapServer/{layerId}`, use `ArcGISFeatureServerSourceLoader` and its [feature query API](https://loaders.gl/next/docs/developer-guide/arcgis/feature-layers.md). The registry selects this vector source for numbered MapServer layer URLs; MapServer root URLs retain the imagery source. Spatial layer queries require advertised GeoJSON support. Counts, IDs, extents and nonspatial tables share the feature-query implementation. This does not add `identify`, `find`, or legend APIs.
+For a queryable `/MapServer/{layerId}`, use `ArcGISFeatureServerLoader` and its [feature query API](https://loaders.gl/next/docs/developer-guide/arcgis/feature-layers.md). The registry selects this vector source for numbered MapServer layer URLs; MapServer root URLs retain the imagery source. Spatial layer queries require advertised GeoJSON support. Counts, IDs, extents and nonspatial tables share the feature-query implementation. This does not add `identify`, `find`, or legend APIs.
 
 ## TileMatrix metadata[​](#tilematrix-metadata "Direct link to TileMatrix metadata")
 

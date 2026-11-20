@@ -27,9 +27,9 @@ These names are portal item types, not every human-facing ArcGIS product label. 
 ```
 import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
 
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
 
 
@@ -49,7 +49,7 @@ if (!selected.selectedLayer) throw new Error('Select a layer first.');
 
 console.log(selected.selectedLayer.metadata.fields);
 
-const source = await load(selected.selectedLayer.url, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(selected.selectedLayer.url, ArcGISFeatureServerLoader);
 
 const result = await source.queryFeatures({maxFeatures: 5000});
 ```

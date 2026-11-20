@@ -18,10 +18,10 @@ Choose rendered imagery or numerical pixels from your existing imagery service.
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                         |
-| ------------- | ----------------------------------------------------------------------------------------------------------- |
-| Source loader | [`ArcGISImageServerSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
-| Source loader | [`ArcGISImageTileSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md)   |
+| Type          | API                                                                                                   |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| Source loader | [`ArcGISImageServerLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
+| Source loader | [`ArcGISImageTileLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md)   |
 
 [![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-image-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 
@@ -78,7 +78,7 @@ For a familiar rendered view, request an image. For analytical pixels, use LERC 
 | -------------------------------------- | ------------------------------ | ------------------------------------------------------------------------ |
 | Viewport images                        | Supported                      | `getImage()` or `exportImage()` returns decoded imagery                  |
 | LERC rasters                           | Supported                      | `exportRaster()` returns typed bands, masks, dimensions and statistics   |
-| Image tiles                            | Supported                      | `ArcGISImageTileSourceLoader` makes dynamic exports for tile bounds      |
+| Image tiles                            | Supported                      | `ArcGISImageTileLoader` makes dynamic exports for tile bounds            |
 | Native cached imagery tiles            | Not implemented                | This tile source does not consume `/tile` or cached elevation protocols  |
 | Spatial references                     | Supported for viewport exports | `bboxSR` and `imageSR`; tile exports use Web Mercator                    |
 | Bands and pixel types                  | Supported                      | Selection/parameters forwarded; numerical types retained in LERC results |

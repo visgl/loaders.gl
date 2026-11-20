@@ -69,7 +69,7 @@ See [Draco](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md) d
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {DracoWriter} from '@loaders.gl/scene/draco-writer';
+import {DracoWriter} from '@loaders.gl/scene/draco';
 
 import {encode} from '@loaders.gl/core';
 

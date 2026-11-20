@@ -21,7 +21,7 @@ The package root exports metadata only. Asynchronous core APIs load the parser t
 ## Direct parser access[​](#direct-parser-access "Direct link to Direct parser access")
 
 ```
-import {MaterialXLoaderWithParser} from '@loaders.gl/scene/materialx-loader';
+import {MaterialXLoaderWithParser} from '@loaders.gl/scene/materialx';
 
 
 

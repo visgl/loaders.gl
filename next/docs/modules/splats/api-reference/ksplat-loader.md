@@ -50,7 +50,7 @@ Complete in-memory files; no progressive sections
 
 ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)
 
-`KSPLATLoader` parses GaussianSplats3D `.ksplat` files and returns a [Mesh Arrow table](https://loaders.gl/next/docs/specifications/category-mesh.md#mesh-arrow-tables).
+`KSPLATLoader` parses GaussianSplats3D `.ksplat` files and returns a native Apache Arrow `Table`.
 
 Detailed guide
 
@@ -64,7 +64,7 @@ The reference below covers the supported file shape, decoded columns, output met
 | Extensions   | `.ksplat`                                                                    |
 | Worker       | ❌ No                                                                        |
 | Input type   | `ArrayBuffer`                                                                |
-| Output shape | `arrow-table`                                                                |
+| Output shape | `arrow`                                                                      |
 
 ## Usage[​](#usage "Direct link to Usage")
 
@@ -82,6 +82,6 @@ The loader decodes complete in-memory files. It does not expose GaussianSplats3D
 
 ## Options[​](#options "Direct link to Options")
 
-| Option         | Type            | Default         | Description                                                      |
-| -------------- | --------------- | --------------- | ---------------------------------------------------------------- |
-| `splats.shape` | `'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table output. V1 only supports `arrow-table`. |
+| Option         | Type      | Default   | Description                   |
+| -------------- | --------- | --------- | ----------------------------- |
+| `splats.shape` | `'arrow'` | `'arrow'` | Returns a native Arrow table. |

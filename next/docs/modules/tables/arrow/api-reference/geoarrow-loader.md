@@ -65,7 +65,7 @@ The sections below cover usage, options, recognized extension types, and the ret
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {GeoArrowLoader} from '@loaders.gl/tables/arrow';
+import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
 
 import {load} from '@loaders.gl/core';
 
@@ -81,7 +81,7 @@ const data = await load(url, GeoArrowLoader, options);
 
 ## Worker parsing[​](#worker-parsing "Direct link to Worker parsing")
 
-Atomic parsing and `parseInBatches()` support workers with `core.worker: true`. Each batch session retains one Arrow IPC reader, requests input on demand, and waits for the consumer before advancing past an output batch. Batches retain the existing `arrow-table` output shape. Atomic parsing converts to the requested output shape on the caller after hydrating the transferred Arrow data.
+Atomic parsing and `parseInBatches()` support workers with `core.worker: true`. Each batch session retains one Arrow IPC reader, requests input on demand, and waits for the consumer before advancing past an output batch. Batched APIs yield native Apache Arrow `RecordBatch` objects by default. Atomic parsing converts to the requested output shape on the caller after hydrating the transferred Arrow data.
 
 Workers return owned Arrow column buffers, preserving dictionaries and extension metadata without transferring buffers still referenced by the reader. Decoded JSON rows and GeoJSON features are never structured-cloned across the worker boundary. Small table and protocol descriptors accompany the buffers. Input chunks can still be large; backpressure does not bound an individual input chunk.
 

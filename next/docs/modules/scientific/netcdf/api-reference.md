@@ -54,6 +54,10 @@ Typed raster data with original metadata
 
 OGC network Common Data Form (netCDF) standards suite
 
+| Property    | Value          |
+| ----------- | -------------- |
+| Data source | `NetCDFSource` |
+
 ## Scan support[​](#scan-support "Direct link to Scan support")
 
 Detailed guide
@@ -62,7 +66,7 @@ Detailed guide
 
 The reference below documents scan support, metadata discovery, slicing, limitations, and the source API.
 
-`NetCDFSource` and `NetCDFSourceLoader` expose NetCDF classic and 64-bit-offset headers through the shared scan architecture. `getQueryMetadata()` discovers variable names, portable scalar types, variable attributes, dimensions, and file size without decoding data arrays. `getRaster()` then reads selected numeric variables and applies named dimension slices.
+`NetCDFSource` and `NetCDFLoader` expose NetCDF classic and 64-bit-offset headers through the shared scan architecture. `getQueryMetadata()` discovers variable names, portable scalar types, variable attributes, dimensions, and file size without decoding data arrays. `getRaster()` then reads selected numeric variables and applies named dimension slices.
 
 | Capability                  | Support                               | Execution                                              |
 | --------------------------- | ------------------------------------- | ------------------------------------------------------ |
@@ -76,7 +80,7 @@ The reference below documents scan support, metadata discovery, slicing, limitat
 | Streaming or chunk pruning  | ❌ Not implemented                    | Current classic-file execution materializes the source |
 
 ```
-import {NetCDFSource} from '@loaders.gl/scientific/netcdf/netcdf-source-loader';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf';
 
 
 

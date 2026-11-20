@@ -6,7 +6,7 @@ This page records the reader-side contracts for newer 3D Tiles and glTF extensio
 
 ## Standalone SPZ[​](#standalone-spz "Direct link to Standalone SPZ")
 
-[`@loaders.gl/splats`](https://loaders.gl/next/docs/modules/splats.md) accepts standalone SPZ v2, v3, and v4 files and keeps the existing Arrow-table output. v2 and v3 are legacy gzip streams; v4 is the current TLV/zstd container. Coordinate conversion is explicit through `sourceCoordinateSystem` and `targetCoordinateSystem`; no silent conversion is applied.
+[`@loaders.gl/splats`](https://loaders.gl/next/docs/modules/splats.md) accepts standalone SPZ v2, v3, and v4 files and keeps the native Arrow output. v2 and v3 are legacy gzip streams; v4 is the current TLV/zstd container. Coordinate conversion is explicit through `sourceCoordinateSystem` and `targetCoordinateSystem`; no silent conversion is applied.
 
 These options live under `splats`. The compatibility default is source `RUB` (right/up/back), with the target equal to the source. Explicit `RUB`/`LUF` (left/up/forward) options request a conversion. `parseSPZToGaussianSplats` from `@loaders.gl/splats` provides the reusable decoded representation.
 

@@ -94,7 +94,7 @@ Installed vis.gl package versions (outside the local modules):
 * `@math.gl/earth@5.0.0-beta.2`
 * `@math.gl/geometry@5.0.0-beta.2`
 * `@math.gl/geospatial@5.0.0-beta.2`
-* `@math.gl/web-mercator@5.0.0-beta.2`
+* `@math.gl/geospatial/web-mercator@5.0.0-beta.2`
 * `probe.gl@5.0.0`
 
 Installed non-vis.gl package versions:

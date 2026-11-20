@@ -40,7 +40,7 @@ Object-row table for inspection
 
 Columns
 
-ArrowTable with WKB geometry
+Arrow Table with WKB geometry
 
 04
 
@@ -70,19 +70,19 @@ const data = await load(url, KMLLoader, options);
 
 ## Shapes[​](#shapes "Direct link to Shapes")
 
-`KMLLoader` returns loaders.gl `ArrowTable` objects by default. Set `kml.shape` to select another table representation.
+`KMLLoader` returns Apache Arrow `Table` objects by default. Set `kml.shape` to select another table representation.
 
 | Shape              | Output                                     |
 | ------------------ | ------------------------------------------ |
 | `geojson-table`    | loaders.gl GeoJSON table                   |
 | `object-row-table` | loaders.gl row table with GeoJSON features |
-| `arrow-table`      | loaders.gl `ArrowTable` with WKB geometry  |
+| `arrow`            | Apache Arrow `Table` with WKB geometry     |
 
 ## Options[​](#options "Direct link to Options")
 
-| Option      | Type   | Default         | Description                       |
-| ----------- | ------ | --------------- | --------------------------------- |
-| `kml.shape` | string | `'arrow-table'` | Selects the returned table shape. |
+| Option      | Type   | Default   | Description                       |
+| ----------- | ------ | --------- | --------------------------------- |
+| `kml.shape` | string | `'arrow'` | Selects the returned table shape. |
 
 ## Limitations[​](#limitations "Direct link to Limitations")
 

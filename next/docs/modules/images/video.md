@@ -85,7 +85,7 @@ import {load} from '@loaders.gl/core';
 
 import {VideoLoader} from '@loaders.gl/images';
 
-import GIFBuilder from '@loaders.gl/images/gif-builder';
+import GIFBuilder from '@loaders.gl/images/image';
 ```
 
-`VideoLoader` is metadata-only and preloads its browser implementation through async core APIs. Direct parser access is `VideoLoaderWithParser` from `@loaders.gl/images/video-loader`. GIF building remains a browser-only direct entry point. Neither API is pulled into the image root implementation eagerly.
+`VideoLoader` is metadata-only and preloads its browser implementation through async core APIs. Direct parser access is `VideoLoaderWithParser` from `@loaders.gl/images/video`. GIF building remains a browser-only direct entry point. Neither API is pulled into the image root implementation eagerly.

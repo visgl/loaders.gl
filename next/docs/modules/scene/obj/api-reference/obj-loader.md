@@ -64,10 +64,10 @@ The reference below covers output shapes, material and geometry records, batched
 
 Set `obj.shape: 'mesh'` when a legacy [Mesh](https://loaders.gl/next/docs/specifications/category-mesh.md) object is required.
 
-| Shape         | Output             | Use when                           |
-| ------------- | ------------------ | ---------------------------------- |
-| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
-| `mesh`        | `Mesh`             | You need the legacy mesh object.   |
+| Shape   | Output             | Use when                           |
+| ------- | ------------------ | ---------------------------------- |
+| `arrow` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| `mesh`  | `Mesh`             | You need the legacy mesh object.   |
 
 ## Usage[​](#usage "Direct link to Usage")
 
@@ -80,14 +80,14 @@ import {load} from '@loaders.gl/core';
 
 const data = await load(url, OBJLoader, options);
 
-const table = await load(url, OBJLoader, {obj: {shape: 'arrow-table'}});
+const table = await load(url, OBJLoader, {obj: {shape: 'arrow'}});
 ```
 
 ## Batched Parsing[​](#batched-parsing "Direct link to Batched Parsing")
 
 `OBJLoader` supports `loadInBatches` and `parseInBatches` for vertex-only OBJ point clouds. By default, the loader scans the OBJ text before batching; if `f` face records or `l` line records are present, it falls back to atomic parsing and yields one batch.
 
-Set `obj.pointCloud: true` when the input is known to be a point cloud and should stream `v` vertex records without waiting for a whole-file geometry scan. With `obj.shape: 'arrow-table'`, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow-table'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
+Set `obj.pointCloud: true` when the input is known to be a point cloud and should stream `v` vertex records without waiting for a whole-file geometry scan. With `obj.shape: 'arrow'`, the loader yields native Apache Arrow `RecordBatch` objects. Their schema metadata carries cumulative bounds. Read the bounds for an individual batch from `batch.metadata.get('boundingBox')`.
 
 ```
 import {loadInBatches} from '@loaders.gl/core';
@@ -100,7 +100,7 @@ const batches = await loadInBatches(url, OBJLoader, {
 
   batchSize: 100_000,
 
-  obj: {shape: 'arrow-table', pointCloud: true}
+  obj: {shape: 'arrow', pointCloud: true}
 
 });
 
@@ -115,10 +115,10 @@ for await (const batch of batches) {
 
 ## Options[​](#options "Direct link to Options")
 
-| Option           | Type                      | Default         | Description                                                                                |
-| ---------------- | ------------------------- | --------------- | ------------------------------------------------------------------------------------------ |
-| `obj.shape`      | `'mesh' \| 'arrow-table'` | `'arrow-table'` | Selects Mesh or Mesh Arrow table output.                                                   |
-| `obj.pointCloud` | `boolean`                 | `false`         | Streams OBJ `v` records as point-cloud batches. Use only for known point-cloud OBJ inputs. |
+| Option           | Type                | Default   | Description                                                                                |
+| ---------------- | ------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| `obj.shape`      | `'mesh' \| 'arrow'` | `'arrow'` | Selects Mesh or Mesh Arrow table output.                                                   |
+| `obj.pointCloud` | `boolean`           | `false`   | Streams OBJ `v` records as point-cloud batches. Use only for known point-cloud OBJ inputs. |
 
 Remarks:
 
@@ -137,7 +137,7 @@ const batches = await parseInBatches(input, OBJLoader, {
 
   core: {worker: true, batchSize: 1000},
 
-  obj: {shape: 'arrow-table', pointCloud: true}
+  obj: {shape: 'arrow', pointCloud: true}
 
 });
 
@@ -150,4 +150,4 @@ for await (const batch of batches) {
 
 With `obj.pointCloud: true`, vertex batches can arrive before input ends. General OBJ geometry is collected before parsing so faces can reference earlier vertices.
 
-Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/scene/obj-loader`.
+Cancellation uses the shared `signal` option. Aborting or ending iteration releases the worker; transferred input buffers remain detached. Self-hosted workers must implement the batch protocol and opt in with `core.workerInBatches: true`. Custom workers must use the current Arrow column wire format. This module ships a browser worker; Node workers require a compatible Node artifact. The parser-bearing loader is available from `@loaders.gl/scene/obj`.

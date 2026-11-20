@@ -50,7 +50,7 @@ Pass the table to a splat renderer or transform
 
 ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)
 
-`SPLATLoader` parses raw `.splat` Gaussian splat files and returns a [Mesh Arrow table](https://loaders.gl/next/docs/specifications/category-mesh.md#mesh-arrow-tables).
+`SPLATLoader` parses raw `.splat` Gaussian splat files and returns a native Apache Arrow `Table`.
 
 Detailed guide
 
@@ -64,7 +64,7 @@ The reference below covers supported fields, output columns, options, and the re
 | Extensions   | `.splat`                                                                    |
 | Worker       | ❌ No                                                                       |
 | Input type   | `ArrayBuffer`                                                               |
-| Output shape | `arrow-table`                                                               |
+| Output shape | `arrow`                                                                     |
 
 ## Usage[​](#usage "Direct link to Usage")
 
@@ -82,6 +82,6 @@ The returned table uses GraphDECO-style Gaussian splat columns and can be passed
 
 ## Options[​](#options "Direct link to Options")
 
-| Option         | Type            | Default         | Description                                                      |
-| -------------- | --------------- | --------------- | ---------------------------------------------------------------- |
-| `splats.shape` | `'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table output. V1 only supports `arrow-table`. |
+| Option         | Type      | Default   | Description                   |
+| -------------- | --------- | --------- | ----------------------------- |
+| `splats.shape` | `'arrow'` | `'arrow'` | Returns a native Arrow table. |

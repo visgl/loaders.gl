@@ -12,7 +12,6 @@ Describe a large scene as a hierarchy of bounded, streamable pieces so a rendere
 | ------ | ------------------------------------------------------------------------------------------------------------------------------ |
 | Loader | [`Tiles3DLoader`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)                |
 | Source | [`Tiles3DSource`](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tiles-3d-source.md)                         |
-| Loader | [`CesiumIonLoader`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader.md)            |
 | Writer | [`Tiles3DWriter`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tile-3d-writer.md)                 |
 | Writer | [`Tiles3DArchiveWriter`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-archive-writer.md) |
 

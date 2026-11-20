@@ -48,7 +48,7 @@ Decode
 
 Data
 
-[Arrow table datashape: 'arrow-table'↗](https://loaders.gl/next/docs/specifications/category-table.md)
+[Arrow table datashape: 'arrow'↗](https://loaders.gl/next/docs/specifications/category-table.md)
 
 Encode
 

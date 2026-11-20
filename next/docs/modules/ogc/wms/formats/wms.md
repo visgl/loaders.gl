@@ -20,7 +20,7 @@ WMS exposes georeferenced map images through capabilities, layer, style, dimensi
 
 | Type          | API                                                                                                                   |
 | ------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Source loader | [`WMSSourceLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-source-loader.md)             |
+| Source loader | [`WMSLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-loader.md)                          |
 | Loader        | [`WMSCapabilitiesLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-capabilities-loader.md) |
 | Loader        | [`WMSFeatureInfoLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/wms-feature-info-loader.md)  |
 
@@ -123,18 +123,18 @@ The sections below cover supported protocol operations, quick start usage, CRS h
 | CRS normalization and axis order       | ✅ Supported    | Handles the WMS 1.3.0 `EPSG:4326` axis-order change                                |
 | Server-side styling                    | ✅ Pass through | Named styles and vendor parameters are sent to the service                         |
 | Authentication                         | ✅ Supported    | Standard fetch headers, credentials, proxies, and URL parameters                   |
-| deck.gl rendering                      | ✅ First class  | Pass `WMSSourceLoader` to `SourceLayer`                                            |
+| deck.gl rendering                      | ✅ First class  | Pass `WMSLoader` to `SourceLayer`                                                  |
 
 ## Quick start[​](#quick-start "Direct link to Quick start")
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(wmsUrl, [WMSSourceLoader], {
+const source = createDataSourceSync(wmsUrl, [WMSLoader], {
 
   wms: {
 

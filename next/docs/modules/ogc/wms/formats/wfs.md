@@ -22,9 +22,9 @@ WFS exposes vector features over HTTP. The loaders.gl source handles capabilitie
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API               |
-| ------------- | ----------------- |
-| Source loader | `WFSSourceLoader` |
+| Type          | API         |
+| ------------- | ----------- |
+| Source loader | `WFSLoader` |
 
 The WFS request path
 
@@ -60,7 +60,7 @@ Vector features, binary data, or Arrow tables
 
 [![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/scan#vector-table-views)
 
-WFS serves vector features and properties over HTTP. `WFSSourceLoader` provides a read-only `VectorSource` with GeoJSON and streaming GML ingestion.
+WFS serves vector features and properties over HTTP. `WFSLoader` provides a read-only `VectorSource` with GeoJSON and streaming GML ingestion.
 
 Detailed guide
 
@@ -174,13 +174,13 @@ Prefer native WFS filters and paging when the service can reduce a large respons
 ## Query features[​](#query-features "Direct link to Query features")
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSLoader], {
 
   wfs: {wfsParameters: {version: '2.0.0'}}
 
@@ -208,7 +208,7 @@ const features = await source.getFeatures({
 Request GML explicitly when a service does not provide GeoJSON or when a large response should be processed incrementally:
 
 ```
-const source = createDataSource(wfsUrl, [WFSSourceLoader], {
+const source = createDataSourceSync(wfsUrl, [WFSLoader], {
 
   wfs: {wfsParameters: {outputFormat: 'application/vnd.ogc.gml'}}
 
@@ -278,7 +278,7 @@ The source normalizes common CRS spellings and applies the WFS version's axis-or
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {WFSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms';
 
 
 
@@ -288,7 +288,7 @@ const layer = new SourceLayer({
 
   data: wfsUrl,
 
-  loaders: [WFSSourceLoader],
+  loaders: [WFSLoader],
 
   layers: ['workspace:roads'],
 

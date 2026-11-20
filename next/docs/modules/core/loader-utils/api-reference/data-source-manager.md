@@ -71,7 +71,7 @@ import {createDataSource} from '@loaders.gl/core';
 
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
 
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
 
 
@@ -79,7 +79,7 @@ const dataSourceManager = new DataSourceManager();
 
 
 
-const tiles = createDataSource('https://example.com/world.pmtiles', [PMTilesSourceLoader], {
+const tiles = await createDataSource('https://example.com/world.pmtiles', [PMTilesLoader], {
 
   pmtiles: {
 
@@ -115,7 +115,7 @@ const firstTiles = dataSourceManager.getOrCreate({
 
   createDataSource: data =>
 
-    createDataSource(data as string, [PMTilesSourceLoader], {
+    createDataSource(data as string, [PMTilesLoader], {
 
       pmtiles: {
 
@@ -135,7 +135,7 @@ const secondTiles = dataSourceManager.getOrCreate({
 
   data: 'https://example.com/world.pmtiles',
 
-  createDataSource: data => createDataSource(data as string, [PMTilesSourceLoader])
+  createDataSource: data => createDataSource(data as string, [PMTilesLoader])
 
 });
 
@@ -151,7 +151,7 @@ const tiles = dataSourceManager.getOrCreate({
 
   data: 'https://example.com/world.pmtiles',
 
-  createDataSource: data => createDataSource(data as string, [PMTilesSourceLoader])
+  createDataSource: data => createDataSource(data as string, [PMTilesLoader])
 
 });
 ```
@@ -167,7 +167,7 @@ const firstSource = dataSourceManager.getOrCreate({
 
   data: blob,
 
-  createDataSource: data => createDataSource(data as Blob, [GeoPackageSource])
+  createDataSource: data => createDataSourceSync(data as Blob, [GeoPackageSource])
 
 });
 
@@ -177,7 +177,7 @@ const secondSource = dataSourceManager.getOrCreate({
 
   data: blob,
 
-  createDataSource: data => createDataSource(data as Blob, [GeoPackageSource])
+  createDataSource: data => createDataSourceSync(data as Blob, [GeoPackageSource])
 
 });
 
@@ -253,7 +253,7 @@ dataSourceManager.add({
 
   dataSourceId: 'world-tiles',
 
-  dataSource: createDataSource('https://example.com/world.pmtiles', [PMTilesSourceLoader])
+  dataSource: await createDataSource('https://example.com/world.pmtiles', [PMTilesLoader])
 
 });
 ```
@@ -265,7 +265,7 @@ Deferred ids are useful when layer configuration is created before data sources 
 Calling `add()` with an existing `dataSourceId` replaces the current `DataSource`, notifies subscribers, and releases the previous instance through its lifecycle method.
 
 ```
-const updatedTiles = createDataSource('https://example.com/world-v2.pmtiles', [PMTilesSourceLoader]);
+const updatedTiles = await createDataSource('https://example.com/world-v2.pmtiles', [PMTilesLoader]);
 
 
 
@@ -363,13 +363,13 @@ This lets `DataSource` subclasses release database handles, network sessions, ti
 A `SourceLoader` is metadata plus a `createDataSource()` method. The manager does not select source loaders itself; selection stays with `createDataSource()`, `selectSource()`, or application code.
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
 
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
 
 
@@ -377,11 +377,11 @@ const dataSourceManager = new DataSourceManager();
 
 
 
-const dataSource = createDataSource(
+const dataSource = createDataSourceSync(
 
   url,
 
-  [PMTilesSourceLoader, MVTSourceLoader],
+  [PMTilesLoader, MVTLoader],
 
   {
 
@@ -414,12 +414,12 @@ This split keeps responsibilities clear:
 
 ### Use the manager for scan federation[​](#use-the-manager-for-scan-federation "Direct link to Use the manager for scan federation")
 
-`@loaders.gl/core/scan` reuses this manager rather than defining a scan-only registry. Register each `TableScanSource` under a stable id, then reference those ids from `FederatedTableScanSource`:
+`@loaders.gl/core/query` reuses this manager rather than defining a scan-only registry. Register each `TableScanSource` under a stable id, then reference those ids from `FederatedTableScanSource`:
 
 ```
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
 
-import {FederatedTableScanSource} from '@loaders.gl/core/scan';
+import {FederatedTableScanSource} from '@loaders.gl/core/query';
 
 
 

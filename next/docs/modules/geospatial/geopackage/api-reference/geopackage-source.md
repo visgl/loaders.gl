@@ -48,7 +48,7 @@ One selected table with loader options
 
 Output
 
-ArrowTable with GeoPackage metadata
+Apache Arrow table with GeoPackage metadata
 
 [![](/next/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)[Try It](https://loaders.gl/next/examples/geospatial/geopackage)[Overview](https://loaders.gl/next/docs/modules/geospatial/geopackage/formats/geopackage.md)[Format](https://loaders.gl/next/docs/modules/geospatial/geopackage/format.md)[GeoPackageLoader](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader.md)[GeoPackageSource](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source.md)
 
@@ -58,16 +58,16 @@ Detailed guide
 
 The short reference below covers construction, metadata discovery, table selection, and output shape.
 
-`GeoPackageSource` is available from `@loaders.gl/geospatial/geopackage`. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
+Use `GeoPackageLoader` to open a reusable GeoPackage source. It is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {GeoPackageSource} from '@loaders.gl/geospatial/geopackage';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
 
 
 
-const dataSource = createDataSource(url, [GeoPackageSource], {geopackage: {}});
+const dataSource = createDataSourceSync(url, [GeoPackageLoaderWithParser], {geopackage: {}});
 
 const metadata = await dataSource.getMetadata();
 
@@ -76,7 +76,7 @@ const table = await dataSource.getTable(metadata.tables[0]?.name);
 
 `getMetadata()` returns available vector tables, including geometry column metadata and the selected default table.
 
-`getTable(tableName?)` returns the selected table as an `ArrowTable` using the same default-table heuristic as `GeoPackageLoader` with `geopackage.shape: 'arrow-table'`.
+`getTable(tableName?)` returns the selected table as an Apache Arrow `Table` using the same default-table heuristic as `GeoPackageLoader` with `geopackage.shape: 'arrow'`.
 
 ## Raster tile-table metadata[​](#raster-tile-table-metadata "Direct link to Raster tile-table metadata")
 

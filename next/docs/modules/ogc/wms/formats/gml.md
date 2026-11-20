@@ -82,7 +82,7 @@ The reference below covers supported geometry encodings, CRS metadata, streaming
 | Streaming                                            | ✅ Supported     | `parseInBatches` emits collections as feature members arrive                                                            |
 | Schema-aware scalar properties                       | ✅ Supported     | Supply string, boolean, integer, number, date, and date-time hints                                                      |
 | GeoJSON output                                       | ✅ Supported     | Default geospatial representation                                                                                       |
-| Binary and Arrow output                              | ✅ Through WFS   | `WFSSourceLoader` converts parsed GML to standard vector outputs                                                        |
+| Binary and Arrow output                              | ✅ Through WFS   | `WFSLoader` converts parsed GML to standard vector outputs                                                              |
 | Arbitrary GML application schemas                    | ⚠️ Best effort   | Unknown XML properties are preserved instead of guessed                                                                 |
 | Topologies, solids, and every ISO geometry primitive | ❌ Not supported | Outside the practical WFS feature subset                                                                                |
 
@@ -99,7 +99,7 @@ import {GMLLoader} from '@loaders.gl/ogc/wms';
 
 const table = await load('features.gml', GMLLoader);
 
-console.log(table.data.numRows);
+console.log(table.numRows);
 ```
 
 ## Stream a large response[​](#stream-a-large-response "Direct link to Stream a large response")
@@ -152,7 +152,7 @@ Unknown or untyped properties remain strings; structured XML properties are JSON
 
 ## GML and WFS[​](#gml-and-wfs "Direct link to GML and WFS")
 
-Most applications should use [`WFSSourceLoader`](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md) rather than invoke `GMLLoader` directly. The WFS source negotiates the response format, applies paging and CRS request rules, streams GML, and converts the result to GeoJSON, binary, or Arrow output.
+Most applications should use [`WFSLoader`](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md) rather than invoke `GMLLoader` directly. The WFS source negotiates the response format, applies paging and CRS request rules, streams GML, and converts the result to GeoJSON, binary, or Arrow output.
 
 ## Boundaries[​](#boundaries "Direct link to Boundaries")
 

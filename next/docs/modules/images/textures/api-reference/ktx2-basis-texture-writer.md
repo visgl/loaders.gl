@@ -81,7 +81,7 @@ import {load, encode} from '@loaders.gl/core';
 
 import {ImageLoader, getImageData} from '@loaders.gl/images';
 
-import {KTX2BasisWriter} from '@loaders.gl/images/ktx2-basis-writer';
+import {KTX2BasisWriter} from '@loaders.gl/images/basis';
 
 
 

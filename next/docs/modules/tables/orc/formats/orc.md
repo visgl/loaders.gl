@@ -20,10 +20,10 @@ Apache ORC stores a schema, encoded column streams, and statistics in a compact 
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API               |
-| ------------- | ----------------- |
-| Loader        | `ORCLoader`       |
-| Source loader | `ORCSourceLoader` |
+| Type          | API         |
+| ------------- | ----------- |
+| Loader        | `ORCLoader` |
+| Source loader | `ORCLoader` |
 
 ORC loader exampleEnter fullscreen
 

@@ -18,9 +18,9 @@ Read your published feature layers and tables as bounded queries with explicit c
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------------------- |
-| Source loader | [`ArcGISFeatureServerSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
+| Type          | API                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| Source loader | [`ArcGISFeatureServerLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
 
 [![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-feature-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 

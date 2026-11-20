@@ -98,7 +98,7 @@ Use `load()` for resources
 * Pass an explicit loader when the format is known; pass an array when detection should choose.
 * Use [`parse()`](https://loaders.gl/next/docs/modules/core/api-reference/parse.md) when the bytes, text, response, or stream are already available.
 
-The return value depends on the selected loader's category data. For example, a CSV loader may return batches or a table, while a glTF loader returns a scenegraph-shaped object.
+`load()` returns parsed data. A CSV loader can return a table, while a glTF loader returns a scenegraph-shaped object. To open a data source for queries or tiled access, use [`createDataSource()`](https://loaders.gl/next/docs/modules/core/api-reference/create-data-source.md).
 
 ## Parameters[​](#parameters "Direct link to Parameters")
 

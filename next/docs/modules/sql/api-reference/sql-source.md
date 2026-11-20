@@ -106,7 +106,7 @@ Portable table queries are compiled to quoted, parameterized SQL inside the data
 
 ### `queryArrow(query, options?)`[​](#queryarrowquery-options "Direct link to queryarrowquery-options")
 
-Executes raw SQL or a portable table query and returns a loaders.gl Arrow table.
+Executes raw SQL or a portable table query and returns an Apache Arrow `Table`.
 
 ### `close()`[​](#close "Direct link to close")
 
@@ -118,7 +118,7 @@ These methods are available on `DuckDBSQLDataSource` with the browser DuckDB-Was
 
 ### `insertArrowTable(table, options)`[​](#insertarrowtabletable-options "Direct link to insertarrowtabletable-options")
 
-Serializes a loaders.gl `ArrowTable` with the application's Arrow runtime, then uploads the IPC stream to DuckDB. No Arrow runtime objects cross the adapter boundary.
+Serializes an Apache Arrow `Table` with the application's Arrow runtime, then uploads the IPC stream to DuckDB. No Arrow runtime objects cross the adapter boundary.
 
 ### `insertArrowIPC(bytes, options)`[​](#insertarrowipcbytes-options "Direct link to insertarrowipcbytes-options")
 

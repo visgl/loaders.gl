@@ -67,7 +67,7 @@ The sections below document row indexes, filtering, sorting, materialization, an
 ```
 import * as arrow from 'apache-arrow';
 
-import {IndexedArrowTable} from '@loaders.gl/tables/arrow';
+import {IndexedArrowTable} from '@math.gl/core/arrow';
 
 
 

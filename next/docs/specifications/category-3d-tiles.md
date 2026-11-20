@@ -26,7 +26,7 @@ Arrow TablePlain
 
 Decode
 
-[Tiles3D​Loader↗](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[Cesium​Ion​Loader↗](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader.md)[I3S​Loader↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-loader.md)[Potree​Loader↗](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)
+[Tiles3D​Loader↗](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)[I3S​Loader↗](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-loader.md)[Potree​Loader↗](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)
 
 Data
 
@@ -123,13 +123,12 @@ The category is intentionally format-neutral. A 3D Tiles source can use geometri
 
 Use a loader when the application needs to parse one resource. Use a source-backed runtime when the application needs repeated, viewport-driven requests:
 
-| Need                      | Entry point                                                                                                         | Role                                              |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Parse a 3D Tiles resource | [`Tiles3DLoader`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md)     | Decode a tileset or tile payload                  |
-| Resolve Cesium ion data   | [`CesiumIonLoader`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/cesium-ion-loader.md) | Resolve ion credentials and tileset URLs          |
-| Parse I3S resources       | [`I3SLoader`](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-loader.md)                   | Decode I3S metadata, nodes, and content           |
-| Parse Potree resources    | [`PotreeLoader`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)          | Decode Potree hierarchy and point data            |
-| Traverse a tiled world    | [`Tileset3D`](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tileset-3d.md)                       | Select, request, cache, and release visible tiles |
+| Need                      | Entry point                                                                                                     | Role                                              |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Parse a 3D Tiles resource | [`Tiles3DLoader`](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader.md) | Decode a tileset or tile payload                  |
+| Parse I3S resources       | [`I3SLoader`](https://loaders.gl/next/docs/modules/tiles-3d/i3s/api-reference/i3s-loader.md)               | Decode I3S metadata, nodes, and content           |
+| Parse Potree resources    | [`PotreeLoader`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)      | Decode Potree hierarchy and point data            |
+| Traverse a tiled world    | [`Tileset3D`](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/tileset-3d.md)                   | Select, request, cache, and release visible tiles |
 
 Detailed guide
 

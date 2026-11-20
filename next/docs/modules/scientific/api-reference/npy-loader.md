@@ -96,4 +96,4 @@ Currently no options are supported for this loader.
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 
-For synchronous access, use `NPYLoaderWithParser` from `@loaders.gl/scientific/npy-loader` with `parseSync`. The package root exports metadata and preloads the parser for async APIs.
+For synchronous access, use `NPYLoaderWithParser` from `@loaders.gl/scientific/npy` with `parseSync`. The package root exports metadata and preloads the parser for async APIs.

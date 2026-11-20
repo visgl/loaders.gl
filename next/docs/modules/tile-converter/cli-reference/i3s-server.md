@@ -81,9 +81,9 @@ npm i @loaders.gl/tile-converter
 Convert 3DTiles tileset to I3S:
 
 ```
-npx tile-converter --install-dependencies
+npx tile-converter-v4 --install-dependencies
 
-npx tile-converter --input-type 3DTILES --tileset /path/to/tileset.json --name NewTileset
+npx tile-converter-v4 --input-type 3DTILES --tileset /path/to/tileset.json --name NewTileset
 ```
 
 ### Start HTTP server[​](#start-http-server "Direct link to Start HTTP server")

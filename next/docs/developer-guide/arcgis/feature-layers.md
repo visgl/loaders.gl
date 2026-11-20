@@ -3,13 +3,13 @@
 Use a layer URL such as `/FeatureServer/3` or a queryable `/MapServer/3`. A service root requires one explicit `layers` selection. Nonspatial table endpoints use the same source. Item URLs are not yet resolved automatically.
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
 
 
-const source = await load(featureLayerUrl, ArcGISFeatureServerSourceLoader);
+const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerLoader);
 
 const controller = new AbortController();
 

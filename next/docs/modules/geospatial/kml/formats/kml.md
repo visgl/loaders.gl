@@ -90,7 +90,7 @@ KML is an [Open Geospatial Consortium standard](https://www.ogc.org/standards/km
 | Model                                  | ✅ Supported       | Location, orientation, scale, and resource reference metadata are retained |
 | `gx:Track` and `gx:MultiTrack`         | ✅ Supported       | Converted to line geometry with timestamp metadata                         |
 | KMZ `doc.kml` selection                | ✅ Supported       | Falls back to a root or first KML entry when needed                        |
-| KMZ relative resources                 | ✅ Supported       | Lazy archive access through `openKMZArchive` and `KMZVectorSource`         |
+| KMZ relative resources                 | ✅ Supported       | Lazy archive access through `_openKMZArchive` and `KMZVectorSource`        |
 | KML/KMZ writing                        | ✅ Supported       | `KMLWriter` and `KMZWriter` cover common feature geometries and properties |
 | Arbitrary CRS transformation           | ❌ Not implemented | KML/KMZ coordinates are interpreted as WGS84 longitude/latitude            |
 | External NetworkLink fetching          | ❌ Not implemented | Applications decide whether and how to fetch linked documents              |
@@ -257,7 +257,7 @@ if (!kmlBytes) {
 const data = await parse(kmlBytes, KMLLoader);
 ```
 
-`KMLLoader` returns a `GeoJSONTable` by default. Set `kml.shape` to choose `object-row-table` or `arrow-table` when the next stage of the application needs a different table representation. See the [KMLLoader reference](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md) for the available shapes and options.
+`KMLLoader` returns a `GeoJSONTable` by default. Set `kml.shape` to choose `object-row-table` or `arrow` when the next stage of the application needs a different table representation. See the [KMLLoader reference](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader.md) for the available shapes and options.
 
 ## Interoperability checklist[​](#interoperability-checklist "Direct link to Interoperability checklist")
 

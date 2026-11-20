@@ -94,20 +94,20 @@ The sections below provide the service matrix, installation instructions, source
 
 ## Service matrix[​](#service-matrix "Direct link to Service matrix")
 
-| Service or format                                                                                            | Primary source or loader      | Data category              | Status              | Best use                                        |
-| ------------------------------------------------------------------------------------------------------------ | ----------------------------- | -------------------------- | ------------------- | ----------------------------------------------- |
-| [WMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)                                      | `WMSSourceLoader`             | Rendered image             | ✅ Supported        | Dynamic maps, feature information, legends      |
-| [WMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md)                                    | `WMTSSourceLoader`            | Image tiles                | ✅ Supported        | Capability-driven tiled imagery                 |
-| [WFS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)                                      | `WFSSourceLoader`             | Vector features            | ✅ Supported        | GeoJSON or streaming GML feature queries        |
-| [WCS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)                                      | `WCSCoverageSourceLoader`     | Analytical raster          | ⚠️ Focused          | Binary coverages and decoded LERC               |
-| [CSW](https://loaders.gl/next/docs/modules/ogc/wms/formats/csw.md)                                      | `CSWSourceLoader`             | Catalog records            | ⚠️ Focused          | Read-only catalog search and service references |
-| [GML](https://loaders.gl/next/docs/modules/ogc/wms/formats/gml.md)                                      | `GMLLoader`                   | Vector format              | ⚠️ Supported subset | High-volume WFS feature ingestion               |
-| [OGC API Features](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md#ogc-api-features)   | `OGCAPIFeaturesSourceLoader`  | Vector features            | ⚠️ Minimal          | Common collections/items read path              |
-| [OGC API Tiles](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md#ogc-api-tiles)         | `OGCAPITilesSourceLoader`     | Tile bytes                 | ⚠️ Minimal          | Known tile templates                            |
-| [OGC API Coverages](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md#ogc-api-coverages) | `OGCAPICoveragesSourceLoader` | Coverage data              | ⚠️ Minimal          | Common collection coverage endpoint             |
-| [OGC API EDR](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md#ogc-api-edr)             | `OGCAPIEDRSourceLoader`       | Environmental observations | ⚠️ Focused          | Position, area, cube, and path queries          |
-| [WMC](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmc.md)                                      | None                          | Map context                | ❌ Not implemented  | Documented to clarify scope                     |
-| [OWS Context](https://loaders.gl/next/docs/modules/ogc/wms/formats/ows-context.md)                      | None                          | Service context            | ❌ Not implemented  | Documented to clarify scope                     |
+| Service or format                                                                                            | Loader                  | Data source             | Data category              | Status              | Best use                                        |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------- | ----------------------- | -------------------------- | ------------------- | ----------------------------------------------- |
+| [WMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)                                      | `WMSLoader`             | `WMSImageSource`        | Rendered image             | ✅ Supported        | Dynamic maps, feature information, legends      |
+| [WMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md)                                    | `WMTSLoader`            | `WMTSImageTileSource`   | Image tiles                | ✅ Supported        | Capability-driven tiled imagery                 |
+| [WFS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)                                      | `WFSLoader`             | `WFSVectorSource`       | Vector features            | ✅ Supported        | GeoJSON or streaming GML feature queries        |
+| [WCS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)                                      | `WCSCoverageLoader`     | `WCSCoverageSource`     | Analytical raster          | ⚠️ Focused          | Binary coverages and decoded LERC               |
+| [CSW](https://loaders.gl/next/docs/modules/ogc/wms/formats/csw.md)                                      | `CSWLoader`             | `CSWCatalogSource`      | Catalog records            | ⚠️ Focused          | Read-only catalog search and service references |
+| [GML](https://loaders.gl/next/docs/modules/ogc/wms/formats/gml.md)                                      | `GMLLoader`             | —                       | Vector format              | ⚠️ Supported subset | High-volume WFS feature ingestion               |
+| [OGC API Features](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md#ogc-api-features)   | `OGCAPIFeaturesLoader`  | `OGCAPIFeaturesSource`  | Vector features            | ⚠️ Minimal          | Common collections/items read path              |
+| [OGC API Tiles](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md#ogc-api-tiles)         | `OGCAPITilesLoader`     | `OGCAPITilesSource`     | Tile bytes                 | ⚠️ Minimal          | Known tile templates                            |
+| [OGC API Coverages](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md#ogc-api-coverages) | `OGCAPICoveragesLoader` | `OGCAPICoveragesSource` | Coverage data              | ⚠️ Minimal          | Common collection coverage endpoint             |
+| [OGC API EDR](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md#ogc-api-edr)             | `OGCAPIEDRLoader`       | `OGCAPIEDRSource`       | Environmental observations | ⚠️ Focused          | Position, area, cube, and path queries          |
+| [WMC](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmc.md)                                      | None                    | —                       | Map context                | ❌ Not implemented  | Documented to clarify scope                     |
+| [OWS Context](https://loaders.gl/next/docs/modules/ogc/wms/formats/ows-context.md)                      | None                    | —                       | Service context            | ❌ Not implemented  | Documented to clarify scope                     |
 
 “Focused” means the important read operations are implemented without claiming every optional operation. “Minimal” means a deliberately small interoperability adapter for the most common OGC API path.
 
@@ -126,13 +126,13 @@ Install `@loaders.gl/deck-layers` when visual services should render directly th
 Every service source can be created through the loaders.gl core API:
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(wmsUrl, [WMSSourceLoader], {
+const source = createDataSourceSync(wmsUrl, [WMSLoader], {
 
   wms: {wmsParameters: {layers: ['workspace:roads']}}
 
@@ -175,7 +175,7 @@ Visual service sources work through one generic `SourceLayer`:
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {WMTSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms';
 
 
 
@@ -185,7 +185,7 @@ const layer = new SourceLayer({
 
   data: wmtsUrl,
 
-  loaders: [WMTSSourceLoader],
+  loaders: [WMTSLoader],
 
   sourceOptions: {wmts: {layer: layerId, tileMatrixSet: matrixSetId}}
 

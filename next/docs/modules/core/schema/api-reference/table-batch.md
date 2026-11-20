@@ -40,7 +40,7 @@ ColumnarTableBatch for column data
 
 Arrow
 
-ArrowTableBatch for record batches
+Native Apache Arrow RecordBatch
 
 04
 
@@ -56,4 +56,5 @@ The sections below list the supported batch families and their relationship to A
 
 * RowTableBatch
 * ColumnarTableBatch
-* ArrowTableBatch
+
+Arrow streams yield native Apache Arrow `RecordBatch` objects. The batch schema carries table-level metadata and `batch.metadata` carries batch-local information.

@@ -28,7 +28,7 @@ The same point records can become a legacy point-cloud object or typed columns. 
 
 Default
 
-Mesh Arrow table with shape: 'arrow-table'
+Mesh Arrow table with shape: 'arrow'
 
 02
 
@@ -87,11 +87,11 @@ const mesh = await load(url, LASLoader, {las: {shape: 'mesh'}});
 Select another implementation by importing its loader variant instead of setting an option:
 
 ```
-import {LASCOPCLoaderWithParser as LASCOPCLoader} from '@loaders.gl/pointclouds/las-copc-loader';
+import {LASCOPCLoaderWithParser as LASCOPCLoader} from '../../../../../website/src/alternate-loaders/las/las-copc-loader';
 
-import {LAZPerfLoaderWithParser as LAZPerfLoader} from '@loaders.gl/pointclouds/lazperf-loader';
+import {LAZPerfLoaderWithParser as LAZPerfLoader} from '../../../../../website/src/alternate-loaders/las/lazperf-loader';
 
-import {LAZRsLoaderWithParser as LAZRsLoader} from '@loaders.gl/pointclouds/laz-rs-loader';
+import {LAZRsLoaderWithParser as LAZRsLoader} from '../../../../../website/src/alternate-loaders/las/laz-rs-loader';
 
 
 
@@ -111,15 +111,17 @@ Loader variants are selected by the loader import. There is no runtime backend o
 
 ## Options[​](#options "Direct link to Options")
 
-| Option                   | Type                 | Default       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ------------------------ | -------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `options.las.shape`      | `string`             | `arrow-table` | Format of parsed data, e.g: `'mesh'`, `'columnar-table'`, `'arrow-table'`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `options.las.fp64`       | `number`             | `false`       | If `true`, positions are stored in 64-bit floats instead of 32-bit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `options.las.colorDepth` | `number` or `string` | `8`           | Whether colors encoded using 8 or 16 bits? Can be set to `'auto'`. Note: LAS specification recommends 16 bits.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `options.las.columns`    | `string[]`           | all           | Arrow columns to decode: `POSITION`, `intensity`, `classification`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `COLOR_0`, `GPS_TIME`, `NIR`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `WAVEFORM`, and `EXTRA_BYTES`. `POSITION` is always returned; an empty array requests positions only.                                                                                                                                                                    |
-| `options.las.extraBytes` | `'raw'` or `'typed'` | `raw`         | Controls `EXTRA_BYTES` output. `raw` returns the fixed-width byte payload; `typed` returns one `EXTRA_BYTES_<descriptor-name>` numeric Arrow attribute per supported scalar or vector descriptor, applying descriptor scale/offset values per component. Raw Extra Bytes require `EXTRA_BYTES` in `columns`; with `typed` and no `columns` list, Extra Bytes are included by default. 64-bit integer descriptors use exact Arrow Uint64/Int64 values. Nonidentity scale/offset transforms use Float64 and may lose precision; identity transforms preserve BigInt. |
-| `options.las.workerUrl`  | `string`             | -             | Overrides the packaged `LASLoader` worker. Supplying a URL for another LAS loader opts that loader into an application-built worker.                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `options.onProgress`     | `function`           | -             | Callback when a new chunk of data is read. Only works on the main thread.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Option                   | Type                 | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------ | -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `options.las.shape`      | `string`             | `arrow` | Format of parsed data, e.g: `'mesh'`, `'columnar-table'`, `'arrow'`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `options.las.fp64`       | `number`             | `false` | If `true`, positions are stored in 64-bit floats instead of 32-bit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `options.las.colorDepth` | `number` or `string` | `8`     | Whether colors encoded using 8 or 16 bits? Can be set to `'auto'`. Note: LAS specification recommends 16 bits.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `options.las.columns`    | `string[]`           | all     | Arrow columns to decode: `POSITION`, `intensity`, `classification`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `COLOR_0`, `GPS_TIME`, `NIR`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, `edgeOfFlightLine`, `WAVEFORM`, and `EXTRA_BYTES`. `POSITION` is always returned; an empty array requests positions only.                                                                                                                                                                    |
+| `options.las.extraBytes` | `'raw'` or `'typed'` | `raw`   | Controls `EXTRA_BYTES` output. `raw` returns the fixed-width byte payload; `typed` returns one `EXTRA_BYTES_<descriptor-name>` numeric Arrow attribute per supported scalar or vector descriptor, applying descriptor scale/offset values per component. Raw Extra Bytes require `EXTRA_BYTES` in `columns`; with `typed` and no `columns` list, Extra Bytes are included by default. 64-bit integer descriptors use exact Arrow Uint64/Int64 values. Nonidentity scale/offset transforms use Float64 and may lose precision; identity transforms preserve BigInt. |
+| `options.las.workerUrl`  | `string`             | -       | Overrides the packaged `LASLoader` worker. Supplying a URL for another LAS loader opts that loader into an application-built worker.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `options.onProgress`     | `function`           | -       | Callback when a new chunk of data is read. Only works on the main thread.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+For streamed LAS/LAZ batches, `core.batchSize` controls the number of points per batch. Set `core.batchMaxRowsPerSecond` to pace delivery by point count. The first batch is immediate. The default of zero delivers batches as they become ready.
 
 ### Interrupted LAZ writers[​](#interrupted-laz-writers "Direct link to Interrupted LAZ writers")
 
@@ -150,7 +152,7 @@ const batches = await parseInBatches(response, LASLoader, {
 
   signal: controller.signal,
 
-  las: {shape: 'arrow-table'}
+  las: {shape: 'arrow'}
 
 });
 
@@ -167,7 +169,7 @@ Abort or close the iterator to release its worker. Already transferred input buf
 
 `LASLoader.parseInBatches` consumes compressed LAZ input incrementally. Legacy interleaved PDRF 0-5 chunks can emit complete Arrow batches before the current compressed chunk or file has finished arriving. Layered PDRF 6-10 table parsing emits after the compressed field ranges required by `las.columns` arrive. PDRF 9/10 waveform-reference rows can precede trailing Extra Bytes; raw or typed Extra Bytes are projected directly once their Byte14 layers arrive. Complete-buffer `parse` uses the same direct-column path instead of allocating and reparsing complete raw records. Legacy Point10/GPS/RGB/Byte item versions 1 and 2, WavePacket13 item version 1, and modern item versions 2-4 are supported. Legacy files may use either pointwise compressor 1 (one continuous stream without a chunk table) or chunked compressor 2. Pointwise parsing preserves predictors across batches and releases consumed compressed bytes. `GPS_TIME`, `NIR`, `synthetic`, `keyPoint`, `withheld`, `overlap`, `scanAngle`, `userData`, `pointSourceId`, `returnNumber`, `numberOfReturns`, `scannerChannel`, `scanDirectionFlag`, and `edgeOfFlightLine` are available as typed Arrow columns for records that contain them. Legacy PDRF 0-5 records report `overlap` as zero because that flag was introduced with PDRF 6. `WAVEFORM` exposes PDRF 4/5/9/10 packet references as fixed-width 29-byte rows. `EXTRA_BYTES` exposes raw bytes by default, or descriptor-defined numeric attributes through `las.extraBytes: 'typed'`. Waveform sample payloads are loaded separately through the range APIs below. The raw chunk decoder remains available when complete LAS point records, including currently unexposed fields, are required.
 
-Atomic TypeScript parses attach typed file metadata to `loaderData.metadata`. This includes the public header identity and creation fields, raw VLR and EVLR records, Extra Bytes descriptors, waveform packet descriptors, WKT projection records, and GeoTIFF payloads. EVLR payloads are retained when they are present in the supplied complete buffer; streaming batches expose the header before later EVLR data is available.
+Atomic Arrow parses attach the file header as JSON in `table.schema.metadata.get('loaders.gl.las.header')`. Mesh output exposes the typed metadata at `mesh.loaderData.metadata`. This includes the public header identity and creation fields, raw VLR and EVLR records, Extra Bytes descriptors, waveform packet descriptors, WKT projection records, and GeoTIFF payloads. EVLR payloads are retained when they are present in the supplied complete buffer; streaming batches expose the header before later EVLR data is available.
 
 ## Waveform Sample Access[​](#waveform-sample-access "Direct link to Waveform Sample Access")
 
@@ -186,9 +188,15 @@ import {HttpFile} from '@loaders.gl/core/loader-utils';
 
 
 
-const metadata = table.loaderData.metadata;
+const header = JSON.parse(table.schema.metadata.get('loaders.gl.las.header')!, (key, value) =>
 
-const waveformRow = table.data.getChild('WAVEFORM').get(pointIndex);
+  key === 'waveformDataOffset' ? BigInt(value) : value
+
+);
+
+const metadata = header.metadata;
+
+const waveformRow = table.getChild('WAVEFORM')!.get(pointIndex);
 
 const reference = parseLASWaveformPacketReference(Uint8Array.from(waveformRow));
 

@@ -6,11 +6,11 @@ From v5.0
 
 Reuse an existing raster region source to export selected image tiles in a downloadable archive.
 
-[GeoTIFF source](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+[GeoTIFF source](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[PMTiles writer](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md)
+[ ↗](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)[PMTiles writer](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md)
 
 <!-- -->
 
@@ -27,7 +27,7 @@ Try the [browser PMTiles export example](https://loaders.gl/next/examples/tiles/
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff-source-loader';
+import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff';
 
 import {encodeRasterPMTiles} from '@loaders.gl/tiles/pmtiles/raster';
 

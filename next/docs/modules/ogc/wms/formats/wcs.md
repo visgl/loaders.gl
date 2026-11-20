@@ -22,9 +22,9 @@ WCS provides analytical raster coverages rather than server-rendered map images.
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                       |
-| ------------- | ------------------------- |
-| Source loader | `WCSCoverageSourceLoader` |
+| Type          | API                 |
+| ------------- | ------------------- |
+| Source loader | `WCSCoverageLoader` |
 
 The WCS request path
 
@@ -58,7 +58,7 @@ GeoTIFF, LERC, or another binary coverage loader
 
 [![](/next/images/format-logos/ogc-mark.svg)OGCWCS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)[WCS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wcs.md)
 
-WCS provides analytical geospatial coverages rather than server-rendered map images. `WCSCoverageSourceLoader` supports focused discovery and read-only coverage retrieval.
+WCS provides analytical geospatial coverages rather than server-rendered map images. `WCSCoverageLoader` supports focused discovery and read-only coverage retrieval.
 
 Detailed guide
 
@@ -87,13 +87,13 @@ The reference below covers capabilities, subsets, CRS selection, binary response
 ## Retrieve a coverage[​](#retrieve-a-coverage "Direct link to Retrieve a coverage")
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WCSCoverageSourceLoader} from '@loaders.gl/ogc/wms';
+import {WCSCoverageLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource('https://example.com/wcs', [WCSCoverageSourceLoader], {
+const source = createDataSourceSync('https://example.com/wcs', [WCSCoverageLoader], {
 
   wcs: {
 

@@ -107,7 +107,7 @@ See [WMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md), [OGC A
 
 GeoPackage sources expose explicit-table `getTile()` lookups for bounded encoded payloads. Missing rows return `null`; matrix geometry does not imply that every position is populated. See [GeoPackageSource](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source.md).
 
-GeoTIFF/COG raster sources expose optional `tileGrid` metadata for representable tiled overview hierarchies. Native IFD identifiers, unequal pixel sizes, and padded edge tiles are preserved. Stripped or rotated hierarchies retain their native raster APIs without an invented tile matrix. See [GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md).
+GeoTIFF/COG raster sources expose optional `tileGrid` metadata for representable tiled overview hierarchies. Native IFD identifiers, unequal pixel sizes, and padded edge tiles are preserved. Stripped or rotated hierarchies retain their native raster APIs without an invented tile matrix. See [GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md).
 
 ## Requesting a non-default grid through an image source[​](#requesting-a-non-default-grid-through-an-image-source "Direct link to Requesting a non-default grid through an image source")
 
@@ -156,5 +156,18 @@ For complete regular or coalesced grids, [`selectTileMatrixTiles`](https://loade
 ## Shared validation and coalesced requests[​](#shared-validation-and-coalesced-requests "Direct link to Shared validation and coalesced requests")
 
 `getTileGridValidation` distinguishes complete geometry, partial advertised metadata and invalid geometry or coverage, with diagnostics. `validateTileGrid` rejects invalid inputs while allowing partial metadata; `resolveTileGridTile` applies shared matrix identity and coverage rules. See [grid utilities](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/tile-grid.md).
+
+WMTS, OGC TileMatrixSet 2.0 and OGC API Tiles sources apply these rules in the same way:
+
+| Advertised metadata                                 | `getMetadata()`                                    | `getTile()`                    |
+| --------------------------------------------------- | -------------------------------------------------- | ------------------------------ |
+| Duplicate matrix IDs, or malformed limits           | Rejects                                            | Rejects without a tile request |
+| Unknown explicit `tileMatrix`                       | Not applicable                                     | Rejects with `RangeError`      |
+| Malformed level value, such as a zero tile width    | Keeps it; validation status `invalid`              | Rejects without a tile request |
+| Missing resolution or dimensions                    | Keeps partial levels; status `partial`             | Uses native IDs and limits     |
+| Empty limits list                                   | Valid; status `complete` when geometry is complete | `null` without a tile request  |
+| Tile outside limits or matrix, or no matrix for `z` | Not applicable                                     | `null` without a tile request  |
+
+Matrix dimensions always come from the matrix set, never from a layer or tileset content extent.
 
 OGC API Tiles preserves `variableMatrixWidths` in native row numbering, regardless of coordinate axis normalization. Fixed-frame selection enumerates canonical columns only. OGC URLs and the explicit image adapter use the same coalesced footprint/coverage semantics, including a canonical column before the minimum covered alias. No source dimensions, CRS equivalence, or renderer capabilities are inferred. Coalesced requests require complete geometry; partial metadata remains inspectable. WMTS variable-width extensions are not parsed by this change.

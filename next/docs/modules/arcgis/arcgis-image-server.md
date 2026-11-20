@@ -102,6 +102,10 @@ The sections below cover support, authentication, viewport images, analytical ra
 
 ArcGIS ImageServer endpoints expose rendered imagery and analytical raster data. loaders.gl offers an `ImageSource` for viewport exports and a `TileSource` for tiled visualization or analysis.
 
+| Property    | Value                                        |
+| ----------- | -------------------------------------------- |
+| Data source | `ArcGISImageSource`, `ArcGISImageTileSource` |
+
 ## Feature support[​](#feature-support "Direct link to Feature support")
 
 | Capability                  | Image source                   | Tile source                       | API and behavior                                                       |
@@ -125,13 +129,13 @@ ArcGIS ImageServer endpoints expose rendered imagery and analytical raster data.
 ## Viewport images[​](#viewport-images "Direct link to Viewport images")
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISImageServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageServerLoader} from '@loaders.gl/arcgis';
 
 
 
-const source = await load(imageServerUrl, [ArcGISImageServerSourceLoader]);
+const source = await createDataSource(imageServerUrl, [ArcGISImageServerLoader]);
 
 
 
@@ -180,14 +184,14 @@ Defaults can be supplied under `arcgis-image-server.exportImageParameters` and o
 
 ## Image tiles[​](#image-tiles "Direct link to Image tiles")
 
-`ArcGISImageTileSourceLoader` requests one `/exportImage` response per Web Mercator tile:
+`ArcGISImageTileLoader` requests one `/exportImage` response per Web Mercator tile:
 
 ```
-import {ArcGISImageTileSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageTileLoader} from '@loaders.gl/arcgis';
 
 
 
-const tileSource = await load(imageServerUrl, [ArcGISImageTileSourceLoader], {
+const tileSource = await createDataSource(imageServerUrl, [ArcGISImageTileLoader], {
 
   'arcgis-image-server-tiles': {
 

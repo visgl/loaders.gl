@@ -74,7 +74,7 @@ Streaming writer for GeoJSON encoded files.
 Encode a loaders.gl table containing geometry into a GeoJSON FeatureCollection. For example, an object-row table can contain WKT geometry strings in a named column:
 
 ```
-import {GeoJSONWriter} from '@loaders.gl/tables/json';
+import {GeoJSONWriter} from '@loaders.gl/tables/geojson';
 
 import {encode} from '@loaders.gl/core';
 
@@ -106,7 +106,7 @@ const text = new TextDecoder().decode(bytes);
 Pass an iterable of table batches to `encodeInBatches`. Each output chunk is an `ArrayBuffer` containing UTF-8 text; join chunks in order to form the complete GeoJSON document. Output chunks are not parsed feature batches.
 
 ```
-import {GeoJSONWriter} from '@loaders.gl/tables/json';
+import {GeoJSONWriter} from '@loaders.gl/tables/geojson';
 
 import {encodeInBatches} from '@loaders.gl/core';
 

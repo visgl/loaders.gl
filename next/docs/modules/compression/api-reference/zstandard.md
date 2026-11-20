@@ -72,12 +72,11 @@ Both implement the shared [Compressor and Decompressor](https://loaders.gl/next/
 
 ## Backend choices[​](#backend-choices "Direct link to Backend choices")
 
-| Backend        | Direction                                   | Subpath                            |
-| -------------- | ------------------------------------------- | ---------------------------------- |
-| fzstd          | Decompression                               | `zstd-decompressor-fzstd`          |
-| zstd-codec     | Compression and decompression compatibility | `zstd-zstd-codec`                  |
-| compress-utils | Compression                                 | `zstd-compressor-compress-utils`   |
-| compress-utils | Decompression                               | `zstd-decompressor-compress-utils` |
+| Backend        | Direction     | Subpath                            |
+| -------------- | ------------- | ---------------------------------- |
+| fzstd          | Decompression | `zstd-decompressor-fzstd`          |
+| compress-utils | Compression   | `zstd-compressor-compress-utils`   |
+| compress-utils | Decompression | `zstd-decompressor-compress-utils` |
 
 See the [live benchmarks](https://loaders.gl/next/docs/modules/compression/benchmarks.md) for bundle-size and throughput comparisons, plus the status of built-in browser support.
 

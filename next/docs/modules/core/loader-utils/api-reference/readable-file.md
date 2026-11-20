@@ -68,7 +68,7 @@ All implementations satisfy the `ReadableFile` interface exported from `@loaders
 
 info
 
-Legacy `FileProvider` classes have been removed from the default `@loaders.gl/core/loader-utils` exports. Use the `ReadableFile` implementations above instead.
+Legacy `FileProvider` classes have been removed. Use the `ReadableFile` implementations above instead.
 
 ## Usage[​](#usage "Direct link to Usage")
 

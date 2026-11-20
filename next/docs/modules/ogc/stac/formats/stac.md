@@ -8,17 +8,17 @@ STAC connects catalog, collection, and item metadata to the files or services th
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/stac.md)[STAC source API](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/stac.md)[STAC source API](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-loader.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-loader.md)
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------------------ |
-| Source loader | [`STACSourceLoader`](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md) |
+| Type          | API                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| Source loader | [`STACLoader`](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-loader.md) |
 
 Catalog discovery
 
@@ -123,9 +123,9 @@ Static STAC and STAC API expose similar documents but have materially different 
 
 Catalog discovery and asset decoding are intentionally separate:
 
-1. Open a catalog with `STACSourceLoader`.
+1. Open a catalog with `STACLoader`.
 2. Select an Item and a suitable data asset.
-3. Open that asset with a format source such as `ParquetSourceLoader`, `GeoTIFFSourceLoader`, or `PMTilesSourceLoader`.
+3. Open that asset with a format source such as `ParquetLoader`, `GeoTIFFLoader`, or `PMTilesLoader`.
 
 This keeps the STAC module small and lets each format source retain its own range planning, predicate pushdown, worker, and caching behavior.
 

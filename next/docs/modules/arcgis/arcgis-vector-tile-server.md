@@ -100,7 +100,11 @@ Detailed guide
 
 The sections below cover support, authentication, raw and decoded tiles, styles, and source options.
 
-ArcGIS VectorTileServer endpoints publish Mapbox Vector Tile (MVT) data together with an ArcGIS tile grid, style document, and sprite resources. `ArcGISVectorTileServerSourceLoader` implements the loaders.gl `VectorTileSource` contract.
+ArcGIS VectorTileServer endpoints publish Mapbox Vector Tile (MVT) data together with an ArcGIS tile grid, style document, and sprite resources. `ArcGISVectorTileServerLoader` implements the loaders.gl `VectorTileSource` contract.
+
+| Property    | Value                          |
+| ----------- | ------------------------------ |
+| Data source | `ArcGISVectorTileServerSource` |
 
 ## Feature support[​](#feature-support "Direct link to Feature support")
 
@@ -125,13 +129,13 @@ ArcGIS VectorTileServer endpoints publish Mapbox Vector Tile (MVT) data together
 ## Raw and decoded tiles[​](#raw-and-decoded-tiles "Direct link to Raw and decoded tiles")
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISVectorTileServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISVectorTileServerLoader} from '@loaders.gl/arcgis';
 
 
 
-const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader]);
+const source = await createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerLoader]);
 
 
 
@@ -149,7 +153,7 @@ Use `getTile` when caching or forwarding the original PBF. Use `getVectorTile` w
 MVT options are forwarded to `@loaders.gl/tiles/mvt`:
 
 ```
-const source = await load(vectorTileServiceUrl, [ArcGISVectorTileServerSourceLoader], {
+const source = await createDataSource(vectorTileServiceUrl, [ArcGISVectorTileServerLoader], {
 
   mvt: {
 

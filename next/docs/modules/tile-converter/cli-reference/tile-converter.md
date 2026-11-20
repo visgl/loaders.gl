@@ -1,10 +1,14 @@
-Tile converter / CLI
+Tile converter / Legacy v4 CLI
 
 # Put tiled-data conversion in the build pipeline.
 
 The tile-converter CLI converts supported I3S and 3D Tiles datasets from URLs or local files. Use it for data preparation, format migration, and repeatable output generation outside the browser.
 
-[Tile converter module](https://loaders.gl/next/docs/modules/tile-converter.md)
+[Default v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)[Tile converter module](https://loaders.gl/next/docs/modules/tile-converter.md)
 
 <!-- -->
 
@@ -56,13 +60,13 @@ The detailed guide covers installation, command-line options, dependencies, outp
 
 ![From-v3.0](https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square)[![npm version](https://badge.fury.io/js/%40loaders.gl%2Ftile-converter.svg)](https://badge.fury.io/js/%40loaders.gl%2Ftile-converter)[![Dockerhub](https://img.shields.io/docker/v/visgl/tile-converter?label=dockerhub)](https://hub.docker.com/r/visgl/tile-converter/tags)
 
-The `tile-converter` is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both are OGC community standards. It can load tilesets to be converted directly from a URL or file based formats. I3S and 3DTiles are large formats that include different layer types and data formats. See [Supported Features](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/supported-features.md) page which describes what tile-converter supports.
+This page describes the legacy `tile-converter-v4` command. The plain `tile-converter` command now runs the [v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md). The legacy command is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both are OGC community standards. It can load tilesets to be converted directly from a URL or file based formats. I3S and 3DTiles are large formats that include different layer types and data formats. See [Supported Features](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/supported-features.md) page which describes what tile-converter supports.
 
 ## Installation[​](#installation "Direct link to Installation")
 
 The tile-converter is published as an npm module and as a [docker image](#docker-image).
 
-Installing `@loaders.gl/tile-converter` from npm makes the `tile-converter` command line tool available.
+Installing `@loaders.gl/tile-converter` from npm makes the `tile-converter-v4` command line tool available.
 
 ```
 npm i @loaders.gl/tile-converter
@@ -75,25 +79,25 @@ Tile Converter can be run using `npx`.
 Aknowledge available options:
 
 ```
-npx tile-converter --help
+npx tile-converter-v4 --help
 ```
 
 Install dependencies:
 
 ```
-npx tile-converter --install-dependencies
+npx tile-converter-v4 --install-dependencies
 ```
 
 Run conversion:
 
 ```
-npx tile-converter --input-type \<I3S\|3DTILES\> --tileset \<tileset\> --name <tileset name> [--output <output folder>] [--no-draco] [--max-depth 4] [--slpk] [--7zExe <path/to/7z.exe>] [--token <ION token>] [--egm <pat/to/*.pgm|none>] [--split-nodes] [--instant-node-writing] [--generate-textures] [--generate-bounding-volumes]
+npx tile-converter-v4 --input-type \<I3S\|3DTILES\> --tileset \<tileset\> --name <tileset name> [--output <output folder>] [--no-draco] [--max-depth 4] [--slpk] [--7zExe <path/to/7z.exe>] [--token <ION token>] [--egm <pat/to/*.pgm|none>] [--split-nodes] [--instant-node-writing] [--generate-textures] [--generate-bounding-volumes]
 ```
 
 Alternatively, you can use syntax with the equal sign:
 
 ```
-npx tile-converter --input-type=\<I3S\|3DTILES\> --tileset=<tileset> --splk=true|false ...
+npx tile-converter-v4 --input-type=\<I3S\|3DTILES\> --tileset=<tileset> --splk=true|false ...
 ```
 
 Alternatively, there is a docker image to run:
@@ -164,7 +168,7 @@ In case when the input 3DTiles dataset has multiple metadata classes, the tile-c
 If the wanted class is known before the conversion it is possible to skip the prompt with setting `metadata-class` option. For example:
 
 ```
-npx tile-converter --input-type 3DTILES --tileset ..... --metadata-class bridges
+npx tile-converter-v4 --input-type 3DTILES --tileset ..... --metadata-class bridges
 ```
 
 ## Quiet mode[​](#quiet-mode "Direct link to Quiet mode")
@@ -172,7 +176,7 @@ npx tile-converter --input-type 3DTILES --tileset ..... --metadata-class bridges
 Use `--quiet` option to avoid user prompts during conversion. In some cases, tile-converter stops and waits for an input from a user, for example, it can ask whether to resume conversion or start a new conversion.
 
 ```
-npx tile-converter ..... --quiet
+npx tile-converter-v4 ..... --quiet
 ```
 
 With `--quiet` option present, tile-converter will not ask a user to make a decision, it will do a default action instead.
@@ -211,7 +215,7 @@ open https://loaders.gl/examples/i3s?url=http://localhost:8080/NewLayerName/Scen
 
 ## Docker image[​](#docker-image "Direct link to Docker image")
 
-The tile converter is available as a docker image in the [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter/tags) dockerhub repo. The advantage of docker image is that it has dependencies pre-installed so it is not necessary to call `npx tile-converter --install-dependencies`.
+The repository Dockerfile builds a **legacy v4** image. Use the v4 flags in the examples below, even though the default npm command now runs v5. The [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter/tags) Docker Hub repository hosts converter images. The Dockerfile preinstalls the legacy dependencies, so a locally built image does not need a separate `--install-dependencies` step.
 
 To download the tile-converter docker image, run:
 
@@ -261,9 +265,15 @@ To build your own tile-converter docker image:
 * In root folder of the project run:
 
 ```
-  yarn bootstrap
+yarn install
 
-  docker build -t [docker_image_name] -f modules/tile-converter/Dockerfile .
+yarn build
+
+yarn workspace @loaders.gl/tile-converter build-converter-bundle
+
+docker build -t tile-converter-v4 -f apps/tile-converter/Dockerfile .
 ```
 
 * Push docker image to your docker hub
+
+The legacy converter shares unchanged byte-identical PNG/JPEG textures across nodes when alternative texture generation is disabled. Matching retains at most 16 MiB of encoded images; further unique textures retain per-node storage. Shared texture owners are preserved in conversion dumps for resumed output.

@@ -89,6 +89,20 @@ The `@loaders.gl/tables/json` module parses JSON, tabular JSON, and geospatial f
 
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files to avoid blocking for tens of seconds.
 
+## Convert rows already in memory[​](#convert-rows-already-in-memory "Direct link to Convert rows already in memory")
+
+[`convertJSONToArrow`](https://loaders.gl/next/docs/modules/tables/json/api-reference/convert-json-to-arrow.md) converts application-built arrays or already-parsed JSON into a native Apache Arrow table synchronously. It uses the same nested schema inference and conversion policies as `JSONTableLoader`, without serializing your data.
+
+```
+import {convertJSONToArrow} from '@loaders.gl/tables/json';
+
+
+
+const table = convertJSONToArrow([{name: 'Oslo', population: 717710}]);
+```
+
+See the [converter reference](https://loaders.gl/next/docs/modules/tables/json/api-reference/convert-json-to-arrow.md) for supported inputs, schemas, recovery options, and Arrow-compatible deck.gl `dataTransform` examples.
+
 ## Parsing batches in workers[​](#parsing-batches-in-workers "Direct link to Parsing batches in workers")
 
 `JSONLoader`, `JSONTableLoader`, and `NDJSONLoader` support incremental worker parsing. Arrow output transfers as owned Arrow column buffers. Arbitrary documents, heterogeneous row output, and container metadata transfer as owned UTF-8 JSON frames and are decoded on the caller. Core enables supported browser workers by default. Set `core.worker: false` to retain caller-side parsing and logging. The following example makes worker selection explicit while consuming results as an async iterator:
@@ -106,7 +120,7 @@ const batches = await loadInBatches('records.ndjson', NDJSONLoader, {
 
   core: {worker: true, batchSize: 1024},
 
-  ndjson: {shape: 'arrow-table'},
+  ndjson: {shape: 'arrow'},
 
   signal: controller.signal,
 
@@ -116,7 +130,7 @@ const batches = await loadInBatches('records.ndjson', NDJSONLoader, {
 
 for await (const batch of batches) {
 
-  consume(batch.data); // Hydrated Apache Arrow Table for arrow-table output.
+  consume(batch); // Hydrated Apache Arrow RecordBatch.
 
 }
 ```

@@ -63,13 +63,13 @@ The detailed reference covers synchronous and asynchronous selection, detection 
 ```
 import {_selectSource} from '@loaders.gl/core';
 
-import {PMTilesSourceLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
 
-import {MVTSourceLoader} from '@loaders.gl/tiles/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
 
 
-const sourceLoader = _selectSource('filename.pmtiles', [PMTilesSourceLoader, MVTSourceLoader]);
+const sourceLoader = _selectSource('filename.pmtiles', [PMTilesLoader, MVTLoader]);
 ```
 
 ## Signature[​](#signature "Direct link to Signature")

@@ -12,11 +12,11 @@ IcebergTableSource reads table metadata and manifests, selects the relevant Parq
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)[Parquet source](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md)[Parquet source](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source.md)
 
 The manifest path
 

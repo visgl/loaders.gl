@@ -56,7 +56,7 @@ Detailed guide
 
 The reference below covers supported image values, type detection, pixel extraction, dimensions, and platform-dependent format support.
 
-Background: The image returned by [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md) is always `ImageBitmap`, while deprecated [`LegacyImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/legacy-image-loader.md) preserves older compatibility return types.
+Background: The image returned by [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md) is always `ImageBitmap`.
 
 ## Usage[​](#usage "Direct link to Usage")
 
@@ -118,7 +118,7 @@ Returns `true` if `mimeType` is one of the MIME types that `@loaders.gl/images` 
 isImage(image : any): boolean
 ```
 
-* `image`: An image returned by an image category loader, such as `ImageLoader` or deprecated `LegacyImageLoader`
+* `image`: An image returned by an image category loader, such as `ImageLoader`
 
 Returns `true` if `image` is one of the types that `@loaders.gl/images` can return.
 
@@ -130,7 +130,7 @@ getImageType(image : any): 'imagebitmap' | 'image' | 'data'
 
 Returns the type of an image.
 
-* `image`: An image returned by an image category loader, such as `ImageLoader` or deprecated `LegacyImageLoader`
+* `image`: An image returned by an image category loader, such as `ImageLoader`
 
 Returns
 
@@ -146,7 +146,7 @@ The following image types are distinguished
 | --------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `'data'`        | A simple JavaScript object with `data`, `width`, `height` etc. fields..                                     | Useful when additional manipulation of the image data is desired. Helper APIs continue to accept this shape directly.                   |
 | `'imagebitmap'` | [`ImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap)                               | The preferred image type returned by `ImageLoader` and by the Node.js `ImageBitmap` polyfill installed by `@loaders.gl/core/polyfills`. |
-| `'image'`       | [`Image`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image) (aka `HTMLImageElement`) | Supported by helper APIs for compatibility and still available through deprecated `LegacyImageLoader`.                                  |
+| `'image'`       | [`Image`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image) (aka `HTMLImageElement`) | Supported by helper APIs for compatibility.                                                                                             |
 
 ### getImageData()[​](#getimagedata "Direct link to getImageData()")
 
@@ -154,7 +154,7 @@ The following image types are distinguished
 getImageData(image : any): Object
 ```
 
-* `image`: An image returned by an image category loader, such as `ImageLoader` or deprecated `LegacyImageLoader`
+* `image`: An image returned by an image category loader, such as `ImageLoader`
 
 Returns and image data object with the following fields
 

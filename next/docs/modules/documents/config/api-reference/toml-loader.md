@@ -23,4 +23,4 @@ const data = await load('config.toml', TOMLLoader);
 
 Parser options are passed as `options.toml`. The options include BigInt handling for large integer values and a maximum nesting-depth setting.
 
-For synchronous parsing, import `TOMLLoaderWithParser` from `@loaders.gl/documents/toml-loader` and pass it to `parseSync`.
+For synchronous parsing, import `TOMLLoaderWithParser` from `@loaders.gl/documents/toml` and pass it to `parseSync`.

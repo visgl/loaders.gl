@@ -67,7 +67,7 @@ ArcGIS Server directories can publish several endpoint families. loaders.gl v5 k
 | `arcgis-vector-tile-server` | `VectorTileServer`                               | `VectorTileSource`                             | `getMetadata`, `getTile`, `getVectorTile`                                                                                                          | PBF or decoded vector tile                        |
 | `arcgis-scene-server`       | `SceneServer`                                    | `Tileset3DSource` or `PointCloudTilesetSource` | `getMetadata`, `getTilesetSource`                                                                                                                  | I3S mesh, Point, or Point Cloud source            |
 
-`ARCGIS_LOADERS` contains these loaders in deterministic selection order. Pass it to async `load()` or deck.gl's `SourceLayer`:
+`ARCGIS_LOADERS` contains these loaders in deterministic selection order. Pass it to async `createDataSource()` or deck.gl's `SourceLayer`:
 
 ```
 import {load} from '@loaders.gl/core';
@@ -83,16 +83,16 @@ When endpoint rewriting hides `FeatureServer`, `ImageServer`, `MapServer`, `Vect
 
 ## Runtime source classes[​](#runtime-source-classes "Direct link to Runtime source classes")
 
-Import source classes and synchronous service loaders from `@loaders.gl/arcgis/bundled`. The package root exports lightweight loaders for async `load()` and source instance types.
+Import source classes and synchronous service loaders from `@loaders.gl/arcgis/bundled`. The package root exports lightweight loaders for async `createDataSource()` and source instance types.
 
-| Source class                   | Source loader                        | Documentation                                                                                            |
-| ------------------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `ArcGISVectorSource`           | `ArcGISFeatureServerSourceLoader`    | [FeatureServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)               |
-| `ArcGISImageSource`            | `ArcGISImageServerSourceLoader`      | [ImageServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)                   |
-| `ArcGISImageTileSource`        | `ArcGISImageTileSourceLoader`        | [ImageServer tiles](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md#image-tiles) |
-| `ArcGISMapTileSource`          | `ArcGISMapTileSourceLoader`          | [MapServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md)                       |
-| `ArcGISVectorTileServerSource` | `ArcGISVectorTileServerSourceLoader` | [VectorTileServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md)        |
-| `ArcGISSceneServerSource`      | `ArcGISSceneServerSourceLoader`      | [SceneServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md)                   |
+| Source class                   | Source loader                  | Documentation                                                                                            |
+| ------------------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `ArcGISVectorSource`           | `ArcGISFeatureServerLoader`    | [FeatureServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)               |
+| `ArcGISImageSource`            | `ArcGISImageServerLoader`      | [ImageServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)                   |
+| `ArcGISImageTileSource`        | `ArcGISImageTileLoader`        | [ImageServer tiles](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md#image-tiles) |
+| `ArcGISMapTileSource`          | `ArcGISMapTileLoader`          | [MapServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md)                       |
+| `ArcGISVectorTileServerSource` | `ArcGISVectorTileServerLoader` | [VectorTileServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md)        |
+| `ArcGISSceneServerSource`      | `ArcGISSceneServerLoader`      | [SceneServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md)                   |
 
 ## Discovery exports[​](#discovery-exports "Direct link to Discovery exports")
 

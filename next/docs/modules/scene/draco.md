@@ -90,15 +90,14 @@ npm install @loaders.gl/core @loaders.gl/scene
 
 The injectable `draco3d` npm backend is an `optionalDependency`. The default loader and writer use vendored runtimes and work with `npm install --omit=optional`. If you omit optional dependencies and want to inject `options.modules.draco3d`, install `draco3d` explicitly.
 
-The scene root exports loader metadata and public Draco types. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco-loader` for direct parsing, and import writers and encoding helpers from `@loaders.gl/scene/draco-writer`. Bundled runtime URL helpers use `@loaders.gl/scene/draco-library-options` (an ESM entry point).
+The scene root exports loader metadata and public Draco types. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco` for direct parsing, and import writers and encoding helpers from `@loaders.gl/scene/draco`. Bundled runtime URL helpers use `@loaders.gl/scene/draco` (an ESM entry point).
 
 ## Loaders and Writers[​](#loaders-and-writers "Direct link to Loaders and Writers")
 
-| Loader                                                                                                     | Description                                                                                                                                                      |
-| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`DracoLoader`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md)       | Loads Draco meshes and point clouds as Mesh objects or [Mesh Arrow tables](https://loaders.gl/next/docs/specifications/category-mesh.md#mesh-arrow-tables). |
-| [`DracoWorkerLoader`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md) | Loads Draco meshes and point clouds in a worker.                                                                                                                 |
-| [`DracoWriter`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-writer.md)       | Encodes Draco meshes and point clouds from Mesh or Mesh Arrow table data.                                                                                        |
+| Loader                                                                                               | Description                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`DracoLoader`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md) | Loads Draco meshes and point clouds as Mesh objects or [Mesh Arrow tables](https://loaders.gl/next/docs/specifications/category-mesh.md#mesh-arrow-tables). |
+| [`DracoWriter`](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-writer.md) | Encodes Draco meshes and point clouds from Mesh or Mesh Arrow table data.                                                                                        |
 
 `encodeDracoInBatches` accepts an async or synchronous iterator of geometry batches. With `worker: true` it leases one worker for the full iterator and keeps one Draco encoder alive, which is useful for large exports and stateful batch pipelines. With `worker: false` it uses the same lifecycle locally.
 
@@ -135,7 +134,7 @@ Using the bundled WebAssembly decoder and encoder assets:
 ```
 import {setLoaderOptions} from '@loaders.gl/core';
 
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
 
 setLoaderOptions(getDracoLibraryOptions());
 ```

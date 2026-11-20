@@ -100,11 +100,10 @@ npm install @loaders.gl/core @loaders.gl/tables
 
 ## Loaders and Writers[​](#loaders-and-writers "Direct link to Loaders and Writers")
 
-| API                                                                                                   | Description                                  |
-| ----------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| [`CSVLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)       | Loads CSV and TSV data as loaders.gl tables. |
-| [`CSVWorkerLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md) | Deprecated alias for `CSVLoader`.            |
-| [`CSVWriter`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)       | Writes loaders.gl tables as CSV text.        |
+| API                                                                                             | Description                                  |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| [`CSVLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md) | Loads CSV and TSV data as loaders.gl tables. |
+| [`CSVWriter`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md) | Writes loaders.gl tables as CSV text.        |
 
 ## Additional APIs[​](#additional-apis "Direct link to Additional APIs")
 

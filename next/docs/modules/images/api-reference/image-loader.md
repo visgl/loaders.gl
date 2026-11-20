@@ -68,7 +68,7 @@ The reference below covers supported image formats, output behavior, browser opt
 | Worker Thread  | ❌ No (but may run on separate native thread in browsers)                 |
 | Streaming      | ❌ No                                                                     |
 
-`ImageLoader` was previously named `ImageBitmapLoader`. The older loader with `auto`, `image`, and `data` output modes is now [`LegacyImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/legacy-image-loader.md). Use `ImageLoaderOptions` for bitmap options and `LegacyImageLoaderOptions` for those older output modes.
+`ImageLoader` was previously named `ImageBitmapLoader`. Use `ImageLoaderOptions` for bitmap options.
 
 ## Usage[​](#usage "Direct link to Usage")
 

@@ -12,12 +12,12 @@ import {MTLLoader} from '@loaders.gl/scene/obj';
 const materials = await load('model.mtl', MTLLoader);
 ```
 
-For synchronous parsing, import `MTLLoaderWithParser` from `@loaders.gl/scene/mtl-loader`.
+For synchronous parsing, import `MTLLoaderWithParser` from `@loaders.gl/scene/mtl`.
 
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {MTLLoaderWithParser} from '@loaders.gl/scene/mtl-loader';
+import {MTLLoaderWithParser} from '@loaders.gl/scene/mtl';
 
 
 

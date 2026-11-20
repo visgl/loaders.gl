@@ -73,7 +73,7 @@ The `DracoWriter` encodes [Mesh](https://loaders.gl/next/docs/specifications/cat
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {DracoWriter} from '@loaders.gl/scene/draco-writer';
+import {DracoWriter} from '@loaders.gl/scene/draco';
 
 import {encode} from '@loaders.gl/core';
 

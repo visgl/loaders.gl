@@ -64,11 +64,10 @@ npm install @loaders.gl/core
 
 ## API[​](#api "Direct link to API")
 
-| Loader                                                                                                       | Description                                          |
-| ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
-| [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)              | Preferred pure `ImageBitmap` loader                  |
-| [`LegacyImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/legacy-image-loader.md) | Deprecated compatibility loader                      |
-| [`ImageWriter`](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md)              | Encodes decoded images into supported image formats. |
+| Loader                                                                                          | Description                                          |
+| ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md) | Preferred pure `ImageBitmap` loader                  |
+| [`ImageWriter`](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md) | Encodes decoded images into supported image formats. |
 
 ### Binary Image API[​](#binary-image-api "Direct link to Binary Image API")
 
@@ -84,7 +83,7 @@ Use this metadata helper instead of the removed `isBinaryImage`, `getBinaryImage
 
 ### Parsed Image API[​](#parsed-image-api "Direct link to Parsed Image API")
 
-A set of functions to work with parsed images returned by `ImageLoader`, deprecated `LegacyImageLoader`, and other image-category APIs.
+A set of functions to work with parsed images returned by `ImageLoader` and other image-category APIs.
 
 | Function                                        | Description                                                                                  |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -99,10 +98,10 @@ A set of functions to work with parsed images returned by `ImageLoader`, depreca
 The parsed image APIs support multiple image representations.
 
 * `ImageBitmap` - The preferred return type of `ImageLoader`.
-* `Image` (aka `HTMLImageElement`) - Still supported by helper APIs such as `getImageData`, and remains available through deprecated `LegacyImageLoader`.
+* `Image` (aka `HTMLImageElement`) - Still supported by helper APIs such as `getImageData`.
 * `data` - Raw binary memory representing the image pixels. This remains supported by helper APIs and can be produced from images with `getImageData(image)`.
 
-Prefer [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md) for new code. See deprecated [`LegacyImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/legacy-image-loader.md) for compatibility behavior and legacy options.
+Prefer [`ImageLoader`](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md) for new code.
 
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
@@ -124,11 +123,11 @@ import {ImageLoader, BasisLoader, TextureLoader, VideoLoader} from '@loaders.gl/
 const imageBitmap = await load('image.png', ImageLoader);
 ```
 
-Direct parser access uses flat subpaths and `*WithParser` exports. For example, `BasisLoaderWithParser` is available from `@loaders.gl/images/basis-loader`. Texture writers use direct subpaths such as `@loaders.gl/images/ktx2-basis-writer`; manifest schemas use `@loaders.gl/images/texture-manifest-schema`.
+Direct parser access uses flat subpaths and `*WithParser` exports. For example, `BasisLoaderWithParser` is available from `@loaders.gl/images/basis`. Texture writers use direct subpaths such as `@loaders.gl/images/basis`; manifest schemas use `@loaders.gl/images/texture`.
 
 ### Direct parser and sync access[​](#direct-parser-and-sync-access "Direct link to Direct parser and sync access")
 
-Direct access does not make an asynchronous loader synchronous. `ImageLoaderWithParser` and `BasisLoaderWithParser` still decode asynchronously. NPY arrays now belong to [scientific](https://loaders.gl/next/docs/modules/scientific/api-reference/npy-loader.md). Import `NPYLoaderWithParser` from `@loaders.gl/scientific/npy-loader` for synchronous array parsing.
+Direct access does not make an asynchronous loader synchronous. `ImageLoaderWithParser` and `BasisLoaderWithParser` still decode asynchronously. NPY arrays now belong to [scientific](https://loaders.gl/next/docs/modules/scientific/api-reference/npy-loader.md). Import `NPYLoaderWithParser` from `@loaders.gl/scientific/npy` for synchronous array parsing.
 
 ## Node image codecs[​](#node-image-codecs "Direct link to Node image codecs")
 
@@ -148,69 +147,60 @@ The Node backend detects formats from encoded bytes and returns RGBA pixels thro
 
 ## Format guides[​](#format-guides "Direct link to Format guides")
 
+* [IES](https://loaders.gl/next/docs/modules/images/ies.md)
+
+* [Color LUTs: Cube, 3dl and PNG](https://loaders.gl/next/docs/modules/images/color-lut.md)
+
+* [OpenEXR](https://loaders.gl/next/docs/modules/images/openexr.md)
+
 * [Basis Universal](https://loaders.gl/next/docs/modules/images/textures/formats/basis.md)
+
 * [Compressed Textures](https://loaders.gl/next/docs/modules/images/textures/formats/compressed-textures.md)
+
 * [Crunch texture](https://loaders.gl/next/docs/modules/images/textures/formats/crunch.md)
+
 * [DDS texture](https://loaders.gl/next/docs/modules/images/textures/formats/dds.md)
+
 * [Radiance HDR](https://loaders.gl/next/docs/modules/images/textures/formats/hdr.md)
+
 * [KTX and KTX2 formats](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
+
 * [PVR texture](https://loaders.gl/next/docs/modules/images/textures/formats/pvr.md)
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->50<!-- -->)
+All exported subpaths (<!-- -->29<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format | Import subpath                                         |
 | ------ | ------------------------------------------------------ |
-|        | `@loaders.gl/images/basis-format-utils`                |
-|        | `@loaders.gl/images/basis-loader`                      |
-|        | `@loaders.gl/images/basis-loader-types`                |
-|        | `@loaders.gl/images/basis-module-loader`               |
-|        | `@loaders.gl/images/basis-types`                       |
+|        | `@loaders.gl/images/basis`                             |
 |        | `@loaders.gl/images/basis-worker-node.cjs`             |
 |        | `@loaders.gl/images/basis-worker-node.js`              |
 |        | `@loaders.gl/images/basis-worker.js`                   |
+|        | `@loaders.gl/images/basis/bundled`                     |
 |        | `@loaders.gl/images/bundled`                           |
-|        | `@loaders.gl/images/compressed-texture-loader`         |
-|        | `@loaders.gl/images/compressed-texture-loader-types`   |
+|        | `@loaders.gl/images/color-lut`                         |
+|        | `@loaders.gl/images/color-lut/bundled`                 |
 |        | `@loaders.gl/images/compressed-texture-worker.js`      |
-|        | `@loaders.gl/images/compressed-texture-writer`         |
-|        | `@loaders.gl/images/crunch-loader`                     |
-|        | `@loaders.gl/images/crunch-module-loader`              |
+|        | `@loaders.gl/images/crunch`                            |
 |        | `@loaders.gl/images/crunch-worker.js`                  |
-|        | `@loaders.gl/images/gif-builder`                       |
+|        | `@loaders.gl/images/exr`                               |
+|        | `@loaders.gl/images/exr/bundled`                       |
 |        | `@loaders.gl/images/gl-extensions`                     |
-|        | `@loaders.gl/images/image-format`                      |
-|        | `@loaders.gl/images/image-loader`                      |
-|        | `@loaders.gl/images/image-loader-types`                |
-|        | `@loaders.gl/images/image-writer`                      |
-|        | `@loaders.gl/images/ktx2-basis-writer`                 |
-|        | `@loaders.gl/images/ktx2-basis-writer-worker-loader`   |
+|        | `@loaders.gl/images/ies`                               |
+|        | `@loaders.gl/images/ies/bundled`                       |
+|        | `@loaders.gl/images/image`                             |
+|        | `@loaders.gl/images/image/bundled`                     |
 |        | `@loaders.gl/images/ktx2-basis-writer-worker-node.cjs` |
 |        | `@loaders.gl/images/ktx2-basis-writer-worker-node.js`  |
 |        | `@loaders.gl/images/ktx2-basis-writer-worker.js`       |
-|        | `@loaders.gl/images/legacy-image-loader`               |
-|        | `@loaders.gl/images/legacy-image-loader-types`         |
-|        | `@loaders.gl/images/load-image`                        |
-|        | `@loaders.gl/images/load-image-array`                  |
-|        | `@loaders.gl/images/load-image-cube`                   |
-|        | `@loaders.gl/images/radiance-hdr-loader`               |
-|        | `@loaders.gl/images/radiance-hdr-loader-types`         |
-|        | `@loaders.gl/images/texture-array-loader`              |
-|        | `@loaders.gl/images/texture-array-loader-types`        |
-|        | `@loaders.gl/images/texture-cube-array-loader`         |
-|        | `@loaders.gl/images/texture-cube-array-loader-types`   |
-|        | `@loaders.gl/images/texture-cube-loader`               |
-|        | `@loaders.gl/images/texture-cube-loader-types`         |
-|        | `@loaders.gl/images/texture-format`                    |
-|        | `@loaders.gl/images/texture-loader`                    |
-|        | `@loaders.gl/images/texture-loader-types`              |
-|        | `@loaders.gl/images/texture-manifest-schema`           |
+|        | `@loaders.gl/images/radiance-hdr`                      |
+|        | `@loaders.gl/images/radiance-hdr/bundled`              |
+|        | `@loaders.gl/images/texture`                           |
 |        | `@loaders.gl/images/texture-manifest.schema.json`      |
+|        | `@loaders.gl/images/texture/bundled`                   |
 |        | `@loaders.gl/images/types`                             |
-|        | `@loaders.gl/images/unbundled`                         |
-|        | `@loaders.gl/images/video-format`                      |
-|        | `@loaders.gl/images/video-loader`                      |
-|        | `@loaders.gl/images/video-loader-types`                |
+|        | `@loaders.gl/images/video`                             |
+|        | `@loaders.gl/images/video/bundled`                     |

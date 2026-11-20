@@ -57,14 +57,14 @@ The sections below document converter contracts, supported targets, metadata beh
 
 ## GeoArrowTableConverter[​](#geoarrowtableconverter "Direct link to GeoArrowTableConverter")
 
-| Field       | Value                                                                                                           |
-| ----------- | --------------------------------------------------------------------------------------------------------------- |
-| Package     | `@loaders.gl/core/geoarrow`                                                                                     |
-| `id`        | `'geoarrow-table'`                                                                                              |
-| `from`      | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
-| `to`        | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
-| Detection   | Arrow tables whose schema carries GeoArrow metadata                                                             |
-| Typical use | Move a GeoArrow table into or out of wrappers without changing geometry encoding                                |
+| Field       | Value                                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| Package     | `@loaders.gl/core/geoarrow`                                                                    |
+| `id`        | `'geoarrow-table'`                                                                             |
+| `from`      | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
+| `to`        | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'` |
+| Detection   | Arrow tables whose schema carries GeoArrow metadata                                            |
+| Typical use | Convert between native GeoArrow and row, columnar, or GeoJSON tables                           |
 
 ## GeoArrowGeometryConverter[​](#geoarrowgeometryconverter "Direct link to GeoArrowGeometryConverter")
 
@@ -90,7 +90,7 @@ The sections below document converter contracts, supported targets, metadata beh
 
 ## Binary Polygon Buffers[​](#binary-polygon-buffers "Direct link to Binary Polygon Buffers")
 
-`makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension})` adapts an existing `BinaryPolygonGeometry` to the Arrow-independent `GeoArrowColumn` descriptor from `@math.gl/geospatial/geoarrow`. It produces one `geoarrow.polygon` row per polygon, including empty polygons. It does not reconstruct MultiPolygon grouping or original feature identity.
+`makeGeoArrowColumnFromBinaryPolygon(binaryPolygons, {dimension})` adapts an existing `BinaryPolygonGeometry` to the Arrow-independent `GeoArrowColumn` descriptor from `@math.gl/core/arrow`. It produces one `geoarrow.polygon` row per polygon, including empty polygons. It does not reconstruct MultiPolygon grouping or original feature identity.
 
 ```
 import {
@@ -101,7 +101,7 @@ import {
 
 } from '@loaders.gl/core/geoarrow';
 
-import {getGeoArrowBounds} from '@math.gl/geospatial/geoarrow';
+import {getGeoArrowBounds} from '@math.gl/core/arrow';
 
 
 

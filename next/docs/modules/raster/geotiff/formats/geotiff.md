@@ -22,14 +22,14 @@ GeoTIFF combines TIFF image storage with tags that describe the raster’s coord
 | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Loader        | [`GeoTIFFLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)              |
 | Loader        | [`GeoTIFFRasterLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md) |
-| Source loader | [`GeoTIFFSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md) |
-| Source loader | [`OMETiffSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md) |
+| Source loader | [`GeoTIFFLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)              |
+| Source loader | [`OMETiffLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-loader.md)              |
 
 GeoTIFF raster format exampleEnter fullscreen
 
 ⛶ Explore fullscreen
 
-[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFLoaderWithParser](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)[OMETiffLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-loader.md)
 
 Windowed raster access
 
@@ -57,13 +57,13 @@ bboxoverviewband
 
 rea&#x64;**→**
 
-[03 · application result](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+[03 · application result](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
-### [Typed raster result](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+### [Typed raster result](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
-[Pixels, dimensions, transform, and CRS stay available to the application.<!-- --> ↗](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+[Pixels, dimensions, transform, and CRS stay available to the application.<!-- --> ↗](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
-[pixelstransformCRS](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)
+[pixelstransformCRS](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)
 
 A local file may use direct offsets; a cloud source may use HTTP ranges or object-store chunks. The application-facing selection remains the same.
 
@@ -120,17 +120,17 @@ The latest version is TIFF 6.0 was released on 3 June 1992.
 
 GeoTIFF and Cloud Optimized GeoTIFF participate through the raster side of the [common scan architecture](https://loaders.gl/next/docs/developer-guide/common-scan-architecture.md). Raster queries keep their natural window, resolution, and band vocabulary rather than pretending pixels are table rows.
 
-| Capability                 | GeoTIFF / COG                                                                                                                                                                                           | OME-TIFF                                       |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Entry point                | `getRaster()`                                                                                                                                                                                           | `getRaster()`                                  |
-| Metadata discovery         | Bands, dtype, bounds, CRS, overviews                                                                                                                                                                    | Channels, dtype, dimensions, multiscale levels |
-| Native TileMatrix geometry | Optional for tiled, axis-aligned overview hierarchies; see [source details](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md#native-tilematrix-geometry) | Not provided                                   |
-| Spatial window             | Bounds pushdown in the source CRS                                                                                                                                                                       | Not geospatial                                 |
-| Resolution                 | Overview/target-size selection                                                                                                                                                                          | Multiscale level selection                     |
-| Components                 | Band selection                                                                                                                                                                                          | Channel selection plus time and z slices       |
-| Output                     | Typed planar or interleaved raster data                                                                                                                                                                 | Typed image planes                             |
-| Reprojection               | Not performed                                                                                                                                                                                           | Not applicable                                 |
-| Cancellation               | Checked by the source, but not advertised as cooperative raster cancellation                                                                                                                            | Validated query execution                      |
+| Capability                 | GeoTIFF / COG                                                                                                                                                                                    | OME-TIFF                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
+| Entry point                | `getRaster()`                                                                                                                                                                                    | `getRaster()`                                  |
+| Metadata discovery         | Bands, dtype, bounds, CRS, overviews                                                                                                                                                             | Channels, dtype, dimensions, multiscale levels |
+| Native TileMatrix geometry | Optional for tiled, axis-aligned overview hierarchies; see [source details](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md#native-tilematrix-geometry) | Not provided                                   |
+| Spatial window             | Bounds pushdown in the source CRS                                                                                                                                                                | Not geospatial                                 |
+| Resolution                 | Overview/target-size selection                                                                                                                                                                   | Multiscale level selection                     |
+| Components                 | Band selection                                                                                                                                                                                   | Channel selection plus time and z slices       |
+| Output                     | Typed planar or interleaved raster data                                                                                                                                                          | Typed image planes                             |
+| Reprojection               | Not performed                                                                                                                                                                                    | Not applicable                                 |
+| Cancellation               | Checked by the source, but not advertised as cooperative raster cancellation                                                                                                                     | Validated query execution                      |
 
 COG range access is preserved: a bounded request can select the relevant image and byte ranges without first downloading the entire file. When a viewport CRS differs from the source CRS, the source rejects the request rather than silently returning misregistered pixels.
 

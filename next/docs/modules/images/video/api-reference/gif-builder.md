@@ -76,7 +76,7 @@ import {load} from '@loaders.gl/core';
 
 import {ImageLoader} from '@loaders.gl/images';
 
-import GIFBuilder from '@loaders.gl/images/gif-builder';
+import GIFBuilder from '@loaders.gl/images/image';
 
 
 
@@ -94,7 +94,7 @@ gifBuilder.build();
 Build a GIF from image URLs (Experimental)
 
 ```
-import GIFBuilder from '@loaders.gl/images/gif-builder';
+import GIFBuilder from '@loaders.gl/images/image';
 
 
 
@@ -112,7 +112,7 @@ gifBuilder.build();
 Build a GIF from image URLs, with frame-specific Text (Experimental)
 
 ```
-import GIFBuilder from '@loaders.gl/images/gif-builder';
+import GIFBuilder from '@loaders.gl/images/image';
 
 
 
@@ -130,7 +130,7 @@ gifBuilder.build();
 Build a GIF from the webcam (Experimental)
 
 ```
-import GIFBuilder from '@loaders.gl/images/gif-builder';
+import GIFBuilder from '@loaders.gl/images/image';
 
 const gifBuilder = new GIFBuilder({source: webcam, width: 400, height: 400});
 

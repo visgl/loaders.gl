@@ -84,18 +84,18 @@ The package-root export is metadata-only. Async core APIs preload the parser fro
 
 ## Return Types[​](#return-types "Direct link to Return Types")
 
-| Shape         | Return value                                                                   |
-| ------------- | ------------------------------------------------------------------------------ |
-| `json`        | `ChromeTraceFileSchema`, preserving top-level and event passthrough fields.    |
-| `arrow-table` | `ChromeTraceEventArrowTable`, with file metadata attached to the Arrow schema. |
+| Shape   | Return value                                                                   |
+| ------- | ------------------------------------------------------------------------------ |
+| `json`  | `ChromeTraceFileSchema`, preserving top-level and event passthrough fields.    |
+| `arrow` | `ChromeTraceEventArrowTable`, with file metadata attached to the Arrow schema. |
 
 ## Options[​](#options "Direct link to Options")
 
-| Option                  | Type                      | Default         | Description                                                                     |
-| ----------------------- | ------------------------- | --------------- | ------------------------------------------------------------------------------- |
-| `chromeTrace.shape`     | `'json' \| 'arrow-table'` | `'arrow-table'` | Whole-file result shape.                                                        |
-| `chromeTrace.batchSize` | `number`                  | `256`           | Maximum events per streamed Arrow record batch.                                 |
-| `maxLength`             | `number`                  | `1000`          | Maximum number of events structurally validated; all events are still returned. |
+| Option                  | Type                | Default   | Description                                                                     |
+| ----------------------- | ------------------- | --------- | ------------------------------------------------------------------------------- |
+| `chromeTrace.shape`     | `'json' \| 'arrow'` | `'arrow'` | Whole-file result shape.                                                        |
+| `chromeTrace.batchSize` | `number`            | `256`     | Maximum events per streamed Arrow record batch.                                 |
+| `maxLength`             | `number`            | `1000`    | Maximum number of events structurally validated; all events are still returned. |
 
 The legacy top-level `shape` option is also accepted and takes precedence if supplied. Prefer `chromeTrace.shape` in new code. Arrow results retain this module's native Apache Arrow `Table` API (`table.numRows`), not a loaders.gl `{shape, data}` wrapper.
 
@@ -112,7 +112,7 @@ import {ChromeTraceLoader} from '@loaders.gl/traces';
 
 const batches = await parseInBatches(chunks, ChromeTraceLoader, {
 
-  chromeTrace: {shape: 'arrow-table', batchSize: 1024}
+  chromeTrace: {shape: 'arrow', batchSize: 1024}
 
 });
 

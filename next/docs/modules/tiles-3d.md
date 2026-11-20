@@ -44,7 +44,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->32<!-- -->)
+All exported subpaths (<!-- -->28<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -57,13 +57,12 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles/subtree.schema.json`                |
 | [![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema`                 |
 | [![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles/tileset.schema.json`                |
-| [![](/next/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/next/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles/unbundled`                          |
-|                                                                                                                                                       | `@loaders.gl/tiles-3d/cesium-ion-loader-with-parser`               |
 | [![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md) | `@loaders.gl/tiles-3d/copc`                                        |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s`                                         |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-lepcc-loader`                            |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-mesh-writer`                             |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-slpk-writer`                             |
+| [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-zod-schema`                              |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/bundled`                                 |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-content-worker-node.js`              |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-content-worker.js`                   |
@@ -72,13 +71,10 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-node-page.schema.json`               |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-point-cloud-scene-layer.schema.json` |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-scene-layer.schema.json`             |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-zod-schema`                          |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/unbundled`                               |
+|                                                                                                                                                       | `@loaders.gl/tiles-3d/point-cloud-tile-loader`                     |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/point-cloud-tile-source`                     |
-|                                                                                                                                                       | `@loaders.gl/tiles-3d/point-cloud-tile-source-loader`              |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree`                                      |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree-loader`                               |
+|                                                                                                                                                       | `@loaders.gl/tiles-3d/potree-metadata-schema`                      |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree/bundled`                              |
-|                                                                                                                                                       | `@loaders.gl/tiles-3d/potree/potree-metadata-schema`               |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree/potree-metadata.schema.json`          |
-|                                                                                                                                                       | `@loaders.gl/tiles-3d/potree/unbundled`                            |

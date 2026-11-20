@@ -62,7 +62,7 @@ Loader selection heuristics are based on:
 * MIME types (from `Response` `content-type` headers or `Blob.type`/`File.type` fields)
 * Initial bytes - for certain inputs, the initial bytes in the supplied data can be compared against known "magic bytes" for various file formats.
 
-**loader registry** - `selectLoader()` and `selectLoaderSync()` are also aware of the [loader registry](https://loaders.gl/next/docs/modules/core/api-reference/register-loaders.md). The list of pre-registered loaders will be included in the search for a compatible loader, unless `options.core.ignoreRegisteredLoaders` is `true`.
+**loader registry** - `selectLoader()` and `selectLoaderSync()` are also aware of the [loader registry](https://loaders.gl/next/docs/modules/core/api-reference/register-loaders.md). Selection searches the supplied loaders first. If none match, it searches the registered loaders unless `options.core.ignoreRegisteredLoaders` is `true`.
 
 ## Usage[​](#usage "Direct link to Usage")
 

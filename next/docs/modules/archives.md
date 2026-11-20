@@ -23,6 +23,6 @@ These are the package's public exports, including format entry points, parsers, 
 |        | `@loaders.gl/archives/tar-loader`         |
 |        | `@loaders.gl/archives/tar-writer`         |
 |        | `@loaders.gl/archives/zip`                |
+|        | `@loaders.gl/archives/zip-encode`         |
 |        | `@loaders.gl/archives/zip-loader`         |
 |        | `@loaders.gl/archives/zip-writer`         |
-|        | `@loaders.gl/archives/zip/zip-encode`     |

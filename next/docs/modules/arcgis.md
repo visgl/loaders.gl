@@ -56,7 +56,7 @@ The source owns protocol details; the application owns how returned features, pi
 
 If your data is already in ArcGIS, start with its item page or REST service URL. You can query a feature layer, display a published map, read imagery values, or connect to vector tiles and scenes. Your data stays in ArcGIS; loaders.gl reads the subset your application requests.
 
-Use async `load()` to create a source. Feature, image and tile sources can feed deck.gl's `SourceLayer`; SceneServer needs a compatible I3S rendering path. Existing ArcGIS sharing and service permissions continue to apply.
+Use async `createDataSource()` to create a source. Feature, image and tile sources can feed deck.gl's `SourceLayer`; SceneServer needs a compatible I3S rendering path. Existing ArcGIS sharing and service permissions continue to apply.
 
 OGC protocols such as WMS, WMTS, WFS, WCS, CSW, GML, and OGC API remain in [`@loaders.gl/ogc/wms`](https://loaders.gl/next/docs/modules/ogc/wms.md). Keeping the protocol implementations in their owning modules lets applications install only the service families they use.
 
@@ -98,7 +98,7 @@ The reference below covers supported ArcGIS services, installation, source const
 
 Read the [ArcGIS developer guide](https://loaders.gl/next/docs/developer-guide/arcgis.md), [authentication recipes](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md), and [examples gallery](https://loaders.gl/next/examples/arcgis). The [complete service inventory](https://loaders.gl/next/docs/modules/arcgis/services.md) includes unsupported operations and service families.
 
-The root exports lightweight service loaders. Authentication and discovery have dedicated `/authentication` and `/discovery` entrypoints. Async `load()` imports the selected implementation. For synchronous `createDataSource()` or direct source classes, use `@loaders.gl/arcgis/bundled`; see [import patterns](https://loaders.gl/next/docs/developer-guide/arcgis.md#how-imports-work).
+The root exports lightweight service loaders. Authentication and discovery have dedicated `/authentication` and `/discovery` entrypoints. Async `load()` imports the selected implementation. For synchronous `createDataSourceSync()` or direct source classes, use `@loaders.gl/arcgis/bundled`; see [import patterns](https://loaders.gl/next/docs/developer-guide/arcgis.md#how-imports-work).
 
 ## Start with your published data[​](#start-with-your-published-data "Direct link to Start with your published data")
 
@@ -115,15 +115,15 @@ Use the service URL from the item's details or ArcGIS Services Directory, not th
 
 ## Service support[​](#service-support "Direct link to Service support")
 
-| Service                  | Source loader                        | Runtime contract                               | Primary output                                                       | deck.gl                           | Documentation                                                                                     |
-| ------------------------ | ------------------------------------ | ---------------------------------------------- | -------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
-| ArcGIS FeatureServer     | `ArcGISFeatureServerSourceLoader`    | `VectorSource`                                 | Complete bounded GeoJSON, binary or Arrow queries; explicit page API | `SourceLayer`                     | [FeatureServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)        |
-| ArcGIS ImageServer       | `ArcGISImageServerSourceLoader`      | `ImageSource`                                  | Rendered image or decoded LERC raster                                | `SourceLayer` for rendered images | [ImageServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)            |
-| ArcGIS ImageServer tiles | `ArcGISImageTileSourceLoader`        | `TileSource`                                   | Image tiles or decoded LERC tiles                                    | `SourceLayer` for image tiles     | [ImageServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)            |
-| ArcGIS MapServer         | `ArcGISMapTileSourceLoader`          | `TileSource`                                   | Cached or dynamically exported image tiles                           | `SourceLayer`                     | [MapServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md)                |
-| ArcGIS VectorTileServer  | `ArcGISVectorTileServerSourceLoader` | `VectorTileSource`                             | Raw MVT or decoded WGS84 features                                    | `SourceLayer`                     | [VectorTileServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md) |
-| ArcGIS SceneServer       | `ArcGISSceneServerSourceLoader`      | `Tileset3DSource` or `PointCloudTilesetSource` | I3S mesh, Point, or Point Cloud tiles                                | Application-specific 3D renderer  | [SceneServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md)            |
-| ArcGIS service directory | Capability graph utilities           | Discovery graph                                | First matching service endpoint                                      | Not directly visual               | [Capability discovery](#capability-discovery)                                                     |
+| Service                  | Source loader                  | Runtime contract                               | Primary output                                                       | deck.gl                           | Documentation                                                                                     |
+| ------------------------ | ------------------------------ | ---------------------------------------------- | -------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| ArcGIS FeatureServer     | `ArcGISFeatureServerLoader`    | `VectorSource`                                 | Complete bounded GeoJSON, binary or Arrow queries; explicit page API | `SourceLayer`                     | [FeatureServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-feature-server.md)        |
+| ArcGIS ImageServer       | `ArcGISImageServerLoader`      | `ImageSource`                                  | Rendered image or decoded LERC raster                                | `SourceLayer` for rendered images | [ImageServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)            |
+| ArcGIS ImageServer tiles | `ArcGISImageTileLoader`        | `TileSource`                                   | Image tiles or decoded LERC tiles                                    | `SourceLayer` for image tiles     | [ImageServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-image-server.md)            |
+| ArcGIS MapServer         | `ArcGISMapTileLoader`          | `TileSource`                                   | Cached or dynamically exported image tiles                           | `SourceLayer`                     | [MapServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md)                |
+| ArcGIS VectorTileServer  | `ArcGISVectorTileServerLoader` | `VectorTileSource`                             | Raw MVT or decoded WGS84 features                                    | `SourceLayer`                     | [VectorTileServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md) |
+| ArcGIS SceneServer       | `ArcGISSceneServerLoader`      | `Tileset3DSource` or `PointCloudTilesetSource` | I3S mesh, Point, or Point Cloud tiles                                | Application-specific 3D renderer  | [SceneServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md)            |
+| ArcGIS service directory | Capability graph utilities     | Discovery graph                                | First matching service endpoint                                      | Not directly visual               | [Capability discovery](#capability-discovery)                                                     |
 
 ## Installation[​](#installation "Direct link to Installation")
 
@@ -158,13 +158,13 @@ const metadata = await source.getMetadata();
 Use `load` when the application already knows the service type:
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerSourceLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
 
 
 
-const source = await load(serviceUrl, [ArcGISFeatureServerSourceLoader]);
+const source = await createDataSource(serviceUrl, [ArcGISFeatureServerLoader]);
 
 const features = await source.getFeatures({
 
@@ -355,16 +355,16 @@ All exported subpaths (<!-- -->11<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
-| Format                                                                                                                                             | Import subpath                                               |
-| -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)         | `@loaders.gl/arcgis/arcgis-feature-server-source-loader`     |
-| [![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)             | `@loaders.gl/arcgis/arcgis-image-server-source-loader`       |
-| [![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)                                           | `@loaders.gl/arcgis/arcgis-image-tile-source-loader`         |
-| [![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)                                           | `@loaders.gl/arcgis/arcgis-map-tile-source-loader`           |
-| [![](/next/images/format-logos/arcgis-logo.svg)Scene](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md)             | `@loaders.gl/arcgis/arcgis-scene-server-source-loader`       |
-| [![](/next/images/format-logos/arcgis-logo.svg)Vector Tile](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md) | `@loaders.gl/arcgis/arcgis-vector-tile-server-source-loader` |
-|                                                                                                                                                    | `@loaders.gl/arcgis/authentication`                          |
-|                                                                                                                                                    | `@loaders.gl/arcgis/bundled`                                 |
-|                                                                                                                                                    | `@loaders.gl/arcgis/discovery`                               |
-|                                                                                                                                                    | `@loaders.gl/arcgis/items`                                   |
-|                                                                                                                                                    | `@loaders.gl/arcgis/scene-aggregation`                       |
+| Format                                                                                                                                             | Import subpath                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)         | `@loaders.gl/arcgis/arcgis-feature-server-loader`     |
+| [![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)             | `@loaders.gl/arcgis/arcgis-image-server-loader`       |
+| [![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)                                           | `@loaders.gl/arcgis/arcgis-image-tile-loader`         |
+| [![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)                                           | `@loaders.gl/arcgis/arcgis-map-tile-loader`           |
+| [![](/next/images/format-logos/arcgis-logo.svg)Scene](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md)             | `@loaders.gl/arcgis/arcgis-scene-server-loader`       |
+| [![](/next/images/format-logos/arcgis-logo.svg)Vector Tile](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md) | `@loaders.gl/arcgis/arcgis-vector-tile-server-loader` |
+|                                                                                                                                                    | `@loaders.gl/arcgis/authentication`                   |
+|                                                                                                                                                    | `@loaders.gl/arcgis/bundled`                          |
+|                                                                                                                                                    | `@loaders.gl/arcgis/discovery`                        |
+|                                                                                                                                                    | `@loaders.gl/arcgis/items`                            |
+|                                                                                                                                                    | `@loaders.gl/arcgis/scene-aggregation`                |

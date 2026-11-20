@@ -149,7 +149,7 @@ import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 
-import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply-loader';
+import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply';
 
 
 

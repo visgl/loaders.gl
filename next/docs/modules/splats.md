@@ -62,13 +62,13 @@ npm install @loaders.gl/core @loaders.gl/splats
 
 ## Loaders[​](#loaders "Direct link to Loaders")
 
-| Loader                                                                                                   | Description                                               |
-| -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| [`SPLATLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/splat-loader.md)          | Loads raw `.splat` Gaussian splat files.                  |
-| [`KSPLATLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/ksplat-loader.md)        | Loads GaussianSplats3D `.ksplat` files from full buffers. |
-| [`SPZLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/spz-loader.md)              | Loads Niantic Spatial `.spz` files from full buffers.     |
-| [`RADLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/rad-source-loader.md)       | Loads Spark `.rad` metadata from full buffers.            |
-| [`RADSourceLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/rad-source-loader.md) | Creates a source for Spark `.rad` metadata and chunks.    |
+| Loader                                                                                             | Description                                               |
+| -------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| [`SPLATLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/splat-loader.md)    | Loads raw `.splat` Gaussian splat files.                  |
+| [`KSPLATLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/ksplat-loader.md)  | Loads GaussianSplats3D `.ksplat` files from full buffers. |
+| [`SPZLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/spz-loader.md)        | Loads Niantic Spatial `.spz` files from full buffers.     |
+| [`RADLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/rad-source-loader.md) | Loads Spark `.rad` metadata from full buffers.            |
+| [`RADLoader`](https://loaders.gl/next/docs/modules/splats/api-reference/rad-source-loader.md) | Creates a source for Spark `.rad` metadata and chunks.    |
 
 ## Formats[​](#formats "Direct link to Formats")
 
@@ -86,7 +86,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->10<!-- -->)
+All exported subpaths (<!-- -->9<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -101,4 +101,3 @@ These are the package's public exports, including format entry points, parsers, 
 |        | `@loaders.gl/splats/radc-metadata.schema.json` |
 |        | `@loaders.gl/splats/splat-loader`              |
 |        | `@loaders.gl/splats/spz-loader`                |
-|        | `@loaders.gl/splats/unbundled`                 |

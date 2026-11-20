@@ -124,7 +124,7 @@ The reference below covers installation, current scan behavior, query methods, s
 
 ![From v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)[![Scan supported](https://img.shields.io/badge/Scan-Supported-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
 
-The `@loaders.gl/tables/orc` module reads and writes Apache ORC files. `ORCSourceLoader` adds a portable table scan over a URL or `Blob` and returns Arrow data.
+The `@loaders.gl/tables/orc` module reads and writes Apache ORC files. `ORCLoader` adds a portable table scan over a URL or `Blob` and returns Arrow data.
 
 ## Installation[​](#installation "Direct link to Installation")
 
@@ -149,13 +149,13 @@ The current source is a correct materialized scan. It reads ORC footer metadata 
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ORCSourceLoader} from '@loaders.gl/tables/orc';
+import {ORCLoader} from '@loaders.gl/tables/orc';
 
-import {parseSQLPredicate} from '@loaders.gl/core/scan';
+import {parseSQLPredicate} from '@loaders.gl/core/query';
 
 
 
-const source = createDataSource('events.orc', [ORCSourceLoader]);
+const source = await createDataSource('events.orc', [ORCLoader]);
 
 const metadata = await source.getQueryMetadata();
 

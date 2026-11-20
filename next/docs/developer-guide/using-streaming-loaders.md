@@ -91,7 +91,7 @@ const batches = await loadInBatches('records.csv', CSVLoader);
 
 for await (const batch of batches) {
 
-  updateApplication(batch.data);
+  updateApplication(batch);
 
 }
 ```
@@ -128,11 +128,15 @@ Inspect streamed GeoJSON features
 ```
 import {loadInBatches} from '@loaders.gl/core';
 
-import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 
 
 
-const batches = await loadInBatches('features.geojson', GeoJSONLoader);
+const batches = await loadInBatches('features.geojson', GeoJSONLoader, {
+
+  geojson: {shape: 'geojson-table'}
+
+});
 
 
 
@@ -188,7 +192,9 @@ const checksum = new CRC32Hash({
 
 const batches = await loadInBatches('records.csv', CSVLoader, {
 
-  core: {transforms: [checksum.hashBatches]}
+  core: {transforms: [checksum.hashBatches]},
+
+  csv: {shape: 'object-row-table'}
 
 });
 

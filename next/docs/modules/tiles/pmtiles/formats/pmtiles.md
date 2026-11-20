@@ -8,20 +8,20 @@ PMTiles replaces a directory of tile objects with one archive whose header and d
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles.md)[PMTiles source](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles.md)[PMTiles source](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md)
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                                     |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Source loader | [`PMTilesSourceLoader`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source-loader.md) |
-| Writer        | [`PMTilesWriter`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md)              |
+| Type          | API                                                                                                        |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| Source loader | [`PMTilesLoader`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-source.md) |
+| Writer        | [`PMTilesWriter`](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md) |
 
-[Try MVT](https://loaders.gl/next/examples/tiles/mvt)[Try PMTiles](https://loaders.gl/next/examples/tiles/pmtiles)[Create PMTiles](https://loaders.gl/next/examples/tiles/pmtiles-authoring)[Try Arrow Tiler](https://loaders.gl/next/examples/tiles/table-tiler)[Try MLT](https://loaders.gl/next/examples/tiles/mlt)[MVT](https://loaders.gl/next/docs/modules/tiles/mvt/formats/mvt.md)[PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md)[Arrow Table Tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-source-loader.md)[TableTileSourceLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-source-loader.md)[MLT](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md)
+[Try MVT](https://loaders.gl/next/examples/tiles/mvt)[Try PMTiles](https://loaders.gl/next/examples/tiles/pmtiles)[Create PMTiles](https://loaders.gl/next/examples/tiles/pmtiles-authoring)[Try Arrow Tiler](https://loaders.gl/next/examples/tiles/table-tiler)[Try MLT](https://loaders.gl/next/examples/tiles/mlt)[MVT](https://loaders.gl/next/docs/modules/tiles/mvt/formats/mvt.md)[PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md)[Arrow Table Tiler](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/arrow-table-tile-loader.md)[TableTileLoader](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/table-tile-loader.md)[MLT](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md)
 
 The archive workflow
 

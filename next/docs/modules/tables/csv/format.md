@@ -94,7 +94,7 @@ The reference below covers dialect options, type inference, streaming, table out
 
 ## Loaders and Writers[​](#loaders-and-writers "Direct link to Loaders and Writers")
 
-[Loader**CSVLoader**Loads CSV and TSV data as loaders.gl row, columnar, or Arrow tables.Output: ObjectRowTable, ArrayRowTable, ColumnarTable, ArrowTableAPIs: load, parse, parseText, parseInBatches](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader)[Writer**CSVWriter**Writes loaders.gl row, columnar, or Arrow tables as comma-separated or delimiter-separated text.Input: Table, ArrowTableAPIs: encode, encodeTextSync](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer)
+[Loader**CSVLoader**Loads CSV and TSV data as loaders.gl row, columnar, or Arrow tables.Output: ObjectRowTable, ArrayRowTable, ColumnarTable, Apache Arrow tableAPIs: load, parse, parseText, parseInBatches](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader)[Writer**CSVWriter**Writes loaders.gl row, columnar, or Arrow tables as comma-separated or delimiter-separated text.Input: Table, Apache Arrow tableAPIs: encode, encodeTextSync](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer)
 
 | Characteristic | Value                                                                        |
 | -------------- | ---------------------------------------------------------------------------- |

@@ -2,7 +2,7 @@ RAD source
 
 # Page large splat datasets instead of loading them all.
 
-`RADLoader` reads local RAD metadata while `RADSourceLoader` discovers and range-fetches Spark RAD chunks. The source exposes decoded chunk tables so a renderer can own level-of-detail selection and GPU residency.
+`RADLoader` reads local RAD metadata while `RADLoader` discovers and range-fetches Spark RAD chunks. The source exposes decoded chunk tables so a renderer can own level-of-detail selection and GPU residency.
 
 [Splats module](https://loaders.gl/next/docs/modules/splats.md)
 
@@ -50,7 +50,7 @@ Renderer-owned LoD traversal and cache policy
 
 ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)
 
-`RADLoader` parses Spark `.rad` metadata. `RADSourceLoader` creates a runtime source for range-fetching Spark `.rad` headers, RADC chunks, and decoded chunk tables.
+`RADLoader` parses Spark `.rad` metadata. `RADLoader` creates a runtime source for range-fetching Spark `.rad` headers, RADC chunks, and decoded chunk tables.
 
 Detailed guide
 
@@ -66,18 +66,22 @@ The reference below covers local parsing, remote range fetching, chunk iteration
 | Input type  | `ArrayBuffer`, URL, or `Blob`                                             |
 | Output      | RAD metadata or `RADSource`                                               |
 
+| Property    | Value       |
+| ----------- | ----------- |
+| Data source | `RADSource` |
+
 ## Usage[​](#usage "Direct link to Usage")
 
-Use `RADSourceLoader` when working with remote LoD assets:
+Use `RADLoader` when working with remote LoD assets:
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {RADSourceLoader} from '@loaders.gl/splats';
+import {RADLoader} from '@loaders.gl/splats';
 
 
 
-const source = await load(url, RADSourceLoader);
+const source = await createDataSource(url, RADLoader);
 
 const metadata = await source.getMetadata();
 
@@ -100,6 +104,8 @@ for await (const chunkTable of source.getChunkTables({
 }
 ```
 
+Chunk table methods return Apache Arrow tables. The schema entry `loaders_gl.gaussian_splats.loader_data` holds the chunk header and, when decoded, the LoD child counts and offsets as JSON arrays.
+
 For full buffers, `RADLoader` returns just the top-level metadata:
 
 ```
@@ -114,7 +120,7 @@ const metadata = await parse(arrayBuffer, RADLoader);
 
 ## Format Support[​](#format-support "Direct link to Format Support")
 
-`RADLoader` and `RADSourceLoader` support Spark RAD version 1 files with `type: 'gsplat'`. The source understands:
+`RADLoader` and `RADLoader` support Spark RAD version 1 files with `type: 'gsplat'`. The source understands:
 
 * top-level `RAD0` metadata headers
 * inline RADC chunks stored after the RAD header

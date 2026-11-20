@@ -123,7 +123,7 @@ Streamed batches use direct JSON-table columns. They expose `s` and `scope` sepa
 
 ## Round-Trip Behavior[​](#round-trip-behavior "Direct link to Round-Trip Behavior")
 
-`ChromeTraceLoader` with `shape: 'arrow-table'` and `ChromeTraceWriter` preserve:
+`ChromeTraceLoader` with `shape: 'arrow'` and `ChromeTraceWriter` preserve:
 
 * `args` objects through JSON text
 * unknown event fields through `extraJson`

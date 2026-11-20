@@ -8,11 +8,11 @@ Parse a MapLibre or Mapbox style document and resolve its tile-source metadata i
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/formats/map-style.md)[MVT source](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/formats/map-style.md)[MVT source](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)[MVT module](https://loaders.gl/next/docs/modules/tiles/mvt.md)
+[ ↗](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source.md)[MVT module](https://loaders.gl/next/docs/modules/tiles/mvt.md)
 
 <!-- -->
 
@@ -304,5 +304,5 @@ This two-step resolution is the main reason to use `MapStyleLoader` instead of p
 ## Related APIs[​](#related-apis "Direct link to Related APIs")
 
 * [`TileJSONLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/tilejson-loader.md)
-* [`MVTSourceLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source-loader.md)
+* [`MVTLoader`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-source.md)
 * [`Map Styles`](https://loaders.gl/next/docs/modules/tiles/mvt/formats/map-style.md)

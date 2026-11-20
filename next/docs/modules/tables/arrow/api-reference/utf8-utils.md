@@ -65,7 +65,7 @@ The reference below covers UTF-8 comparison, numeric parsing, sliced data, offse
 ```
 import * as arrow from 'apache-arrow';
 
-import {compareUTF8, parseUTF8Number} from '@loaders.gl/tables/arrow';
+import {compareUTF8, parseUTF8Number} from '@math.gl/core/utf8';
 
 
 

@@ -56,10 +56,10 @@ The sections below document supported inputs, output shapes, usage, elevation de
 
 `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values. It returns a [Mesh Arrow table](https://loaders.gl/next/docs/specifications/category-mesh.md#mesh-arrow-tables) by default. Set `terrain.shape: 'mesh'` for the legacy [Mesh](https://loaders.gl/next/docs/specifications/category-mesh.md) object.
 
-| Shape         | Output             | Use when                           |
-| ------------- | ------------------ | ---------------------------------- |
-| `mesh`        | `Mesh`             | You want the legacy mesh object.   |
-| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| Shape   | Output             | Use when                           |
+| ------- | ------------------ | ---------------------------------- |
+| `mesh`  | `Mesh`             | You want the legacy mesh object.   |
+| `arrow` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | TerrainLoader     |                                                                                                                                                                                    |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -87,7 +87,7 @@ const table = await load(url, TerrainLoader, {
 
   worker: false,
 
-  terrain: {...options.terrain, shape: 'arrow-table'}
+  terrain: {...options.terrain, shape: 'arrow'}
 
 });
 ```
@@ -119,7 +119,7 @@ If you only need elevation samples, use the lightweight [heightmap utilities](ht
 | `terrain.bounds`             | `array<number>` | `null`                                 | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder`   | `object`        | See below                              | See below                                                                                                                                     |
 | `terrain.tesselator`         | `string`        | `auto`                                 | See below                                                                                                                                     |
-| `terrain.shape`              | `string`        | `arrow-table`                          | Output shape: `'arrow-table'` or `'mesh'`.                                                                                                    |
+| `terrain.shape`              | `string`        | `arrow`                                | Output shape: `'arrow'` or `'mesh'`.                                                                                                          |
 | `terrain.skirtHeight`        | `number`        | `null`                                 | If set, create the skirt for the tile with particular height in meters                                                                        |
 
 ### elevationDecoder[​](#elevationdecoder "Direct link to elevationDecoder")

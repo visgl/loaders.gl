@@ -18,9 +18,9 @@ Read your published vector tiles and style their decoded features in your applic
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                              |
-| ------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Source loader | [`ArcGISVectorTileServerSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
+| Type          | API                                                                                                        |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| Source loader | [`ArcGISVectorTileServerLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
 
 [![](/next/images/format-logos/arcgis-logo.svg)Vector Tile](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md)[Full example](https://loaders.gl/next/examples/tiles/arcgis-vector-tile-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 

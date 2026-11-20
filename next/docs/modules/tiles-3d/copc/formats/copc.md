@@ -18,12 +18,12 @@ COPC combines LAS 1.4 point records, LAZ compression, and an octree hierarchy in
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                               |
-| ------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Source loader | [`COPCSourceLoader`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md) |
-| Writer        | [`COPCWriter`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)              |
+| Type          | API                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| Source loader | [`COPCLoader`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-loader.md) |
+| Writer        | [`COPCWriter`](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md) |
 
-[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-source-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
+[![](/next/assets/images/copc-logo-80-4d2cfd37829f50dada1756d82902376f.png)](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[Try It](https://loaders.gl/next/examples/pointclouds/copc-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/copc.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/copc/formats/copc.md)[COPCLoader](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-loader.md)[COPCWriter](https://loaders.gl/next/docs/modules/tiles-3d/copc/api-reference/copc-writer.md)
 
 The cloud point path
 
@@ -189,7 +189,7 @@ Within a node, layered LAZ stores fields in independent compressed ranges. Posit
 | Point-data range      | Contains one independently decodable LAZ chunk for a point-bearing node.             |
 | Hierarchy EVLRs       | May hold root or child hierarchy pages outside the regular VLR area.                 |
 
-Each point-bearing hierarchy entry contains `pointDataOffset`, `pointDataLength`, and `pointCount`. `COPCSourceLoader` requests the half-open range `pointDataOffset..pointDataOffset + pointDataLength` and passes the arriving bytes to the TypeScript LAZ decoder.
+Each point-bearing hierarchy entry contains `pointDataOffset`, `pointDataLength`, and `pointCount`. `COPCLoader` requests the half-open range `pointDataOffset..pointDataOffset + pointDataLength` and passes the arriving bytes to the TypeScript LAZ decoder.
 
 ## Implementation[​](#implementation "Direct link to Implementation")
 

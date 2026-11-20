@@ -75,7 +75,7 @@ const table = await load(url, DracoLoader, {
 
   worker: false,
 
-  draco: {shape: 'arrow-table'}
+  draco: {shape: 'arrow'}
 
 });
 ```
@@ -84,10 +84,10 @@ const table = await load(url, DracoLoader, {
 
 `DracoLoader` returns Mesh Arrow tables by default. Set `draco.shape` to select another representation.
 
-| Shape         | Output                                                      |
-| ------------- | ----------------------------------------------------------- |
-| `mesh`        | legacy loaders.gl `Mesh` object                             |
-| `arrow-table` | loaders.gl Mesh Arrow table with geometry attribute columns |
+| Shape   | Output                                                      |
+| ------- | ----------------------------------------------------------- |
+| `mesh`  | legacy loaders.gl `Mesh` object                             |
+| `arrow` | loaders.gl Mesh Arrow table with geometry attribute columns |
 
 ## Support[​](#support "Direct link to Support")
 
@@ -114,7 +114,7 @@ Metadata Support:
 
 | Option                     | Type   | Default                                | Description                                                               |
 | -------------------------- | ------ | -------------------------------------- | ------------------------------------------------------------------------- |
-| `draco.shape`              | string | `'arrow-table'`                        | Output shape: `'arrow-table'` or `'mesh'`.                                |
+| `draco.shape`              | string | `'arrow'`                              | Output shape: `'arrow'` or `'mesh'`.                                      |
 | `draco.backend`            | string | `'wasm'` when WebAssembly is available | Draco decoder backend: `'wasm'`, `'javascript'`, or `'draco3d'`.          |
 | `draco.extraAttributes`    | object | `{}`                                   | Additional custom attributes to decode.                                   |
 | `draco.attributeNameEntry` | string | N/A                                    | Metadata entry used to map Draco attribute ids to output attribute names. |
@@ -123,7 +123,7 @@ Metadata Support:
 
 `draco.decoderProfile` selects `'full'` (the default) or `'gltf'`, the smaller decoder subset for glTF-compatible mesh bitstreams. The glTF loader selects `'gltf'` by default when decoding `KHR_draco_mesh_compression`; callers can explicitly select `'full'` to share one runtime.
 
-Draco libraries load from a CDN by default. Browser applications can bundle the vendored runtimes with `getDracoLibraryOptions` from the existing `@loaders.gl/scene/draco-library-options` entrypoint.
+Draco libraries load from a CDN by default. Browser applications can bundle the vendored runtimes with `getDracoLibraryOptions` from the existing `@loaders.gl/scene/draco` entrypoint.
 
 ## Bundled Library Options[​](#bundled-library-options "Direct link to Bundled Library Options")
 
@@ -134,7 +134,7 @@ import {parse} from '@loaders.gl/core';
 
 import {DracoLoader} from '@loaders.gl/scene';
 
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
 
 
 

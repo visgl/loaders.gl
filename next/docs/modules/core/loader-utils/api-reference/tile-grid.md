@@ -24,19 +24,19 @@ if (request) await source.getTile(request);
 
 Returns `{status, issues}` without changing the input. Status is `complete` for valid authoritative `tileMatrixSet` geometry and coverage, `partial` when required geometry/CRS is absent, or `invalid` for malformed/ambiguous metadata. Each issue includes `code`, `message` and, when applicable, `tileMatrix`. Codes are `missing-crs`, `missing-geometry`, `invalid-matrix`, `duplicate-matrix-id` and `invalid-limits`. Messages are diagnostic text, not stable identifiers.
 
-Complete geometry is authoritative when both complete and partial fields exist. Advertised partial fields are retained by `createTileGrid`, including invalid values, so callers can inspect them. Invalid or duplicate levels never become complete geometry. Complete empty matrix sets are valid empty selections; absence of a matrix set is partial metadata. This result describes geometry and coverage, not projection-engine support, renderer compatibility or actual sparse tile presence.
+Complete geometry must also pass math.gl `validateTileMatrixSet`, with its limits. Complete geometry is authoritative when both complete and partial fields exist. Advertised partial fields are retained by `createTileGrid`, including invalid values, so callers can inspect them. Invalid or duplicate levels never become complete geometry. Complete empty matrix sets are valid empty selections; absence of a matrix set is partial metadata. This result describes geometry and coverage, not projection-engine support, renderer compatibility or actual sparse tile presence.
 
 ## `validateTileGrid(grid)` and `validateTileGridLimits(grid)`[​](#validatetilegridgrid-and-validatetilegridlimitsgrid "Direct link to validatetilegridgrid-and-validatetilegridlimitsgrid")
 
 `validateTileGrid` throws `RangeError` for invalid identity, geometry or coverage. Partial metadata is allowed, but an explicitly supplied complete set must have a CRS. Callers that require complete geometry must also check the validation status or require `tileMatrixSet`.
 
-`validateTileGridLimits` checks safe integer inclusive rectangles, unique known matrix IDs and advertised dimensions independently of resolution/CRS. An omitted limits list is unrestricted; an empty list allows no tiles. A matrix omitted from a present list is unavailable.
+`validateTileGridLimits` checks safe integer inclusive rectangles, unique known matrix IDs and advertised dimensions independently of resolution/CRS. An omitted limits list is unrestricted; an empty list allows no tiles. A matrix omitted from a present list is unavailable. The `RangeError` message names the first reason: a missing or repeated matrix ID, an index that is not a nonnegative safe integer, reversed bounds, an unknown matrix, or bounds beyond the matrix.
 
 ## `resolveTileGridTile(grid, parameters)`[​](#resolvetilegridtilegrid-parameters "Direct link to resolvetilegridtilegrid-parameters")
 
 Validates nonnegative safe integer `x`, `y`, `z`; preserves an explicit native `tileMatrix`; and returns resolved parameters or `null` outside geometry/coverage. Unknown explicit IDs reject. Without an explicit ID, an ID equal to numeric `z` wins over the array-index fallback. Other request fields, including cancellation, survive. No grid preserves the legacy request unchanged.
 
-For coalesced rows, all base-column aliases resolve to one canonical column. Coverage is satisfied when any alias is inside the limits: the canonical result may precede `minTileColumn`. math.gl computes the footprint and canonical range. Complete geometry is required for coalesced requests; ordinary partial grids support dimension/limit-only checks. This helper does not cache requests, fetch content, infer a CRS or transform coordinates. Callers own source/dimension cache scoping.
+For coalesced rows, all base-column aliases resolve to one canonical column. Coverage is satisfied when any alias is inside the limits: the canonical result may precede `minTileColumn`. math.gl resolves the canonical index with `resolveTileIndex`. Complete geometry is required for coalesced requests; ordinary partial grids support dimension/limit-only checks. This helper does not cache requests, fetch content, infer a CRS or transform coordinates. Callers own source/dimension cache scoping.
 
 ## Normalization[​](#normalization "Direct link to Normalization")
 

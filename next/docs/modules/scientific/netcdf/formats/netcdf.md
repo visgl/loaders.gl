@@ -18,10 +18,10 @@ NetCDF stores typed multidimensional arrays together with named dimensions and a
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                  |
-| ------------- | -------------------- |
-| Loader        | `NetCDFLoader`       |
-| Source loader | `NetCDFSourceLoader` |
+| Type          | API            |
+| ------------- | -------------- |
+| Loader        | `NetCDFLoader` |
+| Source loader | `NetCDFLoader` |
 
 The array model
 

@@ -18,9 +18,9 @@ Connect an existing scene layer to the appropriate I3S content and rendering pat
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                         |
-| ------------- | ----------------------------------------------------------------------------------------------------------- |
-| Source loader | [`ArcGISSceneServerSourceLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
+| Type          | API                                                                                                   |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| Source loader | [`ArcGISSceneServerLoader`](https://loaders.gl/next/docs/modules/arcgis/api-reference/arcgis.md) |
 
 [![](/next/images/format-logos/arcgis-logo.svg)Scene](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md)[Service guide](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md)[Protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md)[Full example](https://loaders.gl/next/examples/arcgis-scene-server)[Support and gaps](https://loaders.gl/next/docs/modules/arcgis/services.md)[All ArcGIS examples](https://loaders.gl/next/examples/arcgis)
 

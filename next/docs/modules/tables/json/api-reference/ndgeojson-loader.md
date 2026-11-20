@@ -76,13 +76,13 @@ Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL)
 ```
 import {load, parseInBatches} from '@loaders.gl/core';
 
-import {NDGeoJSONLoader} from '@loaders.gl/tables/json';
+import {NDGeoJSONLoader} from '@loaders.gl/tables/geojson';
 
 
 
 const table = await load('features.ndgeojson', NDGeoJSONLoader);
 
-console.log(table.data.numRows);
+console.log(table.numRows);
 
 
 
@@ -92,16 +92,16 @@ for await (const batch of await parseInBatches(chunks, NDGeoJSONLoader, {
 
 })) {
 
-  console.log(batch.data.numRows);
+  console.log(batch.numRows);
 
 }
 ```
 
-The package root exports a metadata-only loader. For `parseSync`, import `NDGeoJSONLoaderWithParser` from `@loaders.gl/tables/ndgeojson-loader`.
+The package root exports a metadata-only loader. For `parseSync`, import `NDGeoJSONLoaderWithParser` from `@loaders.gl/tables/geojson`.
 
 ## Output and options[​](#output-and-options "Direct link to Output and options")
 
-The default result is `{shape: 'arrow-table', schema, data}`, where `data` is an Apache Arrow table. Feature properties and IDs become columns and geometry uses the `geoarrow.wkb` extension. Feature IDs use the `id` column. If a feature ID collides with an existing property named `id`, Arrow conversion throws instead of overwriting either value; explicit object rows preserve both. Set `geojson.shape: 'object-row-table'` to return `{shape: 'object-row-table', data: Feature[]}` with complete, unmodified GeoJSON feature objects.
+The loader returns an Apache Arrow `Table` for `geojson.shape: 'arrow'` (the default). Batched reads yield Apache Arrow `RecordBatch` objects. Feature properties and IDs become columns and geometry uses the `geoarrow.wkb` extension. Feature IDs use the `id` column. If a feature ID collides with an existing property named `id`, Arrow conversion throws instead of overwriting either value; explicit object rows preserve both. Set `geojson.shape: 'object-row-table'` to return `{shape: 'object-row-table', data: Feature[]}` with complete, unmodified GeoJSON feature objects.
 
 Arrow conversion accepts the same `json.schema`, `json.arrowConversion`, `json.geoarrowGeometryColumn`, and `geoarrow.encodingPreference` options as `GeoJSONLoader`. Streaming freezes the schema after the first nonempty batch; incompatible later records follow the shared JSON Arrow conversion policy. Provide `json.schema` when later records contain fields not represented in the first batch. Native/optimized geometry streams use a stable `geoarrow.geometry` union so later geometry types remain representable.
 

@@ -182,7 +182,7 @@ const stats = createRangeStats('pmtiles-range-transport');
 
 
 
-const source = createDataSource(url, [PMTilesSourceLoader], {
+const source = await createDataSource(url, [PMTilesLoader], {
 
   rangeRequests: {
 

@@ -18,7 +18,7 @@ See [Coordinate Reference Systems](https://loaders.gl/next/docs/developer-guide/
 
 ![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square)![source loader from v5.0](https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square)[![Scan supported for compatible Potree versions](https://img.shields.io/badge/Scan-Supported_versions-2f855a.svg?style=flat-square)](https://loaders.gl/next/docs/developer-guide/common-scan-architecture)
 
-[Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
+[Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[Data Source](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
 
 The Potree path
 
@@ -62,7 +62,7 @@ The sections below document supported metadata and node layouts, scan behavior, 
 
 Potree reads dataset versions **1.0–1.8 and 2.0**. Writers produce legacy binary node files and modern DEFAULT output. See the [Potree format reference](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md) for the version matrix, read/write feature table, and qualification limits.
 
-Use [PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) for both layouts: pass `cloud.js` for 1.x or `metadata.json` for 2.0. Directory inputs retain the legacy `cloud.js` default. Converter/viewer release numbers are distinct from dataset versions. See [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md) for complete typed file collections.
+Use [PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) for both layouts: pass `cloud.js` for 1.x or `metadata.json` for 2.0. Directory inputs retain the legacy `cloud.js` default. Converter/viewer release numbers are distinct from dataset versions. See [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md) for complete typed file collections.
 
 ## Scan support[​](#scan-support "Direct link to Scan support")
 
@@ -97,11 +97,11 @@ import {createDataSource} from '@loaders.gl/core';
 
 import {PointCloudTileset} from '@loaders.gl/tiles-3d';
 
-import {PotreeSourceLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
 
 
-const dataSource = createDataSource(POTREE_URL, [PotreeSourceLoader], {
+const dataSource = await createDataSource(POTREE_URL, PotreeLoader, {
 
   core: {type: 'potree'},
 
@@ -118,15 +118,14 @@ await tileset.selectTiles(viewport);
 
 ## API[​](#api "Direct link to API")
 
-This modules provides the following exports:
+This module provides the following exports:
 
 * `PotreeHierarchyChunkLoader` for the hierarchy indices
-* `PotreeSourceLoader` for point-cloud tile sources ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
+* `PotreeLoader` for metadata parsing and point-cloud tile sources ![From-v5.0](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)
 
 ## Modern sources and authoring[​](#modern-sources-and-authoring "Direct link to Modern sources and authoring")
 
-* `PotreeLoader`: one metadata-only declaration loader for both wire layouts, with the `@loaders.gl/tiles-3d/potree-loader` parser subpath.
-* `PotreeSourceLoader`: version-specific readers behind one source factory, compatible with `PointCloudTileset` and v5 tile-converter traversal. Modern 2.0 datasets use native-coordinate range reads; query `scan()` remains available only for compatible legacy datasets.
+* `PotreeLoader` parses metadata and opens point-cloud sources for both layouts. Modern 2.0 datasets use native-coordinate range reads. Query `scan()` is available for compatible legacy datasets.
 * `PotreeWriter`: standard metadata writer.
 * `encodePotreeDataset`: complete legacy or modern file collections from decoded Mesh/Arrow rows.
 
@@ -135,3 +134,5 @@ Follow-ups include 2.0 query scans, BROTLI output, out-of-core authoring and app
 ## Attribution[​](#attribution "Direct link to Attribution")
 
 The `PotreeLoader` is a fork of Markus Schuetz' potree code (<https://github.com/potree/potree>) under BSD-2 clause license.
+
+Potree2 exact chunk reads use Core's bounded range-response reader. HTTP 206 and the requested body length are required. Visible Content-Range offsets and totals are validated; a CORS-hidden header is tolerated without a HEAD probe. In that case the reader trusts the server's 206 status for the offset. Bigint offset checks, configured point/hierarchy byte budgets and cancellation remain enforced.

@@ -18,11 +18,11 @@ CSV, TSV, and DSV use plain text to represent rows and fields. Their simplicity 
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                   |
-| ------------- | ----------------------------------------------------------------------------------------------------- |
-| Loader        | [`CSVLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md)       |
-| Writer        | [`CSVWriter`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md)       |
-| Source loader | [`CSVSourceLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md) |
+| Type          | API                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| Loader        | [`CSVLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md) |
+| Writer        | [`CSVWriter`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-writer.md) |
+| Source loader | [`CSVLoader`](https://loaders.gl/next/docs/modules/tables/csv/api-reference/csv-loader.md) |
 
 CSV format map exampleEnter fullscreen
 

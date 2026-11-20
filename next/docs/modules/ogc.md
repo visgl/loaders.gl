@@ -3,9 +3,9 @@
 `@loaders.gl/ogc` groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use [WMS and OGC API sources](https://loaders.gl/next/docs/modules/ogc/wms.md) or [STAC sources](https://loaders.gl/next/docs/modules/ogc/stac.md) for format-specific APIs and explicit parser entry points.
 
 ```
-import {WMSCapabilitiesLoader, STACSourceLoader} from '@loaders.gl/ogc';
+import {WMSCapabilitiesLoader, STACLoader} from '@loaders.gl/ogc';
 
-import {WMSSourceLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms';
 ```
 
 WMS, WMTS, WFS, WCS, CSW, GML, and OGC API Features, Tiles, EDR, and Coverages live here. Provider credentials remain in [`@loaders.gl/services`](https://loaders.gl/next/docs/modules/services.md), and ArcGIS has its own [`@loaders.gl/arcgis`](https://loaders.gl/next/docs/modules/arcgis.md) package.
@@ -28,7 +28,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->7<!-- -->)
+All exported subpaths (<!-- -->6<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -36,8 +36,7 @@ These are the package's public exports, including format entry points, parsers, 
 | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCGML](https://loaders.gl/next/docs/modules/ogc/wms/formats/gml.md)   | `@loaders.gl/ogc/gml-loader`                           |
 | [![](/next/images/format-logos/stac-logo.png)STAC](https://loaders.gl/next/docs/modules/ogc/stac/formats/stac.md)  | `@loaders.gl/ogc/stac`                                 |
-| [![](/next/images/format-logos/stac-logo.png)STAC](https://loaders.gl/next/docs/modules/ogc/stac/formats/stac.md)  | `@loaders.gl/ogc/stac-source`                          |
+| [![](/next/images/format-logos/stac-logo.png)STAC](https://loaders.gl/next/docs/modules/ogc/stac/formats/stac.md)  | `@loaders.gl/ogc/stac-loader`                          |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)   | `@loaders.gl/ogc/wms`                                  |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)   | `@loaders.gl/ogc/wms/bundled`                          |
-| [![](/next/images/format-logos/ogc-mark.svg)OGCWMS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wms.md)   | `@loaders.gl/ogc/wms/unbundled`                        |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCWMTS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wmts.md) | `@loaders.gl/ogc/wmts-capabilities-loader-with-parser` |

@@ -5,7 +5,7 @@ The documents `JSONLoader` parses one ordinary JSON document into its JavaScript
 ```
 import {parse} from '@loaders.gl/core';
 
-import {JSONLoader} from '@loaders.gl/documents';
+import {JSONLoader} from '@loaders.gl/documents/json';
 
 
 
@@ -17,7 +17,7 @@ The root loader is metadata-only. Async APIs preload the native parser automatic
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {JSONLoaderWithParser} from '@loaders.gl/documents/json-loader';
+import {JSONLoaderWithParser} from '@loaders.gl/documents/json';
 
 
 

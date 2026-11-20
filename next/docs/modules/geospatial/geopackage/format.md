@@ -72,7 +72,7 @@ The reference below describes the SQLite container, OGC metadata, supported geom
 
 ## Loaders and Sources[​](#loaders-and-sources "Direct link to Loaders and Sources")
 
-[Loader**GeoPackageLoader**Loads one selected GeoPackage vector table.Output: GeoJSONTable, ArrowTableAPIs: load, parse](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader)[Source**GeoPackageSource**Exposes GeoPackage table metadata and one-table Arrow reads.Output: ArrowTableAPIs: createDataSource, getMetadata, getTable](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source)
+[Loader**GeoPackageLoader**Loads one selected GeoPackage vector table.Output: GeoJSONTable, Apache Arrow tableAPIs: load, parse](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-loader)[Source**GeoPackageSource**Exposes GeoPackage table metadata and one-table Arrow reads.Output: Apache Arrow tableAPIs: createDataSource, getMetadata, getTable](https://loaders.gl/next/docs/modules/geospatial/geopackage/api-reference/geopackage-source)
 
 ## SQLite Container[​](#sqlite-container "Direct link to SQLite Container")
 
@@ -80,4 +80,4 @@ GeoPackage stores geospatial data in a SQLite database with OGC-defined metadata
 
 ## Arrow[​](#arrow "Direct link to Arrow")
 
-Set `geopackage.shape: 'arrow-table'` and specify `geopackage.table` to load one vector table as an Arrow table with a WKB `geometry` column.
+Set `geopackage.shape: 'arrow'` and specify `geopackage.table` to load one vector table as an Arrow table with a WKB `geometry` column.

@@ -17,3 +17,5 @@ const dataset = await parse(bytes, NetCDFLoader);
 * HDF5-backed NetCDF-4 uses the separate `openNetCDF4Source` API from `@loaders.gl/scientific/netcdf`. Its current HDF5 path uses the WASM backend described in [HDF5](https://loaders.gl/next/docs/modules/scientific/hdf5.md); the classic metadata loader does not select it automatically.
 
 Use `NetCDFLoaderWithParser` from the format subpath when calling `parseSync`.
+
+Remote prefix reads use Content-Range for total file size when visible. If CORS hides that header, the source uses HEAD Content-Length; the partial GET Content-Length is never interpreted as the full size. Missing or invalid HEAD size fails explicitly.

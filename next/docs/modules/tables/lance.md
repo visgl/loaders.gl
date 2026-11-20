@@ -4,11 +4,11 @@ Lance module
 
 `@loaders.gl/tables/lance` provides a focused, read-only path through Lance manifests, fragments, and selected primitive columns. It uses Arrow tables as the result and HTTP ranges for remote column reads.
 
-[Lance APIs](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source-loader.md)
+[Lance APIs](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source-loader.md)[Arrow data plane](https://loaders.gl/next/docs/developer-guide/apache-arrow.md)
+[ ↗](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source.md)[Arrow data plane](https://loaders.gl/next/docs/developer-guide/apache-arrow.md)
 
 <!-- -->
 
@@ -118,7 +118,7 @@ Strings, binary/image columns, nullable values, general lists, compressed encodi
 
 ## APIs[​](#apis "Direct link to APIs")
 
-* [`LanceSourceLoader`](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source-loader.md) reads dataset metadata and local or remote Arrow batches.
-* The parser helpers are available from the [`@loaders.gl/tables/lance/lance-arrow`](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-arrow.md) subpath. They read selected primitive or two-dimensional coordinate columns with HTTP ranges.
+* [`LanceLoader`](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-source.md) reads dataset metadata and local or remote Arrow batches.
+* The parser helpers are available from the [`@loaders.gl/tables/lance`](https://loaders.gl/next/docs/modules/tables/lance/api-reference/lance-arrow.md) subpath. They read selected primitive or two-dimensional coordinate columns with HTTP ranges.
 
 See the [Lance browser example](https://github.com/visgl/loaders.gl/tree/master/examples/lance/browser) for a curated Hugging Face picker, LAION scalar table, and PushT deck.gl coordinate view.

@@ -16,13 +16,13 @@ GeoTIFFLoader is the entry point for TIFF imagery whose tags describe scale, bou
 
 [ ↗](https://loaders.gl/next/docs/modules/raster/geotiff.md)
 
-[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md)[OMETiffSourceLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-source-loader.md)
+[![](/next/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[Try GeoTIFF](https://loaders.gl/next/examples/geospatial/geotiff)[Try OME-TIFF](https://loaders.gl/next/examples/bioimaging/ome-tiff)[Overview](https://loaders.gl/next/docs/modules/raster/geotiff.md)[Format](https://loaders.gl/next/docs/modules/raster/geotiff/formats/geotiff.md)[GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md)[GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md)[GeoTIFFLoaderWithParser](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md)[OMETiffLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/ometiff-loader.md)
 
 Loader or source?
 
 ## Load a complete image, or query a remote raster.
 
-The loader is the simple complete-file path. GeoTIFFSourceLoader adds metadata discovery, range reads, windows, overview selection, and cancellation for cloud-native access.
+The loader is the simple complete-file path. GeoTIFFLoader adds metadata discovery, range reads, windows, overview selection, and cancellation for cloud-native access.
 
 01
 
@@ -54,9 +54,13 @@ Detailed guide
 
 ## GeoTIFF loader details
 
-The reference below covers complete-file loading, the returned raster shape, metadata, and the boundary between GeoTIFFLoader and GeoTIFFSourceLoader.
+The reference below covers complete-file loading, the returned raster shape, metadata, and the boundary between GeoTIFFLoader and GeoTIFFLoader.
 
-`GeoTIFFLoader` parses a complete GeoTIFF from an `ArrayBuffer` and reads the first image in the file. It is the straightforward path for local files or applications that already have the complete file in memory. For remote windows, overviews, or band-selective reads, use [`GeoTIFFSourceLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source-loader.md).
+`GeoTIFFLoader` parses a complete GeoTIFF from an `ArrayBuffer` and reads the first image in the file. It is the straightforward path for local files or applications that already have the complete file in memory. For remote windows, overviews, or band-selective reads, use [`GeoTIFFLoader`](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-source.md).
+
+| Property    | Value                 |
+| ----------- | --------------------- |
+| Data source | `GeoTIFFRasterSource` |
 
 ## Usage[​](#usage "Direct link to Usage")
 

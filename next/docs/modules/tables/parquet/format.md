@@ -14,11 +14,11 @@ Parquet stores typed columns in independently addressable pages. loaders.gl comb
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[Selective reads](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[Selective reads](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source.md)
 
 [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Try It](https://loaders.gl/next/examples/geospatial/geoparquet)[Overview](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)[Format](https://loaders.gl/next/docs/modules/tables/parquet/format.md)[GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)[ParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader.md)[GeoParquetLoader](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader.md)[ParquetWriter](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer.md)
 
@@ -73,7 +73,7 @@ The reference below compares loaders, sources, writers, output shapes, streaming
 
 ## Loaders, Sources and Writers[​](#loaders-sources-and-writers "Direct link to Loaders, Sources and Writers")
 
-[Loader**ParquetLoader**Loads Parquet files as object-row tables or Arrow tables.Output: ObjectRowTable, ArrowTableAPIs: load, parse, parseInBatches](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader)[Loader**GeoParquetLoader**Loads GeoParquet files as GeoJSON tables or Arrow tables with geospatial metadata.Output: GeoJSONTable, ArrowTableAPIs: load, parse, parseInBatches](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader)[Source**ParquetSourceLoader**Reuses cached schema and footer metadata for selective Arrow reads.Output: ArrowTableBatchAPIs: createDataSource, getMetadata, getSchema, read](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source-loader)[Writer**ParquetWriter**Writes loaders.gl tables as Parquet files.Input: TableAPIs: encode, encodeSync](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer)
+[Loader**ParquetLoader**Loads Parquet files as object-row tables or Arrow tables.Output: ObjectRowTable, Apache Arrow tableAPIs: load, parse, parseInBatches](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-loader)[Loader**GeoParquetLoader**Loads GeoParquet files as GeoJSON tables or Arrow tables with geospatial metadata.Output: GeoJSONTable, Apache Arrow tableAPIs: load, parse, parseInBatches](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/geoparquet-loader)[Source**ParquetLoader**Reuses cached schema and footer metadata for selective Arrow reads.Output: Arrow RecordBatchAPIs: createDataSource, getMetadata, getSchema, read](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-source)[Writer**ParquetWriter**Writes loaders.gl tables as Parquet files.Input: TableAPIs: encode, encodeSync](https://loaders.gl/next/docs/modules/tables/parquet/api-reference/parquet-writer)
 
 ## Encodings[​](#encodings "Direct link to Encodings")
 

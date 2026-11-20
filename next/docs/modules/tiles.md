@@ -16,7 +16,7 @@ Import format loaders and writers from separate subpaths:
 
 Install `@loaders.gl/tiles` once; the subpaths are not separate npm packages. For 3D Tiles and I3S, use [the 3D tiles module](https://loaders.gl/next/docs/modules/tiles-3d.md). The root still reexports `Tileset3D`, `TILE_TYPE`, `TILESET_TYPE`, and `LOD_METRIC_TYPE` for deck.gl 9 compatibility. These deprecated exports will be removed after deck.gl imports the 3D module directly.
 
-See the [`Tileset2D` API](https://loaders.gl/next/docs/modules/tiles/api-reference/tileset-2d.md) and [`RasterSet` API](https://loaders.gl/next/docs/modules/tiles/api-reference/raster-set.md).
+See the [`Tileset2D` API](https://loaders.gl/next/docs/modules/tiles/api-reference/tileset-2d.md) and [`RasterSet` API](https://loaders.gl/next/docs/modules/tiles/api-reference/raster-set.md). For shared terrain height fields, see the experimental [`TerrainSource`](https://loaders.gl/next/docs/modules/tiles/api-reference/terrain-source.md).
 
 For explicit native-CRS frames, see [TileMatrix selection and shared runtime traversal](https://loaders.gl/next/docs/modules/tiles/api-reference/tile-matrix.md). Viewport conversion and projected rendering remain application responsibilities.
 
@@ -38,22 +38,22 @@ All exported subpaths (<!-- -->17<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
-| Format                                                                                                                          | Import subpath                                     |
-| ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md) | `@loaders.gl/tiles/arrow-table-tile-source-loader` |
-|                                                                                                                                 | `@loaders.gl/tiles/mlt`                            |
-|                                                                                                                                 | `@loaders.gl/tiles/mlt/bundled`                    |
-|                                                                                                                                 | `@loaders.gl/tiles/mlt/unbundled`                  |
-|                                                                                                                                 | `@loaders.gl/tiles/mvt`                            |
-|                                                                                                                                 | `@loaders.gl/tiles/mvt-geojson-loader`             |
-|                                                                                                                                 | `@loaders.gl/tiles/mvt/bundled`                    |
-|                                                                                                                                 | `@loaders.gl/tiles/mvt/mvt-worker.js`              |
-|                                                                                                                                 | `@loaders.gl/tiles/mvt/tilejson-zod-schema`        |
-|                                                                                                                                 | `@loaders.gl/tiles/mvt/tilejson.schema.json`       |
-|                                                                                                                                 | `@loaders.gl/tiles/mvt/unbundled`                  |
-|                                                                                                                                 | `@loaders.gl/tiles/pmtiles`                        |
-|                                                                                                                                 | `@loaders.gl/tiles/pmtiles/bundled`                |
-|                                                                                                                                 | `@loaders.gl/tiles/pmtiles/geoarrow`               |
-|                                                                                                                                 | `@loaders.gl/tiles/pmtiles/raster`                 |
-|                                                                                                                                 | `@loaders.gl/tiles/pmtiles/unbundled`              |
-|                                                                                                                                 | `@loaders.gl/tiles/tile-matrix`                    |
+| Format                                                                                                                          | Import subpath                               |
+| ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md) | `@loaders.gl/tiles/arrow-table-tile-loader`  |
+|                                                                                                                                 | `@loaders.gl/tiles/mlt`                      |
+|                                                                                                                                 | `@loaders.gl/tiles/mlt-loader`               |
+|                                                                                                                                 | `@loaders.gl/tiles/mlt/bundled`              |
+|                                                                                                                                 | `@loaders.gl/tiles/mvt`                      |
+|                                                                                                                                 | `@loaders.gl/tiles/mvt-geojson-loader`       |
+|                                                                                                                                 | `@loaders.gl/tiles/mvt-loader`               |
+|                                                                                                                                 | `@loaders.gl/tiles/mvt/bundled`              |
+|                                                                                                                                 | `@loaders.gl/tiles/mvt/mvt-worker.js`        |
+|                                                                                                                                 | `@loaders.gl/tiles/mvt/tilejson-zod-schema`  |
+|                                                                                                                                 | `@loaders.gl/tiles/mvt/tilejson.schema.json` |
+|                                                                                                                                 | `@loaders.gl/tiles/pmtiles`                  |
+|                                                                                                                                 | `@loaders.gl/tiles/pmtiles/bundled`          |
+|                                                                                                                                 | `@loaders.gl/tiles/pmtiles/geoarrow`         |
+|                                                                                                                                 | `@loaders.gl/tiles/pmtiles/raster`           |
+|                                                                                                                                 | `@loaders.gl/tiles/terrain`                  |
+|                                                                                                                                 | `@loaders.gl/tiles/tile-matrix`              |

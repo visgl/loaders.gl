@@ -50,7 +50,7 @@ Work in progress; verify current coverage
 
 ![From-v1.0](https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square)![Status: Work-In-Progress](https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square)
 
-[Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
+[Try It](https://loaders.gl/next/examples/pointclouds/potree-source)[Overview](https://loaders.gl/next/docs/modules/tiles-3d/potree.md)[Format](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md)[PotreeLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md)[Data Source](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md)
 
 Detailed guide
 
@@ -64,4 +64,4 @@ Work in progress
 
 `PotreeLoader` parses both legacy `cloud.js` declarations (1.0–1.8) and modern `metadata.json` declarations (2.0), selecting the validator from the declared dataset version. It returns `PotreeDatasetMetadata`; inspect `version` before accessing layout-specific fields. The package root is metadata-only. Async core parsing preloads the implementation; synchronous parsing uses `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree-loader`.
 
-Use [PotreeSourceLoader](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) for hierarchy traversal and decoded point tiles.
+Pass the same loader to [`createDataSource()`](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) to traverse the hierarchy and decode point tiles on demand.

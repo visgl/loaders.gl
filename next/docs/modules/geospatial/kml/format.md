@@ -71,7 +71,7 @@ The reference below compares the three XML formats, loader output shapes, metada
 
 ## Loaders[​](#loaders "Direct link to Loaders")
 
-[Loader**KMLLoader**Loads Keyhole Markup Language documents as loaders.gl geometry tables.Output: GeoJSONTable, ObjectRowTable, ArrowTableAPIs: load, parse, parseTextSync](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader)[Loader**GPXLoader**Loads GPS Exchange Format tracks, routes, and waypoints as loaders.gl geometry tables.Output: GeoJSONTable, ObjectRowTable, ArrowTable, BinaryFeatureCollectionAPIs: load, parse, parseTextSync](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/gpx-loader)[Loader**TCXLoader**Loads Training Center XML activity files as loaders.gl geometry tables.Output: GeoJSONTable, ObjectRowTable, ArrowTable, BinaryFeatureCollectionAPIs: load, parse, parseTextSync](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader)
+[Loader**KMLLoader**Loads Keyhole Markup Language documents as loaders.gl geometry tables.Output: GeoJSONTable, ObjectRowTable, Apache Arrow TableAPIs: load, parse, parseTextSync](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/kml-loader)[Loader**GPXLoader**Loads GPS Exchange Format tracks, routes, and waypoints as loaders.gl geometry tables.Output: GeoJSONTable, ObjectRowTable, Apache Arrow Table, BinaryFeatureCollectionAPIs: load, parse, parseTextSync](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/gpx-loader)[Loader**TCXLoader**Loads Training Center XML activity files as loaders.gl geometry tables.Output: GeoJSONTable, ObjectRowTable, Apache Arrow Table, BinaryFeatureCollectionAPIs: load, parse, parseTextSync](https://loaders.gl/next/docs/modules/geospatial/kml/api-reference/tcx-loader)
 
 ## XML-Based Formats[​](#xml-based-formats "Direct link to XML-Based Formats")
 
@@ -79,4 +79,4 @@ KML, GPX, and TCX are XML-based geospatial interchange formats. They are text fi
 
 ## Geospatial Output[​](#geospatial-output "Direct link to Geospatial Output")
 
-The KML module converts these documents into loaders.gl geometry table shapes for application code. The default output is an `ArrowTable`; GeoJSON and object-row tables remain available through the format-specific `shape` option.
+The KML module converts these documents into loaders.gl geometry table shapes for application code. The default output is an Apache Arrow `Table`; GeoJSON and object-row tables remain available through the format-specific `shape` option.

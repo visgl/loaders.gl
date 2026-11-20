@@ -10,11 +10,11 @@ Catalogue Service for the Web (CSW) is an OGC protocol for searching geospatial 
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/wms.md)[CSW service](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-source-loader.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/wms.md)[CSW service](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-loader.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-source-loader.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-loader.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
 
 <!-- -->
 
@@ -22,9 +22,9 @@ Catalogue Service for the Web (CSW) is an OGC protocol for searching geospatial 
 
 ## loaders.gl support[​](#loadersgl-support "Direct link to loaders.gl support")
 
-| Type          | API                                                                                                       |
-| ------------- | --------------------------------------------------------------------------------------------------------- |
-| Source loader | [`CSWSourceLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-source-loader.md) |
+| Type          | API                                                                                          |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| Source loader | [`CSWLoader`](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-loader.md) |
 
 The catalog path
 
@@ -62,7 +62,7 @@ Detailed guide
 
 The reference below covers supported operations, catalog search, service-directory extraction, request customization, and current protocol boundaries.
 
-CSW is an OGC protocol for searching catalogs of geospatial datasets, services, and related resources. `CSWSourceLoader` adapts read-only CSW endpoints to the loaders.gl `CatalogSource` contract.
+CSW is an OGC protocol for searching catalogs of geospatial datasets, services, and related resources. `CSWLoader` adapts read-only CSW endpoints to the loaders.gl `CatalogSource` contract.
 
 ## Feature support[​](#feature-support "Direct link to Feature support")
 
@@ -84,13 +84,13 @@ CSW is an OGC protocol for searching catalogs of geospatial datasets, services, 
 ## Search a catalog[​](#search-a-catalog "Direct link to Search a catalog")
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {CSWSourceLoader} from '@loaders.gl/ogc/wms';
+import {CSWLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const catalog = createDataSource(cswUrl, [CSWSourceLoader]);
+const catalog = createDataSourceSync(cswUrl, [CSWLoader]);
 
 const metadata = await catalog.getMetadata();
 

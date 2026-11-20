@@ -63,12 +63,12 @@ For raw geometry, Cesium 1.146.0 independently decodes and renders the represent
 
 ## Lossless Draco geometry[​](#lossless-draco-geometry "Direct link to Lossless Draco geometry")
 
-`encodeI3SMeshLayerWithDraco(mesh, options, libraryOptions?)` is the asynchronous alternative exported by the same root and `i3s-mesh-writer` entrypoints. It reuses the raw writer's geographic preparation and precision limits, then encodes geometry with Draco Edge Breaker without quantization. Normals and triangle feature ownership are preserved, with the required I3S feature-index metadata. Decoded oriented attribute/feature tuples are verified before publishing resources, including duplicate triangles and winding. Node-page vertex counts reflect Draco's decoded vertex count. Other layer, material and feature resources retain their encoding; geometry, attributes and JSON remain individually GZIP compressed.
+`encodeI3SMeshLayerWithDraco(mesh, options, libraryOptions?)` is the asynchronous alternative exported by the same root and `i3s-mesh-writer` entrypoints. It reuses the raw writer's geographic preparation and precision limits, then encodes geometry with Draco Edge Breaker without quantization. Normals and triangle feature ownership are preserved, with the required I3S feature-index metadata. Decoded oriented attribute/feature tuples are verified before publishing resources, including duplicate triangles and winding. The raw geometry is retained at buffer index 0, and Draco is written at buffer index 1. Node pages report the raw vertex count. Draco stores its own count in the bitstream. their encoding; geometry, attributes and JSON remain individually GZIP compressed.
 
 ```
 import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco-library-options';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
 
 
 
@@ -83,6 +83,6 @@ const layer = await encodeI3SMeshLayerWithDraco(
 );
 ```
 
-Both encoder and full decoder runtimes are required. Application overrides use the existing `modules`, `CDN` and `useLocalLibraries` controls; omitted controls retain Draco's defaults. The glTF subset is not selected for I3S verification. `maxResourceBytes` also applies to the encoded Draco buffer and finalized JSON resources. The temporary expanded raw geometry is working memory, not an emitted resource. The limit does not cap codec/verification allocations or total peak memory. The existing synchronous writer remains available for raw geometry, including degenerate triangles that Draco cannot preserve. Very small geometry resources may grow. Independent ArcGIS viewer qualification remains follow-up work.
+Both encoder and full decoder runtimes are required. Application overrides use the existing `modules`, `CDN` and `useLocalLibraries` controls; omitted controls retain Draco's defaults. The glTF subset is not selected for I3S verification. `maxResourceBytes` also applies to the raw and Draco buffers and finalized JSON resources. The limit does not cap codec/verification allocations or total peak memory. The existing synchronous writer remains available for raw geometry, including degenerate triangles that Draco cannot preserve. Very small geometry resources may grow. Independent ArcGIS viewer qualification remains follow-up work.
 
 Compression metadata follows the [I3S 1.7 compressed-attribute contract](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md).

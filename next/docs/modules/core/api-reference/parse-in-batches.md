@@ -60,7 +60,7 @@ Some loaders can keep a parser session on one worker while input fragments arriv
 
 The worker is returned to the pool after normal completion. If the iterator is aborted, fails, or is closed early, its worker is terminated and a fresh worker is used for later sessions. Close an iterator that the application abandons (`await iterator.return?.()`) rather than leaving a session active. Transferred binary fragments can be detached on the calling thread; copy a fragment first if the application must retain its bytes. Loader-specific serializers can hydrate results such as Arrow tables after they cross the worker boundary.
 
-`core.worker: 'auto'` is currently an atomic `parse()` policy. Batched parsing keeps the loader's existing worker or main-thread behavior, including the CSV Arrow-table pilot. See the [worker loaders guide](https://loaders.gl/next/docs/developer-guide/using-worker-loaders.md) for lifecycle, fallback, and transport details.
+`core.worker: 'auto'` is currently an atomic `parse()` policy. Batched parsing keeps the loader's existing worker or main-thread behavior, including native Arrow batches from CSV. See the [worker loaders guide](https://loaders.gl/next/docs/developer-guide/using-worker-loaders.md) for lifecycle, fallback, and transport details.
 
 caution
 

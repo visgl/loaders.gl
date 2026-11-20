@@ -60,12 +60,12 @@ The OGC API family replaces monolithic XML web-service protocols with linked JSO
 
 ## Family overview[​](#family-overview "Direct link to Family overview")
 
-| API               | Source loader                 | Discovery                                          | Data path                          | Output                      | Scope                   |
-| ----------------- | ----------------------------- | -------------------------------------------------- | ---------------------------------- | --------------------------- | ----------------------- |
-| OGC API Features  | `OGCAPIFeaturesSourceLoader`  | Landing page and collections                       | Collection items with bbox and CRS | GeoJSON, binary, Arrow      | Minimal read client     |
-| OGC API Tiles     | `OGCAPITilesSourceLoader`     | Landing-page tile link and tileset tile matrix set | Explicit tile template             | Raw tile bytes              | Minimal template client |
-| OGC API Coverages | `OGCAPICoveragesSourceLoader` | Landing page and collections                       | Collection coverage with subsets   | JSON object or binary bytes | Minimal read client     |
-| OGC API EDR       | `OGCAPIEDRSourceLoader`       | Landing page and collections                       | Six spatiotemporal query shapes    | JSON object or binary bytes | Focused query client    |
+| API               | Source loader           | Discovery                                          | Data path                          | Output                      | Scope                   |
+| ----------------- | ----------------------- | -------------------------------------------------- | ---------------------------------- | --------------------------- | ----------------------- |
+| OGC API Features  | `OGCAPIFeaturesLoader`  | Landing page and collections                       | Collection items with bbox and CRS | GeoJSON, binary, Arrow      | Minimal read client     |
+| OGC API Tiles     | `OGCAPITilesLoader`     | Landing-page tile link and tileset tile matrix set | Explicit tile template             | Raw tile bytes              | Minimal template client |
+| OGC API Coverages | `OGCAPICoveragesLoader` | Landing page and collections                       | Collection coverage with subsets   | JSON object or binary bytes | Minimal read client     |
+| OGC API EDR       | `OGCAPIEDRLoader`       | Landing page and collections                       | Six spatiotemporal query shapes    | JSON object or binary bytes | Focused query client    |
 
 All four sources support standard loaders.gl fetch options for headers, credentials, proxies, cancellation, and custom transports.
 
@@ -132,17 +132,17 @@ Cancellation, failed later pages, inconsistent counts, repeated URLs/pages/IDs, 
 Collected GeoJSON removes page-specific links/extents and updates `numberReturned`. Unknown `numberMatched` stays unknown; it never becomes fabricated completeness evidence. `ManagedVectorSource` can retain a collected result only when the service's numeric total matches its rows. Arrow and binary conversion happens once after collection; per-page GeoJSON remains materialized rather than a network-streamed feature parser. These rules follow [OGC API Features Core](https://docs.ogc.org/is/17-069r4/17-069r4.html#fc-response).
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OGCAPIFeaturesSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIFeaturesLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(
+const source = createDataSourceSync(
 
   'https://demo.ldproxy.net/daraa',
 
-  [OGCAPIFeaturesSourceLoader],
+  [OGCAPIFeaturesLoader],
 
   {'ogc-api': {collectionId: 'VegetationSrf'}}
 
@@ -179,13 +179,13 @@ const features = await source.getFeatures({
 | deck.gl                     | ⚠️ Foundation only | The generic tile contract is present; callers must provide the appropriate decoded tile type                                                           |
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OGCAPITilesSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(landingPageUrl, [OGCAPITilesSourceLoader], {
+const source = createDataSourceSync(landingPageUrl, [OGCAPITilesLoader], {
 
   'ogc-api': {
 
@@ -248,7 +248,7 @@ Discovery failure is an error, not an approximation. `getMetadata()` and `getTil
 For a service whose matrix identifiers are zoom numbers and that publishes no tileset metadata, set `discoverTileMatrixSet: false`: `{tileMatrix}` is then the `tileMatrix` parameter, otherwise `z`, as before discovery existed. Templates that use only `{z}`, `{x}` and `{y}` never discover.
 
 ```
-const source = createDataSource('https://example.com/ogcapi', [OGCAPITilesSourceLoader], {
+const source = createDataSourceSync('https://example.com/ogcapi', [OGCAPITilesLoader], {
 
   'ogc-api': {
 
@@ -298,13 +298,13 @@ const tileBytes = await source.getTile({z: 3, x: 4, y: 5, tileMatrix: 'UTM18N:3'
 | Processing and visualization | ❌ Not provided           | Values are not resampled or colorized implicitly                   |
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OGCAPICoveragesSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPICoveragesLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(landingPageUrl, [OGCAPICoveragesSourceLoader], {
+const source = createDataSourceSync(landingPageUrl, [OGCAPICoveragesLoader], {
 
   'ogc-api-coverages': {collectionId: 'temperature'}
 
@@ -345,13 +345,13 @@ EDR—Environmental Data Retrieval—queries multidimensional observations by sp
 | deck.gl                                     | ❌ Not direct             | Convert the selected response representation into a visual source first |
 
 ```
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OGCAPIEDRSourceLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIEDRLoader} from '@loaders.gl/ogc/wms';
 
 
 
-const source = createDataSource(edrUrl, [OGCAPIEDRSourceLoader], {
+const source = createDataSourceSync(edrUrl, [OGCAPIEDRLoader], {
 
   'ogc-api-edr': {collectionId: 'weather'}
 

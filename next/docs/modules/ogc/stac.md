@@ -4,11 +4,11 @@ Dataset discovery
 
 The STAC module discovers datasets, links, time ranges, and spatial extents from static catalogs or API searches, then leaves the selected asset free to use its native loader.
 
-[STAC source](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md)
+[STAC source](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-loader.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
+[ ↗](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-loader.md)[Using sources](https://loaders.gl/next/docs/developer-guide/using-sources.md)
 
 <!-- -->
 
@@ -109,13 +109,13 @@ npm install @loaders.gl/core @loaders.gl/services
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {load} from '@loaders.gl/core';
+import {createDataSource} from '@loaders.gl/core';
 
-import {STACSourceLoader} from '@loaders.gl/ogc/stac';
+import {STACLoader} from '@loaders.gl/ogc/stac';
 
 
 
-const source = await load('https://example.com/catalog.json', STACSourceLoader);
+const source = await createDataSource('https://example.com/catalog.json', STACLoader);
 
 const {mode, root} = await source.getMetadata();
 
@@ -148,7 +148,7 @@ if (mode === 'api') {
 }
 ```
 
-See [`STACSourceLoader`](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-source-loader.md) for the source API and [STAC format notes](https://loaders.gl/next/docs/modules/ogc/stac/formats/stac.md) for protocol behavior.
+See [`STACLoader`](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-loader.md) for the source API and [STAC format notes](https://loaders.gl/next/docs/modules/ogc/stac/formats/stac.md) for protocol behavior.
 
 ## Browser access[​](#browser-access "Direct link to Browser access")
 
