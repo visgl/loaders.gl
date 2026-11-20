@@ -155,8 +155,8 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       );
     await memory.write({
       resourceId,
-      parts: [await compressor.compress(bytes.buffer)],
-      contentType: 'application/gzip'
+      parts: [resourceId.endsWith('.gz') ? await compressor.compress(bytes.buffer) : bytes.buffer],
+      contentType: resourceId.endsWith('.gz') ? 'application/gzip' : 'application/json'
     });
   }
   return {
@@ -375,7 +375,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
         });
       if (!layer.textureSetDefinitions?.length) delete layer.textureSetDefinitions;
       await writeJson('3dSceneLayer.json.gz', layer);
-      await writeJson('metadata.json.gz', {
+      await writeJson('metadata.json', {
         folderPattern: 'BASIC',
         archiveCompressionType: 'STORE',
         resourceCompressionType: 'GZIP',

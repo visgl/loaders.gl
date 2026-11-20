@@ -79,7 +79,9 @@ async function readJson(
 ) {
   const bytes = await files.find(file => file.resourceId === name)!.blob.arrayBuffer();
   return JSON.parse(
-    new TextDecoder().decode(new GZipDecompressor({useNative: false}).decompressSync(bytes))
+    new TextDecoder().decode(
+      name.endsWith('.gz') ? new GZipDecompressor({useNative: false}).decompressSync(bytes) : bytes
+    )
   );
 }
 
@@ -118,7 +120,7 @@ test.each([
   }
   const leaf = await readJson(files, `nodes/${count}/3dNodeIndexDocument.json.gz`);
   expect(leaf.parentNode.obb).toEqual(root.obb);
-  expect((await readJson(files, 'metadata.json.gz')).nodeCount).toBe(count + 1);
+  expect((await readJson(files, 'metadata.json')).nodeCount).toBe(count + 1);
   const lastIds = new GZipDecompressor({useNative: false}).decompressSync(
     await files
       .find(file => file.resourceId === `nodes/${count}/attributes/f_0/0.bin.gz`)!

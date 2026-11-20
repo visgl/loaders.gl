@@ -755,3 +755,41 @@ test('CLI converts ordered multi-content and multi-primitive tiles into indexed 
     await archive.close();
   }
 });
+
+test('CLI names a raw SLPK and writes plain package metadata', async () => {
+  /** Destination for the existing tiny nested triangle fixture. */
+  const output = join(directory, 'named-raw.slpk');
+  expect(
+    await runTileConverterCLI(
+      [
+        'convert',
+        rootPath,
+        '--resource',
+        identifier,
+        '--output-format',
+        'slpk',
+        '--output',
+        output,
+        '--no-draco',
+        '--name',
+        'Buildings'
+      ],
+      {stdout: () => {}, stderr: () => {}}
+    )
+  ).toBe(0);
+  /** Public reader resolves the indexed resources in the completed archive. */
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    expect(
+      JSON.parse(new TextDecoder().decode(await archive.getFile('metadata.json')))
+    ).toMatchObject({nodeCount: 2});
+    expect(
+      JSON.parse(new TextDecoder().decode(await archive.getFile('3dSceneLayer.json')))
+    ).toMatchObject({name: 'Buildings'});
+    expect((await archive.getFile('nodes/1/geometries/0.bin')).byteLength).toBeGreaterThan(0);
+  } finally {
+    await archive.close();
+  }
+});
