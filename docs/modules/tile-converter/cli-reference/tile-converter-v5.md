@@ -30,7 +30,10 @@ for the other conversion restrictions.
 Use `--name` to name the SLPK layer and `--no-draco` to write raw geometry.
 For 3D Tiles or 3TZ input whose derived heights already represent EGM2008 orthometric
 meters, use `--declare-egm2008-heights` to declare EPSG:3855 in the SLPK. This changes
-layer metadata only. It applies no geoid correction. The default is ellipsoidal.
+layer metadata only. To convert ellipsoidal input instead, pass `--egm2008-grid /path/to/egm2008-5.pgm`.
+Use a local GeographicLib EGM2008 PGM grid up to 128 MiB. The converter subtracts the
+interpolated undulation before encoding positions and building bounds. The two options
+are mutually exclusive. The default is ellipsoidal.
 SLPK package metadata is stored as plain `metadata.json`.
 
 ## Inspect and select
@@ -148,6 +151,7 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--max-meshes` | `64` | Set the content and primitive placement limits for 3D Tiles/3TZ to SLPK (max 1000) |
 
 | `--max-output-bytes` | `33554432` | Limit combined resource bytes and, separately, archive bytes. Archives can opt in to a larger budget. |
+| `--egm2008-grid` | | Convert ellipsoidal heights using a local GeographicLib EGM2008 PGM grid (max 128 MiB) |
 | `--declare-egm2008-heights` | `false` | Declare existing EGM2008 orthometric heights in 3D Tiles/3TZ to SLPK output |
 | `--profile` | `false` | Include elapsed stage timings in the JSON conversion report; convert/validate only |
 | `--help` | | Show usage |
