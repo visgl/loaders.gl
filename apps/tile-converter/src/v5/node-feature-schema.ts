@@ -64,7 +64,7 @@ export async function readFeatureSchema(
     'featureIdField',
     'batchSize',
     'integer64Encoding',
-    ...(!i3s ? ['i3sFieldNames', 'coerceNumericStrings'] : []),
+    ...(!i3s ? ['i3sFieldNames', 'coerceNumericStrings', 'i3sNumericNullValues'] : []),
     ...(i3s ? ['objectIdProperty', 'maxAttributeBytes'] : [])
   ]);
   if (
@@ -110,6 +110,15 @@ export async function readFeatureSchema(
     for (const [sourceName, targetName] of Object.entries(requireRecord(options.i3sFieldNames))) {
       if (!names.has(sourceName)) rejectSchema(`Unknown I3S source field "${sourceName}"`);
       requireName(targetName);
+    }
+  }
+  if (options.i3sNumericNullValues !== undefined) {
+    for (const [name, replacement] of Object.entries(requireRecord(options.i3sNumericNullValues))) {
+      if (!names.has(name) || typeof replacement !== 'number' || !Number.isFinite(replacement)) {
+        rejectSchema(
+          `I3S numeric null replacement for "${name}" requires a declared column and a finite number`
+        );
+      }
     }
   }
   const identifier = schema.fields.find(

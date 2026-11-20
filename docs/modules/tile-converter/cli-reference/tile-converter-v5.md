@@ -273,3 +273,10 @@ float32, or float64 columns. Integer strings must contain whole decimal
 digits, with an optional sign. Blank strings, hexadecimal, and floating
 point overflow fail validation. Feature identifiers and null handling follow
 their existing schema rules.
+
+For 3D Tiles to SLPK, a feature mapping can specify
+`"i3sNumericNullValues": {"measuredHeight": -9999}` to replace nulls in a
+nullable `int32` or `float64` column. Use the source field name, even when the
+output field is renamed. Choose a value outside the valid domain and configure
+consumers to treat it as missing. It is stored as an ordinary number in SLPK.
+Without a replacement, numeric nulls fail validation.

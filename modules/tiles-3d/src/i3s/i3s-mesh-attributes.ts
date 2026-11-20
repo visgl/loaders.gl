@@ -20,6 +20,8 @@ export interface I3SMeshFeatures {
   readonly integer64Encoding?: 'decimal-string';
   /** Explicit SLPK field names keyed by source Arrow column name. */
   readonly i3sFieldNames?: Readonly<Record<string, string>>;
+  /** Explicit replacements for null values in nullable I3S int32 and float64 source columns. */
+  readonly i3sNumericNullValues?: Readonly<Record<string, number>>;
 }
 
 /** Binary attribute resources and their target schema. */
@@ -90,6 +92,22 @@ export function encodeI3SMeshAttributes(
   }
   /** Tracks case-insensitive output names, including the reserved object ID. */
   const outputNames = new Set(['OBJECTID']);
+  for (const [name, replacement] of Object.entries(features.i3sNumericNullValues ?? {})) {
+    /** Validate every configured replacement, including columns without nulls in this node. */
+    const field = schema.fields.find(column => column.name === name);
+    if (
+      field?.nullable !== true ||
+      (field.type !== 'int32' && field.type !== 'float64') ||
+      typeof replacement !== 'number' ||
+      !Number.isFinite(replacement) ||
+      (field.type === 'int32' &&
+        (!Number.isInteger(replacement) || replacement < -2147483648 || replacement > 2147483647))
+    ) {
+      throw new Error(
+        `Invalid I3S null replacement for "${name}": expected a nullable int32 or float64 column and an in-range value`
+      );
+    }
+  }
   for (const field of schema.fields) {
     if (omitFeatureIdAttribute && field.name === features.featureIdField) continue;
     /** Explicit rename applies only to the output field and storage descriptor. */
@@ -107,10 +125,14 @@ export function encodeI3SMeshAttributes(
       );
     }
     outputNames.add(outputName.toUpperCase());
+    /** Apply only explicit replacements, preserving existing non-null values. */
+    const replacement = Object.hasOwn(features.i3sNumericNullValues ?? {}, field.name)
+      ? features.i3sNumericNullValues![field.name]
+      : null;
     const values = batches.flatMap(batch => {
       const column = batch.getChild(field.name);
       if (!column) throw new Error(`Missing Arrow column ${field.name}`);
-      return Array.from({length: column.length}, (_, index) => column.get(index));
+      return Array.from({length: column.length}, (_, index) => column.get(index) ?? replacement);
     });
     if (field.nullable !== true && values.some(value => value === null))
       throw new Error('I3S non-nullable fields must not contain null values');

@@ -797,3 +797,30 @@ test('maps an I3S field name and retains the original source alias', () => {
     encodeI3SMeshAttributes({...features, i3sFieldNames: {'gml:id': 'Feature_ID'}}, 65536)
   ).toThrow(/duplicates/);
 });
+
+test('replaces nullable I3S numeric values only with explicit field configuration', () => {
+  /** The second row is a legitimate zero and must survive unchanged. */
+  const features = createFeatures(
+    {
+      fields: [
+        {name: 'feature_id', type: 'utf8', nullable: false},
+        {name: 'height', type: 'float64', nullable: true}
+      ]
+    },
+    [
+      {feature_id: 'missing', height: null},
+      {feature_id: 'zero', height: 0}
+    ]
+  );
+  expect(() => encodeI3SMeshAttributes(features, 65536)).toThrow(/non-null/);
+  /** Output attribute buffer starts with an eight-byte header. */
+  const encoded = encodeI3SMeshAttributes(
+    {...features, i3sNumericNullValues: {height: -9999}},
+    65536
+  );
+  expect(new DataView(encoded.buffers[2]).getFloat64(8, true)).toBe(-9999);
+  expect(new DataView(encoded.buffers[2]).getFloat64(16, true)).toBe(0);
+  expect(() =>
+    encodeI3SMeshAttributes({...features, i3sNumericNullValues: {height: Infinity}}, 65536)
+  ).toThrow(/height/);
+});
