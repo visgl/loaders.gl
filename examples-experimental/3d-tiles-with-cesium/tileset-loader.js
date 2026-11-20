@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* global Cesium */
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {setLoaderOptions} from '@loaders.gl/core';
 import {_getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
 import {Tileset3D} from '@loaders.gl/tiles';

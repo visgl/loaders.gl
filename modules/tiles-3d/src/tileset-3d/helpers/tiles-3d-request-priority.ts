@@ -4,7 +4,7 @@
 
 // This file contains behavior derived from the Cesium code base under Apache 2 license.
 
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {TILE_REFINEMENT} from '../../constants';
 

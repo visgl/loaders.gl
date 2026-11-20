@@ -102,11 +102,8 @@ export type {
   VectorTileTableScanSourceOptions
 } from './vector-table-scan-source';
 
-export {
-  ARROW_TABLE_QUERY_CAPABILITIES,
-  explainArrowTableQuery,
-  queryArrowTable
-} from './query-arrow-table';
+export {ARROW_TABLE_QUERY_CAPABILITIES, explainArrowTableQuery} from './query-arrow-table';
+export {queryArrowTable} from './query-arrow-table-math';
 export * from './sql-predicate';
 export {explainTableQuery, getSQLPredicateColumnNames, planTableQuery} from './table-query';
 export type {
@@ -128,8 +125,6 @@ export type {
   LogicalTableQueryProjectStep,
   LogicalTableQueryPlan
 } from '../loader-utils/lib/scan-utils/logical-table-query';
-
-export {queryArrowTableInBatches} from './query-arrow-table-in-batches';
 
 export {projectArrowTable, filterArrowTable} from './arrow-execution';
 export type {ArrowFilterOptions} from './arrow-execution';

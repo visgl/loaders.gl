@@ -18,7 +18,7 @@ import type {
   GLTF_EXT_structural_metadata_PropertyTexture
 } from '@loaders.gl/scene/gltf';
 
-import {Vector3, Matrix4, Vector4} from '@math.gl/core';
+import {Vector3, Matrix4, Vector4} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 /* @ts-expect-error TS2732: Cannot find module 'node:module' or its corresponding type declarations. */
@@ -51,15 +51,10 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/tiles-3d/i3s';
-import {Geoid} from '@math.gl/earth';
+import {Geoid} from '@math.gl/earth/geoid';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
 import {flattenPropertyTableByFeatureIds} from './feature-attributes';
-/*
-  At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/core'.
-  So the following import is replaced with the local import
-  import type {TypedArrayConstructor} from '@math.gl/core';
-*/
 import type {GLTFAttributesData, TextureImageProperties} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';

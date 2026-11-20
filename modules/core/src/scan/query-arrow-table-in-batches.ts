@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import * as arrow from 'apache-arrow';
+import type * as arrow from 'apache-arrow';
+import {queryArrowTableInBatches as executeArrowQueryInBatches} from '@math.gl/sql';
 import {validateTableQueryLimit} from '@loaders.gl/core/loader-utils';
-import {filterArrowTable, projectArrowTable} from './arrow-execution';
 import type {ArrowQueryOptions} from './query-arrow-table';
 
 /**
@@ -29,27 +29,26 @@ export async function* queryArrowTableInBatches(
     throw new Error('Arrow select cannot be combined with columns.');
   }
   validateTableQueryLimit(options.limit);
-  let remaining = options.limit;
   options.signal?.throwIfAborted();
-  if (remaining === 0) return;
-  for await (const batch of batches) {
-    options.signal?.throwIfAborted();
-    let table = new arrow.Table(batch.schema, [batch]);
-    if (options.predicate) {
-      table = filterArrowTable(table, options.predicate, {
-        limit: remaining,
-        signal: options.signal
-      });
-    } else if (remaining !== undefined && remaining < table.numRows) {
-      table = new arrow.Table(batch.schema, [batch.slice(0, remaining)]);
+  if (options.limit === 0) return;
+  const iterator = batches[Symbol.asyncIterator]();
+  try {
+    const first = await iterator.next();
+    if (first.done) return;
+    async function* readBatches(): AsyncIterable<arrow.RecordBatch> {
+      yield first.value;
+      for (let next = await iterator.next(); !next.done; next = await iterator.next()) {
+        yield next.value;
+      }
     }
-    const selections = options.select ?? options.columns;
-    if (selections) table = projectArrowTable(table, selections);
-    if (table.batches.length) yield* table.batches;
-    else yield new arrow.RecordBatch(table.schema, undefined, new Map(batch.metadata));
-    if (remaining !== undefined) {
-      remaining -= table.numRows;
-      if (remaining === 0) return;
-    }
+    yield* executeArrowQueryInBatches(readBatches(), first.value.schema, {
+      select: options.select ?? options.columns,
+      where: options.predicate,
+      limit: options.limit,
+      signal: options.signal,
+      emitEmptyBatches: true
+    });
+  } finally {
+    await iterator.return?.();
   }
 }

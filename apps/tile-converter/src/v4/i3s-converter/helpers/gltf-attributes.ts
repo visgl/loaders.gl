@@ -2,7 +2,7 @@ import {getConversionAccessor} from './conversion-gltf';
 import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import type {ConversionNode} from './conversion-gltf';
 import type {Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Matrix4, Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core/matrix';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {getImageData} from '@loaders.gl/images';
 import {Ellipsoid} from '@math.gl/geospatial';

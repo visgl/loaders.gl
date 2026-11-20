@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {BoundingRectangle} from '../../types';

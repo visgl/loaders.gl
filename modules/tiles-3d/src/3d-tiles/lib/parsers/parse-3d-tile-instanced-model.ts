@@ -5,10 +5,10 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {Vector3, Matrix3, Matrix4, Quaternion} from '@math.gl/core';
+import {Vector3, Matrix3, Matrix4, Quaternion} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial';
-import {octDecodeInRange} from '@math.gl/geometry';
+import {octDecodeInRange} from '@math.gl/geometry/processing';
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 

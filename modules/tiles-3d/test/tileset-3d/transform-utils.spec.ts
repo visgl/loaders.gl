@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {calculateTransformProps} from '../../src/tileset-3d/helpers/transform-utils';
 
 /** Numeric node index zero must resolve before absorbing an Earth-scale placement. */

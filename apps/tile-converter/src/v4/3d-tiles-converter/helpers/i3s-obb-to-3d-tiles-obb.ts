@@ -1,4 +1,4 @@
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
 // @ts-expect-error

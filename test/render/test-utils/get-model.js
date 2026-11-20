@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {mat4} from '@math.gl/core';
+import {mat4} from '@math.gl/core/matrix';
 import {Model, Geometry} from '@luma.gl/engine';
 
 import {normalizeAttributes} from './normalize-attributes';

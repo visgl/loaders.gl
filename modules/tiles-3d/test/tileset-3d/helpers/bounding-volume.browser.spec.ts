@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {createBoundingVolume} from '../../../src/tileset-3d/helpers/bounding-volume';
 
 describe('3D Tiles region bounding volumes', () => {

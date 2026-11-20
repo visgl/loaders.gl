@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // import type {TextureLevel} from '@loaders.gl/core/schema';
-import type {TypedArray} from '@math.gl/core';
-// import {TypedArrayConstructor} from "@math.gl/core";
+import type {TypedArray} from '@math.gl/core/types';
 
 // TODO move to math.gl
 type TypedArrayConstructor =

@@ -4,7 +4,7 @@
 
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 
-import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
+import type {Matrix4, Quaternion, Vector3} from '@math.gl/core/matrix';
 import type {ImageDataType} from '@loaders.gl/images';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/core/schema';
 import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles-3d';

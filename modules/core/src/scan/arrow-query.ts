@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {ARROW_TABLE_QUERY_CAPABILITIES, queryArrowTable} from './query-arrow-table';
+export {ARROW_TABLE_QUERY_CAPABILITIES} from './query-arrow-table';
+export {queryArrowTable} from './query-arrow-table-math';
+export {queryArrowTableInBatches} from './query-arrow-table-in-batches';
 export {getSQLPredicateColumnNames, planTableQuery} from './table-query';
 
 export type {

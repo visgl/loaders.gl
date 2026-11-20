@@ -87,8 +87,6 @@ export type {
   LogicalTableQueryPlan
 } from './src/scan';
 
-export {queryArrowTableInBatches} from './src/scan';
-
 export {projectArrowTable, filterArrowTable} from './src/scan/arrow-execution';
 export type {ArrowFilterOptions} from './src/scan/arrow-execution';
 

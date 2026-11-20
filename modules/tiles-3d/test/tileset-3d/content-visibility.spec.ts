@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {BoundingSphere, CullingVolume, Plane} from '@math.gl/geometry/culling';
 import {getContentVisibility} from '../../src/tileset-3d/common/tile-3d';
 

@@ -8,7 +8,7 @@ import type {GeoArrowDimension} from '@loaders.gl/core/schema';
 export {
   getGeoArrowUnionGeometryKind,
   type GeoArrowUnionGeometryKind
-} from '@loaders.gl/core/arrow-geometry/native-geometry';
+} from '../../../arrow-geometry/geoarrow-union-kind';
 
 /** Resolves a dense-union child dimension from its name, physical type, or canonical ID. */
 export function getGeoArrowUnionDimension(

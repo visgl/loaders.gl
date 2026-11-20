@@ -4,7 +4,7 @@ import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ConversionPanel} from '../examples/website/i3s-slpk/src/components/conversion-panel';
-import {fetchFile, load, parse} from '@loaders.gl/core';
+import {fetchFile, load, parse} from '@loaders.gl/core/matrix';
 import {Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles-3d';
 import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-source';
 import {
@@ -247,7 +247,7 @@ vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async impor
 
 test('nested metadata selections convert with declaring-document axes, relative URLs and ancestor placement', async () => {
   const {createTriangle} = await import('./utils/tile-browser-conversion');
-  const {Matrix4} = await import('@math.gl/core');
+  const {Matrix4} = await import('@math.gl/core/matrix');
   const documents = {
     'https://example.invalid/tileset.json': {
       asset: {version: '1.1', gltfUpAxis: 'Y'},

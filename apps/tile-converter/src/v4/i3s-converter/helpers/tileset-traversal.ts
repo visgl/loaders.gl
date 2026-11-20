@@ -1,6 +1,6 @@
 import {Tiles3DTileJSONPostprocessed} from '@loaders.gl/tiles-3d/3d-tiles';
 import {NodeIndexDocument} from './node-index-document';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 
 /** Traversal props for the conversion stage */
 export type TraversalConversionProps = {

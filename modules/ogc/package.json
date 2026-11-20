@@ -85,7 +85,7 @@
     "@loaders.gl/documents": "5.0.0-rc.1",
     "@loaders.gl/images": "5.0.0-rc.1",
     "@loaders.gl/raster": "5.0.0-rc.1",
-    "@math.gl/geospatial": "5.0.0-beta.12",
+    "@math.gl/geospatial": "5.0.0-rc.1",
     "lerc": "^4.2.0"
   },
   "browser": {

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf';
 import {createGLTFV1ConformanceAsset} from '../../test-utils/create-gltf-v1-conformance';
 

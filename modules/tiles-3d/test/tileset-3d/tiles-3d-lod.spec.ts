@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {getFrameState, Tile3D} from '@loaders.gl/tiles-3d';
 import {WebMercatorViewport} from '@deck.gl/core';

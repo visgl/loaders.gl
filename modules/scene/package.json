@@ -185,8 +185,8 @@
   "dependencies": {
     "@loaders.gl/documents": "5.0.0-rc.1",
     "@loaders.gl/images": "5.0.0-rc.1",
-    "@math.gl/core": "5.0.0-beta.12",
-    "@math.gl/geometry": "5.0.0-beta.12",
+    "@math.gl/core": "5.0.0-rc.1",
+    "@math.gl/geometry": "5.0.0-rc.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {

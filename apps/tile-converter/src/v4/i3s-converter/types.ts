@@ -5,7 +5,7 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/tiles-3d/i3s';
-import {Matrix4, Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core/matrix';
 
 /** Converted resources for specific node */
 export type I3SConvertedResources = {

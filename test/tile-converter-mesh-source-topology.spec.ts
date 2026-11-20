@@ -18,7 +18,7 @@ import {
 } from '@loaders.gl/scene/gltf';
 import type {GLTFMeshPrimitive} from '@loaders.gl/scene/gltf';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s';
 import {validateBytes} from 'gltf-validator';

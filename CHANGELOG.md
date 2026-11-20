@@ -4,6 +4,10 @@
 
 ### v5.0.0-rc.1
 
+- Upgrade math.gl to 5.0.0-rc.1 and use its GeoArrow column decoder for Arrow table tiles.
+- Use focused math.gl imports, share Arrow query execution, and allow callers to register math.gl SQL functions.
+- Replace the redundant GeoArrow row decoder with math.gl row views and materialization.
+
 - Execute grouped SQL over streaming table scan sources (#4557).
 - Add a dependency-free PDB molecular loader (#4410).
 - Expose Cesium primitive outline indices on scene primitives (#4563).

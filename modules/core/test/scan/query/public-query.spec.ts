@@ -5,6 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/scan';
+import {ST_MAKEPOINT} from '@math.gl/geospatial/st-functions';
 import {parseSQLQuery} from '@math.gl/sql/parser';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
@@ -423,4 +424,16 @@ test('native Arrow queries retain the projected schema on empty streams', async 
   expect(batches).toHaveLength(1);
   expect(batches[0]).toBeInstanceOf(arrow.RecordBatch);
   expect(batches[0].schema).toEqual(table.schema);
+});
+
+test('query can opt into math.gl spatial functions', async () => {
+  const source = makeTable();
+  const result = await query('SELECT ST_MakePoint(value, value) AS geometry WHERE value > 1', {
+    source,
+    sqlParser: parseSQLQuery,
+    functions: [ST_MAKEPOINT]
+  });
+  expect(result.numRows).toBe(2);
+  expect(result.schema.fields.map(field => field.name)).toEqual(['geometry']);
+  expect(result.getChild('geometry')!.isValid(0)).toBe(true);
 });

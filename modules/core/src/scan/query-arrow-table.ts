@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {projectArrowTable, filterArrowTable} from './arrow-execution';
+import {filterArrowTable, projectArrowTable} from './arrow-execution';
 import {
   compareArrowQueryNumbers as compareNumbers,
   getArrowQueryValueType as getValueType
@@ -11,15 +11,7 @@ import {
 import type {TableSelection} from '@loaders.gl/core/loader-utils';
 import {convertRowsToArrowTable} from './rows-to-arrow';
 
-import {
-  planTableQuery,
-  type TableQueryFilterStep,
-  type TableQueryLimitStep,
-  type TableQueryOptions,
-  type TableQueryPlanStep,
-  type TableQueryProjectStep,
-  type TableQueryScanStep
-} from './table-query';
+import {planTableQuery, type TableQueryOptions} from './table-query';
 import type {
   RelationalAggregate,
   RelationalExpression,
@@ -104,17 +96,27 @@ export function explainArrowTableQuery(
   );
 }
 
+/** Executes a validated linear query after portable predicates have been applied. */
+type ExecuteLinearArrowQuery = (
+  table: arrow.Table,
+  options: Readonly<{select?: readonly string[]; limit?: number; signal?: AbortSignal}>
+) => arrow.Table;
+
+/** Projects and limits Arrow rows for the lightweight scan sources. */
+const executePortableArrowQuery: ExecuteLinearArrowQuery = (table, {select, limit}) => {
+  const projected = select ? projectArrowTable(table, select) : table;
+  return projected.numRows === 0 || limit === undefined ? projected : projected.slice(0, limit);
+};
+
 /**
  * Executes a small, Arrow-native query over one in-memory table.
  *
- * The proof of concept supports portable predicates, column projection, and limits. Projection
- * and limits without a predicate preserve Arrow's zero-copy views. Predicate evaluation is
- * currently row-oriented and materializes the matching result rows; later physical operators can
- * replace this implementation with vectorized selection handling without changing this API.
+ * Linear queries delegate to math.gl. Named source combinations retain loaders.gl planning.
  */
 export function queryArrowTable(
   sourceTable: arrow.Table,
-  options: ArrowQueryOptions = {}
+  options: ArrowQueryOptions = {},
+  executeLinear: ExecuteLinearArrowQuery = executePortableArrowQuery
 ): arrow.Table {
   throwIfAborted(options.signal);
   if (options.select !== undefined) {
@@ -131,7 +133,7 @@ export function queryArrowTable(
       )
     ];
     const {select, ...remainingOptions} = options;
-    const result = queryArrowTable(sourceTable, {...remainingOptions, columns});
+    const result = queryArrowTable(sourceTable, {...remainingOptions, columns}, executeLinear);
     return projectArrowTable(result, select);
   }
 
@@ -150,21 +152,23 @@ export function queryArrowTable(
     return queryArrowTableRelational(sourceTable, options);
   }
 
-  const sourceData = sourceTable;
   const plan = planTableQuery(
-    sourceData.schema.fields.map(field => field.name),
+    sourceTable.schema.fields.map(field => field.name),
     options
   );
-  const scannedData = sourceData.select([...getScanStep(plan).columns]);
-  const predicate = getFilterStep(plan)?.predicate;
-  const limit = getLimitStep(plan)?.limit ?? Number.POSITIVE_INFINITY;
-  if (!predicate) {
-    const projectedData = projectArrowTable(scannedData, getProjectStep(plan).columns);
-    return projectedData.numRows === 0 ? projectedData : projectedData.slice(0, limit);
-  }
-
-  const filteredData = filterArrowTable(scannedData, predicate, {limit, signal: options.signal});
-  return projectArrowTable(filteredData, getProjectStep(plan).columns);
+  const projection = plan.find(step => step.kind === 'project');
+  // Portable source predicates retain Date, binary and mixed numeric comparison semantics.
+  const filtered = options.predicate
+    ? filterArrowTable(sourceTable, options.predicate, {
+        limit: options.limit,
+        signal: options.signal
+      })
+    : sourceTable;
+  return executeLinear(filtered, {
+    select: projection?.columns,
+    limit: options.limit,
+    signal: options.signal
+  });
 }
 
 /** Executes the relational subset that can be evaluated against one in-memory Arrow table. */
@@ -614,36 +618,6 @@ function evaluateAggregate(
     case 'max':
       return Math.max(...numericValues);
   }
-}
-
-/** Returns the mandatory source scan from a normalized table-query plan. */
-function getScanStep(plan: readonly TableQueryPlanStep[]): TableQueryScanStep {
-  const step = plan.find((candidate): candidate is TableQueryScanStep => candidate.kind === 'scan');
-  if (!step) {
-    throw new Error('Arrow query plan is missing a scan step.');
-  }
-  return step;
-}
-
-/** Returns the optional predicate filter from a normalized table-query plan. */
-function getFilterStep(plan: readonly TableQueryPlanStep[]): TableQueryFilterStep | undefined {
-  return plan.find((candidate): candidate is TableQueryFilterStep => candidate.kind === 'filter');
-}
-
-/** Returns the mandatory output projection from a normalized table-query plan. */
-function getProjectStep(plan: readonly TableQueryPlanStep[]): TableQueryProjectStep {
-  const step = plan.find(
-    (candidate): candidate is TableQueryProjectStep => candidate.kind === 'project'
-  );
-  if (!step) {
-    throw new Error('Arrow query plan is missing a project step.');
-  }
-  return step;
-}
-
-/** Returns the optional result limit from a normalized table-query plan. */
-function getLimitStep(plan: readonly TableQueryPlanStep[]): TableQueryLimitStep | undefined {
-  return plan.find((candidate): candidate is TableQueryLimitStep => candidate.kind === 'limit');
 }
 
 /** Throws a standard cancellation error if a caller has aborted the query. */

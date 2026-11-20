@@ -15,7 +15,7 @@ import {
 import type {GLTF, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles-3d';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles-3d';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../types';
 import {parse3DTileVectorContent} from './parse-3d-tile-vector-content';

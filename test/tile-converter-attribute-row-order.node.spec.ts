@@ -1,7 +1,7 @@
 import {beforeAll, expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader, type Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {BoundingSphere} from '@math.gl/geometry/culling';
 import convertB3dmToI3sGeometry from '../apps/tile-converter/src/v4/i3s-converter/helpers/geometry-converter';
 import {AttributeMetadataInfo} from '../apps/tile-converter/src/v4/i3s-converter/helpers/attribute-metadata-info';

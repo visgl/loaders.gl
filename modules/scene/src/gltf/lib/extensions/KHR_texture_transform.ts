@@ -6,7 +6,7 @@
  * https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md
  */
 
-import {Vector3, Matrix3} from '@math.gl/core';
+import {Vector3, Matrix3} from '@math.gl/core/matrix';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {
   GLTFMeshPrimitive,

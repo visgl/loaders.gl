@@ -91,6 +91,8 @@ export type QueryOptions = TableQueryExecutionOptions &
     limit?: never;
     /** Parser or lazy parser promise, required only for SQL string input. */
     sqlParser?: SQLQueryParser | Promise<SQLQueryParser>;
+    /** Optional math.gl SQL functions used by locally executed expressions. */
+    functions?: readonly import('@math.gl/sql/arrow').ArrowFunctionPackage[];
     /** Append-only batches (default), or complete progressive replacement snapshots. */
     queryOutput?: 'batches' | 'snapshots';
   }> &
@@ -343,19 +345,30 @@ async function* queryAppendBatches(
     const readSchema = convertArrowToSchema(inputSchema);
     const comparisonInputSchema = expressionTools ? convertSchemaToArrow(readSchema) : undefined;
     const compiledFilter = expressionFilter
-      ? expressionTools!.compileArrowExpression(expressionFilter.expression, {inputSchema})
+      ? expressionTools!.compileArrowExpression(expressionFilter.expression, {
+          inputSchema,
+          functions: options.functions
+        })
       : castPredicate && portablePredicate
         ? expressionTools!.compileArrowPredicate(portablePredicate, {inputSchema})
         : undefined;
     if (compiledFilter && !arrow.DataType.isBool(compiledFilter.outputField.type))
       throw new Error('SQL WHERE expression must return Boolean.');
     const project = computedProjection
-      ? expressionTools!.compileArrowProjection(inputSchema, select!, options.signal)
+      ? expressionTools!.compileArrowProjection(
+          inputSchema,
+          select!,
+          options.signal,
+          options.functions
+        )
       : (data: arrow.Table) => projectArrowTable(data, normalized.select);
     const empty = project(new arrow.Table(inputSchema));
     const comparisonSchema = convertSchemaToArrow(convertArrowToSchema(empty.schema));
     const pushedPlan =
-      !inMemory && !('command' in parsedQuery) && (source as TableScanSource).planQueryPushdown
+      !inMemory &&
+      !options.functions?.length &&
+      !('command' in parsedQuery) &&
+      (source as TableScanSource).planQueryPushdown
         ? await (await import('./query-pushdown')).planQueryPushdown(
             source as TableScanSource,
             logicalQuery,

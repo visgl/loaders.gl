@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Matrix4, Quaternion} from '@math.gl/core';
+import {Matrix4, Quaternion} from '@math.gl/core/matrix';
 import type {GLTF} from '../types/gltf-types';
 
 /** Convert translation-only animated matrices while preserving their entire linear transform. */

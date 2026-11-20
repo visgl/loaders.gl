@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Viewport} from '@deck.gl/core';
-import {Matrix4, equals, type NumericArray} from '@math.gl/core';
+import {Matrix4, equals} from '@math.gl/core/matrix';
+import {type NumericArray} from '@math.gl/core/types';
 import {
   STRATEGY_DEFAULT,
   STRATEGY_NEVER,

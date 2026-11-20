@@ -8,7 +8,7 @@ import {
   markTilesetSpatialReferenceTransformed,
   Tiles3DSpatialTransformer
 } from '@loaders.gl/tiles-3d';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import type {
   CreateTilesetSpatialReferenceOptions,
   I3SSpatialBounds,

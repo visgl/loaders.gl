@@ -8,7 +8,6 @@ import {
   convertFeaturesToGeoArrowTable,
   convertGeoArrowGeometry,
   getGeoArrowBounds,
-  getGeoArrowNativeGeometry,
   getGeoArrowRowBounds,
   inspectGeoArrowVector
 } from '@loaders.gl/core/geoarrow';
@@ -176,75 +175,7 @@ test('native WKT kernel rejects malformed shapes and non-native encodings conser
   expect(encodeGeoArrowWKTVector(makeValueVector([null]), 'geoarrow.point')?.get(0)).toBeNull();
 });
 
-test('native geometry reader covers every concrete family and malformed rows', () => {
-  const cases: [GeoArrowEncoding, unknown, string][] = [
-    ['geoarrow.point', {x: 1, y: 2, z: 3, m: 4}, 'Point'],
-    [
-      'geoarrow.linestring',
-      makeVectorValue([
-        [0, 0],
-        [1, 1]
-      ]),
-      'LineString'
-    ],
-    [
-      'geoarrow.polygon',
-      [
-        [
-          [0, 0],
-          [1, 0],
-          [0, 0]
-        ]
-      ],
-      'Polygon'
-    ],
-    ['geoarrow.multipoint', [Float64Array.of(1, 2), [3, 4]], 'MultiPoint'],
-    [
-      'geoarrow.multilinestring',
-      [
-        [
-          [0, 0],
-          [1, 1]
-        ]
-      ],
-      'MultiLineString'
-    ],
-    [
-      'geoarrow.multipolygon',
-      [
-        [
-          [
-            [0, 0],
-            [1, 0],
-            [0, 0]
-          ]
-        ]
-      ],
-      'MultiPolygon'
-    ]
-  ];
-  for (const [encoding, value, expectedType] of cases) {
-    expect(getGeoArrowNativeGeometry(makeValueVector([value]), 0, encoding)?.type).toBe(
-      expectedType
-    );
-  }
-
-  const point = makeValueVector([{toArray: () => Float32Array.of(7, 8)}]);
-  expect(getGeoArrowNativeGeometry(point, 0, 'geoarrow.point')).toEqual({
-    type: 'Point',
-    coordinates: [7, 8]
-  });
-  expect(getGeoArrowNativeGeometry(makeValueVector([[1, 'bad']]), 0, 'geoarrow.point')).toBeNull();
-  expect(
-    getGeoArrowNativeGeometry(makeValueVector([{x: 1, y: 'bad'}]), 0, 'geoarrow.point')
-  ).toBeNull();
-  expect(getGeoArrowNativeGeometry(point, -1, 'geoarrow.point')).toBeNull();
-  expect(getGeoArrowNativeGeometry(point, 1, 'geoarrow.point')).toBeNull();
-  expect(getGeoArrowNativeGeometry(point, 0, 'geoarrow.box')).toBeNull();
-  expect(getGeoArrowNativeGeometry(point, 0, 'geoarrow.wkb')).toBeNull();
-});
-
-test('union and collection readers inspect, bound, and decode all native geometry families', () => {
+test('union and collection readers inspect and bound all native geometry families', () => {
   const features: any[] = [
     {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}},
     {
@@ -316,7 +247,6 @@ test('union and collection readers inspect, bound, and decode all native geometr
     'MultiPolygon'
   ]);
   expect(getGeoArrowRowBounds(union, 'geoarrow.geometry')).toHaveLength(features.length);
-  expect(getGeoArrowNativeGeometry(union, 5, 'geoarrow.geometry')?.type).toBe('MultiPolygon');
 
   const collectionSource = convertFeaturesToGeoArrowTable([
     {
@@ -338,11 +268,6 @@ test('union and collection readers inspect, bound, and decode all native geometr
     nullCount: 1,
     geometryTypes: ['GeometryCollection']
   });
-  expect(getGeoArrowNativeGeometry(collection, 0, 'geoarrow.geometrycollection')).toMatchObject({
-    type: 'GeometryCollection',
-    geometries: [{type: 'Point'}, {type: 'LineString'}]
-  });
-  expect(getGeoArrowNativeGeometry(collection, 1, 'geoarrow.geometrycollection')).toBeNull();
 });
 
 test('vector inspection covers malformed serialized and native dimension variants', () => {

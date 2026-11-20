@@ -12,7 +12,7 @@ import {BlobFile, HttpFile} from '@loaders.gl/core/loader-utils';
 import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
 import type {MeshAttributes} from '@loaders.gl/core/schema';
-import {Matrix4, Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {
   PointCloudBoundingVolume,

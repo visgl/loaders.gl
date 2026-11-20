@@ -15,7 +15,7 @@ import {
 import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 import {DBFLoaderWithParser as DBFLoader} from '../../src/shapefile/dbf-loader';
 import {projectionEngine} from '@math.gl/geospatial/projection';
-import {equals, withEpsilon} from '@math.gl/core';
+import {equals, withEpsilon} from '@math.gl/core/matrix';
 setLoaderOptions({core: {_workerType: 'test', worker: false}});
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/geospatial/shapefile/test/data/shapefile-js';
 const SHAPEFILE_JS_TEST_FILES = {

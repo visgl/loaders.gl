@@ -14,12 +14,8 @@ import {
   type GetTileDataParameters,
   type TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
-import type {Schema, GeoArrowEncoding} from '@loaders.gl/core/schema';
-import {
-  convertWKBToGeometry,
-  convertWKTToGeometry
-} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import {getGeoArrowNativeGeometry} from '@loaders.gl/core/arrow-geometry/native-geometry';
+import type {Feature, Schema, GeoArrowEncoding} from '@loaders.gl/core/schema';
+import {decodeGeoArrowGeometryColumn} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {getGeoMetadata, setGeoMetadata} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {TableVectorTileSource, TableTileLoader} from './table-tile-loader';
@@ -180,21 +176,21 @@ export class ArrowTableVectorTileSource
     this.geometryColumn = field.name;
     const column = table.getChild(field.name)!;
     const features: ProtoFeature[] = [];
-    for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
-      if (!column.isValid(rowIndex)) continue;
-      const geometry =
-        encoding === 'geoarrow.wkb' || encoding === 'geoarrow.wkt'
-          ? encoding === 'geoarrow.wkb'
-            ? convertWKBToGeometry(column.get(rowIndex))
-            : convertWKTToGeometry(column.get(rowIndex))
-          : getGeoArrowNativeGeometry(column, rowIndex, encoding);
-      if (geometry)
-        features.push(
-          ...convertFeaturesToProtoFeature(
-            {type: 'Feature', geometry, properties: {sourceRowIndex: rowIndex}},
-            this.tiler.tableOptions
-          )
-        );
+    let rowOffset = 0;
+    for (const chunk of column.data) {
+      const geometries = decodeGeoArrowGeometryColumn(arrow.makeVector(chunk), encoding);
+      for (let chunkRowIndex = 0; chunkRowIndex < chunk.length; chunkRowIndex++) {
+        const geometry = geometries[chunkRowIndex] as Feature['geometry'];
+        if (geometry) {
+          features.push(
+            ...convertFeaturesToProtoFeature(
+              {type: 'Feature', geometry, properties: {sourceRowIndex: rowOffset + chunkRowIndex}},
+              this.tiler.tableOptions
+            )
+          );
+        }
+      }
+      rowOffset += chunk.length;
     }
     const wrappedFeatures = wrapFeatures(features, this.tiler.tableOptions);
     if (wrappedFeatures.length) this.tiler.splitTile(wrappedFeatures, 0, 0, 0);

@@ -25,7 +25,7 @@ import type {
 import {load, encode, isBrowser} from '@loaders.gl/core';
 import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
-import {Geoid} from '@math.gl/earth';
+import {Geoid} from '@math.gl/earth/geoid';
 import {join} from 'path';
 import {randomUUID} from 'node:crypto';
 import process from 'process';
@@ -74,7 +74,7 @@ import {
   loadTile3DContent,
   loadFromArchive
 } from './helpers/load-3d-tiles';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {TILE_REFINEMENT, createBoundingVolume} from '@loaders.gl/tiles-3d';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';

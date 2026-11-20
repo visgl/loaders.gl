@@ -54,6 +54,12 @@ for supported buffers, ownership, and validation requirements.
 
 ## Inspect and process
 
+For work on native geometry buffers, use `@math.gl/core/arrow`. Adapt an Arrow vector
+with `makeGeoArrowColumnFromArrowVector`, borrow a chunk or row with
+`iterateGeoArrowBatches` or `getGeoArrowRowView`, and use `convertGeoArrowColumn`
+to request an output encoding and physical layout. Use `materializeGeoArrowRows`
+when you need JavaScript coordinates as `GeoArrowDecodedGeometry` values.
+
 The public API includes field inspection and validation, bounds, coordinate mapping, ring
 rewinding, builders, and table/vector conversion. Native GeoArrow buffers are preferred for
 repeated coordinate operations because they avoid parsing variable-length WKB records for every

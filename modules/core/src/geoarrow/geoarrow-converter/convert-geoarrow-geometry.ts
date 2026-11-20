@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {convertGeoArrowColumn, decodeGeoArrowWKB, encodeGeoArrowWKB} from '@math.gl/core/arrow';
+import {convertGeoArrowColumn, decodeGeoArrowWKB} from '@math.gl/core/arrow';
 import type {DecodeGeoArrowWKBOptions} from '@math.gl/core/arrow';
 import {
   convertGeometryToWKB,
@@ -507,7 +507,9 @@ function convertGeometryColumnWithMath(
     }
   }
   if (targetEncoding === 'geoarrow.wkb') {
-    return makeArrowVectorFromGeoArrowColumn(encodeGeoArrowWKB(sourceColumn));
+    return makeArrowVectorFromGeoArrowColumn(
+      convertGeoArrowColumn(sourceColumn, {encoding: targetEncoding})
+    );
   }
 
   const convertedColumn = convertGeoArrowColumn(sourceColumn, {

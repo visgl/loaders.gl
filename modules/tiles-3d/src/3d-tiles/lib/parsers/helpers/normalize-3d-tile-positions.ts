@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 
 // Prepare attribute for positions
 export function normalize3DTilePositionAttribute(tile, positions, options) {

@@ -4,7 +4,6 @@ import {
   convertFeaturesToGeoArrowTable,
   convertGeoArrowGeometry,
   convertGeoArrowVector,
-  getGeoArrowNativeGeometry,
   getGeoArrowGeometryInfo,
   getGeoArrowFieldInfo,
   isGeoArrowGeometry,
@@ -271,17 +270,6 @@ describe('GeoArrow nested geometry recognition', () => {
       } as any)
     );
 
-    expect(getGeoArrowNativeGeometry(renamedVector, 0, 'geoarrow.geometry')).toMatchObject({
-      type: 'Point',
-      coordinates: [1, 2]
-    });
-    expect(getGeoArrowNativeGeometry(renamedVector, 1, 'geoarrow.geometry')).toMatchObject({
-      type: 'LineString',
-      coordinates: [
-        [0, 0],
-        [1, 1]
-      ]
-    });
     expect(inspectGeoArrowVector(renamedVector, 'geoarrow.geometry').geometryTypes).toEqual([
       'Point',
       'LineString'

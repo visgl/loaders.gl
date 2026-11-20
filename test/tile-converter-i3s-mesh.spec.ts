@@ -15,7 +15,7 @@ import {
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {
   convertTileset,
   createMeshTilesetConversionSource,

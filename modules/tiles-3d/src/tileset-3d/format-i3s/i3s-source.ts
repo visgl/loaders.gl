@@ -5,7 +5,7 @@
 import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {path} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tile3D as Tile3DNode} from '../common/tile-3d';

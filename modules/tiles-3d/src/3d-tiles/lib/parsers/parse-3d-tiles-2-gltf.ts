@@ -12,7 +12,7 @@ import type {
   GLTFWithBuffers
 } from '@loaders.gl/scene/gltf';
 import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
 import {type ParsedImplicitSubtree} from '@loaders.gl/tiles-3d';
