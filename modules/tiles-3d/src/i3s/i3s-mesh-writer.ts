@@ -96,7 +96,7 @@ export function encodeI3SMeshLayer(
 /**
  * Authors the same bounded I3S profile using lossless Draco Edge Breaker geometry.
  * Reuses the geographic rounding budget and verifies complete oriented attribute/feature
- * tuples after decoding. No quantization or uncompressed fallback is emitted.
+ * tuples after decoding. The uncompressed representation remains at index 0; Draco is added at index 1.
  * Decoder and encoder allocations are not bounded by the per-resource limit.
  * @param mesh - Absolute ECEF geometry, never modified.
  * @param options - The same appearance, feature, resource and precision controls as the raw writer.
@@ -110,7 +110,7 @@ export async function encodeI3SMeshLayerWithDraco(
 ): Promise<EncodedI3SMeshLayer> {
   await preloadI3SMeshCompression();
   const maxResourceBytes = options.maxResourceBytes;
-  const prepared = prepareMeshLayer(mesh, options, 'draco');
+  const prepared = prepareMeshLayer(mesh, options);
   const geometry = prepared.files['nodes/1/geometries/0.bin.gz'];
   const view = new DataView(geometry);
   const vertexCount = view.getUint32(0, true);
@@ -180,22 +180,20 @@ export async function encodeI3SMeshLayerWithDraco(
       'Lossless I3S Draco must preserve oriented triangles, attributes and feature IDs'
     );
   const layer = JSON.parse(new TextDecoder().decode(prepared.files['3dSceneLayer.json.gz']));
-  layer.geometryDefinitions[0].geometryBuffers = [
-    {
-      compressedAttributes: {
-        encoding: 'draco',
-        attributes: [
-          'position',
-          ...(normals ? ['normal'] : []),
-          ...(textureCoordinates ? ['uv0'] : []),
-          'feature-index'
-        ]
-      }
+  layer.geometryDefinitions[0].geometryBuffers.push({
+    compressedAttributes: {
+      encoding: 'draco',
+      attributes: [
+        'position',
+        ...(normals ? ['normal'] : []),
+        ...(textureCoordinates ? ['uv0'] : []),
+        'feature-index'
+      ]
     }
-  ];
+  });
   const page = JSON.parse(new TextDecoder().decode(prepared.files['nodepages/0.json.gz']));
   page.nodes[1].mesh.geometry.vertexCount = decoded.attributes.POSITION.value.length / 3;
-  prepared.files['nodes/1/geometries/0.bin.gz'] = encoded.data;
+  prepared.files['nodes/1/geometries/1.bin.gz'] = encoded.data;
   prepared.files['3dSceneLayer.json.gz'] = new TextEncoder().encode(JSON.stringify(layer)).buffer;
   prepared.files['nodepages/0.json.gz'] = new TextEncoder().encode(JSON.stringify(page)).buffer;
   return compressMeshLayer(prepared, maxResourceBytes);
@@ -205,12 +203,10 @@ export async function encodeI3SMeshLayerWithDraco(
  * Expands, groups and rounds a mesh once, retaining resources until final encoding.
  * @param mesh - Validated absolute ECEF mesh.
  * @param options - Precision, metadata and emitted resource limits.
- * @param geometryEncoding - Intended output; temporary Draco expansion is working memory.
  */
 function prepareMeshLayer(
   mesh: MeshGeometry,
-  options: I3SMeshWriterOptions,
-  geometryEncoding: 'raw' | 'draco' = 'raw'
+  options: I3SMeshWriterOptions
 ): {
   files: Record<string, ArrayBuffer>;
   maximumPositionError: number;
@@ -346,7 +342,7 @@ function prepareMeshLayer(
     8 +
     outputVertexCount * (12 + (normals ? 12 : 0) + (textureCoordinates ? 8 : 0)) +
     featureCount * 16;
-  if (geometryEncoding === 'raw' && byteLength > options.maxResourceBytes)
+  if (byteLength > options.maxResourceBytes)
     throw new Error('I3S geometry exceeds maxResourceBytes');
   const minimum = [Infinity, Infinity, Infinity];
   const maximum = [-Infinity, -Infinity, -Infinity];

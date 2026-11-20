@@ -102,7 +102,8 @@ geographic preparation and precision limits, then encodes geometry with Draco Ed
 without quantization. Normals and triangle feature ownership are preserved, with the required
 I3S feature-index metadata. Decoded oriented attribute/feature tuples are verified before
 publishing resources, including duplicate triangles and winding. Node-page vertex counts
-reflect Draco's decoded vertex count. Other layer, material and feature resources retain
+reflect Draco's decoded vertex count. The raw geometry is retained at buffer index 0 for
+legacy clients, and Draco is written at buffer index 1. Other layer, material and feature resources retain
 their encoding; geometry, attributes and JSON remain individually GZIP compressed.
 
 ```ts
@@ -119,8 +120,7 @@ const layer = await encodeI3SMeshLayerWithDraco(
 Both encoder and full decoder runtimes are required. Application overrides use the existing
 `modules`, `CDN` and `useLocalLibraries` controls; omitted controls retain Draco's defaults.
 The glTF subset is not selected for I3S verification. `maxResourceBytes` also applies to the
-encoded Draco buffer and finalized JSON resources. The temporary expanded raw geometry
-is working memory, not an emitted resource. The limit does not cap codec/verification
+raw and Draco buffers and finalized JSON resources. The limit does not cap codec/verification
 allocations or total peak memory. The existing synchronous writer remains available for
 raw geometry, including degenerate triangles that Draco cannot preserve. Very small geometry
 resources may grow. Independent ArcGIS viewer qualification remains follow-up work.
