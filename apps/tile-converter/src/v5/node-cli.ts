@@ -43,7 +43,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --max-meshes N               Set content and primitive limits for 3D Tiles/3TZ to SLPK (default 64, max 1000)
   --max-output-bytes N         Set the output/archive budget (default: 32 MiB)
   --slpk-lod-threshold N      Explicit I3S maxScreenThresholdSQ for replacement hierarchy
-
+  --egm2008-grid PATH         Correct ellipsoidal heights with a local EGM2008 PGM grid
   --declare-egm2008-heights   Declare already orthometric heights for 3D Tiles/3TZ to SLPK
   --omit-feature-id           Omit the feature identifier attribute in SLPK
   --no-draco                  Write raw SLPK geometry
@@ -73,6 +73,7 @@ export async function runTileConverterCLI(
       options: {
         help: {type: 'boolean'},
         profile: {type: 'boolean'},
+        'egm2008-grid': {type: 'string'},
         'declare-egm2008-heights': {type: 'boolean'},
         'omit-feature-id': {type: 'boolean'},
         'no-draco': {type: 'boolean'},
@@ -163,6 +164,7 @@ export async function runTileConverterCLI(
         resourceIds: values.resource ?? [],
         allContents: values['all-contents'],
         profile: values.profile,
+        egm2008Grid: values['egm2008-grid'],
         declareEgm2008Heights: values['declare-egm2008-heights'],
         omitFeatureIdAttribute: values['omit-feature-id'],
         name: values.name,
@@ -189,6 +191,7 @@ export async function runTileConverterCLI(
       return 0;
     }
     if (
+      values['egm2008-grid'] !== undefined ||
       values['declare-egm2008-heights'] !== undefined ||
       values.profile !== undefined ||
       values['feature-schema'] !== undefined ||
