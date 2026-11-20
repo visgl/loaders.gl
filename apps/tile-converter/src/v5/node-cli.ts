@@ -39,7 +39,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --output PATH               New destination (required for convert, forbidden for validate)
   --max-input-bytes N          Lower the 16 MiB input/read budget
   --max-resources N            Lower the 1,000 content-declaration limit
-  --max-documents N            Lower the 32 metadata-document limit
+  --max-documents N            Set the 3D Tiles document budget (default 32, max 256)
   --max-output-bytes N         Lower the 32 MiB output/archive budget
   --omit-feature-id           Omit the feature identifier attribute in SLPK
   --no-draco                  Write raw SLPK geometry
@@ -76,7 +76,7 @@ export async function runTileConverterCLI(
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
         'max-resources': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputResources)},
-        'max-documents': {type: 'string', default: String(NODE_TILESET_LIMITS.maxTilesetDocuments)},
+        'max-documents': {type: 'string', default: '32'},
         'max-output-bytes': {type: 'string', default: String(32 * 1024 * 1024)},
         'output-format': {type: 'string', default: '3tz'},
         output: {type: 'string'},

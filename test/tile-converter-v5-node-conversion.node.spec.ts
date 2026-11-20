@@ -811,3 +811,36 @@ test('CLI validates all nested 3D Tiles content without explicit resource IDs', 
     })
   ).toBe(1);
 });
+
+test('Node CLI can raise the inspection budget above 32 document placements', async () => {
+  /** Repeated external references are distinct placements under the root. */
+  const input = join(directory, 'input', 'document-budget.json');
+  await writeFile(
+    input,
+    JSON.stringify({
+      ...root,
+      root: {
+        ...root.root,
+        content: undefined,
+        children: Array.from({length: 32}, () => ({
+          boundingVolume: {sphere: [0, 0, 0, 10]},
+          geometricError: 0,
+          content: {uri: 'nested/tileset.json'}
+        }))
+      }
+    })
+  );
+  /** Capture the failure with the default and results with the raised budget. */
+  const output: string[] = [];
+  /** Capture diagnostics so the default fails for the expected reason. */
+  const errors: string[] = [];
+  /** CLI output callbacks for both operations. */
+  const callbacks = {
+    stdout: (line: string) => output.push(line),
+    stderr: (line: string) => errors.push(line)
+  };
+  expect(await runTileConverterCLI(['inspect', input], callbacks)).toBe(1);
+  expect(errors.join('')).toContain('INPUT_TILESET_COUNT_EXCEEDED');
+  expect(await runTileConverterCLI(['inspect', input, '--max-documents', '33'], callbacks)).toBe(0);
+  expect(JSON.parse(output[0]).resources).toHaveLength(32);
+});

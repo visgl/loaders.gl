@@ -26,7 +26,7 @@ export const NODE_TILESET_LIMITS = {
   /** Declared content placements in the explicit root document. */
   maxInputResources: 1000,
   /** Maximum root/external document placements inspected or traversed. */
-  maxTilesetDocuments: 32
+  maxTilesetDocuments: 256
 } as const;
 
 /** Platform I/O options for bounded explicit 3D Tiles inspection and raw content reads. */

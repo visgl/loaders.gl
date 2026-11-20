@@ -141,7 +141,7 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--output` | | New destination; required only for convert |
 | `--max-input-bytes` | `16777216` | Lower transport/physical-read and decoded mesh budgets |
 | `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
-| `--max-documents` | `32` | Lower the root/external document-placement limit |
+| `--max-documents` | `32` | Set the root/external document-placement limit (max 256) |
 | `--max-output-bytes` | `33554432` | Lower retained file bytes and, separately, archive bytes |
 | `--profile` | `false` | Include elapsed stage timings in the JSON conversion report; convert/validate only |
 | `--help` | | Show usage |
@@ -285,3 +285,8 @@ Use `--all-contents` on `validate` or `convert` to select every inspected
 placement in a 3D Tiles or 3TZ input. Supply either this flag or individual
 `--resource` selections. The selected mesh profile still applies its existing
 budget, refinement, and feature schema rules.
+
+For Node 3D Tiles and 3TZ inspection or flat conversion, `--max-documents`
+sets the root and external document placement budget from 1 to 256. The
+default is 32. Hierarchy-preserving output still supports up to 32 document
+placements. Input bytes and selected meshes have separate limits.
