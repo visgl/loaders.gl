@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/raster",
-  "version": "5.0.0-beta.12",
+  "version": "5.0.0-rc.1",
   "description": "GeoTIFF, OME-TIFF, LERC, and terrain raster loaders",
   "license": "MIT",
   "type": "module",
@@ -224,8 +224,8 @@
     "pre-build": "npm run copy-libs && node ./build-cjs.mjs && npm run build-worker-terrain && npm run build-worker-quantized-mesh"
   },
   "dependencies": {
-    "@loaders.gl/documents": "5.0.0-beta.12",
-    "@loaders.gl/images": "5.0.0-beta.12",
+    "@loaders.gl/documents": "5.0.0-rc.1",
+    "@loaders.gl/images": "5.0.0-rc.1",
     "@math.gl/geospatial": "5.0.0-beta.12"
   },
   "peerDependencies": {
