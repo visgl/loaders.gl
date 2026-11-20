@@ -8,6 +8,7 @@ import {
   TileConversionError,
   createBoundedMemoryTileConversionSink
 } from '@loaders.gl/tile-converter/v5/core';
+import type {BoundedMemoryTileConversionSink} from './browser-sink.js';
 import type {
   BrowserTileConversionFile,
   TileConversionSink
@@ -16,6 +17,8 @@ import type {I3SMeshConversionResource} from './i3s-mesh-conversion.js';
 
 /** Bounded flat collection of mesh nodes sharing one I3S feature/geometry schema. */
 export interface I3SMeshSinkOptions {
+  /** Optional storage for encoded files; defaults to bounded in-memory storage. */
+  readonly resourceSink?: BoundedMemoryTileConversionSink;
   /** Maximum compressed bytes retained, including final layer/index metadata. */
   readonly maxTotalBytes: number;
   /** Maximum primitive placements, from one through 64. */
@@ -114,7 +117,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       'I3S_COLLECTION_OPTIONS_INVALID',
       'I3S collections require 1–64 meshes and a positive resource byte limit'
     );
-  const memory = createBoundedMemoryTileConversionSink(options);
+  const memory = options.resourceSink ?? createBoundedMemoryTileConversionSink(options);
   const compressor = new GZipCompressor({useNative: false});
   const decompressor = new GZipDecompressor({useNative: false});
   const leaves: {node: MeshNode; legacy: Record<string, unknown>}[] = [];
@@ -235,6 +238,10 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       if (texture) {
         texture.textureSetDefinitionId = layer.textureSetDefinitions!.length;
         layer.textureSetDefinitions!.push(authored.textureSetDefinitions![0]);
+        node.mesh.material.resource = index;
+      }
+      // A custom resource store can release texture payloads after each write.
+      if (texture && !options.resourceSink) {
         const definition = JSON.stringify(authored.textureSetDefinitions);
         const textureFiles = Object.entries(resource.files)
           .filter(([name]) => name.startsWith('nodes/1/textures/'))
