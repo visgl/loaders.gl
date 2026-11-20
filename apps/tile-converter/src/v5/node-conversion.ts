@@ -55,6 +55,8 @@ export interface NodeTileConversionOptions
   readonly integratedMeshPolicy?: 'as-3d-object';
   /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
   readonly resourceIds: readonly string[];
+  /** Select every inspected 3D Tiles placement. Supply an empty resourceIds array. */
+  readonly allContents?: boolean;
   /** Explicit feature class/schema mapping, also supplied by the CLI feature-schema file. */
   readonly features?: MeshSourceFeatureOptions;
   /** Target mesh profile, independent of output filename. */
@@ -84,6 +86,12 @@ export async function convertNodeTileset(
       'Select a supported output profile and a positive output budget at most 32 MiB'
     );
   const i3s = options.format === 'i3s' || options.format === 'slpk';
+  if (options.allContents && (i3s || options.resourceIds.length)) {
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'allContents requires 3D Tiles input and no explicit resource IDs'
+    );
+  }
   if (
     (options.preserveHierarchy !== undefined && typeof options.preserveHierarchy !== 'boolean') ||
     (options.preserveHierarchy && (i3s || options.outputFormat === 'slpk'))
@@ -134,6 +142,12 @@ export async function convertNodeTileset(
   let report: TileConversionReport;
   try {
     const inspection = await rawSource.inspect(signal);
+    /** Resolve selections in inspection order while retaining placement identity. */
+    const resourceIds = options.allContents
+      ? (inspection as BrowserTilesetConversionInspection).resources.map(
+          resource => resource.resourceId
+        )
+      : options.resourceIds;
     await import('@loaders.gl/core/polyfills');
     const {getDracoLibraryOptions} = await import('@loaders.gl/scene/draco');
     const dracoLibraryOptions = getDracoLibraryOptions({
@@ -145,7 +159,7 @@ export async function convertNodeTileset(
         ? {
             ...(await rawSource.select(
               inspection as Awaited<ReturnType<typeof rawSource.inspect>>,
-              options.resourceIds,
+              resourceIds,
               dracoLibraryOptions,
               options.i3sFeatures
             )),
@@ -154,7 +168,7 @@ export async function convertNodeTileset(
         : await createSelectedMeshConversionSource(
             inspection as Awaited<ReturnType<typeof rawSource.inspect>>,
             {
-              resourceIds: options.resourceIds,
+              resourceIds,
               preserveHierarchy: options.preserveHierarchy,
               allowAdditiveNonLeaves: options.outputFormat === 'slpk',
               features: options.features,
@@ -210,7 +224,7 @@ export async function convertNodeTileset(
       const sink = options.preserveHierarchy
         ? createMeshHierarchyTilesetSink({
             inspection: inspection as BrowserTilesetConversionInspection,
-            resourceIds: options.resourceIds,
+            resourceIds,
             maxTotalBytes: maxOutputBytes,
             maxPositionError: SELECTED_MESH_LIMITS.maxPositionError
           })
