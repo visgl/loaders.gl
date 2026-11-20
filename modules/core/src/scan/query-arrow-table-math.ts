@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table} from 'apache-arrow';
+import {needsPortablePredicateCompatibility} from './arrow-execution/portable-predicate-compatibility';
 import {queryArrowTable as executeArrowQuery} from '@math.gl/sql/query';
 import {
   queryArrowTable as planAndQueryArrowTable,
