@@ -33,19 +33,26 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --integrated-mesh-policy as-3d-object  Authorize I3S layer-type change
   --preserve-hierarchy        Retain a complete explicit 3D Tiles tree (3D Tiles/3TZ only)
   --feature-schema PATH       Local JSON feature class/schema mapping (at most 64 KiB)
+  --all-contents               Select every inspected 3D Tiles content placement
   --resource ID               Selected content placement; repeat for multiple selections
   --output-format 3d-tiles|3tz|slpk  Target profile (default: 3tz)
   --output PATH               New destination (required for convert, forbidden for validate)
-  --max-input-bytes N          Lower the 16 MiB input/read budget
+  --max-input-bytes N          Set input/read budget (default 16 MiB, max 256 MiB for 3D Tiles/3TZ)
   --max-resources N            Lower the 1,000 content-declaration limit
-  --max-documents N            Lower the 32 metadata-document limit
-  --max-output-bytes N         Lower the 32 MiB output/archive budget
+  --max-documents N            Set the 3D Tiles document budget (default 32, max 256)
+  --max-meshes N               Set content and primitive limits for 3D Tiles/3TZ to SLPK (default 64, max 1000)
+  --max-output-bytes N         Set the output/archive budget (default: 32 MiB)
+  --egm2008-grid PATH         Correct ellipsoidal heights with a local EGM2008 PGM grid
+  --declare-egm2008-heights   Declare already orthometric heights for 3D Tiles/3TZ to SLPK
+  --omit-feature-id           Omit the feature identifier attribute in SLPK
+  --no-draco                  Write raw SLPK geometry
+  --name NAME                 Set the SLPK layer name
   --profile                   Include elapsed conversion stage timings in JSON
   --help                      Show this help
 
 Inspect reads metadata only, following declared .json external tilesets.
 Convert/validate require explicit selections; I3S uses declared CRS and shared spatial preparation.
-Validate decodes, converts and packages the selected target profile without writing files.
+Validate decodes, converts and packages the selected target profile without publishing a destination.
 Output defaults to a partial flat mesh collection. --preserve-hierarchy requires every declared content.
 Remote archives require HTTP 206 ranges and a stable ETag or Last-Modified validator.
 I3S inspect lists leaf nodes; feature-bearing conversion requires --feature-schema.
@@ -65,15 +72,22 @@ export async function runTileConverterCLI(
       options: {
         help: {type: 'boolean'},
         profile: {type: 'boolean'},
+        'egm2008-grid': {type: 'string'},
+        'declare-egm2008-heights': {type: 'boolean'},
+        'omit-feature-id': {type: 'boolean'},
+        'no-draco': {type: 'boolean'},
+        name: {type: 'string'},
         'preserve-hierarchy': {type: 'boolean'},
         'input-format': {type: 'string', default: '3d-tiles'},
         'max-input-bytes': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputBytes)},
         'max-resources': {type: 'string', default: String(NODE_TILESET_LIMITS.maxInputResources)},
-        'max-documents': {type: 'string', default: String(NODE_TILESET_LIMITS.maxTilesetDocuments)},
+        'max-documents': {type: 'string', default: '32'},
+        'max-meshes': {type: 'string'},
         'max-output-bytes': {type: 'string', default: String(32 * 1024 * 1024)},
         'output-format': {type: 'string', default: '3tz'},
         output: {type: 'string'},
         resource: {type: 'string', multiple: true},
+        'all-contents': {type: 'boolean'},
         'feature-schema': {type: 'string'},
         'geometric-error': {type: 'string'},
         'integrated-mesh-policy': {type: 'string'}
@@ -105,15 +119,25 @@ export async function runTileConverterCLI(
       maxTilesetDocuments: parseLimit(values['max-documents']),
       inspectNestedTilesets: true
     };
+    if (
+      (values.name !== undefined || values['no-draco'] || values['omit-feature-id']) &&
+      (operation === 'inspect' || values['output-format'] !== 'slpk')
+    ) {
+      throw new TileConversionError(
+        'CLI_USAGE_ERROR',
+        '--name, --no-draco and --omit-feature-id require SLPK output'
+      );
+    }
     if (operation !== 'inspect') {
       if (
-        !values.resource?.length ||
+        Boolean(values.resource?.length) === Boolean(values['all-contents']) ||
+        (values['all-contents'] && (format === 'i3s' || format === 'slpk')) ||
         !['3d-tiles', '3tz', 'slpk'].includes(values['output-format']) ||
         (operation === 'convert' ? !values.output : values.output !== undefined)
       )
         throw new TileConversionError(
           'CLI_USAGE_ERROR',
-          'Convert/validate require --resource selections and a supported --output-format; only convert requires --output'
+          'Convert/validate require --resource or --all-contents (3D Tiles inputs only) and a supported --output-format; only convert requires --output'
         );
       if (
         values['integrated-mesh-policy'] !== undefined &&
@@ -135,11 +159,19 @@ export async function runTileConverterCLI(
       const report = await convertNodeTileset({
         ...sourceOptions,
         ...features,
-        resourceIds: values.resource,
+        resourceIds: values.resource ?? [],
+        allContents: values['all-contents'],
         profile: values.profile,
+        egm2008Grid: values['egm2008-grid'],
+        declareEgm2008Heights: values['declare-egm2008-heights'],
+        omitFeatureIdAttribute: values['omit-feature-id'],
+        name: values.name,
+        draco: values['no-draco'] ? false : undefined,
         preserveHierarchy: values['preserve-hierarchy'],
         outputFormat: values['output-format'] as NodeTileConversionOutputFormat,
         output: values.output,
+        maxMeshes:
+          values['max-meshes'] === undefined ? undefined : parseLimit(values['max-meshes']),
         maxOutputBytes: parseLimit(values['max-output-bytes']),
         geometricError:
           values['geometric-error'] === undefined
@@ -153,14 +185,18 @@ export async function runTileConverterCLI(
       return 0;
     }
     if (
+      values['egm2008-grid'] !== undefined ||
+      values['declare-egm2008-heights'] !== undefined ||
       values.profile !== undefined ||
       values['feature-schema'] !== undefined ||
       values['preserve-hierarchy'] !== undefined ||
       values['geometric-error'] !== undefined ||
       values['integrated-mesh-policy'] !== undefined ||
       values.resource ||
+      values['all-contents'] ||
       values.output ||
       values['output-format'] !== '3tz' ||
+      values['max-meshes'] !== undefined ||
       values['max-output-bytes'] !== String(32 * 1024 * 1024)
     )
       throw new TileConversionError(

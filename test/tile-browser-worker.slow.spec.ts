@@ -115,9 +115,9 @@ test.each([
         expect(metadata).toBeDefined();
         if (format === 'slpk') {
           expect(
-            metadata.geometryDefinitions[0].geometryBuffers[0].compressedAttributes.encoding
+            metadata.geometryDefinitions[0].geometryBuffers[1].compressedAttributes.encoding
           ).toBe('draco');
-          const geometry = await archive.getFile('nodes/1/geometries/0', 'http');
+          const geometry = await archive.getFile('nodes/1/geometries/1', 'http');
           expect(new TextDecoder().decode(geometry.slice(0, 5))).toBe('DRACO');
           expect(new Uint8Array(geometry)[8]).toBe(1);
         } else {

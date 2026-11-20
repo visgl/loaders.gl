@@ -44,6 +44,8 @@ export interface I3SMeshWriterOptions {
   readonly maxPositionError: number;
   /** Maximum bytes for each geometry, attribute, or JSON resource before GZIP. */
   readonly maxResourceBytes: number;
+  /** Declare derived heights as already EGM2008 orthometric meters, without a geoid transform. */
+  readonly declareEgm2008Heights?: boolean;
   /** Optional layer name. */
   readonly name?: string;
   /** Optional material and encoded PNG/JPEG base-color texture. */
@@ -52,6 +54,10 @@ export interface I3SMeshWriterOptions {
   readonly features?: I3SMeshFeatures;
   /** First generated object ID; collection codecs allocate disjoint ranges across nodes. */
   readonly objectIdOffset?: number;
+  /** Explicit object IDs in feature row order. */
+  readonly objectIds?: readonly number[];
+  /** Omit the feature identifier column from output attributes while retaining OBJECTID. */
+  readonly omitFeatureIdAttribute?: boolean;
 }
 
 /** Full Draco runtime URL or injected-module controls accepted by I3S geometry encoding. */
@@ -92,7 +98,7 @@ export function encodeI3SMeshLayer(
 /**
  * Authors the same bounded I3S profile using lossless Draco Edge Breaker geometry.
  * Reuses the geographic rounding budget and verifies complete oriented attribute/feature
- * tuples after decoding. No quantization or uncompressed fallback is emitted.
+ * tuples after decoding. The uncompressed representation remains at index 0; Draco is added at index 1.
  * Decoder and encoder allocations are not bounded by the per-resource limit.
  * @param mesh - Absolute ECEF geometry, never modified.
  * @param options - The same appearance, feature, resource and precision controls as the raw writer.
@@ -106,7 +112,7 @@ export async function encodeI3SMeshLayerWithDraco(
 ): Promise<EncodedI3SMeshLayer> {
   await preloadI3SMeshCompression();
   const maxResourceBytes = options.maxResourceBytes;
-  const prepared = prepareMeshLayer(mesh, options, 'draco');
+  const prepared = prepareMeshLayer(mesh, options);
   const geometry = prepared.files['nodes/1/geometries/0.bin.gz'];
   const view = new DataView(geometry);
   const vertexCount = view.getUint32(0, true);
@@ -147,8 +153,14 @@ export async function encodeI3SMeshLayerWithDraco(
       ...runtimeOptions,
       draco: {
         method: 'MESH_EDGEBREAKER_ENCODING',
-        attributeNameEntry: 'i3s-attribute-type',
-        attributesMetadata: {'feature-index': {'i3s-feature-ids': featureIdentifiers}}
+        // Standard Draco semantics identify positions, normals and UVs. I3S metadata names
+        // only the generic feature attribute so clients do not override those semantics.
+        attributesMetadata: {
+          'feature-index': {
+            'i3s-attribute-type': 'feature-index',
+            'i3s-feature-ids': featureIdentifiers
+          }
+        }
       }
     }
   );
@@ -176,24 +188,19 @@ export async function encodeI3SMeshLayerWithDraco(
       'Lossless I3S Draco must preserve oriented triangles, attributes and feature IDs'
     );
   const layer = JSON.parse(new TextDecoder().decode(prepared.files['3dSceneLayer.json.gz']));
-  layer.geometryDefinitions[0].geometryBuffers = [
-    {
-      compressedAttributes: {
-        encoding: 'draco',
-        attributes: [
-          'position',
-          ...(normals ? ['normal'] : []),
-          ...(textureCoordinates ? ['uv0'] : []),
-          'feature-index'
-        ]
-      }
+  layer.geometryDefinitions[0].geometryBuffers.push({
+    compressedAttributes: {
+      encoding: 'draco',
+      attributes: [
+        'position',
+        ...(normals ? ['normal'] : []),
+        ...(textureCoordinates ? ['uv0'] : []),
+        'feature-index'
+      ]
     }
-  ];
-  const page = JSON.parse(new TextDecoder().decode(prepared.files['nodepages/0.json.gz']));
-  page.nodes[1].mesh.geometry.vertexCount = decoded.attributes.POSITION.value.length / 3;
-  prepared.files['nodes/1/geometries/0.bin.gz'] = encoded.data;
+  });
+  prepared.files['nodes/1/geometries/1.bin.gz'] = encoded.data;
   prepared.files['3dSceneLayer.json.gz'] = new TextEncoder().encode(JSON.stringify(layer)).buffer;
-  prepared.files['nodepages/0.json.gz'] = new TextEncoder().encode(JSON.stringify(page)).buffer;
   return compressMeshLayer(prepared, maxResourceBytes);
 }
 
@@ -201,12 +208,10 @@ export async function encodeI3SMeshLayerWithDraco(
  * Expands, groups and rounds a mesh once, retaining resources until final encoding.
  * @param mesh - Validated absolute ECEF mesh.
  * @param options - Precision, metadata and emitted resource limits.
- * @param geometryEncoding - Intended output; temporary Draco expansion is working memory.
  */
 function prepareMeshLayer(
   mesh: MeshGeometry,
-  options: I3SMeshWriterOptions,
-  geometryEncoding: 'raw' | 'draco' = 'raw'
+  options: I3SMeshWriterOptions
 ): {
   files: Record<string, ArrayBuffer>;
   maximumPositionError: number;
@@ -298,7 +303,11 @@ function prepareMeshLayer(
   ) {
     throw new Error('I3S indices must reference complete existing triangles');
   }
-  const attributes = encodeI3SMeshAttributes(options.features, options.maxResourceBytes);
+  const attributes = encodeI3SMeshAttributes(
+    options.features,
+    options.maxResourceBytes,
+    options.omitFeatureIdAttribute
+  );
   const featureCount = options.features ? attributes.count : 1;
   const objectIdOffset = options.objectIdOffset ?? 0;
   if (
@@ -307,6 +316,18 @@ function prepareMeshLayer(
     objectIdOffset + featureCount > 2147483648
   )
     throw new Error('I3S object IDs must fit the signed 32-bit Draco metadata range');
+  /** Use one ID per output feature row in both geometry and attributes. */
+  const featureObjectIds =
+    options.objectIds ?? Array.from({length: featureCount}, (_, index) => objectIdOffset + index);
+  if (
+    featureObjectIds.length !== featureCount ||
+    new Set(featureObjectIds).size !== featureCount ||
+    featureObjectIds.some(id => !Number.isSafeInteger(id) || id < 0 || id > 2147483647)
+  ) {
+    throw new Error(
+      'I3S object IDs must be unique signed 32-bit nonnegative integers within a node'
+    );
+  }
   const triangleCount = outputVertexCount / 3;
   const associations = options.features?.triangleFeatureIndices;
   if (
@@ -326,7 +347,7 @@ function prepareMeshLayer(
     8 +
     outputVertexCount * (12 + (normals ? 12 : 0) + (textureCoordinates ? 8 : 0)) +
     featureCount * 16;
-  if (geometryEncoding === 'raw' && byteLength > options.maxResourceBytes)
+  if (byteLength > options.maxResourceBytes)
     throw new Error('I3S geometry exceeds maxResourceBytes');
   const minimum = [Infinity, Infinity, Infinity];
   const maximum = [-Infinity, -Infinity, -Infinity];
@@ -406,7 +427,7 @@ function prepareMeshLayer(
   const featureOffset =
     8 + outputVertexCount * (12 + (normals ? 12 : 0) + (textureCoordinates ? 8 : 0));
   for (let index = 0; index < featureCount; index++) {
-    view.setBigUint64(featureOffset + index * 8, BigInt(objectIdOffset + index), true);
+    view.setBigUint64(featureOffset + index * 8, BigInt(featureObjectIds[index]), true);
     view.setUint32(featureOffset + featureCount * 8 + index * 8, faceRanges[index * 2], true);
     view.setUint32(
       featureOffset + featureCount * 8 + index * 8 + 4,
@@ -461,8 +482,12 @@ function prepareMeshLayer(
     name: options.name || 'Converted mesh',
     description: featureClass ? `Source feature metadata class: ${featureClass}` : undefined,
     layerType: '3DObject',
-    spatialReference: {wkid: 4326},
-    heightModelInfo: {heightModel: 'ellipsoidal', heightUnit: 'meter'},
+    spatialReference: options.declareEgm2008Heights
+      ? {wkid: 4326, vcsWkid: 3855, latestVcsWkid: 3855}
+      : {wkid: 4326},
+    heightModelInfo: options.declareEgm2008Heights
+      ? {heightModel: 'gravity_related_height', heightUnit: 'meter', vertCRS: 'EGM2008_Geoid'}
+      : {heightModel: 'ellipsoidal', heightUnit: 'meter'},
     capabilities: ['View'],
     fields: attributes.fields,
     attributeStorageInfo: attributes.storage,
@@ -546,7 +571,7 @@ function prepareMeshLayer(
     'nodes/root/3dNodeIndexDocument.json.gz': root,
     'nodes/1/3dNodeIndexDocument.json.gz': leaf,
     'nodepages/0.json.gz': page,
-    'metadata.json.gz': {
+    'metadata.json': {
       folderPattern: 'BASIC',
       archiveCompressionType: 'STORE',
       resourceCompressionType: 'GZIP',
@@ -559,7 +584,7 @@ function prepareMeshLayer(
   const objectIds = options.features ? attributes.buffers[0].slice(0) : encodeDefaultObjectId();
   const objectIdView = new DataView(objectIds);
   for (let index = 0; index < featureCount; index++)
-    objectIdView.setUint32(4 + index * 4, objectIdOffset + index, true);
+    objectIdView.setUint32(4 + index * 4, featureObjectIds[index], true);
   if (options.material?.baseColorTexture) {
     const texture = options.material.baseColorTexture;
     rawFiles[`nodes/1/textures/0.${texture.mimeType === 'image/png' ? 'png' : 'jpg'}`] =

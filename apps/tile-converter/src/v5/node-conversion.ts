@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {openAsBlob} from 'node:fs';
+import {tmpdir} from 'node:os';
 import {mkdir, open, rm, link, mkdtemp} from 'node:fs/promises';
 import {dirname, join, resolve} from 'node:path';
 import {convertTileset, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {BoundedMemoryTileConversionSink} from './browser-sink.js';
 import type {
   BrowserTileConversionFile,
   BrowserTilesetConversionInspection,
@@ -37,6 +40,16 @@ export interface NodeTileConversionOptions
   extends Omit<NodeTilesetConversionSourceOptions, 'format'> {
   /** Include portable stages and Node setup/output elapsed milliseconds in the report. */
   readonly profile?: boolean;
+  /** Omit the feature identifier attribute from SLPK output. */
+  readonly omitFeatureIdAttribute?: boolean;
+  /** Declare already orthometric input heights as EGM2008 in 3D Tiles/3TZ to SLPK output. */
+  readonly declareEgm2008Heights?: boolean;
+  /** Local GeographicLib EGM2008 PGM grid used to correct ellipsoidal input heights. */
+  readonly egm2008Grid?: string;
+  /** Name of the authored SLPK scene layer. */
+  readonly name?: string;
+  /** Set to false to write raw SLPK geometry. */
+  readonly draco?: boolean;
   /** Explicit 3D Tiles, I3S layer or indexed archive source. */
   readonly format?: '3d-tiles' | '3tz' | 'i3s' | 'slpk';
   /** Explicit I3S attribute mapping, also supplied by the CLI feature-schema file. */
@@ -47,21 +60,42 @@ export interface NodeTileConversionOptions
   readonly preserveHierarchy?: boolean;
   /** Authorizes IntegratedMesh to 3DObject output with a reported semantic warning. */
   readonly integratedMeshPolicy?: 'as-3d-object';
-  /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
+  /** Maximum content and primitive placements for 3D Tiles/3TZ to SLPK (default 64, max 1000). */
+  readonly maxMeshes?: number;
+  /** Inspected content placement identifiers. */
   readonly resourceIds: readonly string[];
+  /** Select every inspected 3D Tiles placement. Supply an empty resourceIds array. */
+  readonly allContents?: boolean;
   /** Explicit feature class/schema mapping, also supplied by the CLI feature-schema file. */
   readonly features?: MeshSourceFeatureOptions;
   /** Target mesh profile, independent of output filename. */
   readonly outputFormat: NodeTileConversionOutputFormat;
-  /** New destination path; omitted for profile validation without writing. */
+  /** New destination path; omitted for profile validation without publishing a destination. */
   readonly output?: string;
-  /** Maximum retained files and, separately, archive bytes; at most 32 MiB. */
+  /** Maximum combined resource bytes and, separately, archive bytes. Directory output is capped at 32 MiB. */
   readonly maxOutputBytes?: number;
 }
 
 /** Runs the qualified browser mesh codecs with confined Node input and optional output. */
 export async function convertNodeTileset(
   options: NodeTileConversionOptions
+): Promise<TileConversionReport> {
+  options.signal?.throwIfAborted();
+  const directory =
+    options.outputFormat === '3tz' || options.outputFormat === 'slpk'
+      ? await mkdtemp(join(tmpdir(), 'tile-converter-resources-'))
+      : undefined;
+  try {
+    return await convertNodeTilesetWithStorage(options, directory);
+  } finally {
+    if (directory) await rm(directory, {recursive: true, force: true});
+  }
+}
+
+/** Converts and packages resources while the optional staging directory is alive. */
+async function convertNodeTilesetWithStorage(
+  options: NodeTileConversionOptions,
+  directory?: string
 ): Promise<TileConversionReport> {
   const started = options.profile ? performance.now() : 0;
   let setupMilliseconds = 0;
@@ -71,13 +105,50 @@ export async function convertNodeTileset(
     !['3d-tiles', '3tz', 'slpk'].includes(options.outputFormat) ||
     !Number.isSafeInteger(maxOutputBytes) ||
     maxOutputBytes < 1 ||
-    maxOutputBytes > SELECTED_MESH_LIMITS.maxOutputBytes
+    (!directory && maxOutputBytes > SELECTED_MESH_LIMITS.maxOutputBytes)
   )
     throw new TileConversionError(
       'INVALID_NODE_CONVERSION_OPTIONS',
-      'Select a supported output profile and a positive output budget at most 32 MiB'
+      'Select a supported output profile and a positive safe integer output budget (at most 32 MiB for directory output)'
     );
   const i3s = options.format === 'i3s' || options.format === 'slpk';
+  const maxMeshes = options.maxMeshes ?? SELECTED_MESH_LIMITS.maxMeshResources;
+  if (
+    options.maxMeshes !== undefined &&
+    (i3s ||
+      options.outputFormat !== 'slpk' ||
+      !Number.isSafeInteger(maxMeshes) ||
+      maxMeshes < 1 ||
+      maxMeshes > 1000)
+  )
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'maxMeshes requires 3D Tiles/3TZ to SLPK conversion and an integer from 1 to 1000'
+    );
+
+  if (
+    (options.declareEgm2008Heights || options.egm2008Grid !== undefined) &&
+    (i3s || options.outputFormat !== 'slpk')
+  )
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'EGM2008 height options require 3D Tiles/3TZ to SLPK conversion'
+    );
+  if (options.declareEgm2008Heights && options.egm2008Grid !== undefined)
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'Choose either existing EGM2008 heights or an EGM2008 grid'
+    );
+  const egm2008Geoid =
+    options.egm2008Grid === undefined
+      ? undefined
+      : await loadEgm2008Grid(options.egm2008Grid, signal);
+  if (options.allContents && (i3s || options.resourceIds.length)) {
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'allContents requires 3D Tiles input and no explicit resource IDs'
+    );
+  }
   if (
     (options.preserveHierarchy !== undefined && typeof options.preserveHierarchy !== 'boolean') ||
     (options.preserveHierarchy && (i3s || options.outputFormat === 'slpk'))
@@ -128,6 +199,12 @@ export async function convertNodeTileset(
   let report: TileConversionReport;
   try {
     const inspection = await rawSource.inspect(signal);
+    /** Resolve selections in inspection order while retaining placement identity. */
+    const resourceIds = options.allContents
+      ? (inspection as BrowserTilesetConversionInspection).resources.map(
+          resource => resource.resourceId
+        )
+      : options.resourceIds;
     await import('@loaders.gl/core/polyfills');
     const {getDracoLibraryOptions} = await import('@loaders.gl/scene/draco');
     const dracoLibraryOptions = getDracoLibraryOptions({
@@ -139,7 +216,7 @@ export async function convertNodeTileset(
         ? {
             ...(await rawSource.select(
               inspection as Awaited<ReturnType<typeof rawSource.inspect>>,
-              options.resourceIds,
+              resourceIds,
               dracoLibraryOptions,
               options.i3sFeatures
             )),
@@ -148,8 +225,9 @@ export async function convertNodeTileset(
         : await createSelectedMeshConversionSource(
             inspection as Awaited<ReturnType<typeof rawSource.inspect>>,
             {
-              resourceIds: options.resourceIds,
+              resourceIds,
               preserveHierarchy: options.preserveHierarchy,
+              maxMeshes: options.maxMeshes,
               allowAdditiveNonLeaves: options.outputFormat === 'slpk',
               features: options.features,
               signal,
@@ -168,8 +246,8 @@ export async function convertNodeTileset(
       measureInputBytes: measureMeshBytes,
       maxInputBytes: options.maxInputBytes ?? SELECTED_MESH_LIMITS.maxInputBytes,
       maxOutputBytes,
-      maxInputResources: SELECTED_MESH_LIMITS.maxMeshResources,
-      maxOutputResources: SELECTED_MESH_LIMITS.maxMeshResources
+      maxInputResources: maxMeshes,
+      maxOutputResources: maxMeshes
     };
     const codecOptions = {
       spatialContext,
@@ -178,16 +256,31 @@ export async function convertNodeTileset(
       dracoLibraryOptions,
       maxPositionError: SELECTED_MESH_LIMITS.maxPositionError
     };
+    const resourceSink = directory
+      ? createNodeArchiveResourceSink(directory, maxOutputBytes)
+      : undefined;
+    const maxResourceBytes = Math.min(maxOutputBytes, SELECTED_MESH_LIMITS.maxOutputBytes);
     if (options.outputFormat === 'slpk') {
       const sink = createI3SMeshSink({
+        shareSourceObjectIds: true,
         maxTotalBytes: maxOutputBytes,
-        maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
-        maxResourceBytes: maxOutputBytes
+        resourceSink,
+        maxMeshes,
+        maxResourceBytes
       });
       report = await convertTileset({
         ...common,
         sink,
-        codec: createI3SMeshConversionCodec({...codecOptions, maxResourceBytes: maxOutputBytes}),
+        codec: createI3SMeshConversionCodec({
+          ...codecOptions,
+          shareSourceObjectIds: true,
+          omitFeatureIdAttribute: options.omitFeatureIdAttribute,
+          declareEgm2008Heights: options.declareEgm2008Heights,
+          egm2008Geoid,
+          name: options.name,
+          draco: options.draco,
+          maxResourceBytes
+        }),
         measureOutputBytes: resource =>
           Object.values(resource.files).reduce((total, bytes) => total + bytes.byteLength, 0)
       });
@@ -196,12 +289,14 @@ export async function convertNodeTileset(
       const sink = options.preserveHierarchy
         ? createMeshHierarchyTilesetSink({
             inspection: inspection as BrowserTilesetConversionInspection,
-            resourceIds: options.resourceIds,
+            resourceIds,
             maxTotalBytes: maxOutputBytes,
+            resourceSink,
             maxPositionError: SELECTED_MESH_LIMITS.maxPositionError
           })
         : createMeshTilesetSink({
             maxTotalBytes: maxOutputBytes,
+            resourceSink,
             maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
             geometricError
           });
@@ -218,7 +313,7 @@ export async function convertNodeTileset(
   }
   const outputStarted = options.profile ? performance.now() : 0;
   signal.throwIfAborted();
-  // Validate packaging as well as content, including on the write-free validation path.
+  // Validate packaging as well as content, including when no destination is requested.
   if (options.outputFormat !== '3d-tiles' && !options.output) {
     for await (const chunk of encodeTileConversionArchiveInBatches(files, {
       format: options.outputFormat,
@@ -359,5 +454,104 @@ async function writeFileBytes(
     if (!result.bytesWritten)
       throw new TileConversionError('NODE_OUTPUT_WRITE_FAILED', 'Output write made no progress');
     offset += result.bytesWritten;
+  }
+}
+
+/** Stages one encoded resource at a time in a private, caller-owned directory. */
+function createNodeArchiveResourceSink(
+  directory: string,
+  maxTotalBytes: number
+): BoundedMemoryTileConversionSink {
+  const files = new Map<string, BrowserTileConversionFile>();
+  let totalBytes = 0;
+  let closed = false;
+  return {
+    getFiles() {
+      return [...files.values()].sort((left, right) =>
+        left.resourceId < right.resourceId ? -1 : left.resourceId > right.resourceId ? 1 : 0
+      );
+    },
+    async write(resource, signal = new AbortController().signal) {
+      signal.throwIfAborted();
+      if (closed)
+        throw new TileConversionError('RESOURCE_SINK_CLOSED', 'Cannot write after finalization');
+      if (!resource.resourceId || files.has(resource.resourceId))
+        throw new TileConversionError('INVALID_NODE_OUTPUT', 'Output resource IDs must be unique');
+      const blob = new Blob([...resource.parts], {type: resource.contentType});
+      if (blob.size > maxTotalBytes - totalBytes)
+        throw new TileConversionError(
+          'OUTPUT_BYTES_LIMIT_EXCEEDED',
+          'Output files exceed the byte budget'
+        );
+
+      // Generated filenames keep resource IDs out of filesystem path resolution.
+      const path = join(directory, String(files.size));
+      const handle = await open(path, 'wx');
+      try {
+        for await (const bytes of blob.stream()) await writeFileBytes(handle, bytes, signal);
+      } finally {
+        await handle.close();
+      }
+      signal.throwIfAborted();
+      files.set(resource.resourceId, {
+        resourceId: resource.resourceId,
+        blob: await openAsBlob(path, {type: blob.type})
+      });
+      totalBytes += blob.size;
+    },
+    async finalize() {
+      closed = true;
+    },
+    async abort() {
+      closed = true;
+      files.clear();
+    }
+  };
+}
+
+/** Reads a finite, local GeographicLib grid before conversion starts. */
+async function loadEgm2008Grid(path: string, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const handle = await open(path, 'r');
+  try {
+    const status = await handle.stat();
+    const {size} = status;
+    if (!status.isFile() || !Number.isSafeInteger(size) || size < 1 || size > 128 * 1024 * 1024)
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 PGM must be a regular file between 1 byte and 128 MiB'
+      );
+    const data = new Uint8Array(size);
+    let offset = 0;
+    while (offset < size) {
+      signal.throwIfAborted();
+      const {bytesRead} = await handle.read(data, offset, size - offset, offset);
+      if (!bytesRead)
+        throw new TileConversionError(
+          'INVALID_EGM2008_GRID',
+          'EGM2008 PGM ended before its stated size'
+        );
+      offset += bytesRead;
+    }
+    const {parsePGM} = await import('@math.gl/earth');
+    signal.throwIfAborted();
+    const geoid = parsePGM(data, {cubic: false});
+    // Validate the complete raster until math.gl enforces it at parse time.
+    const {_width, _height, _datastart, _offset, _scale} = geoid.options;
+    const rasterBytes = _width * _height * 2;
+    if (
+      !Number.isSafeInteger(rasterBytes) ||
+      data.byteLength - _datastart !== rasterBytes ||
+      !Number.isFinite(_offset) ||
+      !Number.isFinite(_scale) ||
+      _scale <= 0
+    )
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 PGM raster or scale metadata is invalid'
+      );
+    return geoid;
+  } finally {
+    await handle.close();
   }
 }

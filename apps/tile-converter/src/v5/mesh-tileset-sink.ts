@@ -4,6 +4,7 @@
 
 import type {Tiles3DTilesetJSON, Tiles3DTileJSON} from '@loaders.gl/tiles-3d/3d-tiles';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {BoundedMemoryTileConversionSink} from './browser-sink.js';
 import type {TileConversionSink} from '@loaders.gl/tile-converter/v5/core';
 import {createBoundedMemoryTileConversionSink} from '@loaders.gl/tile-converter/v5/core';
 import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core';
@@ -179,6 +180,8 @@ export function createMeshTileset(
 
 /** Limits for an explicit collection of independent ECEF mesh leaves. */
 export interface MeshTilesetSinkOptions extends SingleMeshTilesetSinkOptions {
+  /** Optional storage for encoded files; defaults to bounded in-memory storage. */
+  readonly resourceSink?: BoundedMemoryTileConversionSink;
   /** Maximum mesh placements, including repeated content at distinct source placements. */
   readonly maxMeshes: number;
 }
@@ -211,7 +214,7 @@ export function createMeshTilesetSink(options: MeshTilesetSinkOptions): MeshTile
       'A leaf collection requires finite nonnegative geometricError and positive maxMeshes'
     );
   }
-  const memory = createBoundedMemoryTileConversionSink(options);
+  const memory = options.resourceSink ?? createBoundedMemoryTileConversionSink(options);
   const children: ReturnType<typeof createMeshTileset>['root'][] = [];
   const identifiers = new Set<string>();
   const minimum = [Infinity, Infinity, Infinity];

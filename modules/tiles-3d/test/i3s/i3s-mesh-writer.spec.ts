@@ -96,10 +96,36 @@ beforeAll(() => {
   });
   const decompressor = new GZipDecompressor({useNative: false});
   raw = Object.fromEntries(
-    Object.entries(layer.files).map(([name, bytes]) => [name, decompressor.decompressSync(bytes)])
+    Object.entries(layer.files).map(([name, bytes]) => [
+      name,
+      name.endsWith('.gz') ? decompressor.decompressSync(bytes) : bytes
+    ])
   );
   metadata = JSON.parse(new TextDecoder().decode(raw['3dSceneLayer.json.gz']));
   page = JSON.parse(new TextDecoder().decode(raw['nodepages/0.json.gz']));
+});
+
+test('I3S can declare EGM2008 heights without changing geometry or node bounds', () => {
+  const mesh = createMesh();
+  const ellipsoidal = encodeI3SMeshLayer(mesh, OPTIONS);
+  const orthometric = encodeI3SMeshLayer(mesh, {...OPTIONS, declareEgm2008Heights: true});
+  for (const [name, bytes] of Object.entries(ellipsoidal.files)) {
+    if (name !== '3dSceneLayer.json.gz') expect(orthometric.files[name]).toEqual(bytes);
+  }
+  const layer = JSON.parse(
+    new TextDecoder().decode(
+      new GZipDecompressor({useNative: false}).decompressSync(
+        orthometric.files['3dSceneLayer.json.gz']
+      )
+    )
+  );
+  expect(I3SSceneLayerSchema.safeParse(layer).success).toBe(true);
+  expect(layer.spatialReference).toEqual({wkid: 4326, vcsWkid: 3855, latestVcsWkid: 3855});
+  expect(layer.heightModelInfo).toEqual({
+    heightModel: 'gravity_related_height',
+    heightUnit: 'meter',
+    vertCRS: 'EGM2008_Geoid'
+  });
 });
 
 test('I3S authoring is exported and generates schema-valid metadata with an empty root and bounded mesh leaf', () => {
@@ -128,7 +154,7 @@ test('I3S authoring is exported and generates schema-valid metadata with an empt
   expect(root.children[0].href).toBe('../1');
   expect(leaf.geometryData[0].href).toBe('./geometries/0');
   expect(leaf.attributeData).toHaveLength(5);
-  expect(JSON.parse(new TextDecoder().decode(raw['metadata.json.gz']))).toMatchObject({
+  expect(JSON.parse(new TextDecoder().decode(raw['metadata.json']))).toMatchObject({
     I3SVersion: '1.7',
     nodeCount: 2
   });
@@ -490,12 +516,12 @@ async function decodeDracoLayer(encoded: Awaited<ReturnType<typeof encodeI3SMesh
   const resources = Object.fromEntries(
     Object.entries(encoded.files).map(([name, buffer]) => [
       name,
-      decompressor.decompressSync(buffer)
+      name.endsWith('.gz') ? decompressor.decompressSync(buffer) : buffer
     ])
   );
   const layerMetadata = JSON.parse(new TextDecoder().decode(resources['3dSceneLayer.json.gz']));
   const nodes = JSON.parse(new TextDecoder().decode(resources['nodepages/0.json.gz']));
-  const geometry = resources['nodes/1/geometries/0.bin.gz'];
+  const geometry = resources['nodes/1/geometries/1.bin.gz'];
   const content = await parse(geometry.slice(0), I3SContentLoader, {
     core: {worker: false, useLocalLibraries: true},
     i3s: {
@@ -533,11 +559,7 @@ beforeAll(async () => {
     expect(encoded.maximumPositionError).toBe(rawLayer.maximumPositionError);
     expect(encoded.decimalStringFields).toEqual(rawLayer.decimalStringFields);
     for (const name of Object.keys(encoded.files)) {
-      if (
-        !['3dSceneLayer.json.gz', 'nodepages/0.json.gz', 'nodes/1/geometries/0.bin.gz'].includes(
-          name
-        )
-      )
+      if (!['3dSceneLayer.json.gz', 'nodes/1/geometries/1.bin.gz'].includes(name))
         expect(encoded.files[name]).toEqual(rawLayer.files[name]);
     }
     expect(mesh.attributes.POSITION.value).toEqual(originalPositions);
@@ -556,6 +578,7 @@ test.each(
   expect(I3SSceneLayerSchema.safeParse(decoded.layerMetadata).success).toBe(true);
   expect(I3SNodePageSchema.safeParse(decoded.nodes).success).toBe(true);
   expect(decoded.layerMetadata.geometryDefinitions[0].geometryBuffers).toEqual([
+    expect.objectContaining({offset: 8, position: {type: 'Float32', component: 3}}),
     {
       compressedAttributes: {
         encoding: 'draco',
@@ -596,22 +619,35 @@ test.each(
     );
   }
   expect(triangles.sort()).toEqual(['0,1,2', '3,4,5']);
-  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(content.vertexCount);
+  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(6);
 });
 
-test('I3S Draco records decoded vertex counts for shared indexed vertices', async () => {
+test('I3S Draco retains standard attribute semantics and explicitly tags feature indices', async () => {
+  const decoded = await parse(compressedLayers[1].geometry, DracoLoader, {
+    core: {worker: false, useLocalLibraries: true},
+    draco: {shape: 'mesh', attributeNameEntry: 'i3s-attribute-type'}
+  });
+  expect(decoded.attributes.POSITION).toBeDefined();
+  expect(decoded.attributes.NORMAL).toBeDefined();
+  const metadata = Object.values(decoded.loaderData.attributes).map(
+    attribute => attribute.metadata?.['i3s-attribute-type']?.string
+  );
+  expect(metadata.filter(Boolean)).toEqual(['feature-index']);
+});
+
+test('I3S node pages report raw vertex counts when Draco deduplicates vertices', async () => {
   const mesh = createMesh();
   mesh.indices = {value: new Uint16Array([0, 1, 2, 0, 2, 3]), size: 1};
   const encoded = await encodeI3SMeshLayerWithDraco(mesh, OPTIONS, {useLocalLibraries: true});
   const decoded = await decodeDracoLayer(encoded);
   expect(decoded.content.indices!.length).toBe(6);
   expect(decoded.content.vertexCount).toBe(4);
-  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(4);
+  expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(6);
   expect(Array.from(decoded.content.featureIds)).toEqual([0, 0, 0, 0]);
   expect(encoded.maximumPositionError).toBeLessThanOrEqual(OPTIONS.maxPositionError);
 });
 
-test('I3S Draco caps emitted resources instead of temporary raw geometry', async () => {
+test('I3S Draco bounds the emitted uncompressed fallback', async () => {
   const mesh = createMesh();
   const width = 13;
   const vertexCount = width * width;
@@ -641,13 +677,9 @@ test('I3S Draco caps emitted resources instead of temporary raw geometry', async
   }
   mesh.indices = {value: new Uint16Array(indices), size: 1};
   expect(() => encodeI3SMeshLayer(mesh, OPTIONS)).toThrow('geometry exceeds maxResourceBytes');
-  const encoded = await encodeI3SMeshLayerWithDraco(mesh, OPTIONS, {useLocalLibraries: true});
-  const decoded = await decodeDracoLayer(encoded);
-  for (const resource of Object.values(decoded.resources))
-    expect(resource.byteLength).toBeLessThanOrEqual(OPTIONS.maxResourceBytes);
-  expect(decoded.content.indices!.length).toBe(indices.length);
-  expect(decoded.content.vertexCount).toBe(vertexCount);
-  expect(new Uint8Array(decoded.geometry)[8]).toBe(1);
+  await expect(
+    encodeI3SMeshLayerWithDraco(mesh, OPTIONS, {useLocalLibraries: true})
+  ).rejects.toThrow('geometry exceeds maxResourceBytes');
 });
 
 test('I3S Draco rejects failed verification before exposing resources', async () => {
@@ -774,3 +806,50 @@ function getFeatureMetadata(mesh: any): any {
     (attribute: any) => attribute.metadata['i3s-attribute-type']?.string === 'feature-index'
   );
 }
+
+test('maps an I3S field name and retains the original source alias', () => {
+  /** Namespaced CityGML field remains in the source batch. */
+  const features = createFeatures(
+    {
+      fields: [
+        {name: 'feature_id', type: 'utf8', nullable: false},
+        {name: 'gml:id', type: 'utf8', nullable: false}
+      ]
+    },
+    [{feature_id: 'building-1', 'gml:id': 'original'}]
+  );
+  expect(() => encodeI3SMeshAttributes(features, 65536)).toThrow(/gml:id/);
+  expect(
+    encodeI3SMeshAttributes({...features, i3sFieldNames: {'gml:id': 'gml_id'}}, 65536).fields
+  ).toContainEqual({name: 'gml_id', alias: 'gml:id', type: 'esriFieldTypeString'});
+  expect(() =>
+    encodeI3SMeshAttributes({...features, i3sFieldNames: {'gml:id': 'Feature_ID'}}, 65536)
+  ).toThrow(/duplicates/);
+});
+
+test('replaces nullable I3S numeric values only with explicit field configuration', () => {
+  /** The second row is a legitimate zero and must survive unchanged. */
+  const features = createFeatures(
+    {
+      fields: [
+        {name: 'feature_id', type: 'utf8', nullable: false},
+        {name: 'height', type: 'float64', nullable: true}
+      ]
+    },
+    [
+      {feature_id: 'missing', height: null},
+      {feature_id: 'zero', height: 0}
+    ]
+  );
+  expect(() => encodeI3SMeshAttributes(features, 65536)).toThrow(/non-null/);
+  /** Output attribute buffer starts with an eight-byte header. */
+  const encoded = encodeI3SMeshAttributes(
+    {...features, i3sNumericNullValues: {height: -9999}},
+    65536
+  );
+  expect(new DataView(encoded.buffers[2]).getFloat64(8, true)).toBe(-9999);
+  expect(new DataView(encoded.buffers[2]).getFloat64(16, true)).toBe(0);
+  expect(() =>
+    encodeI3SMeshAttributes({...features, i3sNumericNullValues: {height: Infinity}}, 65536)
+  ).toThrow(/height/);
+});

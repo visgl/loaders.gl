@@ -195,6 +195,8 @@ test('CLI inspect exposes nested selections and validate qualifies an archive wi
 
 test('installed CLI converts and installed ESM/CJS Node entrypoints expose the API', async () => {
   const output = join(directory, 'installed.3tz');
+  const staging = join(directory, 'installed-staging');
+  await mkdir(staging);
   const result = execFileSync(
     process.execPath,
     [
@@ -206,13 +208,14 @@ test('installed CLI converts and installed ESM/CJS Node entrypoints expose the A
       '--output',
       output
     ],
-    {encoding: 'utf8'}
+    {encoding: 'utf8', env: {...process.env, TMPDIR: staging, TEMP: staging, TMP: staging}}
   );
   expect(JSON.parse(result)).toMatchObject({
     operation: 'convert',
     output,
     report: {outputResources: 1}
   });
+  expect(await readdir(staging)).toEqual([]);
   const entrypoints = execFileSync(
     process.execPath,
     [
@@ -344,7 +347,8 @@ test('conversion rejects missing selections, invalid budgets and failed inputs w
     {resourceIds: ['missing']},
     {maxOutputBytes: 0},
     {maxInputBytes: 1},
-    {maxTilesetDocuments: 1}
+    {maxTilesetDocuments: 1},
+    {declareEgm2008Heights: true}
   ])
     await expect(
       convertNodeTileset({
@@ -451,10 +455,12 @@ test.each([
       {index: 2, parentIndex: 0, children: [], mesh: {geometry: {resource: 2, vertexCount: 3}}}
     ]);
     expect(nodePage.nodes[2].obb.center[2] - nodePage.nodes[1].obb.center[2]).toBeCloseTo(5);
-    for (const resource of [1, 2])
-      expect(
-        (await archive.getFile(`nodes/${resource}/geometries/0.bin`)).byteLength
-      ).toBeGreaterThan(0);
+    for (const resource of [1, 2]) {
+      const raw = await archive.getFile(`nodes/${resource}/geometries/0.bin`);
+      expect(new DataView(raw).getUint32(0, true)).toBe(3);
+      const compressed = await archive.getFile(`nodes/${resource}/geometries/1.bin`);
+      expect(new TextDecoder().decode(compressed.slice(0, 5))).toBe('DRACO');
+    }
   } finally {
     await archive.close();
   }
@@ -820,6 +826,221 @@ test('CLI validates inline ECEF metadata and converts unchanged box bounds into 
       JSON.parse(new TextDecoder().decode(await archive.getFile('3dSceneLayer.json')))
     ).toMatchObject({layerType: '3DObject'});
     expect((await archive.getFile('nodes/1/geometries/0.bin')).byteLength).toBeGreaterThan(0);
+  } finally {
+    await archive.close();
+  }
+});
+
+test('CLI names a raw SLPK and declares its EGM2008 heights', async () => {
+  /** Destination for the existing tiny nested triangle fixture. */
+  const output = join(directory, 'named-raw.slpk');
+  expect(
+    await runTileConverterCLI(
+      [
+        'convert',
+        rootPath,
+        '--resource',
+        identifier,
+        '--output-format',
+        'slpk',
+        '--output',
+        output,
+        '--no-draco',
+        '--declare-egm2008-heights',
+        '--max-output-bytes',
+        String(128 * 1024 * 1024),
+        '--name',
+        'Buildings'
+      ],
+      {stdout: () => {}, stderr: () => {}}
+    )
+  ).toBe(0);
+  /** Public reader resolves the indexed resources in the completed archive. */
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    expect(
+      JSON.parse(new TextDecoder().decode(await archive.getFile('metadata.json')))
+    ).toMatchObject({nodeCount: 2});
+    expect(
+      JSON.parse(new TextDecoder().decode(await archive.getFile('3dSceneLayer.json')))
+    ).toMatchObject({
+      name: 'Buildings',
+      spatialReference: {wkid: 4326, vcsWkid: 3855, latestVcsWkid: 3855},
+      heightModelInfo: {
+        heightModel: 'gravity_related_height',
+        heightUnit: 'meter',
+        vertCRS: 'EGM2008_Geoid'
+      }
+    });
+    expect((await archive.getFile('nodes/1/geometries/0.bin')).byteLength).toBeGreaterThan(0);
+  } finally {
+    await archive.close();
+  }
+});
+
+test('CLI validates all nested 3D Tiles content without explicit resource IDs', async () => {
+  /** Captures the CLI report without creating an output archive. */
+  const stdout: string[] = [];
+  expect(
+    await runTileConverterCLI(['validate', rootPath, '--all-contents', '--output-format', 'slpk'], {
+      stdout: line => stdout.push(line),
+      stderr: () => {}
+    })
+  ).toBe(0);
+  expect(JSON.parse(stdout[0]).report.outputResources).toBe(1);
+  expect(
+    await runTileConverterCLI(['validate', rootPath, '--all-contents', '--resource', identifier], {
+      stdout: () => {},
+      stderr: () => {}
+    })
+  ).toBe(1);
+});
+
+test('Node CLI can raise the inspection budget above 32 document placements', async () => {
+  /** Repeated external references are distinct placements under the root. */
+  const input = join(directory, 'input', 'document-budget.json');
+  await writeFile(
+    input,
+    JSON.stringify({
+      ...root,
+      root: {
+        ...root.root,
+        content: undefined,
+        children: Array.from({length: 32}, () => ({
+          boundingVolume: {sphere: [0, 0, 0, 10]},
+          geometricError: 0,
+          content: {uri: 'nested/tileset.json'}
+        }))
+      }
+    })
+  );
+  /** Capture the failure with the default and results with the raised budget. */
+  const output: string[] = [];
+  /** Capture diagnostics so the default fails for the expected reason. */
+  const errors: string[] = [];
+  /** CLI output callbacks for both operations. */
+  const callbacks = {
+    stdout: (line: string) => output.push(line),
+    stderr: (line: string) => errors.push(line)
+  };
+  expect(await runTileConverterCLI(['inspect', input], callbacks)).toBe(1);
+  expect(errors.join('')).toContain('INPUT_TILESET_COUNT_EXCEEDED');
+  expect(await runTileConverterCLI(['inspect', input, '--max-documents', '33'], callbacks)).toBe(0);
+  expect(JSON.parse(output[0]).resources).toHaveLength(32);
+});
+
+test('Node CLI raises the SLPK content and primitive budget above 64', async () => {
+  const input = join(directory, 'input', 'mesh-budget.json');
+  const output = join(directory, 'mesh-budget.slpk');
+  await writeFile(
+    input,
+    JSON.stringify({
+      ...root,
+      root: {
+        ...root.root,
+        content: undefined,
+        children: Array.from({length: 65}, () => ({
+          ...nested.root,
+          boundingVolume: root.root.boundingVolume,
+          content: {uri: 'nested/triangle.glb'}
+        }))
+      }
+    })
+  );
+  const argumentsList = [
+    'convert',
+    input,
+    '--all-contents',
+    '--output-format',
+    'slpk',
+    '--output',
+    output,
+    '--no-draco'
+  ];
+  const errors: string[] = [];
+  const callbacks = {stdout: () => {}, stderr: (line: string) => errors.push(line)};
+  expect(await runTileConverterCLI(argumentsList, callbacks)).toBe(1);
+  expect(errors.pop()).toContain('1 and 64');
+  expect(await runTileConverterCLI([...argumentsList, '--max-meshes', '65'], callbacks)).toBe(0);
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    expect(
+      JSON.parse(new TextDecoder().decode(await archive.getFile('metadata.json')))
+    ).toMatchObject({nodeCount: 66});
+    expect((await archive.getFile('nodes/65/geometries/0.bin')).byteLength).toBeGreaterThan(0);
+  } finally {
+    await archive.close();
+  }
+});
+
+test('CLI applies an explicit Node 3D Tiles input budget above the default', async () => {
+  /** Keep the regression small by testing option propagation with existing geometry. */
+  const callbacks = {stdout: () => {}, stderr: () => {}};
+  /** Select the existing nested geometry and qualify the output. */
+  const argumentsList = ['validate', rootPath, '--all-contents', '--output-format', 'slpk'];
+  expect(
+    await runTileConverterCLI([...argumentsList, '--max-input-bytes', '67108864'], callbacks)
+  ).toBe(0);
+  expect(
+    await runTileConverterCLI([...argumentsList, '--max-input-bytes', '268435457'], callbacks)
+  ).toBe(1);
+});
+
+test('CLI subtracts EGM2008 undulation before authoring SLPK geometry and bounds', async () => {
+  const grid = join(directory, 'constant-geoid.pgm');
+  const output = join(directory, 'corrected-heights.slpk');
+  const header = new TextEncoder().encode('P5\n# Offset 0\n# Scale 1\n4 3\n65535\n');
+  const bytes = new Uint8Array(header.length + 24);
+  bytes.set(header);
+  for (let offset = header.length; offset < bytes.length; offset += 2)
+    new DataView(bytes.buffer).setUint16(offset, 20, false);
+  await writeFile(grid, bytes.subarray(0, -1));
+  await expect(
+    convertNodeTileset({
+      input: rootPath,
+      resourceIds: [identifier],
+      outputFormat: 'slpk',
+      output,
+      draco: false,
+      egm2008Grid: grid
+    })
+  ).rejects.toMatchObject({code: 'INVALID_EGM2008_GRID'});
+  await writeFile(grid, bytes);
+
+  const errors: string[] = [];
+  expect(
+    await runTileConverterCLI(
+      [
+        'convert',
+        rootPath,
+        '--all-contents',
+        '--output-format',
+        'slpk',
+        '--output',
+        output,
+        '--no-draco',
+        '--egm2008-grid',
+        grid
+      ],
+      {stdout: () => {}, stderr: line => errors.push(line)}
+    ),
+    errors.join('\n')
+  ).toBe(0);
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    const layer = JSON.parse(new TextDecoder().decode(await archive.getFile('3dSceneLayer.json')));
+    expect(layer.spatialReference.vcsWkid).toBe(3855);
+    const page = JSON.parse(new TextDecoder().decode(await archive.getFile('nodepages/0.json')));
+    const height = page.nodes[1].obb.center[2];
+    expect(height).toBeCloseTo(-19.5, 4);
+    const geometry = new DataView(await archive.getFile('nodes/1/geometries/0.bin'));
+    expect(height + geometry.getFloat32(16, true)).toBeCloseTo(-20, 4);
   } finally {
     await archive.close();
   }

@@ -12,6 +12,7 @@ import {I3SNodePageSchema, I3SSceneLayerSchema} from '@loaders.gl/tiles-3d/i3s-z
 import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {
   createSingleMeshI3SSink,
+  convertFeatureAttributesToArrowBatches,
   convertTileset,
   createI3SMeshConversionCodec,
   createTiles3DConversionSpatialContext,
@@ -79,7 +80,9 @@ async function readJson(
 ) {
   const bytes = await files.find(file => file.resourceId === name)!.blob.arrayBuffer();
   return JSON.parse(
-    new TextDecoder().decode(new GZipDecompressor({useNative: false}).decompressSync(bytes))
+    new TextDecoder().decode(
+      name.endsWith('.gz') ? new GZipDecompressor({useNative: false}).decompressSync(bytes) : bytes
+    )
   );
 }
 
@@ -118,7 +121,7 @@ test.each([
   }
   const leaf = await readJson(files, `nodes/${count}/3dNodeIndexDocument.json.gz`);
   expect(leaf.parentNode.obb).toEqual(root.obb);
-  expect((await readJson(files, 'metadata.json.gz')).nodeCount).toBe(count + 1);
+  expect((await readJson(files, 'metadata.json')).nodeCount).toBe(count + 1);
   const lastIds = new GZipDecompressor({useNative: false}).decompressSync(
     await files
       .find(file => file.resourceId === `nodes/${count}/attributes/f_0/0.bin.gz`)!
@@ -254,4 +257,72 @@ test.each([
       await files.find(file => file.resourceId === 'nodes/1/textures/0.png')!.blob.arrayBuffer()
     )
   ).toEqual(image);
+});
+
+test('material parts share OBJECTIDs by original batch row within one placement', async () => {
+  /** Uses the same dense feature row in three nodes and two source placements. */
+  const batches = convertFeatureAttributesToArrowBatches(
+    [{featureId: 'building', metadataClass: 'building', properties: {}}],
+    {schema: {fields: [{name: 'feature_id', type: 'utf8', nullable: false}]}}
+  );
+  /** Only the first two nodes describe the same original feature. */
+  const source = {
+    inspect: async () => ({}),
+    async *read() {
+      for (let index = 0; index < 3; index++) {
+        yield {
+          ...createResource(index),
+          contentResourceId: index < 2 ? 'first' : 'second',
+          features: {
+            batches,
+            featureIdField: 'feature_id',
+            triangleFeatureIndices: new Uint32Array([0]),
+            sourceBatchRows: [7]
+          }
+        };
+      }
+    }
+  };
+  /** Reopens authored node attributes below to check the allocator and sink together. */
+  const sink = createI3SMeshSink({
+    ...OPTIONS,
+    maxMeshes: 3,
+    maxTotalBytes: 1000000,
+    shareSourceObjectIds: true
+  });
+  await convertTileset({
+    source,
+    sink,
+    measureInputBytes: resource => resource.mesh.attributes.POSITION.value.byteLength,
+    measureOutputBytes: resource =>
+      Object.values(resource.files).reduce((bytes, file) => bytes + file.byteLength, 0),
+    codec: createI3SMeshConversionCodec({
+      ...OPTIONS,
+      draco: false,
+      shareSourceObjectIds: true,
+      omitFeatureIdAttribute: true,
+      spatialContext: createTiles3DConversionSpatialContext({
+        sourceCrs: 'EPSG:4978',
+        coordinateFrame: 'geocentric',
+        heightReference: 'ellipsoidal'
+      })
+    })
+  });
+  /** Attribute OBJECTID values in node order. */
+  const ids = await Promise.all(
+    [1, 2, 3].map(async node => {
+      const file = sink
+        .getFiles()
+        .find(entry => entry.resourceId === `nodes/${node}/attributes/f_0/0.bin.gz`)!;
+      return new DataView(
+        new GZipDecompressor({useNative: false}).decompressSync(await file.blob.arrayBuffer())
+      ).getUint32(4, true);
+    })
+  );
+  expect(ids).toEqual([0, 0, 1]);
+  expect(
+    (await readJson(sink.getFiles(), '3dSceneLayer.json.gz')).fields.map(
+      (field: {name: string}) => field.name
+    )
+  ).toEqual(['OBJECTID']);
 });

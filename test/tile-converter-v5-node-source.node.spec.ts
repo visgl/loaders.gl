@@ -8,7 +8,7 @@ import {execFileSync, spawnSync} from 'node:child_process';
 import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   createNodeTilesetConversionSource,
-  NODE_TILESET_LIMITS
+  MAXIMUM_NODE_TILESET_INPUT_BYTES
 } from '../apps/tile-converter/src/v5/node-source';
 import {runTileConverterCLI} from '../apps/tile-converter/src/v5/node-cli';
 
@@ -185,7 +185,7 @@ test('opening rejects oversize files, unsupported protocols and unbounded option
   await expect(
     createNodeTilesetConversionSource({input: 'ftp://example.invalid/input'})
   ).rejects.toMatchObject({code: 'UNSUPPORTED_NODE_SOURCE'});
-  for (const maxInputBytes of [0, Infinity, NODE_TILESET_LIMITS.maxInputBytes + 1])
+  for (const maxInputBytes of [0, Infinity, MAXIMUM_NODE_TILESET_INPUT_BYTES + 1])
     await expect(
       createNodeTilesetConversionSource({input: rootPath, maxInputBytes})
     ).rejects.toMatchObject({code: 'INVALID_NODE_SOURCE_OPTIONS'});

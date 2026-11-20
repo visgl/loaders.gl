@@ -31,8 +31,14 @@ export interface MeshSourceFeatureOptions extends FeatureArrowBatchOptions {
   readonly metadataClass: string;
   /** Optional source property providing stable identifiers; otherwise row indices are stable within the content. */
   readonly sourceFeatureIdProperty?: string;
+  /** Accept decimal strings in legacy batch-table numeric properties. */
+  readonly coerceNumericStrings?: boolean;
   /** Explicit I3S representation for 64-bit integers; omission rejects those target fields. */
   readonly integer64Encoding?: 'decimal-string';
+  /** Explicit SLPK field names keyed by source Arrow column name. */
+  readonly i3sFieldNames?: Readonly<Record<string, string>>;
+  /** Explicit replacements for null values in nullable I3S int32 and float64 source columns. */
+  readonly i3sNumericNullValues?: Readonly<Record<string, number>>;
 }
 
 /** Extracts legacy batch tables or one decoded modern property table and validates geometry ownership. */
@@ -357,6 +363,11 @@ export function extractMeshFeatures(
   const propertyNames = [
     ...new Set([...Object.keys(properties), ...propertyMappings.keys()])
   ].filter(name => name !== sourceIdentifier);
+  /** Look up declared types only for the legacy batch-table coercion path. */
+  const numericTypes =
+    !declarations && options.coerceNumericStrings
+      ? new Map(mapping.schema.fields.map(field => [field.name, field.type]))
+      : undefined;
   const batches = convertFeatureAttributesToArrowBatches(
     selectedRows.map(row => ({
       featureId: (sourceIdentifier ? readProperty(sourceIdentifier, row) : row) as
@@ -364,14 +375,42 @@ export function extractMeshFeatures(
         | number
         | bigint,
       metadataClass: options.metadataClass,
-      properties: Object.fromEntries(propertyNames.map(name => [name, readProperty(name, row)]))
+      properties: Object.fromEntries(
+        propertyNames.map(name => [
+          name,
+          coerceBatchNumericString(readProperty(name, row), numericTypes?.get(name))
+        ])
+      )
     })),
     mapping
   );
   return {
     batches,
     triangleFeatureIndices,
+    sourceBatchRows: declarations ? undefined : selectedRows,
     featureIdField: options.featureIdField || 'feature_id',
+    i3sFieldNames: options.i3sFieldNames,
+    i3sNumericNullValues: options.i3sNumericNullValues,
     integer64Encoding: options.integer64Encoding
   };
+}
+
+/** Converts decimal strings while letting the Arrow validator report invalid values by field. */
+function coerceBatchNumericString(value: unknown, type: unknown): unknown {
+  if (typeof value !== 'string' || typeof type !== 'string') return value;
+  if (/^(?:u?int)(?:8|16|32|64)$/.test(type) && /^[+-]?\d+$/.test(value)) {
+    if (type.endsWith('64')) return BigInt(value);
+    return Number(value);
+  }
+  if (
+    /^float(?:32|64)$/.test(type) &&
+    /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value)
+  ) {
+    /** Preserve the string on overflow so validation reports the affected field. */
+    const number = Number(value);
+    return Number.isFinite(number) && (type !== 'float32' || Number.isFinite(Math.fround(number)))
+      ? number
+      : value;
+  }
+  return value;
 }

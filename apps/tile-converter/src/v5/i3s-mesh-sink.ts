@@ -8,6 +8,7 @@ import {
   TileConversionError,
   createBoundedMemoryTileConversionSink
 } from '@loaders.gl/tile-converter/v5/core';
+import type {BoundedMemoryTileConversionSink} from './browser-sink.js';
 import type {
   BrowserTileConversionFile,
   TileConversionSink
@@ -16,10 +17,14 @@ import type {I3SMeshConversionResource} from './i3s-mesh-conversion.js';
 
 /** Bounded flat collection of mesh nodes sharing one I3S feature/geometry schema. */
 export interface I3SMeshSinkOptions {
+  /** Optional storage for encoded files; defaults to bounded in-memory storage. */
+  readonly resourceSink?: BoundedMemoryTileConversionSink;
   /** Maximum compressed bytes retained, including final layer/index metadata. */
   readonly maxTotalBytes: number;
-  /** Maximum primitive placements, from one through 64. */
+  /** Maximum primitive placements, capped at 64 for the in-memory store. */
   readonly maxMeshes: number;
+  /** Trust codec-assigned feature identities across material nodes. */
+  readonly shareSourceObjectIds?: boolean;
   /** Maximum decompressed or generated metadata/attribute resource bytes. */
   readonly maxResourceBytes: number;
 }
@@ -102,17 +107,17 @@ interface MeshLayer {
 export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
   const {maxMeshes, maxResourceBytes} = options;
   if (
-    !Number.isInteger(maxMeshes) ||
+    !Number.isSafeInteger(maxMeshes) ||
     maxMeshes < 1 ||
-    maxMeshes > 64 ||
+    (!options.resourceSink && maxMeshes > 64) ||
     !Number.isSafeInteger(maxResourceBytes) ||
     maxResourceBytes < 1
   )
     throw new TileConversionError(
       'I3S_COLLECTION_OPTIONS_INVALID',
-      'I3S collections require 1–64 meshes and a positive resource byte limit'
+      'I3S collections require a positive mesh count and resource byte limit (at most 64 meshes in memory)'
     );
-  const memory = createBoundedMemoryTileConversionSink(options);
+  const memory = options.resourceSink ?? createBoundedMemoryTileConversionSink(options);
   const compressor = new GZipCompressor({useNative: false});
   const decompressor = new GZipDecompressor({useNative: false});
   const leaves: {node: MeshNode; legacy: Record<string, unknown>}[] = [];
@@ -155,8 +160,8 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       );
     await memory.write({
       resourceId,
-      parts: [await compressor.compress(bytes.buffer)],
-      contentType: 'application/gzip'
+      parts: [resourceId.endsWith('.gz') ? await compressor.compress(bytes.buffer) : bytes.buffer],
+      contentType: resourceId.endsWith('.gz') ? 'application/gzip' : 'application/json'
     });
   }
   return {
@@ -191,14 +196,19 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       if (
         objectIds.byteLength !== 4 + count * 4 ||
         !count ||
-        objectIdRanges.some(([start, end]) => first < end && first + count > start) ||
-        Array.from({length: count}, (_, index) => objectIds.getUint32(4 + index * 4, true)).some(
-          (value, index) => value !== first + index
-        )
+        (!options.shareSourceObjectIds &&
+          (objectIdRanges.some(([start, end]) => first < end && first + count > start) ||
+            Array.from({length: count}, (_, index) =>
+              objectIds.getUint32(4 + index * 4, true)
+            ).some((value, index) => value !== first + index))) ||
+        (options.shareSourceObjectIds &&
+          new Set(
+            Array.from({length: count}, (_, index) => objectIds.getUint32(4 + index * 4, true))
+          ).size !== count)
       )
         throw new TileConversionError(
           'I3S_COLLECTION_IDS_INVALID',
-          'Generated object IDs must be contiguous and disjoint across nodes'
+          'Invalid generated object IDs for the selected collection policy'
         );
       const index = leaves.length + 1;
       const node = (await readJson<{nodes: MeshNode[]}>(resource, 'nodepages/0.json.gz')).nodes[1];
@@ -228,6 +238,10 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       if (texture) {
         texture.textureSetDefinitionId = layer.textureSetDefinitions!.length;
         layer.textureSetDefinitions!.push(authored.textureSetDefinitions![0]);
+        node.mesh.material.resource = index;
+      }
+      // A custom resource store can release texture payloads after each write.
+      if (texture && !options.resourceSink) {
         const definition = JSON.stringify(authored.textureSetDefinitions);
         const textureFiles = Object.entries(resource.files)
           .filter(([name]) => name.startsWith('nodes/1/textures/'))
@@ -305,7 +319,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
       }
       leaves.push({node, legacy: {...legacy, id: String(index)}});
       identifiers.add(resource.id);
-      objectIdRanges.push([first, first + count]);
+      if (!options.shareSourceObjectIds) objectIdRanges.push([first, first + count]);
       state = 'open';
     },
     /** Rebuilds both indices and layer bounds only after every leaf has completed. */
@@ -375,7 +389,7 @@ export function createI3SMeshSink(options: I3SMeshSinkOptions): I3SMeshSink {
         });
       if (!layer.textureSetDefinitions?.length) delete layer.textureSetDefinitions;
       await writeJson('3dSceneLayer.json.gz', layer);
-      await writeJson('metadata.json.gz', {
+      await writeJson('metadata.json', {
         folderPattern: 'BASIC',
         archiveCompressionType: 'STORE',
         resourceCompressionType: 'GZIP',

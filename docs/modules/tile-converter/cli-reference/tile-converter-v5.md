@@ -47,6 +47,15 @@ Undeclared or non-ECEF frames remain rejected. Hierarchy-preserving output keeps
 restriction on dataset schemas/metadata; this exception applies to selected mesh conversion. See the
 [mesh source profile](../api-reference/v5-conversion.md#source-mesh-to-i3sslpk) for the other restrictions.
 
+Use `--name` to name the SLPK layer and `--no-draco` to write raw geometry.
+For 3D Tiles or 3TZ input whose derived heights already represent EGM2008 orthometric
+meters, use `--declare-egm2008-heights` to declare EPSG:3855 in the SLPK. This changes
+layer metadata only. To convert ellipsoidal input instead, pass `--egm2008-grid /path/to/egm2008-5.pgm`.
+Use a local GeographicLib EGM2008 PGM grid up to 128 MiB. The converter subtracts the
+interpolated undulation before encoding positions and building bounds. The two options
+are mutually exclusive. The default is ellipsoidal.
+SLPK package metadata is stored as plain `metadata.json`.
+
 ## Inspect and select
 
 `inspect` reads metadata only. It accepts a JSON path/file URL, HTTP(S) JSON URL, or local
@@ -156,12 +165,22 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--resource` | | Required selected placement ID for convert/validate; repeatable |
 | `--output-format` | `3tz` | `3d-tiles`, `3tz` or `slpk` |
 | `--output` | | New destination; required only for convert |
-| `--max-input-bytes` | `16777216` | Lower transport/physical-read and decoded mesh budgets |
+| `--max-input-bytes` | `16777216` | Set transport/physical-read and decoded mesh budgets (max 256 MiB for 3D Tiles/3TZ) |
 | `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
-| `--max-documents` | `32` | Lower the root/external document-placement limit |
-| `--max-output-bytes` | `33554432` | Lower retained file bytes and, separately, archive bytes |
+| `--max-documents` | `32` | Set the root/external document-placement limit (max 256) |
+| `--max-meshes` | `64` | Set the content and primitive placement limits for 3D Tiles/3TZ to SLPK (max 1000) |
+
+| `--max-output-bytes` | `33554432` | Limit combined resource bytes and, separately, archive bytes. Archives can opt in to a larger budget. |
+| `--egm2008-grid` | | Convert ellipsoidal heights using a local GeographicLib EGM2008 PGM grid (max 128 MiB) |
+| `--declare-egm2008-heights` | `false` | Declare existing EGM2008 orthometric heights in 3D Tiles/3TZ to SLPK output |
 | `--profile` | `false` | Include elapsed stage timings in the JSON conversion report; convert/validate only |
 | `--help` | | Show usage |
+
+For 3TZ and SLPK, the Node CLI stages encoded resources in the system temporary directory
+and streams the indexed archive from those files. Allow space for both the staged resources
+and the final archive during packaging. Archive validation also uses temporary disk space.
+Node SLPK writes textured nodes independently, so repeated textures can increase archive size.
+The 32 MiB default, 3D Tiles directory output cap, and independent input limits still apply.
 
 Limits must be positive decimal integers within those ceilings. Archive file size and aggregate
 indexed physical reads are also capped by the input limit. Metadata, raw meshes and their buffers
@@ -272,3 +291,38 @@ All converter commands accept `--version`, which prints the installed package
 version and converter implementation. Legacy invocations print this identity to stderr. V5 includes a `converter`
 identity object in JSON results and errors so both output streams stay parseable.
 `tile-converter` and `tile-converter-v5` identify as `v5`; `tile-converter-v4` identifies as `legacy-v4`.
+
+For legacy B3DM inputs, SLPK uses one OBJECTID per original batch-table row
+within each selected content placement, including across material nodes.
+Use `--omit-feature-id` to hide the feature identifier attribute while keeping
+OBJECTID available for picking and queries.
+
+For 3D Tiles to SLPK, add `"i3sFieldNames": {"gml:id": "gml_id"}` alongside
+`schema` in the feature mapping file. Keep the original column name in
+`schema.fields`. The output uses `gml_id` as its field name and `gml:id` as
+its display alias. Output names must be unique ignoring case and cannot use
+the reserved `OBJECTID` name.
+
+Set `"coerceNumericStrings": true` in the feature mapping file to accept
+decimal strings in legacy B3DM batch-table properties declared as integer,
+float32, or float64 columns. Integer strings must contain whole decimal
+digits, with an optional sign. Blank strings, hexadecimal, and floating
+point overflow fail validation. Feature identifiers and null handling follow
+their existing schema rules.
+
+For 3D Tiles to SLPK, a feature mapping can specify
+`"i3sNumericNullValues": {"measuredHeight": -9999}` to replace nulls in a
+nullable `int32` or `float64` column. Use the source field name, even when the
+output field is renamed. Choose a value outside the valid domain and configure
+consumers to treat it as missing. It is stored as an ordinary number in SLPK.
+Without a replacement, numeric nulls fail validation.
+
+Use `--all-contents` on `validate` or `convert` to select every inspected
+placement in a 3D Tiles or 3TZ input. Supply either this flag or individual
+`--resource` selections. The selected mesh profile still applies its existing
+budget, refinement, and feature schema rules.
+
+For Node 3D Tiles and 3TZ inspection or flat conversion, `--max-documents`
+sets the root and external document placement budget from 1 to 256. The
+default is 32. Hierarchy-preserving output still supports up to 32 document
+placements. Input bytes and selected meshes have separate limits.

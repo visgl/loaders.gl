@@ -19,14 +19,17 @@ import type {
 import {createTileConversionResourceFetcher} from './resource-fetcher.js';
 import {openTileConversionArchive} from './archive-source.js';
 
-/** Maximum budgets for the initial Node source profile; callers may lower them. */
+/** Maximum explicit input budget for Node 3D Tiles and 3TZ sources. */
+export const MAXIMUM_NODE_TILESET_INPUT_BYTES = 256 * 1024 * 1024;
+
+/** Default input budgets and ceilings for resource and document counts. */
 export const NODE_TILESET_LIMITS = {
   /** Aggregate response bytes and, separately, indexed archive read bytes. */
   maxInputBytes: 16 * 1024 * 1024,
   /** Declared content placements in the explicit root document. */
   maxInputResources: 1000,
   /** Maximum root/external document placements inspected or traversed. */
-  maxTilesetDocuments: 32
+  maxTilesetDocuments: 256
 } as const;
 
 /** Platform I/O options for bounded explicit 3D Tiles inspection and raw content reads. */
@@ -35,7 +38,7 @@ export interface NodeTilesetConversionSourceOptions {
   readonly input: string;
   /** Explicit JSON or indexed archive input format. */
   readonly format?: '3d-tiles' | '3tz';
-  /** Positive response/indexed-read budget, at most 16 MiB. */
+  /** Positive response/indexed-read budget, at most 256 MiB. */
   readonly maxInputBytes?: number;
   /** Positive content-placement budget, at most 1,000. */
   readonly maxInputResources?: number;
@@ -77,7 +80,7 @@ export async function createNodeTilesetConversionSource(
   if (
     !Number.isSafeInteger(maxInputBytes) ||
     maxInputBytes < 1 ||
-    maxInputBytes > NODE_TILESET_LIMITS.maxInputBytes ||
+    maxInputBytes > MAXIMUM_NODE_TILESET_INPUT_BYTES ||
     !Number.isSafeInteger(maxInputResources) ||
     maxInputResources < 1 ||
     maxInputResources > NODE_TILESET_LIMITS.maxInputResources ||

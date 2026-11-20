@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Ellipsoid} from '@math.gl/geospatial';
 import {
   encodeI3SMeshLayer,
   encodeI3SMeshLayerWithDraco,
@@ -27,21 +28,34 @@ import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core
 export interface I3SMeshConversionResource extends EncodedI3SMeshLayer {
   /** Source placement identifier used for diagnostics. */
   readonly id: string;
+  /** Whether a source outline was omitted. */
+  readonly omittedPrimitiveOutline?: boolean;
   /** Original I3S layer type when authoring from an I3S source. */
   readonly sourceLayerType?: '3DObject' | 'IntegratedMesh';
 }
 
 /** Spatial preparation and required authoring limits for the I3S codec. */
 export interface I3SMeshConversionCodecOptions
-  extends Pick<I3SMeshWriterOptions, 'name' | 'maxPositionError' | 'maxResourceBytes'> {
+  extends Pick<
+    I3SMeshWriterOptions,
+    | 'name'
+    | 'maxPositionError'
+    | 'maxResourceBytes'
+    | 'omitFeatureIdAttribute'
+    | 'declareEgm2008Heights'
+  > {
   /** Shared source-to-ECEF context, applied exactly once before I3S geographic encoding. */
   readonly spatialContext: Tiles3DConversionSpatialContext | I3SConversionSpatialContext;
   /** I3S vector frame when using an I3S context; defaults to earth-centered. */
   readonly normalReferenceFrame?: 'earth-centered' | 'vertex-reference-frame';
   /** Lossless Edge Breaker geometry by default; false retains raw I3S geometry. */
   readonly draco?: boolean;
+  /** Share IDs for legacy batch-table rows across parts of one content placement. */
+  readonly shareSourceObjectIds?: boolean;
   /** Explicitly authorize IntegratedMesh input to become 3DObject output; omission rejects it. */
   readonly integratedMeshPolicy?: 'as-3d-object';
+  /** EGM2008 undulation in meters for a latitude and longitude in degrees. */
+  readonly egm2008Geoid?: {getHeight(latitude: number, longitude: number): number};
   /** Full Draco encoder/decoder runtime URLs or injected modules. */
   readonly dracoLibraryOptions?: I3SDracoLibraryOptions;
 }
@@ -78,6 +92,8 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       'I3S mesh authoring requires resolved ECEF coordinates and ellipsoidal heights'
     );
   let objectIdOffset = 0;
+  /** Each content placement owns its own legacy row namespace. */
+  const objectIdsByContent = new Map<string, Map<number, number>>();
   return {
     /** Places a source mesh in ECEF and authors one layer without modifying source arrays. */
     async *convert(resource, _inspection, signal) {
@@ -108,16 +124,50 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
                 : undefined
             };
       signal?.throwIfAborted();
-      mesh.attributes.POSITION = {value: transformed.positions, size: 3};
+      mesh.attributes.POSITION = {
+        value: options.egm2008Geoid
+          ? subtractEgm2008Undulation(transformed.positions, options.egm2008Geoid)
+          : transformed.positions,
+        size: 3
+      };
       if (mesh.attributes.NORMAL) mesh.attributes.NORMAL = {value: transformed.normals!, size: 3};
       let layer: EncodedI3SMeshLayer;
       try {
         await preloadI3SMeshCompression();
+        /** Original row indices retain identity when each primitive selects a different subset. */
+        const rows = resource.features?.sourceBatchRows;
+        /** Selection supplies a distinct identifier even for repeated payload URLs. */
+        const contentId = resource.contentResourceId;
+        /** Explicit row-to-ID mapping for the current primitive. */
+        let objectIds: number[] | undefined;
+        if (options.shareSourceObjectIds && contentId && rows) {
+          /** Persistent row mapping for the current placement. */
+          const contentIds = objectIdsByContent.get(contentId) ?? new Map<number, number>();
+          objectIdsByContent.set(contentId, contentIds);
+          objectIds = rows.map(row => {
+            /** Reuse an allocated ID even when the current node has a different row order. */
+            const existing = contentIds.get(row);
+            if (existing !== undefined) return existing;
+            /** This row has never appeared in the conversion. */
+            const id = objectIdOffset++;
+            contentIds.set(row, id);
+            return id;
+          });
+        } else {
+          objectIds = Array.from(
+            {
+              length:
+                resource.features?.batches.reduce((total, batch) => total + batch.numRows, 0) ?? 1
+            },
+            () => objectIdOffset++
+          );
+        }
         const writerOptions = {
           ...options,
+          declareEgm2008Heights: Boolean(options.egm2008Geoid) || options.declareEgm2008Heights,
           material: resource.material,
           features: resource.features,
-          objectIdOffset
+          objectIds
         };
         layer =
           options.draco === false
@@ -130,13 +180,26 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
         );
       }
       signal?.throwIfAborted();
-      objectIdOffset +=
-        resource.features?.batches.reduce((total, batch) => total + batch.numRows, 0) ?? 1;
-      yield {id: resource.id, ...layer, sourceLayerType: resource.sourceLayerType};
+      yield {
+        id: resource.id,
+        ...layer,
+        sourceLayerType: resource.sourceLayerType,
+        omittedPrimitiveOutline: resource.omittedPrimitiveOutline
+      };
     },
     /** Reports measured precision and explicitly authorized integer representation changes. */
     async validateOutput(resource) {
       return [
+        ...(resource.omittedPrimitiveOutline
+          ? [
+              {
+                code: 'MESH_PRIMITIVE_OUTLINE_OMITTED',
+                message: 'The target mesh profile does not retain CESIUM_primitive_outline',
+                severity: 'warning' as const,
+                resourceId: resource.id
+              }
+            ]
+          : []),
         ...(resource.sourceLayerType === 'IntegratedMesh'
           ? [
               {
@@ -227,4 +290,26 @@ export function createSingleMeshI3SSink(options: {
       await memory.abort(error);
     }
   };
+}
+
+/** Returns ECEF-like positions whose derived height is orthometric, leaving input data intact. */
+function subtractEgm2008Undulation(
+  positions: Float64Array | Float32Array,
+  geoid: NonNullable<I3SMeshConversionCodecOptions['egm2008Geoid']>
+): Float64Array {
+  const corrected = new Float64Array(positions.length);
+  for (let offset = 0; offset < positions.length; offset += 3) {
+    const geographic = Ellipsoid.WGS84.cartesianToCartographic(
+      positions.subarray(offset, offset + 3)
+    );
+    const undulation = geoid.getHeight(geographic[1], geographic[0]);
+    if (!Number.isFinite(undulation))
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 grid returned an invalid height'
+      );
+    geographic[2] -= undulation;
+    corrected.set(Ellipsoid.WGS84.cartographicToCartesian(geographic), offset);
+  }
+  return corrected;
 }

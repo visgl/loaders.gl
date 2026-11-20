@@ -2,6 +2,15 @@
 
 ## v5.0
 
+### v5.0.0-rc.1
+
+- Execute grouped SQL over streaming table scan sources (#4557).
+- Add a dependency-free PDB molecular loader (#4410).
+- Expose Cesium primitive outline indices on scene primitives (#4563).
+- Default tile-converter to v5 and support additive selections and explicit mesh selection (#4559, #4568).
+- Add SLPK interoperability options for field mapping, numeric null replacements and numeric strings (#4562, #4565–#4567).
+- Stage Node tile-converter archive resources on disk and make input and document budgets configurable (#4569, #4570, #4571).
+
 ### v5.0.0-beta.12
 
 - Upgrade math.gl to beta.12 and adopt its consolidated Arrow, UTF-8, Web Mercator, and scale entry points.

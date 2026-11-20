@@ -277,3 +277,5 @@ export {type GLTFLoaderOptions} from './gltf-loader-types';
 export {GLTFLoaderWithParser, parse} from '../gltf-loader';
 
 export {type GLTFWriterOptions} from '../gltf-writer';
+
+export {getGLTFPrimitiveOutline} from './lib/api/gltf-primitive-outline';
