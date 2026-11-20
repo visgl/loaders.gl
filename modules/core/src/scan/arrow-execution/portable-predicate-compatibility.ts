@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DataType, DateUnit, Precision, TimeUnit, type Schema} from 'apache-arrow';
+import {DataType, Precision, type Schema} from 'apache-arrow';
 import {getColumnarPredicatePaths} from '@loaders.gl/core/loader-utils';
 import type {SQLPredicate} from '../sql-predicate-types';
 
-/** Keeps predicates on storage that RC.2 cannot bind in the portable evaluator. */
+/** Retains portable evaluation when RC.2 does not support the path, storage type or literal units. */
 export function needsPortablePredicateCompatibility(
   schema: Schema,
   predicate: SQLPredicate
@@ -21,9 +21,7 @@ export function needsPortablePredicateCompatibility(
       (DataType.isFloat(type) && type.precision !== Precision.HALF) ||
       DataType.isBool(type) ||
       DataType.isUtf8(type) ||
-      DataType.isBinary(type) ||
-      (DataType.isDate(type) && type.unit === DateUnit.DAY) ||
-      (DataType.isTimestamp(type) && type.unit === TimeUnit.MICROSECOND)
+      DataType.isBinary(type)
     );
   });
 }
