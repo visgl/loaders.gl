@@ -106,7 +106,8 @@ test.each([
     new Uint8Array(raw[`nodes/1/textures/0.${mimeType === 'image/png' ? 'png' : 'jpg'}`])
   ).toEqual(image);
   expect(new DataView(raw['nodes/1/attributes/f_0/0.bin.gz']).getUint32(4, true)).toBe(42);
-  const geometry = raw['nodes/1/geometries/0.bin.gz'];
+  const geometry = raw[`nodes/1/geometries/${draco ? 1 : 0}.bin.gz`];
+
   const coordinates = draco
     ? (
         await parse(geometry, DracoLoader, {

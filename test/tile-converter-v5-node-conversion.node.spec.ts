@@ -455,10 +455,12 @@ test.each([
       {index: 2, parentIndex: 0, children: [], mesh: {geometry: {resource: 2, vertexCount: 3}}}
     ]);
     expect(nodePage.nodes[2].obb.center[2] - nodePage.nodes[1].obb.center[2]).toBeCloseTo(5);
-    for (const resource of [1, 2])
-      expect(
-        (await archive.getFile(`nodes/${resource}/geometries/0.bin`)).byteLength
-      ).toBeGreaterThan(0);
+    for (const resource of [1, 2]) {
+      const raw = await archive.getFile(`nodes/${resource}/geometries/0.bin`);
+      expect(new DataView(raw).getUint32(0, true)).toBe(3);
+      const compressed = await archive.getFile(`nodes/${resource}/geometries/1.bin`);
+      expect(new TextDecoder().decode(compressed.slice(0, 5))).toBe('DRACO');
+    }
   } finally {
     await archive.close();
   }
