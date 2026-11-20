@@ -518,7 +518,22 @@ async function loadEgm2008Grid(path: string, signal: AbortSignal) {
     }
     const {parsePGM} = await import('@math.gl/earth');
     signal.throwIfAborted();
-    return parsePGM(data, {cubic: false});
+    const geoid = parsePGM(data, {cubic: false});
+    // Validate the complete raster until math.gl enforces it at parse time.
+    const {_width, _height, _datastart, _offset, _scale} = geoid.options;
+    const rasterBytes = _width * _height * 2;
+    if (
+      !Number.isSafeInteger(rasterBytes) ||
+      data.byteLength - _datastart !== rasterBytes ||
+      !Number.isFinite(_offset) ||
+      !Number.isFinite(_scale) ||
+      _scale <= 0
+    )
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 PGM raster or scale metadata is invalid'
+      );
+    return geoid;
   } finally {
     await handle.close();
   }

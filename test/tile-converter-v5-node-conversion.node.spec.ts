@@ -881,6 +881,17 @@ test('CLI subtracts EGM2008 undulation before authoring SLPK geometry and bounds
   bytes.set(header);
   for (let offset = header.length; offset < bytes.length; offset += 2)
     new DataView(bytes.buffer).setUint16(offset, 20, false);
+  await writeFile(grid, bytes.subarray(0, -1));
+  await expect(
+    convertNodeTileset({
+      input: rootPath,
+      resourceIds: [identifier],
+      outputFormat: 'slpk',
+      output,
+      draco: false,
+      egm2008Grid: grid
+    })
+  ).rejects.toMatchObject({code: 'INVALID_EGM2008_GRID'});
   await writeFile(grid, bytes);
 
   const errors: string[] = [];
