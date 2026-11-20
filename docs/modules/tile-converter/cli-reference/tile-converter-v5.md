@@ -142,9 +142,15 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 | `--max-input-bytes` | `16777216` | Set transport/physical-read and decoded mesh budgets (max 256 MiB for 3D Tiles/3TZ) |
 | `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
 | `--max-documents` | `32` | Set the root/external document-placement limit (max 256) |
-| `--max-output-bytes` | `33554432` | Lower retained file bytes and, separately, archive bytes |
+| `--max-output-bytes` | `33554432` | Limit combined resource bytes and, separately, archive bytes. Archives can opt in to a larger budget. |
 | `--profile` | `false` | Include elapsed stage timings in the JSON conversion report; convert/validate only |
 | `--help` | | Show usage |
+
+For 3TZ and SLPK, the Node CLI stages encoded resources in the system temporary directory
+and streams the indexed archive from those files. Allow space for both the staged resources
+and the final archive during packaging. Archive validation also uses temporary disk space.
+Node SLPK writes textured nodes independently, so repeated textures can increase archive size.
+The 32 MiB default, 3D Tiles directory output cap, and input and selection limits still apply.
 
 Limits must be positive decimal integers within those ceilings. Archive file size and aggregate
 indexed physical reads are also capped by the input limit. Metadata, raw meshes and their buffers

@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {openAsBlob} from 'node:fs';
+import {tmpdir} from 'node:os';
 import {mkdir, open, rm, link, mkdtemp} from 'node:fs/promises';
 import {dirname, join, resolve} from 'node:path';
 import {convertTileset, TileConversionError} from '@loaders.gl/tile-converter/v5/core';
+import type {BoundedMemoryTileConversionSink} from './browser-sink.js';
 import type {
   BrowserTileConversionFile,
   BrowserTilesetConversionInspection,
@@ -61,15 +64,32 @@ export interface NodeTileConversionOptions
   readonly features?: MeshSourceFeatureOptions;
   /** Target mesh profile, independent of output filename. */
   readonly outputFormat: NodeTileConversionOutputFormat;
-  /** New destination path; omitted for profile validation without writing. */
+  /** New destination path; omitted for profile validation without publishing a destination. */
   readonly output?: string;
-  /** Maximum retained files and, separately, archive bytes; at most 32 MiB. */
+  /** Maximum combined resource bytes and, separately, archive bytes. Directory output is capped at 32 MiB. */
   readonly maxOutputBytes?: number;
 }
 
 /** Runs the qualified browser mesh codecs with confined Node input and optional output. */
 export async function convertNodeTileset(
   options: NodeTileConversionOptions
+): Promise<TileConversionReport> {
+  options.signal?.throwIfAborted();
+  const directory =
+    options.outputFormat === '3tz' || options.outputFormat === 'slpk'
+      ? await mkdtemp(join(tmpdir(), 'tile-converter-resources-'))
+      : undefined;
+  try {
+    return await convertNodeTilesetWithStorage(options, directory);
+  } finally {
+    if (directory) await rm(directory, {recursive: true, force: true});
+  }
+}
+
+/** Converts and packages resources while the optional staging directory is alive. */
+async function convertNodeTilesetWithStorage(
+  options: NodeTileConversionOptions,
+  directory?: string
 ): Promise<TileConversionReport> {
   const started = options.profile ? performance.now() : 0;
   let setupMilliseconds = 0;
@@ -79,11 +99,11 @@ export async function convertNodeTileset(
     !['3d-tiles', '3tz', 'slpk'].includes(options.outputFormat) ||
     !Number.isSafeInteger(maxOutputBytes) ||
     maxOutputBytes < 1 ||
-    maxOutputBytes > SELECTED_MESH_LIMITS.maxOutputBytes
+    (!directory && maxOutputBytes > SELECTED_MESH_LIMITS.maxOutputBytes)
   )
     throw new TileConversionError(
       'INVALID_NODE_CONVERSION_OPTIONS',
-      'Select a supported output profile and a positive output budget at most 32 MiB'
+      'Select a supported output profile and a positive safe integer output budget (at most 32 MiB for directory output)'
     );
   const i3s = options.format === 'i3s' || options.format === 'slpk';
   if (options.allContents && (i3s || options.resourceIds.length)) {
@@ -198,12 +218,17 @@ export async function convertNodeTileset(
       dracoLibraryOptions,
       maxPositionError: SELECTED_MESH_LIMITS.maxPositionError
     };
+    const resourceSink = directory
+      ? createNodeArchiveResourceSink(directory, maxOutputBytes)
+      : undefined;
+    const maxResourceBytes = Math.min(maxOutputBytes, SELECTED_MESH_LIMITS.maxOutputBytes);
     if (options.outputFormat === 'slpk') {
       const sink = createI3SMeshSink({
         shareSourceObjectIds: true,
         maxTotalBytes: maxOutputBytes,
+        resourceSink,
         maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
-        maxResourceBytes: maxOutputBytes
+        maxResourceBytes
       });
       report = await convertTileset({
         ...common,
@@ -214,7 +239,7 @@ export async function convertNodeTileset(
           omitFeatureIdAttribute: options.omitFeatureIdAttribute,
           name: options.name,
           draco: options.draco,
-          maxResourceBytes: maxOutputBytes
+          maxResourceBytes
         }),
         measureOutputBytes: resource =>
           Object.values(resource.files).reduce((total, bytes) => total + bytes.byteLength, 0)
@@ -226,10 +251,12 @@ export async function convertNodeTileset(
             inspection: inspection as BrowserTilesetConversionInspection,
             resourceIds,
             maxTotalBytes: maxOutputBytes,
+            resourceSink,
             maxPositionError: SELECTED_MESH_LIMITS.maxPositionError
           })
         : createMeshTilesetSink({
             maxTotalBytes: maxOutputBytes,
+            resourceSink,
             maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
             geometricError
           });
@@ -246,7 +273,7 @@ export async function convertNodeTileset(
   }
   const outputStarted = options.profile ? performance.now() : 0;
   signal.throwIfAborted();
-  // Validate packaging as well as content, including on the write-free validation path.
+  // Validate packaging as well as content, including when no destination is requested.
   if (options.outputFormat !== '3d-tiles' && !options.output) {
     for await (const chunk of encodeTileConversionArchiveInBatches(files, {
       format: options.outputFormat,
@@ -388,4 +415,56 @@ async function writeFileBytes(
       throw new TileConversionError('NODE_OUTPUT_WRITE_FAILED', 'Output write made no progress');
     offset += result.bytesWritten;
   }
+}
+
+/** Stages one encoded resource at a time in a private, caller-owned directory. */
+function createNodeArchiveResourceSink(
+  directory: string,
+  maxTotalBytes: number
+): BoundedMemoryTileConversionSink {
+  const files = new Map<string, BrowserTileConversionFile>();
+  let totalBytes = 0;
+  let closed = false;
+  return {
+    getFiles() {
+      return [...files.values()].sort((left, right) =>
+        left.resourceId < right.resourceId ? -1 : left.resourceId > right.resourceId ? 1 : 0
+      );
+    },
+    async write(resource, signal = new AbortController().signal) {
+      signal.throwIfAborted();
+      if (closed)
+        throw new TileConversionError('RESOURCE_SINK_CLOSED', 'Cannot write after finalization');
+      if (!resource.resourceId || files.has(resource.resourceId))
+        throw new TileConversionError('INVALID_NODE_OUTPUT', 'Output resource IDs must be unique');
+      const blob = new Blob([...resource.parts], {type: resource.contentType});
+      if (blob.size > maxTotalBytes - totalBytes)
+        throw new TileConversionError(
+          'OUTPUT_BYTES_LIMIT_EXCEEDED',
+          'Output files exceed the byte budget'
+        );
+
+      // Generated filenames keep resource IDs out of filesystem path resolution.
+      const path = join(directory, String(files.size));
+      const handle = await open(path, 'wx');
+      try {
+        for await (const bytes of blob.stream()) await writeFileBytes(handle, bytes, signal);
+      } finally {
+        await handle.close();
+      }
+      signal.throwIfAborted();
+      files.set(resource.resourceId, {
+        resourceId: resource.resourceId,
+        blob: await openAsBlob(path, {type: blob.type})
+      });
+      totalBytes += blob.size;
+    },
+    async finalize() {
+      closed = true;
+    },
+    async abort() {
+      closed = true;
+      files.clear();
+    }
+  };
 }

@@ -773,7 +773,7 @@ Node imports.
 
 The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) exposes this
 metadata inspection as `tile-converter inspect` and adds bounded selected-mesh `convert`
-and write-free target-profile `validate` commands. The original v4 workflow is available via `tile-converter-v4`. The `tile-converter-v5` name remains an alias for the default command.
+and target-profile `validate` commands. The original v4 workflow is available via `tile-converter-v4`. The `tile-converter-v5` name remains an alias for the default command.
 
 The Node entrypoint also exports `convertNodeTileset`:
 
@@ -789,8 +789,10 @@ const report = await convertNodeTileset({
 });
 ```
 
-Omit `output` for target-profile validation without writing. `outputFormat` accepts
-`3d-tiles` (directory), `3tz` and `slpk`; `maxOutputBytes` may lower the 32 MiB ceiling.
+Omit `output` for target-profile validation without publishing a destination. `outputFormat` accepts
+`3d-tiles` (directory), `3tz` and `slpk`. The default `maxOutputBytes` is 32 MiB.
+Node archive profiles stage encoded resources on disk and accept larger budgets.
+Directory output retains its 32 MiB ceiling.
 Service callers supply the existing explicit `features` (3D Tiles) or `i3sFeatures` mapping; the CLI
 accepts the same scalar/string mapping through a bounded local `--feature-schema` JSON file. Conversion owns and
 closes the raw Node source before publishing output. It reuses the
@@ -1047,7 +1049,7 @@ including its epoch, is retained when supplied.
 
 Limits: 32 explicit document placements (including repeats), 256 tiles across the entire tree,
 64 selected binary contents and **64 total mesh primitive placements**, existing 16 MiB input
-and 32 MiB output/archive budgets. Static multi-primitive meshes and repeated scene-node
+and a default 32 MiB output budget. Static multi-primitive meshes and repeated scene-node
 placements are supported. Each primitive becomes a self-contained GLB with its own supported
 material and feature mapping, in the original tile’s ordered `contents` list. Ordering follows
 source content slots, then scene traversal and primitive order. Primitives do not become child

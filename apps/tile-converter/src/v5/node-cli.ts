@@ -40,7 +40,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --max-input-bytes N          Set input/read budget (default 16 MiB, max 256 MiB for 3D Tiles/3TZ)
   --max-resources N            Lower the 1,000 content-declaration limit
   --max-documents N            Set the 3D Tiles document budget (default 32, max 256)
-  --max-output-bytes N         Lower the 32 MiB output/archive budget
+  --max-output-bytes N         Set the output/archive budget (default: 32 MiB)
   --omit-feature-id           Omit the feature identifier attribute in SLPK
   --no-draco                  Write raw SLPK geometry
   --name NAME                 Set the SLPK layer name
@@ -49,7 +49,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
 
 Inspect reads metadata only, following declared .json external tilesets.
 Convert/validate require explicit selections; I3S uses declared CRS and shared spatial preparation.
-Validate decodes, converts and packages the selected target profile without writing files.
+Validate decodes, converts and packages the selected target profile without publishing a destination.
 Output defaults to a partial flat mesh collection. --preserve-hierarchy requires every declared content.
 Remote archives require HTTP 206 ranges and a stable ETag or Last-Modified validator.
 I3S inspect lists leaf nodes; feature-bearing conversion requires --feature-schema.

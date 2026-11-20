@@ -195,6 +195,8 @@ test('CLI inspect exposes nested selections and validate qualifies an archive wi
 
 test('installed CLI converts and installed ESM/CJS Node entrypoints expose the API', async () => {
   const output = join(directory, 'installed.3tz');
+  const staging = join(directory, 'installed-staging');
+  await mkdir(staging);
   const result = execFileSync(
     process.execPath,
     [
@@ -206,13 +208,14 @@ test('installed CLI converts and installed ESM/CJS Node entrypoints expose the A
       '--output',
       output
     ],
-    {encoding: 'utf8'}
+    {encoding: 'utf8', env: {...process.env, TMPDIR: staging, TEMP: staging, TMP: staging}}
   );
   expect(JSON.parse(result)).toMatchObject({
     operation: 'convert',
     output,
     report: {outputResources: 1}
   });
+  expect(await readdir(staging)).toEqual([]);
   const entrypoints = execFileSync(
     process.execPath,
     [
@@ -771,6 +774,8 @@ test('CLI names a raw SLPK and writes plain package metadata', async () => {
         '--output',
         output,
         '--no-draco',
+        '--max-output-bytes',
+        String(128 * 1024 * 1024),
         '--name',
         'Buildings'
       ],
