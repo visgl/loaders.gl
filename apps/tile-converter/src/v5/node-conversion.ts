@@ -37,6 +37,10 @@ export interface NodeTileConversionOptions
   extends Omit<NodeTilesetConversionSourceOptions, 'format'> {
   /** Include portable stages and Node setup/output elapsed milliseconds in the report. */
   readonly profile?: boolean;
+  /** Name of the authored SLPK scene layer. */
+  readonly name?: string;
+  /** Set to false to write raw SLPK geometry. */
+  readonly draco?: boolean;
   /** Explicit 3D Tiles, I3S layer or indexed archive source. */
   readonly format?: '3d-tiles' | '3tz' | 'i3s' | 'slpk';
   /** Explicit I3S attribute mapping, also supplied by the CLI feature-schema file. */
@@ -187,7 +191,12 @@ export async function convertNodeTileset(
       report = await convertTileset({
         ...common,
         sink,
-        codec: createI3SMeshConversionCodec({...codecOptions, maxResourceBytes: maxOutputBytes}),
+        codec: createI3SMeshConversionCodec({
+          ...codecOptions,
+          name: options.name,
+          draco: options.draco,
+          maxResourceBytes: maxOutputBytes
+        }),
         measureOutputBytes: resource =>
           Object.values(resource.files).reduce((total, bytes) => total + bytes.byteLength, 0)
       });
