@@ -434,3 +434,49 @@ test('reads Cesium outline index pairs from a glTF accessor', () => {
     /outline accessor/
   );
 });
+
+test.each([
+  [true, '17.50', true],
+  [false, '17.50', false],
+  [true, '0x12', false],
+  [true, '1e999', false]
+] as const)('legacy numeric coercion, opt-in=%s, value=%s', async (enabled, value, valid) => {
+  /** Reuse the strip fixture with a single legacy batch row. */
+  const {payload, primitive} = cloneStrip();
+  primitive.attributes._BATCHID = payload.gltf!.json.accessors!.length;
+  payload.gltf!.json.accessors!.push({
+    ...getGLTFAccessor(payload.gltf!, primitive.indices!),
+    count: 6,
+    componentType: 5121
+  });
+  replaceAccessor(payload, primitive.attributes._BATCHID, new Uint8Array(6));
+  payload.header = {...payload.header, batchLength: 1};
+  payload.batchTableJson = {height: [value]};
+  await createSource(payload);
+  /** The explicit Arrow schema controls which properties may be coerced. */
+  const source = createMeshTilesetConversionSource(runtimes.at(-1)!, {
+    features: {
+      metadataClass: 'surface',
+      coerceNumericStrings: enabled,
+      schema: {
+        fields: [
+          {name: 'feature_id', type: 'int32', nullable: false},
+          {name: 'height', type: 'float64', nullable: false}
+        ]
+      }
+    }
+  });
+  /** Pull one mesh to exercise feature materialization. */
+  const iterator = source.read(await source.inspect())[Symbol.asyncIterator]();
+  try {
+    if (valid) {
+      expect((await iterator.next()).value.features.batches[0].getChild('height').get(0)).toBe(
+        17.5
+      );
+    } else {
+      await expect(iterator.next()).rejects.toMatchObject({code: 'FEATURE_VALUE_TYPE_MISMATCH'});
+    }
+  } finally {
+    await iterator.return?.();
+  }
+});

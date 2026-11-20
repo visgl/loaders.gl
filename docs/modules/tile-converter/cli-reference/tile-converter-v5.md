@@ -266,3 +266,10 @@ For 3D Tiles to SLPK, add `"i3sFieldNames": {"gml:id": "gml_id"}` alongside
 `schema.fields`. The output uses `gml_id` as its field name and `gml:id` as
 its display alias. Output names must be unique ignoring case and cannot use
 the reserved `OBJECTID` name.
+
+Set `"coerceNumericStrings": true` in the feature mapping file to accept
+decimal strings in legacy B3DM batch-table properties declared as integer,
+float32, or float64 columns. Integer strings must contain whole decimal
+digits, with an optional sign. Blank strings, hexadecimal, and floating
+point overflow fail validation. Feature identifiers and null handling follow
+their existing schema rules.

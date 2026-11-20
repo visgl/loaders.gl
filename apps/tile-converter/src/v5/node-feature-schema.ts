@@ -64,9 +64,15 @@ export async function readFeatureSchema(
     'featureIdField',
     'batchSize',
     'integer64Encoding',
-    ...(!i3s ? ['i3sFieldNames'] : []),
+    ...(!i3s ? ['i3sFieldNames', 'coerceNumericStrings'] : []),
     ...(i3s ? ['objectIdProperty', 'maxAttributeBytes'] : [])
   ]);
+  if (
+    options.coerceNumericStrings !== undefined &&
+    typeof options.coerceNumericStrings !== 'boolean'
+  ) {
+    rejectSchema('coerceNumericStrings must be a boolean');
+  }
   requireName(options.metadataClass);
   for (const key of ['sourceFeatureIdProperty', 'featureIdField']) {
     if (options[key] !== undefined) requireName(options[key]);
