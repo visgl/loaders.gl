@@ -285,3 +285,8 @@ Use `--all-contents` on `validate` or `convert` to select every inspected
 placement in a 3D Tiles or 3TZ input. Supply either this flag or individual
 `--resource` selections. The selected mesh profile still applies its existing
 budget, refinement, and feature schema rules.
+
+For Node 3D Tiles and 3TZ inspection or flat conversion, `--max-documents`
+sets the root and external document placement budget from 1 to 256. The
+default is 32. Hierarchy-preserving output still supports up to 32 document
+placements. Input bytes and selected meshes have separate limits.
