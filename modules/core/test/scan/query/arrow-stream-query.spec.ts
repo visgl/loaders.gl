@@ -4,6 +4,7 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
+import {queryArrowTable} from '@loaders.gl/core/scan/arrow-query';
 import {filterArrowTable} from '@loaders.gl/core/scan/arrow-execution';
 import {queryArrowTableInBatches} from '../../../src/scan/query-arrow-table-in-batches';
 
@@ -243,4 +244,60 @@ test('native streaming stops before reading input when already cancelled', async
     Symbol.asyncIterator
   ]();
   await expect(iterator.next()).rejects.toBe(reason);
+});
+
+test('streaming preserves fractional predicates against Int64 columns', async () => {
+  const table = arrow.tableFromArrays({value: BigInt64Array.of(1n, 2n, 3n)});
+  /** Streams the test table without combining its batches. */
+  async function* input() {
+    yield* table.batches;
+  }
+  const values: bigint[] = [];
+  for await (const batch of queryArrowTableInBatches(input(), {
+    predicate: {op: '>', args: [{property: 'value'}, 1.5]}
+  })) {
+    values.push(...batch.getChild('value')!);
+  }
+  expect(values).toEqual([2n, 3n]);
+});
+
+test('streaming retains portable comparisons for Arrow time columns', async () => {
+  const table = new arrow.Table({
+    value: arrow.vectorFromArray([1, 2, 3], new arrow.TimeSecond())
+  });
+  /** Streams a table containing a time column. */
+  async function* input() {
+    yield* table.batches;
+  }
+  const values: number[] = [];
+  for await (const batch of queryArrowTableInBatches(input(), {
+    predicate: {op: '>', args: [{property: 'value'}, 1]}
+  })) {
+    values.push(...batch.getChild('value')!);
+  }
+  expect(values).toEqual([2, 3]);
+});
+
+test.each([
+  [new arrow.DateDay(), {op: '=', args: [{property: 'value'}, new Date(43_200_000)]}, []],
+  [new arrow.DateDay(), {op: '=', args: [{property: 'value'}, 86_400_000]}, [86_400_000]],
+  [
+    new arrow.TimestampMicrosecond(),
+    {op: '>', args: [{property: 'value'}, 43_200_000]},
+    [86_400_000]
+  ]
+] as const)('direct Arrow queries preserve temporal literal semantics for %s', async (type, predicate, expected) => {
+  const table = new arrow.Table({
+    value: arrow.vectorFromArray([0, 86_400_000, null], type)
+  });
+  expect(Array.from(queryArrowTable(table, {predicate}).getChild('value')!)).toEqual(expected);
+  /** Delivers the same Arrow input through the streaming path. */
+  async function* input() {
+    yield* table.batches;
+  }
+  const values: number[] = [];
+  for await (const batch of queryArrowTableInBatches(input(), {predicate})) {
+    values.push(...batch.getChild('value')!);
+  }
+  expect(values).toEqual(expected);
 });

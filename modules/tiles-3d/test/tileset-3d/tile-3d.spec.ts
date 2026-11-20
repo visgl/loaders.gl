@@ -6,7 +6,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {expect, test, vi} from 'vitest';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {TILE_CONTENT_STATE, Tile3D} from '@loaders.gl/tiles-3d';
 // @ts-ignore
 import {LOD_METRIC_TYPE} from '../../src';

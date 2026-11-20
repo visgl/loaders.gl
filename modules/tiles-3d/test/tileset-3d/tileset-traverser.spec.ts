@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {radians} from '@math.gl/core';
+import {radians} from '@math.gl/core/matrix';
 import {TILE_REFINEMENT} from '../../src/constants';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';

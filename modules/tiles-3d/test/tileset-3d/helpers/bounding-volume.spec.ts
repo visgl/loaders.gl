@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
 import {createBoundingVolume} from '../../../src/tileset-3d/helpers/bounding-volume';
-import {degrees, Matrix4} from '@math.gl/core';
+import {degrees, Matrix4} from '@math.gl/core/matrix';
 import {OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 test('Tiles bounding-volume#createBoundingVolume - bounds Cesium OSM region', () => {

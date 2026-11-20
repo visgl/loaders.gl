@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs';
+import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs/s2';
 import {
   createImplicitSubtreeReference,
   LOD_METRIC_TYPE,

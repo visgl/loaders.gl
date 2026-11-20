@@ -108,8 +108,6 @@ export {
 
 export {getGeoArrowGeometryInfo} from './get-geoarrow-geometry-info';
 export {getGeoarrowVertexCount} from './get-geoarrow-vertex-count';
-export {getGeoArrowNativeGeometry} from './get-geoarrow-native-geometry';
-export type {GeoArrowNativeGeometry} from './get-geoarrow-native-geometry';
 export {convertGeoArrowBatches} from './geoarrow-stream';
 export type {GeoArrowStreamConvertOptions} from './geoarrow-stream';
 export {inspectGeoArrowVector} from './geoarrow-inspection';

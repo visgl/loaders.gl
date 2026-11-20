@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {TypedArrayConstructor} from '@math.gl/core';
+import type {TypedArrayConstructor} from '@math.gl/core/types';
 
 /** Component names and legacy numeric identifiers accepted in 3D Tiles binary tables. */
 const TILE_COMPONENT_ARRAYS: Readonly<Record<string, TypedArrayConstructor>> = {

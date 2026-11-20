@@ -17,7 +17,7 @@ import type {Tileset3D as TilesetRuntime, TilesetSourceMetadata} from '@loaders.
 import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
 import {GLTFLoader} from '@loaders.gl/scene/gltf/bundled';
 import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {
   createI3SMeshTilesetConversionSource,

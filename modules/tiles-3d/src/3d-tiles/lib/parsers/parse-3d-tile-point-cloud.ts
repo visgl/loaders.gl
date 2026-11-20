@@ -8,7 +8,7 @@
 import {DracoLoader} from '@loaders.gl/scene';
 import type {DracoMesh} from '@loaders.gl/scene';
 import {LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 
 import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import Tile3DBatchTable from '../classes/tile-3d-batch-table';

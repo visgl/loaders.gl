@@ -8,14 +8,12 @@ import {
   convertFeaturesToGeoArrowTable,
   convertGeoArrowGeometry,
   getGeoArrowBounds,
-  getGeoArrowNativeGeometry,
   getGeoArrowRowBounds,
   inspectGeoArrowVector
 } from '@loaders.gl/core/geoarrow';
 import type {GeoArrowEncoding} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {encodeGeoArrowBoxVector} from '../../src/geoarrow/lib/kernels/encode-geoarrow-box';
-import {encodeGeoArrowWKTVector} from '../../src/geoarrow/lib/kernels/encode-geoarrow-wkt';
 
 /** Creates the minimum vector surface needed by row-oriented boundary kernels. */
 function makeValueVector(values: unknown[], type: arrow.DataType = new arrow.Null()): arrow.Vector {
@@ -105,146 +103,7 @@ test('GeoArrow Box kernel covers nested, separated, dimensional, null, WKT, and 
   expect(wkb.nullCount).toBe(1);
 });
 
-test.each([
-  ['geoarrow.point', {x: 1, y: 2}, 'POINT (1 2)'],
-  ['geoarrow.point', {toArray: () => Float64Array.of(1, 2, 3)}, 'POINT Z (1 2 3)'],
-  ['geoarrow.linestring', makeVectorValue([[0, 1], {x: 2, y: 3}]), 'LINESTRING (0 1, 2 3)'],
-  ['geoarrow.linestring', [], 'LINESTRING EMPTY'],
-  [
-    'geoarrow.polygon',
-    [
-      [
-        [0, 0],
-        [1, 0],
-        [0, 0]
-      ]
-    ],
-    'POLYGON ((0 0, 1 0, 0 0))'
-  ],
-  ['geoarrow.polygon', [], 'POLYGON EMPTY'],
-  ['geoarrow.multipoint', [[1, 2], Float64Array.of(3, 4)], 'MULTIPOINT ((1 2), (3 4))'],
-  ['geoarrow.multipoint', [], 'MULTIPOINT EMPTY'],
-  [
-    'geoarrow.multilinestring',
-    [
-      [
-        [0, 0],
-        [1, 1]
-      ],
-      makeVectorValue([
-        [2, 2],
-        [3, 3]
-      ])
-    ],
-    'MULTILINESTRING ((0 0, 1 1), (2 2, 3 3))'
-  ],
-  ['geoarrow.multilinestring', [], 'MULTILINESTRING EMPTY'],
-  [
-    'geoarrow.multipolygon',
-    [
-      [
-        [
-          [0, 0],
-          [1, 0],
-          [0, 0]
-        ]
-      ]
-    ],
-    'MULTIPOLYGON (((0 0, 1 0, 0 0)))'
-  ],
-  ['geoarrow.multipolygon', [], 'MULTIPOLYGON EMPTY']
-] as const)('native WKT kernel traverses %s row representations', (encoding, value, expectedWKT) => {
-  const vector = makeValueVector([value]);
-  const dimension = expectedWKT.includes(' Z ') ? 'xyz' : 'xy';
-  const encoded = encodeGeoArrowWKTVector(vector, encoding, dimension);
-  expect(encoded?.get(0)).toBe(expectedWKT);
-});
-
-test('native WKT kernel rejects malformed shapes and non-native encodings conservatively', () => {
-  const malformedCases: [GeoArrowEncoding, unknown][] = [
-    ['geoarrow.linestring', {not: 'children'}],
-    ['geoarrow.linestring', [[1]]],
-    ['geoarrow.polygon', [{not: 'a ring'}]],
-    ['geoarrow.multipoint', [[1]]],
-    ['geoarrow.multilinestring', [{not: 'a line'}]],
-    ['geoarrow.multipolygon', [{not: 'a polygon'}]]
-  ];
-  for (const [encoding, value] of malformedCases) {
-    expect(encodeGeoArrowWKTVector(makeValueVector([value]), encoding)).toBeNull();
-  }
-  expect(encodeGeoArrowWKTVector(makeValueVector(['POINT (1 2)']), 'geoarrow.wkt')).toBeNull();
-  expect(encodeGeoArrowWKTVector(makeValueVector([null]), 'geoarrow.point')?.get(0)).toBeNull();
-});
-
-test('native geometry reader covers every concrete family and malformed rows', () => {
-  const cases: [GeoArrowEncoding, unknown, string][] = [
-    ['geoarrow.point', {x: 1, y: 2, z: 3, m: 4}, 'Point'],
-    [
-      'geoarrow.linestring',
-      makeVectorValue([
-        [0, 0],
-        [1, 1]
-      ]),
-      'LineString'
-    ],
-    [
-      'geoarrow.polygon',
-      [
-        [
-          [0, 0],
-          [1, 0],
-          [0, 0]
-        ]
-      ],
-      'Polygon'
-    ],
-    ['geoarrow.multipoint', [Float64Array.of(1, 2), [3, 4]], 'MultiPoint'],
-    [
-      'geoarrow.multilinestring',
-      [
-        [
-          [0, 0],
-          [1, 1]
-        ]
-      ],
-      'MultiLineString'
-    ],
-    [
-      'geoarrow.multipolygon',
-      [
-        [
-          [
-            [0, 0],
-            [1, 0],
-            [0, 0]
-          ]
-        ]
-      ],
-      'MultiPolygon'
-    ]
-  ];
-  for (const [encoding, value, expectedType] of cases) {
-    expect(getGeoArrowNativeGeometry(makeValueVector([value]), 0, encoding)?.type).toBe(
-      expectedType
-    );
-  }
-
-  const point = makeValueVector([{toArray: () => Float32Array.of(7, 8)}]);
-  expect(getGeoArrowNativeGeometry(point, 0, 'geoarrow.point')).toEqual({
-    type: 'Point',
-    coordinates: [7, 8]
-  });
-  expect(getGeoArrowNativeGeometry(makeValueVector([[1, 'bad']]), 0, 'geoarrow.point')).toBeNull();
-  expect(
-    getGeoArrowNativeGeometry(makeValueVector([{x: 1, y: 'bad'}]), 0, 'geoarrow.point')
-  ).toBeNull();
-  expect(getGeoArrowNativeGeometry(point, -1, 'geoarrow.point')).toBeNull();
-  expect(getGeoArrowNativeGeometry(point, 1, 'geoarrow.point')).toBeNull();
-  expect(getGeoArrowNativeGeometry(point, 0, 'geoarrow.box')).toBeNull();
-  expect(getGeoArrowNativeGeometry(point, 0, 'geoarrow.wkb')).toBeNull();
-});
-
-test('union and collection readers inspect, bound, and decode all native geometry families', () => {
+test('union and collection readers inspect and bound all native geometry families', () => {
   const features: any[] = [
     {type: 'Feature', properties: {}, geometry: {type: 'Point', coordinates: [1, 2]}},
     {
@@ -316,7 +175,6 @@ test('union and collection readers inspect, bound, and decode all native geometr
     'MultiPolygon'
   ]);
   expect(getGeoArrowRowBounds(union, 'geoarrow.geometry')).toHaveLength(features.length);
-  expect(getGeoArrowNativeGeometry(union, 5, 'geoarrow.geometry')?.type).toBe('MultiPolygon');
 
   const collectionSource = convertFeaturesToGeoArrowTable([
     {
@@ -338,11 +196,6 @@ test('union and collection readers inspect, bound, and decode all native geometr
     nullCount: 1,
     geometryTypes: ['GeometryCollection']
   });
-  expect(getGeoArrowNativeGeometry(collection, 0, 'geoarrow.geometrycollection')).toMatchObject({
-    type: 'GeometryCollection',
-    geometries: [{type: 'Point'}, {type: 'LineString'}]
-  });
-  expect(getGeoArrowNativeGeometry(collection, 1, 'geoarrow.geometrycollection')).toBeNull();
 });
 
 test('vector inspection covers malformed serialized and native dimension variants', () => {

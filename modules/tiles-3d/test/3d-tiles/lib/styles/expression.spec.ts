@@ -9,7 +9,8 @@
 // @ts-nocheck
 
 import Expression from '@loaders.gl/tiles-3d/3d-tiles/styles/expression';
-import {Vector2, Vector3, Vector4, Color, CesiumMath} from '@math.gl/core';
+import {Vector2, Vector3, Vector4} from '@math.gl/core/matrix';
+import {Color, CesiumMath} from '@math.gl/core';
 
 // ExpressionNodeType) {
 //   'Scene/ExpressionNodeType'

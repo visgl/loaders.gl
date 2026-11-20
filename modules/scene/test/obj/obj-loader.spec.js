@@ -5,7 +5,7 @@ import {meshArrowSchema} from '@loaders.gl/core/schema';
 import {canParseWithWorker} from '@loaders.gl/core/loader-utils';
 import {OBJLoader} from '@loaders.gl/scene/obj';
 import {setLoaderOptions, load, parseInBatches} from '@loaders.gl/core';
-import {equals} from '@math.gl/core';
+import {equals} from '@math.gl/core/matrix';
 const OBJ_ASCII_URL = '@loaders.gl/scene/obj/test/data/bunny.obj';
 const OBJ_NORMALS_URL = '@loaders.gl/scene/obj/test/data/cube.obj';
 const OBJ_MULTI_PART_URL = '@loaders.gl/scene/obj/test/data/magnolia.obj';

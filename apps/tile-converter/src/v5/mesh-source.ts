@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import type {MeshAttribute} from '@loaders.gl/core/schema';
 import type {GLTFWithBuffers, GLTFMeshPrimitive, GLTFMaterial} from '@loaders.gl/scene/gltf';
 import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';

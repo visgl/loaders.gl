@@ -5,7 +5,7 @@
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {convertColorArrayToFloat16} from '@loaders.gl/core/schema';
 import type {TypedArray} from '@loaders.gl/core/schema';
-import {Vector3, Matrix4} from '@math.gl/core';
+import {Vector3, Matrix4} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';

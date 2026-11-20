@@ -4,7 +4,7 @@
 
 import {I3STileManager} from '../../src/tileset-3d/format-i3s/i3s-tile-manager';
 import {I3STilesetTraverser} from '../../src/tileset-3d/format-i3s/i3s-tileset-traverser';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {describe, expect, test, vi} from 'vitest';
 
 const FRAME_STATE_1 = {frameNumber: 1, viewport: {id: 'main'}} as any;

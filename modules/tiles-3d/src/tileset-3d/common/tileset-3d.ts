@@ -5,7 +5,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {log as loaderLog} from '@loaders.gl/core/loader-utils';
-import {Matrix4, Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from 'probe.gl/stats';
 import {RequestScheduler, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';

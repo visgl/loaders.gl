@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {compileArrowArray, compileArrowExpression} from '@math.gl/sql/arrow';
+import {
+  compileArrowArray,
+  compileArrowExpression,
+  type ArrowFunctionPackage
+} from '@math.gl/sql/arrow';
 import type {TableSelection} from '@math.gl/sql/parser';
 import {getExpressionColumns} from '@math.gl/sql/expressions';
 
@@ -34,7 +38,8 @@ export function getProjectionColumns(selections: readonly TableSelection[]): str
 export function compileArrowProjection(
   inputSchema: arrow.Schema,
   selections: readonly TableSelection[],
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  functions?: readonly ArrowFunctionPackage[]
 ): (source: arrow.Table) => arrow.Table {
   const names = new Set<string>();
   const columns = selections.map((selection, index) => {
@@ -43,7 +48,7 @@ export function compileArrowProjection(
         ? undefined
         : 'array' in selection
           ? compileArrowArray(selection.array, {inputSchema, type: selection.type})
-          : compileArrowExpression(selection.expression, {inputSchema});
+          : compileArrowExpression(selection.expression, {inputSchema, functions});
     const column =
       typeof selection === 'string' ? selection : 'column' in selection ? selection.column : '';
     const sourceIndex = inputSchema.fields.findIndex(field => field.name === column);

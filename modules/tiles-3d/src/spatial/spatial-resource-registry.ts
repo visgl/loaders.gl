@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Geoid, parsePGM} from '@math.gl/earth';
+import {Geoid, parsePGM} from '@math.gl/earth/geoid';
 import {FullProjectionEngine, parseNTv2Grid} from '@math.gl/geospatial/projection';
 import type {DatumGrid, ProjectionEngine} from '@math.gl/geospatial/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';

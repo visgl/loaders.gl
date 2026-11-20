@@ -312,7 +312,7 @@ physical buffers without decoding nested or dictionary-encoded columns.
 
 ### Streaming linear Arrow queries
 
-`queryArrowTableInBatches(batches, options)` consumes and yields native Arrow RecordBatches
+Import `queryArrowTableInBatches` from `@loaders.gl/core/scan/arrow-query`. It consumes and yields native Arrow RecordBatches
 without collecting its output. It accepts predicates, ordered projection, aliases, a global
 limit, and cancellation. Sorting, aggregates, expressions, unions, and joins remain on the
 existing materializing paths.
@@ -375,3 +375,8 @@ native results and no row-dependent errors. Core can then ask the source to eval
 items and return the input columns needed by Arrow for the remaining items. The source must
 accept the rewritten query with its original filter, offset, and limit. Returning `null`
 from planning keeps execution on the existing fallback path.
+
+To opt into math.gl SQL functions in local SELECT and WHERE expressions, pass a
+`functions` array to `query` or `queryInBatches`. For example, import
+`ST_MAKEPOINT` from `@math.gl/geospatial/st-functions` and pass
+`functions: [ST_MAKEPOINT]` in the query options.

@@ -1,6 +1,6 @@
 import {vi} from 'vitest';
 import {act} from 'react';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/scene/gltf';
 
 /** Generates a tiny self-contained triangle or strip, optionally with a second scene placement. */

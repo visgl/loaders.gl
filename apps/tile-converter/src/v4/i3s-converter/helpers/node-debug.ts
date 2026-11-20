@@ -4,7 +4,7 @@ import {
   BoundingSphere,
   makeOrientedBoundingBoxFromQuaternion
 } from '@math.gl/geometry/culling';
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 // biome-ignore format: preserve intentional fixture layout

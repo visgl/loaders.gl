@@ -12,7 +12,7 @@ import type {
   GLTFTexture,
   GLTFImage
 } from '@loaders.gl/scene/gltf';
-import type {TypedArray} from '@math.gl/core';
+import type {TypedArray} from '@math.gl/core/types';
 
 /** Packed geometry passed to the legacy conversion worker, independent of scene JSON. */
 export type ConversionAccessor = Omit<GLTFAccessor, 'bufferView' | 'sparse'> & {

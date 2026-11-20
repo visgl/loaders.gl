@@ -84,11 +84,7 @@ export function filterArrowRows(
       continue;
     }
     const gathered = takeArrowTableRows(data, Int32Array.from(indices));
-    batches.push(
-      ...gathered.batches.map(
-        output => new arrow.RecordBatch(source.schema, output.data, batch.metadata)
-      )
-    );
+    batches.push(...gathered.batches);
   }
   return new arrow.Table(source.schema, batches);
 }

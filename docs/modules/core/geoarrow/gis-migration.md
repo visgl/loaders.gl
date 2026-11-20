@@ -48,7 +48,8 @@ the same owner as their associated API unless a schema owner is listed.
 | `getWKBGeometryStatistics`, `WKBGeometryStatistics`, `WKBGeometryBoundingBox` | `scanWKB` and its types from `@math.gl/geospatial`; the legacy ISO-number/bbox result is retained in `@loaders.gl/core/arrow-geometry/wkb-statistics` |
 | `convertBinaryGeometryToWKB`, `getBinaryGeometryWKBSize`, `inferBinaryGeometryTypes`, `writeBinaryGeometryToWKB`, `reprojectWKBInPlace` | Same names from `@loaders.gl/core/geoarrow`; loader implementations/options in `@loaders.gl/core/arrow-geometry/binary-geometry-to-wkb` |
 | `convertTWKBToGeometry`, `convertGeometryToTWKB` | `@loaders.gl/core/wkt/twkb`; implementation and fixtures stay with WKT |
-| `getGeoArrowNativeGeometry`, `GeoArrowNativeGeometry`, `getGeoArrowUnionGeometryKind`, `GeoArrowUnionGeometryKind` | Same names from `@loaders.gl/core/geoarrow`; shared native reader in `@loaders.gl/core/arrow-geometry/native-geometry` |
+| `getGeoArrowNativeGeometry`, `GeoArrowNativeGeometry` | Use `makeGeoArrowColumnFromArrowVector`, `getGeoArrowRowView` and `materializeGeoArrowRows` from `@math.gl/core/arrow`. |
+| `getGeoArrowUnionGeometryKind`, `GeoArrowUnionGeometryKind` | Use the GeoArrow compatibility entry point. |
 | `GeoArrowBuilder`, `WKBBuilder`, `triangulateWKB` and builder types | `@loaders.gl/core/arrow-geometry` |
 | `convertGeoArrowToBinaryFeatureCollection`, `getBinaryGeometryTemplate`, `getMeanCentersFromBinaryGeometries`, `getTriangleIndices` and rendering types | Same names from `@loaders.gl/core/geoarrow`; shared loader kernels in `@loaders.gl/core/arrow-geometry/binary-features` |
 | `updateBoundsFromGeoArrowSamples` | Same name from `@loaders.gl/core/geoarrow` or `@loaders.gl/core/arrow-geometry/sampled-bounds`; sampling is not an exact scan |

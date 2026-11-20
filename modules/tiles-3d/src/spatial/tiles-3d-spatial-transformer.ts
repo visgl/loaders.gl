@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {SpatialCoordinateTransformer} from './spatial-coordinate-transformer';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from './spatial-types';
 
 /** Structural 3D Tiles volume shape used by the source adapter. */

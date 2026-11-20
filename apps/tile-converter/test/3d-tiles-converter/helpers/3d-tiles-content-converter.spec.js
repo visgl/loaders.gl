@@ -5,7 +5,7 @@ import {loadI3STile} from '@loaders.gl/tiles-3d/i3s/test/test-utils/load-utils';
 import {Tiles3DContentConverter} from '../../../src/v4/3d-tiles-converter/helpers/3d-tiles-content-converter';
 import {isBrowser, parse, load} from '@loaders.gl/core';
 import {I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s';
-import {Matrix4, Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 const ATTRIBUTES_STORAGE_INFO_STUB = [
   {

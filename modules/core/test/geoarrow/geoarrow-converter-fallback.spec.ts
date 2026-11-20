@@ -18,12 +18,6 @@ vi.mock('../../src/geoarrow/lib/kernels/decode-wkt-native', async importOriginal
   };
 });
 
-vi.mock('../../src/geoarrow/lib/kernels/encode-geoarrow-wkt', async importOriginal => {
-  const original =
-    await importOriginal<typeof import('../../src/geoarrow/lib/kernels/encode-geoarrow-wkt')>();
-  return {...original, encodeGeoArrowWKTVector: vi.fn(() => null)};
-});
-
 /** Loads the converter with declining WKT kernels to exercise the compatibility contract. */
 async function loadFallbackConverter(): Promise<
   typeof import('../../src/geoarrow/geoarrow-converter/convert-geoarrow-geometry')

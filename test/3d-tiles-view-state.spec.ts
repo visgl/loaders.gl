@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {WebMercatorViewport} from '@deck.gl/core';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {createTilesetViewState} from '../examples/website/3d-tiles/create-tileset-view-state';
 

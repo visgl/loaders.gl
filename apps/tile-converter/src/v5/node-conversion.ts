@@ -580,10 +580,18 @@ async function loadEgm2008Grid(path: string, signal: AbortSignal) {
         );
       offset += bytesRead;
     }
-    const {parsePGM} = await import('@math.gl/earth');
+    const {parsePGM} = await import('@math.gl/earth/geoid');
     signal.throwIfAborted();
-    const geoid = parsePGM(data, {cubic: false});
-    // Validate the complete raster until math.gl enforces it at parse time.
+    let geoid: ReturnType<typeof parsePGM>;
+    try {
+      geoid = parsePGM(data, {cubic: false});
+    } catch (error) {
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        `Invalid EGM2008 PGM: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+    // Validate the grid's scale and raster before conversion.
     const {_width, _height, _datastart, _offset, _scale} = geoid.options;
     const rasterBytes = _width * _height * 2;
     if (

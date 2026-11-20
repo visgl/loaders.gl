@@ -10,7 +10,7 @@ import {PGMLoader} from '../../../src/v4/pgm-loader';
 import {getAttributeTypesMapFromPropertyTable} from '../../../src/v4/i3s-converter/helpers/feature-attributes';
 import {AttributeMetadataInfo} from '../../../src/v4/i3s-converter/helpers/attribute-metadata-info';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
-import {Matrix4} from '@math.gl/core';
+import {Matrix4} from '@math.gl/core/matrix';
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';

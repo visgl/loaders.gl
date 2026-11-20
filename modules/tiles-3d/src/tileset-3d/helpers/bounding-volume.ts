@@ -4,7 +4,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 /* eslint-disable */
-import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
+import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core/matrix';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 import {assert} from '@loaders.gl/core/loader-utils';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {Vector3} from '@math.gl/core';
+import type {Vector3} from '@math.gl/core/matrix';
 import type {TilesetTraverser, TilesetTraverserProps} from './tileset-traverser';
 import type {Tile3D} from './tile-3d';
 import type {Tileset3D} from './tileset-3d';

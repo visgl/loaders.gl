@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {Vector3} from '@math.gl/core';
-import {octDecode} from '@math.gl/geometry';
+import {Vector3} from '@math.gl/core/matrix';
+import {octDecode} from '@math.gl/geometry/processing';
 import {Tiles3DTileContent} from '../../../types';
 
 const scratchNormal = new Vector3();

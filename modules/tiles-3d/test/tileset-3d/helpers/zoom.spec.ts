@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {BoundingSphere, makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {
   getZoomFromBoundingVolume,
   getZoomFromExtent,

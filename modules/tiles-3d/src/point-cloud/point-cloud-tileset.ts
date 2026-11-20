@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {BoundingSphere, CullingVolume, Plane} from '@math.gl/geometry/culling';
 import type {Viewport} from '../types';
 import {PointCloudTile} from './point-cloud-tile';

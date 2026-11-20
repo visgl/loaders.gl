@@ -1,4 +1,4 @@
-import {Vector3} from '@math.gl/core';
+import {Vector3} from '@math.gl/core/matrix';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import {POTreeNode} from '@loaders.gl/tiles-3d/potree';
 import {PointTileSourceTraverser} from './point-tile-source-traverser';

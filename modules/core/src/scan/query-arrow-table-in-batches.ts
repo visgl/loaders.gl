@@ -3,8 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {createRecordBatchWithMetadata, getRecordBatchMetadata} from '@math.gl/core/arrow';
+import {queryArrowTableInBatches as executeArrowQueryInBatches} from '@math.gl/sql/query';
 import {validateTableQueryLimit} from '@loaders.gl/core/loader-utils';
-import {filterArrowTable, projectArrowTable} from './arrow-execution';
+import {filterArrowTable} from './arrow-execution/filter-arrow-table';
+import {needsPortablePredicateCompatibility} from './arrow-execution/portable-predicate-compatibility';
 import type {ArrowQueryOptions} from './query-arrow-table';
 
 /**
@@ -29,27 +32,56 @@ export async function* queryArrowTableInBatches(
     throw new Error('Arrow select cannot be combined with columns.');
   }
   validateTableQueryLimit(options.limit);
-  let remaining = options.limit;
   options.signal?.throwIfAborted();
-  if (remaining === 0) return;
-  for await (const batch of batches) {
-    options.signal?.throwIfAborted();
-    let table = new arrow.Table(batch.schema, [batch]);
-    if (options.predicate) {
-      table = filterArrowTable(table, options.predicate, {
-        limit: remaining,
-        signal: options.signal
-      });
-    } else if (remaining !== undefined && remaining < table.numRows) {
-      table = new arrow.Table(batch.schema, [batch.slice(0, remaining)]);
+  if (options.limit === 0) return;
+  const iterator = batches[Symbol.asyncIterator]();
+  try {
+    const first = await iterator.next();
+    if (first.done) return;
+    const predicate = options.predicate;
+    const compatiblePredicate =
+      predicate && needsPortablePredicateCompatibility(first.value.schema, predicate)
+        ? predicate
+        : undefined;
+    /** Replays the first batch and adapts predicate shapes RC.2 cannot bind. */
+    async function* readBatches(): AsyncIterable<arrow.RecordBatch> {
+      let remaining = options.limit;
+      for (
+        let next: IteratorResult<arrow.RecordBatch> = first;
+        !next.done;
+        next = await iterator.next()
+      ) {
+        const batch = next.value;
+        if (!compatiblePredicate) {
+          yield batch;
+          continue;
+        }
+        const filtered = filterArrowTable(
+          new arrow.Table(batch.schema, [batch]),
+          compatiblePredicate,
+          {
+            limit: remaining,
+            signal: options.signal
+          }
+        );
+        if (filtered.numRows) yield* filtered.batches;
+        else
+          yield createRecordBatchWithMetadata(
+            batch.schema,
+            new arrow.RecordBatch(batch.schema, undefined).data,
+            getRecordBatchMetadata(batch)
+          );
+        if (remaining !== undefined) remaining -= filtered.numRows;
+      }
     }
-    const selections = options.select ?? options.columns;
-    if (selections) table = projectArrowTable(table, selections);
-    if (table.batches.length) yield* table.batches;
-    else yield new arrow.RecordBatch(table.schema, undefined, new Map(batch.metadata));
-    if (remaining !== undefined) {
-      remaining -= table.numRows;
-      if (remaining === 0) return;
-    }
+    yield* executeArrowQueryInBatches(readBatches(), first.value.schema, {
+      select: options.select ?? options.columns,
+      where: compatiblePredicate ? undefined : predicate,
+      limit: options.limit,
+      signal: options.signal,
+      emitEmptyBatches: true
+    });
+  } finally {
+    await iterator.return?.();
   }
 }

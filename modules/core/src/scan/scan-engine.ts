@@ -43,7 +43,7 @@ const arrowScanBackend: ScanBackend = Object.freeze({
   name: 'arrow',
   query: queryArrowTable,
   queryAsync: (sourceTable, options) =>
-    Promise.resolve().then(queryArrowTable.bind(null, sourceTable, options)),
+    Promise.resolve().then(() => queryArrowTable(sourceTable, options)),
   explain: explainArrowTableQuery
 });
 

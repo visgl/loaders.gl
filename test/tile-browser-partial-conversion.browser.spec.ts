@@ -247,7 +247,7 @@ vi.mock('../examples/website/i3s-slpk/src/conversion-worker-client', async impor
 
 test('nested metadata selections convert with declaring-document axes, relative URLs and ancestor placement', async () => {
   const {createTriangle} = await import('./utils/tile-browser-conversion');
-  const {Matrix4} = await import('@math.gl/core');
+  const {Matrix4} = await import('@math.gl/core/matrix');
   const documents = {
     'https://example.invalid/tileset.json': {
       asset: {version: '1.1', gltfUpAxis: 'Y'},
