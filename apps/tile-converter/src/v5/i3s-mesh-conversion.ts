@@ -37,7 +37,11 @@ export interface I3SMeshConversionResource extends EncodedI3SMeshLayer {
 export interface I3SMeshConversionCodecOptions
   extends Pick<
     I3SMeshWriterOptions,
-    'name' | 'maxPositionError' | 'maxResourceBytes' | 'omitFeatureIdAttribute'
+    | 'name'
+    | 'maxPositionError'
+    | 'maxResourceBytes'
+    | 'omitFeatureIdAttribute'
+    | 'declareEgm2008Heights'
   > {
   /** Shared source-to-ECEF context, applied exactly once before I3S geographic encoding. */
   readonly spatialContext: Tiles3DConversionSpatialContext | I3SConversionSpatialContext;
