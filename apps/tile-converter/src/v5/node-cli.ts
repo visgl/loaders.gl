@@ -33,6 +33,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --integrated-mesh-policy as-3d-object  Authorize I3S layer-type change
   --preserve-hierarchy        Retain a complete explicit 3D Tiles tree (3D Tiles/3TZ only)
   --feature-schema PATH       Local JSON feature class/schema mapping (at most 64 KiB)
+  --all-contents               Select every inspected 3D Tiles content placement
   --resource ID               Selected content placement; repeat for multiple selections
   --output-format 3d-tiles|3tz|slpk  Target profile (default: 3tz)
   --output PATH               New destination (required for convert, forbidden for validate)
@@ -80,6 +81,7 @@ export async function runTileConverterCLI(
         'output-format': {type: 'string', default: '3tz'},
         output: {type: 'string'},
         resource: {type: 'string', multiple: true},
+        'all-contents': {type: 'boolean'},
         'feature-schema': {type: 'string'},
         'geometric-error': {type: 'string'},
         'integrated-mesh-policy': {type: 'string'}
@@ -122,13 +124,14 @@ export async function runTileConverterCLI(
     }
     if (operation !== 'inspect') {
       if (
-        !values.resource?.length ||
+        Boolean(values.resource?.length) === Boolean(values['all-contents']) ||
+        (values['all-contents'] && (format === 'i3s' || format === 'slpk')) ||
         !['3d-tiles', '3tz', 'slpk'].includes(values['output-format']) ||
         (operation === 'convert' ? !values.output : values.output !== undefined)
       )
         throw new TileConversionError(
           'CLI_USAGE_ERROR',
-          'Convert/validate require --resource selections and a supported --output-format; only convert requires --output'
+          'Convert/validate require --resource or --all-contents (3D Tiles inputs only) and a supported --output-format; only convert requires --output'
         );
       if (
         values['integrated-mesh-policy'] !== undefined &&
@@ -150,7 +153,8 @@ export async function runTileConverterCLI(
       const report = await convertNodeTileset({
         ...sourceOptions,
         ...features,
-        resourceIds: values.resource,
+        resourceIds: values.resource ?? [],
+        allContents: values['all-contents'],
         profile: values.profile,
         omitFeatureIdAttribute: values['omit-feature-id'],
         name: values.name,
@@ -177,6 +181,7 @@ export async function runTileConverterCLI(
       values['geometric-error'] !== undefined ||
       values['integrated-mesh-policy'] !== undefined ||
       values.resource ||
+      values['all-contents'] ||
       values.output ||
       values['output-format'] !== '3tz' ||
       values['max-output-bytes'] !== String(32 * 1024 * 1024)

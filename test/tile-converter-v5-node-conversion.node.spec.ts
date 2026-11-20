@@ -793,3 +793,21 @@ test('CLI names a raw SLPK and writes plain package metadata', async () => {
     await archive.close();
   }
 });
+
+test('CLI validates all nested 3D Tiles content without explicit resource IDs', async () => {
+  /** Captures the CLI report without creating an output archive. */
+  const stdout: string[] = [];
+  expect(
+    await runTileConverterCLI(['validate', rootPath, '--all-contents', '--output-format', 'slpk'], {
+      stdout: line => stdout.push(line),
+      stderr: () => {}
+    })
+  ).toBe(0);
+  expect(JSON.parse(stdout[0]).report.outputResources).toBe(1);
+  expect(
+    await runTileConverterCLI(['validate', rootPath, '--all-contents', '--resource', identifier], {
+      stdout: () => {},
+      stderr: () => {}
+    })
+  ).toBe(1);
+});

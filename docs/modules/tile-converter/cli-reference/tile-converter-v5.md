@@ -280,3 +280,8 @@ nullable `int32` or `float64` column. Use the source field name, even when the
 output field is renamed. Choose a value outside the valid domain and configure
 consumers to treat it as missing. It is stored as an ordinary number in SLPK.
 Without a replacement, numeric nulls fail validation.
+
+Use `--all-contents` on `validate` or `convert` to select every inspected
+placement in a 3D Tiles or 3TZ input. Supply either this flag or individual
+`--resource` selections. The selected mesh profile still applies its existing
+budget, refinement, and feature schema rules.
