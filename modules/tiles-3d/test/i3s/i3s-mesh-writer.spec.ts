@@ -602,6 +602,19 @@ test.each(
   expect(decoded.nodes.nodes[1].mesh.geometry.vertexCount).toBe(content.vertexCount);
 });
 
+test('I3S Draco retains standard attribute semantics and explicitly tags feature indices', async () => {
+  const decoded = await parse(compressedLayers[1].geometry, DracoLoader, {
+    core: {worker: false, useLocalLibraries: true},
+    draco: {shape: 'mesh', attributeNameEntry: 'i3s-attribute-type'}
+  });
+  expect(decoded.attributes.POSITION).toBeDefined();
+  expect(decoded.attributes.NORMAL).toBeDefined();
+  const metadata = Object.values(decoded.loaderData.attributes).map(
+    attribute => attribute.metadata?.['i3s-attribute-type']?.string
+  );
+  expect(metadata.filter(Boolean)).toEqual(['feature-index']);
+});
+
 test('I3S Draco records decoded vertex counts for shared indexed vertices', async () => {
   const mesh = createMesh();
   mesh.indices = {value: new Uint16Array([0, 1, 2, 0, 2, 3]), size: 1};
