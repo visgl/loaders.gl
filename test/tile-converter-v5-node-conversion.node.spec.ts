@@ -14,11 +14,7 @@ import {
 } from '@loaders.gl/tile-converter/v5/adapters';
 import {GLTFLoader, GLTFScenegraph, GLTFWriter} from '@loaders.gl/scene/gltf';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {
-  parse3DTilesArchive,
-  Tile3DWriter,
-  Tiles3DArchiveWriter
-} from '@loaders.gl/tiles-3d/3d-tiles';
+import {parse3DTilesArchive, Tile3DWriter, Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {
   convertNodeTileset,
@@ -815,6 +811,88 @@ test('CLI names a raw SLPK and declares its EGM2008 heights', async () => {
   }
 });
 
+test('CLI inspects B3DM feature tables and drafts a separate mapping', async () => {
+  const scene = new GLTFScenegraph({json: {asset: {version: '2.0'}}});
+  const mesh = scene.addMesh({
+    attributes: {
+      POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3},
+      _BATCHID: {value: new Uint16Array([0, 0, 0]), size: 1}
+    },
+    indices: new Uint16Array([0, 1, 2])
+  });
+  scene.setDefaultScene(scene.addScene({nodeIndices: [scene.addNode({meshIndex: mesh})]}));
+  scene.createBinaryChunk();
+  const triangle = GLTFWriter.encodeSync!(scene.gltf);
+  const input = join(directory, 'input', 'schema-draft.json');
+  await writeFile(
+    join(directory, 'input', 'schema-draft.b3dm'),
+    new Uint8Array(
+      Tile3DWriter.encodeSync!({
+        type: 'b3dm',
+        gltfEncoded: new Uint8Array(triangle),
+        featuresLength: 2,
+        batchTable: {'gml:id': ['B0', 'B1'], height: [null, 10.5], count: [1, 2], mixed: [2, '3']}
+      })
+    )
+  );
+  await writeFile(
+    input,
+    JSON.stringify({...root, root: {...root.root, content: {uri: 'schema-draft.b3dm'}}})
+  );
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  expect(
+    await runTileConverterCLI(['inspect', input, '--draft-feature-schema'], {
+      stdout: line => stdout.push(line),
+      stderr: line => stderr.push(line)
+    }),
+    stderr.join('\n')
+  ).toBe(0);
+  const report = JSON.parse(stdout[0]);
+  expect(report).toMatchObject({
+    featureSchema: {
+      metadataClass: 'features',
+      schema: {
+        fields: [
+          {name: 'feature_id', type: 'int32', nullable: false},
+          {name: 'gml:id', type: 'utf8', nullable: false},
+          {name: 'height', type: 'float64', nullable: true},
+          {name: 'count', type: 'int32', nullable: false}
+        ]
+      },
+      omitSourceProperties: ['mixed'],
+      i3sFieldNames: {'gml:id': 'gml_id'}
+    },
+    schemaDraft: {
+      sampledTables: 1,
+      skippedContents: 0,
+      omittedProperties: ['mixed'],
+      numericNullProperties: ['height']
+    }
+  });
+  const mappingPath = join(directory, 'draft-schema.json');
+  await writeFile(
+    mappingPath,
+    JSON.stringify({...report.featureSchema, i3sNumericNullValues: {height: -1}})
+  );
+  expect(
+    await runTileConverterCLI(
+      [
+        'validate',
+        input,
+        '--all-contents',
+        '--output-format',
+        'slpk',
+        '--no-draco',
+        '--feature-schema',
+        mappingPath
+      ],
+      {stdout: line => stdout.push(line), stderr: line => stderr.push(line)}
+    ),
+    stderr.join('\n')
+  ).toBe(0);
+});
+
 test('CLI validates all nested 3D Tiles content without explicit resource IDs', async () => {
   /** Captures the CLI report without creating an output archive. */
   const stdout: string[] = [];
@@ -925,84 +1003,58 @@ test('CLI applies an explicit Node 3D Tiles input budget above the default', asy
   ).toBe(1);
 });
 
-test('CLI inspects B3DM feature tables and drafts a separate mapping', async () => {
-  const scene = new GLTFScenegraph({json: {asset: {version: '2.0'}}});
-  const mesh = scene.addMesh({
-    attributes: {
-      POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3},
-      _BATCHID: {value: new Uint16Array([0, 0, 0]), size: 1}
-    },
-    indices: new Uint16Array([0, 1, 2])
-  });
-  scene.setDefaultScene(scene.addScene({nodeIndices: [scene.addNode({meshIndex: mesh})]}));
-  scene.createBinaryChunk();
-  const triangle = GLTFWriter.encodeSync!(scene.gltf);
-  const input = join(directory, 'input', 'schema-draft.json');
-  await writeFile(
-    join(directory, 'input', 'schema-draft.b3dm'),
-    new Uint8Array(
-      Tile3DWriter.encodeSync!({
-        type: 'b3dm',
-        gltfEncoded: new Uint8Array(triangle),
-        featuresLength: 2,
-        batchTable: {'gml:id': ['B0', 'B1'], height: [null, 10.5], count: [1, 2], mixed: [2, '3']}
-      })
-    )
-  );
-  await writeFile(
-    input,
-    JSON.stringify({...root, root: {...root.root, content: {uri: 'schema-draft.b3dm'}}})
-  );
-  const stdout: string[] = [];
-  const stderr: string[] = [];
-  expect(
-    await runTileConverterCLI(['inspect', input, '--draft-feature-schema'], {
-      stdout: line => stdout.push(line),
-      stderr: line => stderr.push(line)
-    }),
-    stderr.join('\n')
-  ).toBe(0);
-  const report = JSON.parse(stdout[0]);
-  expect(report).toMatchObject({
-    featureSchema: {
-      metadataClass: 'features',
-      schema: {
-        fields: [
-          {name: 'feature_id', type: 'int32', nullable: false},
-          {name: 'gml:id', type: 'utf8', nullable: false},
-          {name: 'height', type: 'float64', nullable: true},
-          {name: 'count', type: 'int32', nullable: false}
-        ]
-      },
-      omitSourceProperties: ['mixed'],
-      i3sFieldNames: {'gml:id': 'gml_id'}
-    },
-    schemaDraft: {
-      sampledTables: 1,
-      skippedContents: 0,
-      omittedProperties: ['mixed'],
-      numericNullProperties: ['height']
-    }
-  });
-  const mappingPath = join(directory, 'draft-schema.json');
-  await writeFile(
-    mappingPath,
-    JSON.stringify({...report.featureSchema, i3sNumericNullValues: {height: -1}})
-  );
+test('CLI subtracts EGM2008 undulation before authoring SLPK geometry and bounds', async () => {
+  const grid = join(directory, 'constant-geoid.pgm');
+  const output = join(directory, 'corrected-heights.slpk');
+  const header = new TextEncoder().encode('P5\n# Offset 0\n# Scale 1\n4 3\n65535\n');
+  const bytes = new Uint8Array(header.length + 24);
+  bytes.set(header);
+  for (let offset = header.length; offset < bytes.length; offset += 2)
+    new DataView(bytes.buffer).setUint16(offset, 20, false);
+  await writeFile(grid, bytes.subarray(0, -1));
+  await expect(
+    convertNodeTileset({
+      input: rootPath,
+      resourceIds: [identifier],
+      outputFormat: 'slpk',
+      output,
+      draco: false,
+      egm2008Grid: grid
+    })
+  ).rejects.toMatchObject({code: 'INVALID_EGM2008_GRID'});
+  await writeFile(grid, bytes);
+
+  const errors: string[] = [];
   expect(
     await runTileConverterCLI(
       [
-        'validate',
-        input,
+        'convert',
+        rootPath,
         '--all-contents',
         '--output-format',
         'slpk',
+        '--output',
+        output,
         '--no-draco',
-        '--feature-schema',
-        mappingPath
+        '--egm2008-grid',
+        grid
       ],
-      {stdout: line => stdout.push(line), stderr: line => stderr.push(line)}
+      {stdout: () => {}, stderr: line => errors.push(line)}
     ),
-    stderr.join('\n')
+    errors.join('\n')
   ).toBe(0);
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    const layer = JSON.parse(new TextDecoder().decode(await archive.getFile('3dSceneLayer.json')));
+    expect(layer.spatialReference.vcsWkid).toBe(3855);
+    const page = JSON.parse(new TextDecoder().decode(await archive.getFile('nodepages/0.json')));
+    const height = page.nodes[1].obb.center[2];
+    expect(height).toBeCloseTo(-19.5, 4);
+    const geometry = new DataView(await archive.getFile('nodes/1/geometries/0.bin'));
+    expect(height + geometry.getFloat32(16, true)).toBeCloseTo(-20, 4);
+  } finally {
+    await archive.close();
+  }
 });
