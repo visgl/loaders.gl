@@ -223,7 +223,11 @@ open https://loaders.gl/examples/i3s?url=http://localhost:8080/NewLayerName/Scen
 
 ## Docker image
 
-The tile converter is available as a docker image in the [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter/tags) dockerhub repo. The advantage of docker image is that it has dependencies pre-installed so it is not necessary to call `npx tile-converter-v4 --install-dependencies`.
+The repository Dockerfile builds a **legacy v4** image. Use the v4 flags in the examples below,
+even though the default npm command now runs v5. The
+[visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter/tags) Docker Hub repository
+hosts converter images. The Dockerfile preinstalls the legacy dependencies, so a locally built
+image does not need a separate `--install-dependencies` step.
 
 To download the tile-converter docker image, run:
 
@@ -262,8 +266,10 @@ To build your own tile-converter docker image:
 - In root folder of the project run:
 
 ```bash
-  yarn bootstrap
-  docker build -t [docker_image_name] -f modules/tile-converter/Dockerfile .
+yarn install
+yarn build
+yarn workspace @loaders.gl/tile-converter build-converter-bundle
+docker build -t tile-converter-v4 -f apps/tile-converter/Dockerfile .
 ```
 
 - Push docker image to your docker hub

@@ -20,8 +20,10 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ### Tile converter defaults to v5
 
-The default command and package root now use the v5 converter. To keep the same v4
+The default npm command and package root now use the v5 converter. To keep the same v4
 behavior, change the command or import, **not** the existing v4 flags.
+The [repository Docker image](./modules/tile-converter/cli-reference/tile-converter.md#docker-image)
+still runs v4 and uses the same v4 flags. To run v5, use the npm package.
 
 | Before | Now |
 | --- | --- |

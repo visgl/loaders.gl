@@ -1,7 +1,8 @@
-# Docker image for tile-converter module
+# Docker image for the legacy v4 tile converter
 # -----------------------------
 # To build a docker image, run in the root folder of the repository:
-# docker build -t loaders -f modules/tile-converter/Dockerfile .
+# yarn workspace @loaders.gl/tile-converter build-converter-bundle
+# docker build -t tile-converter-v4 -f apps/tile-converter/Dockerfile .
 #
 # Use the image to convert tileset:
 # docker run --rm \
@@ -19,14 +20,14 @@
 # --rm                  Remove container after conversion
 # -v                    Create docker volume, linked to internal data folder
 # visgl/tile-converter  Image name
-# ...                   Converter options (described here: modules/tile-converter/docs/cli-reference/tile-converter.md)
+# ...                   Converter options (described here: docs/modules/tile-converter/cli-reference/tile-converter.md)
 
 # change to alpine
 FROM node:18-alpine
 
 # copy pgm and dist converter
 WORKDIR /loaders-bundle
-COPY ./modules/tile-converter/dist/converter.min.cjs .
+COPY ./apps/tile-converter/dist/converter.min.cjs .
 
 # install dependencies
 # join-images npm package related to the specific version of sharp

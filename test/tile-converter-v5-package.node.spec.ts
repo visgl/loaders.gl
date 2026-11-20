@@ -227,8 +227,10 @@ test('built Node adapter shares the core error class without changing portable i
 test('converter declaration exports point to built files', () => {
   const packageRoot = new URL('../apps/tile-converter/', import.meta.url);
   const manifest = JSON.parse(readFileSync(new URL('package.json', packageRoot), 'utf8'));
-  expect(manifest.types).toBeUndefined();
-  expect(manifest.exports['.'].types).toBeUndefined();
+  expect(manifest.types).toBe('dist/v5/index.d.ts');
+  expect(manifest.exports['.'].types).toBe('./dist/v5/index.d.ts');
+  expect(manifest.exports['./v4'].types).toBe('./dist/v4/index.d.ts');
+  expect(manifest.exports['./v5'].types).toBe(manifest.exports['.'].types);
   for (const entry of Object.values(manifest.exports) as {types?: string}[]) {
     if (entry.types) expect(existsSync(new URL(entry.types, packageRoot))).toBe(true);
   }
