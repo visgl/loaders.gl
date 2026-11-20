@@ -27,6 +27,8 @@ import type {BrowserTileConversionFile} from '@loaders.gl/tile-converter/v5/core
 export interface I3SMeshConversionResource extends EncodedI3SMeshLayer {
   /** Source placement identifier used for diagnostics. */
   readonly id: string;
+  /** Whether a source outline was omitted. */
+  readonly omittedPrimitiveOutline?: boolean;
   /** Original I3S layer type when authoring from an I3S source. */
   readonly sourceLayerType?: '3DObject' | 'IntegratedMesh';
 }
@@ -132,11 +134,26 @@ export function createI3SMeshConversionCodec<TInspection = unknown>(
       signal?.throwIfAborted();
       objectIdOffset +=
         resource.features?.batches.reduce((total, batch) => total + batch.numRows, 0) ?? 1;
-      yield {id: resource.id, ...layer, sourceLayerType: resource.sourceLayerType};
+      yield {
+        id: resource.id,
+        ...layer,
+        sourceLayerType: resource.sourceLayerType,
+        omittedPrimitiveOutline: resource.omittedPrimitiveOutline
+      };
     },
     /** Reports measured precision and explicitly authorized integer representation changes. */
     async validateOutput(resource) {
       return [
+        ...(resource.omittedPrimitiveOutline
+          ? [
+              {
+                code: 'MESH_PRIMITIVE_OUTLINE_OMITTED',
+                message: 'The target mesh profile does not retain CESIUM_primitive_outline',
+                severity: 'warning' as const,
+                resourceId: resource.id
+              }
+            ]
+          : []),
         ...(resource.sourceLayerType === 'IntegratedMesh'
           ? [
               {

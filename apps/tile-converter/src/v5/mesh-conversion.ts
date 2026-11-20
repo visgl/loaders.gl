@@ -23,6 +23,8 @@ export interface MeshConversionInput {
   readonly id: string;
   /** Inspected content placement, used by the hierarchy sink independently of primitive IDs. */
   readonly contentResourceId?: string;
+  /** Whether the selected source declared an optional outline that the target drops. */
+  readonly omittedPrimitiveOutline?: boolean;
   /** Ordered primitive within a content; last marks complete extraction for hierarchy authoring. */
   readonly contentPrimitive?: {
     /** Zero-based primitive placement index in scene traversal order. */
@@ -57,6 +59,8 @@ export interface EncodedMeshConversionResource {
   };
   /** Self-contained GLB with local positions and transformed normals. */
   readonly glb: ArrayBuffer;
+  /** Whether a source outline was omitted. */
+  readonly omittedPrimitiveOutline?: boolean;
   /** Target-frame translation to add to the encoded positions. */
   readonly origin: readonly [number, number, number];
   /** Target-frame bounds of the reconstructed encoded vertices, including float32 rounding. */
@@ -224,6 +228,7 @@ export function createMeshConversionCodec<TInspection = unknown>(
       yield {
         id: resource.id,
         contentResourceId: resource.contentResourceId,
+        omittedPrimitiveOutline: resource.omittedPrimitiveOutline,
         contentPrimitive: resource.contentPrimitive,
         glb: encoded.glb,
         origin,
@@ -235,16 +240,28 @@ export function createMeshConversionCodec<TInspection = unknown>(
     },
     /** Reports position rounding authorized by the configured precision budget. */
     async validateOutput(resource) {
-      return resource.maximumPositionError > 0
-        ? [
-            {
-              code: 'MESH_POSITION_ROUNDING',
-              message: `Encoded positions have up to ${resource.maximumPositionError} target-unit reconstruction error`,
-              severity: 'info' as const,
-              resourceId: resource.id
-            }
-          ]
-        : [];
+      return [
+        ...(resource.omittedPrimitiveOutline
+          ? [
+              {
+                code: 'MESH_PRIMITIVE_OUTLINE_OMITTED',
+                message: 'The target mesh profile does not retain CESIUM_primitive_outline',
+                severity: 'warning' as const,
+                resourceId: resource.id
+              }
+            ]
+          : []),
+        ...(resource.maximumPositionError > 0
+          ? [
+              {
+                code: 'MESH_POSITION_ROUNDING',
+                message: `Encoded positions have up to ${resource.maximumPositionError} target-unit reconstruction error`,
+                severity: 'info' as const,
+                resourceId: resource.id
+              }
+            ]
+          : [])
+      ];
     }
   };
 }

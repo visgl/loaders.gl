@@ -729,3 +729,10 @@ GPU upload, float32 conversion, high/low splitting and animation interpolation a
 consumer responsibilities. Successfully decoding an asset does not establish that
 a renderer supports its double-precision attributes. The draft requires
 double-precision interpolation for double-precision animation data.
+
+### Cesium primitive outlines
+
+`getGLTFPrimitiveOutline(gltf, primitive)` from `@loaders.gl/scene/gltf`
+reads the vertex-index pairs declared by `CESIUM_primitive_outline`. It returns
+`undefined` for a primitive without outlines. Applications can use the decoded
+pairs to draw outlines with their renderer's edge rendering technique.
