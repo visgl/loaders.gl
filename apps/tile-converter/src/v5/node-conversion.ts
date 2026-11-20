@@ -56,7 +56,9 @@ export interface NodeTileConversionOptions
   readonly preserveHierarchy?: boolean;
   /** Authorizes IntegratedMesh to 3DObject output with a reported semantic warning. */
   readonly integratedMeshPolicy?: 'as-3d-object';
-  /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
+  /** Maximum content and primitive placements for 3D Tiles/3TZ to SLPK (default 64, max 1000). */
+  readonly maxMeshes?: number;
+  /** Inspected content placement identifiers. */
   readonly resourceIds: readonly string[];
   /** Select every inspected 3D Tiles placement. Supply an empty resourceIds array. */
   readonly allContents?: boolean;
@@ -106,6 +108,19 @@ async function convertNodeTilesetWithStorage(
       'Select a supported output profile and a positive safe integer output budget (at most 32 MiB for directory output)'
     );
   const i3s = options.format === 'i3s' || options.format === 'slpk';
+  const maxMeshes = options.maxMeshes ?? SELECTED_MESH_LIMITS.maxMeshResources;
+  if (
+    options.maxMeshes !== undefined &&
+    (i3s ||
+      options.outputFormat !== 'slpk' ||
+      !Number.isSafeInteger(maxMeshes) ||
+      maxMeshes < 1 ||
+      maxMeshes > 1000)
+  )
+    throw new TileConversionError(
+      'INVALID_NODE_CONVERSION_OPTIONS',
+      'maxMeshes requires 3D Tiles/3TZ to SLPK conversion and an integer from 1 to 1000'
+    );
   if (options.allContents && (i3s || options.resourceIds.length)) {
     throw new TileConversionError(
       'INVALID_NODE_CONVERSION_OPTIONS',
@@ -190,6 +205,7 @@ async function convertNodeTilesetWithStorage(
             {
               resourceIds,
               preserveHierarchy: options.preserveHierarchy,
+              maxMeshes: options.maxMeshes,
               allowAdditiveNonLeaves: options.outputFormat === 'slpk',
               features: options.features,
               signal,
@@ -208,8 +224,8 @@ async function convertNodeTilesetWithStorage(
       measureInputBytes: measureMeshBytes,
       maxInputBytes: options.maxInputBytes ?? SELECTED_MESH_LIMITS.maxInputBytes,
       maxOutputBytes,
-      maxInputResources: SELECTED_MESH_LIMITS.maxMeshResources,
-      maxOutputResources: SELECTED_MESH_LIMITS.maxMeshResources
+      maxInputResources: maxMeshes,
+      maxOutputResources: maxMeshes
     };
     const codecOptions = {
       spatialContext,
@@ -227,7 +243,7 @@ async function convertNodeTilesetWithStorage(
         shareSourceObjectIds: true,
         maxTotalBytes: maxOutputBytes,
         resourceSink,
-        maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
+        maxMeshes,
         maxResourceBytes
       });
       report = await convertTileset({

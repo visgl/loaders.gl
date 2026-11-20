@@ -59,7 +59,9 @@ export interface SelectedMeshSourceOptions {
   readonly preserveHierarchy?: boolean;
   /** Permit known additive parent contents in flat output; never keep source LOD. */
   readonly allowAdditiveNonLeaves?: boolean;
-  /** Inspected content placement identifiers; one to 64 distinct selections. */
+  /** Maximum selected contents and decoded primitives for a custom flat source. */
+  readonly maxMeshes?: number;
+  /** Distinct inspected content placement identifiers. */
   readonly resourceIds: readonly string[];
   /** Cancellation across qualification, raw reads and decoding. */
   readonly signal: AbortSignal;
@@ -112,15 +114,26 @@ export async function createSelectedMeshConversionSource(
       'INVALID_SELECTED_MESH_OPTIONS',
       'Selected mesh input budget must be a positive safe integer at most 16 MiB'
     );
+  const maxMeshes = options.maxMeshes ?? SELECTED_MESH_LIMITS.maxMeshResources;
+  if (
+    !Number.isSafeInteger(maxMeshes) ||
+    maxMeshes < 1 ||
+    ((!options.source || preserveHierarchy) && maxMeshes > SELECTED_MESH_LIMITS.maxMeshResources)
+  )
+    throw new TileConversionError(
+      'INVALID_SELECTED_MESH_OPTIONS',
+      'Invalid selected mesh count budget'
+    );
   if (
     !resourceIds.length ||
-    resourceIds.length > SELECTED_MESH_LIMITS.maxSelectedResources ||
+    resourceIds.length >
+      Math.min(maxMeshes, options.maxMeshes ?? SELECTED_MESH_LIMITS.maxSelectedResources) ||
     new Set(resourceIds).size !== resourceIds.length ||
     resourceIds.some(
       identifier => !inspection.resources.some(resource => resource.resourceId === identifier)
     )
   )
-    throw new Error('Select between 1 and 64 distinct content placements.');
+    throw new Error(`Select between 1 and ${maxMeshes} distinct content placements.`);
   if (preserveHierarchy !== undefined && typeof preserveHierarchy !== 'boolean')
     throw new TileConversionError(
       'MESH_HIERARCHY_UNSUPPORTED',
@@ -240,7 +253,7 @@ export async function createSelectedMeshConversionSource(
           let meshCount = 0;
           for await (const resource of meshSource.read(metadata, signal)) {
             meshCount++;
-            if (++primitiveCount > SELECTED_MESH_LIMITS.maxMeshResources)
+            if (++primitiveCount > maxMeshes)
               throw new Error('Selected contents exceed the mesh primitive placement limit.');
             decodedBytes += measureMeshBytes(resource);
             if (decodedBytes > maxInputBytes)
