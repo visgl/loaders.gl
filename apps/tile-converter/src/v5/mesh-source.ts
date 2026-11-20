@@ -52,7 +52,8 @@ export interface MeshTilesetSourceOptions extends TilesetConversionSourceOptions
  * once, retaining Float64 absolute positions and inverse-transpose unit normals. Animation, skins,
  * morphs, instancing, broader texture semantics, unknown extensions, non-affine/mirrored
  * placements, and
- * metadata outside the declared feature profile fail explicitly. Multiple resources can be read;
+ * metadata outside the declared feature profile fail explicitly. Inline dataset CRS/epoch
+ * declarations are accepted only when they match the resolved native source frame. Multiple resources can be read;
  * collection sinks accept bounded multiple placements; the compatibility single-mesh sink rejects a second resource.
  * @param tileset - Dedicated native EPSG:4978 runtime with decoded glTF content enabled.
  * @param options - Explicit feature schema/mapping and optional decoded-content cleanup.
@@ -83,7 +84,10 @@ export function createMeshTilesetConversionSource(
           'Mesh extraction requires native EPSG:4978 xyz coordinates in meters and ellipsoidal heights'
         );
       }
-      if (metadata.tileset.metadata || metadata.tileset.groups?.length) {
+      if (
+        (metadata.tileset.metadata && !hasOnlyConsumedSpatialMetadata(metadata)) ||
+        metadata.tileset.groups?.length
+      ) {
         throw new TileConversionError(
           'MESH_SOURCE_METADATA_UNSUPPORTED',
           'Tileset/group metadata requires a separate mapping'
@@ -450,4 +454,75 @@ function createTriangleIndices(
     indices[triangle * 3 + 2] = sourceIndices?.[third] ?? third;
   }
   return {value: indices, size: 1};
+}
+
+/** Inline class properties inspected without interpreting a second metadata value model. */
+type SpatialMetadataClass = {
+  /** Explicit property definitions for the selected tileset metadata entity. */
+  properties?: Record<string, Record<string, unknown>>;
+};
+
+/** Accepts only plain, explicit CRS/epoch properties that agree with the resolved source frame. */
+function hasOnlyConsumedSpatialMetadata(metadata: TilesetSourceMetadata): boolean {
+  /** Original dataset entity; other entity fields require their own preservation policy. */
+  const entity = metadata.tileset.metadata!;
+  /** Inline class used by this entity, rather than an unresolved external schema. */
+  const definition = metadata.tileset.schema?.classes?.[entity.class || ''] as
+    | SpatialMetadataClass
+    | undefined;
+  /** Raw explicit values; defaults, arrays and transformed properties are outside this profile. */
+  const values = entity.properties;
+  /** Definitions for the only class whose values this conversion consumes. */
+  const properties = definition?.properties;
+  if (
+    metadata.tileset.schemaUri ||
+    Object.keys(entity).some(key => !['class', 'properties'].includes(key)) ||
+    !values ||
+    typeof values !== 'object' ||
+    Array.isArray(values) ||
+    !properties ||
+    typeof properties !== 'object' ||
+    Array.isArray(properties)
+  )
+    return false;
+  /** One CRS and an optional epoch; every selected class property must have an explicit value. */
+  const entries = Object.entries(properties);
+  if (!entries.length || entries.length > 2 || Object.keys(values).length !== entries.length)
+    return false;
+  /** Prevents duplicate semantic aliases from masking an unconsumed property. */
+  const semantics = new Set<unknown>();
+  /** Each declared field must be plain, explicitly populated and uniquely consumed. */
+  for (const [name, property] of entries) {
+    if (
+      !property ||
+      typeof property !== 'object' ||
+      Array.isArray(property) ||
+      !Object.hasOwn(values, name) ||
+      Object.keys(property).some(
+        key =>
+          !['name', 'description', 'semantic', 'type', 'componentType', 'required'].includes(key)
+      ) ||
+      semantics.has(property.semantic)
+    )
+      return false;
+    semantics.add(property.semantic);
+    if (property.semantic === 'TILESET_CRS_GEOCENTRIC') {
+      if (
+        property.type !== 'STRING' ||
+        property.componentType !== undefined ||
+        values[name] !== metadata.spatialReference?.sourceCrs
+      )
+        return false;
+    } else if (property.semantic === 'TILESET_CRS_COORDINATE_EPOCH') {
+      if (
+        property.type !== 'SCALAR' ||
+        property.componentType !== 'FLOAT64' ||
+        typeof values[name] !== 'number' ||
+        !Number.isFinite(values[name]) ||
+        values[name] !== metadata.spatialReference?.coordinateEpoch
+      )
+        return false;
+    } else return false;
+  }
+  return semantics.has('TILESET_CRS_GEOCENTRIC');
 }

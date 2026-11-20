@@ -340,12 +340,16 @@ Draco output may reject them, so select `draco: false` on the GLB or I3S codec w
 Points, lines and primitive-restart indices remain unsupported. A root region bounding volume
 or a supported explicit CRS declaration must establish the ECEF source frame; sphere/box
 bounds alone do not imply a CRS.
-Recognition of that frame is separate from mesh metadata qualification: tileset `metadata`
-and nonempty `groups` are rejected with `MESH_SOURCE_METADATA_UNSUPPORTED`, even when the
-only metadata property declares `TILESET_CRS_GEOCENTRIC: EPSG:4978`. Feature mappings do not
-map this dataset metadata. A correctly enclosing WGS84 root `region` can establish the
-format-default frame without it; placeholder bounds are not a CRS conversion. See the
-[CLI native-ECEF caveat](../cli-reference/tile-converter-v5.md#native-ecef-input-caveat).
+Inline tileset metadata may declare that frame using a `STRING` property with semantic
+`TILESET_CRS_GEOCENTRIC` and value `EPSG:4978`, plus an optional explicit `SCALAR` /
+`FLOAT64` `TILESET_CRS_COORDINATE_EPOCH` property. The adapter consumes these spatial values
+only when they match the loader's resolved reference. The selected class must contain only
+those explicitly populated properties; defaults, arrays, value transforms, entity extras/extensions,
+external schemas, duplicate semantics, unrelated properties and nonempty `groups` still fail
+with `MESH_SOURCE_METADATA_UNSUPPORTED`. Tile/content metadata still needs a separate mapping.
+This does not infer or transform a box/sphere-only source frame. Hierarchy preservation retains
+its separate dataset-metadata restrictions. See the
+[CLI declaration example](../cli-reference/tile-converter-v5.md#native-ecef-source-metadata).
 
 ```ts
 import {

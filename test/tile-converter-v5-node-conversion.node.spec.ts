@@ -755,3 +755,72 @@ test('CLI converts ordered multi-content and multi-primitive tiles into indexed 
     await archive.close();
   }
 });
+
+test('CLI validates inline ECEF metadata and converts unchanged box bounds into readable SLPK', async () => {
+  /** Existing tiny GLB stays in its original transformed local frame. */
+  const input = join(directory, 'input', 'explicit-ecef.json');
+  /** Final archive is independently opened after the Node conversion writes it. */
+  const output = join(directory, 'explicit-ecef.slpk');
+  await writeFile(
+    input,
+    JSON.stringify({
+      asset: {version: '1.1', gltfUpAxis: 'Z'},
+      schema: {
+        classes: {frame: {properties: {crs: {type: 'STRING', semantic: 'TILESET_CRS_GEOCENTRIC'}}}}
+      },
+      metadata: {class: 'frame', properties: {crs: 'EPSG:4978'}},
+      geometricError: 0,
+      root: {
+        geometricError: 0,
+        boundingVolume: {box: [0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0, 10]},
+        transform: root.root.transform,
+        content: {uri: 'nested/triangle.glb'}
+      }
+    })
+  );
+  /** Captured CLI result must qualify the actual target, rather than metadata inspection alone. */
+  const stdout: string[] = [];
+  /** Any reported source qualification error fails this regression. */
+  const stderr: string[] = [];
+  expect(
+    await runTileConverterCLI(
+      ['validate', input, '--resource', 'tile-root-content-0', '--output-format', 'slpk'],
+      {
+        stdout: text => stdout.push(text),
+        stderr: text => stderr.push(text)
+      }
+    ),
+    stderr.join('\n')
+  ).toBe(0);
+  expect(JSON.parse(stdout.pop()!).report).toMatchObject({state: 'completed', outputResources: 1});
+  /** Public CLI conversion must finalize the same qualified frame into a complete archive. */
+  expect(
+    await runTileConverterCLI(
+      [
+        'convert',
+        input,
+        '--resource',
+        'tile-root-content-0',
+        '--output-format',
+        'slpk',
+        '--output',
+        output
+      ],
+      {stdout: text => stdout.push(text), stderr: text => stderr.push(text)}
+    ),
+    stderr.join('\n')
+  ).toBe(0);
+  expect(JSON.parse(stdout.pop()!).report).toMatchObject({state: 'completed', outputResources: 1});
+  /** Shared archive reader verifies both the root layer and the written mesh payload. */
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    expect(
+      JSON.parse(new TextDecoder().decode(await archive.getFile('3dSceneLayer.json')))
+    ).toMatchObject({layerType: '3DObject'});
+    expect((await archive.getFile('nodes/1/geometries/0.bin')).byteLength).toBeGreaterThan(0);
+  } finally {
+    await archive.close();
+  }
+});
