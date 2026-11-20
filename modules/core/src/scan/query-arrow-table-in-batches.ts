@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type * as arrow from 'apache-arrow';
+import * as arrow from 'apache-arrow';
+import {createRecordBatchWithMetadata, getRecordBatchMetadata} from '@math.gl/core/arrow';
 import {queryArrowTableInBatches as executeArrowQueryInBatches} from '@math.gl/sql';
 import {validateTableQueryLimit} from '@loaders.gl/core/loader-utils';
+import {filterArrowTable} from './arrow-execution/filter-arrow-table';
 import type {ArrowQueryOptions} from './query-arrow-table';
 
 /**
@@ -35,15 +37,39 @@ export async function* queryArrowTableInBatches(
   try {
     const first = await iterator.next();
     if (first.done) return;
+    /** Applies portable filtering within the remaining limit, before math.gl projects rows. */
     async function* readBatches(): AsyncIterable<arrow.RecordBatch> {
-      yield first.value;
-      for (let next = await iterator.next(); !next.done; next = await iterator.next()) {
-        yield next.value;
+      let remaining = options.limit;
+      for (
+        let next: IteratorResult<arrow.RecordBatch> = first;
+        !next.done;
+        next = await iterator.next()
+      ) {
+        const batch = next.value;
+        if (!options.predicate) {
+          yield batch;
+          continue;
+        }
+        const filtered = filterArrowTable(
+          new arrow.Table(batch.schema, [batch]),
+          options.predicate,
+          {limit: remaining, signal: options.signal}
+        );
+        if (filtered.numRows) yield* filtered.batches;
+        else
+          yield createRecordBatchWithMetadata(
+            batch.schema,
+            new arrow.RecordBatch(batch.schema, undefined).data,
+            getRecordBatchMetadata(batch)
+          );
+        if (remaining !== undefined) {
+          remaining -= filtered.numRows;
+          if (remaining === 0) return;
+        }
       }
     }
     yield* executeArrowQueryInBatches(readBatches(), first.value.schema, {
       select: options.select ?? options.columns,
-      where: options.predicate,
       limit: options.limit,
       signal: options.signal,
       emitEmptyBatches: true

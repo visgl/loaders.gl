@@ -244,3 +244,18 @@ test('native streaming stops before reading input when already cancelled', async
   ]();
   await expect(iterator.next()).rejects.toBe(reason);
 });
+
+test('streaming preserves fractional predicates against Int64 columns', async () => {
+  const table = arrow.tableFromArrays({value: BigInt64Array.of(1n, 2n, 3n)});
+  /** Streams the test table without combining its batches. */
+  async function* input() {
+    yield* table.batches;
+  }
+  const values: bigint[] = [];
+  for await (const batch of queryArrowTableInBatches(input(), {
+    predicate: {op: '>', args: [{property: 'value'}, 1.5]}
+  })) {
+    values.push(...batch.getChild('value')!);
+  }
+  expect(values).toEqual([2n, 3n]);
+});
