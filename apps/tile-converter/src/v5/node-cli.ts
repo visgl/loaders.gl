@@ -40,6 +40,7 @@ const HELP = `Usage: tile-converter inspect|convert|validate <input path or URL>
   --max-resources N            Lower the 1,000 content-declaration limit
   --max-documents N            Lower the 32 metadata-document limit
   --max-output-bytes N         Lower the 32 MiB output/archive budget
+  --omit-feature-id           Omit the feature identifier attribute in SLPK
   --no-draco                  Write raw SLPK geometry
   --name NAME                 Set the SLPK layer name
   --profile                   Include elapsed conversion stage timings in JSON
@@ -67,6 +68,7 @@ export async function runTileConverterCLI(
       options: {
         help: {type: 'boolean'},
         profile: {type: 'boolean'},
+        'omit-feature-id': {type: 'boolean'},
         'no-draco': {type: 'boolean'},
         name: {type: 'string'},
         'preserve-hierarchy': {type: 'boolean'},
@@ -110,10 +112,13 @@ export async function runTileConverterCLI(
       inspectNestedTilesets: true
     };
     if (
-      (values.name !== undefined || values['no-draco']) &&
+      (values.name !== undefined || values['no-draco'] || values['omit-feature-id']) &&
       (operation === 'inspect' || values['output-format'] !== 'slpk')
     ) {
-      throw new TileConversionError('CLI_USAGE_ERROR', '--name and --no-draco require SLPK output');
+      throw new TileConversionError(
+        'CLI_USAGE_ERROR',
+        '--name, --no-draco and --omit-feature-id require SLPK output'
+      );
     }
     if (operation !== 'inspect') {
       if (
@@ -147,6 +152,7 @@ export async function runTileConverterCLI(
         ...features,
         resourceIds: values.resource,
         profile: values.profile,
+        omitFeatureIdAttribute: values['omit-feature-id'],
         name: values.name,
         draco: values['no-draco'] ? false : undefined,
         preserveHierarchy: values['preserve-hierarchy'],

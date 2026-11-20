@@ -255,3 +255,8 @@ All converter commands accept `--version`, which prints the installed package
 version and converter implementation. Legacy invocations print this identity to stderr. V5 includes a `converter`
 identity object in JSON results and errors so both output streams stay parseable.
 `tile-converter` and `tile-converter-v5` identify as `v5`; `tile-converter-v4` identifies as `legacy-v4`.
+
+For legacy B3DM inputs, SLPK uses one OBJECTID per original batch-table row
+within each selected content placement, including across material nodes.
+Use `--omit-feature-id` to hide the feature identifier attribute while keeping
+OBJECTID available for picking and queries.

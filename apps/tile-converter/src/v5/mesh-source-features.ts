@@ -371,6 +371,7 @@ export function extractMeshFeatures(
   return {
     batches,
     triangleFeatureIndices,
+    sourceBatchRows: declarations ? undefined : selectedRows,
     featureIdField: options.featureIdField || 'feature_id',
     integer64Encoding: options.integer64Encoding
   };
