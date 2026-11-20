@@ -64,6 +64,7 @@ export async function readFeatureSchema(
     'featureIdField',
     'batchSize',
     'integer64Encoding',
+    ...(!i3s ? ['i3sFieldNames'] : []),
     ...(i3s ? ['objectIdProperty', 'maxAttributeBytes'] : [])
   ]);
   requireName(options.metadataClass);
@@ -98,6 +99,12 @@ export async function readFeatureSchema(
     )
       rejectSchema('Fields require a scalar numeric/utf8 type and an optional boolean nullable');
     validateMetadata(field.metadata);
+  }
+  if (options.i3sFieldNames !== undefined) {
+    for (const [sourceName, targetName] of Object.entries(requireRecord(options.i3sFieldNames))) {
+      if (!names.has(sourceName)) rejectSchema(`Unknown I3S source field "${sourceName}"`);
+      requireName(targetName);
+    }
   }
   const identifier = schema.fields.find(
     value => value.name === (options.featureIdField ?? 'feature_id')

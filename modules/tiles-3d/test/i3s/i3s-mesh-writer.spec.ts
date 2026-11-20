@@ -777,3 +777,23 @@ function getFeatureMetadata(mesh: any): any {
     (attribute: any) => attribute.metadata['i3s-attribute-type']?.string === 'feature-index'
   );
 }
+
+test('maps an I3S field name and retains the original source alias', () => {
+  /** Namespaced CityGML field remains in the source batch. */
+  const features = createFeatures(
+    {
+      fields: [
+        {name: 'feature_id', type: 'utf8', nullable: false},
+        {name: 'gml:id', type: 'utf8', nullable: false}
+      ]
+    },
+    [{feature_id: 'building-1', 'gml:id': 'original'}]
+  );
+  expect(() => encodeI3SMeshAttributes(features, 65536)).toThrow(/gml:id/);
+  expect(
+    encodeI3SMeshAttributes({...features, i3sFieldNames: {'gml:id': 'gml_id'}}, 65536).fields
+  ).toContainEqual({name: 'gml_id', alias: 'gml:id', type: 'esriFieldTypeString'});
+  expect(() =>
+    encodeI3SMeshAttributes({...features, i3sFieldNames: {'gml:id': 'Feature_ID'}}, 65536)
+  ).toThrow(/duplicates/);
+});

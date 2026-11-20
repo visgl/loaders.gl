@@ -255,3 +255,9 @@ All converter commands accept `--version`, which prints the installed package
 version and converter implementation. Legacy invocations print this identity to stderr. V5 includes a `converter`
 identity object in JSON results and errors so both output streams stay parseable.
 `tile-converter` and `tile-converter-v5` identify as `v5`; `tile-converter-v4` identifies as `legacy-v4`.
+
+For 3D Tiles to SLPK, add `"i3sFieldNames": {"gml:id": "gml_id"}` alongside
+`schema` in the feature mapping file. Keep the original column name in
+`schema.fields`. The output uses `gml_id` as its field name and `gml:id` as
+its display alias. Output names must be unique ignoring case and cannot use
+the reserved `OBJECTID` name.
