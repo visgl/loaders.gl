@@ -29,6 +29,7 @@ import type {
   MeshSourceFeatureOptions
 } from '@loaders.gl/tile-converter/v5/adapters';
 import {createNodeTilesetConversionSource} from './node-source.js';
+import {prepareMeshHierarchy} from './mesh-hierarchy.js';
 import {createNodeI3SConversionSource} from './node-i3s-source.js';
 import type {NodeTilesetConversionSourceOptions} from './node-source.js';
 
@@ -56,6 +57,8 @@ export interface NodeTileConversionOptions
   readonly geometricError?: number;
   /** Retain a complete explicit 3D Tiles tree, including inspected external documents in 3D Tiles/3TZ output. */
   readonly preserveHierarchy?: boolean;
+  /** Explicit I3S maxScreenThresholdSQ for replacement hierarchy output. */
+  readonly slpkLodThreshold?: number;
   /** Authorizes IntegratedMesh to 3DObject output with a reported semantic warning. */
   readonly integratedMeshPolicy?: 'as-3d-object';
   /** One to 64 inspected content placement identifiers; no automatic all-content conversion. */
@@ -121,11 +124,19 @@ async function convertNodeTilesetWithStorage(
   }
   if (
     (options.preserveHierarchy !== undefined && typeof options.preserveHierarchy !== 'boolean') ||
-    (options.preserveHierarchy && (i3s || options.outputFormat === 'slpk'))
+    (options.preserveHierarchy && i3s) ||
+    (options.preserveHierarchy &&
+      options.outputFormat === 'slpk' &&
+      options.slpkLodThreshold === undefined) ||
+    (options.slpkLodThreshold !== undefined &&
+      (!options.preserveHierarchy ||
+        options.outputFormat !== 'slpk' ||
+        !Number.isFinite(options.slpkLodThreshold) ||
+        options.slpkLodThreshold <= 0))
   )
     throw new TileConversionError(
       'MESH_HIERARCHY_UNSUPPORTED',
-      'Hierarchy preservation requires 3D Tiles/3TZ input and output'
+      'Hierarchy preservation requires 3D Tiles/3TZ input; SLPK requires a positive explicit LOD threshold'
     );
   if (
     i3s &&
@@ -175,6 +186,16 @@ async function convertNodeTilesetWithStorage(
           resource => resource.resourceId
         )
       : options.resourceIds;
+    const slpkHierarchy =
+      options.slpkLodThreshold === undefined
+        ? undefined
+        : {
+            parents: prepareSlpkHierarchy(
+              inspection as BrowserTilesetConversionInspection,
+              resourceIds
+            ),
+            lodThreshold: options.slpkLodThreshold
+          };
     await import('@loaders.gl/core/polyfills');
     const {getDracoLibraryOptions} = await import('@loaders.gl/scene/draco');
     const dracoLibraryOptions = getDracoLibraryOptions({
@@ -231,6 +252,7 @@ async function convertNodeTilesetWithStorage(
     const maxResourceBytes = Math.min(maxOutputBytes, SELECTED_MESH_LIMITS.maxOutputBytes);
     if (options.outputFormat === 'slpk') {
       const sink = createI3SMeshSink({
+        hierarchy: slpkHierarchy,
         shareSourceObjectIds: true,
         maxTotalBytes: maxOutputBytes,
         resourceSink,
@@ -475,4 +497,29 @@ function createNodeArchiveResourceSink(
       files.clear();
     }
   };
+}
+
+/** Qualifies replacement-only tiles and links each mesh to its nearest mesh ancestor. */
+function prepareSlpkHierarchy(
+  inspection: BrowserTilesetConversionInspection,
+  resourceIds: readonly string[]
+): ReadonlyMap<string, string | null> {
+  const hierarchy = prepareMeshHierarchy(inspection, resourceIds);
+  if (
+    hierarchy.coordinateEpoch !== undefined ||
+    hierarchy.nodes.some(node => node.refine !== 'REPLACE' || node.resourceIds.length > 1)
+  )
+    throw new TileConversionError(
+      'I3S_HIERARCHY_UNSUPPORTED',
+      'SLPK hierarchy requires REPLACE tiles with at most one content and no coordinate epoch'
+    );
+  const parents = new Map<string, string | null>();
+  const ancestors: (string | null)[] = [null];
+  for (const [index, node] of hierarchy.nodes.entries()) {
+    const content = node.resourceIds[0];
+    const ancestor = ancestors[index];
+    if (content) parents.set(content, ancestor);
+    for (const child of node.children) ancestors[child] = content ?? ancestor;
+  }
+  return parents;
 }

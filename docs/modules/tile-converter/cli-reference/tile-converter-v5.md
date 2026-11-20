@@ -61,7 +61,7 @@ output, an explicit selection may also include content on an ADD parent with chi
 declaring tileset document. Each selected nonleaf and each edge from it to a selected descendant
 must use effective ADD refinement; REPLACE or mixed refinement paths are rejected. The selected
 primitives become independent I3S leaves, not a copy of the source LOD tree. The
-`--preserve-hierarchy` option still applies only to 3D Tiles/3TZ output.
+`--preserve-hierarchy` supports SLPK replacement LOD with an explicit screen threshold.
 A selected content may contain multiple static
 primitives, up to 64 meshes in total. Declaring-document glTF axes, composed placement and
 relative URLs are retained during extraction. Feature-bearing contents require an explicit
@@ -134,7 +134,8 @@ resource URLs: Node I3S resource redirects are rejected until their relative bas
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `--preserve-hierarchy` | `false` | Require a complete explicit hierarchy across inspected documents for 3D Tiles/3TZ output |
+| `--preserve-hierarchy` | `false` | Require a complete explicit hierarchy across inspected documents |
+| `--slpk-lod-threshold` | | Positive I3S `maxScreenThresholdSQ` for SLPK replacement hierarchy |
 | `--input-format` | `3d-tiles` | `3d-tiles`, `3tz`, `i3s` or `slpk` |
 | `--geometric-error` | | Required metric source error for I3S to 3D Tiles |
 | `--integrated-mesh-policy` | | `as-3d-object` authorizes IntegratedMesh to SLPK |
@@ -210,6 +211,14 @@ See the [complete hierarchy profile](../api-reference/v5-conversion.md#complete-
 for the shared browser/service API and remaining qualification. Nested content IDs include
 the complete external-reference chain, such as `tile-root-content-0/tile-root-content-0`.
 
+
+For SLPK replacement LOD, use `--preserve-hierarchy --slpk-lod-threshold N` with a
+positive I3S `maxScreenThresholdSQ` value. This profile requires a complete explicit
+REPLACE hierarchy with at most one content per tile and one primitive per content.
+Contentless ancestors collapse to their nearest geometry-bearing ancestor or the
+synthetic root. Internal meshes retain their geometry and use the supplied threshold.
+Source geometric errors are preserved for 3D Tiles/3TZ output. SLPK uses the explicit
+screen threshold and the source’s existing meshes.
 
 ## Feature-schema controls
 

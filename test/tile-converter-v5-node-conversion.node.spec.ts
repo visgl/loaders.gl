@@ -872,3 +872,58 @@ test('CLI applies an explicit Node 3D Tiles input budget above the default', asy
     await runTileConverterCLI([...argumentsList, '--max-input-bytes', '268435457'], callbacks)
   ).toBe(1);
 });
+
+test('SLPK replacement hierarchy retains parent geometry, child links and explicit LOD', async () => {
+  const input = join(directory, 'input', 'slpk-hierarchy.json');
+  const hierarchy = JSON.parse(await readFile(join(directory, 'input', 'hierarchy.json'), 'utf8'));
+  hierarchy.root.children[0].transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 5, 0, 0, 1];
+  await writeFile(input, JSON.stringify(hierarchy));
+  const output = join(directory, 'preserved.slpk');
+  const errors: string[] = [];
+  expect(
+    await runTileConverterCLI(
+      [
+        'convert',
+        input,
+        '--all-contents',
+        '--output-format',
+        'slpk',
+        '--output',
+        output,
+        '--no-draco',
+        '--preserve-hierarchy',
+        '--slpk-lod-threshold',
+        '400'
+      ],
+      {stdout: () => {}, stderr: line => errors.push(line)}
+    ),
+    errors.join('\n')
+  ).toBe(0);
+  const archive = await parseSLPKArchive(
+    new BlobFile(new Blob([new Uint8Array(await readFile(output))]))
+  );
+  try {
+    const page = JSON.parse(new TextDecoder().decode(await archive.getFile('nodepages/0.json')));
+    expect(page.nodes).toMatchObject([
+      {index: 0, children: [1], lodThreshold: 0},
+      {index: 1, parentIndex: 0, children: [2], lodThreshold: 400, mesh: {geometry: {resource: 1}}},
+      {index: 2, parentIndex: 1, children: [], lodThreshold: 0, mesh: {geometry: {resource: 2}}}
+    ]);
+    expect(page.nodes[2].obb.center[2] - page.nodes[1].obb.center[2]).toBeCloseTo(5);
+    expect(page.nodes[1].obb.halfSize[0]).toBeGreaterThan(5);
+    const parent = JSON.parse(
+      new TextDecoder().decode(await archive.getFile('nodes/1/3dNodeIndexDocument.json'))
+    );
+    expect(parent).toMatchObject({
+      level: 1,
+      children: [{id: '2', href: '../2'}],
+      lodSelection: [{metricType: 'maxScreenThresholdSQ', maxError: 400}]
+    });
+    const child = JSON.parse(
+      new TextDecoder().decode(await archive.getFile('nodes/2/3dNodeIndexDocument.json'))
+    );
+    expect(child).toMatchObject({level: 2, parentNode: {id: '1', href: '../1'}});
+  } finally {
+    await archive.close();
+  }
+});
