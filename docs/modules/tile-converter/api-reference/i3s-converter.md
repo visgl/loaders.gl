@@ -69,7 +69,7 @@ use the previous field order, feature-row order, or null encoding.
 ## Usage
 
 ```typescript
-import {I3SConverter} from '@loaders.gl/tile-converter';
+import {I3SConverter} from '@loaders.gl/tile-converter/v4';
 
 const converter = new I3SConverter();
 const tilesetJson = await converter.convert({

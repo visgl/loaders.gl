@@ -13,8 +13,11 @@ For documentation please visit the [website](https://loaders.gl).
 ## Source layout
 
 The original converter implementation lives in `src/v4`, and the newer conversion APIs live in
-`src/v5`. The package root remains the compatibility entrypoint for the original converter. Shared
-implementation belongs in `src/common` only when it is intentionally used by multiple versions.
+`src/v5`. The package root and the `tile-converter` command now use v5. The legacy engine remains
+available through `@loaders.gl/tile-converter/v4` and `tile-converter-v4`; existing `/v5` imports and
+the `tile-converter-v5` command are unchanged aliases. See the [upgrade guide](https://loaders.gl/docs/upgrade-guide#tile-converter-defaults-to-v5)
+to migrate existing scripts. Shared implementation belongs in `src/common` only when it is
+intentionally used by multiple versions.
 
 ## Portable core and format adapters
 
@@ -27,7 +30,7 @@ The v5 implementation is split into two entrypoints inside this application:
 
 The existing `/v5` and `/v5/browser` imports remain compatible. The adapters consume the
 same core functions, types and error class. No implementation or dependencies move into
-other packages. The original CLI and v4 code remain compatible. Node inspection now has a separate entrypoint and command, described below.
+other packages. The legacy flags are unchanged in `tile-converter-v4`. Node inspection and conversion are available in the default v5 command, described below.
 
 ## V5 source-backed mesh traversal
 
@@ -537,12 +540,12 @@ and [conversion support](https://loaders.gl/docs/modules/tile-converter/cli-refe
 
 ## Experimental Node inspection
 
-`tile-converter-v5 inspect` inventories metadata and ordered content declarations from an
+`tile-converter inspect` inventories metadata and ordered content declarations from an
 explicit 3D Tiles 1.0/1.1 JSON path or HTTP(S) URL, or a local 3TZ archive:
 
 ```sh
-tile-converter-v5 inspect ./dataset/tileset.json
-tile-converter-v5 inspect ./dataset.3tz --input-format 3tz
+tile-converter inspect ./dataset/tileset.json
+tile-converter inspect ./dataset.3tz --input-format 3tz
 ```
 
 The command prints JSON to stdout, emits JSON errors to stderr and exits nonzero on failure.

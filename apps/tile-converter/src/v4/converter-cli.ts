@@ -2,7 +2,7 @@
 import '@loaders.gl/core/polyfills';
 import {join} from 'path';
 import inquirer from 'inquirer';
-import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
+import {I3SConverter, Tiles3DConverter} from './index';
 import {DepsInstaller} from './deps-installer/deps-installer';
 import {
   getBooleanValue,

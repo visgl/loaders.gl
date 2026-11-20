@@ -5829,6 +5829,7 @@ __metadata:
   bin:
     i3s-server: ./bin/i3s-server.js
     tile-converter: ./bin/converter.js
+    tile-converter-v4: ./bin/converter-v4.js
     tile-converter-v5: ./bin/converter-v5.js
   languageName: unknown
   linkType: soft

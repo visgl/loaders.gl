@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import '../dist/converter.min.cjs';
+import './converter-v5.js';

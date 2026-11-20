@@ -5,10 +5,15 @@
 import {TileConversionError} from './conversion-api.js';
 import type {TileConversionSource} from './conversion-api.js';
 
+/** Supported 3D Tiles refinement modes. */
+type TileRefinement = 'ADD' | 'REPLACE';
+
 type TilesetContent = {uri?: string; url?: string};
 type TilesetTile = {
   /** Source metric error, scaled conservatively during selected mesh extraction. */
   geometricError?: number;
+  /** Explicit refinement; child tiles inherit their parent’s mode when omitted. */
+  refine?: unknown;
   content?: TilesetContent;
   contents?: TilesetContent[];
   children?: TilesetTile[];
@@ -269,6 +274,8 @@ export interface BrowserTilesetContentSelection {
   readonly geometricError: number;
   /** Whether the original selected tile has no children. */
   readonly isLeaf: boolean;
+  /** Effective refinement for each tile from the declaring root to the selected tile. */
+  readonly refinementPath: readonly (TileRefinement | undefined)[];
 }
 
 /** Selects one inspected content while keeping declaring-document conventions and placement. */
@@ -287,7 +294,12 @@ export function selectBrowserTilesetContent(
   let transform = [...(placement?.parentTransform ?? identityMatrix())];
   let maximum = placement?.parentGeometricError ?? 0;
   let tile = originalRoot;
+  /** Accumulated effective modes from the declaring root, retaining unknown refinement as undefined. */
+  const refinementPath: (TileRefinement | undefined)[] = [];
   for (let depth = 0; ; depth++) {
+    /** Current tile’s explicit mode, or its inherited parent mode when omitted. */
+    const refinement = tile.refine === undefined ? refinementPath.at(-1) : tile.refine;
+    refinementPath.push(refinement === 'ADD' || refinement === 'REPLACE' ? refinement : undefined);
     transform = multiplyMatrices(transform, normalizeMatrix(tile.transform));
     if (
       typeof tile.geometricError !== 'number' ||
@@ -336,7 +348,8 @@ export function selectBrowserTilesetContent(
     tileset: document,
     contentUrl: resolveResourceUrl(descriptor.uri, placement?.url ?? inspection.rootUrl),
     geometricError: maximum,
-    isLeaf
+    isLeaf,
+    refinementPath
   };
 }
 

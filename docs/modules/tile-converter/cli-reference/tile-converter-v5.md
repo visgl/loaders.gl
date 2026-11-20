@@ -5,9 +5,27 @@ description: Bounded metadata inspection, selected mesh conversion and target-pr
 
 # Tile-converter v5 CLI
 
-The experimental `tile-converter-v5` command inspects explicit 3D Tiles and converts selected
-static native-ECEF GLB/B3DM meshes or supported I3S leaf meshes. Install `@loaders.gl/tile-converter` to use its binary.
-The original `tile-converter` command remains the v4 conversion CLI.
+The default `tile-converter` command uses the experimental v5 engine. It inspects explicit 3D
+Tiles and converts selected static native-ECEF GLB/B3DM meshes or supported I3S leaf meshes.
+Install `@loaders.gl/tile-converter` to use it; `tile-converter-v5` remains an alias.
+The original flag-based workflow now uses [`tile-converter-v4`](./tile-converter.md).
+See the [migration table](../../../upgrade-guide.md#tile-converter-defaults-to-v5) for existing scripts.
+
+## Native-ECEF input caveat
+
+For 3D Tiles, recognition of a native EPSG:4978 frame does not by itself qualify a mesh source.
+The loader can resolve an inline `TILESET_CRS_GEOCENTRIC` semantic with value `EPSG:4978`,
+but the current mesh adapter rejects tileset `metadata` and nonempty `groups`, including
+metadata used only to declare that CRS. Conversion and target-profile validation then fail with
+`MESH_SOURCE_METADATA_UNSUPPORTED: Tileset/group metadata requires a separate mapping`.
+`--feature-schema` maps mesh features; it does not map tileset or group metadata.
+
+A correctly enclosing WGS84 root `boundingVolume.region` can establish the format's global
+ellipsoidal frame without tileset metadata. Its bounds must describe the actual dataset;
+adding a placeholder region is not a CRS conversion. Sphere/box-only inputs without a
+supported explicit frame declaration remain unsupported: coordinates are never guessed to
+be ECEF from their magnitude. See the [mesh source profile](../api-reference/v5-conversion.md#source-mesh-to-i3sslpk)
+for the other conversion restrictions.
 
 ## Inspect and select
 
@@ -21,33 +39,39 @@ Missing mesh payload files do not fail inspection. Extensionless external metada
 probed by this profile; implicit tiling is rejected.
 
 ```sh
-tile-converter-v5 inspect ./dataset/tileset.json
-tile-converter-v5 inspect https://example.com/tileset.json
-tile-converter-v5 inspect ./dataset.3tz --input-format 3tz
-tile-converter-v5 inspect https://example.com/layers/0 --input-format i3s
-tile-converter-v5 inspect ./dataset.slpk --input-format slpk
+tile-converter inspect ./dataset/tileset.json
+tile-converter inspect https://example.com/tileset.json
+tile-converter inspect ./dataset.3tz --input-format 3tz
+tile-converter inspect https://example.com/layers/0 --input-format i3s
+tile-converter inspect ./dataset.slpk --input-format slpk
 ```
 
 ## Convert and validate
 
 Copy placement IDs from inspection and repeat `--resource` for multiple selections.
 Selections are processed in declaration order; select between 1 and 64 distinct contents.
-In the default flat profile, multiple selections must be source leaves. A selected content may contain multiple static
+In the default flat profile, multiple selections generally must be source leaves. For Node SLPK
+output, an explicit selection may also include content on an ADD parent with children in the same
+declaring tileset document. Each selected nonleaf and each edge from it to a selected descendant
+must use effective ADD refinement; REPLACE or mixed refinement paths are rejected. The selected
+primitives become independent I3S leaves, not a copy of the source LOD tree. The
+`--preserve-hierarchy` option still applies only to 3D Tiles/3TZ output.
+A selected content may contain multiple static
 primitives, up to 64 meshes in total. Declaring-document glTF axes, composed placement and
 relative URLs are retained during extraction. Feature-bearing contents require an explicit
 [feature-schema mapping](#feature-schema-controls). Node service callers supply the same
 `features` (3D Tiles) or `i3sFeatures` (I3S) mapping to `convertNodeTileset`.
 
 ```sh
-tile-converter-v5 convert ./dataset/tileset.json \
+tile-converter convert ./dataset/tileset.json \
   --resource tile-root-content-0 \
   --output-format 3tz --output ./selected.3tz
 
-tile-converter-v5 convert ./dataset.3tz --input-format 3tz \
+tile-converter convert ./dataset.3tz --input-format 3tz \
   --resource tile-root-content-0 \
   --output-format slpk --output ./selected.slpk
 
-tile-converter-v5 validate ./dataset/tileset.json \
+tile-converter validate ./dataset/tileset.json \
   --resource tile-root-content-0 --output-format 3tz
 ```
 
@@ -82,7 +106,7 @@ not apply renderer projection. Only the existing 3DObject/IntegratedMesh mesh, a
 explicit feature profiles are supported.
 
 ```sh
-tile-converter-v5 convert ./dataset.slpk --input-format slpk \
+tile-converter convert ./dataset.slpk --input-format slpk \
   --resource 1 --geometric-error 2 \
   --output-format 3tz --output ./selected.3tz
 ```
@@ -146,7 +170,7 @@ After inspecting an explicit 3D Tiles dataset, including declared `.json` extern
 add `--preserve-hierarchy` to `convert` or `validate`:
 
 ```sh
-tile-converter-v5 convert ./tileset.json --preserve-hierarchy \
+tile-converter convert ./tileset.json --preserve-hierarchy \
   --resource tile-root-content-0 --resource tile-0-content-0 \
   --output-format 3tz --output ./converted.3tz
 ```
@@ -224,7 +248,7 @@ SLPK collections share byte-identical encoded texture sets with compatible textu
 profiles across mesh nodes. Geometry, UVs and material definitions remain per mesh.
 Both node pages and legacy node indices reference the shared texture owner.
 
-Both converter commands accept `--version`, which prints the installed package
+All converter commands accept `--version`, which prints the installed package
 version and converter implementation. Legacy invocations print this identity to stderr. V5 includes a `converter`
 identity object in JSON results and errors so both output streams stay parseable.
-`tile-converter` selects `legacy-v4`; `tile-converter-v5` selects `v5`.
+`tile-converter` and `tile-converter-v5` identify as `v5`; `tile-converter-v4` identifies as `legacy-v4`.

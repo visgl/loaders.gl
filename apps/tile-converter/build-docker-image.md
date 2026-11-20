@@ -1,6 +1,8 @@
 # Tile-converter create and push docker image
 
-## Create Docker image
+## Create the legacy v4 Docker image
+
+The repository Dockerfile still bundles v4, not the default v5 npm command.
 
 ### Go to the root project folder
 
@@ -11,20 +13,22 @@ cd loaders.gl
 ### Select branch to create docker image (x.x-release or some commit from master branch for alpha release)
 
 ```bash
-git chekout x.x-release
+git checkout x.x-release
 ```
 
 ### Build the project
 
 ```bash
-yarn bootstrap
+yarn install
+yarn build
+yarn workspace @loaders.gl/tile-converter build-converter-bundle
 ```
 
-### Create docker images for latest and needed release (for aplha releases use node 14 in Dockerfile)
+### Create docker images for latest and needed release
 
 ```bash
-  sudo docker build -t visgl/tile-converter:latest -f modules/tile-converter/Dockerfile .
-  sudo docker build -t visgl/tile-converter:vX.X.X -f modules/tile-converter/Dockerfile .
+  sudo docker build -t visgl/tile-converter:latest -f apps/tile-converter/Dockerfile .
+  sudo docker build -t visgl/tile-converter:vX.X.X -f apps/tile-converter/Dockerfile .
 ```
 
 ### Docker Login (Dockerhub: [tile-converter](https://hub.docker.com/repository/docker/visgl/tile-converter/general))
@@ -59,4 +63,4 @@ docker run --rm -v /path/to/output_folder:/loaders-bundle/data -v /path/to/input
 - **--rm** Remove container after conversion
 - **-v** Create docker volume, linked to internal data folder
 - **visgl/tile-converter:version** Image name
-- Converter options (described here: modules/tile-converter/docs/cli-reference/tile-converter.md)
+- Converter options are documented in the [legacy v4 CLI reference](../../docs/modules/tile-converter/cli-reference/tile-converter.md).

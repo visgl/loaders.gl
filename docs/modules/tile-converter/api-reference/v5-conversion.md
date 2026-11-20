@@ -336,8 +336,16 @@ normalized by the glTF loader. Draco-compressed primitives are normalized to tri
 before source extraction. Vertex attributes and source buffers remain unchanged. Degenerate
 strip connectors are retained and advance winding parity. Repeated-index connectors use the
 first corner's feature row; nondegenerate mixed-feature triangles still fail.
-Draco output may reject them, so select `draco: false` on the GLB or I3S codec when needed. Points, lines and primitive-restart indices remain unsupported. A region bounding volume or explicit CRS metadata
-must establish the ECEF source frame; sphere/box bounds alone do not imply a CRS.
+Draco output may reject them, so select `draco: false` on the GLB or I3S codec when needed.
+Points, lines and primitive-restart indices remain unsupported. A root region bounding volume
+or a supported explicit CRS declaration must establish the ECEF source frame; sphere/box
+bounds alone do not imply a CRS.
+Recognition of that frame is separate from mesh metadata qualification: tileset `metadata`
+and nonempty `groups` are rejected with `MESH_SOURCE_METADATA_UNSUPPORTED`, even when the
+only metadata property declares `TILESET_CRS_GEOCENTRIC: EPSG:4978`. Feature mappings do not
+map this dataset metadata. A correctly enclosing WGS84 root `region` can establish the
+format-default frame without it; placeholder bounds are not a CRS conversion. See the
+[CLI native-ECEF caveat](../cli-reference/tile-converter-v5.md#native-ecef-input-caveat).
 
 ```ts
 import {
@@ -764,8 +772,8 @@ infer CRS or qualify content formats. Set `maxTilesetDocuments` (up to 32) to en
 Node imports.
 
 The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) exposes this
-metadata inspection as `tile-converter-v5 inspect` and adds bounded selected-mesh `convert`
-and write-free target-profile `validate` commands. The original `tile-converter` command uses v4.
+metadata inspection as `tile-converter inspect` and adds bounded selected-mesh `convert`
+and write-free target-profile `validate` commands. The original v4 workflow is available via `tile-converter-v4`. The `tile-converter-v5` name remains an alias for the default command.
 
 The Node entrypoint also exports `convertNodeTileset`:
 
@@ -1107,7 +1115,7 @@ the sum of named stages because orchestration, byte measurement, progress callba
 cleanup are not separate stages. Completed timings are attached to the returned report only
 after finalization; failed/cancelled operations reject as before.
 
-Use `tile-converter-v5 convert ... --profile` or `validate ... --profile` to include these
+Use `tile-converter convert ... --profile` or `validate ... --profile` to include these
 values in the existing JSON output. The boolean option does not add callback or worker
 transport requirements. Repeat measurements with identical input, limits, hardware and
 cache conditions. These timings do not measure peak memory or independently qualify

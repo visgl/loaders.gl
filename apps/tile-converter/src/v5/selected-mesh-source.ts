@@ -22,6 +22,8 @@ import {
 import type {
   BrowserTilesetConversionInspection,
   BrowserTilesetConversionInputResource,
+  BrowserTilesetContentSelection,
+  BrowserTilesetResourceDescriptor,
   TileConversionSource
 } from '@loaders.gl/tile-converter/v5/core';
 import {
@@ -55,6 +57,8 @@ export const SELECTED_MESH_LIMITS = {
 export interface SelectedMeshSourceOptions {
   /** Require a complete qualified explicit tree; pair with createMeshHierarchyTilesetSink. */
   readonly preserveHierarchy?: boolean;
+  /** Permit known additive parent contents in flat output; never keep source LOD. */
+  readonly allowAdditiveNonLeaves?: boolean;
   /** Inspected content placement identifiers; one to 64 distinct selections. */
   readonly resourceIds: readonly string[];
   /** Cancellation across qualification, raw reads and decoding. */
@@ -95,6 +99,7 @@ export async function createSelectedMeshConversionSource(
     dracoLibraryOptions,
     features,
     preserveHierarchy,
+    allowAdditiveNonLeaves,
     fetcher = fetch
   } = options;
   const maxInputBytes = options.maxInputBytes ?? SELECTED_MESH_LIMITS.maxInputBytes;
@@ -135,10 +140,17 @@ export async function createSelectedMeshConversionSource(
     !preserveHierarchy &&
     resourceIds.length > 1 &&
     selections.some(selection => !selection.isLeaf)
-  )
-    throw new Error(
-      'Multi-selection requires leaf contents; source LOD hierarchy is not exported.'
-    );
+  ) {
+    if (!allowAdditiveNonLeaves)
+      throw new Error(
+        'Multi-selection requires leaf contents; source LOD hierarchy is not exported.'
+      );
+    if (!canFlattenAdditiveSelection(descriptors, selections))
+      throw new TileConversionError(
+        'MESH_SELECTION_REFINEMENT_UNSUPPORTED',
+        'SLPK multi-selection with non-leaf content requires ADD refinement on each selected parent and the path to its selected descendants in one tileset document.'
+      );
+  }
   signal.throwIfAborted();
   const boundedFetcher = createTileConversionResourceFetcher({
     maxInputBytes,
@@ -260,6 +272,32 @@ export async function createSelectedMeshConversionSource(
       Math.max(...selections.map(selection => selection.geometricError)) +
       SELECTED_MESH_LIMITS.maxPositionError
   };
+}
+
+/** Qualifies flat output only when selected non-leaf contents can coexist with descendant meshes. */
+function canFlattenAdditiveSelection(
+  descriptors: readonly BrowserTilesetResourceDescriptor[],
+  selections: readonly BrowserTilesetContentSelection[]
+): boolean {
+  // External document boundaries require separate refinement inheritance qualification.
+  if (descriptors.some(descriptor => descriptor.documentIndex !== descriptors[0].documentIndex))
+    return false;
+  return selections.every((selection, index) => {
+    if (selection.isLeaf) return true;
+    if (selection.refinementPath.at(-1) !== 'ADD') return false;
+    const parentPath = descriptors[index].tilePath;
+    return descriptors.every(({tilePath}, descendantIndex) => {
+      if (
+        tilePath.length <= parentPath.length ||
+        !parentPath.every((childIndex, depth) => childIndex === tilePath[depth])
+      )
+        return true;
+      // The descendant's own refinement governs its children, not the incoming refinement.
+      return selections[descendantIndex].refinementPath
+        .slice(parentPath.length, -1)
+        .every(refinement => refinement === 'ADD');
+    });
+  });
 }
 
 /** Dedicated runtime source that inherits an absent external-document CRS from the qualified root. */
