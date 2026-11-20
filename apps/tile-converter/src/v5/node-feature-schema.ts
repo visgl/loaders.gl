@@ -64,7 +64,9 @@ export async function readFeatureSchema(
     'featureIdField',
     'batchSize',
     'integer64Encoding',
-    ...(!i3s ? ['i3sFieldNames', 'coerceNumericStrings', 'i3sNumericNullValues'] : []),
+    ...(!i3s
+      ? ['i3sFieldNames', 'coerceNumericStrings', 'i3sNumericNullValues', 'omitSourceProperties']
+      : []),
     ...(i3s ? ['objectIdProperty', 'maxAttributeBytes'] : [])
   ]);
   if (
@@ -72,6 +74,16 @@ export async function readFeatureSchema(
     typeof options.coerceNumericStrings !== 'boolean'
   ) {
     rejectSchema('coerceNumericStrings must be a boolean');
+  }
+  if (options.omitSourceProperties !== undefined) {
+    if (
+      !Array.isArray(options.omitSourceProperties) ||
+      options.omitSourceProperties.length > 255 ||
+      new Set(options.omitSourceProperties).size !== options.omitSourceProperties.length
+    )
+      rejectSchema('omitSourceProperties must list up to 255 unique legacy property names');
+    if (options.omitSourceProperties.some(name => typeof name !== 'string'))
+      rejectSchema('omitSourceProperties must contain strings');
   }
   requireName(options.metadataClass);
   for (const key of ['sourceFeatureIdProperty', 'featureIdField']) {

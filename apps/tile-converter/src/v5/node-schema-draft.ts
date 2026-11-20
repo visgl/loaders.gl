@@ -93,6 +93,7 @@ export async function draftLegacyFeatureSchema(
     featureSchema: {
       metadataClass: 'features',
       schema: {fields},
+      ...(omittedProperties.length ? {omitSourceProperties: omittedProperties} : {}),
       ...(fieldNames.length ? {i3sFieldNames: Object.fromEntries(fieldNames)} : {})
     },
     schemaDraft: {

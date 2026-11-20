@@ -56,7 +56,8 @@ Use `tile-converter inspect ./tileset.json --draft-feature-schema` to scan bound
 B3DM batch tables without decoding mesh geometry. Save the report’s `featureSchema`
 object as a schema file, review inferred types and field aliases, and pass it to
 `convert --feature-schema`. The report lists skipped contents, omitted properties, and
-nullable numeric fields that need an explicit I3S null replacement policy.
+nullable numeric fields that need an explicit I3S null replacement policy. The draft’s
+`omitSourceProperties` list explicitly excludes unsupported legacy source columns.
 
 
 ## Convert and validate

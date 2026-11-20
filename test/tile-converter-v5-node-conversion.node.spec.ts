@@ -926,18 +926,26 @@ test('CLI applies an explicit Node 3D Tiles input budget above the default', asy
 });
 
 test('CLI inspects B3DM feature tables and drafts a separate mapping', async () => {
-  const triangle = Uint8Array.from(
-    await readFile(join(directory, 'input', 'nested', 'triangle.glb'))
-  );
+  const scene = new GLTFScenegraph({json: {asset: {version: '2.0'}}});
+  const mesh = scene.addMesh({
+    attributes: {
+      POSITION: {value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), size: 3},
+      _BATCHID: {value: new Uint16Array([0, 0, 0]), size: 1}
+    },
+    indices: new Uint16Array([0, 1, 2])
+  });
+  scene.setDefaultScene(scene.addScene({nodeIndices: [scene.addNode({meshIndex: mesh})]}));
+  scene.createBinaryChunk();
+  const triangle = GLTFWriter.encodeSync!(scene.gltf);
   const input = join(directory, 'input', 'schema-draft.json');
   await writeFile(
     join(directory, 'input', 'schema-draft.b3dm'),
     new Uint8Array(
       Tile3DWriter.encodeSync!({
         type: 'b3dm',
-        gltfEncoded: triangle.buffer,
+        gltfEncoded: new Uint8Array(triangle),
         featuresLength: 2,
-        batchTable: {'gml:id': ['B0', 'B1'], height: [10.5, null], count: [1, 2], mixed: [2, '3']}
+        batchTable: {'gml:id': ['B0', 'B1'], height: [null, 10.5], count: [1, 2], mixed: [2, '3']}
       })
     )
   );
@@ -954,7 +962,8 @@ test('CLI inspects B3DM feature tables and drafts a separate mapping', async () 
     }),
     stderr.join('\n')
   ).toBe(0);
-  expect(JSON.parse(stdout[0])).toMatchObject({
+  const report = JSON.parse(stdout[0]);
+  expect(report).toMatchObject({
     featureSchema: {
       metadataClass: 'features',
       schema: {
@@ -965,6 +974,7 @@ test('CLI inspects B3DM feature tables and drafts a separate mapping', async () 
           {name: 'count', type: 'int32', nullable: false}
         ]
       },
+      omitSourceProperties: ['mixed'],
       i3sFieldNames: {'gml:id': 'gml_id'}
     },
     schemaDraft: {
@@ -974,4 +984,25 @@ test('CLI inspects B3DM feature tables and drafts a separate mapping', async () 
       numericNullProperties: ['height']
     }
   });
+  const mappingPath = join(directory, 'draft-schema.json');
+  await writeFile(
+    mappingPath,
+    JSON.stringify({...report.featureSchema, i3sNumericNullValues: {height: -1}})
+  );
+  expect(
+    await runTileConverterCLI(
+      [
+        'validate',
+        input,
+        '--all-contents',
+        '--output-format',
+        'slpk',
+        '--no-draco',
+        '--feature-schema',
+        mappingPath
+      ],
+      {stdout: line => stdout.push(line), stderr: line => stderr.push(line)}
+    ),
+    stderr.join('\n')
+  ).toBe(0);
 });
