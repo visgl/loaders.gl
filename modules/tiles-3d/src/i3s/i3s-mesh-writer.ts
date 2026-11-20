@@ -52,6 +52,10 @@ export interface I3SMeshWriterOptions {
   readonly features?: I3SMeshFeatures;
   /** First generated object ID; collection codecs allocate disjoint ranges across nodes. */
   readonly objectIdOffset?: number;
+  /** Explicit object IDs in feature row order. */
+  readonly objectIds?: readonly number[];
+  /** Omit the feature identifier column from output attributes while retaining OBJECTID. */
+  readonly omitFeatureIdAttribute?: boolean;
 }
 
 /** Full Draco runtime URL or injected-module controls accepted by I3S geometry encoding. */
@@ -298,7 +302,11 @@ function prepareMeshLayer(
   ) {
     throw new Error('I3S indices must reference complete existing triangles');
   }
-  const attributes = encodeI3SMeshAttributes(options.features, options.maxResourceBytes);
+  const attributes = encodeI3SMeshAttributes(
+    options.features,
+    options.maxResourceBytes,
+    options.omitFeatureIdAttribute
+  );
   const featureCount = options.features ? attributes.count : 1;
   const objectIdOffset = options.objectIdOffset ?? 0;
   if (
@@ -307,6 +315,18 @@ function prepareMeshLayer(
     objectIdOffset + featureCount > 2147483648
   )
     throw new Error('I3S object IDs must fit the signed 32-bit Draco metadata range');
+  /** Use one ID per output feature row in both geometry and attributes. */
+  const featureObjectIds =
+    options.objectIds ?? Array.from({length: featureCount}, (_, index) => objectIdOffset + index);
+  if (
+    featureObjectIds.length !== featureCount ||
+    new Set(featureObjectIds).size !== featureCount ||
+    featureObjectIds.some(id => !Number.isSafeInteger(id) || id < 0 || id > 2147483647)
+  ) {
+    throw new Error(
+      'I3S object IDs must be unique signed 32-bit nonnegative integers within a node'
+    );
+  }
   const triangleCount = outputVertexCount / 3;
   const associations = options.features?.triangleFeatureIndices;
   if (
@@ -406,7 +426,7 @@ function prepareMeshLayer(
   const featureOffset =
     8 + outputVertexCount * (12 + (normals ? 12 : 0) + (textureCoordinates ? 8 : 0));
   for (let index = 0; index < featureCount; index++) {
-    view.setBigUint64(featureOffset + index * 8, BigInt(objectIdOffset + index), true);
+    view.setBigUint64(featureOffset + index * 8, BigInt(featureObjectIds[index]), true);
     view.setUint32(featureOffset + featureCount * 8 + index * 8, faceRanges[index * 2], true);
     view.setUint32(
       featureOffset + featureCount * 8 + index * 8 + 4,
@@ -559,7 +579,7 @@ function prepareMeshLayer(
   const objectIds = options.features ? attributes.buffers[0].slice(0) : encodeDefaultObjectId();
   const objectIdView = new DataView(objectIds);
   for (let index = 0; index < featureCount; index++)
-    objectIdView.setUint32(4 + index * 4, objectIdOffset + index, true);
+    objectIdView.setUint32(4 + index * 4, featureObjectIds[index], true);
   if (options.material?.baseColorTexture) {
     const texture = options.material.baseColorTexture;
     rawFiles[`nodes/1/textures/0.${texture.mimeType === 'image/png' ? 'png' : 'jpg'}`] =

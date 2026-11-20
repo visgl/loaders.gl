@@ -37,6 +37,8 @@ export interface NodeTileConversionOptions
   extends Omit<NodeTilesetConversionSourceOptions, 'format'> {
   /** Include portable stages and Node setup/output elapsed milliseconds in the report. */
   readonly profile?: boolean;
+  /** Omit the feature identifier attribute from SLPK output. */
+  readonly omitFeatureIdAttribute?: boolean;
   /** Name of the authored SLPK scene layer. */
   readonly name?: string;
   /** Set to false to write raw SLPK geometry. */
@@ -184,6 +186,7 @@ export async function convertNodeTileset(
     };
     if (options.outputFormat === 'slpk') {
       const sink = createI3SMeshSink({
+        shareSourceObjectIds: true,
         maxTotalBytes: maxOutputBytes,
         maxMeshes: SELECTED_MESH_LIMITS.maxMeshResources,
         maxResourceBytes: maxOutputBytes
@@ -193,6 +196,8 @@ export async function convertNodeTileset(
         sink,
         codec: createI3SMeshConversionCodec({
           ...codecOptions,
+          shareSourceObjectIds: true,
+          omitFeatureIdAttribute: options.omitFeatureIdAttribute,
           name: options.name,
           draco: options.draco,
           maxResourceBytes: maxOutputBytes

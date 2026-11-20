@@ -14,6 +14,8 @@ export interface I3SMeshFeatures {
   readonly triangleFeatureIndices: Uint32Array;
   /** Non-null stable identifier column; geometry uses separate local OIDs. */
   readonly featureIdField: string;
+  /** Original legacy batch-table row for each retained feature. */
+  readonly sourceBatchRows?: readonly number[];
   /** Explicit authorization to represent int64/uint64 values as exact decimal strings. */
   readonly integer64Encoding?: 'decimal-string';
   /** Explicit SLPK field names keyed by source Arrow column name. */
@@ -37,7 +39,8 @@ export interface EncodedI3SMeshAttributes {
 /** Encodes scalar Arrow features with explicit null and 64-bit policies, without coercion. */
 export function encodeI3SMeshAttributes(
   features: I3SMeshFeatures | undefined,
-  maxResourceBytes: number
+  maxResourceBytes: number,
+  omitFeatureIdAttribute = false
 ): EncodedI3SMeshAttributes {
   const batches = features?.batches || [];
   const schema = batches[0]?.schema && convertArrowToSchema(batches[0].schema);
@@ -88,6 +91,7 @@ export function encodeI3SMeshAttributes(
   /** Tracks case-insensitive output names, including the reserved object ID. */
   const outputNames = new Set(['OBJECTID']);
   for (const field of schema.fields) {
+    if (omitFeatureIdAttribute && field.name === features.featureIdField) continue;
     /** Explicit rename applies only to the output field and storage descriptor. */
     const outputName = Object.hasOwn(features.i3sFieldNames ?? {}, field.name)
       ? features.i3sFieldNames![field.name]
