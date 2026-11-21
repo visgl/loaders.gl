@@ -18,8 +18,9 @@ function loadParquetWorker(): Worker | null {
     const moduleUrl = import.meta.url;
     // Native workers cannot resolve the page's import map. The distributed
     // standalone asset handles that case while app bundles use the ESM entry.
+    // Bundlers may replace import.meta.url with a build-machine file URL.
     if (
-      moduleUrl &&
+      /^https?:/.test(moduleUrl) &&
       new URL(moduleUrl).pathname.endsWith('/dist/parquet/parquet-loader-types.js')
     ) {
       const workerUrl = new URL('../parquet-worker.js', moduleUrl);
