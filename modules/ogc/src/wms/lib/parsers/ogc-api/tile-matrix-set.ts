@@ -40,7 +40,7 @@ export type OGCTileMatrix = {
   /** Matrix height in tiles. */
   matrixHeight?: number;
   /** Coalesced row bands in native row numbering; complete geometry validates their bounds. */
-  variableMatrixWidths?: readonly import('@math.gl/geospatial').VariableMatrixWidth[];
+  variableMatrixWidths?: readonly import('@math.gl/geospatial/tiles').VariableMatrixWidth[];
 };
 
 /** An OGC TileMatrixSet 2.0 JSON document (OGC 17-083r4). */
