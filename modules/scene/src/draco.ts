@@ -33,3 +33,6 @@ export {
   getDracoLibraryOptions,
   type DracoLibraryOptions
 } from './draco-library-options';
+
+/** Exact triangle comparison for format writers that qualify lossless Draco output. */
+export {hasSameDracoMeshTriangles} from './draco/lib/compare-draco-mesh-triangles';

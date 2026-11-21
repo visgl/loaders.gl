@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {DracoLoader, type DracoMesh} from '@loaders.gl/scene';
-import {encodeDraco} from '@loaders.gl/scene/draco';
+import {encodeDraco, hasSameDracoMeshTriangles} from '@loaders.gl/scene/draco';
 import type {GLTFAccessor} from '@loaders.gl/scene/gltf';
 import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
@@ -75,7 +75,17 @@ export async function encodeDracoMeshTile(
       );
     }
   }
-  if (JSON.stringify(getMeshTriangles(geometry)) !== JSON.stringify(getMeshTriangles(decoded))) {
+  const attributeNames = Object.keys(geometry.attributes);
+  if (
+    attributeNames.length !== Object.keys(decoded.attributes).length ||
+    !hasSameDracoMeshTriangles(
+      geometry.attributes,
+      geometry.indices.value,
+      decoded.attributes,
+      decoded.indices.value,
+      attributeNames
+    )
+  ) {
     throw new TileConversionError(
       'MESH_DRACO_ATTRIBUTE_CHANGED',
       'Lossless Draco must preserve oriented triangles and every attribute, including feature ownership'
@@ -154,30 +164,4 @@ export async function encodeDracoMeshTile(
 /** Identifies one exact finite Float32 position independently of Draco vertex ordering. */
 function getPositionKey(positions: ArrayLike<number>, index: number): string {
   return `${positions[index]},${positions[index + 1]},${positions[index + 2]}`;
-}
-
-/** Compares oriented triangles independently of vertex/face order, retaining every attribute. */
-function getMeshTriangles(mesh: Pick<MeshGeometry, 'attributes' | 'indices'>): string[] {
-  const names = Object.keys(mesh.attributes).sort();
-  const indices = mesh.indices!.value;
-  const triangles: string[] = [];
-  for (let index = 0; index < indices.length; index += 3) {
-    const vertices = [0, 1, 2].map(corner =>
-      names
-        .map(name => {
-          const attribute = mesh.attributes[name];
-          return Array.from(
-            {length: attribute.size},
-            (_, component) => attribute.value[indices[index + corner] * attribute.size + component]
-          ).join(',');
-        })
-        .join('|')
-    );
-    triangles.push(
-      [0, 1, 2]
-        .map(corner => [...vertices.slice(corner), ...vertices.slice(0, corner)].join(';'))
-        .sort()[0]
-    );
-  }
-  return triangles.sort();
 }
