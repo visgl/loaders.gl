@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {GetTileParameters, TileGrid, TileGridMatrix, TileGridLimits} from './tile-source';
-import {resolveTileIndex, validateTileMatrix, validateTileMatrixSet} from '@math.gl/geospatial/tiles';
+import {
+  resolveTileIndex,
+  validateTileMatrix,
+  validateTileMatrixSet
+} from '@math.gl/geospatial/tiles';
 import type {TileMatrix, TileMatrixSet, VariableMatrixWidth} from '@math.gl/geospatial/tiles';
 
 /**
