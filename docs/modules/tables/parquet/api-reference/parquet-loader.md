@@ -296,4 +296,4 @@ website’s alternate ParquetJS and WASM readers, and hyparquet.
 
 - The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
 
-In browser ESM builds, the application bundler resolves the Parquet module worker from the loader package. Set `parquet.workerUrl` to serve a prebuilt worker from a custom location. Node uses the packaged Node worker.
+Application bundlers resolve the Parquet module worker from the loader package. Native browser ESM uses the packaged standalone browser worker, which can load independently of the page’s import map. Node uses the packaged Node worker. Set `parquet.workerUrl` to use a custom worker URL.
