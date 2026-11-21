@@ -68,3 +68,13 @@ test('NPY public async and sync parsers agree without worker dispatch', async ()
   const expected = NPYLoaderWithParser.parseSync(buffer);
   expect(await NPYLoaderWithParser.parse(buffer)).toEqual(expected);
 });
+
+test('NPY public parser starts its module worker', async () => {
+  const loadWorker = vi.fn(NPYLoaderWithParser.loadWorker);
+  const loader = {...NPYLoaderWithParser, loadWorker};
+  const {data} = await load(NPY_UINT8_URL, loader, {
+    core: {worker: true, _workerType: 'classic'}
+  });
+  expect(data).toEqual(new Uint8Array([1, 2, 3, 4]));
+  expect(loadWorker).toHaveBeenCalledOnce();
+});
