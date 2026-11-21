@@ -34,7 +34,7 @@ test.each([
     [comparisonBytes, ParquetLoader]
   ] as const) {
     const result = await parse(bytes, loader, {
-      worker: false,
+      core: {worker: false},
       parquet: {shape: 'object-row-table'}
     });
     expect(

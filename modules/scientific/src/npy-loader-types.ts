@@ -2,23 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import {NPYFormat} from './npy-format';
-// @ts-ignore __VERSION__ is injected by the package build.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-import type {NPYTile} from './lib/parsers/parse-npy';
+import {NPYLoaderDefinition} from './npy-loader-definition';
 
-// \x93NUMPY
-const NPY_MAGIC_NUMBER = new Uint8Array([147, 78, 85, 77, 80, 89]);
-
-/** NPYLoader for numpy tiles */
-export type NPYLoaderOptions = LoaderOptions & {
-  /** NPYLoader for numpy tiles */
-  npy?: {
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
+export type {NPYLoaderOptions} from './npy-loader-definition';
 
 /** Preloads the parser-bearing NPY loader implementation. */
 async function preload() {
@@ -26,23 +12,23 @@ async function preload() {
   return NPYLoaderWithParser;
 }
 
-/** Metadata-only worker loader for numpy "tiles". */
-export const NPYLoader = {
-  ...NPYFormat,
-  dataType: null as any as NPYTile,
-  batchType: null as never,
+/** Starts the browser module worker for NPY decoding. */
+function loadNPYWorker(): Worker | null {
+  if (typeof Worker !== 'undefined') {
+    const moduleUrl = import.meta.url;
+    // Native browser workers cannot use the page's import map.
+    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/npy-loader-types.js')) {
+      const workerUrl = new URL('./npy-worker.js', moduleUrl);
+      return new Worker(workerUrl, {type: 'module'});
+    }
+    return new Worker(new URL('./workers/npy-worker.js', import.meta.url), {type: 'module'});
+  }
+  return null;
+}
 
-  name: 'NPY',
-  id: 'npy',
-  module: 'scientific',
-  version: VERSION,
-  fetchBeforePreload: true,
-  worker: true,
-  extensions: ['npy'],
-  mimeTypes: [],
-  tests: [NPY_MAGIC_NUMBER.buffer],
-  options: {
-    npy: {}
-  },
+/** Metadata-only NPY loader with an on-demand browser worker. */
+export const NPYLoader = {
+  ...NPYLoaderDefinition,
+  loadWorker: loadNPYWorker,
   preload
-} as const satisfies Loader<NPYTile, never, NPYLoaderOptions>;
+} as const;

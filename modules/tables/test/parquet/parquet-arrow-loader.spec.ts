@@ -18,12 +18,14 @@ const PARQUET_DIR = '@loaders.gl/tables/parquet/test/data';
 setLoaderOptions({core: {_workerType: 'test'}});
 test('ParquetLoader#loader objects', () => {
 });
-test('ParquetLoader#publishes a module-local worker asset', () => {
-    expect(typeof ParquetLoader.worker, 'declares a concrete packaged worker URL').toBe('string');
-    const workerUrl = new URL(String(ParquetLoader.worker), 'https://example.invalid');
-    expect(workerUrl.hostname, 'does not use the implicit worker CDN fallback').not.toBe('unpkg.com');
-    const workerFile = isBrowser ? '/parquet-worker.js' : '/parquet-worker-node.cjs';
-    expect(String(ParquetLoader.worker).endsWith(workerFile), 'targets the packaged runtime worker').toBeTruthy();
+test('ParquetLoader selects a local worker for each runtime', () => {
+  if (isBrowser) {
+    expect(ParquetLoader.loadWorker).toBeTypeOf('function');
+  } else {
+    const workerUrl = new URL(String(ParquetLoader.worker));
+    expect(workerUrl.protocol).toBe('file:');
+    expect(workerUrl.pathname.endsWith('/parquet-worker-node.cjs')).toBe(true);
+  }
 });
 test('ParquetLoader#worker keeps the browser responsive and rehydrates Arrow output', async () => {
     if (!isBrowser) {

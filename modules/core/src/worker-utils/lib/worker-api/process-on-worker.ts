@@ -163,12 +163,13 @@ function getTask(worker: WorkerObject, options: WorkerOptions): WorkerTask {
       'Inline legacy worker source is unsupported; use a TaskRunner worker URL or factory'
     );
   const create = !getCustomWorkerURL(worker, options) && isBrowser ? worker.loadWorker : undefined;
-  const url = getWorkerURL(worker, options);
   return {
     id: `${worker.module}:${worker.id}`,
     initialize: state => state,
     worker: {
-      ...(create ? {create: () => create() ?? createModuleWorker(url)} : {url}),
+      ...(create
+        ? {create: () => create() ?? createModuleWorker(getWorkerURL(worker, options))}
+        : {url: getWorkerURL(worker, options)}),
       capabilities: {atomic: true, streaming: true}
     }
   };

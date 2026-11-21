@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
+import {parse} from '@loaders.gl/core';
+import {GeoJSONWorkerLoader} from '@loaders.gl/tables/geojson/bundled';
 import {RecordBatch, Table, tableFromArrays} from 'apache-arrow';
 import {GeoJSONLoaderWithParser} from '../../src/json/geojson-loader';
 import {JSONTableLoaderWithParser} from '../../src/json/json-table-loader';
@@ -17,6 +19,18 @@ const featureCollection = {
   features: [{type: 'Feature', geometry: {type: 'Point', coordinates: [1, 2]}, properties: {id: 7}}]
 };
 const bytes = new TextEncoder().encode(JSON.stringify(featureCollection));
+
+test('Bundled GeoJSON worker alias starts a local worker', async () => {
+  const implementation = await GeoJSONWorkerLoader.preload();
+  const loadWorker = vi.fn(implementation.loadWorker);
+  const table = await parse(
+    bytes.slice(),
+    {...GeoJSONWorkerLoader, preload: async () => ({...implementation, loadWorker})},
+    {core: {worker: true, _workerType: 'classic'}, geojson: {shape: 'arrow'}}
+  );
+  expect(table).toBeInstanceOf(Table);
+  expect(loadWorker).toHaveBeenCalledOnce();
+});
 
 test('GeoJSON explicit binary and feature outputs preserve streaming values', async () => {
   const options = {geojson: {shape: 'binary-feature-collection' as const}, core: {batchSize: 1}};

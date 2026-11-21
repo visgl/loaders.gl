@@ -8,25 +8,19 @@ import type {GeoJSONTable, ColumnarTable, BinaryFeatureCollection} from '@loader
 import type {Loader, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseFlatGeobuf, ParseFlatGeobufOptions} from './lib/parse-flatgeobuf';
 import {
-  FlatGeobufLoader as FlatGeobufWorkerLoaderMetadata,
-  FlatGeobufLoader as FlatGeobufLoaderMetadata,
+  FlatGeobufLoaderDefinition,
   type FlatGeobufLoaderOptions
-} from './flatgeobuf-loader-types';
+} from './flatgeobuf-loader-definition';
 import {
   deserializeFlatGeobufWorkerResult,
   serializeFlatGeobufWorkerResult
 } from './lib/flatgeobuf-worker-transport';
 
-const {preload: _FlatGeobufWorkerLoaderPreload, ...FlatGeobufWorkerLoaderMetadataWithoutPreload} =
-  FlatGeobufWorkerLoaderMetadata;
-const {preload: _FlatGeobufLoaderPreload, ...FlatGeobufLoaderMetadataWithoutPreload} =
-  FlatGeobufLoaderMetadata;
-
 export type {FlatGeobufLoaderOptions} from './flatgeobuf-loader-types';
 
 /** Load flatgeobuf on a worker */
 export const FlatGeobufWorkerLoaderWithParser = {
-  ...FlatGeobufWorkerLoaderMetadataWithoutPreload
+  ...FlatGeobufLoaderDefinition
 } as const satisfies Loader<
   GeoJSONTable | ColumnarTable | Table | BinaryFeatureCollection,
   RecordBatch,
@@ -36,7 +30,7 @@ export const FlatGeobufWorkerLoaderWithParser = {
 /** Parser-bearing loader for FlatGeobuf files. */
 export const FlatGeobufLoaderWithParser = {
   createDataSourceSync: createFlatGeobufSource,
-  ...FlatGeobufLoaderMetadataWithoutPreload,
+  ...FlatGeobufLoaderDefinition,
   parse: async (arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) =>
     parseSync(arrayBuffer, options),
   parseSync,

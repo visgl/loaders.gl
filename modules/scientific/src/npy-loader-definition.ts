@@ -1,0 +1,41 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import {NPYFormat} from './npy-format';
+// @ts-ignore __VERSION__ is injected by the package build.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import type {NPYTile} from './lib/parsers/parse-npy';
+
+// \x93NUMPY
+const NPY_MAGIC_NUMBER = new Uint8Array([147, 78, 85, 77, 80, 89]);
+
+/** NPYLoader for numpy tiles */
+export type NPYLoaderOptions = LoaderOptions & {
+  /** NPYLoader for numpy tiles */
+  npy?: {
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+};
+
+/** Metadata-only worker loader for numpy "tiles". */
+export const NPYLoaderDefinition = {
+  fetchBeforePreload: true,
+  ...NPYFormat,
+  dataType: null as any as NPYTile,
+  batchType: null as never,
+
+  name: 'NPY',
+  id: 'npy',
+  module: 'scientific',
+  version: VERSION,
+  worker: true,
+  extensions: ['npy'],
+  mimeTypes: [],
+  tests: [NPY_MAGIC_NUMBER.buffer],
+  options: {
+    npy: {}
+  }
+} as const satisfies Loader<NPYTile, never, NPYLoaderOptions>;

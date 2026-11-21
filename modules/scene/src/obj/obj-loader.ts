@@ -25,9 +25,7 @@ import {
 } from '@loaders.gl/core/schema-utils';
 import {getOBJSchema} from './lib/get-obj-schema';
 import {parseOBJ} from './lib/parse-obj';
-import {OBJLoader as OBJLoaderMetadata} from './obj-loader-types';
-
-const {preload: _OBJLoaderPreload, ...OBJLoaderMetadataWithoutPreload} = OBJLoaderMetadata;
+import {OBJLoaderDefinition} from './obj-loader-definition';
 
 /** Converts an OBJ mesh through native Arrow and materializes the mesh layout on request. */
 function convertOBJMesh(mesh: Mesh, options?: OBJLoaderOptions): Mesh | Table {
@@ -37,7 +35,7 @@ function convertOBJMesh(mesh: Mesh, options?: OBJLoaderOptions): Mesh | Table {
 
 /** Loader for OBJ geometry. */
 export const OBJLoaderWithParser = {
-  ...OBJLoaderMetadataWithoutPreload,
+  ...OBJLoaderDefinition,
   parse: async (arrayBuffer: ArrayBuffer, options?: OBJLoaderOptions) =>
     convertOBJMesh(parseOBJ(new TextDecoder().decode(arrayBuffer), options), options),
   parseTextSync: (text: string, options?: OBJLoaderOptions) =>

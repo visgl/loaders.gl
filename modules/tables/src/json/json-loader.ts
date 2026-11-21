@@ -13,17 +13,15 @@ import {convertTableBatchesToArrow} from './lib/parsers/convert-row-table-to-arr
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
 import {
-  JSONLoader as JSONLoaderMetadata,
+  JSONLoaderDefinition,
   type JSONBatch,
   type JSONLoaderOptions,
   type MetadataBatch
-} from './json-loader-types';
-
-const {preload: _JSONLoaderPreload, ...JSONLoaderMetadataWithoutPreload} = JSONLoaderMetadata;
+} from './json-loader-definition';
 
 /** Loader for JSON documents, including tabular JSON and streaming table extraction. */
 export const JSONLoaderWithParser = {
-  ...JSONLoaderMetadataWithoutPreload,
+  ...JSONLoaderDefinition,
   serializeWorkerResult: serializeBinaryJSON,
   deserializeWorkerResult: deserializeBinaryJSON,
   serializeWorkerBatch: serializeJSONWorkerBatch,

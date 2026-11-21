@@ -2,16 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader} from '@loaders.gl/core/loader-utils';
-import type {Table, RecordBatch} from 'apache-arrow';
-import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
+import {ParquetLoaderDefinition} from './parquet-loader-definition';
 
-import {PARQUET_LOADER_BASE} from './parquet-loader-base';
-import type {ParquetLoaderOptions as SharedParquetLoaderOptions} from './parquet-loader-options';
-import {PARQUET_WORKER_URL} from './parquet-worker-url';
-
-/** Options for the Parquet loader. */
-export type ParquetLoaderOptions = SharedParquetLoaderOptions;
+export type {ParquetLoaderOptions} from './parquet-loader-definition';
 
 /** Preloads the parser-bearing TypeScript Parquet loader implementation. */
 async function preloadParquetLoader() {
@@ -19,19 +12,27 @@ async function preloadParquetLoader() {
   return ParquetLoaderWithParser;
 }
 
-/** Metadata-only Parquet table loader supporting object-row and Arrow table output. */
+/** Starts the browser module worker for Parquet decoding. */
+function loadParquetWorker(): Worker | null {
+  if (typeof Worker !== 'undefined') {
+    const moduleUrl = import.meta.url;
+    // Native workers cannot resolve the page's import map. The distributed
+    // standalone asset handles that case while app bundles use the ESM entry.
+    if (
+      moduleUrl &&
+      new URL(moduleUrl).pathname.endsWith('/dist/parquet/parquet-loader-types.js')
+    ) {
+      const workerUrl = new URL('../parquet-worker.js', moduleUrl);
+      return new Worker(workerUrl, {type: 'module'});
+    }
+    return new Worker(new URL('./workers/parquet-worker.js', import.meta.url), {type: 'module'});
+  }
+  return null;
+}
+
+/** Metadata-only Parquet loader with an on-demand browser worker. */
 export const ParquetLoader = {
-  fetchBeforePreload: true,
-  defaultShape: 'arrow',
-  supportsNativeArrow: true,
-  ...PARQUET_LOADER_BASE,
-  worker: PARQUET_WORKER_URL,
-  workerInBatches: true,
-  fromUrl: true,
-  fromBlob: true,
+  ...ParquetLoaderDefinition,
+  loadWorker: loadParquetWorker,
   preload: preloadParquetLoader
-} as const satisfies Loader<
-  ObjectRowTable | Table,
-  ObjectRowTableBatch | RecordBatch,
-  ParquetLoaderOptions
->;
+} as const;

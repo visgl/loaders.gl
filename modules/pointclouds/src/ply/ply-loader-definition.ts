@@ -1,0 +1,50 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+// PLY Loader
+import type {Table, RecordBatch} from 'apache-arrow';
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {PLYMesh} from './lib/ply-types';
+import type {ParsePLYOptions} from './lib/parse-ply';
+import {PLYFormat} from './ply-format';
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type PLYLoaderOptions = LoaderOptions & {
+  ply?: ParsePLYOptions & {
+    /** Output shape. Defaults to a Mesh Arrow table. */
+    shape?: 'mesh' | 'arrow';
+    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
+    colorFormat?: 'uint8norm' | 'float16' | 'float32';
+    /** Treat PLY data as a point cloud by reading only the leading vertex element. */
+    pointCloud?: boolean;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+};
+
+/**
+ * Metadata-only worker loader for PLY - Polygon File Format (aka Stanford Triangle Format)'
+ * links: ['http://paulbourke.net/dataformats/ply/',
+ * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
+ */
+export const PLYLoaderDefinition = {
+  fetchBeforePreload: true,
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as PLYMesh | Table,
+  batchType: null as unknown as PLYMesh | RecordBatch,
+
+  ...PLYFormat,
+  // shapes: ['mesh', 'gltf', 'columnar-table'],
+  version: VERSION,
+  worker: true,
+  /** Enables the stateful input/output batch protocol on the built-in worker. */
+  workerInBatches: true,
+  options: {
+    ply: {shape: 'arrow', colorFormat: 'uint8norm'}
+  }
+} as const satisfies Loader<PLYMesh | Table, PLYMesh | RecordBatch, LoaderOptions>;

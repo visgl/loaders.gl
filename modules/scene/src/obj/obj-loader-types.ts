@@ -2,40 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table, RecordBatch} from 'apache-arrow';
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {Mesh} from '@loaders.gl/core/schema';
-import {OBJFormat} from './obj-format';
+import {OBJLoaderDefinition} from './obj-loader-definition';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-export type OBJLoaderOptions = LoaderOptions & {
-  obj?: {
-    /** Output shape. Defaults to a Mesh Arrow table. */
-    shape?: 'mesh' | 'arrow';
-    /** Treat OBJ vertex records as a point cloud and stream `v` rows in batches. */
-    pointCloud?: boolean;
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
-
-/** Legacy OBJ mesh batch returned after caller-side conversion. */
-export type OBJMeshBatch = {
-  /** Legacy mesh batch shape. */
-  shape: 'mesh';
-  /** Parsed data batch discriminator. */
-  batchType: 'data';
-  /** Decoded mesh. */
-  data: Mesh;
-  /** Number of vertices. */
-  length: number;
-};
-
-/** Public OBJ batch output shapes. */
-export type OBJParsedBatch = OBJMeshBatch | RecordBatch;
+export type {OBJLoaderOptions, OBJMeshBatch, OBJParsedBatch} from './obj-loader-definition';
 
 /**
  * Preloads the parser-bearing OBJ loader implementation.
@@ -45,30 +14,23 @@ async function preload() {
   return OBJLoaderWithParser;
 }
 
-/**
- * Metadata-only worker loader for the OBJ geometry format
- */
-export const OBJLoader = {
-  defaultShape: 'arrow',
-  supportsNativeArrow: true,
-  ...OBJFormat,
-
-  dataType: null as unknown as Mesh | Table,
-  batchType: null as unknown as OBJParsedBatch,
-  version: VERSION,
-  fetchBeforePreload: true,
-  worker: true,
-  /** Enables the stateful input/output batch protocol on the built-in worker. */
-  workerInBatches: true,
-  text: true,
-  testText: testOBJFile,
-  options: {
-    obj: {shape: 'arrow'}
-  },
-  preload
-} as const satisfies Loader<Mesh | Table, OBJParsedBatch, OBJLoaderOptions>;
-
-function testOBJFile(text: string): boolean {
-  // TODO - There could be comment line first
-  return text[0] === 'v';
+/** Starts the browser module worker for OBJ decoding. */
+function loadOBJWorker(): Worker | null {
+  if (typeof Worker !== 'undefined') {
+    const moduleUrl = import.meta.url;
+    // Native browser workers cannot use the page's import map.
+    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/obj/obj-loader-types.js')) {
+      const workerUrl = new URL('../obj-worker.js', moduleUrl);
+      return new Worker(workerUrl, {type: 'module'});
+    }
+    return new Worker(new URL('./workers/obj-worker.js', import.meta.url), {type: 'module'});
+  }
+  return null;
 }
+
+/** Metadata-only OBJ loader with an on-demand browser worker. */
+export const OBJLoader = {
+  ...OBJLoaderDefinition,
+  loadWorker: loadOBJWorker,
+  preload
+} as const;

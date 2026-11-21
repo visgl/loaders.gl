@@ -3,6 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {execFileSync} from 'node:child_process';
+import {readFile} from 'node:fs/promises';
+import {createServer} from 'node:http';
+import {resolve, sep} from 'node:path';
+import {chromium} from 'playwright';
 import {build} from 'esbuild';
 import {expect, test} from 'vitest';
 
@@ -17,6 +21,10 @@ test.each([
   ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoaderWithParser'],
   ['geospatial', 'GeoPackageLoader', 'geopackage', 'GeoPackageLoaderWithParser'],
   ['tables', 'CSVLoader', 'csv', 'CSVLoaderWithParser'],
+  ['pointclouds', 'PCDLoader', 'pcd', 'PCDLoaderWithParser'],
+  ['pointclouds', 'PLYLoader', 'ply', 'PLYLoaderWithParser'],
+  ['scene', 'OBJLoader', 'obj', 'OBJLoaderWithParser'],
+  ['scientific', 'NPYLoader', 'npy', 'NPYLoaderWithParser'],
   ['geospatial', 'KMLLoader', 'kml', 'KMLLoaderWithParser']
 ])(
   'published %s %s metadata preloads through its format export',
@@ -24,7 +32,8 @@ test.each([
     // A separate Node process bypasses Vitest source aliases and checks the published layout.
     const source = `import {${metadata}} from '@loaders.gl/${group}';
     import {${parser}} from '@loaders.gl/${group}/${parserEntry}';
-    if (await ${metadata}.preload() !== ${parser}) process.exit(1);`;
+    if (await ${metadata}.preload() !== ${parser}) process.exit(1);
+    if (${metadata}.loadWorker && ${metadata}.loadWorker !== ${parser}.loadWorker) process.exit(1);`;
     expect(() =>
       execFileSync(process.execPath, ['--input-type=module', '-e', source], {
         cwd: REPOSITORY_ROOT,
@@ -133,4 +142,70 @@ test.each([
     ).not.toThrow();
   },
   35_000
+);
+
+test.each([
+  ['tables', 'parquet/parquet-loader-types.js', 'ParquetLoader', 'parquet'],
+  ['tables', 'arrow/arrow-loader-types.js', 'ArrowLoader', 'arrow'],
+  ['tables', 'json/json-table-loader-types.js', 'JSONTableLoader', 'json'],
+  ['pointclouds', 'pcd/pcd-loader-types.js', 'PCDLoader', 'pcd'],
+  ['scientific', 'npy-loader-types.js', 'NPYLoader', 'npy']
+])(
+  'native browser ESM starts a standalone worker from %s/%s',
+  async (packageName, entry, loaderName, workerName) => {
+    const root = resolve(REPOSITORY_ROOT, 'modules', packageName, 'dist');
+    const server = createServer(async (request, response) => {
+      const url = new URL(request.url ?? '/', 'http://localhost');
+      if (url.pathname === '/') {
+        response.writeHead(200, {'Content-Type': 'text/html'}).end(`<!doctype html>
+        <script type="importmap">{"imports":{"loader":"/dist/${entry}"}}</script>
+        <script type="module">
+          import {${loaderName}} from 'loader';
+          const worker = ${loaderName}.loadWorker();
+          worker.addEventListener('message', event => {
+            if (event.data?.type === 'ready') window.workerResult = 'ready';
+          });
+          worker.addEventListener('error', event => {
+            window.workerResult = event.message || 'worker failed to load';
+          });
+        </script>`);
+        return;
+      }
+      const file = resolve(root, url.pathname.slice('/dist/'.length));
+      if (!url.pathname.startsWith('/dist/') || !file.startsWith(root + sep)) {
+        response.writeHead(404).end();
+        return;
+      }
+      try {
+        const contents = await readFile(file);
+        response.writeHead(200, {'Content-Type': 'text/javascript'}).end(contents);
+      } catch {
+        response.writeHead(404).end();
+      }
+    });
+    await new Promise<void>(complete => server.listen(0, '127.0.0.1', complete));
+    try {
+      const browser = await chromium.launch();
+      try {
+        const address = server.address();
+        if (!address || typeof address === 'string') throw new Error('Expected HTTP port');
+        const page = await browser.newPage();
+        const workers: string[] = [];
+        page.on('worker', worker => workers.push(worker.url()));
+        await page.goto(`http://127.0.0.1:${address.port}/`);
+        const result = await page.waitForFunction(
+          () => Reflect.get(window, 'workerResult'),
+          undefined,
+          {timeout: 10000}
+        );
+        expect(await result.jsonValue()).toBe('ready');
+        expect(workers).toEqual([`http://127.0.0.1:${address.port}/dist/${workerName}-worker.js`]);
+      } finally {
+        await browser.close();
+      }
+    } finally {
+      await new Promise<void>(complete => server.close(() => complete()));
+    }
+  },
+  20_000
 );

@@ -15,17 +15,14 @@ import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/core/schema';
 import {parseGeoArrowSync, parseGeoArrowInBatches} from './lib/parsers/parse-geoarrow';
 import type {GeoArrowLoaderOptions} from './geoarrow-loader-types';
-import {GeoArrowLoader as GeoArrowLoaderMetadata} from './geoarrow-loader-types';
-
-const {preload: _GeoArrowLoaderPreload, ...GeoArrowLoaderMetadataWithoutPreload} =
-  GeoArrowLoaderMetadata;
+import {GeoArrowLoaderDefinition} from './geoarrow-loader-definition';
 
 /**
  * GeoArrowLoaderWithParser loads an Apache Arrow table, parses GeoArrow type extension data
  * to convert it to a GeoJSON table or a BinaryGeometry
  */
 export const GeoArrowLoaderWithParser = {
-  ...GeoArrowLoaderMetadataWithoutPreload,
+  ...GeoArrowLoaderDefinition,
   serializeWorkerResult: serializeArrowTableResult,
   /** Converts geometry on the caller after restoring Arrow extension metadata. */
   deserializeWorkerResult(result: unknown, options?: GeoArrowLoaderOptions) {

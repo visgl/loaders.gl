@@ -19,16 +19,14 @@ import {
   makeNDJSONArrowBatchIterator
 } from './lib/parsers/convert-row-table-to-arrow';
 import {
-  NDJSONLoader as NDJSONLoaderMetadata,
+  NDJSONLoaderDefinition,
   type NDJSONLoaderOptions,
   type NDJSONShape
-} from './ndjson-loader-types';
-
-const {preload: _NDJSONLoaderPreload, ...NDJSONLoaderMetadataWithoutPreload} = NDJSONLoaderMetadata;
+} from './ndjson-loader-definition';
 
 /** Loader for newline-delimited JSON row and Arrow tables. */
 export const NDJSONLoaderWithParser = {
-  ...NDJSONLoaderMetadataWithoutPreload,
+  ...NDJSONLoaderDefinition,
   serializeWorkerOptions: serializeJSONWorkerOptions,
   serializeWorkerResult: serializeJSONWorkerBatch,
   deserializeWorkerResult: deserializeJSONWorkerResult,

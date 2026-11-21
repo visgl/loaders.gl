@@ -2,20 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import {parseNPY, type NPYTile} from './lib/parsers/parse-npy';
-import type {NPYLoaderOptions} from './npy-loader-types';
-import {NPYLoader as NPYLoaderMetadata} from './npy-loader-types';
+import {NPYLoader} from './npy-loader-types.js';
+import {NPYLoaderWithParser as parser} from './npy-parser.js';
 
-const {preload: _preload, ...metadata} = NPYLoaderMetadata;
+export * from './npy-parser.js';
 
-export type {NPYLoaderOptions} from './npy-loader-types';
-
-/**
- * Loader for numpy "tiles"
- */
+/** Parser-bearing NPY loader with its browser module worker factory. */
 export const NPYLoaderWithParser = {
-  ...metadata,
-  parseSync: parseNPY,
-  parse: async (arrayBuffer: ArrayBuffer, options?: LoaderOptions) => parseNPY(arrayBuffer, options)
-} as const satisfies LoaderWithParser<NPYTile, never, NPYLoaderOptions>;
+  ...parser,
+  loadWorker: NPYLoader.loadWorker
+};
