@@ -263,7 +263,7 @@ for (const table of discovered) {
 Multi-table providers expose `getTablesMetadata()` and, for lazy per-table schemas,
 `getTableMetadata(name)`. Single-table sources reuse `getQueryMetadata()`. Tables without a
 metadata discovery contract cannot be listed; requesting an unavailable schema fails explicitly.
-See the [API reference](/docs/modules/core/query/query) for result columns and provider interfaces.
+See the [API reference](/docs/modules/core/query/query-api) for result columns and provider interfaces.
 
 ## Cancel work and observe completion
 
@@ -303,7 +303,7 @@ be preserved when the format supplies it.
 These entry points currently support selection, aliases, predicates, and limits. They do not add
 joins, sorting, aggregates, or synchronous execution. For exact
 signatures, errors, capability details, and benchmark commands, see the
-[query API reference](/docs/modules/core/query/query).
+[query API reference](/docs/modules/core/query/query-api).
 
 ### Injected SQL parser contract
 

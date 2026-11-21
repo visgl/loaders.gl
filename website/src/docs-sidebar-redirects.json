@@ -73,5 +73,6 @@
   "/docs/modules/_sections/point-clouds/loaders": "/docs/modules/pointclouds",
   "/docs/modules/_sections/point-clouds/writers": "/docs/modules/pointclouds",
   "/docs/modules/_sections/raster/loaders": "/docs/modules/raster",
-  "/docs/modules/_sections/ogc/sources": "/docs/modules/ogc"
+  "/docs/modules/_sections/ogc/sources": "/docs/modules/ogc",
+  "/docs/modules/core/scan/query": "/docs/modules/core/query/query-api"
 }

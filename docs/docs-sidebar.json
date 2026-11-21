@@ -236,7 +236,7 @@
               "id": "modules/core/query/README"
             },
             "items": [
-              "modules/core/query/query"
+              "modules/core/query/query-api"
             ]
           },
           {

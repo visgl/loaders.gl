@@ -45,7 +45,7 @@ reference Arrow executor, query parsing, source-neutral query metadata, ordered 
 and adapters that expose an already-addressed vector result as a table.
 
 For application table queries, start with [Querying tables](/docs/developer-guide/querying-tables)
-and the [query API reference](/docs/modules/core/query/query).
+and the [query API reference](/docs/modules/core/query/query-api).
 
 Format packages do not depend on this runtime. They implement lightweight contracts from
 `@loaders.gl/core/loader-utils`, so applications that only load or decode a format do not pay the scan
@@ -339,7 +339,7 @@ query adapters import the focused subpath rather than the full scan entry point.
 Use `query()` for a collected Arrow table and `queryInBatches()` for streamed Arrow batches.
 Both accept logical queries or SQL through an injected parser, with loaded tables, URL source
 loaders, and named data sources. See [Querying tables](/docs/developer-guide/querying-tables) for
-examples and the [query API reference](/docs/modules/core/query/query) for signatures, execution
+examples and the [query API reference](/docs/modules/core/query/query-api) for signatures, execution
 semantics, source capabilities, and benchmarks.
 
 ## Query naming and pushdown capabilities
