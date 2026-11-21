@@ -8,11 +8,10 @@ import {
   compileArrowScales,
   compileArrowScaleExpression,
   createStreamingDomainAccumulator,
-  type CompiledArrowScale,
-  parseSQLScaleExpression,
-  type ParsedSQLScale,
-  type ResolvedScale
+  type CompiledArrowScale
 } from '@math.gl/sql/scales';
+import {parseSQLScaleExpression, type ParsedSQLScale} from '@math.gl/sql/parser';
+import type {ResolvedScale} from '@math.gl/core/color';
 import {makeArrowTableFromBatches} from '@loaders.gl/core/schema-utils';
 import {compileArrowExpression, type CompiledArrowExpression} from '@math.gl/sql/arrow';
 import type {Expression} from '@math.gl/sql/expressions';

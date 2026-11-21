@@ -5,7 +5,7 @@ import {
   makeOrientedBoundingBoxFromQuaternion
 } from '@math.gl/geometry/culling';
 import {Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 
 // biome-ignore format: preserve intentional fixture layout
 const CUBE_POSITIONS = new Float32Array([

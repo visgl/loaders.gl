@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Matrix4} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {createTilesetViewState} from '../examples/website/3d-tiles/create-tileset-view-state';
 
 const DEFAULT_VIEW_STATE = {longitude: 0, latitude: 0, zoom: 3, pitch: 0, bearing: 0};

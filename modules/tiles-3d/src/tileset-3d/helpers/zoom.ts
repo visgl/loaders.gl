@@ -4,7 +4,7 @@
 
 import {Vector3} from '@math.gl/core/matrix';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {BoundingRectangle} from '../../types';
 
 const WGS84_RADIUS_X = 6378137.0;

@@ -19,7 +19,7 @@ import type {
 } from '@loaders.gl/scene/gltf';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 
 /* @ts-expect-error TS2732: Cannot find module 'node:module' or its corresponding type declarations. */
 import {createRequire} from 'node:module';

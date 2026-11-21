@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {BoundingSphere} from '@math.gl/geometry/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 
 export function convertI3SObbToMbs(obb) {
   const halfSize = obb.halfSize;

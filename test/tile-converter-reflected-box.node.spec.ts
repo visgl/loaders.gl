@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {createBoundingVolumes} from '../apps/tile-converter/src/v4/i3s-converter/helpers/coordinate-converter';
 

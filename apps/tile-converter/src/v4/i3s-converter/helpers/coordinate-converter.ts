@@ -1,7 +1,7 @@
 import type {BoundingVolumes, FullExtent, Mbs, Obb} from '@loaders.gl/tiles-3d/i3s';
 
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {
   OrientedBoundingBox,
   makeOrientedBoundingBoxFromPoints,

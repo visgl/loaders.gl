@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
 import {createWebMercatorTileGrid, resolveXYZTileParameters} from '@loaders.gl/core/loader-utils';
-import {getTileBounds} from '@math.gl/geospatial';
+import {getTileBounds} from '@math.gl/geospatial/tiles';
 
 test('Canonical XYZ geometry preserves zoom IDs and logical pixel density', () => {
   const grid = createWebMercatorTileGrid(3, 4, 512);

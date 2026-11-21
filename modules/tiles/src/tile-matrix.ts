@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getTileBounds, getTileRanges, selectTileMatrix} from '@math.gl/geospatial';
-import type {TileMatrixBounds, TileMatrixLimits, TileMatrixSet} from '@math.gl/geospatial';
+import {getTileBounds, getTileRanges, selectTileMatrix} from '@math.gl/geospatial/tiles';
+import type {TileMatrixBounds, TileMatrixLimits, TileMatrixSet} from '@math.gl/geospatial/tiles';
 import type {NonGeoBoundingBox, TileIndex} from './tileset-2d/types';
 import {resolveTileGridTile, validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
 import type {Tileset2DAdapter, Tileset2DTraversalContext} from './tileset-2d/adapter';

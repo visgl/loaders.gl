@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Matrix3, Matrix4, Quaternion, Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {
   getSpatialCoordinateFrame,
   SpatialCoordinateTransformer

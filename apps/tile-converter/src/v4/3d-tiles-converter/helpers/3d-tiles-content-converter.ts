@@ -13,7 +13,7 @@ import {
 } from '@loaders.gl/scene/gltf';
 import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {convertTextureAtlas} from './texture-atlas';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 

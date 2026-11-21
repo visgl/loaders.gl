@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/core/loader-utils';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
 import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {Tile3D} from '../common/tile-3d';

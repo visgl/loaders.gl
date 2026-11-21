@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {GetTileParameters, TileGrid, TileGridMatrix, TileGridLimits} from './tile-source';
-import {resolveTileIndex, validateTileMatrix, validateTileMatrixSet} from '@math.gl/geospatial';
-import type {TileMatrix, TileMatrixSet, VariableMatrixWidth} from '@math.gl/geospatial';
+import {resolveTileIndex, validateTileMatrix, validateTileMatrixSet} from '@math.gl/geospatial/tiles';
+import type {TileMatrix, TileMatrixSet, VariableMatrixWidth} from '@math.gl/geospatial/tiles';
 
 /**
  * Builds a tile grid from advertised per-level metadata. `tileMatrixSet` is set only when every

@@ -7,7 +7,7 @@ import {beforeAll as preloadBeforeAll} from 'vitest';
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/scene';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import type {MeshGeometry, Schema} from '@loaders.gl/core/schema';
 import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';

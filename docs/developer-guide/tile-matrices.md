@@ -49,7 +49,7 @@ WMTS and OGC API Tiles expose a `tileGrid` through `getMetadata()`:
 - Legacy fields such as `origin` and `tileSize` describe the first level. They do not describe every matrix in an irregular pyramid. A bottom-left first level has no legacy top-left `origin`.
 
 ```ts
-import {getTileBounds} from '@math.gl/geospatial';
+import {getTileBounds} from '@math.gl/geospatial/tiles';
 
 const {tileGrid} = await source.getMetadata();
 const matrix = tileGrid?.tileMatrixSet?.matrices.find(level => level.id === 'coarse');

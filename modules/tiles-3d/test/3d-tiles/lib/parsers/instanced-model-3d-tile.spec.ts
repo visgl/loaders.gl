@@ -7,7 +7,8 @@
 
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core/matrix';
-import {Ellipsoid, eastNorthUpToFixedFrame} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
+import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/coordinates';
 import {parse, encodeSync} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';

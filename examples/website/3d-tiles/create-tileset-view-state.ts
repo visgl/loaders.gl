@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {MapViewState} from '@deck.gl/core';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 
 /** Creates a camera target at the tileset center while preserving explicit example placement. */
 export function createTilesetViewState(
