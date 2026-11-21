@@ -26,6 +26,7 @@ export const JaegerTraceLoader = {
   name: 'Jaeger Trace Loader',
   id: 'jaegerTrace',
   module: 'traces',
+  fetchBeforePreload: true,
   worker: true,
   workerInBatches: true,
   workerFile: 'trace-worker.js',

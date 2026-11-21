@@ -36,6 +36,7 @@ export const WKTLoader = {
 
   ...WKTFormat,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   options: {
     wkt: {

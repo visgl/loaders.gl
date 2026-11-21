@@ -26,6 +26,7 @@ const sourceMetadata = {
 
 /** Shared CSV loader metadata for the caller and worker. */
 export const CSVLoaderDefinition = {
+  fetchBeforePreload: true,
   ...sourceMetadata,
   defaultShape: 'arrow',
   supportsNativeArrow: true,

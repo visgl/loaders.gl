@@ -32,6 +32,7 @@ export const WKBLoader = {
   batchType: null as never,
   ...WKBFormat,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   workerFile: 'wkt-worker.js',
   options: {

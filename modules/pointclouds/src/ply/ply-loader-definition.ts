@@ -32,6 +32,7 @@ export type PLYLoaderOptions = LoaderOptions & {
  * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
  */
 export const PLYLoaderDefinition = {
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   dataType: null as unknown as PLYMesh | Table,

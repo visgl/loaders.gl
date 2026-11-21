@@ -32,6 +32,7 @@ export const I3SLEPCCLoader = {
   dataType: null as unknown as I3SLEPCCLoaderResult,
   batchType: null as never,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   workerSourceNode: 'i3s/workers/i3s-lepcc-worker-node.ts',
   options: {

@@ -44,6 +44,7 @@ const sourceMetadata = {
 
 /** Metadata-only loader for newline-delimited JSON row and Arrow tables. */
 export const NDJSONLoaderDefinition = {
+  fetchBeforePreload: true,
   ...sourceMetadata,
   defaultShape: 'arrow',
   supportsNativeArrow: true,

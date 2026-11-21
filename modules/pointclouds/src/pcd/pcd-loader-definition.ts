@@ -26,6 +26,7 @@ export type PCDLoaderOptions = LoaderOptions & {
  * Metadata-only worker loader for PCD - Point Cloud Data
  */
 export const PCDLoaderDefinition = {
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   ...PCDFormat,

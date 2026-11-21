@@ -15,6 +15,7 @@ export type ParquetLoaderOptions = SharedParquetLoaderOptions;
 
 /** Shared Parquet loader metadata for the caller and worker. */
 export const ParquetLoaderDefinition = {
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   ...PARQUET_LOADER_BASE,

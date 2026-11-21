@@ -25,6 +25,7 @@ export type ArrowLoaderOptions = LoaderOptions & {
 
 /** Shared Arrow loader metadata for the caller and worker. */
 export const ArrowLoaderDefinition = {
+  fetchBeforePreload: true,
   /** Matches input for source selection. */
   testURL: (url: string): boolean => /\.(?:arrow|feather|ipc)(?:$|[?#])/i.test(url),
   fromUrl: true,

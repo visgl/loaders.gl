@@ -37,6 +37,7 @@ export const ChromeTraceLoader = {
   name: 'Chrome Trace Loader',
   id: 'chromeTrace',
   module: 'traces',
+  fetchBeforePreload: true,
   worker: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,

@@ -49,6 +49,7 @@ const sourceMetadata = {
  * when the parsed payload may be an arbitrary JSON document.
  */
 export const JSONTableLoaderDefinition = {
+  fetchBeforePreload: true,
   ...sourceMetadata,
   defaultShape: 'arrow',
   supportsNativeArrow: true,

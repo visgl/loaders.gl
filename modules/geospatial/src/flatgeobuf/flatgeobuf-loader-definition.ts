@@ -36,6 +36,7 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
 
 /** Metadata-only FlatGeobuf worker loader. */
 export const FlatGeobufLoaderDefinition = {
+  fetchBeforePreload: true,
   /** Matches input for source selection. */
   testURL: (url: string): boolean => /\.fgb($|[?#])/i.test(url),
   fromUrl: true,

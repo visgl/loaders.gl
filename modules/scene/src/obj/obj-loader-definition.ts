@@ -41,6 +41,7 @@ export type OBJParsedBatch = OBJMeshBatch | RecordBatch;
  * Metadata-only worker loader for the OBJ geometry format
  */
 export const OBJLoaderDefinition = {
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   ...OBJFormat,

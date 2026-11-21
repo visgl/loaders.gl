@@ -22,6 +22,7 @@ export type NPYLoaderOptions = LoaderOptions & {
 
 /** Metadata-only worker loader for numpy "tiles". */
 export const NPYLoaderDefinition = {
+  fetchBeforePreload: true,
   ...NPYFormat,
   dataType: null as any as NPYTile,
   batchType: null as never,

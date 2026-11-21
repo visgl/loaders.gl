@@ -51,6 +51,7 @@ export const ShapefileLoader = {
   batchType: null as unknown as ShapefileOutput | Batch | RecordBatch,
   ...ShapefileFormat,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   workerInBatches: true,
   options: {

@@ -47,6 +47,7 @@ export type GeoJSONLoaderOptions = LoaderOptions &
 
 /** Metadata-only GeoJSON worker loader. */
 export const GeoJSONLoaderDefinition = {
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   dataType: null as unknown as GeoJSONTable | BinaryFeatureCollection | ArrowTable,

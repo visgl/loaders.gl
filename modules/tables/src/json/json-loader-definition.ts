@@ -41,6 +41,7 @@ export type JSONLoaderOptions = LoaderOptions & {
 
 /** Metadata-only loader for JSON documents, including tabular JSON and streaming table extraction. */
 export const JSONLoaderDefinition = {
+  fetchBeforePreload: true,
   dataType: null as unknown,
   batchType: null as unknown as TableBatch | RecordBatch | MetadataBatch | JSONBatch,
 
