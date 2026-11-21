@@ -6,6 +6,7 @@ import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
 import {encode, parse, parseInBatches, load} from '@loaders.gl/core';
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoader as BundledParquetLoader} from '@loaders.gl/tables/parquet/bundled';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 /** Creates two tiny row groups without storing a binary fixture. */
@@ -32,6 +33,15 @@ test('Parquet starts a module worker for atomic and batched Arrow reads', async 
     rows.push(...batch.getChild('id')!);
   }
   expect(rows).toEqual([0, 1, 2, 3]);
+  expect(loadWorker).toHaveBeenCalled();
+});
+
+test('Bundled Parquet loader uses the same module worker', async () => {
+  const loadWorker = vi.fn(BundledParquetLoader.loadWorker);
+  const table = await parse(await createRowGroups(), {...BundledParquetLoader, loadWorker}, {
+    core: {worker: true, _workerType: 'classic'}
+  });
+  expect(table).toMatchObject({numRows: 4});
   expect(loadWorker).toHaveBeenCalled();
 });
 

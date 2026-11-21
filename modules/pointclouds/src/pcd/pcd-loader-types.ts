@@ -2,49 +2,29 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table, RecordBatch} from 'apache-arrow';
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {PCDMesh} from './lib/pcd-types';
-import {PCDFormat} from './pcd-format';
+import {PCDLoaderDefinition} from './pcd-loader-definition';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-export type PCDLoaderOptions = LoaderOptions & {
-  pcd?: {
-    /** Output shape. Defaults to a Mesh Arrow table. */
-    shape?: 'mesh' | 'arrow';
-    /** Color storage format. Defaults to uint8norm for backwards compatibility. */
-    colorFormat?: 'uint8norm' | 'float16' | 'float32';
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
+export type {PCDLoaderOptions} from './pcd-loader-definition';
 
 /**
  * Preloads the parser-bearing PCD loader implementation.
  */
 async function preload() {
   const {PCDLoaderWithParser} = await import('@loaders.gl/pointclouds/pcd');
-  return PCDLoaderWithParser;
+  return {...PCDLoaderWithParser, loadWorker: loadPCDWorker};
 }
 
-/**
- * Metadata-only worker loader for PCD - Point Cloud Data
- */
+/** Starts the browser module worker for PCD decoding. */
+function loadPCDWorker(): Worker | null {
+  if (typeof Worker !== 'undefined') {
+    return new Worker(new URL('./workers/pcd-worker.js', import.meta.url), {type: 'module'});
+  }
+  return null;
+}
+
+/** Metadata-only PCD loader with an on-demand browser worker. */
 export const PCDLoader = {
-  defaultShape: 'arrow',
-  supportsNativeArrow: true,
-  ...PCDFormat,
-  dataType: null as unknown as PCDMesh | Table,
-  batchType: null as unknown as PCDMesh | RecordBatch,
-  version: VERSION,
-  worker: true,
-  /** Enables the stateful input/output batch protocol on the built-in worker. */
-  workerInBatches: true,
-  options: {
-    pcd: {shape: 'arrow', colorFormat: 'uint8norm'}
-  },
+  ...PCDLoaderDefinition,
+  loadWorker: loadPCDWorker,
   preload
-} as const satisfies Loader<PCDMesh | Table, PCDMesh | RecordBatch, PCDLoaderOptions>;
+} as const;

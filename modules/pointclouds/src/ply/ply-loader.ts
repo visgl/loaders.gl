@@ -11,13 +11,11 @@ import {
 } from '@loaders.gl/core/arrow-worker-transport';
 import type {PLYMesh} from './lib/ply-types';
 import {convertPLYTableToMesh, parsePLYTable, parsePLYNativeBatches} from './lib/parse-ply-output';
-import {PLYLoader as PLYLoaderMetadata, type PLYLoaderOptions} from './ply-loader-types';
-
-const {preload: _PLYLoaderPreload, ...PLYLoaderMetadataWithoutPreload} = PLYLoaderMetadata;
+import {PLYLoaderDefinition, type PLYLoaderOptions} from './ply-loader-definition';
 
 /** Loader for PLY polygon meshes and point clouds. */
 export const PLYLoaderWithParser = {
-  ...PLYLoaderMetadataWithoutPreload,
+  ...PLYLoaderDefinition,
   parse: async (input, options) => parsePLYOutput(input, options),
   parseTextSync: parsePLYOutput,
   parseSync: parsePLYOutput,

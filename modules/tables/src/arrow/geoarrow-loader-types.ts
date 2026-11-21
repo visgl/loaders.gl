@@ -11,7 +11,7 @@ async function preload() {
   const {GeoArrowLoaderWithParser} = await import('@loaders.gl/tables/geoarrow');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
   await preloadArrowCompressionDecoders();
-  return {...GeoArrowLoaderWithParser, loadWorker: loadGeoArrowWorker};
+  return GeoArrowLoaderWithParser;
 }
 
 /** Starts the browser module worker for GeoArrow decoding. */

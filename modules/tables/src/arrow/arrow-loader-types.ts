@@ -11,7 +11,7 @@ async function preload() {
   const {ArrowLoaderWithParser} = await import('@loaders.gl/tables/arrow');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
   await preloadArrowCompressionDecoders();
-  return {...ArrowLoaderWithParser, loadWorker: loadArrowWorker};
+  return ArrowLoaderWithParser;
 }
 
 /** Starts the browser module worker for Arrow decoding. */

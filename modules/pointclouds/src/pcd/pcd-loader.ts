@@ -18,9 +18,7 @@ import {
 } from '@loaders.gl/core/schema-utils';
 import type {PCDHeader, PCDMesh} from './lib/pcd-types';
 import {parsePCD, parsePCDHeader} from './lib/parse-pcd';
-import {PCDLoader as PCDLoaderMetadata} from './pcd-loader-types';
-
-const {preload: _PCDLoaderPreload, ...PCDLoaderMetadataWithoutPreload} = PCDLoaderMetadata;
+import {PCDLoaderDefinition} from './pcd-loader-definition';
 
 const PCD_HEADER_KEY = 'loaders.gl.pcd.header';
 
@@ -35,7 +33,7 @@ function convertPCDMesh(mesh: PCDMesh): Table {
 
 /** Loader for PCD point clouds. */
 export const PCDLoaderWithParser = {
-  ...PCDLoaderMetadataWithoutPreload,
+  ...PCDLoaderDefinition,
   parse: async (arrayBuffer, options) => parsePCDOutput(arrayBuffer, options),
   parseSync: parsePCDOutput,
   async *parseInBatches(input, options) {
