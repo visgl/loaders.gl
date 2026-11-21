@@ -17,6 +17,12 @@ async function preloadCSVLoader() {
 /** Starts the browser module worker for CSV decoding. */
 function loadCSVWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
+    const moduleUrl = import.meta.url;
+    // Native browser workers cannot use the page's import map.
+    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/csv/csv-loader-types.js')) {
+      const workerUrl = new URL('../csv-worker.js', moduleUrl);
+      return new Worker(workerUrl, {type: 'module'});
+    }
     return new Worker(new URL('../workers/csv-worker.js', import.meta.url), {type: 'module'});
   }
   return null;

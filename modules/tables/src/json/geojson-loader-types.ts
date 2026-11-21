@@ -15,6 +15,12 @@ async function preload() {
 /** Starts the GeoJSON decoder on an on-demand browser worker. */
 function loadGeoJSONWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
+    const moduleUrl = import.meta.url;
+    // Native browser workers cannot use the page's import map.
+    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/json/geojson-loader-types.js')) {
+      const workerUrl = new URL('../geojson-worker.js', moduleUrl);
+      return new Worker(workerUrl, {type: 'module'});
+    }
     return new Worker(new URL('./workers/geojson-worker.js', import.meta.url), {type: 'module'});
   }
   return null;

@@ -9,12 +9,18 @@ export type {NPYLoaderOptions} from './npy-loader-definition';
 /** Preloads the parser-bearing NPY loader implementation. */
 async function preload() {
   const {NPYLoaderWithParser} = await import('@loaders.gl/scientific/npy');
-  return {...NPYLoaderWithParser, loadWorker: loadNPYWorker};
+  return NPYLoaderWithParser;
 }
 
 /** Starts the browser module worker for NPY decoding. */
 function loadNPYWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
+    const moduleUrl = import.meta.url;
+    // Native browser workers cannot use the page's import map.
+    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/npy-loader-types.js')) {
+      const workerUrl = new URL('./npy-worker.js', moduleUrl);
+      return new Worker(workerUrl, {type: 'module'});
+    }
     return new Worker(new URL('./workers/npy-worker.js', import.meta.url), {type: 'module'});
   }
   return null;

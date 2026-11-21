@@ -12,12 +12,18 @@ export type {PLYLoaderOptions} from './ply-loader-definition';
  */
 async function preload() {
   const {PLYLoaderWithParser} = await import('@loaders.gl/pointclouds/ply');
-  return {...PLYLoaderWithParser, loadWorker: loadPLYWorker};
+  return PLYLoaderWithParser;
 }
 
 /** Starts the browser module worker for PLY decoding. */
 function loadPLYWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
+    const moduleUrl = import.meta.url;
+    // Native browser workers cannot use the page's import map.
+    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/ply/ply-loader-types.js')) {
+      const workerUrl = new URL('../ply-worker.js', moduleUrl);
+      return new Worker(workerUrl, {type: 'module'});
+    }
     return new Worker(new URL('./workers/ply-worker.js', import.meta.url), {type: 'module'});
   }
   return null;

@@ -17,6 +17,12 @@ async function preload() {
 /** Starts the browser module worker for GeoArrow decoding. */
 function loadGeoArrowWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
+    const moduleUrl = import.meta.url;
+    // Native browser workers cannot use the page's import map.
+    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/arrow/geoarrow-loader-types.js')) {
+      const workerUrl = new URL('../geoarrow-worker.js', moduleUrl);
+      return new Worker(workerUrl, {type: 'module'});
+    }
     return new Worker(new URL('./workers/geoarrow-worker.js', import.meta.url), {type: 'module'});
   }
   return null;
