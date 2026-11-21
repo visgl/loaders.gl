@@ -3,7 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {GeoJSONLoader} from './json/geojson-loader-types.js';
-import {GeoJSONLoaderWithParser as parser} from './json/geojson-loader.js';
+import {
+  GeoJSONLoaderWithParser as parser,
+  GeoJSONWorkerLoaderWithParser as workerParser
+} from './json/geojson-loader.js';
 
 export * from './json/geojson-loader.js';
 
@@ -11,4 +14,11 @@ export * from './json/geojson-loader.js';
 export const GeoJSONLoaderWithParser = {
   ...parser,
   loadWorker: GeoJSONLoader.loadWorker
+};
+
+/** Public worker descriptor for GeoJSON, with the same local parser preload. */
+export const GeoJSONWorkerLoaderWithParser = {
+  ...workerParser,
+  loadWorker: GeoJSONLoader.loadWorker,
+  preload: GeoJSONLoader.preload
 };
