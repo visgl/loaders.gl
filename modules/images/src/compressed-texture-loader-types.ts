@@ -34,6 +34,7 @@ export const CompressedTextureLoader = {
   id: 'compressed-texture',
   module: 'images',
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   encoding: 'image',
   format: 'compressed-texture',

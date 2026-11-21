@@ -116,6 +116,7 @@ export async function load(
   }
 
   resolvedOptions ||= getGlobalLoaderOptions();
+  let fetchedResponse: Response | undefined;
 
   if (typeof url === 'string' || isBlob(url)) {
     const selectedLoader = await selectLoader(url, resolvedLoaders as Loader | Loader[], {
@@ -123,31 +124,59 @@ export async function load(
       core: {...resolvedOptions?.core, nothrow: true}
     });
 
+    const canFetchBeforePreload = typeof url === 'string' && selectedLoader?.fetchBeforePreload;
     const loaderImplementation =
       selectedLoader && (typeof url === 'string' || selectedLoader.createDataSourceSync)
-        ? await getLoaderImplementation(
+        ? getLoaderImplementation(
             selectedLoader,
             resolvedOptions,
             typeof url === 'string' ? url : undefined
           )
         : null;
+    if (canFetchBeforePreload) {
+      const loadOptions = resolvedOptions;
+      const controller = new AbortController();
+      const fetchOption = loadOptions.core?.fetch;
+      const callerSignal =
+        loadOptions.signal ||
+        context?.signal ||
+        (typeof fetchOption === 'object' ? fetchOption?.signal : undefined);
+      const signal = callerSignal
+        ? AbortSignal.any([callerSignal, controller.signal])
+        : controller.signal;
+      try {
+        [, fetchedResponse] = await Promise.all([
+          loaderImplementation,
+          resolveLoaderAuthenticationOptions(selectedLoader, url, loadOptions).then(options => {
+            signal.throwIfAborted();
+            resolvedOptions = resolveAuthenticationOptions(options);
+            const fetch = getFetchFunction({...resolvedOptions, signal}, context);
+            return fetch(applySearchParamsToUrl(url, resolvedOptions));
+          })
+        ]);
+      } catch (error) {
+        controller.abort(error);
+        throw error;
+      }
+    }
+    const implementation = await loaderImplementation;
     if (
       selectedLoader &&
-      loaderImplementation?.createDataSourceSync &&
-      !isLoaderWithParser(loaderImplementation)
+      implementation?.createDataSourceSync &&
+      !isLoaderWithParser(implementation)
     ) {
       throw new Error(
         `${selectedLoader.id} creates sources. Use createDataSource() instead of load().`
       );
     }
 
-    if (selectedLoader && loaderImplementation && typeof url === 'string') {
+    if (!fetchedResponse && selectedLoader && implementation && typeof url === 'string') {
       resolvedOptions = await resolveLoaderAuthenticationOptions(
-        selectedLoader.getAuthentications ? selectedLoader : loaderImplementation,
+        selectedLoader.getAuthentications ? selectedLoader : implementation,
         url,
         resolvedOptions || {}
       );
-      const {parseUrl} = loaderImplementation;
+      const {parseUrl} = implementation;
       if (parseUrl) {
         const requestUrl = applySearchParamsToUrl(url, resolvedOptions);
         const options = normalizeOptions(resolvedOptions, selectedLoader, [selectedLoader], url);
@@ -164,7 +193,7 @@ export async function load(
   let data = url;
   // url is a string, fetch the url
   if (typeof url === 'string') {
-    data = await fetch(applySearchParamsToUrl(url, resolvedOptions));
+    data = fetchedResponse ?? (await fetch(applySearchParamsToUrl(url, resolvedOptions)));
     // URL is Blob or File, fetchFile handles it (alt: we could generate ObjectURL here)
   }
 

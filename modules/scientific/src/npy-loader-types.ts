@@ -36,6 +36,7 @@ export const NPYLoader = {
   id: 'npy',
   module: 'scientific',
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   extensions: ['npy'],
   mimeTypes: [],

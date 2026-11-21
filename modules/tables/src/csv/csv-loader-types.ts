@@ -34,6 +34,7 @@ const sourceMetadata = {
 /** Metadata-only loader for CSV and other delimiter-separated tables. */
 export const CSVLoader = {
   ...sourceMetadata,
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   ...CSVFormat,

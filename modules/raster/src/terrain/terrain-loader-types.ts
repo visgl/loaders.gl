@@ -33,6 +33,7 @@ export const TerrainLoader = {
 
   ...TerrainFormat,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   /** Loads the parser-bearing terrain loader implementation. */
   preload: async () => {

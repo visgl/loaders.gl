@@ -26,6 +26,7 @@ export const ZipkinTraceLoader = {
   name: 'Zipkin Trace Loader',
   id: 'zipkinTrace',
   module: 'traces',
+  fetchBeforePreload: true,
   worker: true,
   workerInBatches: true,
   workerFile: 'trace-worker.js',

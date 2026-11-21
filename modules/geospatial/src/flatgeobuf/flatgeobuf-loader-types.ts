@@ -52,6 +52,7 @@ export const FlatGeobufLoader = {
   dataType: null as unknown as GeoJSONTable | ColumnarTable | Table | BinaryFeatureCollection,
   batchType: null as unknown as RecordBatch,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   binary: true,
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {parseFromContext} from '@loaders.gl/core/loader-utils';
 import {
   load,
@@ -54,6 +54,107 @@ test('load#applies searchParams before the initial request', async () => {
   });
   expect(data).toEqual({loaded: true});
   expect(requestedUrl).toContain('?token=secret-token');
+});
+
+test('load starts an opted-in fetch before preload completes', async () => {
+  const controller = new AbortController();
+  let finishPreload: () => void;
+  const gate = new Promise<void>(resolve => {
+    finishPreload = resolve;
+  });
+  const loader = {
+    ...JSONLoader,
+    fetchBeforePreload: true,
+    preload: vi.fn(async () => {
+      await gate;
+      return JSONLoader.preload();
+    })
+  };
+  const fetch = vi.fn(async () => new Response('{"loaded":true}'));
+  const result = load(JSON_URL, loader, {
+    signal: controller.signal,
+    searchParams: {test: 'parallel'},
+    core: {fetch, worker: false}
+  });
+  try {
+    await vi.waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('?test=parallel'), {
+        signal: expect.any(AbortSignal)
+      });
+    });
+  } finally {
+    finishPreload!();
+  }
+  await expect(result).resolves.toEqual({loaded: true});
+  expect(fetch).toHaveBeenCalledOnce();
+  expect(loader.preload).toHaveBeenCalledOnce();
+});
+
+test.each(['fetch', 'preload'])('load reports a concurrent %s failure', async failure => {
+  const error = new Error(failure);
+  const loader = {
+    ...JSONLoader,
+    fetchBeforePreload: true,
+    preload: async () => {
+      if (failure === 'preload') {
+        throw error;
+      }
+      return JSONLoader.preload();
+    }
+  };
+  const fetch = async () => {
+    if (failure === 'fetch') {
+      throw error;
+    }
+    return new Response('{}');
+  };
+  await expect(load(JSON_URL, loader, {core: {fetch, worker: false}})).rejects.toBe(error);
+});
+
+test('load cancels the in-flight request when preload rejects', async () => {
+  const error = new Error('preload failed');
+  let failPreload: (reason: Error) => void;
+  const loader = {
+    ...JSONLoader,
+    fetchBeforePreload: true,
+    preload: () =>
+      new Promise<never>((_resolve, reject) => {
+        failPreload = reject;
+      })
+  };
+  const requestAborted = vi.fn();
+  const fetch = vi.fn(
+    (_url: RequestInfo | URL, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          requestAborted();
+          reject(init.signal?.reason);
+        });
+      })
+  );
+  const result = load(JSON_URL, loader, {core: {fetch}});
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+  const rejection = expect(result).rejects.toBe(error);
+  failPreload!(error);
+  await rejection;
+  expect(requestAborted).toHaveBeenCalledOnce();
+});
+
+test('load aborts a fetch started while the parser preloads', async () => {
+  const controller = new AbortController();
+  const loader = {...JSONLoader, fetchBeforePreload: true};
+  const fetch = vi.fn(
+    (_url: RequestInfo | URL, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(init.signal?.reason), {once: true});
+      })
+  );
+  const result = load(JSON_URL, loader, {signal: controller.signal, core: {fetch}});
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+  const error = new Error('cancelled');
+  const aborted = expect(result).rejects.toBe(error);
+  controller.abort(error);
+  await aborted;
 });
 
 test('load#applies searchParams before parseUrl', async () => {

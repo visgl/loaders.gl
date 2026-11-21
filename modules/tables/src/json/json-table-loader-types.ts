@@ -61,6 +61,7 @@ const sourceMetadata = {
  */
 export const JSONTableLoader = {
   ...sourceMetadata,
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   dataType: null as unknown as Table | ArrowTable,

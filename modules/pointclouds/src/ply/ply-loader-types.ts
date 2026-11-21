@@ -48,6 +48,7 @@ export const PLYLoader = {
   ...PLYFormat,
   // shapes: ['mesh', 'gltf', 'columnar-table'],
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   /** Enables the stateful input/output batch protocol on the built-in worker. */
   workerInBatches: true,

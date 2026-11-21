@@ -64,6 +64,8 @@ to be available before the call.
 | `format` | `string` | Optional logical format, such as `geojson` or `gltf`. |
 | `worker` | `boolean \| string` | Optional worker support descriptor. |
 | `preload` | `function` | Optional asynchronous parser implementation hook. |
+| `fetchBeforePreload` | `boolean` | Allows `load()` to fetch input while the parser preloads. Enable only when core owns the initial request and authentication can be resolved from the loader metadata. |
+
 
 `text` and `binary` remain compatibility hints for input handling. Format
 recognition and parser availability are separate: metadata can identify a file

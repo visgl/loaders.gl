@@ -56,6 +56,7 @@ export const OBJLoader = {
   dataType: null as unknown as Mesh | Table,
   batchType: null as unknown as OBJParsedBatch,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   /** Enables the stateful input/output batch protocol on the built-in worker. */
   workerInBatches: true,

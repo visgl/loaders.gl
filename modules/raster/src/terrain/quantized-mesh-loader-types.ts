@@ -32,6 +32,7 @@ export const QuantizedMeshLoader = {
 
   ...QuantizedMeshFormat,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   /** Loads the parser-bearing quantized mesh loader implementation. */
   preload: async () => {

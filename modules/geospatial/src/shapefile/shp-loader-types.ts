@@ -43,6 +43,7 @@ export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
 
   ...SHPFormat,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   workerInBatches: true,
   supportsNativeArrow: true,

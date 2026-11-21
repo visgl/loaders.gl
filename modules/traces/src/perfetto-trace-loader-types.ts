@@ -31,6 +31,7 @@ export const PerfettoTraceLoader = {
   name: 'Perfetto Trace Loader',
   id: 'perfettoTrace',
   module: 'traces',
+  fetchBeforePreload: true,
   worker: true,
   workerInBatches: true,
   workerFile: 'trace-worker.js',

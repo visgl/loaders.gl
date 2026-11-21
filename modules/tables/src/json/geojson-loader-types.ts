@@ -60,6 +60,7 @@ export const GeoJSONLoader = {
 
   ...GeoJSONFormat,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   options: {
     geojson: {
