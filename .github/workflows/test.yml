@@ -39,7 +39,7 @@ jobs:
           yarn -v
 
       - name: Cache Yarn 4 artifacts
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -146,7 +146,7 @@ jobs:
 
       - name: Cache Yarn 4 artifacts
         id: yarn-cache
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -162,6 +162,14 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      # Build seeds the host cache. One shorter coverage job seeds the container cache.
+      - name: Save container Yarn cache
+        if: matrix.profile-name == 'node-24' && steps.yarn-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.yarn/berry/cache
+          key: ${{ steps.yarn-cache.outputs.cache-primary-key }}
 
       - name: Download package and worker build
         uses: actions/download-artifact@v8
@@ -219,7 +227,7 @@ jobs:
           corepack prepare yarn@4.17.1 --activate
 
       - name: Cache Yarn 4 artifacts
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -305,7 +313,7 @@ jobs:
           corepack prepare yarn@4.17.1 --activate
 
       - name: Cache Yarn 4 artifacts
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -369,7 +377,7 @@ jobs:
           corepack prepare yarn@4.17.1 --activate
 
       - name: Cache Yarn 4 artifacts
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.yarn/berry/cache
@@ -517,7 +525,7 @@ jobs:
 
       - name: Cache website Yarn artifacts
         id: website-yarn-cache
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.yarn/berry/cache
