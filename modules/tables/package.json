@@ -91,9 +91,6 @@
       "import": "./dist/arrow/geometry/index.js",
       "require": "./dist/arrow/geometry/index.cjs"
     },
-    "./arrow-worker.js": {
-      "import": "./dist/arrow-worker.js"
-    },
     "./json/bundled": {
       "types": "./dist/json/bundled.d.ts",
       "import": "./dist/json/bundled.js",
@@ -105,9 +102,6 @@
       "require": "./dist/json/index.cjs"
     },
     "./json/geojson-worker.js": {
-      "import": "./dist/geojson-worker.js"
-    },
-    "./geojson-worker.js": {
       "import": "./dist/geojson-worker.js"
     },
     "./lance": {
@@ -143,16 +137,6 @@
       "require": "./dist/parquet-worker-node.cjs"
     },
     "./parquet/parquet-source-worker.js": {
-      "import": "./dist/parquet-source-worker.js"
-    },
-    "./parquet-worker.js": {
-      "import": "./dist/parquet-worker.js"
-    },
-    "./parquet-worker-node.cjs": {
-      "import": "./dist/parquet-worker-node.cjs",
-      "require": "./dist/parquet-worker-node.cjs"
-    },
-    "./parquet-source-worker.js": {
       "import": "./dist/parquet-source-worker.js"
     },
     "./triangulation-worker.js": {

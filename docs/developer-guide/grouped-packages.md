@@ -87,7 +87,7 @@ Core owns format-neutral utilities through independent subpaths:
 - `core/schema` and `core/schema-utils`: data contracts, table helpers, and Arrow transport.
 - `core/arrow-geometry`: focused geometry construction used by loaders.
 - `core/geoarrow`: application-level GeoArrow conversion and processing.
-- `core/scan`: portable scans, query planning, and federation; SQL backends register from the SQL package.
+- `core/query`: portable queries, pushdown planning, and federation; SQL backends register from the SQL package.
 - `core/wkt`: geometry codecs; WKT, WKB, and TWKB loader/writer descriptors belong to geospatial.
 - `core/polyfills`: independent Node platform adapters.
 

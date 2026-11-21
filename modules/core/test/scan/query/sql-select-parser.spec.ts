@@ -4,10 +4,10 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {parseSQLQuery, parseSQLSelect} from '@loaders.gl/core/scan/query';
-import type {TableQuery} from '@loaders.gl/core/scan';
-import {query, queryInBatches} from '@loaders.gl/core/scan';
-import {parseSQLPredicate} from '@loaders.gl/core/scan/parse-sql-predicate';
+import {parseSQLQuery, parseSQLSelect} from '@loaders.gl/core/query/sql';
+import type {TableQuery} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query';
+import {parseSQLPredicate} from '@loaders.gl/core/query/parse-sql-predicate';
 
 test('SELECT parser handles ordered aliases, qualified FROM, exact names, wildcard and limits', () => {
   expect(

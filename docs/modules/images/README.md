@@ -107,7 +107,7 @@ and the project-wide [Attributions and Credits](/docs/references-and-credits).
 The images package also owns texture and video loaders. Its root exports metadata;
 async core APIs preload implementations when needed:
 
-Browse [texture formats and APIs](/docs/modules/images/textures) or [video loading and GIF writing](/docs/modules/images/video).
+Browse [texture formats and APIs](/docs/modules/images/texture) or [video loading and GIF writing](/docs/modules/images/video).
 
 ```typescript
 import {load} from '@loaders.gl/core';
@@ -152,15 +152,15 @@ Sharp is loaded only when Node image decoding or encoding is requested.
 - [IES](./ies/README.md)
 - [Color LUTs: Cube, 3dl and PNG](./color-lut/README.md)
 
-- [OpenEXR](./openexr/README.md)
+- [OpenEXR](./exr/README.md)
 
-- [Basis Universal](./textures/formats/basis.md)
-- [Compressed Textures](./textures/formats/compressed-textures.md)
-- [Crunch texture](./textures/formats/crunch.md)
-- [DDS texture](./textures/formats/dds.md)
-- [Radiance HDR](./textures/formats/hdr.md)
-- [KTX and KTX2 formats](./textures/formats/ktx.md)
-- [PVR texture](./textures/formats/pvr.md)
+- [Basis Universal](texture/formats/basis.md)
+- [Compressed Textures](texture/formats/compressed-textures.md)
+- [Crunch texture](texture/formats/crunch.md)
+- [DDS texture](texture/formats/dds.md)
+- [Radiance HDR](texture/formats/hdr.md)
+- [KTX and KTX2 formats](texture/formats/ktx.md)
+- [PVR texture](texture/formats/pvr.md)
 
 
 ## Package exports

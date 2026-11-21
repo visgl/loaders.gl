@@ -4,8 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, expectTypeOf, test, vi} from 'vitest';
-import {query, queryInBatches} from '@loaders.gl/core/scan';
-import type {SQLQueryParser, Query} from '@loaders.gl/core/scan';
+import {query, queryInBatches} from '@loaders.gl/core/query';
+import type {SQLQueryParser, Query} from '@loaders.gl/core/query';
 import {DataSource, createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {DataSourceOptions, TableSourceCollection} from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';

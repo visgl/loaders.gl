@@ -10,8 +10,8 @@
  */
 const tutorialSidebar = [...require('../../docs/docs-sidebar.json')];
 const arrowSidebar = require('../../docs/arrowjs/arrow-sidebar.json');
-const modulesIndex = tutorialSidebar.findIndex(item => item.label === 'Modules');
-tutorialSidebar.splice(modulesIndex, 0, arrowSidebar);
+const packagesIndex = tutorialSidebar.findIndex(item => item.label === 'Packages');
+tutorialSidebar.splice(packagesIndex, 0, arrowSidebar);
 
 const sidebars = {
   tutorialSidebar

@@ -1,4 +1,5 @@
 {
+  "/docs/modules/images/openexr": "/docs/modules/images/exr",
   "/docs/modules/_sections/core/root-api": "/docs/modules/core",
   "/docs/modules/_sections/documents/guide": "/docs/modules/documents",
   "/docs/modules/_sections/documents/root-api": "/docs/modules/documents",
@@ -13,7 +14,7 @@
   "/docs/modules/_sections/geospatial/api-wkt": "/docs/modules/geospatial/wkt",
   "/docs/modules/_sections/images/guide": "/docs/modules/images",
   "/docs/modules/_sections/images/root-api": "/docs/modules/images",
-  "/docs/modules/_sections/images/api-gif-builder": "/docs/modules/images/video/api-reference/gif-builder",
+  "/docs/modules/_sections/images/api-gif-builder": "/docs/modules/images/image/api-reference/gif-builder",
   "/docs/modules/_sections/pointclouds/guide": "/docs/modules/pointclouds",
   "/docs/modules/_sections/pointclouds/api-las": "/docs/modules/pointclouds/las",
   "/docs/modules/_sections/pointclouds/api-pcd": "/docs/modules/pointclouds/pcd",
@@ -58,5 +59,20 @@
   "/docs/modules/_sections/sql/root-api": "/docs/modules/sql",
   "/docs/modules/_sections/tile-converter/root-api": "/docs/modules/tile-converter/api-reference",
   "/docs/modules/_sections/tile-converter/api-v5": "/docs/modules/tile-converter/api-reference/v5-conversion",
-  "/docs/modules/_sections/tile-converter/guide": "/docs/modules/tile-converter/api-reference/build-instructions"
+  "/docs/modules/_sections/tile-converter/guide": "/docs/modules/tile-converter/api-reference/build-instructions",
+  "/docs/modules/_sections/tables/api-and-guides": "/docs/modules/tables",
+  "/docs/modules/_sections/geospatial/api-and-guides": "/docs/modules/geospatial",
+  "/docs/modules/_sections/point-clouds/api-and-guides": "/docs/modules/pointclouds",
+  "/docs/modules/_sections/raster/api-and-guides": "/docs/modules/raster",
+  "/docs/modules/_sections/archives/api-and-guides": "/docs/modules/archives",
+  "/docs/modules/_sections/ogc/api-and-guides": "/docs/modules/ogc",
+  "/docs/modules/_sections/tables/loaders": "/docs/modules/tables",
+  "/docs/modules/_sections/tables/writers": "/docs/modules/tables",
+  "/docs/modules/_sections/geospatial/loaders": "/docs/modules/geospatial",
+  "/docs/modules/_sections/geospatial/sources": "/docs/modules/geospatial",
+  "/docs/modules/_sections/point-clouds/loaders": "/docs/modules/pointclouds",
+  "/docs/modules/_sections/point-clouds/writers": "/docs/modules/pointclouds",
+  "/docs/modules/_sections/raster/loaders": "/docs/modules/raster",
+  "/docs/modules/_sections/ogc/sources": "/docs/modules/ogc",
+  "/docs/modules/core/scan/query": "/docs/modules/core/query/query-api"
 }

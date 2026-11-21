@@ -21,7 +21,7 @@ export function quoteSqlIdentifier(identifier: string): string {
   return `"${identifier.replace(/"/g, '""')}"`;
 }
 
-export {convertRowsToArrowTable} from '@loaders.gl/core/scan/rows-to-arrow';
+export {convertRowsToArrowTable} from '@loaders.gl/core/query/rows-to-arrow';
 
 /** Converts normalized SQL columns into a loaders.gl schema. */
 export function convertSQLColumnsToSchema(columns: SQLColumnInfo[]): Schema {

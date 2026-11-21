@@ -196,11 +196,6 @@
       "import": "./dist/quantized-mesh-worker.js"
     },
     "./lerc/lerc-wasm.wasm": "./dist/lerc/libs/lerc/lerc-wasm.wasm",
-    "./terrain/index": {
-      "types": "./dist/terrain/index.d.ts",
-      "import": "./dist/terrain/index.js",
-      "require": "./dist/terrain/index.cjs"
-    },
     "./quantized-mesh/bundled": {
       "types": "./dist/quantized-mesh-bundled.d.ts",
       "import": "./dist/quantized-mesh-bundled.js",

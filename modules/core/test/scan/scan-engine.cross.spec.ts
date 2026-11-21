@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {createScanEngine} from '@loaders.gl/core/scan';
+import {createScanEngine} from '@loaders.gl/core/query';
 
 test('executes Arrow queries asynchronously across runtimes', async () => {
   const engine = await createScanEngine();

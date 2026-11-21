@@ -82,7 +82,7 @@ The scene USD loader adds a documented crate 0.8.0 subset, including binary-root
 
 ### OpenEXR channel planes
 
-Images adds single-part scanline OpenEXR decoding with NONE/RLE/ZIPS/ZIP compression and renderer-independent named channels. See [OpenEXR](./modules/images/openexr/README.md).
+Images adds single-part scanline OpenEXR decoding with NONE/RLE/ZIPS/ZIP compression and renderer-independent named channels. See [OpenEXR](./modules/images/exr/README.md).
 
 ### Draco joins scene
 
@@ -107,7 +107,7 @@ See [Documents](/docs/modules/documents) and the [migration guide](/docs/upgrade
 ### Query cloud data where it lives
 
 Discover datasets through [STAC catalogs](./modules/ogc/stac/README.md), then scan supported
-Parquet, Iceberg, Delta, and Hudi sources with a shared [query API](./modules/core/scan/README.md).
+Parquet, Iceberg, Delta, and Hudi sources with a shared [query API](./modules/core/query/README.md).
 Select columns and filter rows without assembling a separate application API for each source;
 individual formats determine which work can be pushed down to storage. Try the
 [STAC explorer](/examples/geospatial/stac) or [Iceberg example](/examples/cloud-native/iceberg).
@@ -251,7 +251,7 @@ Release Date: March 31, 2026
 
 
 - **@loaders.gl/tiles/mlt** - New [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-loader) and [`MLTLoader`](/docs/modules/tiles/mlt/api-reference/mlt-source) add support for the [`MapLibre Tile`](/docs/modules/tiles/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
-- **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/images/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/images/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/images/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/images/textures/api-reference/radiance-hdr-loader).
+- **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/images/texture/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/images/texture/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/images/texture/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/images/texture/api-reference/radiance-hdr-loader).
 - **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
 - **@loaders.gl/tiles/mvt** - New experimental [`MVTWriter`](/docs/modules/tiles/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
 
@@ -314,7 +314,7 @@ A minor release that includes:
 
 **@loaders.gl/textures**
 
-- [`Comp[ressedTextureLoader]`](/docs/modules/images/textures/api-reference/compressed-texture-loader) - Now supports mipmaps in KTX2 textures.
+- [`Comp[ressedTextureLoader]`](/docs/modules/images/texture/api-reference/compressed-texture-loader) - Now supports mipmaps in KTX2 textures.
 
 **@loaders.gl/tiles-3d/3d-tiles**
 
@@ -1251,7 +1251,7 @@ First Official Release
 
 ### Query capability discovery
 
-`@loaders.gl/core/query` is now an alias for the optional scan runtime. Sources expose
+`@loaders.gl/core/query` exposes the optional scan runtime. Sources expose
 `queryCapabilities`, formats can provide advisory `queryPushdownCapabilityHints`, and the runtime
 supports exact-query pushdown negotiation for CAST-capable sources. Offset-capable sources receive
 native row windows; other sources retain the safe residual offset and limit path. Existing scan

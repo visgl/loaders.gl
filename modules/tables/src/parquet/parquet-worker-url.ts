@@ -7,7 +7,7 @@ export const PARQUET_WORKER_URL = isNodeRuntime()
   ? import.meta.url
     ? getParquetWorkerUrl(import.meta.url)
     : typeof require === 'function'
-      ? require.resolve('@loaders.gl/tables/parquet-worker-node.cjs')
+      ? require.resolve('@loaders.gl/tables/parquet/parquet-worker-node.cjs')
       : true
   : true;
 

@@ -5,9 +5,9 @@
 import * as arrow from 'apache-arrow';
 import {RecordBatch} from 'apache-arrow';
 import {expect, expectTypeOf, test, vi} from 'vitest';
-import {query, queryInBatches} from '@loaders.gl/core/scan';
+import {query, queryInBatches} from '@loaders.gl/core/query';
 import type {TableQueryExecutionSummary} from '@loaders.gl/core/loader-utils';
-import type {QueryOptions} from '@loaders.gl/core/scan';
+import type {QueryOptions} from '@loaders.gl/core/query';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {
   SourceLoader,

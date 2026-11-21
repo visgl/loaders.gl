@@ -24,7 +24,7 @@ const SQLPredicatePropertySchema = z
 /**
  * Optional Zod schema for validating the portable loaders.gl SQL predicate AST.
  *
- * Import from `@loaders.gl/core/scan/sql-predicate-zod`; the package root does not load Zod.
+ * Import from `@loaders.gl/core/query/sql-predicate-zod`; the package root does not load Zod.
  */
 export const SQLPredicateSchema: z.ZodType<SQLPredicate> = z.lazy(() =>
   z.union([

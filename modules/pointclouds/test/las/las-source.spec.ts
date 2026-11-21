@@ -4,7 +4,7 @@
 
 import {beforeAll, expect, test, vi} from 'vitest';
 import {createDataSource, createDataSourceSync, fetchFile, preload} from '@loaders.gl/core';
-import {query} from '@loaders.gl/core/scan';
+import {query} from '@loaders.gl/core/query';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {LASLoaderWithParser} from '../../src/las/las-loader';
 import {LASSource} from '../../src/las/las-source';

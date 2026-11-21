@@ -66,7 +66,7 @@ A predicate column need not appear in `select`. For example, selecting only `nam
 Predicates support comparisons, `and`, `or`, `not`, membership, and null checks. Use
 `{op: 'isNull', args: [{property: 'population'}]}` to find nulls. Comparisons with null produce an
 unknown result; WHERE retains only true results, so negating a comparison still excludes nulls.
-See the [predicate reference](/docs/modules/core/scan) for the full vocabulary.
+See the [predicate reference](/docs/modules/core/query) for the full vocabulary.
 
 Rows retain source order. A limit counts matches after filtering; it is not a sample or a sort.
 `limit: 0` returns the projected schema without calling the source's result reader, although schema
@@ -192,7 +192,7 @@ Pass the optional parser explicitly. Math.gl’s `parseSQLQuery()` supports SELE
 aliases, optional FROM, WHERE, and LIMIT.
 
 ```ts
-import {parseSQLQuery} from '@loaders.gl/core/query/query';
+import {parseSQLQuery} from '@loaders.gl/core/query/sql';
 
 const result = await query('SELECT name FROM warehouse.cities LIMIT 20', {
   sources: [warehouse],
@@ -203,7 +203,7 @@ const result = await query('SELECT name FROM warehouse.cities LIMIT 20', {
 You can also pass a parser promise:
 
 ```ts
-const sqlParser = import('@loaders.gl/core/query/query').then(module => module.parseSQLQuery);
+const sqlParser = import('@loaders.gl/core/query/sql').then(module => module.parseSQLQuery);
 ```
 
 ESM imports are tree-shakeable: importing just the parser removes Arrow execution code from the
@@ -230,7 +230,7 @@ Core validates the returned query and source capabilities before executing it.
 The same query APIs return Arrow tables for metadata commands:
 
 ```ts
-import {parseSQLQuery, createSQLCatalog} from '@loaders.gl/core/query/query';
+import {parseSQLQuery, createSQLCatalog} from '@loaders.gl/core/query/sql';
 
 const options = {sources: [warehouse], sqlParser: parseSQLQuery};
 const sources = await query('SHOW SOURCES;', options);
@@ -263,7 +263,7 @@ for (const table of discovered) {
 Multi-table providers expose `getTablesMetadata()` and, for lazy per-table schemas,
 `getTableMetadata(name)`. Single-table sources reuse `getQueryMetadata()`. Tables without a
 metadata discovery contract cannot be listed; requesting an unavailable schema fails explicitly.
-See the [API reference](/docs/modules/core/scan/query) for result columns and provider interfaces.
+See the [API reference](/docs/modules/core/query/query-api) for result columns and provider interfaces.
 
 ## Cancel work and observe completion
 
@@ -303,7 +303,7 @@ be preserved when the format supplies it.
 These entry points currently support selection, aliases, predicates, and limits. They do not add
 joins, sorting, aggregates, or synchronous execution. For exact
 signatures, errors, capability details, and benchmark commands, see the
-[query API reference](/docs/modules/core/scan/query).
+[query API reference](/docs/modules/core/query/query-api).
 
 ### Injected SQL parser contract
 
@@ -351,7 +351,7 @@ loader's input schema still controls how it decodes the original values.
 
 ### Grouped SQL scans
 
-Use `queryGroupedSQL` from `@loaders.gl/core/scan` to return the final grouped table
+Use `queryGroupedSQL` from `@loaders.gl/core/query` to return the final grouped table
 from a URL, table scan source, or Arrow table. The scan accumulates each group across
 input batches. For example:
 

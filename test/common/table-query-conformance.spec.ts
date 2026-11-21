@@ -8,7 +8,7 @@ import {expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
 import {ParquetDatasetSource} from '@loaders.gl/tables/parquet';
-import {queryArrowTable} from '@loaders.gl/core/scan/arrow-query';
+import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 test('Arrow and Parquet execute one portable projection, predicate, and limit consistently', async () => {

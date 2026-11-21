@@ -1,5 +1,5 @@
 ---
-title: Video
+title: '@loaders.gl/images/video'
 description: Load browser video data through the experimental loaders.gl API.
 hide_title: true
 page_style: designed
@@ -10,7 +10,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 <DocPageHeader
   eyebrow="Images package · video APIs"
-  title="Keep browser video loading inside the data pipeline."
+  title="@loaders.gl/images/video"
   description="`@loaders.gl/images` provides an experimental browser-only loader for video data. It follows loaders.gl conventions while leaving playback and rendering decisions to the application."
   tone="blue"
   meta={['Experimental', 'Browser only', 'VideoLoader']}

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TableQuery} from '@loaders.gl/core/scan';
+import type {TableQuery} from '@loaders.gl/core/query';
 import {
   queryScales,
   queryScalesInBatches,

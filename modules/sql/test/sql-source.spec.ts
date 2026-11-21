@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import type {Schema} from '@loaders.gl/core/schema';
 import {SQLDataSource, getSQLAdapterFactory, registerSQLAdapter} from '@loaders.gl/sql';
-import {parseSQLPredicate, query as queryTables} from '@loaders.gl/core/scan';
+import {parseSQLPredicate, query as queryTables} from '@loaders.gl/core/query';
 import {convertRowsToArrowTable} from '../src/sql-utils';
 import type {
   SQLAdapter,

@@ -119,7 +119,7 @@ test('common queries page DuckDB tables, widen integers natively, and fall back 
       return queryRows(statement, options);
     };
     const {query} = await import('@loaders.gl/core/query');
-    const {parseSQLQuery} = await import('@loaders.gl/core/query/query');
+    const {parseSQLQuery} = await import('@loaders.gl/core/query/sql');
     for (const offset of [0, 1]) {
       const result = await query(
         `SELECT CAST(id AS BIGINT) AS result WHERE CAST(id AS BIGINT) >= 2 LIMIT 1 OFFSET ${offset}`,
@@ -175,7 +175,7 @@ test('common queries combine native DuckDB casts and residual Arrow expressions'
       return queryRows(statement, options);
     };
     const {query} = await import('@loaders.gl/core/query');
-    const {parseSQLQuery} = await import('@loaders.gl/core/query/query');
+    const {parseSQLQuery} = await import('@loaders.gl/core/query/sql');
     const projection =
       'SELECT CAST(id AS DOUBLE PRECISION) AS wide, CAST(fraction AS INTEGER) AS truncated';
     const result = await query(projection + ' LIMIT 2 OFFSET 1', {
