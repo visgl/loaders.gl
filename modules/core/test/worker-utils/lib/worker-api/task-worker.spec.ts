@@ -255,6 +255,36 @@ test('cancelling a task signals caller callbacks and ignores late failures', asy
   await vi.waitFor(() => expect(callbackSettled).toHaveBeenCalledOnce());
 });
 
+test('cancelling pending input releases worker capacity before the input settles', async () => {
+  const controller = new AbortController();
+  const pendingInput = new Promise<never>(() => {});
+  const workerInitialized = vi.fn();
+  const descriptor = {
+    ...worker,
+    /** Observe the initialization response without releasing the pending input. */
+    loadWorker: () => {
+      const instance = new Worker(url, {type: 'module'});
+      instance.addEventListener('message', event => {
+        if (event.data?.type === 'done') {
+          workerInitialized();
+        }
+      });
+      return instance;
+    }
+  };
+  const first = processOnWorker(descriptor, pendingInput, {
+    maxConcurrency: 1,
+    signal: controller.signal
+  });
+  const reason = new Error('cancel pending input');
+  const rejection = expect(first).rejects.toBe(reason);
+  await vi.waitFor(() => expect(workerInitialized).toHaveBeenCalledOnce());
+  const second = processOnWorker(descriptor, 'next', {maxConcurrency: 1});
+  controller.abort(reason);
+  await rejection;
+  await expect(second).resolves.toMatchObject({input: 'next'});
+});
+
 test('shutdown cancels active requests and allows a fresh runner', async () => {
   let beginCallback!: () => void;
   const began = new Promise<void>(resolve => {

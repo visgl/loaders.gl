@@ -225,6 +225,45 @@ test('load#load retrieve Response', async () => {
   checkResponse(response);
 });
 
+test.runIf(isBrowser).each([false, true])(
+  'load starts the actual worker before the body finishes (body failure: %s)',
+  async bodyFails => {
+    let body: ReadableStreamDefaultController<Uint8Array>;
+    const response = new Response(
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          body = controller;
+        }
+      })
+    );
+    const loadWorker = vi.fn(
+      () =>
+        new Worker(new URL('/modules/core/dist/null-worker.js', location.href), {type: 'module'})
+    );
+    const loader = {...NullLoader, worker: true, fetchBeforePreload: true, loadWorker};
+    const result = load(JSON_URL, loader, {
+      core: {fetch: async () => response, _workerType: 'classic'}
+    });
+    const observed = result.then(
+      value => ({value}),
+      error => ({error})
+    );
+    const error = new Error('body failed');
+    try {
+      await vi.waitFor(() => expect(loadWorker).toHaveBeenCalledOnce());
+    } finally {
+      if (bodyFails) {
+        body!.error(error);
+      } else {
+        body!.enqueue(new Uint8Array([1, 2, 3]));
+        body!.close();
+      }
+    }
+    expect(await observed).toEqual(bodyFails ? {error: expect.any(TypeError)} : {value: null});
+    expect(loadWorker).toHaveBeenCalledOnce();
+  }
+);
+
 test.runIf(isBrowser)('load#load retrieve Response from worker - BROWSER ONLY', async () => {
   const result = await load(
     JSON_URL,

@@ -50,7 +50,10 @@ export function canProcessOnWorkerInBatches(
   return Boolean(worker.workerInBatches && !getConfiguredWorkerURL(worker, options));
 }
 
-/** Runs one loader request on an initialized math.gl task and closes its handle. */
+/**
+ * Runs one loader request and closes its task handle. A pending input lets the
+ * task initialize while the caller reads the data.
+ */
 export async function processOnWorker(
   worker: WorkerObject,
   data: any,
@@ -58,18 +61,47 @@ export async function processOnWorker(
   context: CallerThreadContext = {},
   jobContext: WorkerJobContext = {}
 ): Promise<any> {
-  const session = await openSession(worker, options, context, jobContext);
+  const controller = new AbortController();
+  const signal = options.signal
+    ? AbortSignal.any([options.signal, controller.signal])
+    : controller.signal;
+  const sessionPromise = openSession(worker, {...options, signal}, context, jobContext);
+  // Observe startup failure immediately, but keep input errors first as in serial parsing.
+  void sessionPromise.catch(() => {});
   try {
+    const input = data instanceof Promise ? await waitForInput(data, signal) : data;
+    const session = await sessionPromise;
     const result = await session.handle.runTask(
-      {value: data},
+      {value: input},
       {
         ...getControls(options),
         options: getParserOptions(options)
       }
     );
     return result.value;
+  } catch (error) {
+    controller.abort(error);
+    throw error;
   } finally {
-    await session.close();
+    const session = await sessionPromise.catch(() => undefined);
+    await session?.close();
+  }
+}
+
+/** Releases the task on cancellation even when the input producer ignores the signal. */
+async function waitForInput<T>(input: Promise<T>, signal: AbortSignal): Promise<T> {
+  let onAbort: () => void;
+  try {
+    const aborted = new Promise<never>((_resolve, reject) => {
+      onAbort = () => reject(signal.reason);
+      signal.addEventListener('abort', onAbort, {once: true});
+      if (signal.aborted) {
+        onAbort();
+      }
+    });
+    return await Promise.race([input, aborted]);
+  } finally {
+    signal.removeEventListener('abort', onAbort!);
   }
 }
 
