@@ -66,6 +66,8 @@ However, there are a number of considerations when loading and parsing data on J
 * **Debugging** - Worker-based code can be harder to debug. Switching back to main-thread parsing is useful during development.
 * **Startup times** - Worker startup time can outweigh the parsing savings for small inputs.
 
+For atomic URL loads that select a worker, the worker can initialize while core reads the response body. Parsing starts when the full input is available.
+
 ## Data Transfer[​](#data-transfer "Direct link to Data Transfer")
 
 Threads cannot share non-binary data structures and these have to be serialized/deserialized. This is a big issue for worker thread based loading as the purpose of loaders is typically to load and parse big datastructures, and main thread deserialization times are often comparable to or even exceed the time required to parse the data in the first place, defeating the value of moving parsing to a worker thread.

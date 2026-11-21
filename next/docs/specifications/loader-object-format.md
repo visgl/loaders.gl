@@ -58,20 +58,21 @@ A metadata loader identifies a format and exposes `preload()` to return its pars
 
 ### Common fields[​](#common-fields "Direct link to Common fields")
 
-| Field        | Type                | Purpose                                                                |
-| ------------ | ------------------- | ---------------------------------------------------------------------- |
-| `id`         | `string`            | Stable loader identifier and option namespace.                         |
-| `name`       | `string`            | Human-readable format name.                                            |
-| `module`     | `string`            | Owning loaders.gl module.                                              |
-| `version`    | `string`            | Version used for runtime assets and diagnostics.                       |
-| `extensions` | `string[]`          | Supported file extensions without leading dots.                        |
-| `mimeTypes`  | `string[]`          | MIME types used for format selection.                                  |
-| `options`    | `object`            | Default options, normally nested under the loader ID.                  |
-| `category`   | `string`            | Optional application-facing data category.                             |
-| `encoding`   | `string`            | Optional physical serialization, such as `json`, `arrow`, or `binary`. |
-| `format`     | `string`            | Optional logical format, such as `geojson` or `gltf`.                  |
-| `worker`     | `boolean \| string` | Optional worker support descriptor.                                    |
-| `preload`    | `function`          | Optional asynchronous parser implementation hook.                      |
+| Field                | Type                | Purpose                                                                                                                                                               |
+| -------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                 | `string`            | Stable loader identifier and option namespace.                                                                                                                        |
+| `name`               | `string`            | Human-readable format name.                                                                                                                                           |
+| `module`             | `string`            | Owning loaders.gl module.                                                                                                                                             |
+| `version`            | `string`            | Version used for runtime assets and diagnostics.                                                                                                                      |
+| `extensions`         | `string[]`          | Supported file extensions without leading dots.                                                                                                                       |
+| `mimeTypes`          | `string[]`          | MIME types used for format selection.                                                                                                                                 |
+| `options`            | `object`            | Default options, normally nested under the loader ID.                                                                                                                 |
+| `category`           | `string`            | Optional application-facing data category.                                                                                                                            |
+| `encoding`           | `string`            | Optional physical serialization, such as `json`, `arrow`, or `binary`.                                                                                                |
+| `format`             | `string`            | Optional logical format, such as `geojson` or `gltf`.                                                                                                                 |
+| `worker`             | `boolean \| string` | Optional worker support descriptor.                                                                                                                                   |
+| `preload`            | `function`          | Optional asynchronous parser implementation hook.                                                                                                                     |
+| `fetchBeforePreload` | `boolean`           | Allows `load()` to fetch input while the parser preloads. Enable only when core owns the initial request and authentication can be resolved from the loader metadata. |
 
 `text` and `binary` remain compatibility hints for input handling. Format recognition and parser availability are separate: metadata can identify a file without carrying the parser code in the initial bundle.
 
