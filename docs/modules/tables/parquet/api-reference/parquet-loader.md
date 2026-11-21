@@ -224,8 +224,8 @@ Supports table category options such as `batchType` and `batchSize`.
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `parquet.shape` | `'arrow' \| 'object-row-table'` | `'arrow'` | Selects the returned table shape. |
-| `parquet.limit` | `number` | `undefined` | Deprecated for direct parsing. Put the maximum row count in a [logical query](/docs/modules/core/scan/query). |
-| `parquet.offset` | `number` | `0` | Deprecated for direct parsing. Put the row offset in a [logical query](/docs/modules/core/scan/query). |
+| `parquet.limit` | `number` | `undefined` | Deprecated for direct parsing. Put the maximum row count in a [logical query](/docs/modules/core/query/query). |
+| `parquet.offset` | `number` | `0` | Deprecated for direct parsing. Put the row offset in a [logical query](/docs/modules/core/query/query). |
 | `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |
 | `parquet.columns` | `string[]` | `undefined` | Restrict parsing to the listed columns. |
 | `parquet.rowGroups` | `number[]` | `undefined` | Read the listed zero-based row groups in the requested order. |

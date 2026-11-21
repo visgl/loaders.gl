@@ -1,6 +1,6 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {parseSQLPredicate} from '@loaders.gl/core/scan';
+import {parseSQLPredicate} from '@loaders.gl/core/query';
 import {ArrowTableSource} from '../../src/arrow/arrow-source';
 import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
 

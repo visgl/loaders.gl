@@ -9,8 +9,8 @@ import {
   isSQLPredicate,
   parseSQLPredicate,
   validateSQLPredicate
-} from '@loaders.gl/core/scan';
-import type {SQLPredicate} from '@loaders.gl/core/scan';
+} from '@loaders.gl/core/query';
+import type {SQLPredicate} from '@loaders.gl/core/query';
 import type {SQLTableQuery} from '@loaders.gl/sql';
 
 describe('SQL predicate structural boundaries', () => {

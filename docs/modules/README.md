@@ -14,7 +14,7 @@ Choose a data family to explore its loaders, writers, sources, supported formats
 
 The public loaders.gl API for loading, parsing, streaming, and encoding data across format modules.
 
-[loader-utils](./core/loader-utils/README.md) · [worker-utils](./core/worker-utils/README.md) · [schema](./core/schema/README.md) · [schema-utils](./core/schema-utils/README.md) · [scan](./core/scan/README.md) · [arrow-geometry](./core/arrow-geometry/README.md) · [geoarrow](./core/geoarrow/README.md) · [wkt](./core/wkt/README.md) · [polyfills](./core/polyfills/README.md)
+[loader-utils](./core/loader-utils/README.md) · [worker-utils](./core/worker-utils/README.md) · [schema](./core/schema/README.md) · [schema-utils](./core/schema-utils/README.md) · [query](./core/query/README.md) · [arrow-geometry](./core/arrow-geometry/README.md) · [geoarrow](./core/geoarrow/README.md) · [wkt](./core/wkt/README.md) · [polyfills](./core/polyfills/README.md)
 
 </PackageTile>
 
@@ -50,12 +50,12 @@ Load geographic features, tracks, and vector datasets, and decode or encode geom
 
 </PackageTile>
 
-<PackageTile formats={[{"slug": "image", "to": "/docs/modules/images/api-reference/image-loader"}, {"slug": "ktx", "to": "/docs/modules/images/textures/formats/ktx"}, {"slug": "basis", "to": "/docs/modules/images/textures/formats/basis"}, {"slug": "dds", "to": "/docs/modules/images/textures/formats/dds"}, {"slug": "pvr", "to": "/docs/modules/images/textures/formats/pvr"}, {"slug": "crunch", "to": "/docs/modules/images/textures/formats/crunch"}, {"slug": "video", "to": "/docs/modules/images/video/api-reference/video-loader"}, {"slug": "gif", "to": "/docs/modules/images/video"}]}>
+<PackageTile formats={[{"slug": "image", "to": "/docs/modules/images/api-reference/image-loader"}, {"slug": "ktx", "to": "/docs/modules/images/texture/formats/ktx"}, {"slug": "basis", "to": "/docs/modules/images/texture/formats/basis"}, {"slug": "dds", "to": "/docs/modules/images/texture/formats/dds"}, {"slug": "pvr", "to": "/docs/modules/images/texture/formats/pvr"}, {"slug": "crunch", "to": "/docs/modules/images/texture/formats/crunch"}, {"slug": "video", "to": "/docs/modules/images/video/api-reference/video-loader"}, {"slug": "gif", "to": "/docs/modules/images/video"}]}>
 
 ### [@loaders.gl/images](./images/README.md)
 
 Decode and encode images, inspect image metadata, and work with textures and browser video APIs.
-See [texture formats and APIs](./images/textures/README.md) and [video loaders](./images/video/README.md).
+See [texture formats and APIs](images/texture/README.md) and [video loaders](./images/video/README.md).
 
 
 </PackageTile>

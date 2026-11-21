@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {TableQuery} from '@loaders.gl/core/scan';
-import {query, queryInBatches} from '@loaders.gl/core/scan';
+import type {TableQuery} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query';
 import {CSVTableSource} from '@loaders.gl/tables/csv';
 import {NDJSONTableSource} from '@loaders.gl/tables/json';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';

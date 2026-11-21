@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
-import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/scan';
-import type {SQLQueryParser} from '@loaders.gl/core/scan';
-import {parseSQLQuery} from '@loaders.gl/core/scan/query';
+import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/query';
+import type {SQLQueryParser} from '@loaders.gl/core/query';
+import {parseSQLQuery} from '@loaders.gl/core/query/sql';
 
 function source() {
   const data = new arrow.Table({

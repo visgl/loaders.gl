@@ -4,8 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {beforeAll, expect, test, vi} from 'vitest';
-import type {TableQuery} from '@loaders.gl/core/scan';
-import {query, queryInBatches} from '@loaders.gl/core/scan';
+import type {TableQuery} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
@@ -399,7 +399,7 @@ test.each([
           core: {batchSize: 2},
           ndjson: {schema: inputSchema}
         });
-  const {parseSQLQuery} = await import('@loaders.gl/core/query/query');
+  const {parseSQLQuery} = await import('@loaders.gl/core/query/sql');
   const statement =
     'SELECT CAST(value AS FLOAT64) AS wide, CAST(value AS FLOAT32) AS single, CAST(value AS FLOAT16) AS half LIMIT 4 OFFSET 1';
   const options = {source, sqlParser: parseSQLQuery};

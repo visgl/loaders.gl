@@ -1,5 +1,5 @@
 import {expect, test, vi} from 'vitest';
-import {query} from '@loaders.gl/core/scan';
+import {query} from '@loaders.gl/core/query';
 import * as arrow from 'apache-arrow';
 import {createDataSourceSync, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
 import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';

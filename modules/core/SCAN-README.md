@@ -1,4 +1,4 @@
-# @loaders.gl/core/scan
+# @loaders.gl/core/query
 
 Optional scan planning and execution for loaders.gl.
 
@@ -6,7 +6,7 @@ The utility subpath has one main entry point and focused query-helper entry poin
 the portable query semantics used by future backends.
 
 ```typescript
-import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {createScanEngine, parseSQLPredicate} from '@loaders.gl/core/query';
 
 const engine = await createScanEngine();
 const result = engine.query(table, {
@@ -33,7 +33,7 @@ Optional backends can register a lazy loader without adding backend-specific imp
 code:
 
 ```typescript
-import {createScanEngine, registerScanBackend} from '@loaders.gl/core/scan';
+import {createScanEngine, registerScanBackend} from '@loaders.gl/core/query';
 
 registerScanBackend('custom', async () => {
   const {createCustomBackend} = await import('./custom-backend');
@@ -50,7 +50,7 @@ into this package when they want the shared planner or Arrow executor.
 The same boundary applies to table execution. `executeTableScanBatches()` is the reusable residual
 executor for object-row, columnar, GeoJSON, and Arrow-shaped batches. It owns filtering, projection,
 global limits, cancellation, and terminal telemetry; a format adapter only supplies its parser's
-batch reader. The helper is re-exported from `@loaders.gl/core/scan` for applications building custom
+batch reader. The helper is re-exported from `@loaders.gl/core/query` for applications building custom
 adapters, while format packages import it from `@loaders.gl/core/loader-utils`. This keeps the common
 implementation in one place without making a CSV, JSON, or other format root import the optional
 scan runtime (and therefore preserves tree-shaking for users who never scan).
@@ -62,7 +62,7 @@ row-index gathering, vector reconstruction, and limits are shared. This keeps fo
 small while avoiding a dependency from those packages on the optional scan runtime.
 
 ```typescript
-import {executeTableScanBatches} from '@loaders.gl/core/scan';
+import {executeTableScanBatches} from '@loaders.gl/core/query';
 
 const result = executeTableScanBatches(
   (signal, onByteLength) => parser.readBatches({signal, onByteLength}),
@@ -74,7 +74,7 @@ The package also provides the application-facing query state and metadata vocabu
 metadata-driven controls. These are deliberately framework-neutral:
 
 ```typescript
-import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/core/scan';
+import type {ScanQuery, ScanQueryMetadata} from '@loaders.gl/core/query';
 
 const query: ScanQuery = {columns: ['name'], limit: 25};
 async function discover(source: {getQueryMetadata(): Promise<ScanQueryMetadata>}) {
@@ -123,7 +123,7 @@ a second loader registry, cache, or lifecycle system.
 
 ```typescript
 import {DataSourceManager} from '@loaders.gl/core/loader-utils';
-import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/core/scan';
+import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/core/query';
 
 const dataSourceManager = new DataSourceManager();
 dataSourceManager.add({dataSourceId: 'current', dataSource: currentSource});
@@ -194,7 +194,7 @@ bind one vector tile or one bounded feature request, then expose the resulting A
 through the same metadata, explain, and `read()` surface:
 
 ```typescript
-import {VectorTileTableScanSource} from '@loaders.gl/core/scan';
+import {VectorTileTableScanSource} from '@loaders.gl/core/query';
 
 const tileTable = new VectorTileTableScanSource(mvtSource, {
   sourceType: 'mvt-tile-table',

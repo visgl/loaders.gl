@@ -9,7 +9,7 @@ import {
   createScanQueryMetadata,
   parseSQLPredicate,
   registerScanBackend
-} from '@loaders.gl/core/scan';
+} from '@loaders.gl/core/query';
 
 test('creates the Arrow reference engine by default', async () => {
   const engine = await createScanEngine();

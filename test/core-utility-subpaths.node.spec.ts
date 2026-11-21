@@ -77,8 +77,8 @@ function listSourceFiles(directory: string): string[] {
 
 test('CommonJS scan entrypoints share backend registrations and public function identities', async () => {
   const require = createRequire(import.meta.url);
-  const scan = require('@loaders.gl/core/scan');
-  const engine = require('@loaders.gl/core/scan/scan-engine');
+  const scan = require('@loaders.gl/core/query');
+  const engine = require('@loaders.gl/core/query/scan-engine');
   expect(scan.registerScanBackend).toBe(engine.registerScanBackend);
   expect(scan.createScanEngine).toBe(engine.createScanEngine);
   const {tableFromArrays} = require('apache-arrow');
@@ -132,7 +132,7 @@ test.each([
   expect(
     eagerOutputs
       .flatMap(output => output.imports)
-      .filter(dependency => dependency.path.startsWith('@loaders.gl/core/scan'))
+      .filter(dependency => dependency.path.startsWith('@loaders.gl/core/query'))
   ).toEqual([]);
   expect(
     eagerOutputs

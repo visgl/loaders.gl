@@ -224,7 +224,7 @@
       "import": "./dist/geoarrow/geoarrow-builder.js",
       "require": "./dist/geoarrow/geoarrow-builder.cjs"
     },
-    "./scan": {
+    "./query": {
       "types": "./dist/scan/index.d.ts",
       "import": "./dist/scan/index.js",
       "require": "./dist/scan/index.cjs"
@@ -234,125 +234,15 @@
       "import": "./dist/scan/query-scales.js",
       "require": "./dist/scan/query-scales.cjs"
     },
-    "./scan/arrow-query-worker": {
+    "./query/arrow-query-worker": {
       "types": "./dist/scan/arrow-query-worker.d.ts",
       "import": "./dist/scan/arrow-query-worker.js",
       "require": "./dist/scan/arrow-query-worker.cjs"
     },
-    "./scan/arrow-query-worker-entry.js": {
+    "./query/arrow-query-worker-entry.js": {
       "types": "./dist/scan/arrow-query-worker-entry.d.ts",
       "import": "./dist/scan/arrow-query-worker-entry.js",
       "require": "./dist/scan/arrow-query-worker-entry.cjs"
-    },
-    "./scan/arrow-query": {
-      "types": "./dist/scan/arrow-query.d.ts",
-      "import": "./dist/scan/arrow-query.js",
-      "require": "./dist/scan/arrow-query.cjs"
-    },
-    "./scan/bind-sql-predicate": {
-      "types": "./dist/scan/bind-sql-predicate.d.ts",
-      "import": "./dist/scan/bind-sql-predicate.js",
-      "require": "./dist/scan/bind-sql-predicate.cjs"
-    },
-    "./scan/parse-sql-predicate": {
-      "types": "./dist/scan/parse-sql-predicate.d.ts",
-      "import": "./dist/scan/parse-sql-predicate.js",
-      "require": "./dist/scan/parse-sql-predicate.cjs"
-    },
-    "./scan/query": {
-      "types": "./dist/scan/query.d.ts",
-      "import": "./dist/scan/query.js",
-      "require": "./dist/scan/query.cjs"
-    },
-    "./scan/query-arrow-table": {
-      "types": "./dist/scan/query-arrow-table.d.ts",
-      "import": "./dist/scan/query-arrow-table.js",
-      "require": "./dist/scan/query-arrow-table.cjs"
-    },
-    "./scan/sql-predicate-schema": {
-      "types": "./dist/scan/sql-predicate-schema.d.ts",
-      "import": "./dist/scan/sql-predicate-schema.js",
-      "require": "./dist/scan/sql-predicate-schema.cjs"
-    },
-    "./scan/sql-predicate-types": {
-      "types": "./dist/scan/sql-predicate-types.d.ts",
-      "import": "./dist/scan/sql-predicate-types.js",
-      "require": "./dist/scan/sql-predicate-types.cjs"
-    },
-    "./scan/sql-predicate-zod": {
-      "types": "./dist/scan/sql-predicate-zod.d.ts",
-      "import": "./dist/scan/sql-predicate-zod.js",
-      "require": "./dist/scan/sql-predicate-zod.cjs"
-    },
-    "./scan/sql-predicate": {
-      "types": "./dist/scan/sql-predicate.d.ts",
-      "import": "./dist/scan/sql-predicate.js",
-      "require": "./dist/scan/sql-predicate.cjs"
-    },
-    "./scan/table-query": {
-      "types": "./dist/scan/table-query.d.ts",
-      "import": "./dist/scan/table-query.js",
-      "require": "./dist/scan/table-query.cjs"
-    },
-    "./scan/table-query-capabilities": {
-      "types": "./dist/scan/table-query-capabilities.d.ts",
-      "import": "./dist/scan/table-query-capabilities.js",
-      "require": "./dist/scan/table-query-capabilities.cjs"
-    },
-    "./scan/rows-to-arrow": {
-      "types": "./dist/scan/rows-to-arrow.d.ts",
-      "import": "./dist/scan/rows-to-arrow.js",
-      "require": "./dist/scan/rows-to-arrow.cjs"
-    },
-    "./scan/scan-engine": {
-      "types": "./dist/scan/scan-engine.d.ts",
-      "import": "./dist/scan/scan-engine.js",
-      "require": "./dist/scan/scan-engine.cjs"
-    },
-    "./scan/scan-query": {
-      "types": "./dist/scan/scan-query.d.ts",
-      "import": "./dist/scan/scan-query.js",
-      "require": "./dist/scan/scan-query.cjs"
-    },
-    "./federated-table-scan-source": {
-      "types": "./dist/federated-table-scan-source.d.ts",
-      "import": "./dist/federated-table-scan-source.js",
-      "require": "./dist/federated-table-scan-source.cjs"
-    },
-    "./vector-table-scan-source": {
-      "types": "./dist/vector-table-scan-source.d.ts",
-      "import": "./dist/vector-table-scan-source.js",
-      "require": "./dist/vector-table-scan-source.cjs"
-    },
-    "./wkt": {
-      "types": "./dist/wkt/index.d.ts",
-      "import": "./dist/wkt/index.js",
-      "require": "./dist/wkt/index.cjs"
-    },
-    "./wkt/twkb": {
-      "types": "./dist/wkt/twkb/index.d.ts",
-      "import": "./dist/wkt/twkb/index.js",
-      "require": "./dist/wkt/twkb/index.cjs"
-    },
-    "./constants": {
-      "types": "./dist/constants/index.d.ts",
-      "import": "./dist/constants/index.js",
-      "require": "./dist/constants/index.cjs"
-    },
-    "./arrow-worker-transport": {
-      "types": "./dist/arrow-worker-transport.d.ts",
-      "import": "./dist/arrow-worker-transport.js",
-      "require": "./dist/arrow-worker-transport.cjs"
-    },
-    "./scan/arrow-execution": {
-      "types": "./dist/scan/arrow-execution.d.ts",
-      "import": "./dist/scan/arrow-execution.js",
-      "require": "./dist/scan/arrow-execution.cjs"
-    },
-    "./query": {
-      "types": "./dist/scan/index.d.ts",
-      "import": "./dist/scan/index.js",
-      "require": "./dist/scan/index.cjs"
     },
     "./query/arrow-query": {
       "types": "./dist/scan/arrow-query.d.ts",
@@ -369,7 +259,7 @@
       "import": "./dist/scan/parse-sql-predicate.js",
       "require": "./dist/scan/parse-sql-predicate.cjs"
     },
-    "./query/query": {
+    "./query/sql": {
       "types": "./dist/scan/query.d.ts",
       "import": "./dist/scan/query.js",
       "require": "./dist/scan/query.cjs"
@@ -423,6 +313,36 @@
       "types": "./dist/scan/scan-query.d.ts",
       "import": "./dist/scan/scan-query.js",
       "require": "./dist/scan/scan-query.cjs"
+    },
+    "./federated-table-scan-source": {
+      "types": "./dist/federated-table-scan-source.d.ts",
+      "import": "./dist/federated-table-scan-source.js",
+      "require": "./dist/federated-table-scan-source.cjs"
+    },
+    "./vector-table-scan-source": {
+      "types": "./dist/vector-table-scan-source.d.ts",
+      "import": "./dist/vector-table-scan-source.js",
+      "require": "./dist/vector-table-scan-source.cjs"
+    },
+    "./wkt": {
+      "types": "./dist/wkt/index.d.ts",
+      "import": "./dist/wkt/index.js",
+      "require": "./dist/wkt/index.cjs"
+    },
+    "./wkt/twkb": {
+      "types": "./dist/wkt/twkb/index.d.ts",
+      "import": "./dist/wkt/twkb/index.js",
+      "require": "./dist/wkt/twkb/index.cjs"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "import": "./dist/constants/index.js",
+      "require": "./dist/constants/index.cjs"
+    },
+    "./arrow-worker-transport": {
+      "types": "./dist/arrow-worker-transport.d.ts",
+      "import": "./dist/arrow-worker-transport.js",
+      "require": "./dist/arrow-worker-transport.cjs"
     },
     "./query/arrow-execution": {
       "types": "./dist/scan/arrow-execution.d.ts",

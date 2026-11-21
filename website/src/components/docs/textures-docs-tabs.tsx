@@ -29,47 +29,47 @@ export type TexturesDocsTabId =
   | 'ktx2basiswriter';
 
 const TEXTURES_TABS = {
-  overview: {id: 'overview', label: 'Overview', href: '/docs/modules/images/textures'},
+  overview: {id: 'overview', label: 'Overview', href: '/docs/modules/images/texture'},
   compressedTextures: {
     id: 'compressed-textures',
     label: 'Compressed Textures',
-    href: '/docs/modules/images/textures/formats/compressed-textures'
+    href: '/docs/modules/images/texture/formats/compressed-textures'
   },
-  basis: {id: 'basis', label: 'Basis', href: '/docs/modules/images/textures/formats/basis'},
-  crunch: {id: 'crunch', label: 'Crunch', href: '/docs/modules/images/textures/formats/crunch'},
-  dds: {id: 'dds', label: 'DDS', href: '/docs/modules/images/textures/formats/dds'},
-  hdr: {id: 'hdr', label: 'HDR', href: '/docs/modules/images/textures/formats/hdr'},
-  ktx: {id: 'ktx', label: 'KTX', href: '/docs/modules/images/textures/formats/ktx'},
-  pvr: {id: 'pvr', label: 'PVR', href: '/docs/modules/images/textures/formats/pvr'},
+  basis: {id: 'basis', label: 'Basis', href: '/docs/modules/images/texture/formats/basis'},
+  crunch: {id: 'crunch', label: 'Crunch', href: '/docs/modules/images/texture/formats/crunch'},
+  dds: {id: 'dds', label: 'DDS', href: '/docs/modules/images/texture/formats/dds'},
+  hdr: {id: 'hdr', label: 'HDR', href: '/docs/modules/images/texture/formats/hdr'},
+  ktx: {id: 'ktx', label: 'KTX', href: '/docs/modules/images/texture/formats/ktx'},
+  pvr: {id: 'pvr', label: 'PVR', href: '/docs/modules/images/texture/formats/pvr'},
   basisLoader: {
     id: 'basisloader',
     label: 'BasisLoader',
-    href: '/docs/modules/images/textures/api-reference/basis-loader'
+    href: '/docs/modules/images/texture/api-reference/basis-loader'
   },
   compressedTextureLoader: {
     id: 'compressedtextureloader',
     label: 'CompressedTextureLoader',
-    href: '/docs/modules/images/textures/api-reference/compressed-texture-loader'
+    href: '/docs/modules/images/texture/api-reference/compressed-texture-loader'
   },
   crunchLoader: {
     id: 'crunchloader',
     label: 'CrunchLoader',
-    href: '/docs/modules/images/textures/api-reference/crunch-loader'
+    href: '/docs/modules/images/texture/api-reference/crunch-loader'
   },
   radianceHdrLoader: {
     id: 'radiancehdrloader',
     label: 'RadianceHDRLoader',
-    href: '/docs/modules/images/textures/api-reference/radiance-hdr-loader'
+    href: '/docs/modules/images/texture/api-reference/radiance-hdr-loader'
   },
   compressedTextureWriter: {
     id: 'compressedtexturewriter',
     label: 'CompressedTextureWriter',
-    href: '/docs/modules/images/textures/api-reference/compressed-texture-writer'
+    href: '/docs/modules/images/texture/api-reference/compressed-texture-writer'
   },
   ktx2BasisWriter: {
     id: 'ktx2basiswriter',
     label: 'KTX2BasisWriter',
-    href: '/docs/modules/images/textures/api-reference/ktx2-basis-texture-writer'
+    href: '/docs/modules/images/texture/api-reference/ktx2-basis-texture-writer'
   }
 } satisfies Record<string, TexturesDocsTab>;
 

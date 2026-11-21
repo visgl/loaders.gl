@@ -11,7 +11,7 @@ import {
   parseSQLPredicate,
   planTableQuery,
   queryArrowTable
-} from '@loaders.gl/core/scan';
+} from '@loaders.gl/core/query';
 import {ArrowTableSource} from '@loaders.gl/sql';
 
 test('Arrow executor advertises portable query capabilities', () => {

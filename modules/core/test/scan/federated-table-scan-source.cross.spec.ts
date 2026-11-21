@@ -14,8 +14,8 @@ import {
   type TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import type {SQLPredicate} from '@loaders.gl/core/scan';
-import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/core/scan';
+import type {SQLPredicate} from '@loaders.gl/core/query';
+import {FederatedTableScanSource, parseSQLPredicate} from '@loaders.gl/core/query';
 
 test('FederatedTableScanSource has matching Node and browser execution semantics', async () => {
   const dataSourceManager = new DataSourceManager();
