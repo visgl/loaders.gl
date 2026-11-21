@@ -2,6 +2,12 @@
 
 ## v5.0
 
+### v5.0.0-rc.2
+
+- Align loaders.gl with the stable math.gl 5.0.0 APIs (#4587).
+- Consolidate public query exports and align the package documentation (#4585, #4586).
+- Resolve browser loader workers through application bundlers, and overlap downloads with worker initialization and parser preloading (#4581–#4583).
+
 ### v5.0.0-rc.1
 
 - Upgrade math.gl to 5.0.0 and use its GeoArrow column decoder for Arrow table tiles.
