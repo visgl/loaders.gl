@@ -112,15 +112,15 @@ Portable scene, tiled-world, point-cloud, mesh-compression, and GPU texture form
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)[KTX / KTX2](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
+[ ↗](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)[KTX / KTX2](https://loaders.gl/next/docs/modules/images/texture/formats/ktx.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)[Basis](https://loaders.gl/next/docs/modules/images/textures/formats/basis.md)
+[ ↗](https://loaders.gl/next/docs/modules/images/texture/formats/ktx.md)[Basis](https://loaders.gl/next/docs/modules/images/texture/formats/basis.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/images/textures/formats/basis.md)[LAS / LAZ](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)
+[ ↗](https://loaders.gl/next/docs/modules/images/texture/formats/basis.md)[LAS / LAZ](https://loaders.gl/next/docs/modules/pointclouds/las/formats/las.md)
 
 <!-- -->
 
@@ -298,11 +298,11 @@ Scene and texture standards designed to move renderable assets between tools and
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)[KTX / KTX2](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
+[ ↗](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)[KTX / KTX2](https://loaders.gl/next/docs/modules/images/texture/formats/ktx.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)[Basis in glTF](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#khr_texture_basisu)
+[ ↗](https://loaders.gl/next/docs/modules/images/texture/formats/ktx.md)[Basis in glTF](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md#khr_texture_basisu)
 
 <!-- -->
 

@@ -4,11 +4,11 @@ Loader category
 
 Texture loaders preserve the details that ordinary image loaders do not: mip levels, array and cube layouts, compression formats, and the metadata a runtime needs to choose a supported GPU representation.
 
-[Texture module](https://loaders.gl/next/docs/modules/images/textures.md)
+[Texture module](https://loaders.gl/next/docs/modules/images/texture.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/images/textures.md)[3D data formats](https://loaders.gl/next/docs/developer-guide/3d-data-formats.md)
+[ ↗](https://loaders.gl/next/docs/modules/images/texture.md)[3D data formats](https://loaders.gl/next/docs/developer-guide/3d-data-formats.md)
 
 <!-- -->
 
@@ -22,7 +22,7 @@ Containers preserve dimensions and mip levels; portable payloads delay the final
 
 Distributed asset
 
-[**KTX2**container and mip chain↗](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)[**Basis**portable supercompression↗](https://loaders.gl/next/docs/modules/images/textures/formats/basis.md)[**DDS / PVR**native GPU payloads↗](https://loaders.gl/next/docs/modules/images/textures/formats/compressed-textures.md)
+[**KTX2**container and mip chain↗](https://loaders.gl/next/docs/modules/images/texture/formats/ktx.md)[**Basis**portable supercompression↗](https://loaders.gl/next/docs/modules/images/texture/formats/basis.md)[**DDS / PVR**native GPU payloads↗](https://loaders.gl/next/docs/modules/images/texture/formats/compressed-textures.md)
 
 inspec&#x74;**→**
 
@@ -88,16 +88,16 @@ The sections below cover category loaders, normalized return shapes, container f
 
 ## Texture Category Loaders[​](#texture-category-loaders "Direct link to Texture Category Loaders")
 
-| Loader                                                                                                                            | Notes                                                             |
-| --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [`CompressedTextureLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/compressed-texture-loader.md) | Parses KTX, DDS, and PVR texture containers                       |
-| [`BasisLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/basis-loader.md)                          | Transcodes Basis assets into runtime texture formats              |
-| [`RadianceHDRLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/radiance-hdr-loader.md)             | Decodes Radiance `.hdr` textures into floating-point texture data |
-| [`CrunchLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/crunch-loader.md)                        | Decodes Crunch compressed mip chains                              |
-| [`TextureLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-loader.md)                      | Loads manifest-driven single image textures and mip chains        |
-| [`TextureArrayLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-array-loader.md)           | Loads manifest-driven texture arrays                              |
-| [`TextureCubeLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-cube-loader.md)             | Loads manifest-driven cubemaps                                    |
-| [`TextureCubeArrayLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-cube-array-loader.md)  | Loads manifest-driven texture cube arrays                         |
+| Loader                                                                                                                           | Notes                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [`CompressedTextureLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/compressed-texture-loader.md) | Parses KTX, DDS, and PVR texture containers                       |
+| [`BasisLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/basis-loader.md)                          | Transcodes Basis assets into runtime texture formats              |
+| [`RadianceHDRLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/radiance-hdr-loader.md)             | Decodes Radiance `.hdr` textures into floating-point texture data |
+| [`CrunchLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/crunch-loader.md)                        | Decodes Crunch compressed mip chains                              |
+| [`TextureLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-loader.md)                      | Loads manifest-driven single image textures and mip chains        |
+| [`TextureArrayLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-array-loader.md)           | Loads manifest-driven texture arrays                              |
+| [`TextureCubeLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-cube-loader.md)             | Loads manifest-driven cubemaps                                    |
+| [`TextureCubeArrayLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-cube-array-loader.md)  | Loads manifest-driven texture cube arrays                         |
 
 Core texture category support is provided by the `@loaders.gl/images` module.
 

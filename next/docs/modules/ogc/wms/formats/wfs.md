@@ -58,7 +58,7 @@ Vector features, binary data, or Arrow tables
 
 [![](/next/images/format-logos/ogc-mark.svg)OGCWFS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)[Try WFS](https://loaders.gl/next/examples/tiles/wfs)[WFS](https://loaders.gl/next/docs/modules/ogc/wms/formats/wfs.md)
 
-[![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/scan#vector-table-views)
+[![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/query#vector-table-views)
 
 WFS serves vector features and properties over HTTP. `WFSLoader` provides a read-only `VectorSource` with GeoJSON and streaming GML ingestion.
 

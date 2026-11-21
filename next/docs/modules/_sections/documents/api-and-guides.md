@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/documents](https://loaders.gl/next/docs/modules/documents.md)
+## [📄️JSONLoader](https://loaders.gl/next/docs/modules/documents/api-reference/json-loader.md)
 
-[8 items](https://loaders.gl/next/docs/modules/documents.md)
+[The documents JSONLoader parses one ordinary JSON document into its JavaScript value. Objects,](https://loaders.gl/next/docs/modules/documents/api-reference/json-loader.md)

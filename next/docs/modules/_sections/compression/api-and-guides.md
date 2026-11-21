@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/compression](https://loaders.gl/next/docs/modules/compression.md)
+## [📄️Compressor and Decompressor](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md)
 
-[12 items](https://loaders.gl/next/docs/modules/compression.md)
+[Use one typed interface for lossless compression and decompression across runtimes.](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md)

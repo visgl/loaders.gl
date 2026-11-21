@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/crypto](https://loaders.gl/next/docs/modules/crypto.md)
+## [📄️Hash API](https://loaders.gl/next/docs/modules/crypto/api-reference/hash.md)
 
-[5 items](https://loaders.gl/next/docs/modules/crypto.md)
+[Hash complete buffers or async binary batches with the crypto module’s portable interface.](https://loaders.gl/next/docs/modules/crypto/api-reference/hash.md)

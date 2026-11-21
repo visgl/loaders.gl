@@ -68,7 +68,7 @@ The scene USD loader adds a documented crate 0.8.0 subset, including binary-root
 
 ### OpenEXR channel planes[​](#openexr-channel-planes "Direct link to OpenEXR channel planes")
 
-Images adds single-part scanline OpenEXR decoding with NONE/RLE/ZIPS/ZIP compression and renderer-independent named channels. See [OpenEXR](https://loaders.gl/next/docs/modules/images/openexr.md).
+Images adds single-part scanline OpenEXR decoding with NONE/RLE/ZIPS/ZIP compression and renderer-independent named channels. See [OpenEXR](https://loaders.gl/next/docs/modules/images/exr.md).
 
 ### Draco joins scene[​](#draco-joins-scene "Direct link to Draco joins scene")
 
@@ -84,7 +84,7 @@ Documents now includes a generic, non-tabular JSON microloader. XML-based loader
 
 ### Query cloud data where it lives[​](#query-cloud-data-where-it-lives "Direct link to Query cloud data where it lives")
 
-Discover datasets through [STAC catalogs](https://loaders.gl/next/docs/modules/ogc/stac.md), then scan supported Parquet, Iceberg, Delta, and Hudi sources with a shared [query API](https://loaders.gl/next/docs/modules/core/scan.md). Select columns and filter rows without assembling a separate application API for each source; individual formats determine which work can be pushed down to storage. Try the [STAC explorer](https://loaders.gl/next/examples/geospatial/stac) or [Iceberg example](https://loaders.gl/next/examples/cloud-native/iceberg).
+Discover datasets through [STAC catalogs](https://loaders.gl/next/docs/modules/ogc/stac.md), then scan supported Parquet, Iceberg, Delta, and Hudi sources with a shared [query API](https://loaders.gl/next/docs/modules/core/query.md). Select columns and filter rows without assembling a separate application API for each source; individual formats determine which work can be pushed down to storage. Try the [STAC explorer](https://loaders.gl/next/examples/geospatial/stac) or [Iceberg example](https://loaders.gl/next/examples/cloud-native/iceberg).
 
 [ArcGIS sources](https://loaders.gl/next/docs/developer-guide/arcgis.md) add service-item discovery, scoped authentication, and bounded, paginated feature queries with explicit completion status. The [item explorer](https://loaders.gl/next/examples/arcgis-items) lets you inspect service layers and tables before loading them.
 
@@ -157,7 +157,7 @@ Release Date: March 31, 2026
 **Highlights**
 
 * **@loaders.gl/tiles/mlt** - New [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md) and [`MLTLoader`](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md) add support for the [`MapLibre Tile`](https://loaders.gl/next/docs/modules/tiles/mlt/formats/mlt.md) format, with a new [MLT website example](https://loaders.gl/next/examples/tiles/mlt).
-* **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-loader.md), [`TextureArrayLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-array-loader.md), and [`TextureCubeLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-cube-loader.md), and support Radiance HDR textures through [`RadianceHDRLoader`](https://loaders.gl/next/docs/modules/images/textures/api-reference/radiance-hdr-loader.md).
+* **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-loader.md), [`TextureArrayLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-array-loader.md), and [`TextureCubeLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-cube-loader.md), and support Radiance HDR textures through [`RadianceHDRLoader`](https://loaders.gl/next/docs/modules/images/texture/api-reference/radiance-hdr-loader.md).
 * **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](https://loaders.gl/next/docs/developer-guide/apache-arrow.md).
 * **@loaders.gl/tiles/mvt** - New experimental [`MVTWriter`](https://loaders.gl/next/docs/modules/tiles/mvt/api-reference/mvt-writer.md) allows GeoJSON to be written in binary MVT tile format.
 
@@ -220,7 +220,7 @@ A minor release that includes:
 
 **@loaders.gl/textures**
 
-* [`Comp[ressedTextureLoader]`](https://loaders.gl/next/docs/modules/images/textures/api-reference/compressed-texture-loader.md) - Now supports mipmaps in KTX2 textures.
+* [`Comp[ressedTextureLoader]`](https://loaders.gl/next/docs/modules/images/texture/api-reference/compressed-texture-loader.md) - Now supports mipmaps in KTX2 textures.
 
 **@loaders.gl/tiles-3d/3d-tiles**
 
@@ -1163,6 +1163,6 @@ First Official Release
 
 ### Query capability discovery[​](#query-capability-discovery "Direct link to Query capability discovery")
 
-`@loaders.gl/core/query` is now an alias for the optional scan runtime. Sources expose `queryCapabilities`, formats can provide advisory `queryPushdownCapabilityHints`, and the runtime supports exact-query pushdown negotiation for CAST-capable sources. Offset-capable sources receive native row windows; other sources retain the safe residual offset and limit path. Existing scan imports and metadata remain compatible.
+`@loaders.gl/core/query` exposes the optional scan runtime. Sources expose `queryCapabilities`, formats can provide advisory `queryPushdownCapabilityHints`, and the runtime supports exact-query pushdown negotiation for CAST-capable sources. Offset-capable sources receive native row windows; other sources retain the safe residual offset and limit path. Existing scan imports and metadata remain compatible.
 
 DuckDB tables can now be queried through `@loaders.gl/core/query` with source-side paging and native signed integer widening casts. Other casts use Arrow.

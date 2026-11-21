@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/core](https://loaders.gl/next/docs/modules/core.md)
+## [📄️LoaderOptions](https://loaders.gl/next/docs/modules/core/api-reference/loader-options.md)
 
-[18 items](https://loaders.gl/next/docs/modules/core.md)
+[Configure shared loading, parsing, workers, batches, and format-specific behavior.](https://loaders.gl/next/docs/modules/core/api-reference/loader-options.md)

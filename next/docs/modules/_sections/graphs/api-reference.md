@@ -1,3 +1,1 @@
-## [🗃@loaders.gl/graphs](https://loaders.gl/next/docs/modules/graphs.md)
-
-[1 item](https://loaders.gl/next/docs/modules/graphs.md)
+## [📄️API overview](https://loaders.gl/next/docs/modules/graphs.md#graphml-loader)

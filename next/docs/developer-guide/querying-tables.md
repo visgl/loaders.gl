@@ -67,7 +67,7 @@ See [authentication](https://loaders.gl/next/docs/developer-guide/authentication
 
 A predicate column need not appear in `select`. For example, selecting only `name` while filtering `population` retains `population` internally until filtering is complete. An output alias such as `people` does not become a WHERE property.
 
-Predicates support comparisons, `and`, `or`, `not`, membership, and null checks. Use `{op: 'isNull', args: [{property: 'population'}]}` to find nulls. Comparisons with null produce an unknown result; WHERE retains only true results, so negating a comparison still excludes nulls. See the [predicate reference](https://loaders.gl/next/docs/modules/core/scan.md) for the full vocabulary.
+Predicates support comparisons, `and`, `or`, `not`, membership, and null checks. Use `{op: 'isNull', args: [{property: 'population'}]}` to find nulls. Comparisons with null produce an unknown result; WHERE retains only true results, so negating a comparison still excludes nulls. See the [predicate reference](https://loaders.gl/next/docs/modules/core/query.md) for the full vocabulary.
 
 Rows retain source order. A limit counts matches after filtering; it is not a sample or a sort. `limit: 0` returns the projected schema without calling the source's result reader, although schema discovery can still read metadata. Empty results retain field names, types, nullability, and available metadata. An explicit empty `select` list, unknown columns, duplicate output names, and invalid limits are errors.
 
@@ -212,7 +212,7 @@ Only the selected table is resolved. It must return an Apache Arrow table or a s
 Pass the optional parser explicitly. Math.gl’s `parseSQLQuery()` supports SELECT projections, AS aliases, optional FROM, WHERE, and LIMIT.
 
 ```
-import {parseSQLQuery} from '@loaders.gl/core/query/query';
+import {parseSQLQuery} from '@loaders.gl/core/query/sql';
 
 
 
@@ -228,7 +228,7 @@ const result = await query('SELECT name FROM warehouse.cities LIMIT 20', {
 You can also pass a parser promise:
 
 ```
-const sqlParser = import('@loaders.gl/core/query/query').then(module => module.parseSQLQuery);
+const sqlParser = import('@loaders.gl/core/query/sql').then(module => module.parseSQLQuery);
 ```
 
 ESM imports are tree-shakeable: importing just the parser removes Arrow execution code from the bundle. For a smaller parser without built-in WHERE support, use `parseSQLSelect()` from the same subpath. It accepts SELECT, AS, FROM, LIMIT, and OFFSET. Pass a `parseWhere` callback to enable WHERE.
@@ -244,7 +244,7 @@ Omitting SQL FROM uses `options.source`. Preserve quoted identifiers as separate
 The same query APIs return Arrow tables for metadata commands:
 
 ```
-import {parseSQLQuery, createSQLCatalog} from '@loaders.gl/core/query/query';
+import {parseSQLQuery, createSQLCatalog} from '@loaders.gl/core/query/sql';
 
 
 
@@ -279,7 +279,7 @@ for (const table of discovered) {
 }
 ```
 
-Multi-table providers expose `getTablesMetadata()` and, for lazy per-table schemas, `getTableMetadata(name)`. Single-table sources reuse `getQueryMetadata()`. Tables without a metadata discovery contract cannot be listed; requesting an unavailable schema fails explicitly. See the [API reference](https://loaders.gl/next/docs/modules/core/scan/query.md) for result columns and provider interfaces.
+Multi-table providers expose `getTablesMetadata()` and, for lazy per-table schemas, `getTableMetadata(name)`. Single-table sources reuse `getQueryMetadata()`. Tables without a metadata discovery contract cannot be listed; requesting an unavailable schema fails explicitly. See the [API reference](https://loaders.gl/next/docs/modules/core/query/query-api.md) for result columns and provider interfaces.
 
 ## Cancel work and observe completion[​](#cancel-work-and-observe-completion "Direct link to Cancel work and observe completion")
 
@@ -313,7 +313,7 @@ CSV, NDJSON, Arrow IPC, and Parquet table sources share these semantics, but the
 
 CSV blanks are empty strings, not SQL nulls. NDJSON inference examines its first decoded batch; provide `ndjson.schema` when that batch cannot determine a field type or when you need precise types. Changing the output schema, including nullability, during execution is an error. Metadata can only be preserved when the format supplies it.
 
-These entry points currently support selection, aliases, predicates, and limits. They do not add joins, sorting, aggregates, or synchronous execution. For exact signatures, errors, capability details, and benchmark commands, see the [query API reference](https://loaders.gl/next/docs/modules/core/scan/query.md).
+These entry points currently support selection, aliases, predicates, and limits. They do not add joins, sorting, aggregates, or synchronous execution. For exact signatures, errors, capability details, and benchmark commands, see the [query API reference](https://loaders.gl/next/docs/modules/core/query/query-api.md).
 
 ### Injected SQL parser contract[​](#injected-sql-parser-contract "Direct link to Injected SQL parser contract")
 
@@ -357,7 +357,7 @@ CSV and NDJSON can write simple float casts on decoded float columns directly in
 
 ### Grouped SQL scans[​](#grouped-sql-scans "Direct link to Grouped SQL scans")
 
-Use `queryGroupedSQL` from `@loaders.gl/core/scan` to return the final grouped table from a URL, table scan source, or Arrow table. The scan accumulates each group across input batches. For example:
+Use `queryGroupedSQL` from `@loaders.gl/core/query` to return the final grouped table from a URL, table scan source, or Arrow table. The scan accumulates each group across input batches. For example:
 
 ```
 const totals = await queryGroupedSQL(

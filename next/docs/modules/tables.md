@@ -21,7 +21,7 @@ BSON document loaders and codecs live in [`@loaders.gl/documents`](https://loade
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->45<!-- -->)
+All exported subpaths (<!-- -->40<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -29,7 +29,6 @@ These are the package's public exports, including format entry points, parsers, 
 | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow`                                 |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow-worker-node.cjs`                 |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow-worker.js`                       |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/arrow-worker.js`                 |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/bundled`                         |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/exports/*`                       |
@@ -49,7 +48,6 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/tables/geoarrow-worker-node.cjs`              |
 | [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/tables/geoarrow/bundled`                      |
 |                                                                                                                                        | `@loaders.gl/tables/geojson`                               |
-|                                                                                                                                        | `@loaders.gl/tables/geojson-worker.js`                     |
 |                                                                                                                                        | `@loaders.gl/tables/geojson/bundled`                       |
 | [![](/next/images/format-logos/hudi-logo.png)](https://loaders.gl/next/docs/modules/tables/hudi/format.md)                        | `@loaders.gl/tables/hudi`                                  |
 | [![](/next/images/format-logos/iceberg-logo.svg)](https://loaders.gl/next/docs/modules/tables/iceberg/format.md)                  | `@loaders.gl/tables/iceberg`                               |
@@ -63,9 +61,6 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)                     | `@loaders.gl/tables/orc`                                   |
 | [![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)                     | `@loaders.gl/tables/orc/bundled`                           |
 | [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet`                               |
-| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet-source-worker.js`              |
-| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet-worker-node.cjs`               |
-| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet-worker.js`                     |
 | [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/bundled`                       |
 | [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/parquet-source-worker.js`      |
 | [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/parquet-worker-node.cjs`       |

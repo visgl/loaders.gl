@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/splats](https://loaders.gl/next/docs/modules/splats.md)
+## [📄️SPLATLoader](https://loaders.gl/next/docs/modules/splats/api-reference/splat-loader.md)
 
-[4 items](https://loaders.gl/next/docs/modules/splats.md)
+[Parse raw Gaussian splat files into the common Mesh Arrow table shape.](https://loaders.gl/next/docs/modules/splats/api-reference/splat-loader.md)

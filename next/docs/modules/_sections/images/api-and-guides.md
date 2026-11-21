@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/images](https://loaders.gl/next/docs/modules/images.md)
+## [🗃Loaders](https://loaders.gl/next/docs/modules/_sections/images/loaders.md)
 
-[9 items](https://loaders.gl/next/docs/modules/images.md)
+[5 items](https://loaders.gl/next/docs/modules/_sections/images/loaders.md)

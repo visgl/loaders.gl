@@ -111,7 +111,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 The images package also owns texture and video loaders. Its root exports metadata; async core APIs preload implementations when needed:
 
-Browse [texture formats and APIs](https://loaders.gl/next/docs/modules/images/textures.md) or [video loading and GIF writing](https://loaders.gl/next/docs/modules/images/video.md).
+Browse [texture formats and APIs](https://loaders.gl/next/docs/modules/images/texture.md) or [video loading and GIF writing](https://loaders.gl/next/docs/modules/images/video.md).
 
 ```
 import {load} from '@loaders.gl/core';
@@ -151,21 +151,21 @@ The Node backend detects formats from encoded bytes and returns RGBA pixels thro
 
 * [Color LUTs: Cube, 3dl and PNG](https://loaders.gl/next/docs/modules/images/color-lut.md)
 
-* [OpenEXR](https://loaders.gl/next/docs/modules/images/openexr.md)
+* [OpenEXR](https://loaders.gl/next/docs/modules/images/exr.md)
 
-* [Basis Universal](https://loaders.gl/next/docs/modules/images/textures/formats/basis.md)
+* [Basis Universal](https://loaders.gl/next/docs/modules/images/texture/formats/basis.md)
 
-* [Compressed Textures](https://loaders.gl/next/docs/modules/images/textures/formats/compressed-textures.md)
+* [Compressed Textures](https://loaders.gl/next/docs/modules/images/texture/formats/compressed-textures.md)
 
-* [Crunch texture](https://loaders.gl/next/docs/modules/images/textures/formats/crunch.md)
+* [Crunch texture](https://loaders.gl/next/docs/modules/images/texture/formats/crunch.md)
 
-* [DDS texture](https://loaders.gl/next/docs/modules/images/textures/formats/dds.md)
+* [DDS texture](https://loaders.gl/next/docs/modules/images/texture/formats/dds.md)
 
-* [Radiance HDR](https://loaders.gl/next/docs/modules/images/textures/formats/hdr.md)
+* [Radiance HDR](https://loaders.gl/next/docs/modules/images/texture/formats/hdr.md)
 
-* [KTX and KTX2 formats](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)
+* [KTX and KTX2 formats](https://loaders.gl/next/docs/modules/images/texture/formats/ktx.md)
 
-* [PVR texture](https://loaders.gl/next/docs/modules/images/textures/formats/pvr.md)
+* [PVR texture](https://loaders.gl/next/docs/modules/images/texture/formats/pvr.md)
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 

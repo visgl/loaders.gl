@@ -14,7 +14,7 @@ Update package imports first, then check the source APIs, output shapes, and cod
 
 ### math.gl release candidate imports[​](#mathgl-release-candidate-imports "Direct link to math.gl release candidate imports")
 
-Import `queryArrowTableInBatches` from `@loaders.gl/core/scan/arrow-query`. For native GeoArrow row decoding, use the row views and materializer in `@math.gl/core/arrow`. WKT from native columns follows math.gl formatting. Multipoint tuples omit their inner parentheses, and a collection can include an outer dimension qualifier while its members retain their own. Compare parsed geometries when exact WKT spelling is unnecessary.
+Import `queryArrowTableInBatches` from `@loaders.gl/core/query/arrow-query`. For native GeoArrow row decoding, use the row views and materializer in `@math.gl/core/arrow`. WKT from native columns follows math.gl formatting. Multipoint tuples omit their inner parentheses, and a collection can include an outer dimension qualifier while its members retain their own. Compare parsed geometries when exact WKT spelling is unnecessary.
 
 With math.gl 5.0.0-rc.2, import matrix and vector APIs from `@math.gl/core/matrix` and typed arrays and their helpers from `@math.gl/core/types`. Import geoid utilities from `@math.gl/earth/geoid` and S2 helpers from `@math.gl/dggs/s2`. These focused imports replace the earlier beta guidance for those APIs.
 
@@ -60,7 +60,7 @@ Import metadata loaders and writers from the clean format entry point:
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 ```
 
-Public `/index` suffixes and repeated format paths have been removed, except for the temporary `@loaders.gl/raster/terrain/index` compatibility alias used by deck.gl 10 alpha. Use one format entry point for loaders, writers, sources, options, and public helpers. Separate `*-loader`, `*-writer`, and `*-source` entry points have been removed from the format packages.
+Public `/index` suffixes and repeated format paths have been removed, including `@loaders.gl/raster/terrain/index`. Use one format entry point for loaders, writers, sources, options, and public helpers. Separate `*-loader`, `*-writer`, and `*-source` entry points have been removed from the format packages.
 
 `ParquetJSWriter` is now `ParquetWriter`; its options and encoding types are named `ParquetWriterOptions` and `ParquetWriterEncoding`. The former WASM-backed writer is no longer published. Remove `parquet.wasmUrl`; production Parquet readers and writers use TypeScript. The source capability `supportsLocalWasmAsset` and packaged Parquet WASM assets have also been removed.
 
@@ -267,7 +267,7 @@ Format-level entrypoints remain grouped, for example `@loaders.gl/tables/parquet
 | `@loaders.gl/archives/zip/zip-loader`                         | `@loaders.gl/archives/zip-loader`                      |
 | `@loaders.gl/tiles/mvt/arrow-table-tile-source-loader`        | `@loaders.gl/tiles/arrow-table-tile-loader`            |
 | `@loaders.gl/tiles-3d/i3s/i3s-mesh-writer`                    | `@loaders.gl/tiles-3d/i3s-mesh-writer`                 |
-| `@loaders.gl/core/scan/vector-table-scan-source`              | `@loaders.gl/core/vector-table-scan-source`            |
+| `@loaders.gl/core/query/vector-table-scan-source`             | `@loaders.gl/core/vector-table-scan-source`            |
 
 Metadata roots and format-level facades keep their existing paths. Deep implementation helpers and worker or schema assets are not part of this entrypoint migration.
 
@@ -277,22 +277,22 @@ The standalone `@loaders.gl/scan`, `@loaders.gl/arrow-geometry`, and `@loaders.g
 
 | Removed import                         | Replacement                                 |
 | -------------------------------------- | ------------------------------------------- |
-| `@loaders.gl/scan`                     | `@loaders.gl/core/scan`                     |
+| `@loaders.gl/scan`                     | `@loaders.gl/core/query`                    |
 | `@loaders.gl/arrow-geometry`           | `@loaders.gl/core/arrow-geometry`           |
 | `@loaders.gl/arrow-geometry/<utility>` | `@loaders.gl/core/arrow-geometry/<utility>` |
 | `@loaders.gl/geoarrow`                 | `@loaders.gl/core/geoarrow`                 |
 | `@loaders.gl/geoarrow/<utility>`       | `@loaders.gl/core/geoarrow/<utility>`       |
 | `@loaders.gl/wkt/twkb`                 | `@loaders.gl/core/wkt/twkb`                 |
-| `@loaders.gl/sql/arrow-query`          | `@loaders.gl/core/scan/arrow-query`         |
-| `@loaders.gl/sql/table-query`          | `@loaders.gl/core/scan/table-query`         |
-| `@loaders.gl/sql/sql-predicate`        | `@loaders.gl/core/scan/sql-predicate`       |
-| `@loaders.gl/sql/sql-predicate-zod`    | `@loaders.gl/core/scan/sql-predicate-zod`   |
+| `@loaders.gl/sql/arrow-query`          | `@loaders.gl/core/query/arrow-query`        |
+| `@loaders.gl/sql/table-query`          | `@loaders.gl/core/query/table-query`        |
+| `@loaders.gl/sql/sql-predicate`        | `@loaders.gl/core/query/sql-predicate`      |
+| `@loaders.gl/sql/sql-predicate-zod`    | `@loaders.gl/core/query/sql-predicate-zod`  |
 
 Remove the three deleted packages from dependencies and install `@loaders.gl/core`. Format loaders and writers remain in `@loaders.gl/geospatial/wkt`; database adapters remain in `@loaders.gl/sql`.
 
 #### Table-format scan subpaths[​](#table-format-scan-subpaths "Direct link to Table-format scan subpaths")
 
-The experimental `@loaders.gl/scan/iceberg`, `/delta`, and `/hudi` subpaths have been removed. Import their source implementations from `@loaders.gl/tables/iceberg`, `@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`, respectively. `IcebergRestCatalog` is also exported from `@loaders.gl/tables/iceberg`. The `@loaders.gl/core/scan` root continues to provide the query engine and federation APIs without depending on `@loaders.gl/tables`.
+The experimental `@loaders.gl/scan/iceberg`, `/delta`, and `/hudi` subpaths have been removed. Import their source implementations from `@loaders.gl/tables/iceberg`, `@loaders.gl/tables/delta`, and `@loaders.gl/tables/hudi`, respectively. `IcebergRestCatalog` is also exported from `@loaders.gl/tables/iceberg`. The `@loaders.gl/core/query` root continues to provide the query engine and federation APIs without depending on `@loaders.gl/tables`.
 
 #### Core utility subpaths[​](#core-utility-subpaths "Direct link to Core utility subpaths")
 
@@ -741,7 +741,7 @@ Use `'arrow'` as the target for table converters, mesh conversion, and batch con
 
 #### Federated and format-specific scans yield native Arrow batches[​](#federated-and-format-specific-scans-yield-native-arrow-batches "Direct link to Federated and format-specific scans yield native Arrow batches")
 
-Federated scans yield Apache Arrow `RecordBatch` objects. Read source provenance with `getFederatedTableBatchProvenance(batch)` from `@loaders.gl/core/scan`. When federation removes rows, original physical metadata is available through `sourceMetadata` and describes the input batch. Parquet, dataset, and lakehouse readers store file and row provenance as JSON in Arrow batch metadata. Read it with `getParquetBatchProvenance(batch)` from `@loaders.gl/tables/parquet-source`, which restores BigInt and binary values.
+Federated scans yield Apache Arrow `RecordBatch` objects. Read source provenance with `getFederatedTableBatchProvenance(batch)` from `@loaders.gl/core/query`. When federation removes rows, original physical metadata is available through `sourceMetadata` and describes the input batch. Parquet, dataset, and lakehouse readers store file and row provenance as JSON in Arrow batch metadata. Read it with `getParquetBatchProvenance(batch)` from `@loaders.gl/tables/parquet-source`, which restores BigInt and binary values.
 
 Arrow IPC, JSONTable, FlatGeobuf, Lance, DuckDB, COPC, and Potree physical readers also yield native batches. Use `batch.numRows` and access Arrow columns directly.
 

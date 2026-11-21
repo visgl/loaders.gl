@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/sql](https://loaders.gl/next/docs/modules/sql.md)
+## [📄️SQLDataSource](https://loaders.gl/next/docs/modules/sql/api-reference/sql-source.md)
 
-[1 item](https://loaders.gl/next/docs/modules/sql.md)
+[A shared source contract for metadata, portable table queries, and Arrow results.](https://loaders.gl/next/docs/modules/sql/api-reference/sql-source.md)

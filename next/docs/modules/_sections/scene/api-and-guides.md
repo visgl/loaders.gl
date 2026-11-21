@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/scene](https://loaders.gl/next/docs/modules/scene.md)
+## [📄️DracoLoader](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md)
 
-[2 items](https://loaders.gl/next/docs/modules/scene.md)
+[Decode compressed meshes and point clouds into mesh or Arrow data.](https://loaders.gl/next/docs/modules/scene/draco/api-reference/draco-loader.md)

@@ -1,6 +1,6 @@
 Images package · video APIs
 
-# Keep browser video loading inside the data pipeline.
+# @loaders.gl/images/video
 
 `@loaders.gl/images` provides an experimental browser-only loader for video data. It follows loaders.gl conventions while leaving playback and rendering decisions to the application.
 

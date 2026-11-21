@@ -26,7 +26,7 @@ Arrow TablePlain
 
 Decode
 
-[Image​Loader↗](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[Compressed​Texture​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/compressed-texture-loader.md)[Basis​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/basis-loader.md)[Crunch​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/crunch-loader.md)[RadianceHDR​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/radiance-hdr-loader.md)[Texture​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-loader.md)[Texture​Array​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-array-loader.md)[Texture​Cube​Loader↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/texture-cube-loader.md)
+[Image​Loader↗](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[Compressed​Texture​Loader↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/compressed-texture-loader.md)[Basis​Loader↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/basis-loader.md)[Crunch​Loader↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/crunch-loader.md)[RadianceHDR​Loader↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/radiance-hdr-loader.md)[Texture​Loader↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-loader.md)[Texture​Array​Loader↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-array-loader.md)[Texture​Cube​Loader↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/texture-cube-loader.md)
 
 Data
 
@@ -34,7 +34,7 @@ Data
 
 Encode
 
-[Image​Writer↗](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md)[Compressed​Texture​Writer↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/compressed-texture-writer.md)[KTX2​Basis​Universal​Texture​Writer↗](https://loaders.gl/next/docs/modules/images/textures/api-reference/ktx2-basis-texture-writer.md)
+[Image​Writer↗](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md)[Compressed​Texture​Writer↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/compressed-texture-writer.md)[KTX2​Basis​Universal​Texture​Writer↗](https://loaders.gl/next/docs/modules/images/texture/api-reference/ktx2-basis-texture-writer.md)
 
 What comes back
 

@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/traces](https://loaders.gl/next/docs/modules/traces.md)
+## [📄️ChromeTraceLoader](https://loaders.gl/next/docs/modules/traces/api-reference/chrome-trace-loader.md)
 
-[5 items](https://loaders.gl/next/docs/modules/traces.md)
+[Read Chrome Trace Event JSON as a validated document or Arrow event table.](https://loaders.gl/next/docs/modules/traces/api-reference/chrome-trace-loader.md)

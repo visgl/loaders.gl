@@ -140,7 +140,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->81<!-- -->)
+All exported subpaths (<!-- -->65<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -184,38 +184,22 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                        | `@loaders.gl/core/query`                                      |
 |                                                                                                                                        | `@loaders.gl/core/query/arrow-execution`                      |
 |                                                                                                                                        | `@loaders.gl/core/query/arrow-query`                          |
+|                                                                                                                                        | `@loaders.gl/core/query/arrow-query-worker`                   |
+|                                                                                                                                        | `@loaders.gl/core/query/arrow-query-worker-entry.js`          |
 |                                                                                                                                        | `@loaders.gl/core/query/bind-sql-predicate`                   |
 |                                                                                                                                        | `@loaders.gl/core/query/parse-sql-predicate`                  |
-|                                                                                                                                        | `@loaders.gl/core/query/query`                                |
 |                                                                                                                                        | `@loaders.gl/core/query/query-arrow-table`                    |
 |                                                                                                                                        | `@loaders.gl/core/query/rows-to-arrow`                        |
 |                                                                                                                                        | `@loaders.gl/core/query/scan-engine`                          |
 |                                                                                                                                        | `@loaders.gl/core/query/scan-query`                           |
+|                                                                                                                                        | `@loaders.gl/core/query/sql`                                  |
 |                                                                                                                                        | `@loaders.gl/core/query/sql-predicate`                        |
 |                                                                                                                                        | `@loaders.gl/core/query/sql-predicate-schema`                 |
 |                                                                                                                                        | `@loaders.gl/core/query/sql-predicate-types`                  |
 |                                                                                                                                        | `@loaders.gl/core/query/sql-predicate-zod`                    |
 |                                                                                                                                        | `@loaders.gl/core/query/table-query`                          |
 |                                                                                                                                        | `@loaders.gl/core/query/table-query-capabilities`             |
-|                                                                                                                                        | `@loaders.gl/core/scan`                                       |
 |                                                                                                                                        | `@loaders.gl/core/scan-scales`                                |
-|                                                                                                                                        | `@loaders.gl/core/scan/arrow-execution`                       |
-|                                                                                                                                        | `@loaders.gl/core/scan/arrow-query`                           |
-|                                                                                                                                        | `@loaders.gl/core/scan/arrow-query-worker`                    |
-|                                                                                                                                        | `@loaders.gl/core/scan/arrow-query-worker-entry.js`           |
-|                                                                                                                                        | `@loaders.gl/core/scan/bind-sql-predicate`                    |
-|                                                                                                                                        | `@loaders.gl/core/scan/parse-sql-predicate`                   |
-|                                                                                                                                        | `@loaders.gl/core/scan/query`                                 |
-|                                                                                                                                        | `@loaders.gl/core/scan/query-arrow-table`                     |
-|                                                                                                                                        | `@loaders.gl/core/scan/rows-to-arrow`                         |
-|                                                                                                                                        | `@loaders.gl/core/scan/scan-engine`                           |
-|                                                                                                                                        | `@loaders.gl/core/scan/scan-query`                            |
-|                                                                                                                                        | `@loaders.gl/core/scan/sql-predicate`                         |
-|                                                                                                                                        | `@loaders.gl/core/scan/sql-predicate-schema`                  |
-|                                                                                                                                        | `@loaders.gl/core/scan/sql-predicate-types`                   |
-|                                                                                                                                        | `@loaders.gl/core/scan/sql-predicate-zod`                     |
-|                                                                                                                                        | `@loaders.gl/core/scan/table-query`                           |
-|                                                                                                                                        | `@loaders.gl/core/scan/table-query-capabilities`              |
 |                                                                                                                                        | `@loaders.gl/core/schema`                                     |
 |                                                                                                                                        | `@loaders.gl/core/schema-utils`                               |
 |                                                                                                                                        | `@loaders.gl/core/schema/geoarrow-metadata.schema.json`       |

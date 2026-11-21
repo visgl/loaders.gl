@@ -1,3 +1,3 @@
-## [🗃@loaders.gl/scientific](https://loaders.gl/next/docs/modules/scientific.md)
+## [📄️NPYLoader](https://loaders.gl/next/docs/modules/scientific/api-reference/npy-loader.md)
 
-[1 item](https://loaders.gl/next/docs/modules/scientific.md)
+[Read NumPy NPY arrays into typed JavaScript data while preserving dtype, order, and shape metadata.](https://loaders.gl/next/docs/modules/scientific/api-reference/npy-loader.md)

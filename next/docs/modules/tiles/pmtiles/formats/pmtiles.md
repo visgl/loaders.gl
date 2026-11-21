@@ -53,7 +53,7 @@ Decode
 
 MVT, image, terrain, or another tile payload
 
-[![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/scan#vector-table-views)
+[![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/query#vector-table-views)
 
 * [*`@loaders.gl/tiles/pmtiles`*](https://loaders.gl/next/docs/modules/tiles/pmtiles.md)
 * [*PMTiles specification*](https://github.com/protomaps/PMTiles)

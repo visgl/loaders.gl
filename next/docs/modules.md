@@ -8,7 +8,7 @@ Choose a data family to explore its loaders, writers, sources, supported formats
 
 The public loaders.gl API for loading, parsing, streaming, and encoding data across format modules.
 
-[loader-utils](https://loaders.gl/next/docs/modules/core/loader-utils.md) · [worker-utils](https://loaders.gl/next/docs/modules/core/worker-utils.md) · [schema](https://loaders.gl/next/docs/modules/core/schema.md) · [schema-utils](https://loaders.gl/next/docs/modules/core/schema-utils.md) · [scan](https://loaders.gl/next/docs/modules/core/scan.md) · [arrow-geometry](https://loaders.gl/next/docs/modules/core/arrow-geometry.md) · [geoarrow](https://loaders.gl/next/docs/modules/core/geoarrow.md) · [wkt](https://loaders.gl/next/docs/modules/core/wkt.md) · [polyfills](https://loaders.gl/next/docs/modules/core/polyfills.md)
+[loader-utils](https://loaders.gl/next/docs/modules/core/loader-utils.md) · [worker-utils](https://loaders.gl/next/docs/modules/core/worker-utils.md) · [schema](https://loaders.gl/next/docs/modules/core/schema.md) · [schema-utils](https://loaders.gl/next/docs/modules/core/schema-utils.md) · [query](https://loaders.gl/next/docs/modules/core/query.md) · [arrow-geometry](https://loaders.gl/next/docs/modules/core/arrow-geometry.md) · [geoarrow](https://loaders.gl/next/docs/modules/core/geoarrow.md) · [wkt](https://loaders.gl/next/docs/modules/core/wkt.md) · [polyfills](https://loaders.gl/next/docs/modules/core/polyfills.md)
 
 ## Formats[​](#formats "Direct link to Formats")
 
@@ -32,9 +32,9 @@ Load geographic features, tracks, and vector datasets, and decode or encode geom
 
 ### [@loaders.gl/images](https://loaders.gl/next/docs/modules/images.md)[​](#loadersglimages "Direct link to loadersglimages")
 
-Decode and encode images, inspect image metadata, and work with textures and browser video APIs. See [texture formats and APIs](https://loaders.gl/next/docs/modules/images/textures.md) and [video loaders](https://loaders.gl/next/docs/modules/images/video.md).
+Decode and encode images, inspect image metadata, and work with textures and browser video APIs. See [texture formats and APIs](https://loaders.gl/next/docs/modules/images/texture.md) and [video loaders](https://loaders.gl/next/docs/modules/images/video.md).
 
-[Images](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[![](/next/images/format-logos/ktx-logo.svg)](https://loaders.gl/next/docs/modules/images/textures/formats/ktx.md)[BASIS](https://loaders.gl/next/docs/modules/images/textures/formats/basis.md)[DDS](https://loaders.gl/next/docs/modules/images/textures/formats/dds.md)[PVR](https://loaders.gl/next/docs/modules/images/textures/formats/pvr.md)[Crunch](https://loaders.gl/next/docs/modules/images/textures/formats/crunch.md)[Video](https://loaders.gl/next/docs/modules/images/video/api-reference/video-loader.md)[GIF](https://loaders.gl/next/docs/modules/images/video.md)
+[Images](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md)[![](/next/images/format-logos/ktx-logo.svg)](https://loaders.gl/next/docs/modules/images/texture/formats/ktx.md)[BASIS](https://loaders.gl/next/docs/modules/images/texture/formats/basis.md)[DDS](https://loaders.gl/next/docs/modules/images/texture/formats/dds.md)[PVR](https://loaders.gl/next/docs/modules/images/texture/formats/pvr.md)[Crunch](https://loaders.gl/next/docs/modules/images/texture/formats/crunch.md)[Video](https://loaders.gl/next/docs/modules/images/video/api-reference/video-loader.md)[GIF](https://loaders.gl/next/docs/modules/images/video.md)
 
 ### [@loaders.gl/pointclouds](https://loaders.gl/next/docs/modules/pointclouds.md)[​](#loadersglpointclouds "Direct link to loadersglpointclouds")
 

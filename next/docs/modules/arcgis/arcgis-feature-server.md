@@ -66,7 +66,7 @@ normaliz&#x65;**→**
 
 The source owns protocol details; the application owns how returned features, pixels, tiles, or tables are used.
 
-[![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/scan#vector-table-views)
+[![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/query#vector-table-views)
 
 What it provides
 

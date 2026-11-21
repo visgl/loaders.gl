@@ -54,7 +54,7 @@ Scan view
 
 One selected tile can expose Arrow batches
 
-[![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/scan#vector-table-views)
+[![Optional scan table view](https://img.shields.io/badge/Scan-Table_view-3178C6.svg?style=flat-square)](https://loaders.gl/next/docs/modules/core/query#vector-table-views)
 
 * *[`@loaders.gl/tiles/mvt`](https://loaders.gl/next/docs/modules/tiles/mvt.md)*
 * *[Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec)*

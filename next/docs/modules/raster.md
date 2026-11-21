@@ -67,7 +67,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->45<!-- -->)
+All exported subpaths (<!-- -->44<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -108,7 +108,6 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                      | `@loaders.gl/raster/terrain-worker.js`                        |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/bundled`                          |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/heightmap`                        |
-|                                                                                                                                      | `@loaders.gl/raster/terrain/index`                            |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/decode-quantized-mesh`        |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/decode-terrain-heightmap`     |
 |                                                                                                                                      | `@loaders.gl/raster/terrain/lib/delatin`                      |
