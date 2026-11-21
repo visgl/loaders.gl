@@ -715,6 +715,13 @@ test.each([
     }
   ],
   [
+    'triangle multiplicity',
+    (mesh: any) => {
+      const indices = mesh.indices.value;
+      indices.copyWithin(3, 0, 3);
+    }
+  ],
+  [
     'position',
     (mesh: any) => {
       mesh.attributes.POSITION.value[0] += 1;
