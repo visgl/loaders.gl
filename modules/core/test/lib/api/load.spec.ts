@@ -79,7 +79,7 @@ test('load starts an opted-in fetch before preload completes', async () => {
   try {
     await vi.waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(expect.stringContaining('?test=parallel'), {
-        signal: controller.signal
+        signal: expect.any(AbortSignal)
       });
     });
   } finally {
@@ -109,6 +109,35 @@ test.each(['fetch', 'preload'])('load reports a concurrent %s failure', async fa
     return new Response('{}');
   };
   await expect(load(JSON_URL, loader, {core: {fetch, worker: false}})).rejects.toBe(error);
+});
+
+test('load cancels the in-flight request when preload rejects', async () => {
+  const error = new Error('preload failed');
+  let failPreload: (reason: Error) => void;
+  const loader = {
+    ...JSONLoader,
+    fetchBeforePreload: true,
+    preload: () =>
+      new Promise<never>((_resolve, reject) => {
+        failPreload = reject;
+      })
+  };
+  const requestAborted = vi.fn();
+  const fetch = vi.fn(
+    (_url: RequestInfo | URL, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          requestAborted();
+          reject(init.signal?.reason);
+        });
+      })
+  );
+  const result = load(JSON_URL, loader, {core: {fetch}});
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+  const rejection = expect(result).rejects.toBe(error);
+  failPreload!(error);
+  await rejection;
+  expect(requestAborted).toHaveBeenCalledOnce();
 });
 
 test('load aborts a fetch started while the parser preloads', async () => {

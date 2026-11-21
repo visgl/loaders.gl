@@ -135,14 +135,29 @@ export async function load(
         : null;
     if (canFetchBeforePreload) {
       const loadOptions = resolvedOptions;
-      [, fetchedResponse] = await Promise.all([
-        loaderImplementation,
-        resolveLoaderAuthenticationOptions(selectedLoader, url, loadOptions).then(options => {
-          const fetchOptions = resolveAuthenticationOptions(options);
-          resolvedOptions = fetchOptions;
-          return getFetchFunction(fetchOptions, context)(applySearchParamsToUrl(url, fetchOptions));
-        })
-      ]);
+      const controller = new AbortController();
+      const fetchOption = loadOptions.core?.fetch;
+      const callerSignal =
+        loadOptions.signal ||
+        context?.signal ||
+        (typeof fetchOption === 'object' ? fetchOption?.signal : undefined);
+      const signal = callerSignal
+        ? AbortSignal.any([callerSignal, controller.signal])
+        : controller.signal;
+      try {
+        [, fetchedResponse] = await Promise.all([
+          loaderImplementation,
+          resolveLoaderAuthenticationOptions(selectedLoader, url, loadOptions).then(options => {
+            signal.throwIfAborted();
+            resolvedOptions = resolveAuthenticationOptions(options);
+            const fetch = getFetchFunction({...resolvedOptions, signal}, context);
+            return fetch(applySearchParamsToUrl(url, resolvedOptions));
+          })
+        ]);
+      } catch (error) {
+        controller.abort(error);
+        throw error;
+      }
     }
     const implementation = await loaderImplementation;
     if (
