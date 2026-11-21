@@ -102,7 +102,7 @@ export class LASSource
       {
         async filter(batch, predicate, signal) {
           if (!predicate) return batch;
-          const {filterArrowTable} = await import('@loaders.gl/core/scan/arrow-execution');
+          const {filterArrowTable} = await import('@loaders.gl/core/query/arrow-execution');
           return filterArrowTable(batch, predicate, {signal});
         }
       }

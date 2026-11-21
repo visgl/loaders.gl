@@ -255,6 +255,7 @@ const config = {
             '@loaders.gl/tiles-3d/copc': resolve('../modules/tiles-3d/src/copc'),
             '@loaders.gl/core/loader-utils': resolve('../modules/core/src/loader-utils'),
             '@loaders.gl/core/worker-utils': resolve('../modules/core/src/worker-utils'),
+            '@loaders.gl/core/query/sql$': resolve('../modules/core/src/scan/query.ts'),
             '@loaders.gl/core/query': resolve('../modules/core/src/scan'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
@@ -283,7 +284,6 @@ const config = {
             '@loaders.gl/tiles/pmtiles': resolve('../modules/tiles/src/pmtiles'),
             '@loaders.gl/core/polyfills': resolve('../modules/core/src/polyfills'),
             '@loaders.gl/tiles-3d/potree': resolve('../modules/tiles-3d/src/potree'),
-            '@loaders.gl/core/scan': resolve('../modules/core/src/scan'),
             '@loaders.gl/core/schema': resolve('../modules/core/src/schema'),
             '@loaders.gl/core/schema-utils': resolve('../modules/core/src/schema-utils'),
             '@loaders.gl/scene': resolve('../modules/scene/src'),
@@ -375,7 +375,7 @@ const config = {
           const consolidatedModuleDocs = {
             tables: ['arrow', 'avro', 'bson', 'csv', 'json', 'lance', 'orc', 'parquet'],
             geospatial: ['flatgeobuf', 'geopackage', 'kml', 'shapefile', 'wkt'],
-            core: ['scan', 'arrow-geometry', 'geoarrow', 'schema', 'schema-utils', 'polyfills'],
+            core: ['query', 'arrow-geometry', 'geoarrow', 'schema', 'schema-utils', 'polyfills'],
             raster: ['geotiff', 'lerc', 'terrain'],
             tiles: ['mvt', 'mlt', 'pmtiles'],
             'tiles-3d': ['3d-tiles', 'i3s'],
@@ -383,6 +383,9 @@ const config = {
             scene: ['obj', 'gltf', 'draco']
           };
           const pageRedirects = {
+            '/docs/modules/core/scan': '/docs/modules/core/query',
+            '/docs/modules/images/textures': '/docs/modules/images/texture',
+            '/docs/modules/images/video/api-reference/gif-builder': '/docs/modules/images/image/api-reference/gif-builder',
             '/docs/modules/ogc/stac/api-reference/stac-source-loader': '/docs/modules/ogc/stac/api-reference/stac-loader',
             '/docs/modules/ogc/wms/api-reference/csw-source-loader': '/docs/modules/ogc/wms/api-reference/csw-loader',
             '/docs/modules/ogc/wms/api-reference/wms-source-loader': '/docs/modules/ogc/wms/api-reference/wms-loader',
@@ -395,13 +398,6 @@ const config = {
             '/docs/modules/tiles/mvt/api-reference/table-tile-source-loader': '/docs/modules/tiles/mvt/api-reference/table-tile-loader',
 
             '/docs/packages': '/docs/developer-guide/get-started',
-            '/docs/modules/_sections/tables/loaders': '/docs/modules/_sections/tables/api-and-guides',
-            '/docs/modules/_sections/tables/writers': '/docs/modules/_sections/tables/api-and-guides',
-            '/docs/modules/_sections/geospatial/loaders': '/docs/modules/_sections/geospatial/api-and-guides',
-            '/docs/modules/_sections/geospatial/sources': '/docs/modules/_sections/geospatial/api-and-guides',
-            '/docs/modules/_sections/point-clouds/loaders': '/docs/modules/_sections/point-clouds/api-and-guides',
-            '/docs/modules/_sections/point-clouds/writers': '/docs/modules/_sections/point-clouds/api-and-guides',
-            '/docs/modules/_sections/raster/loaders': '/docs/modules/_sections/raster/api-and-guides',
             '/docs/modules/_sections/scene/loaders': '/docs/modules/_sections/scene/api-and-guides',
             '/docs/modules/_sections/scene/writers': '/docs/modules/_sections/scene/api-and-guides',
             '/docs/modules/_sections/tiles/loaders': '/docs/modules/_sections/tiles/api-and-guides',
@@ -409,7 +405,6 @@ const config = {
             '/docs/modules/_sections/tiles/sources': '/docs/modules/_sections/tiles/api-and-guides',
             '/docs/modules/_sections/3d-tiles/loaders': '/docs/modules/_sections/3d-tiles/api-and-guides',
             '/docs/modules/_sections/3d-tiles/sources': '/docs/modules/_sections/3d-tiles/api-and-guides',
-            '/docs/modules/_sections/ogc/sources': '/docs/modules/_sections/ogc/api-and-guides',
             '/docs/modules/textures/api-reference/npy-loader': '/docs/modules/scientific/api-reference/npy-loader',
             '/docs/modules/images/api-reference/image-bitmap-loader': '/docs/modules/images/api-reference/image-loader',
             '/docs/developer-guide/using-unbundled-loaders': '/docs/developer-guide/using-metadata-loaders',

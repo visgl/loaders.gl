@@ -1,0 +1,65 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 14896c4bcb8685641d3a1a0205da873f0e6c4ff5..2a2b748b73226b003dabf1aa1f63dbb2e8d56ab7 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -3513,7 +3513,7 @@ function getMeshGeometry(contentAttributes) {
+ // dist/terrain-layer/terrain-layer.js
+ var import_core17 = require("@deck.gl/core");
+ var import_mesh_layers3 = require("@deck.gl/mesh-layers");
+-var import_terrain = require("@loaders.gl/raster/terrain/index");
++var import_terrain = require("@loaders.gl/raster/terrain");
+ var DUMMY_DATA = [1];
+ var TILE_OVERLAP_PIXELS = 1;
+ var MIN_TERRAIN_MESH_MAX_ERROR = 1;
+diff --git a/dist/terrain-layer/terrain-layer.js b/dist/terrain-layer/terrain-layer.js
+index 1122a4439a11973d54eee5d1ab44bc997ca45d1e..f78b88b407529802a6625c3886e62b758e858a9a 100644
+--- a/dist/terrain-layer/terrain-layer.js
++++ b/dist/terrain-layer/terrain-layer.js
+@@ -3,7 +3,7 @@
+ // Copyright (c) vis.gl contributors
+ import { CompositeLayer, _GlobeViewport as GlobeViewport, log } from '@deck.gl/core';
+ import { SimpleMeshLayer } from '@deck.gl/mesh-layers';
+-import { TerrainWorkerLoader } from '@loaders.gl/raster/terrain/index';
++import { TerrainWorkerLoader } from '@loaders.gl/raster/terrain';
+ import TileLayer from "../tile-layer/tile-layer.js";
+ import { getURLFromTemplate, urlType } from "../tileset-2d/index.js";
+ const DUMMY_DATA = [1];
+diff --git a/dist.webgl-only/index.cjs b/dist.webgl-only/index.cjs
+index 976b401683064d77147196278b1c4eafc2c08d7e..9f8da010bd568502d515326e405f8bbe4d617768 100644
+--- a/dist.webgl-only/index.cjs
++++ b/dist.webgl-only/index.cjs
+@@ -3324,7 +3324,7 @@ function getMeshGeometry(contentAttributes) {
+ // dist/terrain-layer/terrain-layer.js
+ var import_core17 = require("@deck.gl/core");
+ var import_mesh_layers3 = require("@deck.gl/mesh-layers");
+-var import_terrain = require("@loaders.gl/raster/terrain/index");
++var import_terrain = require("@loaders.gl/raster/terrain");
+ var DUMMY_DATA = [1];
+ var TILE_OVERLAP_PIXELS = 1;
+ var MIN_TERRAIN_MESH_MAX_ERROR = 1;
+diff --git a/dist.webgl-only/terrain-layer/terrain-layer.js b/dist.webgl-only/terrain-layer/terrain-layer.js
+index 1122a4439a11973d54eee5d1ab44bc997ca45d1e..f78b88b407529802a6625c3886e62b758e858a9a 100644
+--- a/dist.webgl-only/terrain-layer/terrain-layer.js
++++ b/dist.webgl-only/terrain-layer/terrain-layer.js
+@@ -3,7 +3,7 @@
+ // Copyright (c) vis.gl contributors
+ import { CompositeLayer, _GlobeViewport as GlobeViewport, log } from '@deck.gl/core';
+ import { SimpleMeshLayer } from '@deck.gl/mesh-layers';
+-import { TerrainWorkerLoader } from '@loaders.gl/raster/terrain/index';
++import { TerrainWorkerLoader } from '@loaders.gl/raster/terrain';
+ import TileLayer from "../tile-layer/tile-layer.js";
+ import { getURLFromTemplate, urlType } from "../tileset-2d/index.js";
+ const DUMMY_DATA = [1];
+diff --git a/src/terrain-layer/terrain-layer.ts b/src/terrain-layer/terrain-layer.ts
+index ea3e76913eef07af2d8ab85c75fddf1251bde177..bac89c2d1ce91b1622054f388614753b679bb08a 100644
+--- a/src/terrain-layer/terrain-layer.ts
++++ b/src/terrain-layer/terrain-layer.ts
+@@ -17,7 +17,7 @@ import {
+ } from '@deck.gl/core';
+ import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
+ import type {MeshAttributes} from '@loaders.gl/core/schema';
+-import {TerrainWorkerLoader} from '@loaders.gl/raster/terrain/index';
++import {TerrainWorkerLoader} from '@loaders.gl/raster/terrain';
+ import TileLayer, {TileLayerProps} from '../tile-layer/tile-layer';
+ import type {
+   Bounds,

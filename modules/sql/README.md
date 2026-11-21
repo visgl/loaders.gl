@@ -42,7 +42,7 @@ SQL data sources also accept a portable table query. The source compiles its pre
 and limit to quoted SQL with bound parameters:
 
 ```ts
-import {parseSQLPredicate} from '@loaders.gl/core/scan/sql-predicate';
+import {parseSQLPredicate} from '@loaders.gl/core/query/sql-predicate';
 
 const rows = await dataSource.queryRows(
   {
@@ -62,7 +62,7 @@ loaders.gl to convert row results into an Arrow table.
 
 ## Lightweight Arrow queries
 
-`@loaders.gl/core/scan/arrow-query` provides an experimental in-memory query path for Arrow tables. It
+`@loaders.gl/core/query/arrow-query` provides an experimental in-memory query path for Arrow tables. It
 uses the shared `TableQueryOptions` planner, which always orders operations as scan, filter,
 project, then limit. The same immutable plan can be lowered by GPU dataframe implementations
 without adopting Arrow's materialization strategy. This is useful for lightweight local filtering;
@@ -70,15 +70,15 @@ it is not a replacement for DuckDB and does not yet implement SQL `SELECT` parsi
 or joins.
 
 The generic contract and planner live in `@loaders.gl/core/loader-utils`; SQL-specialized compatibility
-exports remain available from `@loaders.gl/core/scan/table-query`:
+exports remain available from `@loaders.gl/core/query/table-query`:
 
 ```ts
 import {planTableQuery, type TableQueryOptions} from '@loaders.gl/core/loader-utils';
 ```
 
 ```ts
-import {parseSQLPredicate} from '@loaders.gl/core/scan/sql-predicate';
-import {queryArrowTable} from '@loaders.gl/core/scan/arrow-query';
+import {parseSQLPredicate} from '@loaders.gl/core/query/sql-predicate';
+import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
 
 const flights = queryArrowTable(arrowTable, {
   predicate: parseSQLPredicate('year >= 2024 AND cancelled = FALSE'),
@@ -95,7 +95,7 @@ Named SQL parameters can remain unresolved while a caller builds or compiles a q
 immediately before an Arrow backend executes the predicate:
 
 ```ts
-import {bindSQLPredicate, parseSQLPredicate} from '@loaders.gl/core/scan/sql-predicate';
+import {bindSQLPredicate, parseSQLPredicate} from '@loaders.gl/core/query/sql-predicate';
 
 const predicate = parseSQLPredicate('fare >= :minimumFare', {preserveParameters: true});
 const boundPredicate = bindSQLPredicate(predicate, {minimumFare: 250});
@@ -108,7 +108,7 @@ supports comparisons, `IN`, `IS [NOT] NULL`, `AND`, `OR`, `NOT`, parentheses, sc
 named parameters.
 
 ```ts
-import {parseSQLPredicate} from '@loaders.gl/core/scan/sql-predicate';
+import {parseSQLPredicate} from '@loaders.gl/core/query/sql-predicate';
 
 const predicate = parseSQLPredicate(
   "timestamp >= :start AND status IN ('valid', 'estimated')",
@@ -132,7 +132,7 @@ Applications already using Zod can opt into the separate subpath without adding 
 bundle:
 
 ```ts
-import {SQLPredicateSchema} from '@loaders.gl/core/scan/sql-predicate-zod';
+import {SQLPredicateSchema} from '@loaders.gl/core/query/sql-predicate-zod';
 
 const predicate = SQLPredicateSchema.parse(untrustedPayload);
 ```

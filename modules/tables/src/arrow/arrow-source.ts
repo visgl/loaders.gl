@@ -13,7 +13,7 @@ import type {
   TableScanSource
 } from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {projectArrowTable, filterArrowTable} from '@loaders.gl/core/scan/arrow-execution';
+import {projectArrowTable, filterArrowTable} from '@loaders.gl/core/query/arrow-execution';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 
 const ARROW_TABLE_QUERY_CAPABILITIES = Object.freeze({

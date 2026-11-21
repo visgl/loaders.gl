@@ -8,7 +8,7 @@ import {
   createArrowQueryWorker,
   parseSQLPredicate,
   queryArrowTableInWorker
-} from '@loaders.gl/core/scan';
+} from '@loaders.gl/core/query';
 
 const worker =
   typeof Worker === 'undefined'

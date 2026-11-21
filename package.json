@@ -364,6 +364,7 @@
     "minimatch@npm:^10.1.1": "npm:11.0.6",
     "minimatch@npm:^10.2.2": "npm:11.0.6",
     "minimatch@npm:^10.2.6": "npm:11.0.6",
-    "webpack-dev-server": "npm:6.1.0"
+    "webpack-dev-server": "npm:6.1.0",
+    "@deck.gl/geo-layers@npm:10.0.0-alpha.1": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
   }
 }

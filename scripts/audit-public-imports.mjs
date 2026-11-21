@@ -23,10 +23,17 @@ export function auditPublicImports() {
     if (!fs.existsSync(filename)) continue;
     if (/^modules\/[^/]+\/package\.json$/.test(filename)) {
       const manifest = JSON.parse(fs.readFileSync(filename, 'utf8'));
-      for (const subpath of Object.keys(manifest.exports || {})) {
+      const targetPaths = new Map();
+      for (const [subpath, target] of Object.entries(manifest.exports || {})) {
+        const exportTarget = JSON.stringify(target);
+        const canonicalPath = targetPaths.get(exportTarget);
+        if (canonicalPath) {
+          violations.push(`${filename}: export ${subpath} duplicates ${canonicalPath}`);
+        } else {
+          targetPaths.set(exportTarget, subpath);
+        }
         if (
-          (/\/index$/.test(subpath) &&
-            !(manifest.name === '@loaders.gl/raster' && subpath === './terrain/index')) ||
+          /\/index$/.test(subpath) ||
           /\/unbundled$/.test(subpath) ||
           (/^@loaders\.gl\/(?:tables|geospatial|pointclouds|raster|scene|scientific|documents|images)$/.test(manifest.name) &&
             /^\.\/[^/]*-(?:loader|writer|source)(?:-(?:types|options|shared|base|with-parser))?$/.test(subpath)) ||

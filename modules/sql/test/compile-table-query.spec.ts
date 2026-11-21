@@ -5,7 +5,7 @@
 import {describe, expect, test} from 'vitest';
 
 import {compileSQLTableQuery} from '@loaders.gl/sql';
-import {parseSQLPredicate} from '@loaders.gl/core/scan';
+import {parseSQLPredicate} from '@loaders.gl/core/query';
 
 describe('compileSQLTableQuery', () => {
   test('compiles projection, predicate, qualification, and limit', () => {

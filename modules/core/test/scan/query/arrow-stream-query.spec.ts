@@ -4,8 +4,8 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {queryArrowTable} from '@loaders.gl/core/scan/arrow-query';
-import {filterArrowTable} from '@loaders.gl/core/scan/arrow-execution';
+import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
+import {filterArrowTable} from '@loaders.gl/core/query/arrow-execution';
 import {queryArrowTableInBatches} from '../../../src/scan/query-arrow-table-in-batches';
 
 /** Creates a deterministic Arrow table for streaming and identity checks. */

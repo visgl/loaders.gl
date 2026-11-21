@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {afterAll, beforeAll, expect, test} from 'vitest';
-import type {TableQuery} from '@loaders.gl/core/scan';
+import type {TableQuery} from '@loaders.gl/core/query';
 import {
   queryScales,
   queryScalesInBatches,

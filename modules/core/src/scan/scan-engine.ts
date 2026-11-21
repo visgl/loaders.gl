@@ -56,7 +56,7 @@ scanBackends.set('arrow', arrowScanBackend);
  *
  * This is the extension point for future DuckDB and GPU implementations. The backend package can
  * register a dynamic loader from application code while the public import remains
- * `@loaders.gl/core/scan`.
+ * `@loaders.gl/core/query`.
  */
 export function registerScanBackend(name: ScanBackendName, loader: ScanBackendLoader): void {
   if (!name || !loader) {

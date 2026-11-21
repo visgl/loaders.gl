@@ -110,7 +110,7 @@ export {
   isSQLPredicate,
   SQL_PREDICATE_JSON_SCHEMA,
   validateSQLPredicate
-} from '@loaders.gl/core/scan';
+} from '@loaders.gl/core/query';
 export type {
   BoundSQLPredicate,
   SQLComparisonPredicate,
@@ -133,7 +133,7 @@ export type {
   TableQueryPlanStep,
   TableQueryProjectStep,
   TableQueryScanStep
-} from '@loaders.gl/core/scan';
+} from '@loaders.gl/core/query';
 export type {
   SQLAdapter,
   SQLAdapterCapabilities,

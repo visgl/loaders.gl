@@ -10,22 +10,22 @@ export {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,
   queryArrowTable
-} from '@loaders.gl/core/scan/query-arrow-table';
-export {parseSQLPredicate} from '@loaders.gl/core/scan/parse-sql-predicate';
-export {bindSQLPredicate} from '@loaders.gl/core/scan/bind-sql-predicate';
+} from '@loaders.gl/core/query/query-arrow-table';
+export {parseSQLPredicate} from '@loaders.gl/core/query/parse-sql-predicate';
+export {bindSQLPredicate} from '@loaders.gl/core/query/bind-sql-predicate';
 export {compileSQLTableQuery} from './compile-table-query';
 export {
   explainTableQuery,
   getSQLPredicateColumnNames,
   planTableQuery
-} from '@loaders.gl/core/scan/table-query';
-export {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from '@loaders.gl/core/scan/table-query-capabilities';
-export {isSQLPredicateParameter} from '@loaders.gl/core/scan/sql-predicate-types';
+} from '@loaders.gl/core/query/table-query';
+export {SQL_DATA_SOURCE_TABLE_QUERY_CAPABILITIES} from '@loaders.gl/core/query/table-query-capabilities';
+export {isSQLPredicateParameter} from '@loaders.gl/core/query/sql-predicate-types';
 export {
   isSQLPredicate,
   SQL_PREDICATE_JSON_SCHEMA,
   validateSQLPredicate
-} from '@loaders.gl/core/scan/sql-predicate-schema';
+} from '@loaders.gl/core/query/sql-predicate-schema';
 
 export type {
   BoundSQLPredicate,
@@ -41,7 +41,7 @@ export type {
   SQLPredicateProperty,
   SQLPredicateScalar,
   SQLPredicateValue
-} from '@loaders.gl/core/scan/sql-predicate-types';
+} from '@loaders.gl/core/query/sql-predicate-types';
 
 export type {
   SQLAdapter,
@@ -60,7 +60,7 @@ export type {
   SQLTableInfo
 } from './sql-types';
 
-export type {ArrowQueryOptions} from '@loaders.gl/core/scan/query-arrow-table';
+export type {ArrowQueryOptions} from '@loaders.gl/core/query/query-arrow-table';
 export type {ArrowTableSourceOptions} from './arrow-table-source';
 export type {
   CompiledSQLTableQuery,
@@ -84,4 +84,4 @@ export type {
   TableQueryPlanStep,
   TableQueryProjectStep,
   TableQueryScanStep
-} from '@loaders.gl/core/scan/table-query';
+} from '@loaders.gl/core/query/table-query';

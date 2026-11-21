@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {parseSQLPredicate, queryArrowTable} from '@loaders.gl/core/scan';
+import {parseSQLPredicate, queryArrowTable} from '@loaders.gl/core/query';
 
 test('queryArrowTable covers null truth tables and scalar comparison families', () => {
   const nullable = makeArrowTable({value: [null, 1, 2], label: ['null', 'one', 'two']});

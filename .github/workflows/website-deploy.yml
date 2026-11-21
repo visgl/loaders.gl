@@ -3,6 +3,7 @@ name: website
 on:
   push:
     branches:
+      - master
       - '*-release'
   workflow_run:
     workflows:
@@ -11,7 +12,10 @@ on:
       - completed
   workflow_dispatch:
 
-concurrency: website-gh-pages
+concurrency:
+  group: website-gh-pages
+  queue: max
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -129,8 +133,10 @@ jobs:
         with:
           token: ${{ secrets.WEBSITE_DEPLOY_TOKEN }}
           branch: gh-pages
+          force: false
           folder: website/build
           target-folder: ${{ needs.check_branch.outputs.target_folder }}
           clean: true
           clean-exclude: |
             next
+            .nojekyll
