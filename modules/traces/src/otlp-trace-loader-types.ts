@@ -31,6 +31,7 @@ export const OtlpTraceLoader = {
   name: 'OTLP Trace Loader',
   id: 'otlpTrace',
   module: 'traces',
+  fetchBeforePreload: true,
   worker: true,
   workerInBatches: true,
   workerFile: 'trace-worker.js',

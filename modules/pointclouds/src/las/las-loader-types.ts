@@ -21,6 +21,7 @@ async function preload() {
 /** Metadata-only loader for the LAS (LASer) point cloud format. */
 export const LASLoader = {
   ...LAS_LOADER_METADATA,
+  fetchBeforePreload: true,
   worker: true,
   workerInBatches: true,
   preload,

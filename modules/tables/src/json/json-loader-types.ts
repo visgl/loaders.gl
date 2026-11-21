@@ -52,6 +52,7 @@ export const JSONLoader = {
 
   ...JSONFormat,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: JSON_WORKER_URL,
   workerFile: 'json-worker.js',
   workerNode: 'json-worker-node.cjs',

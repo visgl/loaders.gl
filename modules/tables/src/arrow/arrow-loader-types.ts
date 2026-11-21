@@ -38,6 +38,7 @@ export const ArrowLoader = {
   fromUrl: true,
   fromBlob: true,
   type: 'arrow',
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   dataType: null as unknown as Table | NativeArrowTable,

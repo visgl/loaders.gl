@@ -34,6 +34,7 @@ export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
   id: 'dbf',
   module: 'geospatial',
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   workerInBatches: true,
   supportsNativeArrow: true,

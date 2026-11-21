@@ -21,6 +21,7 @@ async function preloadParquetLoader() {
 
 /** Metadata-only Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoader = {
+  fetchBeforePreload: true,
   defaultShape: 'arrow',
   supportsNativeArrow: true,
   ...PARQUET_LOADER_BASE,

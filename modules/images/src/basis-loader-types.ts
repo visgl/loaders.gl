@@ -26,6 +26,7 @@ export const BasisLoader = {
   id: 'basis',
   module: 'images',
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   /** Published CommonJS bundle for Node.js workers. */
   workerNode: 'basis-worker-node.cjs',

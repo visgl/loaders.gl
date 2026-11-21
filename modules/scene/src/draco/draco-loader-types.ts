@@ -55,6 +55,7 @@ export const DracoLoader = {
   ...DracoFormat,
   // shapes: ['mesh'],
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   /** Node test workers live with the Draco implementation. */
   workerSourceNode: 'draco/workers/draco-worker-node.ts',

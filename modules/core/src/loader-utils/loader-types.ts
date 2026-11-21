@@ -185,6 +185,12 @@ export type Loader<
    * Can be used to avoid a later delay and may return a parser-bearing loader that also supports `parseSync`.
    */
   preload?: Preload;
+  /**
+   * Allows load() to fetch a URL while preloading this parser. Core must own the
+   * initial request, including authentication. Use only for loaders that parse
+   * a fetched response and declare any authentication hooks on their metadata.
+   */
+  fetchBeforePreload?: boolean;
   /** Contributes authentication constructors before requests; application constructors take precedence. */
   getAuthentications?: (
     url: string,

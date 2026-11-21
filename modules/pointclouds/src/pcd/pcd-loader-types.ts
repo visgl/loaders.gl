@@ -40,6 +40,7 @@ export const PCDLoader = {
   dataType: null as unknown as PCDMesh | Table,
   batchType: null as unknown as PCDMesh | RecordBatch,
   version: VERSION,
+  fetchBeforePreload: true,
   worker: true,
   /** Enables the stateful input/output batch protocol on the built-in worker. */
   workerInBatches: true,
