@@ -185,8 +185,12 @@ async function parseWithLoader(
   let result: unknown;
 
   if (shouldParseWithWorker(loaderWithParser, data, parseOptions, context, loader)) {
-    data = await getArrayBufferFromData(data, parseOptions);
-    result = await parseWithWorker(loaderWithParser, data, parseOptions, context, parse);
+    // Start the worker while the response body downloads. Transfer only the complete buffer.
+    const input =
+      isResponse(data) && data.ok
+        ? getArrayBufferFromData(data, parseOptions)
+        : await getArrayBufferFromData(data, parseOptions);
+    result = await parseWithWorker(loaderWithParser, input, parseOptions, context, parse);
   } else if (isBlob(data) && loaderWithParser.parseBlob) {
     result = await loaderWithParser.parseBlob(data, parseOptions, context);
   } else {
