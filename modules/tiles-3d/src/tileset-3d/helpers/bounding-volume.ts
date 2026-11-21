@@ -6,7 +6,8 @@
 /* eslint-disable */
 import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core/matrix';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
-import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
+import {makeOBBFromRegion} from '@math.gl/geospatial/globe';
 import {assert} from '@loaders.gl/core/loader-utils';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();

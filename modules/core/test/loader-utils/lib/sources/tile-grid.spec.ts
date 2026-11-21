@@ -12,7 +12,7 @@ import {
   validateTileGridLimits,
   resolveTileGridTile
 } from '@loaders.gl/core/loader-utils';
-import {getTileBounds} from '@math.gl/geospatial';
+import {getTileBounds} from '@math.gl/geospatial/tiles';
 
 const FIELDS = {
   id: 'coarse',

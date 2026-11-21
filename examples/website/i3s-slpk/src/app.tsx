@@ -2,7 +2,7 @@ import React, {useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {MapController} from '@deck.gl/core';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import type {MapViewState} from '@deck.gl/core';
 import DeckGL from '@deck.gl/react';
 import {SourceLayer} from '@loaders.gl/deck-layers';

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles-3d';
 import I3SNodePagesTiles from '../helpers/i3s-nodepages-tiles';
 import {generateTileAttributeUrls, getUrlWithToken, getUrlWithoutParams} from '../utils/url-utils';

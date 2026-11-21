@@ -5,7 +5,7 @@ import type {Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/geometry/culling';
 import {getImageData} from '@loaders.gl/images';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {GLTFAttributesData} from '../types';
 
 /**

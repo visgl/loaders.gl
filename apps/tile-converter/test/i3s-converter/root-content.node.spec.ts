@@ -10,7 +10,7 @@ import {parse} from '@loaders.gl/core';
 import {DracoLoader, type DracoMesh} from '@loaders.gl/scene';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {NodeFile} from '@loaders.gl/core/loader-utils';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import I3SConverter from '../../src/v4/i3s-converter/i3s-converter';
 import {createLegacyB3dm} from '../utils/create-legacy-b3dm';
 

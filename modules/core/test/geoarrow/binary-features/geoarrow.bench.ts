@@ -4,7 +4,7 @@
 
 import {JSONLoader} from '@loaders.gl/tables/json';
 import {load} from '@loaders.gl/core';
-import {earcut} from '@math.gl/geometry';
+import {earcut} from '@math.gl/geometry/polygon';
 import {getGeoarrowVertexCount} from '@loaders.gl/core/geoarrow';
 
 import {

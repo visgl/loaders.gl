@@ -6,7 +6,7 @@ import {
   getZoomFromExtent,
   getZoomFromFullExtent
 } from '../../../src/tileset-3d/helpers/zoom';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 test('Tiles zoom#getZoomFromBoundingVolume', () => {
   const cartographicCenter = new Vector3([
     -122.46338343363956, 37.791575759047028, 87.413529296405613

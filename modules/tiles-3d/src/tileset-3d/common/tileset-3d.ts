@@ -6,7 +6,7 @@
 
 import {log as loaderLog} from '@loaders.gl/core/loader-utils';
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {Stats} from 'probe.gl/stats';
 import {RequestScheduler, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {TilesetCache} from './tileset-cache';

@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
-import {eastNorthUpToFixedFrame} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
+import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/coordinates';
 import {Tile3D} from '../common/tile-3d';
 import {FrameState} from './frame-state';
 

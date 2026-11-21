@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
 import {getTileGridLayerOptions} from '../src/lib/tile-grid-options';
-import type {TileMatrix} from '@math.gl/geospatial';
+import type {TileMatrix} from '@math.gl/geospatial/tiles';
 
 /** Creates a canonical logical 512-pixel XYZ matrix. */
 function createMatrix(zoom: number): TileMatrix {

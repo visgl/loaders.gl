@@ -1,5 +1,5 @@
 import {Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
 // @ts-expect-error
 import {GeoidHeightModel} from '@loaders.gl/tile-converter/lib/geoid-height-model';

@@ -6,7 +6,7 @@ import {createI3SMeshSink} from '../apps/tile-converter/src/v5/i3s-mesh-sink';
 import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {expect, test} from 'vitest';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s';
 import {I3SNodePageSchema, I3SSceneLayerSchema} from '@loaders.gl/tiles-3d/i3s-zod-schema';
 import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';

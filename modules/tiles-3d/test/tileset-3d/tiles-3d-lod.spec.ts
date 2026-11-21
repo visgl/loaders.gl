@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {getFrameState, Tile3D} from '@loaders.gl/tiles-3d';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {TilesetTraverser} from '../../src/tileset-3d/common/tileset-traverser';

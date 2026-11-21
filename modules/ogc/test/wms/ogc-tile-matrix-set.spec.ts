@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import type {OGCTileMatrixSet} from '@loaders.gl/ogc/wms';
 import {convertOGCTileMatrixSetToTileGrid, OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
-import {getTileBounds} from '@math.gl/geospatial';
+import {getTileBounds} from '@math.gl/geospatial/tiles';
 
 /** The first two levels of the OGC WebMercatorQuad registry entry. */
 const WEB_MERCATOR_QUAD: OGCTileMatrixSet = {

@@ -5,8 +5,8 @@
 import type {Tile3D} from '../common/tile-3d';
 import {Vector3} from '@math.gl/core/matrix';
 import {CullingVolume, Plane} from '@math.gl/geometry/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
-import {eastNorthUpToFixedFrame} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
+import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/coordinates';
 import {GeospatialViewport, Viewport} from '../../types';
 
 export type FrameState = {

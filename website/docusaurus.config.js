@@ -231,7 +231,7 @@ const config = {
           // NodeNext source entrypoints name emitted .js files; resolve their TypeScript sources.
           extensionAlias: {'.js': ['.js', '.ts']},
           fallback: {path: false, fs: false, buffer: true},
-          modules: [resolve('node_modules'), resolve('../node_modules')],
+          modules: ['node_modules', resolve('node_modules'), resolve('../node_modules')],
           alias: {
             '@loaders.gl/tables': resolve('../modules/tables/src'),
             '@loaders.gl/geospatial': resolve('../modules/geospatial/src'),

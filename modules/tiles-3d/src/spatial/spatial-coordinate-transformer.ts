@@ -4,10 +4,10 @@
 
 import type {Geoid} from '@math.gl/earth/geoid';
 import {Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
 import type {Projection} from '@math.gl/geospatial/projection';
-import {ProjectionBuffer} from '@math.gl/geospatial/projection/bulk';
+import {ProjectionBuffer} from '@math.gl/geospatial/projection-bulk';
 import {getGeoidModel, getSpatialProjectionEngine} from './spatial-resource-registry';
 import {
   normalizeCrsIdentifier,

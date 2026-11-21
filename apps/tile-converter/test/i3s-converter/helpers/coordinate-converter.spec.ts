@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {BoundingSphere, makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
 import {convertBoundingVolumeToI3SFullExtent} from '../../../src/v4/i3s-converter/helpers/coordinate-converter';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 test('tile-converter(i3s)#convertBoundingVolumeToI3SFullExtent', async () => {
   const sanFrancisco = [-122.43147634230891, 37.762614422522873, 104.40637177880853];
   const cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(sanFrancisco);

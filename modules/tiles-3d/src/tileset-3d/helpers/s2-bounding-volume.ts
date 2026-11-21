@@ -3,7 +3,8 @@
 // Copyright vis.gl contributors
 
 import {getS2Bounds} from '@math.gl/dggs/s2';
-import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
+import {makeOBBFromRegion} from '@math.gl/geospatial/globe';
 
 /** Serialized S2 cell metadata used by 3D Tiles bounding-volume extensions. */
 export type S2VolumeInfo = {

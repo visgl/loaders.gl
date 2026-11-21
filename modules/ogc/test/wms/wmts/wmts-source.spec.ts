@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 import {WMTSLoader, WMTSImageTileSource} from '@loaders.gl/ogc/wms';
 import {WMTSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
-import {getTileBounds} from '@math.gl/geospatial';
+import {getTileBounds} from '@math.gl/geospatial/tiles';
 
 const WMTS_URL = 'https://example.com/wmts?token=abc';
 

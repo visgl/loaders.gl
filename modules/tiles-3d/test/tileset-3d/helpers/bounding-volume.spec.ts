@@ -5,7 +5,7 @@ import {expect, test} from 'vitest';
 import {createBoundingVolume} from '../../../src/tileset-3d/helpers/bounding-volume';
 import {degrees, Matrix4} from '@math.gl/core/matrix';
 import {OrientedBoundingBox} from '@math.gl/geometry/culling';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 test('Tiles bounding-volume#createBoundingVolume - bounds Cesium OSM region', () => {
   // Root region reported by Cesium OSM Buildings in loaders.gl issue #3144.
   const region = [

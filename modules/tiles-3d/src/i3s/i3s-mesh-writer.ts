@@ -4,7 +4,7 @@
 
 import {prepareI3SMeshTexture, type I3SMeshTexture} from './i3s-mesh-texture';
 export type {I3SMeshTexture} from './i3s-mesh-texture';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
 import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {DracoLoaderOptions, DracoMesh} from '@loaders.gl/scene';

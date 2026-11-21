@@ -146,7 +146,7 @@ Web Mercator are built in; for any other CRS, supply the unit length. Origins fo
 rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
 
 ```ts
-import {getTileBounds} from '@math.gl/geospatial';
+import {getTileBounds} from '@math.gl/geospatial/tiles';
 
 const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
   // A UTM matrix set: one CRS unit is one meter.

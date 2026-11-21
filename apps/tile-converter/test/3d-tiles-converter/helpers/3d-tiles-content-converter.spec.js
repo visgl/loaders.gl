@@ -6,7 +6,7 @@ import {Tiles3DContentConverter} from '../../../src/v4/3d-tiles-converter/helper
 import {isBrowser, parse, load} from '@loaders.gl/core';
 import {I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s';
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 const ATTRIBUTES_STORAGE_INFO_STUB = [
   {
     key: 'f_0',

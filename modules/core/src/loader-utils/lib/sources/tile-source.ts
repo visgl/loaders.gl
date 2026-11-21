@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
-import type {TileMatrixLimits, TileMatrixSet, VariableMatrixWidth} from '@math.gl/geospatial';
+import type {TileMatrixLimits, TileMatrixSet, VariableMatrixWidth} from '@math.gl/geospatial/tiles';
 
 /**
  * Props for a TileSource

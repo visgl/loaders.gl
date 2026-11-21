@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core/matrix';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {BoundingSphere} from '@math.gl/geometry/culling';
 import convertB3dmToI3sGeometry from '../apps/tile-converter/src/v4/i3s-converter/helpers/geometry-converter';
 
