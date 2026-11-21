@@ -153,7 +153,7 @@ Some matrix sets change origin or tile size between levels, so each level is des
 A scale denominator becomes a resolution only when the CRS unit is known. EPSG:4326, CRS:84, and Web Mercator are built in; for any other CRS, supply the unit length. Origins follow the same axis rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
 
 ```
-import {getTileBounds} from '@math.gl/geospatial';
+import {getTileBounds} from '@math.gl/geospatial/tiles';
 
 
 
