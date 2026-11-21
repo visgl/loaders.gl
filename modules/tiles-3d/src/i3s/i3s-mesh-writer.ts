@@ -146,7 +146,7 @@ export async function encodeI3SMeshLayerWithDraco(
   const {modules, useLocalLibraries, CDN: contentDeliveryNetwork} = libraryOptions;
   const runtimeOptions = {modules, core: {useLocalLibraries, CDN: contentDeliveryNetwork}};
   const {DracoLoader} = await import('@loaders.gl/scene');
-  const {encodeDraco} = await import('@loaders.gl/scene/draco');
+  const {encodeDraco, hasSameDracoMeshTriangles} = await import('@loaders.gl/scene/draco');
   const encoded = await encodeDraco(
     {attributes, indices},
     {
@@ -180,7 +180,12 @@ export async function encodeI3SMeshLayerWithDraco(
   const decodedFeatureIds = featureMetadata?.metadata?.['i3s-feature-ids']?.intArray;
   if (
     !decoded.indices ||
-    !hasSameMeshTriangles(attributes, indices, decoded.attributes, decoded.indices.value) ||
+    !hasSameDracoMeshTriangles(attributes, indices, decoded.attributes, decoded.indices.value, [
+      'POSITION',
+      'NORMAL',
+      'TEXCOORD_0',
+      'feature-index'
+    ]) ||
     decodedFeatureIds?.length !== featureIdentifiers.length ||
     !featureIdentifiers.every((identifier, index) => decodedFeatureIds[index] === identifier)
   )
@@ -630,89 +635,6 @@ function compressMeshLayer(
     files[name] = name.endsWith('.gz') ? compressor.compressSync(bytes) : bytes;
   }
   return {...prepared, files};
-}
-
-/** Compares all oriented triangle tuples exactly, independent of face order and corner rotation. */
-function hasSameMeshTriangles(
-  source: DracoMesh['attributes'],
-  sourceIndices: ArrayLike<number>,
-  decoded: DracoMesh['attributes'],
-  decodedIndices: ArrayLike<number>
-): boolean {
-  const names = ['POSITION', 'NORMAL', 'TEXCOORD_0', 'feature-index'];
-  if (
-    sourceIndices.length !== decodedIndices.length ||
-    sourceIndices.length % 3 ||
-    names.some(name => source[name]?.size !== decoded[name]?.size)
-  )
-    return false;
-
-  const sourceAttributes = names.filter(name => source[name]).map(name => source[name]);
-  const decodedAttributes = names.filter(name => decoded[name]).map(name => decoded[name]);
-  const first = getTriangleOrder(sourceAttributes, sourceIndices);
-  const second = getTriangleOrder(decodedAttributes, decodedIndices);
-  for (let triangle = 0; triangle < first.length; triangle++) {
-    if (
-      compareTriangles(
-        sourceAttributes,
-        sourceIndices,
-        first[triangle],
-        decodedAttributes,
-        decodedIndices,
-        second[triangle]
-      )
-    )
-      return false;
-  }
-  return true;
-}
-
-/** Stores one corner offset per face, then sorts by the canonical oriented triangle tuple. */
-function getTriangleOrder(
-  attributes: DracoMesh['attributes'][string][],
-  indices: ArrayLike<number>
-): Uint32Array {
-  const order = new Uint32Array(indices.length / 3);
-  for (let start = 0; start < indices.length; start += 3) {
-    let canonical = start;
-    for (let offset = start + 1; offset < start + 3; offset++) {
-      if (compareTriangles(attributes, indices, offset, attributes, indices, canonical) < 0)
-        canonical = offset;
-    }
-    order[start / 3] = canonical;
-  }
-  return order.sort((left, right) =>
-    compareTriangles(attributes, indices, left, attributes, indices, right)
-  );
-}
-
-/** Orders oriented faces by successive vertex attribute tuples from each selected corner. */
-function compareTriangles(
-  leftAttributes: DracoMesh['attributes'][string][],
-  leftIndices: ArrayLike<number>,
-  leftOffset: number,
-  rightAttributes: DracoMesh['attributes'][string][],
-  rightIndices: ArrayLike<number>,
-  rightOffset: number
-): number {
-  const leftCorner = leftOffset % 3;
-  const rightCorner = rightOffset % 3;
-  for (let corner = 0; corner < 3; corner++) {
-    const leftVertex = leftIndices[leftOffset - leftCorner + ((leftCorner + corner) % 3)];
-    const rightVertex = rightIndices[rightOffset - rightCorner + ((rightCorner + corner) % 3)];
-    for (let attribute = 0; attribute < leftAttributes.length; attribute++) {
-      const left = leftAttributes[attribute];
-      const right = rightAttributes[attribute];
-      const leftStart = leftVertex * left.size;
-      const rightStart = rightVertex * left.size;
-      for (let component = 0; component < left.size; component++) {
-        const leftValue = left.value[leftStart + component];
-        const rightValue = right.value[rightStart + component];
-        if (leftValue !== rightValue) return leftValue < rightValue ? -1 : 1;
-      }
-    }
-  }
-  return 0;
 }
 
 /** Encodes the synthetic feature ID for an unannotated mesh. */
