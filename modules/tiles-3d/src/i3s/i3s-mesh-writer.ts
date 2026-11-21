@@ -177,12 +177,12 @@ export async function encodeI3SMeshLayerWithDraco(
   const featureMetadata = Object.values(decoded.loaderData.attributes).find(
     attribute => attribute.metadata?.['i3s-attribute-type']?.string === 'feature-index'
   );
+  const decodedFeatureIds = featureMetadata?.metadata?.['i3s-feature-ids']?.intArray;
   if (
     !decoded.indices ||
-    JSON.stringify(getMeshTriangles(attributes, indices)) !==
-      JSON.stringify(getMeshTriangles(decoded.attributes, decoded.indices.value)) ||
-    featureMetadata?.metadata?.['i3s-feature-ids']?.intArray?.toString() !==
-      featureIdentifiers.toString()
+    !hasSameMeshTriangles(attributes, indices, decoded.attributes, decoded.indices.value) ||
+    decodedFeatureIds?.length !== featureIdentifiers.length ||
+    !featureIdentifiers.every((identifier, index) => decodedFeatureIds[index] === identifier)
   )
     throw new Error(
       'Lossless I3S Draco must preserve oriented triangles, attributes and feature IDs'
@@ -372,27 +372,44 @@ function prepareMeshLayer(
   let maximumPositionError = 0;
   let outputIndex = 0;
   const faceRanges: number[] = [];
+  const absolutePosition = [0, 0, 0];
+  const geographicScratch = [0, 0, 0];
+  const reconstructedGeographic = [0, 0, 0];
+  const reconstructedScratch = [0, 0, 0];
   for (const group of triangles) {
     faceRanges.push(outputIndex / 3, outputIndex / 3 + group.length - 1);
     for (const triangle of group) {
       for (let corner = 0; corner < 3; corner++) {
         const sourceIndex = indices?.[triangle * 3 + corner] ?? triangle * 3 + corner;
-        const absolutePosition = positions.value.subarray(sourceIndex * 3, sourceIndex * 3 + 3);
-        const geographicPosition = Ellipsoid.WGS84.cartesianToCartographic(absolutePosition);
+        const sourceOffset = sourceIndex * 3;
+        for (let axis = 0; axis < 3; axis++)
+          absolutePosition[axis] = positions.value[sourceOffset + axis];
+        const geographicPosition = Ellipsoid.WGS84.cartesianToCartographic(
+          absolutePosition,
+          geographicScratch
+        );
         if (
-          !Array.from(geographicPosition).every(Number.isFinite) ||
+          !geographicPosition ||
+          !geographicPosition.every(Number.isFinite) ||
           Math.abs(geographicPosition[0] - geographicCenter[0]) > 180
         ) {
           throw new Error(
             'I3S initial mesh profile excludes undefined geographic positions and antimeridian wrapping'
           );
         }
-        const reconstructedGeographic = geographicCenter.map(
-          (value, axis) => value + Math.fround(geographicPosition[axis] - value)
+        for (let axis = 0; axis < 3; axis++) {
+          reconstructedGeographic[axis] =
+            geographicCenter[axis] + Math.fround(geographicPosition[axis] - geographicCenter[axis]);
+        }
+        const reconstructed = Ellipsoid.WGS84.cartographicToCartesian(
+          reconstructedGeographic,
+          reconstructedScratch
         );
-        const reconstructed = Ellipsoid.WGS84.cartographicToCartesian(reconstructedGeographic);
+        if (!reconstructed) throw new Error('I3S mesh exceeds maxPositionError');
         const error = Math.hypot(
-          ...Array.from(reconstructed, (value, axis) => value - absolutePosition[axis])
+          reconstructed[0] - absolutePosition[0],
+          reconstructed[1] - absolutePosition[1],
+          reconstructed[2] - absolutePosition[2]
         );
         if (!Number.isFinite(error) || error > options.maxPositionError)
           throw new Error('I3S mesh exceeds maxPositionError');
@@ -615,37 +632,87 @@ function compressMeshLayer(
   return {...prepared, files};
 }
 
-/** Compares a multiset of oriented triangles with complete position, normal and feature tuples. */
-function getMeshTriangles(
-  attributes: DracoMesh['attributes'],
-  indices: ArrayLike<number>
-): string[] {
-  const names = [
-    'POSITION',
-    ...(attributes.NORMAL ? ['NORMAL'] : []),
-    ...(attributes.TEXCOORD_0 ? ['TEXCOORD_0'] : []),
-    'feature-index'
-  ];
-  const triangles: string[] = [];
-  for (let index = 0; index < indices.length; index += 3) {
-    const vertices = [0, 1, 2].map(corner =>
-      names
-        .map(name => {
-          const attribute = attributes[name];
-          return Array.from(
-            {length: attribute.size},
-            (_, component) => attribute.value[indices[index + corner] * attribute.size + component]
-          ).join(',');
-        })
-        .join('|')
-    );
-    triangles.push(
-      [0, 1, 2]
-        .map(corner => [...vertices.slice(corner), ...vertices.slice(0, corner)].join(';'))
-        .sort()[0]
-    );
+/** Compares all oriented triangle tuples exactly, independent of face order and corner rotation. */
+function hasSameMeshTriangles(
+  source: DracoMesh['attributes'],
+  sourceIndices: ArrayLike<number>,
+  decoded: DracoMesh['attributes'],
+  decodedIndices: ArrayLike<number>
+): boolean {
+  const names = ['POSITION', 'NORMAL', 'TEXCOORD_0', 'feature-index'];
+  if (
+    sourceIndices.length !== decodedIndices.length ||
+    sourceIndices.length % 3 ||
+    names.some(name => source[name]?.size !== decoded[name]?.size)
+  )
+    return false;
+
+  const sourceAttributes = names.filter(name => source[name]).map(name => source[name]);
+  const decodedAttributes = names.filter(name => decoded[name]).map(name => decoded[name]);
+  const first = getTriangleOrder(sourceAttributes, sourceIndices);
+  const second = getTriangleOrder(decodedAttributes, decodedIndices);
+  for (let triangle = 0; triangle < first.length; triangle++) {
+    if (
+      compareTriangles(
+        sourceAttributes,
+        sourceIndices,
+        first[triangle],
+        decodedAttributes,
+        decodedIndices,
+        second[triangle]
+      )
+    )
+      return false;
   }
-  return triangles.sort();
+  return true;
+}
+
+/** Stores one corner offset per face, then sorts by the canonical oriented triangle tuple. */
+function getTriangleOrder(
+  attributes: DracoMesh['attributes'][string][],
+  indices: ArrayLike<number>
+): Uint32Array {
+  const order = new Uint32Array(indices.length / 3);
+  for (let start = 0; start < indices.length; start += 3) {
+    let canonical = start;
+    for (let offset = start + 1; offset < start + 3; offset++) {
+      if (compareTriangles(attributes, indices, offset, attributes, indices, canonical) < 0)
+        canonical = offset;
+    }
+    order[start / 3] = canonical;
+  }
+  return order.sort((left, right) =>
+    compareTriangles(attributes, indices, left, attributes, indices, right)
+  );
+}
+
+/** Orders oriented faces by successive vertex attribute tuples from each selected corner. */
+function compareTriangles(
+  leftAttributes: DracoMesh['attributes'][string][],
+  leftIndices: ArrayLike<number>,
+  leftOffset: number,
+  rightAttributes: DracoMesh['attributes'][string][],
+  rightIndices: ArrayLike<number>,
+  rightOffset: number
+): number {
+  const leftCorner = leftOffset % 3;
+  const rightCorner = rightOffset % 3;
+  for (let corner = 0; corner < 3; corner++) {
+    const leftVertex = leftIndices[leftOffset - leftCorner + ((leftCorner + corner) % 3)];
+    const rightVertex = rightIndices[rightOffset - rightCorner + ((rightCorner + corner) % 3)];
+    for (let attribute = 0; attribute < leftAttributes.length; attribute++) {
+      const left = leftAttributes[attribute];
+      const right = rightAttributes[attribute];
+      const leftStart = leftVertex * left.size;
+      const rightStart = rightVertex * left.size;
+      for (let component = 0; component < left.size; component++) {
+        const leftValue = left.value[leftStart + component];
+        const rightValue = right.value[rightStart + component];
+        if (leftValue !== rightValue) return leftValue < rightValue ? -1 : 1;
+      }
+    }
+  }
+  return 0;
 }
 
 /** Encodes the synthetic feature ID for an unannotated mesh. */

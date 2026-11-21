@@ -301,10 +301,16 @@ function subtractEgm2008Undulation(
   geoid: NonNullable<I3SMeshConversionCodecOptions['egm2008Geoid']>
 ): Float64Array {
   const corrected = new Float64Array(positions.length);
+  const cartesian = [0, 0, 0];
+  const geographicScratch = [0, 0, 0];
   for (let offset = 0; offset < positions.length; offset += 3) {
-    const geographic = Ellipsoid.WGS84.cartesianToCartographic(
-      positions.subarray(offset, offset + 3)
-    );
+    for (let axis = 0; axis < 3; axis++) cartesian[axis] = positions[offset + axis];
+    const geographic = Ellipsoid.WGS84.cartesianToCartographic(cartesian, geographicScratch);
+    if (!geographic)
+      throw new TileConversionError(
+        'I3S_MESH_FRAME_UNSUPPORTED',
+        'Mesh has no geographic position'
+      );
     const undulation = geoid.getHeight(geographic[1], geographic[0]);
     if (!Number.isFinite(undulation))
       throw new TileConversionError(
@@ -312,7 +318,13 @@ function subtractEgm2008Undulation(
         'EGM2008 grid returned an invalid height'
       );
     geographic[2] -= undulation;
-    corrected.set(Ellipsoid.WGS84.cartographicToCartesian(geographic), offset);
+    const position = Ellipsoid.WGS84.cartographicToCartesian(geographic, cartesian);
+    if (!position)
+      throw new TileConversionError(
+        'INVALID_EGM2008_GRID',
+        'EGM2008 correction produced an invalid position'
+      );
+    corrected.set(position, offset);
   }
   return corrected;
 }

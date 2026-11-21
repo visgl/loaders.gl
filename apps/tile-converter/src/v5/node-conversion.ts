@@ -472,7 +472,11 @@ async function writeFileBytes(
   let offset = 0;
   while (offset < bytes.byteLength) {
     signal.throwIfAborted();
-    const result = await handle.write(bytes, offset, bytes.byteLength - offset);
+    const result = await handle.write(
+      bytes,
+      offset,
+      Math.min(1024 * 1024, bytes.byteLength - offset)
+    );
     if (!result.bytesWritten)
       throw new TileConversionError('NODE_OUTPUT_WRITE_FAILED', 'Output write made no progress');
     offset += result.bytesWritten;
@@ -499,8 +503,16 @@ function createNodeArchiveResourceSink(
         throw new TileConversionError('RESOURCE_SINK_CLOSED', 'Cannot write after finalization');
       if (!resource.resourceId || files.has(resource.resourceId))
         throw new TileConversionError('INVALID_NODE_OUTPUT', 'Output resource IDs must be unique');
-      const blob = new Blob([...resource.parts], {type: resource.contentType});
-      if (blob.size > maxTotalBytes - totalBytes)
+      const part = resource.parts.length === 1 ? resource.parts[0] : undefined;
+      const binary =
+        part instanceof ArrayBuffer
+          ? new Uint8Array(part)
+          : ArrayBuffer.isView(part)
+            ? new Uint8Array(part.buffer, part.byteOffset, part.byteLength)
+            : undefined;
+      const data = binary ?? new Blob([...resource.parts], {type: resource.contentType});
+      const size = data instanceof Uint8Array ? data.byteLength : data.size;
+      if (size > maxTotalBytes - totalBytes)
         throw new TileConversionError(
           'OUTPUT_BYTES_LIMIT_EXCEEDED',
           'Output files exceed the byte budget'
@@ -510,16 +522,17 @@ function createNodeArchiveResourceSink(
       const path = join(directory, String(files.size));
       const handle = await open(path, 'wx');
       try {
-        for await (const bytes of blob.stream()) await writeFileBytes(handle, bytes, signal);
+        if (data instanceof Uint8Array) await writeFileBytes(handle, data, signal);
+        else for await (const bytes of data.stream()) await writeFileBytes(handle, bytes, signal);
       } finally {
         await handle.close();
       }
       signal.throwIfAborted();
       files.set(resource.resourceId, {
         resourceId: resource.resourceId,
-        blob: await openAsBlob(path, {type: blob.type})
+        blob: await openAsBlob(path, {type: resource.contentType})
       });
-      totalBytes += blob.size;
+      totalBytes += size;
     },
     async finalize() {
       closed = true;
