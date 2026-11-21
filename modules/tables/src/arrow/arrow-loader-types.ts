@@ -2,58 +2,29 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
-import type {Table} from '@loaders.gl/core/schema';
-import {ARROW_WORKER_URL} from './arrow-worker-url';
-import {ArrowFormat} from './exports/arrow-format';
+import {ArrowLoaderDefinition} from './arrow-loader-definition';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** ArrowLoader options */
-export type ArrowLoaderOptions = LoaderOptions & {
-  /** ArrowLoader options */
-  arrow?: {
-    /** Shape of returned data */
-    shape?: 'arrow' | 'columnar-table' | 'array-row-table' | 'object-row-table';
-    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;
-  };
-};
+export type {ArrowLoaderOptions} from './arrow-loader-definition';
 
 /** ArrowJS table loader */
 async function preload() {
   const {ArrowLoaderWithParser} = await import('@loaders.gl/tables/arrow');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
   await preloadArrowCompressionDecoders();
-  return ArrowLoaderWithParser;
+  return {...ArrowLoaderWithParser, loadWorker: loadArrowWorker};
 }
 
-/** Metadata-only ArrowJS table loader. */
-export const ArrowLoader = {
-  /** Matches input for source selection. */
-  testURL: (url: string): boolean => /\.(?:arrow|feather|ipc)(?:$|[?#])/i.test(url),
-  fromUrl: true,
-  fromBlob: true,
-  type: 'arrow',
-  defaultShape: 'arrow',
-  supportsNativeArrow: true,
-  dataType: null as unknown as Table | NativeArrowTable,
-  batchType: null as unknown as RecordBatch,
+/** Starts the browser module worker for Arrow decoding. */
+function loadArrowWorker(): Worker | null {
+  if (typeof Worker !== 'undefined') {
+    return new Worker(new URL('./workers/arrow-worker.js', import.meta.url), {type: 'module'});
+  }
+  return null;
+}
 
-  ...ArrowFormat,
-  version: VERSION,
-  worker: ARROW_WORKER_URL,
-  workerNode: 'arrow-worker-node.cjs',
-  workerSourceNode: 'arrow/workers/arrow-worker.ts',
-  workerFile: 'arrow-worker.js',
-  workerInBatches: true,
-  options: {
-    arrow: {
-      shape: 'columnar-table'
-    }
-  },
+/** Metadata-only Arrow loader with an on-demand browser worker. */
+export const ArrowLoader = {
+  ...ArrowLoaderDefinition,
+  loadWorker: loadArrowWorker,
   preload
-} as const satisfies Loader<Table | NativeArrowTable, RecordBatch, ArrowLoaderOptions>;
+} as const;

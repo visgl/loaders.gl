@@ -15,14 +15,12 @@ import type {Table} from '@loaders.gl/core/schema';
 import {parseArrowSync, parseArrowInBatches} from './lib/parsers/parse-arrow';
 
 import type {ArrowLoaderOptions} from './arrow-loader-types';
-import {ArrowLoader as ArrowLoaderMetadata} from './arrow-loader-types';
-
-const {preload: _ArrowLoaderPreload, ...ArrowLoaderMetadataWithoutPreload} = ArrowLoaderMetadata;
+import {ArrowLoaderDefinition} from './arrow-loader-definition';
 
 /** ArrowJS table loader */
 export const ArrowLoaderWithParser = {
   createDataSourceSync: createArrowSource,
-  ...ArrowLoaderMetadataWithoutPreload,
+  ...ArrowLoaderDefinition,
   serializeWorkerResult: serializeArrowTableResult,
   deserializeWorkerResult: deserializeArrowTableResult,
   serializeWorkerBatch: serializeArrowTableResult,

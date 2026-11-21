@@ -2,48 +2,30 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table as ArrowTable, RecordBatch as ArrowTableBatch} from 'apache-arrow';
+import {CSVLoaderDefinition} from './csv-loader-definition';
 import type {CSVTableSource, CSVSourceOptions} from './csv-source';
-import type {CoreAPI, Loader} from '@loaders.gl/core/loader-utils';
-import type {
-  ArrayRowTable,
-  ColumnarTable,
-  ColumnarTableBatch,
-  ObjectRowTable,
-  TableBatch
-} from '@loaders.gl/core/schema';
-import {CSVFormat} from './csv-format';
-import {CSV_LOADER_OPTIONS, CSV_LOADER_VERSION, type CSVLoaderOptions} from './csv-loader-options';
+import type {CoreAPI} from '@loaders.gl/core/loader-utils';
 
-export type {CSVLoaderOptions} from './csv-loader-options';
+export type {CSVLoaderOptions} from './csv-loader-definition';
 
 /** Preloads the parser-bearing CSV loader implementation. */
 async function preloadCSVLoader() {
   const {CSVLoaderWithParser} = await import('@loaders.gl/tables/csv');
-  return CSVLoaderWithParser;
+  return {...CSVLoaderWithParser, loadWorker: loadCSVWorker};
 }
 
-const sourceMetadata = {
-  type: 'csv-source',
-  fromUrl: true,
-  fromBlob: true,
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\.(?:csv|tsv|dsv)(?:$|[?#])/i.test(url)
-} as const;
+/** Starts the browser module worker for CSV decoding. */
+function loadCSVWorker(): Worker | null {
+  if (typeof Worker !== 'undefined') {
+    return new Worker(new URL('../workers/csv-worker.js', import.meta.url), {type: 'module'});
+  }
+  return null;
+}
 
-/** Metadata-only loader for CSV and other delimiter-separated tables. */
+/** Metadata-only CSV loader with an on-demand browser worker. */
 export const CSVLoader = {
-  ...sourceMetadata,
-  defaultShape: 'arrow',
-  supportsNativeArrow: true,
-  ...CSVFormat,
-  dataType: null as unknown as ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
-  batchType: null as unknown as TableBatch | ColumnarTableBatch | ArrowTableBatch,
-  version: CSV_LOADER_VERSION,
-  text: true,
-  worker: true,
-  workerInBatches: true,
-  options: CSV_LOADER_OPTIONS,
+  ...CSVLoaderDefinition,
+  loadWorker: loadCSVWorker,
   preload: preloadCSVLoader,
   createDataSourceSync(
     _data: string | Blob,
@@ -52,9 +34,4 @@ export const CSVLoader = {
   ): CSVTableSource {
     throw new Error('Call preload(CSVLoader) before creating a source synchronously.');
   }
-} as const satisfies Loader<
-  ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
-  TableBatch | ColumnarTableBatch | ArrowTableBatch,
-  CSVLoaderOptions,
-  CSVTableSource
->;
+} as const;

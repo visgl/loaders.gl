@@ -1,0 +1,50 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
+import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
+import type {Table} from '@loaders.gl/core/schema';
+import {ARROW_WORKER_URL} from './arrow-worker-url';
+import {ArrowFormat} from './exports/arrow-format';
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+/** ArrowLoader options */
+export type ArrowLoaderOptions = LoaderOptions & {
+  /** ArrowLoader options */
+  arrow?: {
+    /** Shape of returned data */
+    shape?: 'arrow' | 'columnar-table' | 'array-row-table' | 'object-row-table';
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+};
+
+/** Shared Arrow loader metadata for the caller and worker. */
+export const ArrowLoaderDefinition = {
+  /** Matches input for source selection. */
+  testURL: (url: string): boolean => /\.(?:arrow|feather|ipc)(?:$|[?#])/i.test(url),
+  fromUrl: true,
+  fromBlob: true,
+  type: 'arrow',
+  defaultShape: 'arrow',
+  supportsNativeArrow: true,
+  dataType: null as unknown as Table | NativeArrowTable,
+  batchType: null as unknown as RecordBatch,
+
+  ...ArrowFormat,
+  version: VERSION,
+  worker: ARROW_WORKER_URL,
+  workerNode: 'arrow-worker-node.cjs',
+  workerSourceNode: 'arrow/workers/arrow-worker.ts',
+  workerFile: 'arrow-worker.js',
+  workerInBatches: true,
+  options: {
+    arrow: {
+      shape: 'columnar-table'
+    }
+  }
+} as const satisfies Loader<Table | NativeArrowTable, RecordBatch, ArrowLoaderOptions>;

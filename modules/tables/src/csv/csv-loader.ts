@@ -38,7 +38,7 @@ import {
   normalizeGeometryObjectRow,
   shouldFinalizeGeometryDetection
 } from './lib/csv-geometry';
-import {CSVLoader as CSVLoaderMetadata, type CSVLoaderOptions} from './csv-loader-types';
+import {CSVLoaderDefinition, type CSVLoaderOptions} from './csv-loader-definition';
 import {
   deserializeCSVWorkerBatch,
   deserializeCSVWorkerResult,
@@ -46,13 +46,11 @@ import {
   serializeCSVWorkerResult
 } from './lib/csv-worker-transport';
 
-const {preload: _CSVLoaderPreload, ...CSVLoaderMetadataWithoutPreload} = CSVLoaderMetadata;
-
 export type {CSVLoaderOptions} from './csv-loader-types';
 
 /** Loader for CSV and other delimiter-separated tabular text formats. */
 export const CSVLoaderWithParser = {
-  ...CSVLoaderMetadataWithoutPreload,
+  ...CSVLoaderDefinition,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     getCSVShape(options) === 'arrow'
       ? parseCSVArrayBufferAsArrow(arrayBuffer, options)

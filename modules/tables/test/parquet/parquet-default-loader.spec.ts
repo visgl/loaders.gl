@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {expect, test} from 'vitest';
-import {encode, parse, load} from '@loaders.gl/core';
+import {expect, test, vi} from 'vitest';
+import {encode, parse, parseInBatches, load} from '@loaders.gl/core';
 import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
@@ -14,6 +14,26 @@ async function createRowGroups(): Promise<ArrayBuffer> {
     parquet: {rowGroupSize: 2}
   });
 }
+
+test('Parquet starts a module worker for atomic and batched Arrow reads', async () => {
+  const implementation = await ParquetLoader.preload();
+  const loadWorker = vi.fn(implementation.loadWorker);
+  const loader = {...ParquetLoader, preload: async () => ({...implementation, loadWorker})};
+  const table = await parse(await createRowGroups(), loader, {core: {worker: true, _workerType: 'classic'}});
+  expect(table).toBeInstanceOf(arrow.Table);
+  expect(table).toMatchObject({numRows: 4});
+
+  const batches = await parseInBatches([await createRowGroups()], loader, {
+    core: {worker: true, _workerType: 'classic'}
+  });
+  const rows: number[] = [];
+  for await (const batch of batches) {
+    expect(batch).toBeInstanceOf(arrow.RecordBatch);
+    rows.push(...batch.getChild('id')!);
+  }
+  expect(rows).toEqual([0, 1, 2, 3]);
+  expect(loadWorker).toHaveBeenCalled();
+});
 
 test('ParquetLoader selects row groups in caller order before offset and limit', async () => {
   const data = await createRowGroups();

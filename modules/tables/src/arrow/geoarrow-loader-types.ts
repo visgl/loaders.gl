@@ -2,56 +2,29 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table as NativeArrowTable, RecordBatch} from 'apache-arrow';
-import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/core/schema';
-import {ARROW_WORKER_URL} from './arrow-worker-url';
-import {ArrowLoader} from './arrow-loader-types';
+import {GeoArrowLoaderDefinition} from './geoarrow-loader-definition';
 
-/** GeoArrow loader options. */
-export type GeoArrowLoaderOptions = LoaderOptions & {
-  arrow?: {
-    shape?: 'arrow' | 'geojson-table' | 'binary-geometry';
-  };
-};
+export type {GeoArrowLoaderOptions} from './geoarrow-loader-definition';
 
 /** Preloads the parser-bearing GeoArrow loader implementation. */
 async function preload() {
   const {GeoArrowLoaderWithParser} = await import('@loaders.gl/tables/geoarrow');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
   await preloadArrowCompressionDecoders();
-  return GeoArrowLoaderWithParser;
+  return {...GeoArrowLoaderWithParser, loadWorker: loadGeoArrowWorker};
 }
 
-const {
-  testURL: _testURL,
-  fromUrl: _fromUrl,
-  fromBlob: _fromBlob,
-  type: _type,
-  ...arrowParserMetadata
-} = ArrowLoader;
+/** Starts the browser module worker for GeoArrow decoding. */
+function loadGeoArrowWorker(): Worker | null {
+  if (typeof Worker !== 'undefined') {
+    return new Worker(new URL('./workers/geoarrow-worker.js', import.meta.url), {type: 'module'});
+  }
+  return null;
+}
 
-/** Metadata-only GeoArrow loader. */
+/** Metadata-only GeoArrow loader with an on-demand browser worker. */
 export const GeoArrowLoader = {
-  ...arrowParserMetadata,
-  batchType: null as unknown as RecordBatch,
-  dataType: null as unknown as GeoJSONTable | NativeArrowTable,
-  format: 'geoarrow',
-  worker:
-    typeof ARROW_WORKER_URL === 'string'
-      ? ARROW_WORKER_URL.replace('arrow-worker-node.cjs', 'geoarrow-worker-node.cjs')
-      : ARROW_WORKER_URL,
-  workerFile: 'geoarrow-worker.js',
-  workerNode: 'geoarrow-worker-node.cjs',
-  workerSourceNode: 'arrow/workers/geoarrow-worker.ts',
-  options: {
-    arrow: {
-      shape: 'arrow'
-    }
-  },
+  ...GeoArrowLoaderDefinition,
+  loadWorker: loadGeoArrowWorker,
   preload
-} as const satisfies Loader<
-  GeoJSONTable | NativeArrowTable,
-  GeoJSONTableBatch | RecordBatch,
-  GeoArrowLoaderOptions
->;
+} as const;

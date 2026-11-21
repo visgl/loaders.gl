@@ -231,7 +231,7 @@ Supports table category options such as `batchType` and `batchSize`.
 | `parquet.rowGroups` | `number[]` | `undefined` | Read the listed zero-based row groups in the requested order. |
 | `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for the explicit WASM reader; accepted but unused by the sequential TypeScript loader. |
 | `parquet.signal` | `AbortSignal` | `undefined` | Cancels worker-backed parsing by terminating its active worker. |
-| `parquet.workerUrl` | `string` | package-local asset | Overrides the packaged worker URL. |
+| `parquet.workerUrl` | `string` | module worker | Overrides the default worker with a custom URL. |
 | `parquet.keyRetriever` | `ParquetKeyRetriever` | `undefined` | Resolves keys for modular-encrypted files. |
 | `parquet.aadPrefix` | `Uint8Array` | `undefined` | Supplies the AAD prefix for encrypted files that omit it from their crypto metadata. |
 | `parquet.int96AsTimestamp` | `boolean` | `false` for object rows, `true` for TypeScript Arrow output | Decodes legacy INT96 physical values as signed epoch-nanosecond timestamps. |
@@ -296,4 +296,4 @@ website’s alternate ParquetJS and WASM readers, and hyparquet.
 
 - The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
 
-The package publishes `parquet-worker.js` for TypeScript decoding. Set `parquet.workerUrl` when serving the worker from a custom location. Alternative WASM readers live in unpublished website benchmark support.
+In browser ESM builds, the application bundler resolves the Parquet module worker from the loader package. Set `parquet.workerUrl` to serve a prebuilt worker from a custom location. Node uses the packaged Node worker.

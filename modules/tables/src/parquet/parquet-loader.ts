@@ -29,13 +29,10 @@ import {
   deserializeParquetWorkerResult,
   serializeParquetWorkerResult
 } from './lib/parquet-worker-transport';
-import {ParquetLoader as ParquetLoaderMetadata} from './parquet-loader-types';
+import {ParquetLoaderDefinition} from './parquet-loader-definition';
 import type {ParquetLoaderOptions} from './parquet-loader-options';
 
 export type {ParquetLoaderOptions} from './parquet-loader-options';
-
-const {preload: _ParquetLoaderPreload, ...ParquetLoaderMetadataWithoutPreload} =
-  ParquetLoaderMetadata;
 
 /** Selects Arrow decoding when the core caller requests object rows. */
 function getArrowDecodeOptions(options: StrictLoaderOptions): StrictLoaderOptions | null {
@@ -47,7 +44,7 @@ function getArrowDecodeOptions(options: StrictLoaderOptions): StrictLoaderOption
 
 /** TypeScript-backed Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoaderWithParser = {
-  ...ParquetLoaderMetadataWithoutPreload,
+  ...ParquetLoaderDefinition,
   /** Decodes Arrow for core object-row requests and materializes rows at the caller boundary. */
   prepareParseOutput(options: StrictLoaderOptions) {
     const decodeOptions = getArrowDecodeOptions(options);
