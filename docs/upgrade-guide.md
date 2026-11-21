@@ -29,7 +29,8 @@ Install the grouped npm package and use its format subpath. For example, replace
 
 | v4 packages | v5 entry points |
 | --- | --- |
-| `arrow`, `csv`, `geoarrow`, `json`, `parquet` | [`@loaders.gl/tables`](./modules/tables/README.md) with the matching format suffix |
+| `arrow`, `csv`, `json`, `parquet` | [`@loaders.gl/tables`](./modules/tables/README.md) with the matching format suffix |
+| `geoarrow` utilities | [`@loaders.gl/core/geoarrow`](./modules/core/geoarrow/README.md) |
 | `bson`, `xml` | [`@loaders.gl/documents`](./modules/documents/README.md) with the matching format suffix |
 | `flatgeobuf`, `geopackage`, `kml`, `shapefile`, `wkt` | [`@loaders.gl/geospatial`](./modules/geospatial/README.md) with the matching format suffix |
 | `las`, `pcd`, `ply` | [`@loaders.gl/pointclouds`](./modules/pointclouds/README.md) with the matching format suffix |
@@ -42,6 +43,8 @@ Install the grouped npm package and use its format subpath. For example, replace
 | `wms` | [`@loaders.gl/ogc/wms`](./modules/ogc/wms/README.md) |
 | `zip` | [`@loaders.gl/archives/zip`](./modules/archives/zip/README.md) |
 | `loader-utils`, `polyfills`, `schema`, `schema-utils`, `worker-utils` | [`@loaders.gl/core`](./modules/core/README.md) with the matching suffix |
+
+The GeoArrow IPC loader and writer are available from `@loaders.gl/tables/geoarrow`.
 
 ### Format entry points
 
