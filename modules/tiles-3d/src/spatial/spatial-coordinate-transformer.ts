@@ -7,7 +7,6 @@ import {Vector3} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial';
 import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
 import type {Projection} from '@math.gl/geospatial/projection';
-import {ProjectionBuffer} from '@math.gl/geospatial/projection/bulk';
 import {getGeoidModel, getSpatialProjectionEngine} from './spatial-resource-registry';
 import {
   normalizeCrsIdentifier,
@@ -35,9 +34,6 @@ export class SpatialCoordinateTransformer {
 
   /** Projection from the source CRS directly to the requested horizontal target CRS. */
   private readonly horizontalProjection?: Projection;
-
-  /** Reusable packed xyz projection for horizontal-only coordinate batches. */
-  private readonly horizontalProjectionBuffer?: ProjectionBuffer;
 
   /** Projection from the source CRS to geographic longitude, latitude, and ellipsoidal height. */
   private readonly geographicProjection?: Projection;
@@ -87,12 +83,6 @@ export class SpatialCoordinateTransformer {
         to: getHorizontalProjectionDefinition(spatialReference.targetCrs),
         enforceAxis: false
       });
-      if (!requiresHeightTransformation(spatialReference)) {
-        this.horizontalProjectionBuffer = new ProjectionBuffer({
-          projection: this.horizontalProjection,
-          dimension: 3
-        });
-      }
     }
 
     if (
@@ -176,14 +166,11 @@ export class SpatialCoordinateTransformer {
       throw new Error('Packed spatial positions must contain a multiple of three components');
     }
     const transformedPositions = new Float64Array(positions.length);
-    if (this.horizontalProjectionBuffer) {
+    if (this.horizontalProjection && !requiresHeightTransformation(this.spatialReference)) {
       transformedPositions.set(positions);
       // The bulk API rejects nonfinite ordinates; preserve scalar behavior for those inputs.
       if (transformedPositions.every(Number.isFinite)) {
-        return this.horizontalProjectionBuffer.projectFlatTo(
-          transformedPositions,
-          transformedPositions
-        );
+        return this.horizontalProjection.projectFlatSync(transformedPositions, 3);
       }
     }
     for (let index = 0; index < positions.length; index += 3) {

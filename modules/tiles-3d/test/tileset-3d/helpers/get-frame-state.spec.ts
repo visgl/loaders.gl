@@ -18,7 +18,7 @@ import {
 } from '@deck.gl/core';
 import type {CustomProjectionViewportOptions} from '@deck.gl/core';
 import {projectionEngine} from '@math.gl/geospatial/projection';
-import type {CRSDescriptor} from '@math.gl/geospatial/projection/core';
+import type {CRSDescriptor} from '@math.gl/geospatial/crs';
 import {equals, Matrix4, radians, Vector3} from '@math.gl/core/matrix';
 import {Ellipsoid, makeOBBFromRegion} from '@math.gl/geospatial';
 const EPSILON = 1e-5;
