@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {MeshAttribute, MeshAttributes} from '@loaders.gl/core/schema';
+import {rankDracoMeshVertices} from './rank-draco-mesh-vertices';
 
 /**
  * Compares the named packed, finite vertex attributes at valid triangle indices.
@@ -24,6 +25,10 @@ export function hasSameDracoMeshTriangles(
 
   const sourceAttributes = names.filter(name => source[name]).map(name => source[name]);
   const decodedAttributes = names.filter(name => decoded[name]).map(name => decoded[name]);
+  const ranks = getVertexRanks(sourceAttributes, sourceIndices.length / 3, decodedAttributes);
+  if (ranks) {
+    return haveSameRankedTriangles(ranks[0], sourceIndices, ranks[1], decodedIndices);
+  }
   const first = getTriangleOrder(sourceAttributes, sourceIndices);
   const second = getTriangleOrder(decodedAttributes, decodedIndices);
   for (let triangle = 0; triangle < first.length; triangle++) {
@@ -85,4 +90,63 @@ function compareTriangles(
     }
   }
   return 0;
+}
+
+/** Ranks only large meshes with a bounded number of vertices relative to the face count. */
+function getVertexRanks(
+  source: MeshAttribute[],
+  triangleCount: number,
+  decoded: MeshAttribute[]
+): [Uint32Array, Uint32Array] | null {
+  // Bound the extra Float64 face-order buffers to 16 MiB total.
+  if (triangleCount < 65_536 || triangleCount > 1_048_576 || !source.length) return null;
+  const sourceCount = source[0].value.length / source[0].size;
+  const decodedCount = decoded[0].value.length / decoded[0].size;
+  // Three ranks in this radix must fit exactly in a JavaScript safe integer.
+  if ((sourceCount + 1) ** 3 > 2 ** 53 || sourceCount + decodedCount > triangleCount * 3) {
+    return null;
+  }
+  if (
+    !Number.isInteger(sourceCount) ||
+    !Number.isInteger(decodedCount) ||
+    source.some(attribute => attribute.value.length !== sourceCount * attribute.size) ||
+    decoded.some(attribute => attribute.value.length !== decodedCount * attribute.size)
+  )
+    return null;
+  return rankDracoMeshVertices(source, sourceCount, decoded, decodedCount);
+}
+
+/** Compares packed, exactly representable rank triples with a numeric typed-array sort. */
+function haveSameRankedTriangles(
+  sourceRanks: Uint32Array,
+  sourceIndices: ArrayLike<number>,
+  decodedRanks: Uint32Array,
+  decodedIndices: ArrayLike<number>
+): boolean {
+  const radix = sourceRanks.length + 1;
+  const first = sortRankedTriangles(sourceRanks, sourceIndices, radix);
+  const second = sortRankedTriangles(decodedRanks, decodedIndices, radix);
+  return Boolean(first && second && first.every((triangle, index) => triangle === second[index]));
+}
+
+/** Packs the smallest cyclic rotation of each oriented rank triple into one exact integer. */
+function sortRankedTriangles(
+  ranks: Uint32Array,
+  indices: ArrayLike<number>,
+  radix: number
+): Float64Array | null {
+  const triangles = new Float64Array(indices.length / 3);
+  const radixSquared = radix * radix;
+  for (let index = 0; index < indices.length; index += 3) {
+    const first = ranks[indices[index]];
+    const second = ranks[indices[index + 1]];
+    const third = ranks[indices[index + 2]];
+    if (!first || !second || !third) return null;
+    triangles[index / 3] = Math.min(
+      first * radixSquared + second * radix + third,
+      second * radixSquared + third * radix + first,
+      third * radixSquared + first * radix + second
+    );
+  }
+  return triangles.sort();
 }
