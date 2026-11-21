@@ -28,18 +28,15 @@ import {
 } from './lib/parsers/convert-row-table-to-arrow';
 import type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-types';
 import {
-  JSONTableLoader as JSONTableLoaderMetadata,
+  JSONTableLoaderDefinition,
   type JSONTableLoaderOptions
-} from './json-table-loader-types';
-
-const {preload: _JSONTableLoaderPreload, ...JSONTableLoaderMetadataWithoutPreload} =
-  JSONTableLoaderMetadata;
+} from './json-table-loader-definition';
 
 /**
  * Parser-bearing loader for JSON documents that must resolve to loaders.gl table output.
  */
 export const JSONTableLoaderWithParser = {
-  ...JSONTableLoaderMetadataWithoutPreload,
+  ...JSONTableLoaderDefinition,
   serializeWorkerOptions: serializeJSONWorkerOptions,
   serializeWorkerResult: serializeJSONWorkerBatch,
   deserializeWorkerResult: deserializeJSONWorkerResult,

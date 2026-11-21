@@ -40,22 +40,13 @@ import {
   convertGeoJSONFeaturesToArrowTable,
   normalizeJSONArrowSchema
 } from './lib/parsers/convert-row-table-to-arrow';
-import {
-  GeoJSONLoader as GeoJSONWorkerLoaderMetadata,
-  GeoJSONLoader as GeoJSONLoaderMetadata,
-  type GeoJSONLoaderOptions
-} from './geojson-loader-types';
-
-const {preload: _GeoJSONWorkerLoaderPreload, ...GeoJSONWorkerLoaderMetadataWithoutPreload} =
-  GeoJSONWorkerLoaderMetadata;
-const {preload: _GeoJSONLoaderPreload, ...GeoJSONLoaderMetadataWithoutPreload} =
-  GeoJSONLoaderMetadata;
+import {GeoJSONLoaderDefinition, type GeoJSONLoaderOptions} from './geojson-loader-definition';
 
 /** GeoJSON worker loader with parser metadata. */
 export const GeoJSONWorkerLoaderWithParser = {
   serializeWorkerResult: serializeGeoJSONWorkerResult,
   deserializeWorkerResult: deserializeGeoJSONWorkerResult,
-  ...GeoJSONWorkerLoaderMetadataWithoutPreload
+  ...GeoJSONLoaderDefinition
 } as const satisfies Loader<
   GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   TableBatch | ArrowTableBatch,
@@ -67,7 +58,7 @@ export const GeoJSONLoaderWithParser = {
   serializeWorkerOptions: serializeJSONWorkerOptions,
   serializeWorkerResult: serializeGeoJSONWorkerResult,
   deserializeWorkerResult: deserializeGeoJSONWorkerResult,
-  ...GeoJSONLoaderMetadataWithoutPreload,
+  ...GeoJSONLoaderDefinition,
   parse,
   parseTextSync,
   parseInBatches,
