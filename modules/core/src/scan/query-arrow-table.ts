@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {queryArrowTable as executeMathArrowQuery} from '@math.gl/sql/query';
 import {filterArrowTable, projectArrowTable} from './arrow-execution';
 import {
   compareArrowQueryNumbers as compareNumbers,
@@ -306,70 +307,26 @@ function hasRelationalOperatorsExceptJoin(options: ArrowQueryOptions): boolean {
   );
 }
 
-/** Executes a bounded nested-loop equi-join for small in-memory Arrow proof-of-concept tables. */
+/** Resolves child inputs and delegates the residual equijoin to math.gl. */
 function queryArrowJoin(sourceTable: arrow.Table, options: ArrowQueryOptions): arrow.Table {
   const join = options.join;
   if (!join) throw new Error('Arrow join query is missing a join definition.');
   const childTable = options.tables?.[join.child.source];
   if (!childTable) throw new Error(`Arrow join source not found: ${join.child.source}`);
-  const leftResult = queryArrowTable(sourceTable, {
+  const left = queryArrowTable(sourceTable, {
     predicate: options.predicate,
-    columns: undefined,
     signal: options.signal
   });
-  const rightResult = queryArrowTable(childTable, {
-    ...(join.child.query || {}),
+  const right = queryArrowTable(childTable, {
+    ...join.child.query,
     signal: options.signal
   });
-  const leftRows = arrowTableToRows(leftResult);
-  const rightRows = arrowTableToRows(rightResult);
-  const rightPrefix = `${join.child.source}.`;
-  const defaultOutputColumns = [
-    ...sourceTable.schema.fields.map(field => field.name),
-    ...rightResult.schema.fields.map(field => `${rightPrefix}${field.name}`)
-  ];
-  const rows: Record<string, unknown>[] = [];
-  for (const leftRow of leftRows) {
-    for (const rightRow of rightRows) {
-      if (
-        leftRow[join.left] !== null &&
-        leftRow[join.left] !== undefined &&
-        rightRow[join.right] !== null &&
-        rightRow[join.right] !== undefined &&
-        compareSortValues(leftRow[join.left], rightRow[join.right]) === 0
-      ) {
-        rows.push({
-          ...leftRow,
-          ...Object.fromEntries(
-            Object.entries(rightRow).map(([key, value]) => [`${rightPrefix}${key}`, value])
-          )
-        });
-      }
-    }
-  }
-  const outputColumns = options.columns || defaultOutputColumns;
-  const outputRows = rows.map(row =>
-    Object.fromEntries(outputColumns.map(column => [column, row[column]]))
-  );
-  const limitedRows = outputRows.slice(0, options.limit);
-  return limitedRows.length
-    ? convertRowsToArrowTable(limitedRows)
-    : createEmptyRelationalResult(
-        sourceTable,
-        outputColumns,
-        options,
-        new Map(
-          rightResult.schema.fields.map(field => [
-            `${rightPrefix}${field.name}`,
-            new arrow.Field(
-              `${rightPrefix}${field.name}`,
-              field.type,
-              field.nullable,
-              field.metadata
-            )
-          ])
-        )
-      );
+  return executeMathArrowQuery(left, {
+    join: {table: right, left: join.left, right: join.right, rightPrefix: `${join.child.source}.`},
+    select: options.columns,
+    limit: options.limit,
+    signal: options.signal
+  });
 }
 
 /** Validates root and child projections before dispatching to the join executor. */
@@ -542,8 +499,7 @@ function serializeGroupKey(values: readonly unknown[]): string {
 function createEmptyRelationalResult(
   sourceData: arrow.Table,
   outputColumns: readonly string[],
-  options: ArrowQueryOptions,
-  additionalFields?: ReadonlyMap<string, arrow.Field>
+  options: ArrowQueryOptions
 ): arrow.Table {
   const sourceFields = new Map(sourceData.schema.fields.map(field => [field.name, field]));
   const expressions = new Map(
@@ -555,8 +511,6 @@ function createEmptyRelationalResult(
   const fields = outputColumns.map(columnName => {
     const sourceField = sourceFields.get(columnName);
     if (sourceField) return sourceField;
-    const additionalField = additionalFields?.get(columnName);
-    if (additionalField) return additionalField;
     const expression = expressions.get(columnName);
     if (expression)
       return new arrow.Field(columnName, getExpressionType(expression, sourceFields), true);
