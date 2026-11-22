@@ -15,6 +15,7 @@ import {
   validateMeshGeometry
 } from './mesh.js';
 
+import {hasSameDracoPositions} from './mesh-draco-positions.js';
 import {prepareMeshFeatureGeometry, encodeMeshFeatures} from './mesh-features.js';
 
 const DRACO_EXTENSION = 'KHR_draco_mesh_compression';
@@ -62,18 +63,12 @@ export async function encodeDracoMeshTile(
     );
   }
   // Lossy quantization is deliberately unavailable in this initial profile.
-  const inputPositions = geometry.attributes.POSITION.value;
-  const positionKeys = new Set<string>();
-  for (let index = 0; index < inputPositions.length; index += 3) {
-    positionKeys.add(getPositionKey(inputPositions, index));
-  }
-  for (let index = 0; index < positions.length; index += 3) {
-    if (!positionKeys.has(getPositionKey(positions, index))) {
-      throw new TileConversionError(
-        'MESH_DRACO_POSITION_CHANGED',
-        'Lossless Draco must preserve the encoded Float32 positions'
-      );
-    }
+  const inputPositions = geometry.attributes.POSITION.value as Float32Array;
+  if (!hasSameDracoPositions(inputPositions, positions)) {
+    throw new TileConversionError(
+      'MESH_DRACO_POSITION_CHANGED',
+      'Lossless Draco must preserve the encoded Float32 positions'
+    );
   }
   const attributeNames = Object.keys(geometry.attributes);
   if (
@@ -159,9 +154,4 @@ export async function encodeDracoMeshTile(
   encodeMeshFeatures(scenegraph, 0, options.features);
   scenegraph.registerRequiredExtension(DRACO_EXTENSION);
   return {glb: finalizeMeshTileScenegraph(scenegraph, 0), positions};
-}
-
-/** Identifies one exact finite Float32 position independently of Draco vertex ordering. */
-function getPositionKey(positions: ArrayLike<number>, index: number): string {
-  return `${positions[index]},${positions[index + 1]},${positions[index + 2]}`;
 }
