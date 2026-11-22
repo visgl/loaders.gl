@@ -55,14 +55,14 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 For CLI
 
 ```bash
-npm install @loaders.gl/tile-converter
+npm install @loaders.gl/tile-converter@beta
 ```
 
 For API
 
 ```bash
-npm install @loaders.gl/core
-npm install @loaders.gl/tile-converter
+npm install @loaders.gl/core@beta
+npm install @loaders.gl/tile-converter@beta
 ```
 
 ## Choose a workflow
