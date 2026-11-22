@@ -595,3 +595,31 @@ test('implicit subtree loading retries after a failed request', async () => {
   expect(requestCount).toBe(2);
   expect(tile.childrenState).toBe('ready');
 });
+
+test('sparse implicit metadata ranks stay aligned across availability bytes', () => {
+  const descriptor = createDescriptor({
+    subtreeLevels: 3,
+    contentUrlTemplate: 'https://example.com/content/{name}.glb'
+  });
+  // Tiles 0–4, 7, 8, 10 and 20 exist. Only tiles 0, 8 and 20 have content.
+  const subtree: ParsedImplicitSubtree = {
+    tileAvailability: {explicitBitstream: new Uint8Array([0x9f, 0x05, 0x10])},
+    contentAvailability: {explicitBitstream: new Uint8Array([0x01, 0x01, 0x10])},
+    childSubtreeAvailability: {constant: 0},
+    tileAttributes: {TILE_GEOMETRIC_ERROR: Uint8Array.of(10, 11, 12, 13, 14, 15, 16, 17, 18)},
+    contentTemplatePropertyRows: [{name: 'root'}, {name: 'byte-boundary'}, {name: 'last'}]
+  };
+  const {root, tileCount} = materializeImplicitSubtree(
+    subtree,
+    createImplicitSubtreeReference(descriptor, {level: 0, x: 0, y: 0, z: 0})
+  );
+  const [beforeBoundary, atBoundary] = root.children[0].children;
+  const last = root.children[3].children[0];
+  expect(tileCount).toBe(9);
+  expect(beforeBoundary.geometricError).toBe(15);
+  expect(beforeBoundary.contentUrl).toBeFalsy();
+  expect(atBoundary.geometricError).toBe(16);
+  expect(atBoundary.contentUrl).toBe('https://example.com/content/byte-boundary.glb');
+  expect(last.geometricError).toBe(18);
+  expect(last.contentUrl).toBe('https://example.com/content/last.glb');
+});
