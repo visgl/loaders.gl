@@ -255,8 +255,13 @@ test('Tile3D#recomputes geometric error without compounding transform scale', ()
   const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
   tile._updateTransform(new Matrix4().scale([2, 2, 2]));
   expect(tile.lodMetricValue, 'applies the first transform scale').toBe(2);
+  const firstTransform = tile.computedTransform;
+  tile._updateTransform(new Matrix4().scale([2, 2, 2]));
+  expect(tile.computedTransform).toBe(firstTransform);
   tile._updateTransform(new Matrix4().scale([4, 4, 4]));
   expect(tile.lodMetricValue, 'recomputes from the source error after a scale change').toBe(4);
+  expect(tile.computedTransform).not.toBe(firstTransform);
+  expect(firstTransform.getScale()).toEqual([2, 2, 2]);
   tile._updateTransform(new Matrix4());
   expect(tile.lodMetricValue, 'returns to the source error when the scale is removed').toBe(1);
 });
