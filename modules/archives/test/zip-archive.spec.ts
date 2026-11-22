@@ -146,6 +146,24 @@ test('streams STORE and DEFLATE with exact CRC and bounded physical reads', asyn
   }
 });
 
+test('complete STORE reads isolate returned buffers and reject short payload reads', async () => {
+  const file = new BlobFile(createZipFixture().buffer);
+  const archive = await openZipArchive(file);
+  archives.push(archive);
+  const entry = (await archive.getEntry('abc.txt'))!;
+  const result = new Uint8Array(await archive.read(entry));
+  expect(result).toEqual(Uint8Array.of(97, 98, 99));
+  result[0] = 0;
+  expect(new Uint8Array(await archive.read(entry))).toEqual(Uint8Array.of(97, 98, 99));
+
+  vi.spyOn(file, 'read').mockResolvedValueOnce(new ArrayBuffer(2));
+  await expect(archive.read(entry)).rejects.toThrow('truncated file read');
+});
+
+test('complete single-chunk STORE reads reject corrupt payloads', async () => {
+  await expect(readFixture({payload: Uint8Array.of(1, 2, 3)})).rejects.toThrow('CRC-32');
+});
+
 test('STORE ranges use exclusive ends and bypass complete-entry budgets', async () => {
   const archive = await open(createZipFixture(), {maxDecodedBytes: 0n, maxCompressedBytes: 0n});
   expect(new TextDecoder().decode(await archive.readRange('abc.txt', {start: 1n, end: 3n}))).toBe(
