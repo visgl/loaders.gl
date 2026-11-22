@@ -1,137 +1,26 @@
 ---
 title: Tile converter build instructions
-description: Build and run the tile converter directly from a repository branch when a published package is not sufficient.
-hide_title: true
-page_style: designed
+description: Build and run the tile converter from a repository checkout.
 ---
 
-import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
-import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/designed-doc';
+# Tile converter build instructions
 
-<DocPageHeader
-  eyebrow="Tile converter / development"
-  title="Run the converter from the source tree."
-  description="Use these instructions when a repository branch contains a fix or capability that is not in the published package yet. Build the modules and workers, then choose the v5 CLI or legacy v4 workflow. The legacy workflow includes its elevation-model installer."
-  tone="blue"
-  meta={['Repository build', 'Latest branch changes', 'Development workflow']}
-  links={[
-    {label: 'Tile converter module', to: '/docs/modules/tile-converter'},
-    {label: 'CLI reference', to: '/docs/modules/tile-converter/cli-reference/tile-converter'},
-    {label: 'Bundle script', to: '/docs/modules/tile-converter/api-reference/tile-converter-bundle'}
-  ]}
-/>
+Build from source to try a change that is ahead of the published package. From the repository
+root, install the workspace dependencies and build the packages, workers, and apps.
 
-<DocOrientation
-  eyebrow="Source-tree workflow"
-  title="Build the exact converter version you need."
-  description="A source build is useful for testing current branch changes or a local patch. Keep the conversion depth bounded when working with a large remote dataset, then validate the generated output with the I3S server or a viewer."
-  tone="blue"
-  items={[
-    {label: 'Checkout', value: 'Clone the repository and select the branch to test.'},
-    {label: 'Build', value: 'Install dependencies and build the required modules.'},
-    {label: 'Prepare', value: 'Install or disable the Earth Gravity Model dependency.'},
-    {label: 'Convert', value: 'Run a bounded conversion and inspect the generated dataset.'}
-  ]}
-/>
-
-<ReferenceBoundary
-  title="Build and run details"
-  description="The detailed guide lists repository setup, build commands, elevation-model options, conversion examples, and local I3S serving steps."
-  tone="blue"
-/>
-
-<p className="badges">
-  <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
-</p>
-
-Following steps are for running converter right on a repository branch. It might be helpful if latest changes from any repository branch are needed. E.g. if latest `master` branch has some important updates in `tile-converter` module or other module that `tile converter` module depends on, a user can run it. It doesn't need to wait for new release.
-
-1. Using [yarn](https://yarnpkg.com/getting-started/install) instead of npm is recommended because it is general practice in vis.gl repos;
-
-2. Clone the repository
-
-```
-git clone git@github.com:visgl/loaders.gl.git
-cd loaders.gl
-```
-
-3. Install dependencies and build modules and workers
-
-```
+```sh
 yarn install
 yarn build
 yarn build-workers
+yarn build-apps
 ```
 
-The Node.js Basis decoder and KTX2 encoder workers are CommonJS `.cjs` bundles. Run
-`yarn build-workers` again after rebuilding modules, which clears their output directories.
-Run `yarn test-tile-converter` to check the converter with local fixtures.
+Run the CLI from the checkout using the same commands as the installed package.
 
-## Run the v5 CLI
-
-The repository build exposes the Node CLI directly:
-
-```bash
-node apps/tile-converter/bin/converter-v5.js inspect ./tileset.json
-node apps/tile-converter/bin/converter-v5.js validate ./tileset.json --resource tile-root-content-0
-node apps/tile-converter/bin/converter-v5.js convert ./tileset.json --resource tile-root-content-0 --output ./converted.3tz
+```sh
+node apps/tile-converter/bin/converter.js --help
+node apps/tile-converter/bin/converter.js inspect ./dataset/tileset.json
 ```
 
-Use content IDs reported by inspection. Add `--preserve-hierarchy` only when explicitly
-selecting every binary content within the qualified hierarchy limits. V5 does not use the
-legacy dependency installer; CRS and height preparation are explicit. See the
-[v5 CLI guide](/docs/modules/tile-converter/cli-reference/tile-converter-v5).
-
-## Run the legacy v4 converter
-
-4. Install default Earth Gravity Model dependency:
-
-```
-npx tile-converter-v4 --install-dependencies
-```
-
-The dependency installer downloads workers and runtime libraries from the matching package version. If a download fails, the error includes the resource URL and HTTP status to help diagnose unavailable artifacts.
-
-You can use custom Earth Gravity Model or disable it using `--egm` option.
-
-5. [Convert some tileset](/docs/modules/tile-converter/cli-reference/tile-converter)
-   Examples:
-
-```
-npx tile-converter-v4 --input-type 3dtiles --tileset ./modules/tiles-3d/test/3d-tiles/data/Batched/BatchedTextured/tileset.json --name BatchedTextured
-npx tile-converter-v4 --input-type 3dtiles --tileset https://assets.ion.cesium.com/29328/tileset.json --name CairoLayer --max-depth 10
-```
-
-Notice "--max-depth" option. It means that the converter will load and convert only first 'n' (10 in example) levels of tiles. Use it for big tilesets when full conversion could take a lot of time. If you want to convert all the tileset, omit this option.
-
-6. I3S layers can be used only as http service. There is local server to handle i3s layer
-
-After conversion there are new i3s layers in output (default: "data") directory. Run it with the local web server:
-
-```
-I3sLayerPath="./data/CairoLayer" DEBUG=i3s-server:* npx i3s-server
-```
-
-7. Show converted layer on a map.
-
-```
-open https://loaders.gl/examples/i3s?url=http://localhost/SceneServer/layers/0
-```
-
-### Advanced
-
-A. To show converted layer in a locally built loaders.gl example.
-
-Run the front-end application from examples
-
-```
-cd examples/website/i3s
-yarn
-MapboxAccessToken=<TOKEN> yarn start-local
-```
-
-B. To run a custom layer in a web-browser manually
-
-```
-http://localhost:8080/?url=http://localhost/layers/0
-```
+See the [CLI reference](../cli-reference/tile-converter-v5.md) for conversion examples, options,
+and limits.

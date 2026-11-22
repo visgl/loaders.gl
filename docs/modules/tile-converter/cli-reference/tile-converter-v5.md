@@ -8,7 +8,7 @@ description: Bounded metadata inspection, selected mesh conversion and target-pr
 The default `tile-converter` command uses the experimental v5 engine. It inspects explicit 3D
 Tiles and converts selected static native-ECEF GLB/B3DM meshes or supported I3S leaf meshes.
 Install `@loaders.gl/tile-converter` to use it; `tile-converter-v5` remains an alias.
-The original flag-based workflow now uses [`tile-converter-v4`](./tile-converter.md).
+The [legacy v4 workflow](./tile-converter.md) is available in earlier releases.
 See the [migration table](../../../upgrade-guide.md#tile-converter-defaults-to-v5) for existing scripts.
 
 ## Native-ECEF source metadata
@@ -313,7 +313,7 @@ Both node pages and legacy node indices reference the shared texture owner.
 All converter commands accept `--version`, which prints the installed package
 version and converter implementation. Legacy invocations print this identity to stderr. V5 includes a `converter`
 identity object in JSON results and errors so both output streams stay parseable.
-`tile-converter` and `tile-converter-v5` identify as `v5`; `tile-converter-v4` identifies as `legacy-v4`.
+`tile-converter` and `tile-converter-v5` identify as `v5`.
 
 For legacy B3DM inputs, SLPK uses one OBJECTID per original batch-table row
 within each selected content placement, including across material nodes.

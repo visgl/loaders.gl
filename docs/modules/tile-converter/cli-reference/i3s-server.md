@@ -71,14 +71,14 @@ npm i @loaders.gl/tile-converter
 Convert 3DTiles tileset to I3S:
 
 ```bash
-npx tile-converter-v4 --install-dependencies
-npx tile-converter-v4 --input-type 3DTILES --tileset /path/to/tileset.json --name NewTileset
+npx tile-converter convert /path/to/tileset.json \
+  --all-contents --output-format slpk --output ./NewTileset.slpk
 ```
 
 ### Start HTTP server
 
 ```bash
-PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./data/NewTileset.slpk" DEBUG=i3s-server:* npx i3s-server
+PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./NewTileset.slpk" DEBUG=i3s-server:* npx i3s-server
 ```
 
 #### The layer should be available on URLs

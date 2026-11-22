@@ -17,8 +17,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   links={[
     {label: 'Tile Converter CLI', to: '/docs/modules/tile-converter/cli-reference/tile-converter'},
     {label: 'Experimental v5 API', to: '/docs/modules/tile-converter/api-reference/v5-conversion'},
-    {label: 'I3S converter API', to: '/docs/modules/tile-converter/api-reference/i3s-converter'},
-    {label: '3D Tiles converter API', to: '/docs/modules/tile-converter/api-reference/3d-tiles-converter'}
+    {label: 'Conversion API', to: '/docs/modules/tile-converter/api-reference/v5-conversion'}
   ]}
 />
 

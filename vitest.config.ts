@@ -164,11 +164,7 @@ const vitestConfiguration = getVitestConfig({
         browser: {enabled: false},
         color: 'blue',
         environment: 'node',
-        exclude: [
-          ...excludePatterns,
-          'apps/tile-converter/test/3d-tiles-converter/helpers/3d-tiles-content-converter.spec.js',
-          'apps/tile-converter/test/3d-tiles-converter/helpers/load-i3s.spec.ts'
-        ],
+        exclude: excludePatterns,
         include: [
           'apps/tile-converter/test/**/*.spec.{ts,js}',
           'test/tile-converter*.node.spec.{ts,js}'

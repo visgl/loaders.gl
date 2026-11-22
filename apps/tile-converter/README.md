@@ -12,12 +12,8 @@ For documentation please visit the [website](https://loaders.gl).
 
 ## Source layout
 
-The original converter implementation lives in `src/v4`, and the newer conversion APIs live in
-`src/v5`. The package root and the `tile-converter` command now use v5. The legacy engine remains
-available through `@loaders.gl/tile-converter/v4` and `tile-converter-v4`; existing `/v5` imports and
-the `tile-converter-v5` command are unchanged aliases. See the [upgrade guide](https://loaders.gl/docs/upgrade-guide#tile-converter-defaults-to-v5)
-to migrate existing scripts. Shared implementation belongs in `src/common` only when it is
-intentionally used by multiple versions.
+The package root and the `tile-converter` command use the v5 implementation in `src/v5`.
+The `/v5` import and `tile-converter-v5` command remain available.
 
 ## Portable core and format adapters
 
@@ -30,7 +26,7 @@ The v5 implementation is split into two entrypoints inside this application:
 
 The existing `/v5` and `/v5/browser` imports remain compatible. The adapters consume the
 same core functions, types and error class. No implementation or dependencies move into
-other packages. The legacy flags are unchanged in `tile-converter-v4`. Node inspection and conversion are available in the default v5 command, described below.
+other packages. Node inspection and conversion are available in the default v5 command, described below.
 
 ## V5 source-backed mesh traversal
 
@@ -343,7 +339,7 @@ on failure/cancellation. Payload reads/copies are at most 64 KiB: one checksum p
 each populated header, then output blocks are read on demand. Inputs and index/directory metadata
 remain in memory; this does not cap total decoding/conversion heap usage.
 
-The legacy v4 I3S converter already writes **SLPK** archives. Portable v5 SLPK output requires
+Portable SLPK output requires
 an I3S scene-layer writer and its node/resource layout; a 3D Tiles package cannot be saved as
 SLPK merely by changing its extension.
 
