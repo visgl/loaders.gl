@@ -88,7 +88,7 @@ test('preserves prototype methods and receiver when loading class backends', asy
       return {} as never;
     }
   }
-  registerScanBackend('class-backend', () => new ClassBackend());
+  registerScanBackend('class-backend', new ClassBackend());
   const engine = await createScanEngine({backend: 'class-backend'});
   const table = makeArrowTable({value: [1]});
   expect(engine.query(table)).toBe(table);
