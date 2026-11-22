@@ -11,11 +11,11 @@ archives. It writes a 3D Tiles directory, a 3TZ archive or an SLPK package. See 
 [supported features](./supported-features.md) for format and mesh restrictions.
 
 ```sh
-npm install -g @loaders.gl/tile-converter
+npm install -g @loaders.gl/tile-converter@beta
 tile-converter --help
 ```
 
-The default command runs v5. `tile-converter-v5` is an alias. For existing scripts,
+Use the `beta` npm tag for the v5 prerelease. The default command runs v5. `tile-converter-v5` is an alias. For existing scripts,
 see the [migration table](../../../upgrade-guide.md#tile-converter-defaults-to-v5)
 and the [original v4 flag reference](./tile-converter.md).
 
@@ -101,6 +101,7 @@ tile tree and the dataset fits that profile.
 | `--max-meshes N` | 64 | Set the content and primitive placement limits for 3D Tiles or 3TZ to SLPK, up to 1,000. |
 | `--max-output-bytes N` | 32 MiB | Bound combined resource bytes and archive bytes independently. Archives can opt in to a larger budget. |
 | `--profile` | Off | Include elapsed stage timings in the convert or validate JSON report. |
+| `--version` | | Print the installed package version and converter implementation. |
 | `--help` | | Show usage. |
 
 Successful operations write JSON to stdout and exit zero. Invalid arguments, unreadable inputs,
@@ -303,36 +304,6 @@ for the source/destination semantic checks.
 SLPK collections share byte-identical encoded texture sets with compatible texture
 profiles across mesh nodes. Geometry, UVs and material definitions remain per mesh.
 Both node pages and legacy node indices reference the shared texture owner.
-
-All converter commands accept `--version`, which prints the installed package
-version and converter implementation. Legacy invocations print this identity to stderr. V5 includes a `converter`
-identity object in JSON results and errors so both output streams stay parseable.
-`tile-converter` and `tile-converter-v5` identify as `v5`; `tile-converter-v4` identifies as `legacy-v4`.
-
-For legacy B3DM inputs, SLPK uses one OBJECTID per original batch-table row
-within each selected content placement, including across material nodes.
-Use `--omit-feature-id` to hide the feature identifier attribute while keeping
-OBJECTID available for picking and queries.
-
-For 3D Tiles to SLPK, add `"i3sFieldNames": {"gml:id": "gml_id"}` alongside
-`schema` in the feature mapping file. Keep the original column name in
-`schema.fields`. The output uses `gml_id` as its field name and `gml:id` as
-its display alias. Output names must be unique ignoring case and cannot use
-the reserved `OBJECTID` name.
-
-Set `"coerceNumericStrings": true` in the feature mapping file to accept
-decimal strings in legacy B3DM batch-table properties declared as integer,
-float32, or float64 columns. Integer strings must contain whole decimal
-digits, with an optional sign. Blank strings, hexadecimal, and floating
-point overflow fail validation. Feature identifiers and null handling follow
-their existing schema rules.
-
-For 3D Tiles to SLPK, a feature mapping can specify
-`"i3sNumericNullValues": {"measuredHeight": -9999}` to replace nulls in a
-nullable `int32` or `float64` column. Use the source field name, even when the
-output field is renamed. Choose a value outside the valid domain and configure
-consumers to treat it as missing. It is stored as an ordinary number in SLPK.
-Without a replacement, numeric nulls fail validation.
 
 For Node 3D Tiles and 3TZ inspection or flat conversion, `--max-documents`
 sets the root and external document placement budget from 1 to 256. The
