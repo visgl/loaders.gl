@@ -209,8 +209,7 @@ jobs:
     runs-on: ubuntu-22.04
     # Vitest blobs contain absolute paths, so match every coverage producer's workspace.
     container:
-      image: mcr.microsoft.com/playwright:v1.59.1-jammy
-      options: --ipc=host
+      image: node:24-bookworm
     timeout-minutes: 10
     steps:
       - name: Checkout code
@@ -281,6 +280,82 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: merged-coverage
+          path: |
+            coverage/
+            test-results/coverage-check.json
+            test-results/coverage-summary.md
+          if-no-files-found: warn
+
+  coverage-reference:
+    name: Compare coverage using the original container
+    needs: [test, slow-tests]
+    runs-on: ubuntu-22.04
+    # Vitest blobs contain absolute paths, so match every coverage producer's workspace.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+      options: --ipc=host
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Enable Corepack / Yarn 4
+        run: |
+          corepack enable
+          corepack prepare yarn@4.17.1 --activate
+
+      - name: Cache Yarn 4 artifacts
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.yarn/berry/cache
+          key: yarn-berry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-berry-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download browser coverage blobs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-blob-headless-*
+          path: .vitest-reports/browser
+          merge-multiple: true
+
+      - name: Download all coverage blobs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-blob-*
+          path: .vitest-reports/all
+          merge-multiple: true
+
+      - name: Merge browser and Node coverage
+        run: yarn vitest --config vitest.config.ts --merge-reports=.vitest-reports/all --coverage --coverage.reportsDirectory=coverage
+
+      - name: Merge browser coverage
+        run: yarn vitest --config vitest.config.ts --merge-reports=.vitest-reports/browser --coverage --coverage.reportsDirectory=coverage/browser
+
+      - name: Enforce per-package coverage ratchets
+        run: yarn test-coverage-check
+
+      - name: Publish package coverage summary
+        if: always()
+        run: yarn test-coverage-summary
+
+      - name: Sanitize lcov for Coveralls
+        run: node ./scripts/sanitize-lcov.mjs coverage/lcov.info
+
+      - name: Upload merged coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reference-coverage
           path: |
             coverage/
             test-results/coverage-check.json
