@@ -257,10 +257,14 @@ function validateImplicitSubtree(
     childSubtreeElementCount,
     'child subtree'
   );
-  const availableTileCount = countAvailableElements(subtree.tileAvailability, tileElementCount);
-  const availableContentCount = contentAvailabilityStreams[0]
-    ? countAvailableElements(contentAvailabilityStreams[0], tileElementCount)
-    : 0;
+  const availableTileCount =
+    subtree.tileAttributes || subtree.tilePropertyRows
+      ? countAvailableElements(subtree.tileAvailability, tileElementCount)
+      : 0;
+  const availableContentCount =
+    (subtree.contentAttributes || subtree.contentPropertyRows) && contentAvailabilityStreams[0]
+      ? countAvailableElements(contentAvailabilityStreams[0], tileElementCount)
+      : 0;
   validateAttributeLengths(subtree.tileAttributes, availableTileCount, 'tile');
   validateAttributeLengths(subtree.contentAttributes, availableContentCount, 'content');
   if (subtree.tilePropertyRows && subtree.tilePropertyRows.length !== availableTileCount) {
@@ -290,19 +294,18 @@ function validateAvailabilityLength(
 
 /** Counts available elements within the meaningful, unpadded part of an availability stream. */
 function countAvailableElements(availability: ImplicitAvailability, elementCount: number): number {
-  if (availability.constant === 1) {
-    return elementCount;
+  if (typeof availability.constant === 'number') {
+    return availability.constant ? elementCount : 0;
   }
-  if (availability.constant === 0) {
-    return 0;
-  }
+  // validateAvailabilityLength has checked that the stream contains all meaningful bits.
+  const bitstream = availability.explicitBitstream!;
+  const fullBytes = Math.floor(elementCount / 8);
   let availableCount = 0;
-  for (let index = 0; index < elementCount; index++) {
-    if (getAvailabilityValue(availability, index)) {
-      availableCount++;
-    }
+  for (let byteIndex = 0; byteIndex < fullBytes; byteIndex++) {
+    availableCount += BYTE_POPULATION_COUNTS[bitstream[byteIndex]];
   }
-  return availableCount;
+  const trailingBitsMask = (1 << (elementCount % 8)) - 1;
+  return availableCount + BYTE_POPULATION_COUNTS[bitstream[fullBytes] & trailingBitsMask];
 }
 
 /** Validates standard subtree attribute accessor counts after availability expansion. */
