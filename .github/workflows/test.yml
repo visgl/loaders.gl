@@ -415,9 +415,6 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Temporary hosted gate failure probe
-        run: exit 1
-
       - name: Checkout code
         uses: actions/checkout@v7
 

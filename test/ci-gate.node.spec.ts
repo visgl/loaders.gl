@@ -7,6 +7,9 @@ import {parse} from 'yaml';
 import {checkResults} from '../scripts/ci-gate.mjs';
 
 const workflow = readFileSync(new URL('../.github/workflows/test.yml', import.meta.url), 'utf8');
+const {jobs} = parse(workflow);
+const gate = jobs['required-ci'];
+
 test('the aggregate gate rejects failed, cancelled, missing and unexpectedly skipped jobs', () => {
   for (const eventName of [
     'pull_request',
@@ -16,14 +19,7 @@ test('the aggregate gate rejects failed, cancelled, missing and unexpectedly ski
     'workflow_dispatch'
   ]) {
     const needs: Record<string, {result?: string}> = Object.fromEntries(
-      [
-        'build',
-        'test',
-        'slow-tests',
-        'tile-converter-tests',
-        'website-build',
-        'external-tests'
-      ].map(name => [
+      gate.needs.map((name: string) => [
         name,
         {
           result:
@@ -51,8 +47,6 @@ test('the aggregate gate rejects failed, cancelled, missing and unexpectedly ski
 });
 test('merge groups run the same workflow and required gate without PR-only guards', () => {
   expect(workflow).toMatch(/merge_group:\n    types: \[checks_requested\]/);
-  const {jobs} = parse(workflow);
-  const gate = jobs['required-ci'];
   expect(gate.name).toBe('Required CI');
   expect(gate.if).toBe('always()');
   expect([...gate.needs].sort()).toEqual(
