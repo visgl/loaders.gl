@@ -18,7 +18,7 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import {ARROW_TABLE_QUERY_CAPABILITIES} from './table-query-capabilities';
-import {explainArrowTableQuery, queryArrowTable, type ArrowQueryOptions} from './query-arrow-table';
+import {explainArrowTableQuery, type ArrowQueryOptions} from './plan-arrow-table-query';
 import {type SQLPredicate} from './sql-predicate-types';
 
 /** Shared display and provenance options for an addressed vector-table scan. */
@@ -106,6 +106,7 @@ export abstract class AddressedVectorTableScanSource {
   /** Applies the portable Arrow query to the addressed feature table. */
   async query(options: ArrowQueryOptions = {}): Promise<Table> {
     const table = await this.getTable(options.signal);
+    const {queryArrowTable} = await import('./query-arrow-table');
     return queryArrowTable(table, options);
   }
 

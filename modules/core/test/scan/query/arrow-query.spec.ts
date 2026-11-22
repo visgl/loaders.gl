@@ -628,3 +628,24 @@ function makeArrowTable(columns: Record<string, readonly unknown[]>): arrow.Tabl
 function toRows(table: arrow.Table): Record<string, unknown>[] {
   return table.toArray().map(row => row?.toJSON() ?? {});
 }
+
+test('residual Arrow joins preserve column types and filter the child before joining', () => {
+  const source = makeArrowTable({id: [2, 1, 2]});
+  const lookup = arrow.tableFromArrays({
+    id: Int32Array.of(2, 1, 2),
+    count: Int16Array.of(10, 20, 30)
+  });
+  const result = queryArrowTable(source, {
+    columns: ['lookup.count'],
+    join: {
+      child: {source: 'lookup', query: {predicate: parseSQLPredicate('count >= 20')}},
+      left: 'id',
+      right: 'id'
+    },
+    tables: {lookup},
+    limit: 2
+  });
+
+  expect(result.getChild('lookup.count')!.type.toString()).toBe('Int16');
+  expect(Array.from(result.getChild('lookup.count')!)).toEqual([30, 20]);
+});
