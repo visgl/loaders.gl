@@ -209,8 +209,7 @@ jobs:
     runs-on: ubuntu-22.04
     # Vitest blobs contain absolute paths, so match every coverage producer's workspace.
     container:
-      image: mcr.microsoft.com/playwright:v1.59.1-jammy
-      options: --ipc=host
+      image: node:24-bookworm
     timeout-minutes: 10
     steps:
       - name: Checkout code
