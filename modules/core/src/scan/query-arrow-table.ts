@@ -52,7 +52,13 @@ export type ArrowQueryOptions = TableQueryOptions &
     /** Additional Arrow tables concatenated in source order before relational operators. */
     union?: readonly ArrowChildQuery[];
     /** Optional equi-join against a table supplied in `tables`. */
-    join?: Readonly<{child: ArrowChildQuery; left: string; right: string}>;
+    join?: Readonly<{
+      /** Keep unmatched root rows with null child columns when set to left. */
+      type?: 'inner' | 'left';
+      child: ArrowChildQuery;
+      left: string;
+      right: string;
+    }>;
     /** Named in-memory child tables used by union and join operators. */
     tables?: Readonly<Record<string, arrow.Table>>;
   }>;
@@ -328,8 +334,14 @@ function queryArrowJoin(sourceTable: arrow.Table, options: ArrowQueryOptions): a
     ...sourceTable.schema.fields.map(field => field.name),
     ...rightResult.schema.fields.map(field => `${rightPrefix}${field.name}`)
   ];
+  const retainUnmatched = join.type === 'left';
+  const unmatchedFields = Object.fromEntries(
+    rightResult.schema.fields.map(field => [rightPrefix + field.name, null])
+  );
   const rows: Record<string, unknown>[] = [];
   for (const leftRow of leftRows) {
+    options.signal?.throwIfAborted();
+    const previousLength = rows.length;
     for (const rightRow of rightRows) {
       if (
         leftRow[join.left] !== null &&
@@ -346,30 +358,45 @@ function queryArrowJoin(sourceTable: arrow.Table, options: ArrowQueryOptions): a
         });
       }
     }
+    if (retainUnmatched && previousLength === rows.length) {
+      rows.push({...leftRow, ...unmatchedFields});
+    }
   }
   const outputColumns = options.columns || defaultOutputColumns;
   const outputRows = rows.map(row =>
     Object.fromEntries(outputColumns.map(column => [column, row[column]]))
   );
   const limitedRows = outputRows.slice(0, options.limit);
-  return limitedRows.length
-    ? convertRowsToArrowTable(limitedRows)
-    : createEmptyRelationalResult(
-        sourceTable,
-        outputColumns,
-        options,
-        new Map(
-          rightResult.schema.fields.map(field => [
-            `${rightPrefix}${field.name}`,
-            new arrow.Field(
-              `${rightPrefix}${field.name}`,
-              field.type,
-              field.nullable,
-              field.metadata
-            )
-          ])
+  if (limitedRows.length && !retainUnmatched) {
+    return convertRowsToArrowTable(limitedRows);
+  }
+  const empty = createEmptyRelationalResult(
+    sourceTable,
+    outputColumns,
+    options,
+    new Map(
+      rightResult.schema.fields.map(field => [
+        rightPrefix + field.name,
+        field.clone({name: rightPrefix + field.name, nullable: retainUnmatched || field.nullable})
+      ])
+    )
+  );
+  if (!limitedRows.length) {
+    return empty;
+  }
+  const schema = new arrow.Schema(empty.schema.fields, sourceTable.schema.metadata);
+  return new arrow.Table(
+    schema,
+    Object.fromEntries(
+      schema.fields.map(field => [
+        field.name,
+        arrow.vectorFromArray(
+          limitedRows.map(row => row[field.name]),
+          field.type
         )
-      );
+      ])
+    )
+  );
 }
 
 /** Validates root and child projections before dispatching to the join executor. */

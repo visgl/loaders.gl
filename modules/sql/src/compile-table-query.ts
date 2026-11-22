@@ -48,7 +48,13 @@ export type SQLTableQuery = TableQueryOptions &
     /** Additional tables concatenated with `UNION ALL`. */
     union?: readonly SQLChildQuery[];
     /** Optional equi-join child table and key mapping. */
-    join?: Readonly<{child: SQLChildQuery; left: string; right: string}>;
+    join?: Readonly<{
+      /** Keep unmatched root rows with null child columns when set to left. */
+      type?: 'inner' | 'left';
+      child: SQLChildQuery;
+      left: string;
+      right: string;
+    }>;
   }>;
 
 /** Options controlling portable table-query compilation. */
@@ -136,7 +142,8 @@ function compileJoinFromClause(
   const rightRelation = join.child.query
     ? `(${compileTableStatement({tableName: join.child.source, ...join.child.query}, context)})`
     : childTable;
-  return `FROM ${table} JOIN ${rightRelation} AS ${childTable} ON ${table}.${quoteSQLIdentifier(join.left)} = ${childTable}.${quoteSQLIdentifier(join.right)}`;
+  const keyword = join.type === 'left' ? 'LEFT JOIN' : 'JOIN';
+  return `FROM ${table} ${keyword} ${rightRelation} AS ${childTable} ON ${table}.${quoteSQLIdentifier(join.left)} = ${childTable}.${quoteSQLIdentifier(join.right)}`;
 }
 
 /** Compiles the SELECT list, including computed and aggregate output columns. */

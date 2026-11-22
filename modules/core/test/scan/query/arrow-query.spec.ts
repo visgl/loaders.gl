@@ -628,3 +628,25 @@ function makeArrowTable(columns: Record<string, readonly unknown[]>): arrow.Tabl
 function toRows(table: arrow.Table): Record<string, unknown>[] {
   return table.toArray().map(row => row?.toJSON() ?? {});
 }
+
+test('queryArrowTable left join keeps unmatched rows and the right column type', () => {
+  const source = makeArrowTable({id: [2, null, 1]});
+  const lookup = makeArrowTable({id: [2, null, 2], count: [10, 20, 30]});
+  const options = {
+    columns: ['id', 'lookup.count'],
+    join: {type: 'left' as const, child: {source: 'lookup'}, left: 'id', right: 'id'}
+  };
+  const joined = queryArrowTable(source, {...options, tables: {lookup}});
+  expect(toRows(joined)).toEqual([
+    {id: 2, 'lookup.count': 10},
+    {id: 2, 'lookup.count': 30},
+    {id: null, 'lookup.count': null},
+    {id: 1, 'lookup.count': null}
+  ]);
+  const unmatched = queryArrowTable(source, {...options, tables: {lookup: lookup.slice(0, 0)}});
+  expect(unmatched.numRows).toBe(3);
+  expect(unmatched.getChild('lookup.count')!.type.toString()).toBe(
+    lookup.getChild('count')!.type.toString()
+  );
+  expect(Array.from(unmatched.getChild('lookup.count')!)).toEqual([null, null, null]);
+});
