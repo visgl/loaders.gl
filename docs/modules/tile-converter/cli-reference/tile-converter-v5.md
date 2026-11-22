@@ -1,71 +1,36 @@
 ---
 title: Tile-converter v5 CLI
-description: Bounded metadata inspection, selected mesh conversion and target-profile validation.
+description: Inspect, convert and validate 3D Tiles and I3S meshes from the command line.
 ---
 
 # Tile-converter v5 CLI
 
-The default `tile-converter` command uses the experimental v5 engine. It inspects explicit 3D
-Tiles and converts selected static native-ECEF GLB/B3DM meshes or supported I3S leaf meshes.
-Install `@loaders.gl/tile-converter` to use it; `tile-converter-v5` remains an alias.
-The original flag-based workflow now uses [`tile-converter-v4`](./tile-converter.md).
-See the [migration table](../../../upgrade-guide.md#tile-converter-defaults-to-v5) for existing scripts.
+Use `tile-converter` to inspect a tileset, convert selected meshes, or check a conversion
+without writing files. The CLI accepts 3D Tiles JSON, 3TZ archives, I3S layers and SLPK
+archives. It writes a 3D Tiles directory, a 3TZ archive or an SLPK package. See the
+[supported features](./supported-features.md) for format and mesh restrictions.
 
-## Native-ECEF source metadata
-
-For 3D Tiles, the mesh adapter accepts native EPSG:4978 XYZ coordinates in meters with
-ellipsoidal heights. A correctly enclosing WGS84 root `boundingVolume.region` can establish
-the format-default frame. A box/sphere-bounded dataset can instead declare its actual frame
-through an inline metadata class:
-
-```json
-{
-  "schema": {
-    "classes": {
-      "frame": {
-        "properties": {
-          "crs": {"type": "STRING", "semantic": "TILESET_CRS_GEOCENTRIC"}
-        }
-      }
-    }
-  },
-  "metadata": {"class": "frame", "properties": {"crs": "EPSG:4978"}}
-}
+```sh
+npm install -g @loaders.gl/tile-converter
+tile-converter --help
 ```
 
-Add these declaration fields to the existing 3D Tiles 1.1 document; retain its real bounds,
-transforms and contents. Declaring a CRS does not reproject geometry, and coordinates are
-never guessed to be ECEF from their magnitude.
+The default command runs v5. `tile-converter-v5` is an alias. For existing scripts,
+see the [migration table](../../../upgrade-guide.md#tile-converter-defaults-to-v5)
+and the [original v4 flag reference](./tile-converter.md).
 
-The selected class must contain only an explicit `STRING` CRS property and an optional explicit
-`SCALAR` / `FLOAT64` property with semantic `TILESET_CRS_COORDINATE_EPOCH`. Both values
-must agree with the loader's resolved spatial reference. Defaults, arrays, value transforms,
-entity extras/extensions, unresolved/external schemas, duplicate semantics, unrelated
-properties and nonempty `groups` remain outside this profile. They fail with
-`MESH_SOURCE_METADATA_UNSUPPORTED`; `--feature-schema` maps mesh features, not dataset metadata.
-Undeclared or non-ECEF frames remain rejected. Hierarchy-preserving output keeps its separate
-restriction on dataset schemas/metadata; this exception applies to selected mesh conversion. See the
-[mesh source profile](../api-reference/v5-conversion.md#source-mesh-to-i3sslpk) for the other restrictions.
+## Common commands
 
-Use `--name` to name the SLPK layer and `--no-draco` to write raw geometry.
-For 3D Tiles or 3TZ input whose derived heights already represent EGM2008 orthometric
-meters, use `--declare-egm2008-heights` to declare EPSG:3855 in the SLPK. This changes
-layer metadata only. To convert ellipsoidal input instead, pass `--egm2008-grid /path/to/egm2008-5.pgm`.
-Use a local GeographicLib EGM2008 PGM grid up to 128 MiB. The converter subtracts the
-interpolated undulation before encoding positions and building bounds. The two options
-are mutually exclusive. The default is ellipsoidal.
-SLPK package metadata is stored as plain `metadata.json`.
+| Command | What it does |
+| --- | --- |
+| `inspect <input>` | List available content placements and metadata. |
+| `convert <input>` | Convert the selected placements and publish a new destination. |
+| `validate <input>` | Decode, convert and package the selected placements without publishing a destination. |
 
-## Inspect and select
+### Inspect and select
 
-`inspect` reads metadata only. It accepts a JSON path/file URL, HTTP(S) JSON URL, or local
-3TZ archive (local or remote). It also accepts HTTP(S) I3S layer URLs and local/remote
-SLPK archives through an explicit input format. Declared external tilesets with **.json URIs** are expanded without loading
-geometry, textures or attributes. The JSON result includes distinct placement IDs, declaring
-document snapshots/URLs, local tile paths, composed transforms and aggregate metadata bytes.
-Local inputs use a synthetic URL for confined resolution; `input` retains the supplied path.
-Missing mesh payload files do not fail inspection. Extensionless external metadata is not
-probed by this profile; implicit tiling is rejected.
+`inspect` lists placement IDs without loading mesh payloads. Pass `--input-format` for
+archive and I3S inputs.
 
 ```sh
 tile-converter inspect ./dataset/tileset.json
@@ -75,29 +40,11 @@ tile-converter inspect https://example.com/layers/0 --input-format i3s
 tile-converter inspect ./dataset.slpk --input-format slpk
 ```
 
-Use `tile-converter inspect ./tileset.json --draft-feature-schema` to scan bounded legacy
-B3DM batch tables without decoding mesh geometry. Save the report’s `featureSchema`
-object as a schema file, review inferred types and field aliases, and pass it to
-`convert --feature-schema`. The report lists skipped contents, omitted properties, and
-nullable numeric fields that need an explicit I3S null replacement policy. The draft’s
-`omitSourceProperties` list explicitly excludes unsupported legacy source columns.
+### Convert and validate
 
-
-## Convert and validate
-
-Copy placement IDs from inspection and repeat `--resource` for multiple selections.
-Selections are processed in declaration order; select between 1 and 64 distinct contents.
-In the default flat profile, multiple selections generally must be source leaves. For Node SLPK
-output, an explicit selection may also include content on an ADD parent with children in the same
-declaring tileset document. Each selected nonleaf and each edge from it to a selected descendant
-must use effective ADD refinement; REPLACE or mixed refinement paths are rejected. The selected
-primitives become independent I3S leaves, not a copy of the source LOD tree. The
-`--preserve-hierarchy` supports SLPK replacement LOD with an explicit screen threshold.
-A selected content may contain multiple static
-primitives, up to 64 meshes in total. Declaring-document glTF axes, composed placement and
-relative URLs are retained during extraction. Feature-bearing contents require an explicit
-[feature-schema mapping](#feature-schema-controls). Node service callers supply the same
-`features` (3D Tiles) or `i3sFeatures` (I3S) mapping to `convertNodeTileset`.
+Copy a placement ID from `inspect` and pass it with `--resource`. Repeat the option for
+more placements, or use `--all-contents` for a qualified 3D Tiles or 3TZ dataset.
+Validate uses the same selection and output flags as convert and omits `--output`.
 
 ```sh
 tile-converter convert ./dataset/tileset.json \
@@ -112,16 +59,80 @@ tile-converter validate ./dataset/tileset.json \
   --resource tile-root-content-0 --output-format 3tz
 ```
 
-Targets are `3d-tiles` (a new directory with `tileset.json` and GLBs), `3tz` or `slpk`.
-The format is explicit and is not inferred from the destination filename. Existing destinations
-are never overwritten. Parent directories must exist. Archive chunks are written with
-backpressure to a temporary sibling and published as a complete file using an exclusive hard
-link. Directory output is visible while writing; incomplete directories are removed on error
-or cancellation. This is not a crash-recovery or durable-resume contract.
+A conversion normally produces a flat mesh collection. Use
+[`--preserve-hierarchy`](#preserve-a-complete-explicit-hierarchy) when you need the source
+tile tree and the dataset fits that profile.
 
-`validate` decodes, converts and verifies the selected target profile, including archive
-packaging, without writing a destination. It requires selections and forbids `--output`.
-It is **not a whole-dataset validator** and does not establish independent viewer interoperability.
+## Options and limits
+
+### Input and selection
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `--input-format` | `3d-tiles` | Input profile: `3d-tiles`, `3tz`, `i3s` or `slpk`. |
+| `--resource ID` | | Select a content placement for convert or validate. Repeat to select more than one. |
+| `--all-contents` | Off | Select every inspected 3D Tiles or 3TZ content placement. Use in place of `--resource`. |
+| `--draft-feature-schema` | Off | Draft a feature mapping from B3DM batch tables during 3D Tiles or 3TZ inspection. |
+| `--feature-schema PATH` | | Local UTF-8 JSON feature mapping, at most 64 KiB, for convert or validate. |
+
+### Output and conversion
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `--output-format` | `3tz` | Target profile: `3d-tiles`, `3tz` or `slpk`. |
+| `--output PATH` | | New destination. Required for convert and forbidden for validate. |
+| `--preserve-hierarchy` | Off | Require a complete explicit hierarchy across inspected documents. |
+| `--geometric-error N` | | Source error in meters, required for I3S to 3D Tiles or 3TZ. |
+| `--slpk-lod-threshold N` | | Positive I3S `maxScreenThresholdSQ` for SLPK replacement hierarchy. |
+| `--integrated-mesh-policy as-3d-object` | | Authorize IntegratedMesh to SLPK as 3DObject. |
+| `--omit-feature-id` | Off | Omit the feature identifier attribute in SLPK. |
+| `--no-draco` | Off | Write uncompressed SLPK geometry. |
+| `--name NAME` | | Set the SLPK layer name. |
+| `--egm2008-grid PATH` | | Convert ellipsoidal heights with a local GeographicLib EGM2008 PGM grid up to 128 MiB. |
+| `--declare-egm2008-heights` | Off | Declare existing EGM2008 orthometric heights in 3D Tiles or 3TZ to SLPK output. |
+
+### Budgets and reporting
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `--max-input-bytes N` | 16 MiB | Bound transport reads and decoded mesh bytes. The 3D Tiles and 3TZ input ceiling is 256 MiB. |
+| `--max-resources N` | 1,000 | Lower the limit on 3D Tiles content declarations or I3S inspected nodes. |
+| `--max-documents N` | 32 | Set the root and external document-placement limit, up to 256. |
+| `--max-meshes N` | 64 | Set the content and primitive placement limits for 3D Tiles or 3TZ to SLPK, up to 1,000. |
+| `--max-output-bytes N` | 32 MiB | Bound combined resource bytes and archive bytes independently. Archives can opt in to a larger budget. |
+| `--profile` | Off | Include elapsed stage timings in the convert or validate JSON report. |
+| `--help` | | Show usage. |
+
+Successful operations write JSON to stdout and exit zero. Invalid arguments, unreadable inputs,
+unsupported profiles and exceeded budgets write JSON errors to stderr and exit nonzero. SIGINT
+cancels cooperatively and releases source/output handles. Help prints text.
+
+## Advanced usage
+
+### Inspection details
+
+Declared external tilesets with **.json URIs** are expanded without loading
+geometry, textures or attributes. The JSON result includes distinct placement IDs, declaring
+document snapshots/URLs, local tile paths, composed transforms and aggregate metadata bytes.
+Local inputs use a synthetic URL for confined resolution; `input` retains the supplied path.
+Missing mesh payload files do not fail inspection. Extensionless external metadata is not
+probed by this profile; implicit tiling is rejected.
+
+### Select a conversion profile
+
+Selections are processed in declaration order. The default limit is 64 contents and mesh
+primitives. For flat 3D Tiles or 3TZ to SLPK conversion, raise it with `--max-meshes`.
+In the default flat profile, multiple selections generally must be source leaves. For Node SLPK
+output, an explicit selection may also include content on an ADD parent with children in the same
+declaring tileset document. Each selected nonleaf and each edge from it to a selected descendant
+must use effective ADD refinement; REPLACE or mixed refinement paths are rejected. The selected
+primitives become independent I3S leaves, not a copy of the source LOD tree. The
+`--preserve-hierarchy` supports SLPK replacement LOD with an explicit screen threshold.
+A selected content may contain multiple static
+primitives. Declaring-document glTF axes, composed placement and
+relative URLs are retained during extraction. Feature-bearing contents require an explicit
+[feature-schema mapping](#feature-schema-controls). Node service callers supply the same
+`features` (3D Tiles) or `i3sFeatures` (I3S) mapping to `convertNodeTileset`.
 
 Output uses the shared browser mesh profiles: 3D Tiles 1.1 GLB with lossless Draco Edge Breaker,
 or I3S 1.7 3DObject/SLPK. By default it is a **partial flat mesh collection**, preserving placement but
@@ -134,7 +145,34 @@ Selected documents must have the same coordinate epoch as the root. Documents wi
 declared CRS inherit the qualified root reference; explicit epoch mismatches are rejected
 because epoch transformations are unsupported.
 
-## I3S and archive inputs
+### Output publication and limits
+
+Targets are `3d-tiles` (a new directory with `tileset.json` and GLBs), `3tz` or `slpk`.
+The format is explicit and is not inferred from the destination filename. Existing destinations
+are never overwritten. Parent directories must exist. Archive chunks are written with
+backpressure to a temporary sibling and published as a complete file using an exclusive hard
+link. Directory output is visible while writing; incomplete directories are removed on error
+or cancellation. This is not a crash-recovery or durable-resume contract.
+
+For 3TZ and SLPK, the Node CLI stages encoded resources in the system temporary directory
+and streams the indexed archive from those files. Allow space for both the staged resources
+and the final archive during packaging. Archive validation also uses temporary disk space.
+Node SLPK writes textured nodes independently, so repeated textures can increase archive size.
+The 32 MiB default, 3D Tiles directory output cap, and independent input limits still apply.
+
+Limits must be positive decimal integers within those ceilings. Archive file size and aggregate
+indexed physical reads are also capped by the input limit. Metadata, raw meshes and their buffers
+and images share the transport budget; decoded geometry, encoded images and Arrow data have a
+separate byte gate. These limits do not bound total peak decoder/decompressor memory.
+Local dependencies, including symlinks, stay within the root document's real directory or archive.
+HTTP(S) datasets must remain unchanged across inspection and content reads; no remote dataset
+snapshot is claimed. Bundled Draco assets are loaded separately from dataset resources.
+
+With `--profile`, `report.timings` separates source/codec work from awaited writes and
+includes Node setup, archive/output publication and total elapsed milliseconds. See
+[profiling semantics](../api-reference/v5-conversion.md#conversion-profiling).
+
+### I3S and archive inputs
 
 I3S inspection lists only leaf mesh nodes, using their declared node IDs as selections.
 It reads layer/node metadata without fetching geometry, textures or attributes. Conversion
@@ -161,60 +199,9 @@ Archives and dependencies remain confined to their virtual root, without network
 I3S layer query parameters are inherited only within the same origin and layer path. Use final
 resource URLs: Node I3S resource redirects are rejected until their relative bases are qualified.
 
-## Options and limits
+### Preserve a complete explicit hierarchy
 
-| Option | Default | Purpose |
-| --- | --- | --- |
-| `--preserve-hierarchy` | `false` | Require a complete explicit hierarchy across inspected documents |
-| `--slpk-lod-threshold` | | Positive I3S `maxScreenThresholdSQ` for SLPK replacement hierarchy |
-| `--input-format` | `3d-tiles` | `3d-tiles`, `3tz`, `i3s` or `slpk` |
-| `--geometric-error` | | Required metric source error for I3S to 3D Tiles |
-| `--integrated-mesh-policy` | | `as-3d-object` authorizes IntegratedMesh to SLPK |
-| `--feature-schema` | | Local UTF-8 JSON feature class/schema mapping, at most 64 KiB; convert/validate only |
-| `--resource` | | Required selected placement ID for convert/validate; repeatable |
-| `--output-format` | `3tz` | `3d-tiles`, `3tz` or `slpk` |
-| `--output` | | New destination; required only for convert |
-| `--max-input-bytes` | `16777216` | Set transport/physical-read and decoded mesh budgets (max 256 MiB for 3D Tiles/3TZ) |
-| `--max-resources` | `1000` | Lower content declarations (3D Tiles) or inspected nodes (I3S) |
-| `--max-documents` | `32` | Set the root/external document-placement limit (max 256) |
-| `--max-meshes` | `64` | Set the content and primitive placement limits for 3D Tiles/3TZ to SLPK (max 1000) |
-
-| `--max-output-bytes` | `33554432` | Limit combined resource bytes and, separately, archive bytes. Archives can opt in to a larger budget. |
-| `--egm2008-grid` | | Convert ellipsoidal heights using a local GeographicLib EGM2008 PGM grid (max 128 MiB) |
-| `--declare-egm2008-heights` | `false` | Declare existing EGM2008 orthometric heights in 3D Tiles/3TZ to SLPK output |
-| `--profile` | `false` | Include elapsed stage timings in the JSON conversion report; convert/validate only |
-| `--help` | | Show usage |
-
-For 3TZ and SLPK, the Node CLI stages encoded resources in the system temporary directory
-and streams the indexed archive from those files. Allow space for both the staged resources
-and the final archive during packaging. Archive validation also uses temporary disk space.
-Node SLPK writes textured nodes independently, so repeated textures can increase archive size.
-The 32 MiB default, 3D Tiles directory output cap, and independent input limits still apply.
-
-Limits must be positive decimal integers within those ceilings. Archive file size and aggregate
-indexed physical reads are also capped by the input limit. Metadata, raw meshes and their buffers
-and images share the transport budget; decoded geometry, encoded images and Arrow data have a
-separate byte gate. These limits do not bound total peak decoder/decompressor memory.
-Local dependencies, including symlinks, stay within the root document's real directory or archive.
-HTTP(S) datasets must remain unchanged across inspection and content reads; no remote dataset
-snapshot is claimed. Bundled Draco assets are loaded separately from dataset resources.
-
-With `--profile`, `report.timings` separates source/codec work from awaited writes and
-includes Node setup, archive/output publication and total elapsed milliseconds. See
-[profiling semantics](../api-reference/v5-conversion.md#conversion-profiling).
-
-Successful operations write JSON to stdout and exit zero. Invalid arguments, unreadable inputs,
-unsupported profiles and exceeded budgets write JSON errors to stderr and exit nonzero. SIGINT
-cancels cooperatively and releases source/output handles. Help prints text.
-
-Broader hierarchy profiles and I3S LOD translation, service configuration, durable recovery and installed Windows
-qualification remain follow-ups. See the
-[v5 source API](/docs/modules/tile-converter/api-reference/v5-conversion#node-inspection-and-raw-content-reads).
-
-
-## Preserve a complete explicit hierarchy
-
-### 3D Tiles and 3TZ output
+#### 3D Tiles and 3TZ output
 
 After inspecting an explicit 3D Tiles dataset, including declared `.json` external tilesets, select every content placement and
 add `--preserve-hierarchy` to `convert` or `validate`:
@@ -247,7 +234,7 @@ See the [complete hierarchy profile](../api-reference/v5-conversion.md#complete-
 for the shared browser/service API and remaining qualification. Nested content IDs include
 the complete external-reference chain, such as `tile-root-content-0/tile-root-content-0`.
 
-### SLPK output
+#### SLPK output
 
 For replacement LOD, use `--preserve-hierarchy --slpk-lod-threshold N` with a
 positive I3S `maxScreenThresholdSQ` value. This profile requires a complete explicit
@@ -260,7 +247,14 @@ Legacy node documents also carry the equivalent screen-diameter threshold.
 Source geometric errors are preserved for 3D Tiles/3TZ output. SLPK uses the explicit
 screen threshold and the source’s existing meshes.
 
-## Feature-schema controls
+### Feature-schema controls
+
+Use `tile-converter inspect ./tileset.json --draft-feature-schema` to scan bounded legacy
+B3DM batch tables without decoding mesh geometry. Save the report’s `featureSchema`
+object as a schema file, review inferred types and field aliases, and pass it to
+`convert --feature-schema`. The report lists skipped contents, omitted properties, and
+nullable numeric fields that need an explicit I3S null replacement policy. The draft’s
+`omitSourceProperties` list explicitly excludes unsupported legacy source columns.
 
 Use `--feature-schema ./features.json` with either `convert` or `validate`. The local file
 contains the existing source mapping directly (no `features` or `i3sFeatures` wrapper):
@@ -340,12 +334,53 @@ output field is renamed. Choose a value outside the valid domain and configure
 consumers to treat it as missing. It is stored as an ordinary number in SLPK.
 Without a replacement, numeric nulls fail validation.
 
-Use `--all-contents` on `validate` or `convert` to select every inspected
-placement in a 3D Tiles or 3TZ input. Supply either this flag or individual
-`--resource` selections. The selected mesh profile still applies its existing
-budget, refinement, and feature schema rules.
-
 For Node 3D Tiles and 3TZ inspection or flat conversion, `--max-documents`
 sets the root and external document placement budget from 1 to 256. The
 default is 32. Hierarchy-preserving output still supports up to 32 document
 placements. Input bytes and selected meshes have separate limits.
+
+### Native-ECEF source metadata
+
+For 3D Tiles, the mesh adapter accepts native EPSG:4978 XYZ coordinates in meters with
+ellipsoidal heights. A correctly enclosing WGS84 root `boundingVolume.region` can establish
+the format-default frame. A box/sphere-bounded dataset can instead declare its actual frame
+through an inline metadata class:
+
+```json
+{
+  "schema": {
+    "classes": {
+      "frame": {
+        "properties": {
+          "crs": {"type": "STRING", "semantic": "TILESET_CRS_GEOCENTRIC"}
+        }
+      }
+    }
+  },
+  "metadata": {"class": "frame", "properties": {"crs": "EPSG:4978"}}
+}
+```
+
+Add these declaration fields to the existing 3D Tiles 1.1 document; retain its real bounds,
+transforms and contents. Declaring a CRS does not reproject geometry, and coordinates are
+never guessed to be ECEF from their magnitude.
+
+The selected class must contain only an explicit `STRING` CRS property and an optional explicit
+`SCALAR` / `FLOAT64` property with semantic `TILESET_CRS_COORDINATE_EPOCH`. Both values
+must agree with the loader's resolved spatial reference. Defaults, arrays, value transforms,
+entity extras/extensions, unresolved/external schemas, duplicate semantics, unrelated
+properties and nonempty `groups` remain outside this profile. They fail with
+`MESH_SOURCE_METADATA_UNSUPPORTED`; `--feature-schema` maps mesh features, not dataset metadata.
+Undeclared or non-ECEF frames remain rejected. Hierarchy-preserving output keeps its separate
+restriction on dataset schemas/metadata; this exception applies to selected mesh conversion. See the
+[mesh source profile](../api-reference/v5-conversion.md#source-mesh-to-i3sslpk) for the other restrictions.
+
+### Orthometric heights
+
+For 3D Tiles or 3TZ input whose derived heights already represent EGM2008 orthometric
+meters, use `--declare-egm2008-heights` to declare EPSG:3855 in the SLPK. This changes
+layer metadata only. To convert ellipsoidal input instead, pass `--egm2008-grid /path/to/egm2008-5.pgm`.
+Use a local GeographicLib EGM2008 PGM grid up to 128 MiB. The converter subtracts the
+interpolated undulation before encoding positions and building bounds. The two options
+are mutually exclusive. The default is ellipsoidal.
+SLPK package metadata is stored as plain `metadata.json`.
