@@ -31,6 +31,9 @@ import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-tr
 import {getI3SSpatialReference} from '../../spatial/format-spatial-reference';
 import {I3SSpatialTransformer} from '../../spatial/i3s-spatial-transformer';
 
+/** Maximum number of missing child headers requested concurrently per traversed parent. */
+const TRAVERSAL_CHILD_HEADER_CONCURRENCY = 4;
+
 const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   draco: false,
   meshopt: false,
@@ -244,11 +247,16 @@ export class I3SSource implements Tileset3DSource {
   async loadChildTileHeader(
     _parentTile: Tile3D,
     childId: string,
-    _frameState: FrameState | null
+    _frameState: FrameState | null,
+    signal?: AbortSignal
   ): Promise<any> {
     const metadata = this.getMetadata();
     if (metadata.tileset.nodePages || metadata.tileset.pointNodePages) {
-      const header = await metadata.tileset.nodePagesTile.formTileFromNodePages(childId);
+      const nodePagesTile = metadata.tileset.nodePagesTile;
+      const header = await (signal
+        ? nodePagesTile.formTileFromNodePages(childId, signal)
+        : nodePagesTile.formTileFromNodePages(childId));
+      throwIfTraversalAborted(signal);
       return await this.transformTileHeader(header);
     }
 
@@ -265,7 +273,8 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    const header = await this.loadResourceData(nodeUrl, options);
+    const header = await this.loadResourceData(nodeUrl, signal ? {...options, signal} : options);
+    throwIfTraversalAborted(signal);
     return await this.transformTileHeader(header);
   }
 
@@ -274,35 +283,83 @@ export class I3SSource implements Tileset3DSource {
     parentTile: Tile3D,
     signal?: AbortSignal
   ): Promise<TileChildrenLoadResult> {
+    const fetchOptions = this.loadOptions.core?.fetch;
+    const configuredSignal =
+      this.loadOptions.signal ?? (typeof fetchOptions === 'object' ? fetchOptions?.signal : null);
+    signal =
+      signal && configuredSignal
+        ? AbortSignal.any([signal, configuredSignal])
+        : (signal ?? configuredSignal ?? undefined);
+    throwIfTraversalAborted(signal);
     const childHeaders = parentTile.header.children || [];
-    let loadedChildren = 0;
-    const orderedChildren: Tile3D[] = [];
-
-    for (const childHeader of childHeaders) {
-      throwIfTraversalAborted(signal);
-      const childId = childHeader.id;
+    if (!childHeaders.length) {
+      return {loaded: true, tileCount: 0, childSubtreeCount: 0};
+    }
+    const existingChildren = parentTile.children;
+    const tileIdIndexes = new Map<string, number>();
+    const headerIdIndexes = new Map<string | number, number>();
+    for (let index = 0; index < existingChildren.length; index++) {
+      const child = existingChildren[index];
+      if (!tileIdIndexes.has(child.id)) tileIdIndexes.set(child.id, index);
+      const headerId = child.header?.id;
+      if (headerId !== undefined && !headerIdIndexes.has(headerId)) {
+        headerIdIndexes.set(headerId, index);
+      }
+    }
+    const orderedChildren = new Array<Tile3D>(childHeaders.length);
+    const missingChildren: {id: string; index: number}[] = [];
+    for (let index = 0; index < childHeaders.length; index++) {
+      const childId = childHeaders[index].id;
       if (typeof childId !== 'string' && typeof childId !== 'number') {
         throw new Error('I3S child header is missing its node ID');
       }
-      const existingChild = parentTile.children.find(
-        tile => tile.id === String(childId) || tile.header?.id === childId
+      const id = String(childId);
+      // Preserve the first match in the original child list across both ID forms.
+      const existingIndex = Math.min(
+        tileIdIndexes.get(id) ?? Infinity,
+        headerIdIndexes.get(childId) ?? Infinity
       );
-      if (existingChild) {
-        orderedChildren.push(existingChild);
-        continue;
+      if (existingIndex !== Infinity) {
+        orderedChildren[index] = existingChildren[existingIndex];
+      } else {
+        missingChildren.push({id, index});
       }
-
-      const childTileHeader = await this.loadChildTileHeader(parentTile, String(childId), null);
-      throwIfTraversalAborted(signal);
-      const childTile = new Tile3DNode(
-        parentTile.tileset,
-        childTileHeader,
-        parentTile,
-        String(childId)
-      );
-      orderedChildren.push(childTile);
-      loadedChildren++;
     }
+
+    if (missingChildren.length) {
+      const controller = new AbortController();
+      const requestSignal = signal
+        ? AbortSignal.any([signal, controller.signal])
+        : controller.signal;
+      let nextChild = 0;
+      /** Fetches missing headers until the queue is empty or cancellation stops further requests. */
+      const loadNextChild = async () => {
+        while (nextChild < missingChildren.length) {
+          throwIfTraversalAborted(requestSignal);
+          const {id, index} = missingChildren[nextChild++];
+          try {
+            const header = await this.loadChildTileHeader(parentTile, id, null, requestSignal);
+            throwIfTraversalAborted(requestSignal);
+            orderedChildren[index] = new Tile3DNode(parentTile.tileset, header, parentTile, id);
+          } catch (error) {
+            controller.abort(error);
+            throw error;
+          }
+        }
+      };
+      try {
+        await Promise.all(
+          Array.from(
+            {length: Math.min(TRAVERSAL_CHILD_HEADER_CONCURRENCY, missingChildren.length)},
+            loadNextChild
+          )
+        );
+      } catch (error) {
+        throwIfTraversalAborted(signal);
+        throw error;
+      }
+    }
+    throwIfTraversalAborted(signal);
 
     const orderedChildSet = new Set(orderedChildren);
     parentTile.children = [
@@ -310,7 +367,7 @@ export class I3SSource implements Tileset3DSource {
       ...parentTile.children.filter(childTile => !orderedChildSet.has(childTile))
     ];
 
-    return {loaded: true, tileCount: loadedChildren, childSubtreeCount: 0};
+    return {loaded: true, tileCount: missingChildren.length, childSubtreeCount: 0};
   }
 
   /**
