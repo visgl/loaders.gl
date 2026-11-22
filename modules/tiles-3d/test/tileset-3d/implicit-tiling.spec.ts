@@ -457,6 +457,28 @@ test('implicit tiling rejects availability and attribute counts that cannot desc
     )
   ).toThrow(/TILE_GEOMETRIC_ERROR count does not match availability/);
 });
+test.each([
+  ['tile', {tilePropertyRows: []}],
+  ['content', {contentPropertyRows: [{unexpected: true}]}]
+])('implicit tiling rejects a mismatched %s property row count', (scope, rows) => {
+  const reference = createImplicitSubtreeReference(createDescriptor(), {
+    level: 0,
+    x: 0,
+    y: 0,
+    z: 0
+  });
+  expect(() =>
+    materializeImplicitSubtree(
+      {
+        tileAvailability: {constant: 1},
+        contentAvailability: {constant: 0},
+        childSubtreeAvailability: {constant: 0},
+        ...rows
+      },
+      reference
+    )
+  ).toThrow(new RegExp(scope + ' property-table count does not match availability'));
+});
 test('implicit subtree traversal materializes roots before applying SSE to deeper boundaries', async () => {
   let requestCount = 0;
   const tile = {
