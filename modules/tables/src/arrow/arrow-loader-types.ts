@@ -19,7 +19,10 @@ function loadArrowWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
     const moduleUrl = import.meta.url;
     // Native browser workers cannot use the page's import map.
-    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/arrow/arrow-loader-types.js')) {
+    if (
+      /^https?:/.test(moduleUrl) &&
+      new URL(moduleUrl).pathname.endsWith('/dist/arrow/arrow-loader-types.js')
+    ) {
       const workerUrl = new URL('../arrow-worker.js', moduleUrl);
       return new Worker(workerUrl, {type: 'module'});
     }
