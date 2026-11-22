@@ -203,9 +203,10 @@ jobs:
           path: test-results/${{ matrix.profile-name }}.json
           if-no-files-found: warn
 
-  coverage-finished:
-    name: Merge and check coverage
-    needs: [test, slow-tests]
+  required-ci:
+    name: Required CI
+    if: always()
+    needs: [build, test, slow-tests, tile-converter-tests, website-build, external-tests]
     runs-on: ubuntu-22.04
     # Vitest blobs contain absolute paths, so match every coverage producer's workspace.
     container:
@@ -219,6 +220,13 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
+
+      - name: Require every selected upstream job to pass
+        id: upstream
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: node scripts/ci-gate.mjs
 
       - name: Enable Corepack / Yarn 4
         run: |
@@ -261,7 +269,7 @@ jobs:
         run: yarn test-coverage-check
 
       - name: Publish package coverage summary
-        if: always()
+        if: always() && steps.upstream.outcome == 'success'
         run: yarn test-coverage-summary
 
       - name: Sanitize lcov for Coveralls
@@ -276,7 +284,7 @@ jobs:
           fail-on-error: false
 
       - name: Upload merged coverage
-        if: always()
+        if: always() && steps.upstream.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
           name: merged-coverage
@@ -401,29 +409,15 @@ jobs:
           VITEST_MAX_WORKERS: 1
         run: yarn test-external
 
-  required-ci:
-    name: Required CI
-    if: always()
-    needs: [build, test, slow-tests, coverage-finished, tile-converter-tests, website-build, external-tests]
-    runs-on: ubuntu-22.04
-    timeout-minutes: 3
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-      - name: Require every selected CI job to pass
-        env:
-          NEEDS: ${{ toJSON(needs) }}
-          EVENT_NAME: ${{ github.event_name }}
-        run: node scripts/ci-gate.mjs
-
   build:
     name: Build
     runs-on: ubuntu-22.04
     timeout-minutes: 15
 
     steps:
+      - name: Temporary hosted gate failure probe
+        run: exit 1
+
       - name: Checkout code
         uses: actions/checkout@v7
 

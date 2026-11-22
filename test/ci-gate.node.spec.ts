@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 import {readFileSync} from 'node:fs';
 import {expect, test} from 'vitest';
+import {parse} from 'yaml';
 import {checkResults} from '../scripts/ci-gate.mjs';
 
 const workflow = readFileSync(new URL('../.github/workflows/test.yml', import.meta.url), 'utf8');
@@ -19,7 +20,6 @@ test('the aggregate gate rejects failed, cancelled, missing and unexpectedly ski
         'build',
         'test',
         'slow-tests',
-        'coverage-finished',
         'tile-converter-tests',
         'website-build',
         'external-tests'
@@ -51,20 +51,25 @@ test('the aggregate gate rejects failed, cancelled, missing and unexpectedly ski
 });
 test('merge groups run the same workflow and required gate without PR-only guards', () => {
   expect(workflow).toMatch(/merge_group:\n    types: \[checks_requested\]/);
-  const gate = workflow.split('\n  required-ci:\n')[1].split('\n  build:\n')[0];
-  expect(gate).toMatch(/if: always\(\)/);
-  expect(gate).toMatch(/name: Required CI/);
-  expect(gate).toMatch(/run: node scripts\/ci-gate.mjs/);
-  for (const name of [
-    'build',
-    'test',
-    'slow-tests',
-    'coverage-finished',
-    'tile-converter-tests',
-    'website-build',
-    'external-tests'
-  ])
-    expect(gate).toContain(name);
+  const {jobs} = parse(workflow);
+  const gate = jobs['required-ci'];
+  expect(gate.name).toBe('Required CI');
+  expect(gate.if).toBe('always()');
+  expect([...gate.needs].sort()).toEqual(
+    Object.keys(jobs)
+      .filter(name => name !== 'required-ci')
+      .sort()
+  );
+  const commands = gate.steps.map((step: {run?: string}) => step.run);
+  expect(commands).toContain('node scripts/ci-gate.mjs');
+  expect(commands).toContain('yarn test-coverage-check');
+  expect(commands.indexOf('node scripts/ci-gate.mjs')).toBeLessThan(
+    commands.indexOf('yarn test-coverage-check')
+  );
+  expect(gate['continue-on-error']).toBeUndefined();
+  expect(gate.steps.every((step: Record<string, unknown>) => !step['continue-on-error'])).toBe(
+    true
+  );
   expect(workflow).toMatch(
     /github.workflow.*github.event_name.*github.event.pull_request.number \|\| github.run_id/
   );
