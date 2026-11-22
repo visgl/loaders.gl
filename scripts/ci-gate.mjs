@@ -10,7 +10,6 @@ export function checkResults(needs, eventName) {
     'build',
     'test',
     'slow-tests',
-    'coverage-finished',
     'tile-converter-tests',
     'website-build'
   ]) {
@@ -30,5 +29,5 @@ export function checkResults(needs, eventName) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const failures = checkResults(JSON.parse(process.env.NEEDS), process.env.EVENT_NAME);
   if (failures.length) throw new Error(failures.join('\n'));
-  console.log('All required CI jobs passed');
+  console.log('All required upstream jobs passed');
 }

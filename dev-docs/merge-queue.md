@@ -1,8 +1,10 @@
 # Master merge queue
 
-The test workflow runs on pull requests and merge groups. Require the GitHub Actions
-check `Required CI` on both: its aggregate gate rejects failed, cancelled, missing
-and unexpectedly skipped jobs, including test and coverage workers.
+The test workflow reports the protected GitHub Actions check `Required CI` on pull
+requests and merge groups. The job validates every upstream job result, merges
+the coverage reports, and enforces the per-package coverage ratchets on the same
+runner. An upstream failure, cancellation, missing result, or unexpected skip
+fails the check, as does a coverage merge or ratchet failure.
 
 The repository ruleset [master merge queue](https://github.com/visgl/loaders.gl/rules/26899454) is staged with enforcement disabled
 until this preparation PR lands. Its source configuration is
