@@ -77,6 +77,79 @@ describe('I3SSource hierarchy and resource boundaries', () => {
     tileset.destroy();
   });
 
+  test('prefetches four missing headers at a time and installs in declaration order', async () => {
+    const release = new Map<string, () => void>();
+    const completions: string[] = [];
+    const loadResource = vi.fn(async (url: string) => {
+      const id = url.split('/').at(-1)!;
+      await new Promise<void>(resolve => release.set(id, resolve));
+      completions.push(id);
+      return {id, mbs: [0, 0, 0, 1], boundingVolume: {sphere: [6378137, 0, 0, 1]}};
+    });
+    const source = new I3SSource(createI3SMetadata({resolver: {loadResource}}) as any);
+    const tileset = new Tileset3D(source);
+    await tileset.tilesetInitializationPromise;
+    const parent = tileset.root!;
+    parent.header.children = [1, 2, 3, 4, 5].map(id => ({id}));
+    const firstMatch = {id: 'alias', header: {id: 3}} as any;
+    const laterMatch = {id: '3', header: {id: '3'}} as any;
+    parent.children = [firstMatch, laterMatch];
+    parent.header.children.push({id: 6});
+
+    const loading = source.loadTileChildrenForTraversal(parent);
+    await vi.waitFor(() => expect([...release.keys()]).toEqual(['1', '2', '4', '5']));
+    release.get('5')!();
+    await vi.waitFor(() => expect(release.has('6')).toBe(true));
+    expect(parent.children).toEqual([firstMatch, laterMatch]);
+    for (const id of ['6', '4', '2', '1']) release.get(id)!();
+    await expect(loading).resolves.toMatchObject({tileCount: 5});
+    expect(completions).toEqual(['5', '6', '4', '2', '1']);
+    expect(parent.children.map(child => child.id)).toEqual(['1', '2', 'alias', '4', '5', '6', '3']);
+    expect(parent.children[2]).toBe(firstMatch);
+    parent.children = parent.children.filter(child => child !== firstMatch && child !== laterMatch);
+    tileset.destroy();
+  });
+
+  test.each([
+    'traversal',
+    'fetch options',
+    'request failure'
+  ])('%s stops active and queued headers', async signalSource => {
+    const controller = new AbortController();
+    const cancellation = new Error('cancel prefetch');
+    const activeSignals: AbortSignal[] = [];
+    const rejectRequests: ((reason: Error) => void)[] = [];
+    const loadResource = vi.fn(async (_url, _loader, options) => {
+      const signal: AbortSignal = options.signal;
+      activeSignals.push(signal);
+      return await new Promise((_resolve, reject) => {
+        rejectRequests.push(reject);
+        signal.addEventListener('abort', () => reject(signal.reason), {once: true});
+      });
+    });
+    const loadOptions =
+      signalSource === 'fetch options' ? {core: {fetch: {signal: controller.signal}}} : {};
+    const source = new I3SSource(createI3SMetadata({resolver: {loadResource}}) as any, loadOptions);
+    await source.initialize();
+    const children: unknown[] = [];
+    const parent = {header: {children: [1, 2, 3, 4, 5].map(id => ({id}))}, children} as any;
+    const loading = source.loadTileChildrenForTraversal(
+      parent,
+      signalSource === 'traversal' ? controller.signal : undefined
+    );
+    await vi.waitFor(() => expect(activeSignals).toHaveLength(4));
+    if (signalSource === 'request failure') {
+      rejectRequests[0](cancellation);
+    } else {
+      controller.abort(cancellation);
+    }
+    await expect(loading).rejects.toBe(cancellation);
+    expect(activeSignals.every(signal => signal.aborted)).toBe(true);
+    expect(loadResource).toHaveBeenCalledTimes(4);
+    expect(parent.children).toBe(children);
+    expect(children).toEqual([]);
+  });
+
   test('rejects missing IDs and cancellation without installing partial child lists', async () => {
     const cancellation = new Error('cancel traversal');
     const controller = new AbortController();
