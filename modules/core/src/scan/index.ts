@@ -102,8 +102,8 @@ export type {
   VectorTileTableScanSourceOptions
 } from './vector-table-scan-source';
 
-export {ARROW_TABLE_QUERY_CAPABILITIES, explainArrowTableQuery} from './query-arrow-table';
-export {queryArrowTable} from './query-arrow-table-math';
+export {ARROW_TABLE_QUERY_CAPABILITIES, explainArrowTableQuery} from './plan-arrow-table-query';
+export {queryArrowTable} from './query-arrow-table';
 export * from './sql-predicate';
 export {explainTableQuery, getSQLPredicateColumnNames, planTableQuery} from './table-query';
 export type {

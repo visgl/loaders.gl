@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table} from 'apache-arrow';
-import {explainArrowTableQuery, queryArrowTable, type ArrowQueryOptions} from './query-arrow-table';
+import {explainArrowTableQuery, type ArrowQueryOptions} from './plan-arrow-table-query';
 import {type SQLPredicate} from './sql-predicate-types';
 import type {TableQueryExplain} from '@loaders.gl/core/loader-utils';
 
@@ -39,17 +39,10 @@ export type ScanEngine = ScanBackend & {
 
 const scanBackends = new Map<ScanBackendName, ScanBackend | ScanBackendLoader>();
 
-const arrowScanBackend: ScanBackend = Object.freeze({
-  name: 'arrow',
-  query: queryArrowTable,
-  queryAsync: (sourceTable, options) =>
-    Promise.resolve().then(() => queryArrowTable(sourceTable, options)),
-  explain: explainArrowTableQuery
+scanBackends.set('arrow', async () => {
+  const {queryArrowTable} = await import('./query-arrow-table');
+  return {name: 'arrow', query: queryArrowTable, explain: explainArrowTableQuery};
 });
-
-// Store the built-in backend directly. Apart from avoiding needless indirection, this keeps
-// coverage stable when browser shards transform this shared module independently.
-scanBackends.set('arrow', arrowScanBackend);
 
 /**
  * Registers a lazy scan backend without adding it to the default bundle.
