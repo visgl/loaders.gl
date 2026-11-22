@@ -304,13 +304,20 @@ export class ZipArchive {
     this.checkEntryBudget(entry);
     if (entry.size > BigInt(Number.MAX_SAFE_INTEGER))
       throw new RangeError('ZIP allocation is not safely representable');
-    const output = new Uint8Array(Number(entry.size));
+    const size = Number(entry.size);
+    let output: Uint8Array<ArrayBuffer> | undefined;
     let offset = 0;
     for await (const chunk of this.readInBatches(entry, options)) {
-      output.set(chunk, offset);
+      if (!output && entry.compression === 'store' && chunk.byteLength === size) {
+        // STORE chunks are owned buffers from readExact. Keep consuming to verify the CRC.
+        output = chunk;
+      } else {
+        output ??= new Uint8Array(size);
+        output.set(chunk, offset);
+      }
       offset += chunk.byteLength;
     }
-    return output.buffer;
+    return output?.buffer ?? new ArrayBuffer(0);
   }
 
   /** Streams decoded chunks with backpressure; consuming through completion verifies CRC-32. */
