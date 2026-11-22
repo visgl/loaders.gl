@@ -760,7 +760,7 @@ Convert between I3S and 3D Tiles datasets with CLI and JavaScript APIs.
 - [Make converted I3S data available to a client.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/i3s-server.md): Serve converted I3S output or SLPK data through the tile-converter HTTP service.
 - [Check the conversion boundary before starting a large job.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/supported-features.md): Check which I3S and 3D Tiles layer types, versions, sources, extensions, and output options the converter supports.
 - [Put tiled-data conversion in the build pipeline.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter.md): Convert I3S and 3D Tiles datasets from URLs or local sources with a repeatable command-line workflow.
-- [Tile-converter v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md): Bounded metadata inspection, selected mesh conversion and target-profile validation.
+- [Tile-converter v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md): Inspect, convert and validate 3D Tiles and I3S meshes from the command line.
 
 #### tiles
 

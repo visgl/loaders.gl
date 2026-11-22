@@ -79,15 +79,15 @@ The reference below covers installation, converter APIs, build and bundle instru
 For CLI
 
 ```
-npm install @loaders.gl/tile-converter
+npm install @loaders.gl/tile-converter@beta
 ```
 
 For API
 
 ```
-npm install @loaders.gl/core
+npm install @loaders.gl/core@beta
 
-npm install @loaders.gl/tile-converter
+npm install @loaders.gl/tile-converter@beta
 ```
 
 ## Choose a workflow[​](#choose-a-workflow "Direct link to Choose a workflow")
