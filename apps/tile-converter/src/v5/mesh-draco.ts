@@ -25,7 +25,7 @@ export async function encodeDracoMeshTile(
   geometry: MeshGeometry,
   options: MeshTileOptions,
   libraryOptions: LoadLibraryOptions = {}
-): Promise<{glb: ArrayBuffer; positions: Float32Array}> {
+): Promise<ReturnType<typeof finalizeMeshTileScenegraph>> {
   geometry = prepareMeshFeatureGeometry(validateMeshGeometry(geometry), options.features);
   // Draco requires explicit faces even when the input triangle list is non-indexed.
   if (!geometry.indices) {
@@ -121,10 +121,12 @@ export async function encodeDracoMeshTile(
     if (name === 'POSITION') {
       const minimum = [Infinity, Infinity, Infinity];
       const maximum = [-Infinity, -Infinity, -Infinity];
-      for (let index = 0; index < positions.length; index++) {
-        const axis = index % 3;
-        minimum[axis] = Math.min(minimum[axis], positions[index]);
-        maximum[axis] = Math.max(maximum[axis], positions[index]);
+      for (let index = 0; index < positions.length; index += 3) {
+        for (let axis = 0; axis < 3; axis++) {
+          const position = positions[index + axis];
+          minimum[axis] = Math.min(minimum[axis], position);
+          maximum[axis] = Math.max(maximum[axis], position);
+        }
       }
       accessor.min = minimum;
       accessor.max = maximum;
@@ -153,5 +155,5 @@ export async function encodeDracoMeshTile(
   ];
   encodeMeshFeatures(scenegraph, 0, options.features);
   scenegraph.registerRequiredExtension(DRACO_EXTENSION);
-  return {glb: finalizeMeshTileScenegraph(scenegraph, 0), positions};
+  return finalizeMeshTileScenegraph(scenegraph, 0);
 }

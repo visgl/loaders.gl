@@ -12,7 +12,7 @@ import type {
   Tiles3DConversionSpatialContext,
   I3SConversionSpatialContext
 } from '@loaders.gl/tile-converter/v5/core';
-import {encodeMeshTile, validateMeshGeometry} from './mesh.js';
+import {encodeMeshTileWithBounds, validateMeshGeometry} from './mesh.js';
 import type {MeshTileFeatures} from './mesh-features.js';
 import type {MeshTileMaterial} from './mesh.js';
 import {encodeDracoMeshTile} from './mesh-draco.js';
@@ -183,10 +183,6 @@ export function createMeshConversionCodec<TInspection = unknown>(
         for (let axis = 0; axis < 3; axis++) origin[axis] = minimum[axis] / 2 + maximum[axis] / 2;
       }
       const localPositions = new Float32Array(targetPositions.length);
-      const minimum = [Infinity, Infinity, Infinity];
-      const maximum = [-Infinity, -Infinity, -Infinity];
-      const localMinimum = [Infinity, Infinity, Infinity];
-      const localMaximum = [-Infinity, -Infinity, -Infinity];
       let maximumPositionError = 0;
       for (let index = 0; index < targetPositions.length; index += 3) {
         for (let axis = 0; axis < 3; axis++) {
@@ -215,16 +211,9 @@ export function createMeshConversionCodec<TInspection = unknown>(
       const appearance = {material: resource.material, features: resource.features};
       const encoded = draco
         ? await encodeDracoMeshTile(geometry, appearance, dracoLibraryOptions)
-        : {glb: encodeMeshTile(geometry, appearance), positions: localPositions};
+        : encodeMeshTileWithBounds(geometry, appearance);
       signal?.throwIfAborted();
-      for (let index = 0; index < encoded.positions.length; index++) {
-        const axis = index % 3;
-        const position = encoded.positions[index];
-        localMinimum[axis] = Math.min(localMinimum[axis], position);
-        localMaximum[axis] = Math.max(localMaximum[axis], position);
-        minimum[axis] = Math.min(minimum[axis], position + origin[axis]);
-        maximum[axis] = Math.max(maximum[axis], position + origin[axis]);
-      }
+      const [localMinimum, localMaximum] = encoded.localBoundingBox;
       yield {
         id: resource.id,
         contentResourceId: resource.contentResourceId,
@@ -232,8 +221,11 @@ export function createMeshConversionCodec<TInspection = unknown>(
         contentPrimitive: resource.contentPrimitive,
         glb: encoded.glb,
         origin,
-        boundingBox: [minimum, maximum],
-        localBoundingBox: [localMinimum, localMaximum],
+        boundingBox: [
+          localMinimum.map((position, axis) => position + origin[axis]),
+          localMaximum.map((position, axis) => position + origin[axis])
+        ],
+        localBoundingBox: encoded.localBoundingBox,
         spatialReference,
         maximumPositionError
       };
