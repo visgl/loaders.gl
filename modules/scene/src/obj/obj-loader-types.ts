@@ -19,7 +19,10 @@ function loadOBJWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
     const moduleUrl = import.meta.url;
     // Native browser workers cannot use the page's import map.
-    if (moduleUrl && new URL(moduleUrl).pathname.endsWith('/dist/obj/obj-loader-types.js')) {
+    if (
+      /^https?:/.test(moduleUrl) &&
+      new URL(moduleUrl).pathname.endsWith('/dist/obj/obj-loader-types.js')
+    ) {
       const workerUrl = new URL('../obj-worker.js', moduleUrl);
       return new Worker(workerUrl, {type: 'module'});
     }

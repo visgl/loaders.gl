@@ -20446,6 +20446,7 @@ __metadata:
   resolution: "loaders.gl@workspace:."
   dependencies:
     "@loaders.gl/tiles-3d": "npm:^5.0.0-alpha.0"
+    "@rspack/core": "npm:^1.7.10"
     "@types/node": "npm:^25.3.0"
     "@vis.gl/dev-tools": "npm:2.0.0-alpha.6"
     "@vis.gl/ts-plugins": "npm:2.0.0-alpha.6"
