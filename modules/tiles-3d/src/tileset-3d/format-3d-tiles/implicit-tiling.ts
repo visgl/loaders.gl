@@ -9,6 +9,10 @@ import {convertS2BoundingVolumeToOBB, type S2VolumeInfo} from '../helpers/s2-bou
 const QUADTREE_CHILD_COUNT = 4;
 const OCTREE_CHILD_COUNT = 8;
 const AVAILABILITY_RANK_CACHE = new WeakMap<ImplicitAvailability, Uint32Array>();
+const BYTE_POPULATION_COUNTS = new Uint8Array(256);
+for (let byte = 1; byte < BYTE_POPULATION_COUNTS.length; byte++) {
+  BYTE_POPULATION_COUNTS[byte] = BYTE_POPULATION_COUNTS[byte >>> 1] + (byte & 1);
+}
 
 /** Global coordinates of a tile in an implicit quadtree or octree. */
 export type ImplicitTileCoordinates = {
@@ -565,17 +569,22 @@ function getAvailabilityRank(availability: ImplicitAvailability, index: number):
   if (availability.constant === 0) {
     return 0;
   }
+  const bitstream = availability.explicitBitstream;
+  if (!bitstream) {
+    return 0;
+  }
   let ranks = AVAILABILITY_RANK_CACHE.get(availability);
   if (!ranks) {
-    const bitCount = (availability.explicitBitstream?.byteLength || 0) * 8;
-    ranks = new Uint32Array(bitCount + 1);
-    for (let candidateIndex = 0; candidateIndex < bitCount; candidateIndex++) {
-      ranks[candidateIndex + 1] =
-        ranks[candidateIndex] + Number(getAvailabilityValue(availability, candidateIndex));
+    ranks = new Uint32Array(bitstream.length + 1);
+    // Count complete preceding bytes. Only the final partial byte is computed on lookup.
+    for (let byteIndex = 0; byteIndex < bitstream.length; byteIndex++) {
+      ranks[byteIndex + 1] = ranks[byteIndex] + BYTE_POPULATION_COUNTS[bitstream[byteIndex]];
     }
     AVAILABILITY_RANK_CACHE.set(availability, ranks);
   }
-  return ranks[index];
+  const byteIndex = Math.floor(index / 8);
+  const precedingBitsMask = (1 << (index % 8)) - 1;
+  return ranks[byteIndex] + BYTE_POPULATION_COUNTS[bitstream[byteIndex] & precedingBitsMask];
 }
 
 /** Locates a concrete generated URI in a retained glTF package. */
@@ -652,12 +661,18 @@ function formatImplicitTileHeader(
   contentAvailability: boolean[],
   children: ImplicitTileHeader[]
 ): ImplicitTileHeader {
-  const tilePropertyIndex = getAvailabilityRank(subtree.tileAvailability, availabilityIndex);
+  const tilePropertyIndex =
+    subtree.tilePropertyRows || subtree.tileTemplatePropertyRows || subtree.tileAttributes
+      ? getAvailabilityRank(subtree.tileAvailability, availabilityIndex)
+      : -1;
   const tileProperties = subtree.tilePropertyRows?.[tilePropertyIndex];
   const primaryContentAvailability = Array.isArray(subtree.contentAvailability)
     ? subtree.contentAvailability[0]
     : subtree.contentAvailability;
   const contentPropertyIndex =
+    (subtree.contentPropertyRows ||
+      subtree.contentTemplatePropertyRows ||
+      subtree.contentAttributes) &&
     primaryContentAvailability &&
     getAvailabilityValue(primaryContentAvailability, availabilityIndex)
       ? getAvailabilityRank(primaryContentAvailability, availabilityIndex)
