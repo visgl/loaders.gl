@@ -457,6 +457,28 @@ test('implicit tiling rejects availability and attribute counts that cannot desc
     )
   ).toThrow(/TILE_GEOMETRIC_ERROR count does not match availability/);
 });
+test.each([
+  ['tile', {tilePropertyRows: []}],
+  ['content', {contentPropertyRows: [{unexpected: true}]}]
+])('implicit tiling rejects a mismatched %s property row count', (scope, rows) => {
+  const reference = createImplicitSubtreeReference(createDescriptor(), {
+    level: 0,
+    x: 0,
+    y: 0,
+    z: 0
+  });
+  expect(() =>
+    materializeImplicitSubtree(
+      {
+        tileAvailability: {constant: 1},
+        contentAvailability: {constant: 0},
+        childSubtreeAvailability: {constant: 0},
+        ...rows
+      },
+      reference
+    )
+  ).toThrow(new RegExp(scope + ' property-table count does not match availability'));
+});
 test('implicit subtree traversal materializes roots before applying SSE to deeper boundaries', async () => {
   let requestCount = 0;
   const tile = {
@@ -602,11 +624,13 @@ test('sparse implicit metadata ranks stay aligned across availability bytes', ()
     contentUrlTemplate: 'https://example.com/content/{name}.glb'
   });
   // Tiles 0–4, 7, 8, 10 and 20 exist. Only tiles 0, 8 and 20 have content.
+  // The high three bits of each final byte are padding and are excluded from row counts.
   const subtree: ParsedImplicitSubtree = {
-    tileAvailability: {explicitBitstream: new Uint8Array([0x9f, 0x05, 0x10])},
-    contentAvailability: {explicitBitstream: new Uint8Array([0x01, 0x01, 0x10])},
+    tileAvailability: {explicitBitstream: new Uint8Array([0x9f, 0x05, 0xf0])},
+    contentAvailability: {explicitBitstream: new Uint8Array([0x01, 0x01, 0xf0])},
     childSubtreeAvailability: {constant: 0},
     tileAttributes: {TILE_GEOMETRIC_ERROR: Uint8Array.of(10, 11, 12, 13, 14, 15, 16, 17, 18)},
+    contentPropertyRows: [{index: 0}, {index: 1}, {index: 2}],
     contentTemplatePropertyRows: [{name: 'root'}, {name: 'byte-boundary'}, {name: 'last'}]
   };
   const {root, tileCount} = materializeImplicitSubtree(
@@ -622,4 +646,5 @@ test('sparse implicit metadata ranks stay aligned across availability bytes', ()
   expect(atBoundary.contentUrl).toBe('https://example.com/content/byte-boundary.glb');
   expect(last.geometricError).toBe(18);
   expect(last.contentUrl).toBe('https://example.com/content/last.glb');
+  expect(last.implicitMetadata?.contentProperties).toEqual({index: 2});
 });
