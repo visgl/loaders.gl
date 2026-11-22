@@ -84,6 +84,8 @@ test('mesh codec rebases Float64 positions and returns bounds of reconstructed o
     [0.25, 0, 0],
     [1.25, 1, 0]
   ]);
+  const {min, max} = scenegraph.getAccessor(0);
+  expect([min, max]).toEqual(output.localBoundingBox);
   expect(output.maximumPositionError).toBe(0);
   expect(output.origin).not.toBe(input.origin);
   expect(output.boundingBox).toEqual([

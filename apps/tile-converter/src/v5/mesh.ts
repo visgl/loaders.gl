@@ -89,6 +89,11 @@ export interface MeshTileOptions {
  * @returns An embedded-buffer GLB containing one mesh, node, and default scene.
  */
 export function encodeMeshTile(mesh: MeshGeometry, options: MeshTileOptions = {}): ArrayBuffer {
+  return encodeMeshTileWithBounds(mesh, options).glb;
+}
+
+/** Encodes an uncompressed GLB and returns its POSITION accessor bounds for tileset placement. */
+export function encodeMeshTileWithBounds(mesh: MeshGeometry, options: MeshTileOptions) {
   const geometry = prepareMeshFeatureGeometry(validateMeshGeometry(mesh), options.features);
   const {scenegraph, materialIndex} = createMeshTileScenegraph(options, geometry);
   const meshIndex = scenegraph.addMesh({
@@ -111,16 +116,17 @@ export function createMeshTileScenegraph(options: MeshTileOptions, geometry: Mes
   return {scenegraph, materialIndex: material ? scenegraph.addMaterial(material) : undefined};
 }
 
-/** Adds placement-neutral nodes and serializes the single-mesh scene as GLB. */
-export function finalizeMeshTileScenegraph(
-  scenegraph: GLTFScenegraph,
-  meshIndex: number
-): ArrayBuffer {
+/** Serializes a single-mesh GLB and returns the bounds already recorded on its POSITION accessor. */
+export function finalizeMeshTileScenegraph(scenegraph: GLTFScenegraph, meshIndex: number) {
+  const {POSITION: positionAccessor} = scenegraph.getMesh(meshIndex).primitives[0].attributes;
+  const {min, max} = scenegraph.getAccessor(positionAccessor);
+  // Both mesh encoders always populate POSITION bounds on validated, nonempty geometry.
+  const localBoundingBox = [min!, max!] as const;
   const nodeIndex = scenegraph.addNode({meshIndex});
   const sceneIndex = scenegraph.addScene({nodeIndices: [nodeIndex]});
   scenegraph.setDefaultScene(sceneIndex);
   scenegraph.createBinaryChunk();
-  return GLTFWriter.encodeSync!(scenegraph.gltf);
+  return {glb: GLTFWriter.encodeSync!(scenegraph.gltf), localBoundingBox};
 }
 
 /** Validates the shared mesh profile; spatial preparation may retain Float64 positions internally. */

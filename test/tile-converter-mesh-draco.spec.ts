@@ -193,7 +193,12 @@ test.each([
     [0, 0, 0],
     [1, 1, 0]
   ]);
-  expect(container.json.accessors[0]).toMatchObject({min: [0, 0, 0], max: [1, 1, 0]});
+  const {min, max} = container.json.accessors[0];
+  expect([min, max]).toEqual(output.localBoundingBox);
+  expect(output.boundingBox).toEqual([
+    [6378137, 0, 0],
+    [6378138, 1, 0]
+  ]);
 });
 
 test('compressed GLB retains encoded image bytes, sampler and texture transform', async () => {
