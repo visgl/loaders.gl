@@ -117,10 +117,13 @@ export default class I3SNodePagesTiles {
   /**
    * Forms tile header using node and tileset data
    * @param id - id of node through all node pages
+   * @param signal - Stops scheduling further work. Pending page reads may be shared by other callers.
    */
   // eslint-disable-next-line complexity, max-statements
-  async formTileFromNodePages(id: number): Promise<I3STileHeader> {
+  async formTileFromNodePages(id: number, signal?: AbortSignal): Promise<I3STileHeader> {
+    signal?.throwIfAborted();
     const node: NodeInPage = await this.getNodeById(id);
+    signal?.throwIfAborted();
     const children: {id: string; obb: Obb}[] = [];
     const childNodesPromises: Promise<NodeInPage>[] = [];
     for (const child of node.children || []) {
@@ -128,6 +131,7 @@ export default class I3SNodePagesTiles {
     }
 
     const childNodes = await Promise.all(childNodesPromises);
+    signal?.throwIfAborted();
     for (const childNode of childNodes) {
       children.push({
         id: childNode.index.toString(),
