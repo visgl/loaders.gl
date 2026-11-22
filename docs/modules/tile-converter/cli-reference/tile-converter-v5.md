@@ -15,7 +15,8 @@ npm install -g @loaders.gl/tile-converter@beta
 tile-converter --help
 ```
 
-Use the `beta` npm tag for the v5 prerelease. The default command runs v5. `tile-converter-v5` is an alias. For existing scripts,
+Use the `beta` npm tag for the v5 prerelease. The default command runs v5.
+`tile-converter-v5` is an alias. For existing scripts,
 see the [migration table](../../../upgrade-guide.md#tile-converter-defaults-to-v5)
 and the [original v4 flag reference](./tile-converter.md).
 
@@ -106,7 +107,8 @@ tile tree and the dataset fits that profile.
 
 Successful operations write JSON to stdout and exit zero. Invalid arguments, unreadable inputs,
 unsupported profiles and exceeded budgets write JSON errors to stderr and exit nonzero. SIGINT
-cancels cooperatively and releases source/output handles. Help prints text.
+cancels cooperatively and releases source/output handles. Help and version flags print text.
+The CLI includes a `converter` identity object in JSON results and errors.
 
 ## Advanced usage
 
@@ -304,6 +306,31 @@ for the source/destination semantic checks.
 SLPK collections share byte-identical encoded texture sets with compatible texture
 profiles across mesh nodes. Geometry, UVs and material definitions remain per mesh.
 Both node pages and legacy node indices reference the shared texture owner.
+
+For legacy B3DM inputs, SLPK uses one OBJECTID per original batch-table row
+within each selected content placement, including across material nodes.
+Use `--omit-feature-id` to hide the feature identifier attribute while keeping
+OBJECTID available for picking and queries.
+
+For 3D Tiles to SLPK, add `"i3sFieldNames": {"gml:id": "gml_id"}` alongside
+`schema` in the feature mapping file. Keep the original column name in
+`schema.fields`. The output uses `gml_id` as its field name and `gml:id` as
+its display alias. Output names must be unique ignoring case and cannot use
+the reserved `OBJECTID` name.
+
+Set `"coerceNumericStrings": true` in the feature mapping file to accept
+decimal strings in legacy B3DM batch-table properties declared as integer,
+float32, or float64 columns. Integer strings must contain whole decimal
+digits, with an optional sign. Blank strings, hexadecimal, and floating
+point overflow fail validation. Feature identifiers and null handling follow
+their existing schema rules.
+
+For 3D Tiles to SLPK, a feature mapping can specify
+`"i3sNumericNullValues": {"measuredHeight": -9999}` to replace nulls in a
+nullable `int32` or `float64` column. Use the source field name, even when the
+output field is renamed. Choose a value outside the valid domain and configure
+consumers to treat it as missing. It is stored as an ordinary number in SLPK.
+Without a replacement, numeric nulls fail validation.
 
 For Node 3D Tiles and 3TZ inspection or flat conversion, `--max-documents`
 sets the root and external document placement budget from 1 to 256. The
