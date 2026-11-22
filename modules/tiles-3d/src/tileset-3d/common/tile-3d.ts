@@ -36,6 +36,8 @@ import {
 } from '../helpers/tiles-3d-request-priority';
 
 const scratchVector = new Vector3();
+/** Shared candidate matrix. Tiles clone changed transforms before keeping them. */
+
 const scratchComputedTransform = new Matrix4();
 
 /**
