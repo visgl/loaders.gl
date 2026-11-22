@@ -36,6 +36,7 @@ import {
 } from '../helpers/tiles-3d-request-priority';
 
 const scratchVector = new Vector3();
+const scratchComputedTransform = new Matrix4();
 
 /**
  * Classifies render-content visibility across all content volumes owned by a tile.
@@ -1297,14 +1298,12 @@ export class Tile3D {
    * @param parentTransform - Current computed transform of the parent tile or tileset.
    */
   _updateTransform(parentTransform = new Matrix4()): void {
-    const computedTransform = parentTransform.clone().multiplyRight(this.transform);
-    const didTransformChange = !computedTransform.equals(this.computedTransform);
-
-    if (!didTransformChange) {
+    scratchComputedTransform.copy(parentTransform).multiplyRight(this.transform);
+    if (scratchComputedTransform.equals(this.computedTransform)) {
       return;
     }
 
-    this.computedTransform = computedTransform;
+    this.computedTransform = scratchComputedTransform.clone();
 
     // Recalculate from the unscaled source metric so repeated model-matrix changes never compound.
     this._updateLodMetricScale();
