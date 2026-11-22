@@ -110,24 +110,39 @@ describe('I3SSource hierarchy and resource boundaries', () => {
     tileset.destroy();
   });
 
-  test('abort cancels active header requests and leaves queued children unloaded', async () => {
+  test.each([
+    'traversal',
+    'fetch options',
+    'request failure'
+  ])('%s stops active and queued headers', async signalSource => {
     const controller = new AbortController();
     const cancellation = new Error('cancel prefetch');
     const activeSignals: AbortSignal[] = [];
+    const rejectRequests: ((reason: Error) => void)[] = [];
     const loadResource = vi.fn(async (_url, _loader, options) => {
       const signal: AbortSignal = options.signal;
       activeSignals.push(signal);
       return await new Promise((_resolve, reject) => {
+        rejectRequests.push(reject);
         signal.addEventListener('abort', () => reject(signal.reason), {once: true});
       });
     });
-    const source = new I3SSource(createI3SMetadata({resolver: {loadResource}}) as any);
+    const loadOptions =
+      signalSource === 'fetch options' ? {core: {fetch: {signal: controller.signal}}} : {};
+    const source = new I3SSource(createI3SMetadata({resolver: {loadResource}}) as any, loadOptions);
     await source.initialize();
     const children: unknown[] = [];
     const parent = {header: {children: [1, 2, 3, 4, 5].map(id => ({id}))}, children} as any;
-    const loading = source.loadTileChildrenForTraversal(parent, controller.signal);
+    const loading = source.loadTileChildrenForTraversal(
+      parent,
+      signalSource === 'traversal' ? controller.signal : undefined
+    );
     await vi.waitFor(() => expect(activeSignals).toHaveLength(4));
-    controller.abort(cancellation);
+    if (signalSource === 'request failure') {
+      rejectRequests[0](cancellation);
+    } else {
+      controller.abort(cancellation);
+    }
     await expect(loading).rejects.toBe(cancellation);
     expect(activeSignals.every(signal => signal.aborted)).toBe(true);
     expect(loadResource).toHaveBeenCalledTimes(4);

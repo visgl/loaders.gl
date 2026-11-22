@@ -273,11 +273,7 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    const requestSignal =
-      signal && this.loadOptions.signal
-        ? AbortSignal.any([signal, this.loadOptions.signal])
-        : (signal ?? this.loadOptions.signal);
-    const header = await this.loadResourceData(nodeUrl, {...options, signal: requestSignal});
+    const header = await this.loadResourceData(nodeUrl, signal ? {...options, signal} : options);
     throwIfTraversalAborted(signal);
     return await this.transformTileHeader(header);
   }
@@ -287,6 +283,13 @@ export class I3SSource implements Tileset3DSource {
     parentTile: Tile3D,
     signal?: AbortSignal
   ): Promise<TileChildrenLoadResult> {
+    const fetchOptions = this.loadOptions.core?.fetch;
+    const configuredSignal =
+      this.loadOptions.signal ?? (typeof fetchOptions === 'object' ? fetchOptions?.signal : null);
+    signal =
+      signal && configuredSignal
+        ? AbortSignal.any([signal, configuredSignal])
+        : (signal ?? configuredSignal ?? undefined);
     throwIfTraversalAborted(signal);
     const childHeaders = parentTile.header.children || [];
     if (!childHeaders.length) {
@@ -334,9 +337,14 @@ export class I3SSource implements Tileset3DSource {
         while (nextChild < missingChildren.length) {
           throwIfTraversalAborted(requestSignal);
           const {id, index} = missingChildren[nextChild++];
-          const header = await this.loadChildTileHeader(parentTile, id, null, requestSignal);
-          throwIfTraversalAborted(requestSignal);
-          orderedChildren[index] = new Tile3DNode(parentTile.tileset, header, parentTile, id);
+          try {
+            const header = await this.loadChildTileHeader(parentTile, id, null, requestSignal);
+            throwIfTraversalAborted(requestSignal);
+            orderedChildren[index] = new Tile3DNode(parentTile.tileset, header, parentTile, id);
+          } catch (error) {
+            controller.abort(error);
+            throw error;
+          }
         }
       };
       try {
@@ -347,7 +355,6 @@ export class I3SSource implements Tileset3DSource {
           )
         );
       } catch (error) {
-        controller.abort(error);
         throwIfTraversalAborted(signal);
         throw error;
       }
