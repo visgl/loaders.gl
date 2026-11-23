@@ -30,7 +30,7 @@ const report = await convertTileset({
 });
 ```
 
-This API is experimental. The core provides source adapters and bounded browser sinks; the format adapters provide mesh and point-cloud codecs and archive packaging. Applications still supply input/output integration for other profiles; the legacy `I3SConverter` and `Tiles3DConverter` remain separate.
+This API is experimental. The core provides source adapters and bounded browser sinks; the format adapters provide mesh and point-cloud codecs and archive packaging. Applications still supply input/output integration for other profiles.
 
 See the [conversion support matrix](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/supported-features.md#experimental-v5-conversion-support) for current input/output profiles, browser limits and remaining qualification work.
 
@@ -585,7 +585,7 @@ Local dependencies must resolve within the root JSON's real directory, including
 
 Inspection reads metadata without loading content, validates the existing explicit 1.0/1.1 document profile and preserves ordered placements/transforms. Raw reads do not decode meshes, infer CRS or qualify content formats. Set `maxTilesetDocuments` (up to 32) to enable raw external-document traversal; add `inspectNestedTilesets: true` to inspect declared .json references without fetching binary contents. Implicit tiling remains unsupported. I3S/SLPK use the separate Node source below. Browser and core entrypoints remain free of Node imports.
 
-The [v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md) exposes this metadata inspection as `tile-converter inspect` and adds bounded selected-mesh `convert` and target-profile `validate` commands. The original v4 workflow is available via `tile-converter-v4`. The `tile-converter-v5` name remains an alias for the default command.
+The [v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md) exposes this metadata inspection as `tile-converter inspect` and adds bounded selected-mesh `convert` and target-profile `validate` commands. The `tile-converter-v5` name remains an alias for the default command.
 
 The Node entrypoint also exports `convertNodeTileset`:
 

@@ -8,15 +8,7 @@ Tile converter
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)[I3S converter](https://loaders.gl/next/docs/modules/tile-converter/api-reference/i3s-converter.md)
-
-<!-- -->
-
-[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/i3s-converter.md)[3D Tiles converter](https://loaders.gl/next/docs/modules/tile-converter/api-reference/3d-tiles-converter.md)
-
-<!-- -->
-
-[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/3d-tiles-converter.md)[Experimental v5 core](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md)
+[ ↗](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)[Experimental v5 core](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md)
 
 <!-- -->
 
@@ -97,7 +89,6 @@ npm install @loaders.gl/tile-converter@beta
 | Default v5 Node CLI (experimental) | [`tile-converter`](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md)          | Inspect, validate and convert explicitly selected meshes; opt-in complete explicit hierarchy for 3D Tiles/3TZ |
 | Portable v5 API                    | [`/v5/core` and `/v5/adapters`](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md) | Mesh/point processing, declared features and CRS operations, bounded archive output                           |
 | Browser application                | [Inline conversion app](https://loaders.gl/next/examples/tiles/3d-tiles-conversion)                                 | Inspect, select, convert and download partial SLPK/3TZ collections                                            |
-| Legacy v4 Node CLI                 | [`tile-converter-v4`](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter.md)          | Original I3S ↔ 3D Tiles workflow, filesystem/services and texture atlases                                     |
 
 The documentation describes the current repository implementation. Check the installed package version with `npx tile-converter --version` before using experimental v5 capabilities. See the [migration table](https://loaders.gl/next/docs/upgrade-guide.md#tile-converter-defaults-to-v5) for existing scripts.
 
@@ -117,11 +108,11 @@ See the [v5 CLI reference](https://loaders.gl/next/docs/modules/tile-converter/c
 
 ## API[​](#api "Direct link to API")
 
-Import the v5 API from the package root or the unchanged `/v5` alias. The [API reference](https://loaders.gl/next/docs/modules/tile-converter/api-reference.md) explains the portable v5 APIs and their Node and browser subpaths. Legacy Node.js classes `I3SConverter` and `Tiles3DConverter` are available under `@loaders.gl/tile-converter/v4`.
+Import the v5 API from the package root or the unchanged `/v5` alias. The [API reference](https://loaders.gl/next/docs/modules/tile-converter/api-reference.md) explains the portable v5 APIs and their Node and browser subpaths.
 
 ### Runtime portability[​](#runtime-portability "Direct link to Runtime portability")
 
-The legacy converters, command-line tools and HTTP server require Node.js. Their filesystem, service and texture-atlas operations remain separate from the experimental v5 conversion APIs. V5 core and adapters use portable binary data and run in Chromium and Node.js with application-provided input readers, output sinks and decoder assets.
+The command-line tools and I3S server require Node.js. V5 core and adapters use portable binary data and run in Chromium and Node.js with application-provided input readers, output sinks and decoder assets.
 
 ## Conversion support[​](#conversion-support "Direct link to Conversion support")
 
@@ -156,7 +147,6 @@ For application-owned storage, `encodeTileConversionArchiveInBatches` streams fi
 There are additional ways to perform conversion:
 
 * Tile converter can be run right on a repository branch. It might be helpful if some updates are needed which last release doesn't contain [Build instructions](https://loaders.gl/next/docs/modules/tile-converter/api-reference/build-instructions.md).
-* An autonomous bundle script can be built. It packages the legacy converter into one file for distribution. [See instructions](https://loaders.gl/next/docs/modules/tile-converter/api-reference/tile-converter-bundle.md).
 
 ## Attribution[​](#attribution "Direct link to Attribution")
 

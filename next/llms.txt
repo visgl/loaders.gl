@@ -751,15 +751,12 @@ Convert between I3S and 3D Tiles datasets with CLI and JavaScript APIs.
 
 - [Move tiled datasets between compatible standards.](https://loaders.gl/next/docs/modules/tile-converter.md): Convert between I3S and 3D Tiles datasets with CLI and JavaScript APIs.
 - [@loaders.gl/tile-converter](https://loaders.gl/next/docs/modules/tile-converter/api-reference.md): JavaScript APIs for converting I3S and 3D Tiles datasets.
-- [Prepare I3S data for a 3D Tiles pipeline.](https://loaders.gl/next/docs/modules/tile-converter/api-reference/3d-tiles-converter.md): Convert I3S datasets into 3D Tiles output through the tile-converter JavaScript API.
-- [Run the converter from the source tree.](https://loaders.gl/next/docs/modules/tile-converter/api-reference/build-instructions.md): Build and run the tile converter directly from a repository branch when a published package is not sufficient.
-- [Prepare 3D Tiles data for I3S consumers.](https://loaders.gl/next/docs/modules/tile-converter/api-reference/i3s-converter.md): Convert 3D Tiles datasets into I3S output through the tile-converter JavaScript API.
+- [Tile converter build instructions](https://loaders.gl/next/docs/modules/tile-converter/api-reference/build-instructions.md): Build and run the tile converter from a repository checkout.
 - [Point-cloud attribute mapping and COPC output](https://loaders.gl/next/docs/modules/tile-converter/api-reference/point-cloud-copc.md): The v5 adapters support explicit point attribute mapping and bounded COPC batch authoring.
-- [Ship the converter as one runnable script.](https://loaders.gl/next/docs/modules/tile-converter/api-reference/tile-converter-bundle.md): Build a self-contained Node.js converter bundle for environments that do not install the full npm package.
 - [Tile-converter v5 conversion core](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md): Experimental platform-neutral contracts for inspecting, converting, and validating tilesets.
 - [Make converted I3S data available to a client.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/i3s-server.md): Serve converted I3S output or SLPK data through the tile-converter HTTP service.
 - [Check the conversion boundary before starting a large job.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/supported-features.md): Check which I3S and 3D Tiles layer types, versions, sources, extensions, and output options the converter supports.
-- [Put tiled-data conversion in the build pipeline.](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter.md): Convert I3S and 3D Tiles datasets from URLs or local sources with a repeatable command-line workflow.
+- [Legacy tile-converter CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter.md): Migrate scripts that used the legacy v4 tile converter.
 - [Tile-converter v5 CLI](https://loaders.gl/next/docs/modules/tile-converter/cli-reference/tile-converter-v5.md): Inspect, convert and validate 3D Tiles and I3S meshes from the command line.
 
 #### tiles

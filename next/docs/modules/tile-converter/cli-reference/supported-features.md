@@ -12,15 +12,11 @@ I3S and 3D Tiles are broad standards with several layer types, payloads, version
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md)[I3S converter API](https://loaders.gl/next/docs/modules/tile-converter/api-reference/i3s-converter.md)
+[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md)[Conversion API](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md)
 
 <!-- -->
 
-[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/i3s-converter.md)[3D Tiles converter API](https://loaders.gl/next/docs/modules/tile-converter/api-reference/3d-tiles-converter.md)
-
-<!-- -->
-
-[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/3d-tiles-converter.md)
+[ ↗](https://loaders.gl/next/docs/modules/tile-converter/api-reference/v5-conversion.md)
 
 Compatibility at a glance
 
