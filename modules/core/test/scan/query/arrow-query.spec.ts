@@ -435,7 +435,7 @@ test('queryArrowTable orders supported scalar types and rejects unsupported type
     queryArrowTable(makeArrowTable({bytes: [new Uint8Array([1]), new Uint8Array([2])]}), {
       orderBy: [{column: 'bytes'}]
     })
-  ).toThrow(/cannot compare/);
+  ).toThrow(/Unsupported Arrow relational key type/);
   expect(
     toRows(
       queryArrowTable(makeArrowTable({flag: [false, true]}), {
@@ -508,7 +508,7 @@ test('queryArrowTable evaluates every relational expression and aggregate bounda
     queryArrowTable(makeArrowTable({value: ['x']}), {
       aggregates: [{name: 'bad', function: 'sum', column: 'value'}]
     })
-  ).toThrow(/requires numeric values/);
+  ).toThrow(/does not support Arrow type/);
 });
 
 test('queryArrowTable covers empty-result schemas for computed values', () => {
