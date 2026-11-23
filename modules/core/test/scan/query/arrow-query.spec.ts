@@ -432,9 +432,14 @@ test('queryArrowTable orders supported scalar types and rejects unsupported type
   expect(toRows(result).map(row => row.date)).toEqual([1, 2]);
 
   expect(() =>
-    queryArrowTable(makeArrowTable({bytes: [new Uint8Array([1]), new Uint8Array([2])]}), {
-      orderBy: [{column: 'bytes'}]
-    })
+    queryArrowTable(
+      new arrow.Table({
+        bytes: arrow.vectorFromArray([Uint8Array.of(1), Uint8Array.of(2)], new arrow.Binary())
+      }),
+      {
+        orderBy: [{column: 'bytes'}]
+      }
+    )
   ).toThrow(/Unsupported Arrow relational key type/);
   expect(
     toRows(
@@ -566,10 +571,10 @@ test('queryArrowTable covers scalar ordering and grouping key kinds', () => {
   expect(toRows(orderedBigints).map(row => row.value)).toEqual([1n, 2n, 2n]);
 
   const grouped = queryArrowTable(
-    makeArrowTable({
-      date: [new Date(1), new Date(1)],
-      bytes: [new Uint8Array([1, 2]), new Uint8Array([1, 2])],
-      nullable: [null, null]
+    new arrow.Table({
+      date: arrow.vectorFromArray([1, 1], new arrow.TimestampMillisecond()),
+      bytes: arrow.vectorFromArray([Uint8Array.of(1, 2), Uint8Array.of(1, 2)], new arrow.Binary()),
+      nullable: arrow.vectorFromArray([null, null], new arrow.Null())
     }),
     {
       groupBy: ['date', 'bytes', 'nullable'],
