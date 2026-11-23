@@ -150,26 +150,62 @@
               "slug": "/modules/_sections/core/developer-guide"
             }
           },
-          "modules/core/api-reference/loader-options",
-          "modules/core/api-reference/load",
-          "modules/core/api-reference/load-in-batches",
-          "modules/core/api-reference/parse",
-          "modules/core/api-reference/parse-sync",
-          "modules/core/api-reference/parse-in-batches",
-          "modules/core/api-reference/select-loader",
-          "modules/core/api-reference/set-loader-options",
-          "modules/core/api-reference/register-loaders",
-          "modules/core/api-reference/select-source",
-          "modules/core/api-reference/create-data-source",
-          "modules/core/api-reference/encode",
-          "modules/core/api-reference/save",
-          "modules/core/api-reference/fetch-file",
-          "modules/core/api-reference/write-file",
-          "modules/core/api-reference/set-path-prefix",
-          "modules/core/api-reference/binary-utilities",
-          "modules/core/api-reference/iterator-utilities",
-          "specifications/loader-object-format",
-          "specifications/writer-object-format",
+          {
+            "type": "category",
+            "label": "Loading and Parsing",
+            "link": {
+              "type": "doc",
+              "id": "modules/core/api-reference/load"
+            },
+            "items": [
+              "modules/core/api-reference/load-in-batches",
+              "modules/core/api-reference/parse",
+              "modules/core/api-reference/parse-sync",
+              "modules/core/api-reference/parse-in-batches"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "Sources",
+            "link": {
+              "type": "doc",
+              "id": "modules/core/api-reference/create-data-source"
+            },
+            "items": [
+              "modules/core/api-reference/select-source"
+            ]
+          },
+          {
+            "type": "doc",
+            "id": "modules/core/api-reference/encode",
+            "label": "Encoding"
+          },
+          {
+            "type": "category",
+            "label": "Configuration",
+            "link": {
+              "type": "doc",
+              "id": "modules/core/api-reference/loader-options"
+            },
+            "items": [
+              "modules/core/api-reference/set-loader-options",
+              "modules/core/api-reference/select-loader",
+              "modules/core/api-reference/register-loaders",
+              "modules/core/api-reference/set-path-prefix"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "Files and Streams",
+            "link": {
+              "type": "doc",
+              "id": "modules/core/api-reference/fetch-file"
+            },
+            "items": [
+              "modules/core/api-reference/binary-utilities",
+              "modules/core/api-reference/iterator-utilities"
+            ]
+          },
           {
             "type": "doc",
             "id": "modules/core/arrow-geometry/README",
@@ -199,7 +235,9 @@
               "modules/core/loader-utils/api-reference/range-request-scheduler",
               "modules/core/loader-utils/api-reference/range-request-cache",
               "modules/core/loader-utils/api-reference/request-credentials",
-              "modules/core/loader-utils/api-reference/parse-with-context"
+              "modules/core/loader-utils/api-reference/parse-with-context",
+              "specifications/loader-object-format",
+              "specifications/writer-object-format"
             ],
             "link": {
               "type": "doc",
