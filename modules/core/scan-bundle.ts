@@ -2,25 +2,29 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/** Startup entry points import their implementation modules to keep the full query API lazy. */
+export {createScanEngine, registerScanBackend} from './src/scan/scan-engine';
 export {
-  createScanEngine,
-  registerScanBackend,
   executeTableScanBatches,
   filterTableBatch,
   projectTableBatch,
   projectTableSchema,
   truncateTableBatch,
-  parseSQLPredicate,
   createScanQueryMetadata,
   intersectPointCloudBounds,
   selectPointCloudScanTiles,
-  validatePointCloudQueryOptions,
+  validatePointCloudQueryOptions
+} from '@loaders.gl/core/loader-utils';
+export {parseSQLPredicate} from './src/scan/parse-sql-predicate';
+export {
   FEDERATED_TABLE_QUERY_CAPABILITIES,
-  FederatedTableScanSource,
+  FederatedTableScanSource
+} from './src/scan/federated-table-scan-source';
+export {
   AddressedVectorTableScanSource,
   VectorFeatureTableScanSource,
   VectorTileTableScanSource
-} from './src/scan';
+} from './src/scan/vector-table-scan-source';
 export type {
   TableScanBatchReader,
   TableScanBatchOperators,
@@ -79,7 +83,10 @@ export type {
   VectorTileTableScanSourceOptions
 } from './src/scan';
 
-export {normalizeTableQuery, planLogicalTableQuery} from './src/scan';
+export {
+  normalizeTableQuery,
+  planLogicalTableQuery
+} from './src/loader-utils/lib/scan-utils/logical-table-query';
 export type {
   NormalizedTableSelection,
   NormalizedTableQuery,

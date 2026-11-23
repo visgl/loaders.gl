@@ -27,7 +27,7 @@ import {
   convertTableToArrow,
   convertSchemaToArrow
 } from '@loaders.gl/core/schema-utils';
-import {queryArrowTable} from './query-arrow-table';
+import {queryArrowTable} from './plan-arrow-table-query';
 import {type SQLPredicate} from './sql-predicate-types';
 
 /** Schema reconciliation modes supported by ordered append federation. */
