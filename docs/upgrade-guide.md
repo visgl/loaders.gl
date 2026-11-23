@@ -24,7 +24,7 @@ for new features.
 
 ### Arrow query results
 
-Relational Arrow queries use math.gl’s Arrow result types. Read `COUNT` fields as Arrow `Int64` values (JavaScript `bigint`). An empty ungrouped aggregate yields one row with `COUNT` equal to `0n` and `NULL` in aggregates such as `SUM` and `AVG`.
+Relational Arrow queries use math.gl’s Arrow result types. Read `COUNT` fields as Arrow `Int64` values (JavaScript `bigint`). An empty ungrouped aggregate yields one row with `COUNT` equal to `0n` and `NULL` in aggregates such as `SUM` and `AVG`. Division by zero throws a SQL evaluation error. Use a nullable divisor to produce a null result instead.
 
 ### Package and import migrations
 

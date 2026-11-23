@@ -470,7 +470,7 @@ test('queryArrowTable evaluates every relational expression and aggregate bounda
   const table = makeArrowTable({
     group: ['a', 'a', 'b'],
     left: [8, 4, null],
-    right: [2, 0, 3]
+    right: [2, 1, 3]
   });
   const expressions = [
     {name: 'literal', expression: {op: 'literal' as const, value: true}},
@@ -485,9 +485,15 @@ test('queryArrowTable evaluates every relational expression and aggregate bounda
   });
   expect(toRows(result)).toEqual([
     {group: 'a', literal: true, copy: 8, add: 10, subtract: 6, divide: 4},
-    {group: 'a', literal: true, copy: 4, add: 4, subtract: 4, divide: null},
+    {group: 'a', literal: true, copy: 4, add: 5, subtract: 3, divide: 4},
     {group: 'b', literal: true, copy: null, add: null, subtract: null, divide: null}
   ]);
+
+  expect(() =>
+    queryArrowTable(makeArrowTable({left: [4], right: [0]}), {
+      expressions: [{name: 'ratio', expression: {op: 'divide', left: 'left', right: 'right'}}]
+    })
+  ).toThrow(/division by zero/i);
 
   const aggregates = queryArrowTable(table, {
     aggregates: [

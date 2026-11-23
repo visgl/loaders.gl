@@ -226,10 +226,11 @@ function queryArrowTableRelational(
           aggregate.column === undefined ? undefined : identifier(aggregate.column);
         if (aggregate.function === 'count')
           return [aggregate.name, {operation: 'COUNT', expression}];
-        if (!expression)
-          throw new Error('Arrow aggregate ' + aggregate.function + ' requires a column.');
         const operations = {sum: 'SUM', min: 'MIN', max: 'MAX', avg: 'AVG'} as const;
-        return [aggregate.name, {operation: operations[aggregate.function], expression}];
+        return [
+          aggregate.name,
+          {operation: operations[aggregate.function], expression: expression!}
+        ];
       })
     ),
     orderBy: options.orderBy,
@@ -243,29 +244,17 @@ function identifier(name: string): {type: 'Identifier'; name: string} {
   return {type: 'Identifier', name};
 }
 
-/** Translates portable arithmetic and preserves null on division by zero. */
+/** Translates portable arithmetic to the upstream expression AST. */
 function toArrowExpression(
   expression: Exclude<RelationalExpression['expression'], {op: 'column'}>
 ) {
   if (expression.op === 'literal') return literal(expression.value);
   const operators = {add: '+', subtract: '-', multiply: '*', divide: '/'} as const;
-  const binary = {
+  return {
     type: 'BinaryExpression' as const,
     operator: operators[expression.op],
     left: identifier(expression.left),
     right: identifier(expression.right)
-  };
-  if (expression.op !== 'divide') return binary;
-  return {
-    type: 'ConditionalExpression' as const,
-    test: {
-      type: 'BinaryExpression' as const,
-      operator: '===',
-      left: binary.right,
-      right: literal(0)
-    },
-    consequent: literal(null),
-    alternate: binary
   };
 }
 
