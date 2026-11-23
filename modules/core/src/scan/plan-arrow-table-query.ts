@@ -188,11 +188,10 @@ function queryArrowTableRelational(
       ? [...(options.groupBy ?? []), ...(options.aggregates ?? []).map(aggregate => aggregate.name)]
       : sourceColumns);
   const plan = planRelationalQuery(sourceColumns, {...options, columns: outputColumns} as never);
-  const scan = plan.tablePlan.find(step => step.kind === 'scan');
-  if (!scan) throw new Error('Arrow relational query plan is missing a scan step.');
-  let table = queryArrowTable(sourceTable, {
-    predicate: options.predicate,
-    columns: scan.columns,
+  const scan = plan.tablePlan.find(step => step.kind === 'scan')!;
+  let table = execute(sourceTable, {
+    where: options.predicate,
+    select: scan.columns,
     signal: options.signal
   });
   if (options.union?.length) {
