@@ -22,6 +22,10 @@ This section covers upgrades from stable loaders.gl 4.x to 5.0. Update all loade
 dependencies together and regenerate your lockfile. See [What's New](./whats-new.mdx#v50)
 for new features.
 
+### Arrow query results
+
+Relational Arrow queries use math.gl’s Arrow result types. Read `COUNT` fields as Arrow `Int64` values (JavaScript `bigint`). An empty ungrouped aggregate yields one row with `COUNT` equal to `0n` and `NULL` in aggregates such as `SUM` and `AVG`.
+
 ### Package and import migrations
 
 Install the grouped npm package and use its format subpath. For example, replace

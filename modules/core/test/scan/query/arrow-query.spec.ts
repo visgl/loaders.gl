@@ -210,8 +210,8 @@ test('queryArrowTable performs SQL-like grouped aggregates and null handling', (
   });
 
   expect(toRows(result)).toEqual([
-    {group: 'b', countValues: 1, total: 5, average: 5},
-    {group: 'a', countValues: 1, total: 2, average: 2}
+    {group: 'b', countValues: 1n, total: 5, average: 5},
+    {group: 'a', countValues: 1n, total: 2, average: 2}
   ]);
 });
 
@@ -381,8 +381,8 @@ test('queryArrowTable computes min, max, count-all, and empty aggregates', () =>
     orderBy: [{column: 'group'}]
   });
   expect(toRows(result)).toEqual([
-    {group: 'a', rows: 2, minimum: 2, maximum: 2},
-    {group: 'b', rows: 1, minimum: 5, maximum: 5}
+    {group: 'a', rows: 2n, minimum: 2, maximum: 2},
+    {group: 'b', rows: 1n, minimum: 5, maximum: 5}
   ]);
   expect(
     toRows(
@@ -417,7 +417,7 @@ test('queryArrowTable evaluates scalar expression edge cases', () => {
     queryArrowTable(makeArrowTable({left: ['x'], right: [1]}), {
       expressions: [{name: 'invalid', expression: {op: 'add', left: 'left', right: 'right'}}]
     })
-  ).toThrow(/numeric operands/);
+  ).toThrow(/operand types must match/);
 });
 
 test('queryArrowTable orders supported scalar types and rejects unsupported types', () => {
@@ -497,13 +497,13 @@ test('queryArrowTable evaluates every relational expression and aggregate bounda
       {name: 'maximum', function: 'max', column: 'left'}
     ]
   });
-  expect(toRows(aggregates)).toEqual([{rows: 3, values: 2, minimum: 4, maximum: 8}]);
+  expect(toRows(aggregates)).toEqual([{rows: 3n, values: 2n, minimum: 4, maximum: 8}]);
 
   expect(() =>
     queryArrowTable(makeArrowTable({left: ['x'], right: [1]}), {
       expressions: [{name: 'bad', expression: {op: 'add', left: 'left', right: 'right'}}]
     })
-  ).toThrow(/requires numeric operands/);
+  ).toThrow(/operand types must match/);
   expect(() =>
     queryArrowTable(makeArrowTable({value: ['x']}), {
       aggregates: [{name: 'bad', function: 'sum', column: 'value'}]
@@ -542,7 +542,7 @@ test('queryArrowTable covers empty-result schemas for computed values', () => {
     limit: 0
   });
   expect(aggregateResult.schema.fields.map(field => field.type.toString())).toEqual([
-    'Int32',
+    'Int64',
     'Float64'
   ]);
 });
@@ -571,7 +571,7 @@ test('queryArrowTable covers scalar ordering and grouping key kinds', () => {
     }
   );
   expect(toRows(grouped)).toHaveLength(1);
-  expect(toRows(grouped)[0].rows).toBe(2);
+  expect(toRows(grouped)[0].rows).toBe(2n);
 
   expect(() =>
     queryArrowTable(makeArrowTable({left: [Number.POSITIVE_INFINITY]}), {

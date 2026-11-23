@@ -212,11 +212,13 @@ function queryArrowTableRelational(
   for (const {name, expression} of options.expressions ?? []) {
     const select: ArrowBatchQuery['select'] = [
       ...table.schema.fields.map(field => field.name),
-      {expression: toArrowExpression(expression), as: name}
+      expression.op === 'column'
+        ? {column: expression.column, as: name}
+        : {expression: toArrowExpression(expression), as: name}
     ];
     table = execute(table, {select, signal: options.signal});
   }
-  const result = execute(table, {
+  return execute(table, {
     select: outputColumns,
     groupBy: options.groupBy,
     aggregates: Object.fromEntries(
@@ -235,28 +237,6 @@ function queryArrowTableRelational(
     limit: options.limit,
     signal: options.signal
   });
-  const counts = new Set(
-    options.aggregates
-      ?.filter(aggregate => aggregate.function === 'count')
-      .map(aggregate => aggregate.name)
-  );
-  if (!counts.size) return result;
-  // The portable API exposes counts as numbers, while the SQL executor uses Int64.
-  return execute(result, {
-    select: outputColumns.map(name =>
-      counts.has(name)
-        ? {
-            as: name,
-            expression: {
-              type: 'CallExpression',
-              callee: identifier('cast'),
-              arguments: [identifier(name), literal(result.numRows ? 'float64' : 'int32')]
-            }
-          }
-        : name
-    ),
-    signal: options.signal
-  });
 }
 
 /** References an Arrow field by name without parsing SQL. */
@@ -265,8 +245,9 @@ function identifier(name: string): {type: 'Identifier'; name: string} {
 }
 
 /** Translates portable arithmetic and preserves null on division by zero. */
-function toArrowExpression(expression: RelationalExpression['expression']) {
-  if (expression.op === 'column') return identifier(expression.column);
+function toArrowExpression(
+  expression: Exclude<RelationalExpression['expression'], {op: 'column'}>
+) {
   if (expression.op === 'literal') return literal(expression.value);
   const operators = {add: '+', subtract: '-', multiply: '*', divide: '/'} as const;
   const binary = {
