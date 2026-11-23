@@ -354,9 +354,6 @@
       "@loaders.gl/tile-converter": [
         "apps/tile-converter/src"
       ],
-      "@loaders.gl/tile-converter/v4": [
-        "apps/tile-converter/src/v4/index.ts"
-      ],
       "@loaders.gl/tile-converter/v5": [
         "apps/tile-converter/src/v5/index.ts"
       ],

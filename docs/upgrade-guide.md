@@ -68,8 +68,9 @@ The GeoArrow IPC loader and writer are available from `@loaders.gl/tables/geoarr
 
 ### Tile converter defaults to v5
 
-The `tile-converter` CLI and the package root now use the v5 engine. Use
-`tile-converter-v4` or `@loaders.gl/tile-converter/v4` for existing v4 workflows. See the
+The `tile-converter` CLI and the package root now use the v5 engine. The
+`tile-converter-v4` command and `@loaders.gl/tile-converter/v4` export were removed.
+If you still need the legacy workflow, use a [previous release](./modules/tile-converter/cli-reference/tile-converter.md). See the
 [v5 CLI reference](./modules/tile-converter/cli-reference/tile-converter-v5.md) for the
 new options and supported inputs.
 

@@ -24,7 +24,7 @@ const report = await convertTileset({
 });
 ```
 
-This API is experimental. The core provides source adapters and bounded browser sinks; the format adapters provide mesh and point-cloud codecs and archive packaging. Applications still supply input/output integration for other profiles; the legacy `I3SConverter` and `Tiles3DConverter` remain separate.
+This API is experimental. The core provides source adapters and bounded browser sinks; the format adapters provide mesh and point-cloud codecs and archive packaging. Applications still supply input/output integration for other profiles.
 
 See the [conversion support matrix](/docs/modules/tile-converter/cli-reference/supported-features#experimental-v5-conversion-support)
 for current input/output profiles, browser limits and remaining qualification work.
@@ -777,7 +777,7 @@ Node imports.
 
 The [v5 CLI](/docs/modules/tile-converter/cli-reference/tile-converter-v5) exposes this
 metadata inspection as `tile-converter inspect` and adds bounded selected-mesh `convert`
-and target-profile `validate` commands. The original v4 workflow is available via `tile-converter-v4`. The `tile-converter-v5` name remains an alias for the default command.
+and target-profile `validate` commands. The `tile-converter-v5` name remains an alias for the default command.
 
 The Node entrypoint also exports `convertNodeTileset`:
 

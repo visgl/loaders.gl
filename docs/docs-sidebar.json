@@ -1896,9 +1896,7 @@
                   "slug": "/modules/_sections/tile-converter/api-and-guides"
                 },
                 "items": [
-                  "modules/tile-converter/api-reference/3d-tiles-converter",
-                  "modules/tile-converter/api-reference/i3s-converter",
-                  "modules/tile-converter/api-reference/tile-converter-bundle"
+                  "modules/tile-converter/api-reference/README"
                 ]
               },
               {
