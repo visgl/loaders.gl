@@ -1,12 +1,12 @@
 # Publishing loaders.gl
 
 Public packages under `modules/*` and `apps/*` share the version in `lerna.json`.
-Publish 5.0 prereleases, including release candidates, with the `beta` dist-tag. Private workspaces are not published.
+Publish 5.0 prereleases, including release candidates, with the `beta` dist-tag. Publish 5.0.0 with the `latest` dist-tag. Private workspaces are not published.
 
 ## Current package setup
 
 All 22 public workspace packages already exist on npm. The next coordinated release is
-5.0.0-rc.2. Private workspaces stay version-aligned but are not published.
+5.0.0. Private workspaces stay version-aligned but are not published.
 
 The standalone config, XML, textures, video, and Draco packages have been
 consolidated into documents, images, and scene. Publish the current workspace
@@ -91,13 +91,13 @@ for npm trusted publishing. The npm relationship must name exactly
 1. Merge the reviewed version, dependency pins, lockfile, and changelog preparation
    into latest master. Keep `NPM_TAG` set to `beta` and fixture URLs on master.
 2. Verify all checks on the merged revision, then tag that exact master commit
-   `v5.0.0-rc.2` and push the tag. Do not run `yarn publish-beta` after a
+   `v5.0.0` and push the tag. Do not run `yarn publish-beta` after a
    version-preparation PR: it increments the version again and pushes a tag.
 3. The workflow builds packages, workers, and apps once and verifies embedded
    versions and the exact release tag. Node tests, browser shards, hermetic slow
    tests, and npm publishing restore the same build artifact.
 4. A separate finalization job verifies every public workspace version and distribution
-   tag in the registry before creating the GitHub prerelease announcement. It checks
+   tag in the registry before creating the GitHub release announcement. It checks
    up to 60 times at 15-second intervals, allowing about 15 minutes for propagation.
    Missing versions, incorrect tags, and registry request failures still fail the job.
 

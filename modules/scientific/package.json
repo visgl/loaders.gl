@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scientific",
-  "version": "5.0.0-rc.2",
+  "version": "5.0.0",
   "description": "Scientific NumPy arrays and sources for NetCDF, Zarr, GRIB2, HDF5, and VTK",
   "license": "MIT",
   "type": "module",
@@ -130,7 +130,7 @@
     "build-cjs-pdb": "esbuild src/pdb-loader.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/pdb-loader.cjs --external:@loaders.gl/*"
   },
   "dependencies": {
-    "@loaders.gl/documents": "5.0.0-rc.2",
+    "@loaders.gl/documents": "5.0.0",
     "@math.gl/core": "^5.0.0",
     "@math.gl/geospatial": "^5.0.0",
     "h5wasm": "^0.10.3",
