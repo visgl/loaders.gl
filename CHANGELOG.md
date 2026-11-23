@@ -2,6 +2,14 @@
 
 ## v5.0
 
+### v5.0.0
+
+- Remove the legacy v4 tile-converter implementation (#4606).
+- Delegate residual Arrow SQL joins to math.gl (#4608).
+- Fix bundled module worker URLs in Rspack (#4592).
+- Reduce memory use in tile conversion and implicit tileset traversal (#4589, #4593, #4595, #4596, #4598–#4600, #4602, #4603).
+- Prefetch I3S child headers with bounded concurrency (#4604).
+
 ### v5.0.0-rc.2
 
 - Align loaders.gl with the stable math.gl 5.0.0 APIs (#4587).

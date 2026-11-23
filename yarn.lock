@@ -5491,10 +5491,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arcgis@workspace:modules/arcgis"
   dependencies:
-    "@loaders.gl/images": "npm:5.0.0-rc.2"
-    "@loaders.gl/raster": "npm:5.0.0-rc.2"
-    "@loaders.gl/tiles": "npm:5.0.0-rc.2"
-    "@loaders.gl/tiles-3d": "npm:5.0.0-rc.2"
+    "@loaders.gl/images": "npm:5.0.0"
+    "@loaders.gl/raster": "npm:5.0.0"
+    "@loaders.gl/tiles": "npm:5.0.0"
+    "@loaders.gl/tiles-3d": "npm:5.0.0"
     lerc: "npm:^4.2.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5505,8 +5505,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/archives@workspace:modules/archives"
   dependencies:
-    "@loaders.gl/compression": "npm:5.0.0-rc.2"
-    "@loaders.gl/crypto": "npm:5.0.0-rc.2"
+    "@loaders.gl/compression": "npm:5.0.0"
+    "@loaders.gl/crypto": "npm:5.0.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
   languageName: unknown
@@ -5591,11 +5591,11 @@ __metadata:
     "@deck.gl/core": "npm:10.0.0-alpha.1"
     "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
-    "@loaders.gl/archives": "npm:5.0.0-rc.2"
-    "@loaders.gl/compression": "npm:5.0.0-rc.2"
-    "@loaders.gl/tables": "npm:5.0.0-rc.2"
-    "@loaders.gl/tiles": "npm:5.0.0-rc.2"
-    "@loaders.gl/tiles-3d": "npm:5.0.0-rc.2"
+    "@loaders.gl/archives": "npm:5.0.0"
+    "@loaders.gl/compression": "npm:5.0.0"
+    "@loaders.gl/tables": "npm:5.0.0"
+    "@loaders.gl/tiles": "npm:5.0.0"
+    "@loaders.gl/tiles-3d": "npm:5.0.0"
     "@luma.gl/core": "npm:10.0.0-alpha.14"
     "@luma.gl/engine": "npm:10.0.0-alpha.14"
     "@luma.gl/shaders": "npm:10.0.0-alpha.14"
@@ -5608,7 +5608,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/documents@npm:5.0.0-rc.2, @loaders.gl/documents@workspace:*, @loaders.gl/documents@workspace:modules/documents":
+"@loaders.gl/documents@npm:5.0.0, @loaders.gl/documents@workspace:*, @loaders.gl/documents@workspace:modules/documents":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/documents@workspace:modules/documents"
   peerDependencies:
@@ -5620,8 +5620,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geospatial@workspace:modules/geospatial"
   dependencies:
-    "@loaders.gl/archives": "npm:5.0.0-rc.2"
-    "@loaders.gl/documents": "npm:5.0.0-rc.2"
+    "@loaders.gl/archives": "npm:5.0.0"
+    "@loaders.gl/documents": "npm:5.0.0"
     "@math.gl/core": "npm:^5.0.0"
     "@math.gl/geospatial": "npm:^5.0.0"
     "@types/sql.js": "npm:^1.4.5"
@@ -5641,7 +5641,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/graphs@workspace:modules/graphs"
   dependencies:
-    "@loaders.gl/documents": "npm:5.0.0-rc.2"
+    "@loaders.gl/documents": "npm:5.0.0"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
     "@loaders.gl/core": ~5.0.0-alpha.0
@@ -5667,9 +5667,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/ogc@workspace:modules/ogc"
   dependencies:
-    "@loaders.gl/documents": "npm:5.0.0-rc.2"
-    "@loaders.gl/images": "npm:5.0.0-rc.2"
-    "@loaders.gl/raster": "npm:5.0.0-rc.2"
+    "@loaders.gl/documents": "npm:5.0.0"
+    "@loaders.gl/images": "npm:5.0.0"
+    "@loaders.gl/raster": "npm:5.0.0"
     "@math.gl/geospatial": "npm:^5.0.0"
     lerc: "npm:^4.2.0"
   peerDependencies:
@@ -5693,8 +5693,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/raster@workspace:modules/raster"
   dependencies:
-    "@loaders.gl/documents": "npm:5.0.0-rc.2"
-    "@loaders.gl/images": "npm:5.0.0-rc.2"
+    "@loaders.gl/documents": "npm:5.0.0"
+    "@loaders.gl/images": "npm:5.0.0"
     "@math.gl/geospatial": "npm:^5.0.0"
     geotiff: "npm:^2.1.0"
     lerc: "npm:^4.2.0"
@@ -5715,8 +5715,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/scene@workspace:modules/scene"
   dependencies:
-    "@loaders.gl/documents": "npm:5.0.0-rc.2"
-    "@loaders.gl/images": "npm:5.0.0-rc.2"
+    "@loaders.gl/documents": "npm:5.0.0"
+    "@loaders.gl/images": "npm:5.0.0"
     "@math.gl/core": "npm:^5.0.0"
     "@math.gl/geometry": "npm:^5.0.0"
     draco3d: "npm:1.5.7"
@@ -5745,7 +5745,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/scientific@workspace:modules/scientific"
   dependencies:
-    "@loaders.gl/documents": "npm:5.0.0-rc.2"
+    "@loaders.gl/documents": "npm:5.0.0"
     "@math.gl/core": "npm:^5.0.0"
     "@math.gl/geospatial": "npm:^5.0.0"
     h5wasm: "npm:^0.10.3"
@@ -5768,7 +5768,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/splats@workspace:modules/splats"
   dependencies:
-    "@loaders.gl/compression": "npm:5.0.0-rc.2"
+    "@loaders.gl/compression": "npm:5.0.0"
     apache-arrow: "npm:>= 17.0.0"
     zod: "npm:^4.1.12"
     zstd-codec: "npm:^0.1.0"
@@ -5800,12 +5800,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/tables@npm:5.0.0-rc.2, @loaders.gl/tables@workspace:*, @loaders.gl/tables@workspace:modules/tables":
+"@loaders.gl/tables@npm:5.0.0, @loaders.gl/tables@workspace:*, @loaders.gl/tables@workspace:modules/tables":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tables@workspace:modules/tables"
   dependencies:
-    "@loaders.gl/compression": "npm:5.0.0-rc.2"
-    "@loaders.gl/documents": "npm:5.0.0-rc.2"
+    "@loaders.gl/compression": "npm:5.0.0"
+    "@loaders.gl/documents": "npm:5.0.0"
     "@math.gl/core": "npm:^5.0.0"
     "@math.gl/geospatial": "npm:^5.0.0"
     apache-arrow: "npm:>= 17.0.0"
@@ -5819,14 +5819,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tile-converter@workspace:apps/tile-converter"
   dependencies:
-    "@loaders.gl/archives": "npm:5.0.0-rc.2"
-    "@loaders.gl/compression": "npm:5.0.0-rc.2"
+    "@loaders.gl/archives": "npm:5.0.0"
+    "@loaders.gl/compression": "npm:5.0.0"
     "@loaders.gl/core": "workspace:*"
-    "@loaders.gl/crypto": "npm:5.0.0-rc.2"
-    "@loaders.gl/images": "npm:5.0.0-rc.2"
-    "@loaders.gl/scene": "npm:5.0.0-rc.2"
-    "@loaders.gl/tiles": "npm:5.0.0-rc.2"
-    "@loaders.gl/tiles-3d": "npm:5.0.0-rc.2"
+    "@loaders.gl/crypto": "npm:5.0.0"
+    "@loaders.gl/images": "npm:5.0.0"
+    "@loaders.gl/scene": "npm:5.0.0"
+    "@loaders.gl/tiles": "npm:5.0.0"
+    "@loaders.gl/tiles-3d": "npm:5.0.0"
     "@math.gl/core": "npm:^5.0.0"
     "@math.gl/earth": "npm:^5.0.0"
     "@math.gl/geometry": "npm:^5.0.0"
@@ -5852,11 +5852,11 @@ __metadata:
   resolution: "@loaders.gl/tiles-3d@workspace:modules/tiles-3d"
   dependencies:
     "@deck.gl/core": "npm:10.0.0-alpha.1"
-    "@loaders.gl/archives": "npm:5.0.0-rc.2"
-    "@loaders.gl/compression": "npm:5.0.0-rc.2"
-    "@loaders.gl/images": "npm:5.0.0-rc.2"
-    "@loaders.gl/pointclouds": "npm:5.0.0-rc.2"
-    "@loaders.gl/scene": "npm:5.0.0-rc.2"
+    "@loaders.gl/archives": "npm:5.0.0"
+    "@loaders.gl/compression": "npm:5.0.0"
+    "@loaders.gl/images": "npm:5.0.0"
+    "@loaders.gl/pointclouds": "npm:5.0.0"
+    "@loaders.gl/scene": "npm:5.0.0"
     "@math.gl/core": "npm:^5.0.0"
     "@math.gl/dggs": "npm:^5.0.0"
     "@math.gl/earth": "npm:^5.0.0"
@@ -5876,10 +5876,10 @@ __metadata:
   resolution: "@loaders.gl/tiles@workspace:modules/tiles"
   dependencies:
     "@deck.gl/core": "npm:10.0.0-alpha.1"
-    "@loaders.gl/compression": "npm:5.0.0-rc.2"
-    "@loaders.gl/images": "npm:5.0.0-rc.2"
-    "@loaders.gl/tables": "npm:5.0.0-rc.2"
-    "@loaders.gl/tiles-3d": "npm:5.0.0-rc.2"
+    "@loaders.gl/compression": "npm:5.0.0"
+    "@loaders.gl/images": "npm:5.0.0"
+    "@loaders.gl/tables": "npm:5.0.0"
+    "@loaders.gl/tiles-3d": "npm:5.0.0"
     "@maplibre/mlt": "npm:^1.1.6"
     "@math.gl/core": "npm:^5.0.0"
     "@math.gl/geometry": "npm:^5.0.0"

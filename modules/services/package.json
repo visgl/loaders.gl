@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/services",
-  "version": "5.0.0-rc.2",
+  "version": "5.0.0",
   "description": "Authentication presets for Mapbox, Google Maps, and Cesium ion services",
   "license": "MIT",
   "type": "module",
