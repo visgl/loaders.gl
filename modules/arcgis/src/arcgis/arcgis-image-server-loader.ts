@@ -9,7 +9,7 @@ import type {
   ArcGISExportImageParameters
 } from '../arcgis-source-types';
 
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 import type {
   CoreAPI,
   SourceLoader,
@@ -18,8 +18,8 @@ import type {
   GetImageParameters
 } from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import type {LERCData} from '@loaders.gl/raster';
-import {LERCLoader} from '@loaders.gl/raster';
+import type {LERCData} from '@loaders.gl/raster/lerc';
+import {LERCLoader} from '@loaders.gl/raster/lerc';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 
 /** Runtime service loader for synchronous construction. */

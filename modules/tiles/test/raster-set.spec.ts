@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {RasterSet} from '@loaders.gl/tiles';
+import {RasterSet} from '@loaders.gl/tiles/raster-set';
 function createRasterSource() {
   return {
     async getMetadata() {

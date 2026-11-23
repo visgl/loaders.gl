@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {IndexedArchiveTilesetSource, Tiles3DSource} from '@loaders.gl/tiles-3d';
+import {IndexedArchiveTilesetSource} from '../tileset-3d/common/indexed-archive-tileset-source';
+import {Tiles3DSource} from '../tileset-3d/format-3d-tiles/tiles-3d-source';
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {parse3DTilesArchive} from './3d-tiles-archive/3d-tiles-archive-parser';
 

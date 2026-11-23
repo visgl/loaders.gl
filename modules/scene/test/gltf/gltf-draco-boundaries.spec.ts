@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 import {beforeEach, expect, test, vi} from 'vitest';
-import {type DracoEncodingResult} from '@loaders.gl/scene';
+import {type DracoEncodingResult} from '@loaders.gl/scene/draco';
 import {encodeDraco} from '@loaders.gl/scene/draco';
 import type {GLTFWithBuffers} from '../../src/gltf/lib/types/gltf-types';
 import {compressGLTFWithDraco} from '../../src/gltf/lib/encoders/encode-gltf-draco';

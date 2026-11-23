@@ -223,11 +223,11 @@ SQL data sources and optional database backends. Portable scan/query utilities l
 
 <PackageTile>
 
-### [@loaders.gl/tile-converter](/docs/modules/_sections/tile-converter/api-and-guides)
+### [@loaders.gl/tile-converter](/docs/modules/tile-converter/api-reference)
 
 Programmatic APIs for converting 3D tilesets, meshes, and point clouds.
 
-[API reference](/docs/modules/_sections/tile-converter/api-and-guides)
+[API reference](/docs/modules/tile-converter/api-reference)
 
 </PackageTile>
 

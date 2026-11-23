@@ -13,7 +13,7 @@ import type {
   TileBoundingBox,
   TileIndex,
   ZRange
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles/tileset-2d';
 import {getOSMTileIndices, osmTile2lngLat} from './deck-tile-traversal';
 
 const TILE_SIZE = 512;

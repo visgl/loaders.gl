@@ -23,7 +23,7 @@ compact JavaScript, and optional codec implementations.
 ## Example
 
 ```typescript
-import {GZipDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 
 const decompressor = new GZipDecompressor();
 const data = await decompressor.decompress(compressedData);

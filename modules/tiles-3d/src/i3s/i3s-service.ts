@@ -4,8 +4,9 @@
 
 import type {CoreAPI, DataSourceOptions, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {getSourceLoaderOptions} from '@loaders.gl/core/loader-utils';
-import {getI3SSpatialReference, I3SSource} from '@loaders.gl/tiles-3d';
-import type {TilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {getI3SSpatialReference} from '../spatial/format-spatial-reference';
+import {I3SSource} from '../tileset-3d/format-i3s/i3s-source';
+import type {TilesetSpatialReference} from '../spatial/spatial-types';
 import {I3SLoaderWithParser} from './i3s-loader-with-parser';
 import {I3SPointCloudSource} from './i3s-point-cloud-source';
 import {

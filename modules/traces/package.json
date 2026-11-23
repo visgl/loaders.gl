@@ -71,6 +71,36 @@
     },
     "./trace-worker.js": {
       "import": "./dist/trace-worker.js"
+    },
+    "./chrome-trace": {
+      "types": "./dist/chrome-trace.d.ts",
+      "import": "./dist/chrome-trace.js",
+      "require": "./dist/chrome-trace.cjs"
+    },
+    "./otlp": {
+      "types": "./dist/otlp.d.ts",
+      "import": "./dist/otlp.js",
+      "require": "./dist/otlp.cjs"
+    },
+    "./jaeger": {
+      "types": "./dist/jaeger.d.ts",
+      "import": "./dist/jaeger.js",
+      "require": "./dist/jaeger.cjs"
+    },
+    "./zipkin": {
+      "types": "./dist/zipkin.d.ts",
+      "import": "./dist/zipkin.js",
+      "require": "./dist/zipkin.cjs"
+    },
+    "./perfetto": {
+      "types": "./dist/perfetto.d.ts",
+      "import": "./dist/perfetto.js",
+      "require": "./dist/perfetto.cjs"
+    },
+    "./stream": {
+      "types": "./dist/stream.d.ts",
+      "import": "./dist/stream.js",
+      "require": "./dist/stream.cjs"
     }
   },
   "sideEffects": false,

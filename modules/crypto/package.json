@@ -26,6 +26,46 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./hash": {
+      "types": "./dist/hash.d.ts",
+      "import": "./dist/hash.js",
+      "require": "./dist/hash.cjs"
+    },
+    "./crc32": {
+      "types": "./dist/crc32.d.ts",
+      "import": "./dist/crc32.js",
+      "require": "./dist/crc32.cjs"
+    },
+    "./crc32c": {
+      "types": "./dist/crc32c.d.ts",
+      "import": "./dist/crc32c.js",
+      "require": "./dist/crc32c.cjs"
+    },
+    "./md5": {
+      "types": "./dist/md5.d.ts",
+      "import": "./dist/md5.js",
+      "require": "./dist/md5.cjs"
+    },
+    "./sha256": {
+      "types": "./dist/sha256.d.ts",
+      "import": "./dist/sha256.js",
+      "require": "./dist/sha256.cjs"
+    },
+    "./webcrypto": {
+      "types": "./dist/webcrypto.d.ts",
+      "import": "./dist/webcrypto.js",
+      "require": "./dist/webcrypto.cjs"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js",
+      "require": "./dist/node.cjs"
+    },
+    "./encoding": {
+      "types": "./dist/encoding.d.ts",
+      "import": "./dist/encoding.js",
+      "require": "./dist/encoding.cjs"
     }
   },
   "sideEffects": false,

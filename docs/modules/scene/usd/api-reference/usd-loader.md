@@ -97,8 +97,8 @@ not the base URL for its embedded files.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {USDLoader} from '@loaders.gl/scene';
-import type {USDAssetPath} from '@loaders.gl/scene';
+import {USDLoader} from '@loaders.gl/scene/usd';
+import type {USDAssetPath} from '@loaders.gl/scene/usd';
 
 const stage = await load('model.usdz', USDLoader);
 // Find the shader prim using your application's scene traversal.

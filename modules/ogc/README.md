@@ -5,7 +5,8 @@ OGC web service clients and STAC catalog sources.
 Supported formats: WMS, WFS, WMTS, WCS, CSW, GML, OGC API, STAC, STAC API, XML, JSON, GeoJSON.
 
 ```ts
-import {WMSCapabilitiesLoader, STACLoader} from '@loaders.gl/ogc';
+import {WMSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
+import {STACLoader} from '@loaders.gl/ogc/stac';
 import {WMSLoader} from '@loaders.gl/ogc/wms';
 import {STACLoaderWithParser} from '@loaders.gl/ogc/stac-loader';
 ```

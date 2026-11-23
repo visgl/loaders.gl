@@ -5,12 +5,11 @@
 import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
 import {
   createImplicitSubtreeReference,
-  LOD_METRIC_TYPE,
   materializeImplicitSubtree,
-  TILE_REFINEMENT,
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/3d-tiles';
+import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles-3d/tileset';
 import {preprocess3DTileContent} from '../../src/3d-tiles/lib/parsers/preprocess-3d-tile-content';
 
 const CONTENT_REFERENCE_COUNT = 10_000;

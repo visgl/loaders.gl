@@ -5,7 +5,8 @@
 import {expect, test} from 'vitest';
 import {Schema, Field, Utf8, Binary} from 'apache-arrow';
 import {load, parse} from '@loaders.gl/core';
-import {GeoJSONLoader, ParquetLoader} from '@loaders.gl/tables';
+import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 
 test.each(['tables'])('GeoJSON worker transport remains executable under %s', async owner => {
   const workerUrl = new URL(`/modules/${owner}/dist/geojson-worker.js`, window.location.origin)

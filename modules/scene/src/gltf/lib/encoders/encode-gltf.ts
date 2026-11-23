@@ -4,7 +4,7 @@
 
 import {encodeGLBSync} from './encode-glb';
 import {GLTFWriterOptions} from '../../gltf-writer';
-import {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
+import {GLTFWithBuffers} from '../types/gltf-types';
 
 export type GLTFEncodeOptions = Record<string, any>;
 

@@ -21,7 +21,11 @@ import {
   resolveXYZTileParameters,
   waitForPromiseWithSignal
 } from '@loaders.gl/core/loader-utils';
-import {ImageLoader, type ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
+import {
+  ImageLoader,
+  type ImageLoaderOptions,
+  getBinaryImageMetadata
+} from '@loaders.gl/images/image';
 import {MVTLoader, type MVTLoaderOptions} from './mvt-loader';
 import {TileJSONLoader, type TileJSONLoaderOptions} from './tilejson-loader';
 import type {TileJSON} from './lib/parse-tilejson';

@@ -8,14 +8,13 @@ import {fetchFile, load} from '@loaders.gl/core';
 import {
   ImageLoader,
   ImageType,
-  // PARSED IMAGE API
   getDefaultImageType,
   isImageTypeSupported,
   isImage,
   getImageType,
   getImageSize,
   getImageData
-} from '@loaders.gl/images';
+} from '@loaders.gl/images/image';
 type ImageT = 'auto' | 'image' | 'imagebitmap' | 'data';
 const IMAGE_TYPES: ImageT[] = ['auto', 'image', 'imagebitmap', 'data'];
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';

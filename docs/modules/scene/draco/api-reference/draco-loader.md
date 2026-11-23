@@ -51,7 +51,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Usage
 
 ```typescript
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, DracoLoader, options);
@@ -122,7 +122,7 @@ the metadata-only root import.
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
 
 const libraries = getDracoLibraryOptions({decoderProfile: 'gltf'});

@@ -15,7 +15,7 @@ import {
   createCesiumIonCredential,
   createGoogleMapsCredential,
   createMapboxCredential
-} from '@loaders.gl/services';
+} from '@loaders.gl/services/authentication';
 
 describe('service authentication presets', () => {
   test('declarative classes preserve the existing provider presets', () => {

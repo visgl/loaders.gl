@@ -16,8 +16,9 @@ import {tableFromJSON} from 'apache-arrow'
 
 import type {Table} from 'apache-arrow'
 import {bindSQLPredicate, parseSQLPredicate, queryArrowTable} from '@loaders.gl/core/query';
-import {compileSQLTableQuery, DuckDBSQLDataSource} from '@loaders.gl/sql'
-import type {SQLTableQuery} from '@loaders.gl/sql'
+import {compileSQLTableQuery} from '@loaders.gl/sql/query';
+import {DuckDBSQLDataSource} from '@loaders.gl/sql/duckdb';
+import type {SQLTableQuery} from '@loaders.gl/sql/query';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget'
 
 maplibregl.setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());

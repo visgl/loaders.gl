@@ -4,7 +4,7 @@
 
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
 import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/archives/zip';
-import {GZipDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 
 /** Description of real paths for different file types */
 const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [

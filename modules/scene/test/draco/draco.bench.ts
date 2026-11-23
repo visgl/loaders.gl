@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse, encode} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {DracoWriter, encodeDracoBatch} from '@loaders.gl/scene/draco';
-import type {DracoWriterOptions} from '@loaders.gl/scene';
+import type {DracoWriterOptions} from '@loaders.gl/scene/draco';
 
 const POSITIONS_URL = '@loaders.gl/scene/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const COLORS_URL = '@loaders.gl/scene/draco/test/data/raw-attribute-buffers/lidar-colors.bin';

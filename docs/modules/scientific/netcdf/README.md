@@ -6,7 +6,7 @@ of the supported classic NetCDF formats. Direct parsing and source APIs are expo
 
 ```ts
 import {parse} from '@loaders.gl/core';
-import {NetCDFLoader} from '@loaders.gl/scientific';
+import {NetCDFLoader} from '@loaders.gl/scientific/netcdf';
 
 const dataset = await parse(bytes, NetCDFLoader);
 ```

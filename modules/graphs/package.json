@@ -40,6 +40,26 @@
       "types": "./dist/gexf-loader.d.ts",
       "import": "./dist/gexf-loader.js",
       "require": "./dist/gexf-loader.cjs"
+    },
+    "./graphml": {
+      "types": "./dist/graphml.d.ts",
+      "import": "./dist/graphml.js",
+      "require": "./dist/graphml.cjs"
+    },
+    "./graph": {
+      "types": "./dist/graph.d.ts",
+      "import": "./dist/graph.js",
+      "require": "./dist/graph.cjs"
+    },
+    "./dot": {
+      "types": "./dist/dot.d.ts",
+      "import": "./dist/dot.js",
+      "require": "./dist/dot.cjs"
+    },
+    "./gexf": {
+      "types": "./dist/gexf.d.ts",
+      "import": "./dist/gexf.js",
+      "require": "./dist/gexf.cjs"
     }
   },
   "sideEffects": false,

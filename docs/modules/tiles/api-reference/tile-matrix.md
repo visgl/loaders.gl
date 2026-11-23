@@ -94,7 +94,7 @@ source coverage, canonical aliases, native bounds, CRS and per-level logical til
 It returns no parent relationship: arbitrary matrix sets need not form a quadtree.
 
 ```typescript
-import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles';
+import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles/tileset-2d';
 
 const metadata = await tileSource.getMetadata();
 if (!metadata.tileGrid) throw new Error('Source has no tile grid');

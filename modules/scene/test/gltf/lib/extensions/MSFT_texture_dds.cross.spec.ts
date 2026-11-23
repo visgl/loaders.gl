@@ -5,7 +5,7 @@
 import {describe, expect, test, vi} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
 import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
-import {CompressedTextureLoader} from '@loaders.gl/images';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
 import {GLBWriter} from '../../../../src/gltf/glb-writer';
 import {GLTFLoaderWithParser} from '../../../../src/gltf/gltf-loader';
 import {GLTFLoader} from '../../../../src/gltf/gltf-loader-types';

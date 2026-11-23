@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
-import {GeoTIFFRasterLoader} from '@loaders.gl/raster';
+import {GeoTIFFRasterLoader} from '@loaders.gl/raster/geotiff';
 
 test('numeric GeoTIFF public preload works in Node and Chromium', async () => {
   const url = new URL('./data/numeric/scaled-int16-big-endian.tif', import.meta.url);

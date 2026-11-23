@@ -37,7 +37,7 @@ overwriting each other's traversal state.
 ### Installation
 
 ```ts
-import {Tileset2D, type Tileset2DProps, type TileLoadProps} from '@loaders.gl/tiles';
+import {Tileset2D, type Tileset2DProps, type TileLoadProps} from '@loaders.gl/tiles/tileset-2d';
 ```
 
 ### Construct from `getTileData`
@@ -54,7 +54,7 @@ const tileset = new Tileset2D({
 
 ```ts
 import type {TileSource} from '@loaders.gl/core/loader-utils';
-import {Tileset2D} from '@loaders.gl/tiles';
+import {Tileset2D} from '@loaders.gl/tiles/tileset-2d';
 
 const tileSource: TileSource = createTileSourceSomehow();
 const tileset = Tileset2D.fromTileSource(tileSource, {

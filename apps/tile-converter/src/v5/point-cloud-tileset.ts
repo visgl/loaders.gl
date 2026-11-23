@@ -4,7 +4,7 @@
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import type {PointCloudTilerOptions} from '@loaders.gl/core/schema-utils';
-import type {TilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import type {TilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {PointCloudTileSource} from '@loaders.gl/tiles-3d/point-cloud-tile-source';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {

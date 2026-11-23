@@ -51,7 +51,7 @@ or a validated JSON container when `chromeTrace.shape` is `json`.
 
 ```typescript
 import {load, parse} from '@loaders.gl/core';
-import {ChromeTraceLoader} from '@loaders.gl/traces';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 
 const eventTable = await load('trace.json', ChromeTraceLoader);
 const traceFile = await load('trace.json', ChromeTraceLoader, {
@@ -61,7 +61,7 @@ const parsed = await parse(jsonText, ChromeTraceLoader);
 ```
 
 The package-root export is metadata-only. Async core APIs preload the parser from
-`@loaders.gl/traces/chrome-trace-loader`. Synchronous code that needs a parser-bearing loader must
+`@loaders.gl/traces/chrome-trace`. Synchronous code that needs a parser-bearing loader must
 import `ChromeTraceLoaderWithParser` from that subpath.
 
 ## Return Types
@@ -91,7 +91,7 @@ Explicit JSON batch output is not supported.
 
 ```typescript
 import {parseInBatches} from '@loaders.gl/core';
-import {ChromeTraceLoader} from '@loaders.gl/traces';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 
 const batches = await parseInBatches(chunks, ChromeTraceLoader, {
   chromeTrace: {shape: 'arrow', batchSize: 1024}

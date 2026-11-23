@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
-import {BSONLoader} from '@loaders.gl/documents';
+import {BSONLoader} from '@loaders.gl/documents/bson';
 // import corruptScenarios from './data/js-bson/corrupt';
 const TAGS_BSON_URL = '@loaders.gl/documents/test/bson/data/js-bson/mongodump.airpair.tags.bson';
 const MINI_BSON_URL = '@loaders.gl/documents/test/bson/data/js-bson/test.bson';

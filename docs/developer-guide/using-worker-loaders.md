@@ -68,7 +68,7 @@ using a loader.
 
 ```typescript
 import {load, parse} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 
 const mesh = await load('model.drc', DracoLoader); // worker when supported
 const localMesh = await parse(buffer, DracoLoader, {core: {worker: false}});
@@ -168,7 +168,7 @@ the main thread. Multiple calls can use bounded task-runner capacity concurrentl
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 
 async function loadInParallel(url1, url2) {
   const [data1, data2] = await Promise.all([load(url1, DracoLoader), load(url2, DracoLoader)]);

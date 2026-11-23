@@ -26,7 +26,7 @@ The repository examples use `SourceLayer` from the private `@loaders.gl/deck-lay
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const layer = new SourceLayer({
   id: 'arcgis-features',

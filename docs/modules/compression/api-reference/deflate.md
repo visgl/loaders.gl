@@ -49,7 +49,7 @@ prefer built-in streams and fall back to `compress-utils`. Wrapped zlib DEFLATE 
 remain distinct and interoperable.
 
 ```typescript
-import {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression';
+import {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression/deflate';
 
 const compressed = await new DeflateCompressor().compress(data);
 const restored = await new DeflateDecompressor().decompress(compressed);

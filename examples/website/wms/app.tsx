@@ -15,7 +15,7 @@ import {
   WMSLoader,
   WMTSLoader
 } from '@loaders.gl/ogc/wms';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 import {Map} from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';

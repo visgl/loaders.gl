@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {convertS2BoundingVolumeToOBB, type S2VolumeInfo} from '@loaders.gl/tiles-3d';
+import {convertS2BoundingVolumeToOBB} from '../../../../tileset-3d/helpers/s2-bounding-volume';
+import type {S2VolumeInfo} from '../../../../tileset-3d/helpers/s2-bounding-volume';
 
 export type {S2VolumeInfo};
 

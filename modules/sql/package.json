@@ -26,6 +26,31 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./adapter": {
+      "types": "./dist/adapter.d.ts",
+      "import": "./dist/adapter.js",
+      "require": "./dist/adapter.cjs"
+    },
+    "./arrow": {
+      "types": "./dist/arrow.d.ts",
+      "import": "./dist/arrow.js",
+      "require": "./dist/arrow.cjs"
+    },
+    "./duckdb": {
+      "types": "./dist/duckdb.d.ts",
+      "import": "./dist/duckdb.js",
+      "require": "./dist/duckdb.cjs"
+    },
+    "./snowflake": {
+      "types": "./dist/snowflake.d.ts",
+      "import": "./dist/snowflake.js",
+      "require": "./dist/snowflake.cjs"
+    },
+    "./query": {
+      "types": "./dist/query.d.ts",
+      "import": "./dist/query.js",
+      "require": "./dist/query.cjs"
     }
   },
   "sideEffects": false,

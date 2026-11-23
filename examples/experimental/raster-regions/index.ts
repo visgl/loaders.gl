@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import {RasterSet} from '@loaders.gl/tiles';
+import {RasterSet} from '@loaders.gl/tiles/raster-set';
 import {sampleRaster, rasterCoordinateToPixel} from '@loaders.gl/core/loader-utils';
 import type {
   NumericRasterData,

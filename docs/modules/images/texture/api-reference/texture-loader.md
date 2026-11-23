@@ -59,7 +59,7 @@ A loader for image-based composite textures described by a JSON manifest.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureLoader} from '@loaders.gl/images';
+import {TextureLoader} from '@loaders.gl/images/texture';
 
 const image = await load('texture.image-texture.json', TextureLoader);
 ```
@@ -68,7 +68,7 @@ Member images are parsed with `ImageLoader` by default:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureLoader} from '@loaders.gl/images';
+import {TextureLoader} from '@loaders.gl/images/texture';
 
 const texture = await load('texture.image-texture.json', TextureLoader);
 ```

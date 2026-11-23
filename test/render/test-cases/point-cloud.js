@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {load, fetchFile, parse, encode} from '@loaders.gl/core';
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {DracoWriter} from '@loaders.gl/scene/draco';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 

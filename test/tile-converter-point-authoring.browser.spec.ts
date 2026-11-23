@@ -6,7 +6,7 @@ import {afterEach, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tiles3DTilesetSchema} from '@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema';
-import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {PointCloudTileSource} from '@loaders.gl/tiles-3d/point-cloud-tile-source';
 import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import type {Mesh} from '@loaders.gl/core/schema';

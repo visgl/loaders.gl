@@ -61,7 +61,7 @@ the complete file in memory. For remote windows, overviews, or band-selective re
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {GeoTIFFLoader} from '@loaders.gl/raster';
+import {GeoTIFFLoader} from '@loaders.gl/raster/geotiff';
 
 const image = await load('example.tif', GeoTIFFLoader);
 

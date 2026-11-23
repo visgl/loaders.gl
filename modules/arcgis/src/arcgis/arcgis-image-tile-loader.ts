@@ -6,7 +6,7 @@ import {ArcGISAuthentication} from '../authentication';
 import {ARCGIS_IMAGE_TILE_SOURCE_LOADER_METADATA} from '../arcgis-source-types';
 import type {ArcGISImageTileLoaderOptions} from '../arcgis-source-types';
 
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 import type {
   CoreAPI,
   GetTileDataParameters,
@@ -16,8 +16,8 @@ import type {
   TileSourceMetadata
 } from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import type {LERCData} from '@loaders.gl/raster';
-import {LERCLoader} from '@loaders.gl/raster';
+import type {LERCData} from '@loaders.gl/raster/lerc';
+import {LERCLoader} from '@loaders.gl/raster/lerc';
 
 /** A tile source that renders ArcGIS ImageServer exports as deck.gl tiles. */
 export class ArcGISImageTileSource

@@ -23,7 +23,7 @@ import type {
   Loader
 } from '@loaders.gl/core/loader-utils';
 import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
-import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
+import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles/image-set';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {
   finalizeOwnedSource,

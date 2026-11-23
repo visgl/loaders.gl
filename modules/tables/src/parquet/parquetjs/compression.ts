@@ -5,21 +5,13 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license
 // Forked from https://github.com/ironSource/parquetjs under MIT license
 
-import {
-  BrotliCompressor,
-  BrotliDecompressor,
-  GZipCompressor,
-  GZipDecompressor,
-  LZ4Compressor,
-  LZ4Decompressor,
-  LzoDecompressor,
-  SnappyCompressor,
-  SnappyDecompressor,
-  ZstdCompressor,
-  ZstdDecompressor,
-  Decompressor,
-  type Compressor
-} from '@loaders.gl/compression';
+import {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression/brotli';
+import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression/gzip';
+import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression/lz4';
+import {LzoDecompressor} from '@loaders.gl/compression/lzo';
+import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression/snappy';
+import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression/zstd';
+import {Decompressor, type Compressor} from '@loaders.gl/compression/codec';
 import {concatenateArrayBuffers, registerJSModules} from '@loaders.gl/core/loader-utils';
 
 import {ParquetCompression} from './schema/declare';

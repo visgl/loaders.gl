@@ -1,5 +1,5 @@
 import {load} from '@loaders.gl/core';
-import {BasisLoader} from '@loaders.gl/images';
+import {BasisLoader} from '@loaders.gl/images/basis';
 
 const canvas = document.createElement('canvas');
 document.body.appendChild(canvas);

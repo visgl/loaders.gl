@@ -6,7 +6,7 @@ import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {Matrix4} from '@math.gl/core/matrix';
 import {parseGltf3DTile} from '../../../../src/3d-tiles/lib/parsers/parse-3d-tile-gltf';
 

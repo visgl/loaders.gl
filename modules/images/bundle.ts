@@ -99,10 +99,10 @@ export {
   getImageData,
   getSupportedImageFormats,
   isImageFormatSupported
-} from '@loaders.gl/images';
+} from '@loaders.gl/images/image';
 export type {
   ImageDataType,
   ImageType,
   ImageTypeEnum,
   ImageLoaderOptions
-} from '@loaders.gl/images';
+} from '@loaders.gl/images/image';

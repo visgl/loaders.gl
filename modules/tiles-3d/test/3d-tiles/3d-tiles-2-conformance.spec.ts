@@ -5,7 +5,8 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 import {coreApi, load} from '@loaders.gl/core';
 import {Tiles3DLoader, type Tiles3DTilesetJSONPostprocessed} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 const VECTOR_PREVIEW_URL =
   '@loaders.gl/tiles-3d/3d-tiles/test/data/3d-tiles-2/vector-preview/tileset.json';

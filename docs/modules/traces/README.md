@@ -181,12 +181,12 @@ Applications that need parser-bearing loader objects directly can import the imp
 subpaths:
 
 ```typescript
-import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace-loader';
-import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto-trace-loader';
-import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp-trace-loader';
-import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp-trace-json-loader';
-import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger-trace-loader';
-import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin-trace-loader';
+import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace';
+import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger';
+import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin';
 ```
 
 Writers and shared public types remain available from `@loaders.gl/traces`.

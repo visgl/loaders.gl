@@ -13,8 +13,8 @@ import {
   setGLTFAccessorValue
 } from '@loaders.gl/scene/gltf';
 import type {GLTF, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
-import {Tiles3DSpatialTransformer} from '@loaders.gl/tiles-3d';
-import type {TilesetSpatialOptions, TilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {Tiles3DSpatialTransformer} from '../../../spatial/tiles-3d-spatial-transformer';
+import type {TilesetSpatialOptions, TilesetSpatialReference} from '../../../spatial/spatial-types';
 import {Matrix4} from '@math.gl/core/matrix';
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../types';

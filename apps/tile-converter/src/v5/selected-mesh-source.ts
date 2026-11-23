@@ -6,12 +6,10 @@ import {prepareMeshHierarchy} from './mesh-hierarchy.js';
 import {coreApi, parse} from '@loaders.gl/core';
 import type {Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
-import type {
-  TilesetSourceInput,
-  TilesetSourceMetadata,
-  TilesetSpatialReference
-} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
+import type {TilesetSourceInput, TilesetSourceMetadata} from '@loaders.gl/tiles-3d/tileset';
+import type {TilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import type {DracoLibraryOptions} from '@loaders.gl/scene/draco';
 import {
   createBrowserTilesetConversionSource,

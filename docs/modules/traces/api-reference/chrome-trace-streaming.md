@@ -60,7 +60,8 @@ The file path uses the same JSON-to-Arrow parser as `ChromeTraceLoader`, then ad
 to logical events. All three paths share the same event accumulator and semantic trace builder.
 
 ```typescript
-import {createTraceStreamSession, streamChromeTraceFileChunks} from '@loaders.gl/traces';
+import {createTraceStreamSession} from '@loaders.gl/traces/stream';
+import {streamChromeTraceFileChunks} from '@loaders.gl/traces/chrome-trace';
 
 const session = createTraceStreamSession();
 
@@ -82,7 +83,8 @@ The matching `consumeChromeTraceEventStream`, `consumeChromeTraceArrowStream`, a
 the latest published snapshot.
 
 ```typescript
-import {consumeChromeTraceArrowStream, createTraceStreamSession} from '@loaders.gl/traces';
+import {consumeChromeTraceArrowStream} from '@loaders.gl/traces/chrome-trace';
+import {createTraceStreamSession} from '@loaders.gl/traces/stream';
 
 const session = createTraceStreamSession({name: 'Imported trace'});
 const unsubscribe = session.subscribe(snapshot => render(snapshot));

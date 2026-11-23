@@ -4,7 +4,7 @@
 
 import {describe, expect, test, vi} from 'vitest';
 import {PointCloudSourceLayer} from '@loaders.gl/deck-layers';
-import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d';
+import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d/point-cloud';
 
 const ROOT_BOUNDING_VOLUME = {
   cartographicBounds: [

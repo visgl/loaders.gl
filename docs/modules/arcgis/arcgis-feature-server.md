@@ -112,7 +112,7 @@ common client-side query contract after the service has returned the bounded fea
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 const source = await createDataSource(
   'https://example.com/arcgis/rest/services/Roads/FeatureServer/0',
@@ -194,7 +194,7 @@ cookies continue to use `core.fetch`. See [authentication](/docs/developer-guide
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const layer = new SourceLayer({
   id: 'bicycle-routes',

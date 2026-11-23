@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {concatenateArrayBuffers} from '@loaders.gl/core/loader-utils';
 import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
 import {SHPLoader} from '@loaders.gl/geospatial/shapefile';
-import {CRC32CHash} from '@loaders.gl/crypto';
+import {CRC32CHash} from '@loaders.gl/crypto/crc32c';
 const SHAPEFILE_URL =
   '@loaders.gl/geospatial/shapefile/test/data/shapefile-js/boolean-property.shp';
 async function* calculateByteLengthInBaches(asyncIterator, options) {

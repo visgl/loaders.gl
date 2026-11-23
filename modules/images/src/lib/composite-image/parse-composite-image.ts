@@ -5,7 +5,9 @@
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {parseFromContext, path, resolvePath} from '@loaders.gl/core/loader-utils';
 import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/core/schema';
-import {ImageLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images';
+import {ImageLoader} from '../../image-loader-types';
+import {getImageSize, isImage} from '../category-api/parsed-image-api';
+import type {ImageType} from '../../types';
 import {asyncDeepMap} from '../texture-api/async-deep-map';
 import type {TextureLoaderOptions} from '../texture-api/texture-api-types';
 import {IMAGE_TEXTURE_CUBE_FACES, type ImageCubeTexture} from './image-texture-cube';

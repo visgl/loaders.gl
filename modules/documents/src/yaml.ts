@@ -5,3 +5,5 @@
 export {YAMLLoaderWithParser, type YAMLLoaderOptions} from './yaml-loader';
 
 export {YAMLLoader} from './yaml-loader-types';
+export {YAMLFormat} from './yaml-format';
+export type {YAMLParseOptions} from './yaml-loader-options';

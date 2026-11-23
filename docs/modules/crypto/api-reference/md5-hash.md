@@ -63,7 +63,7 @@ No preload or WebAssembly initialization is required. `hash()` continues to use
 WebAssembly for larger inputs when it is available.
 
 ```typescript
-import {MD5Hash} from '@loaders.gl/crypto';
+import {MD5Hash} from '@loaders.gl/crypto/md5';
 
 const input = new TextEncoder().encode('hello').buffer;
 const digest = new MD5Hash().hashSync(input, 'hex');

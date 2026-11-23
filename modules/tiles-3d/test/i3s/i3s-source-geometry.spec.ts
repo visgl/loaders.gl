@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {createTilesetSpatialReference, I3SSpatialTransformer} from '@loaders.gl/tiles-3d';
+import {createTilesetSpatialReference, I3SSpatialTransformer} from '@loaders.gl/tiles-3d/spatial';
 import {I3SContentLoader} from '@loaders.gl/tiles-3d/i3s';
 import {parseI3STileContent} from '../../src/i3s/lib/parsers/parse-i3s-tile-content';
 

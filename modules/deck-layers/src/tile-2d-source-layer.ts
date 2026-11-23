@@ -24,7 +24,7 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
-import {Tile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
+import {Tile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles/tileset-2d';
 import {isArrowTable} from '@math.gl/core/arrow';
 import {Matrix4} from '@math.gl/core/matrix';
 import {type NumericArray} from '@math.gl/core/types';

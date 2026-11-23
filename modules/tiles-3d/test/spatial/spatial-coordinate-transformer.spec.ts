@@ -9,7 +9,7 @@ import {
   getSpatialCoordinateFrame,
   registerGeoidModel,
   SpatialCoordinateTransformer
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/spatial';
 
 describe('SpatialCoordinateTransformer', () => {
   test.each([

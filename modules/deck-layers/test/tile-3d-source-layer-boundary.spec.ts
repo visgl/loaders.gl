@@ -28,8 +28,8 @@ vi.mock('@loaders.gl/core', async importOriginal => {
   return {...original, selectLoader: tileLayerMocks.selectLoader, preload: tileLayerMocks.preload};
 });
 
-vi.mock('@loaders.gl/tiles-3d', async importOriginal => {
-  const original = await importOriginal<typeof import('@loaders.gl/tiles-3d')>();
+vi.mock('@loaders.gl/tiles-3d/tileset', async importOriginal => {
+  const original = await importOriginal<typeof import('@loaders.gl/tiles-3d/tileset')>();
   return {
     ...original,
     Tileset3D: class {

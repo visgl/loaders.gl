@@ -85,7 +85,7 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
-export {USDLoader} from '@loaders.gl/scene';
+export {USDLoader} from '@loaders.gl/scene/usd';
 export type {
   USDAssetPath,
   USDAttribute,
@@ -95,6 +95,6 @@ export type {
   USDStage,
   USDValue,
   USDVariant
-} from '@loaders.gl/scene';
+} from '@loaders.gl/scene/usd';
 
 export * from './src';

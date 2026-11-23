@@ -52,7 +52,7 @@ limitations.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {PerfettoTraceLoader} from '@loaders.gl/traces';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
 
 const trace = await load('trace.perfetto-trace', PerfettoTraceLoader);
 
@@ -63,7 +63,7 @@ console.log(trace.threads);
 ```
 
 The package-root export is metadata-only and supports async core APIs through `preload()`. Import
-`PerfettoTraceLoaderWithParser` from `@loaders.gl/traces/perfetto-trace-loader` when direct access to
+`PerfettoTraceLoaderWithParser` from `@loaders.gl/traces/perfetto` when direct access to
 `parseSync` or the parser-bearing loader object is required.
 
 ## Result
@@ -95,7 +95,7 @@ different Arrow schemas.
 
 ```typescript
 import {parseInBatches} from '@loaders.gl/core';
-import {PerfettoTraceLoader} from '@loaders.gl/traces';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
 
 const batches = await parseInBatches(byteChunks, PerfettoTraceLoader, {
   perfettoTrace: {batchSize: 1024}

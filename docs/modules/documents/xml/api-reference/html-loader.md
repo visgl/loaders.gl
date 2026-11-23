@@ -60,7 +60,7 @@ partial object tree.
 ## Usage
 
 ```typescript
-import {HTMLLoader} from '@loaders.gl/documents';
+import {HTMLLoader} from '@loaders.gl/documents/html';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, HTMLLoader, options);

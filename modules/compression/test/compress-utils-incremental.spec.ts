@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {LZ4Compressor, LZ4Decompressor, LzoDecompressor} from '@loaders.gl/compression';
+import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression/lz4';
+import {LzoDecompressor} from '@loaders.gl/compression/lzo';
 import {LZ4CompressUtilsDecompressor} from '../src/lz4-decompressor-compress-utils';
 
 const RAW_LZ4_HELLO = Uint8Array.from([0x50, 104, 101, 108, 108, 111]);

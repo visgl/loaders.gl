@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {ImageLoader, getImageType, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageType, getImageData} from '@loaders.gl/images/image';
 import {load, isBrowser} from '@loaders.gl/core';
 import {parseImageBitmapBlob} from '../src/lib/parsers/parse-image-bitmap';
 import {getBlob, isSVG} from '../src/lib/parsers/svg-utils';

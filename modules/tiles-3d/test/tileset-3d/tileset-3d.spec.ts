@@ -8,7 +8,9 @@
 import {expect, test, vi} from 'vitest';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {coreApi, load, parse} from '@loaders.gl/core';
-import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tile3D, Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {getI3sTileHeader} from '@loaders.gl/tiles-3d/i3s/test/test-utils/load-utils';
 import {getFrameState} from '../../src/tileset-3d/helpers/frame-state';

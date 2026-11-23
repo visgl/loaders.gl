@@ -48,7 +48,7 @@ export type {
 export {RasterSet} from './raster-set';
 
 /** @deprecated Import 3D runtime symbols from `@loaders.gl/tiles-3d`. */
-export {Tileset3D, TILE_TYPE, TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles-3d';
+export {Tileset3D, TILE_TYPE, TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles-3d/tileset';
 
 export {selectTileMatrixTiles, createTileMatrixTileset2DAdapter} from './tile-matrix';
 export type {

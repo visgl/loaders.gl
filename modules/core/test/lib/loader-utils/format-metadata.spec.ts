@@ -3,17 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {NPYFormat} from '@loaders.gl/scientific';
+import {NPYFormat} from '@loaders.gl/scientific/npy';
 
 import {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from '@loaders.gl/tiles-3d/3d-tiles';
 import {ArrowLoader} from '@loaders.gl/tables/arrow';
 import {ArrowFormat} from '@loaders.gl/tables/arrow';
-import {BSONFormat} from '@loaders.gl/documents';
+import {BSONFormat} from '@loaders.gl/documents/bson';
 import {COPCFormat} from '@loaders.gl/tiles-3d/copc';
 import {CSVFormat} from '@loaders.gl/tables/csv';
-import {DracoFormat} from '@loaders.gl/scene';
+import {DracoFormat} from '@loaders.gl/scene/draco';
 import {GeoPackageFormat} from '@loaders.gl/geospatial/geopackage';
-import {GeoTIFFFormat, OMETiffFormat} from '@loaders.gl/raster';
+import {GeoTIFFFormat, OMETiffFormat} from '@loaders.gl/raster/geotiff';
 import {GLBFormat, GLTFFormat} from '@loaders.gl/scene/gltf';
 import {
   ArcGISWebSceneFormat,
@@ -24,14 +24,14 @@ import {
   I3SNodePageFormat,
   SLPKFormat
 } from '@loaders.gl/tiles-3d/i3s';
-import {ImageBitmapFormat, ImageFormat} from '@loaders.gl/images';
+import {ImageBitmapFormat, ImageFormat} from '@loaders.gl/images/image';
 import {GeoJSONFormat, NDGeoJSONFormat} from '@loaders.gl/tables/geojson';
 import {JSONFormat, NDJSONFormat} from '@loaders.gl/tables/json';
 import {KMLFormat, KMZFormat} from '@loaders.gl/geospatial/kml';
 import {GPXFormat} from '@loaders.gl/geospatial/gpx';
 import {TCXFormat} from '@loaders.gl/geospatial/tcx';
 import {LASFormat} from '@loaders.gl/pointclouds/las';
-import {LERCFormat} from '@loaders.gl/raster';
+import {LERCFormat} from '@loaders.gl/raster/lerc';
 import {MLTFormat} from '@loaders.gl/tiles/mlt';
 import {MapStyleFormat, MVTFormat, TileJSONFormat} from '@loaders.gl/tiles/mvt';
 import {NetCDFFormat} from '@loaders.gl/scientific/netcdf';
@@ -45,15 +45,11 @@ import {
   PotreeHierarchyChunkFormat
 } from '@loaders.gl/tiles-3d/potree';
 import {DBFFormat, SHPFormat, ShapefileFormat} from '@loaders.gl/geospatial/shapefile';
-import {QuantizedMeshFormat, TerrainFormat} from '@loaders.gl/raster';
-import {
-  BasisTextureFormat,
-  CompressedTextureFormat,
-  CrunchTextureFormat,
-  DDSTextureFormat,
-  KTX2BasisTextureFormat,
-  RadianceHDRFormat
-} from '@loaders.gl/images';
+import {QuantizedMeshFormat, TerrainFormat} from '@loaders.gl/raster/terrain';
+import {BasisTextureFormat, KTX2BasisTextureFormat} from '@loaders.gl/images/basis';
+import {CompressedTextureFormat, DDSTextureFormat} from '@loaders.gl/images/texture';
+import {CrunchTextureFormat} from '@loaders.gl/images/crunch';
+import {RadianceHDRFormat} from '@loaders.gl/images/radiance-hdr';
 import {WKTCRSFormat, WKTFormat} from '@loaders.gl/geospatial/wkt';
 import {HexWKBFormat, TWKBFormat, WKBFormat} from '@loaders.gl/geospatial/wkb';
 import {
@@ -69,7 +65,8 @@ import {
   WMSLayerDescriptionFormat,
   WMTSCapabilitiesFormat
 } from '@loaders.gl/ogc/wms';
-import {HTMLFormat, XMLFormat} from '@loaders.gl/documents';
+import {HTMLFormat} from '@loaders.gl/documents/html';
+import {XMLFormat} from '@loaders.gl/documents/xml';
 import {ZipFormat} from '@loaders.gl/archives/zip';
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
 import {FlatGeobufFormat} from '@loaders.gl/geospatial/flatgeobuf';

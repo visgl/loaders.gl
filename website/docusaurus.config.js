@@ -8,33 +8,23 @@ const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
-/** Maps flat package entrypoints to source facades for the website bundler. */
-function getFlatEntrypointAliases() {
+/** Resolves public JavaScript package entrypoints directly to their source facades. */
+function getPackageEntrypointAliases() {
   const modulesDirectory = resolve(__dirname, '../modules');
   const aliases = {};
-
   for (const moduleName of readdirSync(modulesDirectory)) {
     const moduleDirectory = resolve(modulesDirectory, moduleName);
-    const packageJsonPath = resolve(moduleDirectory, 'package.json');
-    if (!existsSync(packageJsonPath)) continue;
-
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-    for (const [exportPath, conditions] of Object.entries(packageJson.exports || {})) {
-      const entrypointName = exportPath.slice(2);
-      const importTarget = typeof conditions === 'string' ? conditions : conditions.import;
-      if (
-        !/^\.\/[^/]+$/.test(exportPath) ||
-        !/(?:loader|writer|source)(?:-types)?$/.test(entrypointName) ||
-        importTarget !== `./dist/${entrypointName}.js`
-      ) {
-        continue;
-      }
-
-      const sourcePath = resolve(moduleDirectory, 'src', `${entrypointName}.ts`);
-      if (existsSync(sourcePath)) aliases[`${packageJson.name}/${entrypointName}`] = sourcePath;
+    const manifestPath = resolve(moduleDirectory, 'package.json');
+    if (!existsSync(manifestPath)) continue;
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    for (const [exportPath, conditions] of Object.entries(manifest.exports || {})) {
+      if (exportPath === '.' || typeof conditions !== 'object') continue;
+      const target = conditions.types;
+      if (typeof target !== 'string' || !target.endsWith('.d.ts')) continue;
+      const sourcePath = resolve(moduleDirectory, target.replace('./dist/', './src/').replace(/\.d\.ts$/, '.ts'));
+      if (existsSync(sourcePath)) aliases[manifest.name + exportPath.slice(1) + '$'] = sourcePath;
     }
   }
-
   return aliases;
 }
 
@@ -233,6 +223,7 @@ const config = {
           fallback: {path: false, fs: false, buffer: true},
           modules: ['node_modules', resolve('node_modules'), resolve('../node_modules')],
           alias: {
+            ...getPackageEntrypointAliases(),
             '@loaders.gl/tables': resolve('../modules/tables/src'),
             '@loaders.gl/geospatial': resolve('../modules/geospatial/src'),
             examples: resolve('../examples'),
@@ -302,12 +293,12 @@ const config = {
             '@loaders.gl/type-analyzer': resolve('../modules/type-analyzer/src'),
             '@loaders.gl/geospatial/wkt': resolve('../modules/geospatial/src/wkt'),
             '@loaders.gl/ogc/wms': resolve('../modules/ogc/src/wms'),
-            '@loaders.gl/arcgis/arcgis-feature-server-loader': resolve('../modules/arcgis/src/arcgis/arcgis-feature-server-loader'),
-            '@loaders.gl/arcgis/arcgis-image-server-loader': resolve('../modules/arcgis/src/arcgis/arcgis-image-server-loader'),
-            '@loaders.gl/arcgis/arcgis-image-tile-loader': resolve('../modules/arcgis/src/arcgis/arcgis-image-tile-loader'),
-            '@loaders.gl/arcgis/arcgis-map-tile-loader': resolve('../modules/arcgis/src/arcgis/arcgis-map-tile-loader'),
-            '@loaders.gl/arcgis/arcgis-scene-server-loader': resolve('../modules/arcgis/src/arcgis/arcgis-scene-server-loader'),
-            '@loaders.gl/arcgis/arcgis-vector-tile-server-loader': resolve('../modules/arcgis/src/arcgis/arcgis-vector-tile-server-loader'),
+            '@loaders.gl/arcgis/feature-service': resolve('../modules/arcgis/src/arcgis/arcgis-feature-server-loader'),
+            '@loaders.gl/arcgis/image-service': resolve('../modules/arcgis/src/arcgis/arcgis-image-server-loader'),
+            '@loaders.gl/arcgis/image-service': resolve('../modules/arcgis/src/arcgis/arcgis-image-tile-loader'),
+            '@loaders.gl/arcgis/map-service': resolve('../modules/arcgis/src/arcgis/arcgis-map-tile-loader'),
+            '@loaders.gl/arcgis/scene-service': resolve('../modules/arcgis/src/arcgis/arcgis-scene-server-loader'),
+            '@loaders.gl/arcgis/vector-tile-service': resolve('../modules/arcgis/src/arcgis/arcgis-vector-tile-server-loader'),
             '@loaders.gl/arcgis/bundled': resolve('../modules/arcgis/src/bundled'),
             '@loaders.gl/arcgis/items': resolve('../modules/arcgis/src/arcgis-items'),
             '@loaders.gl/arcgis/authentication': resolve('../modules/arcgis/src/authentication'),
@@ -317,7 +308,6 @@ const config = {
             '@loaders.gl/services': resolve('../modules/services/src'),
             '@loaders.gl/documents': resolve('../modules/documents/src'),
             '@loaders.gl/archives/zip': resolve('../modules/archives/src/zip'),
-            ...getFlatEntrypointAliases(),
             'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 
             // '@deck.gl/react': resolve()

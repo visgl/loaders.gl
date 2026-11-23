@@ -63,7 +63,7 @@ A loader for Basis Universal "supercompressed" GPU textures. Extracts supercompr
 ## Usage
 
 ```typescript
-import {BasisLoader} from '@loaders.gl/images';
+import {BasisLoader} from '@loaders.gl/images/basis';
 import {load} from '@loaders.gl/core';
 
 const miplevels = await load(url, BasisLoader, options);

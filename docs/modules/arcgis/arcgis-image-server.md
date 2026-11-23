@@ -87,7 +87,7 @@ LERC requests. Configure it in `core.credentials`; explicit URL tokens take prec
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISImageServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageServerLoader} from '@loaders.gl/arcgis/image-service';
 
 const source = await createDataSource(imageServerUrl, [ArcGISImageServerLoader]);
 
@@ -125,7 +125,7 @@ request.
 `ArcGISImageTileLoader` requests one `/exportImage` response per Web Mercator tile:
 
 ```ts
-import {ArcGISImageTileLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageTileLoader} from '@loaders.gl/arcgis/image-service';
 
 const tileSource = await createDataSource(imageServerUrl, [ArcGISImageTileLoader], {
   'arcgis-image-server-tiles': {
@@ -172,7 +172,7 @@ domain, color ramp, and NoData policy appropriate to the dataset before uploadin
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const layer = new SourceLayer({
   id: 'land-cover',

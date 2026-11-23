@@ -2,20 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  BZip2Compressor,
-  BZip2Decompressor,
-  DeflateCompressor,
-  DeflateDecompressor,
-  SnappyCompressor,
-  SnappyDecompressor,
-  XZCompressor,
-  XZDecompressor,
-  ZstdCompressor,
-  ZstdDecompressor,
-  type Compressor,
-  type Decompressor
-} from '@loaders.gl/compression';
+import {BZip2Compressor, BZip2Decompressor} from '@loaders.gl/compression/bzip2';
+import {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression/deflate';
+import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression/snappy';
+import {XZCompressor, XZDecompressor} from '@loaders.gl/compression/xz';
+import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression/zstd';
+import {type Compressor, type Decompressor} from '@loaders.gl/compression/codec';
 function toUint8Array(binary: ArrayBuffer | ArrayBufferView): Uint8Array {
   if (binary instanceof Uint8Array) return binary;
   if (ArrayBuffer.isView(binary))

@@ -68,8 +68,9 @@
       "import": "./dist/authentication.js"
     },
     "./discovery": {
-      "types": "./dist/arcgis/arcgis-capability-graph.d.ts",
-      "import": "./dist/arcgis/arcgis-capability-graph.js"
+      "types": "./dist/discovery.d.ts",
+      "import": "./dist/discovery.js",
+      "require": "./dist/discovery.cjs"
     },
     "./scene-aggregation": {
       "types": "./dist/arcgis/arcgis-scene-aggregation.d.ts",
@@ -78,6 +79,31 @@
     "./items": {
       "types": "./dist/arcgis-items.d.ts",
       "import": "./dist/arcgis-items.js"
+    },
+    "./feature-service": {
+      "types": "./dist/feature-service.d.ts",
+      "import": "./dist/feature-service.js",
+      "require": "./dist/feature-service.cjs"
+    },
+    "./image-service": {
+      "types": "./dist/image-service.d.ts",
+      "import": "./dist/image-service.js",
+      "require": "./dist/image-service.cjs"
+    },
+    "./map-service": {
+      "types": "./dist/map-service.d.ts",
+      "import": "./dist/map-service.js",
+      "require": "./dist/map-service.cjs"
+    },
+    "./scene-service": {
+      "types": "./dist/scene-service.d.ts",
+      "import": "./dist/scene-service.js",
+      "require": "./dist/scene-service.cjs"
+    },
+    "./vector-tile-service": {
+      "types": "./dist/vector-tile-service.d.ts",
+      "import": "./dist/vector-tile-service.js",
+      "require": "./dist/vector-tile-service.cjs"
     }
   },
   "sideEffects": false,

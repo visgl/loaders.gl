@@ -1,14 +1,10 @@
 import {ArcGISVectorSource} from '@loaders.gl/arcgis/bundled';
-import {
-  ArcGISFeatureServerLoader,
-  ArcGISImageServerLoader,
-  ArcGISImageTileLoader,
-  ArcGISMapTileLoader,
-  ArcGISSceneServerLoader,
-  ArcGISVectorTileServerLoader,
-  ARCGIS_LOADERS,
-  getArcGISLoader
-} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
+import {ArcGISImageServerLoader, ArcGISImageTileLoader} from '@loaders.gl/arcgis/image-service';
+import {ArcGISMapTileLoader} from '@loaders.gl/arcgis/map-service';
+import {ArcGISSceneServerLoader} from '@loaders.gl/arcgis/scene-service';
+import {ArcGISVectorTileServerLoader} from '@loaders.gl/arcgis/vector-tile-service';
+import {ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis/discovery';
 import {
   discoverArcGISCapabilities,
   selectArcGISService,

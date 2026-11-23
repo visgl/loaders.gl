@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GZipCompressor} from '@loaders.gl/compression';
+import {GZipCompressor} from '@loaders.gl/compression/gzip';
 import {zxyToTileId} from 'pmtiles';
 import type {PMTilesEncodeOptions, PMTilesTileInput} from '../pmtiles-writer-types';
 

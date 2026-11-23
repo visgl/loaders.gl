@@ -64,7 +64,7 @@ mesh][quantized_mesh] format. It returns a [Mesh Arrow table](/docs/specificatio
 ## Usage
 
 ```typescript
-import {QuantizedMeshLoader} from '@loaders.gl/raster';
+import {QuantizedMeshLoader} from '@loaders.gl/raster/terrain';
 import {load} from '@loaders.gl/core';
 
 const options = {

@@ -12,9 +12,13 @@ import {
   I3SAttributeLoader,
   type I3STileContent
 } from '@loaders.gl/tiles-3d/i3s';
-import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
-import type {Tileset3D as TilesetRuntime, TilesetSourceMetadata} from '@loaders.gl/tiles-3d';
-import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
+import type {
+  Tileset3D as TilesetRuntime,
+  TilesetSourceMetadata
+} from '@loaders.gl/tiles-3d/tileset';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {GLTFLoader} from '@loaders.gl/scene/gltf/bundled';
 import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {Matrix4} from '@math.gl/core/matrix';

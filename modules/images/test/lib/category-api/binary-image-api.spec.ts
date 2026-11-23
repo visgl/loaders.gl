@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {getBinaryImageMetadata} from '@loaders.gl/images';
+import {getBinaryImageMetadata} from '@loaders.gl/images/image';
 const readFile = (url: string): Promise<ArrayBuffer> =>
   fetchFile(url).then(response => response.arrayBuffer());
 let imagesPromise: Promise<ArrayBuffer[]> | null = null;

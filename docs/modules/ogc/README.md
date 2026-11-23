@@ -10,7 +10,8 @@ import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
 `@loaders.gl/ogc` groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use [WMS and OGC API sources](/docs/modules/ogc/wms) or [STAC sources](/docs/modules/ogc/stac) for format-specific APIs and explicit parser entry points.
 
 ```ts
-import {WMSCapabilitiesLoader, STACLoader} from '@loaders.gl/ogc';
+import {WMSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
+import {STACLoader} from '@loaders.gl/ogc/stac';
 import {WMSLoader} from '@loaders.gl/ogc/wms';
 ```
 

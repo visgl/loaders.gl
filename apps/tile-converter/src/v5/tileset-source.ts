@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {traverseTilesetContents} from '@loaders.gl/tiles-3d';
+import {traverseTilesetContents} from '@loaders.gl/tiles-3d/tileset';
 import type {
   Tileset3D,
   TilesetContentTraversalItem,
   TilesetSourceMetadata,
   TraverseTilesetContentsOptions
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/tileset';
 import {TileConversionError} from './conversion-api.js';
 import type {TileConversionSource} from './conversion-api.js';
 

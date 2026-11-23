@@ -4,7 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {CRC32CHash, encodeNumber} from '@loaders.gl/crypto';
+import {CRC32CHash} from '@loaders.gl/crypto/crc32c';
+import {encodeNumber} from '@loaders.gl/crypto/encoding';
 
 const loadJSON = async (relativePath: string) => {
   const url = new URL(relativePath, import.meta.url);

@@ -4,49 +4,51 @@
 
 import {expect, test} from 'vitest';
 import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
-import {CSVLoader, AvroLoader, AvroSchemaLoader} from '@loaders.gl/tables';
+import {CSVLoader} from '@loaders.gl/tables/csv';
+import {AvroLoader, AvroSchemaLoader} from '@loaders.gl/tables/avro';
 import {CSVLoaderWithParser} from '@loaders.gl/tables/csv';
 import {AvroLoaderWithParser} from '@loaders.gl/tables/avro';
 import {AvroSchemaLoaderWithParser} from '@loaders.gl/tables/avro';
 import {CSVLoader as FormatCSVLoader} from '@loaders.gl/tables/csv';
 import {AvroLoader as FormatAvroLoader} from '@loaders.gl/tables/avro';
 
-import {ArrowLoader} from '@loaders.gl/tables';
+import {ArrowLoader} from '@loaders.gl/tables/arrow';
 import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
 import {ArrowLoader as FormatArrowLoader} from '@loaders.gl/tables/arrow';
 
-import {JSONLoader} from '@loaders.gl/tables';
+import {JSONLoader} from '@loaders.gl/tables/json';
 import {JSONLoaderWithParser} from '@loaders.gl/tables/json';
 import {JSONLoader as FormatJSONLoader} from '@loaders.gl/tables/json';
 
-import {LanceLoader} from '@loaders.gl/tables';
+import {LanceLoader} from '@loaders.gl/tables/lance';
 import {LanceLoaderWithParser} from '@loaders.gl/tables/lance';
 import {LanceLoader as FormatLanceLoader} from '@loaders.gl/tables/lance';
 
-import {ORCLoader} from '@loaders.gl/tables';
+import {ORCLoader} from '@loaders.gl/tables/orc';
 import {ORCLoaderWithParser} from '@loaders.gl/tables/orc';
 import {ORCLoader as FormatORCLoader} from '@loaders.gl/tables/orc';
 
-import {ParquetLoader} from '@loaders.gl/tables';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
 import {ParquetLoader as FormatParquetLoader} from '@loaders.gl/tables/parquet';
 
-import {GeoArrowLoader} from '@loaders.gl/tables';
+import {GeoArrowLoader} from '@loaders.gl/tables/arrow';
 import {GeoArrowLoaderWithParser} from '@loaders.gl/tables/geoarrow';
 
-import {JSONTableLoader} from '@loaders.gl/tables';
+import {JSONTableLoader} from '@loaders.gl/tables/json';
 import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json';
 
-import {NDJSONLoader} from '@loaders.gl/tables';
+import {NDJSONLoader} from '@loaders.gl/tables/json';
 import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json';
 
+// This case deliberately compares root metadata with the format transport facade.
 import {GeoJSONLoader} from '@loaders.gl/tables';
 import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson';
 
-import {NDGeoJSONLoader} from '@loaders.gl/tables';
+import {NDGeoJSONLoader} from '@loaders.gl/tables/json';
 import {NDGeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson';
 
-import {GeoParquetLoader} from '@loaders.gl/tables';
+import {GeoParquetLoader} from '@loaders.gl/tables/parquet';
 import {GeoParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
 
 test.each(

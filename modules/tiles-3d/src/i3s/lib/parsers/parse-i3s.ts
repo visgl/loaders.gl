@@ -4,7 +4,7 @@
 
 import {makeOrientedBoundingBoxFromQuaternion} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
-import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles-3d';
+import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '../../../constants';
 import I3SNodePagesTiles from '../helpers/i3s-nodepages-tiles';
 import {generateTileAttributeUrls, getUrlWithToken, getUrlWithoutParams} from '../utils/url-utils';
 import {
@@ -22,7 +22,7 @@ import {
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {I3SLoaderWithParser} from '../../i3s-loader-with-parser';
-import {getI3SSpatialReference} from '@loaders.gl/tiles-3d';
+import {getI3SSpatialReference} from '../../../spatial/format-spatial-reference';
 
 export async function normalizeTileData(
   tile: Node3DIndexDocument,

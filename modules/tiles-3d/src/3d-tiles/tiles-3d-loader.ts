@@ -4,8 +4,8 @@
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 // / import type { GLTFLoaderOptions } from '@loaders.gl/scene/gltf';
-import type {DracoLoaderOptions} from '@loaders.gl/scene';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {DracoLoaderOptions} from '@loaders.gl/scene/draco';
+import type {ImageLoaderOptions} from '@loaders.gl/images/image';
 
 import {GLTFLoader, GLBLoader} from '@loaders.gl/scene/gltf';
 import {VERSION} from './lib/utils/version';

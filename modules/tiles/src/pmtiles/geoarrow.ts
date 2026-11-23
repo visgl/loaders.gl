@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {MLTWriter} from '@loaders.gl/tiles/mlt';
-import type {MLTWriterOptions} from '@loaders.gl/tiles/mlt';
-import {MVTWriter} from '@loaders.gl/tiles/mvt';
+import {MLTWriter} from '../mlt/mlt-writer';
+import type {MLTWriterOptions} from '../mlt/mlt-writer';
+import {MVTWriter} from '../mvt/mvt-writer';
 import type {
   ArrowTableTileSourceInput,
-  ArrowTableTileLoaderOptions,
-  MVTWriterOptions
-} from '@loaders.gl/tiles/mvt';
-import {ArrowTableVectorTileSource} from '@loaders.gl/tiles/arrow-table-tile-loader';
+  ArrowTableTileLoaderOptions
+} from '../mvt/arrow-table-tile-source-types';
+import type {MVTWriterOptions} from '../mvt/lib/encode-mvt';
+import {ArrowTableVectorTileSource} from '../mvt/arrow-table-tile-loader';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import type {DataType} from '@loaders.gl/core/schema';
 import {encodePMTiles} from './lib/encode-pmtiles';

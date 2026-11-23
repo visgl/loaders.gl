@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {CompressedTextureLoader} from '@loaders.gl/images';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {
   GL_COMPRESSED_RGB_ETC1_WEBGL,

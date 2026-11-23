@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {beforeAll, expect, test} from 'vitest';
-import {getFrameState, type Tile3D} from '@loaders.gl/tiles-3d';
+import {getFrameState, type Tile3D} from '@loaders.gl/tiles-3d/tileset';
 import {getProjectedRadius} from '../../../src/tileset-3d/helpers/i3s-lod';
 import {
   limitSelectedTiles,

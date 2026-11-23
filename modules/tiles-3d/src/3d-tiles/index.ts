@@ -70,3 +70,16 @@ export type {
   Tile3DStyleInputOptions,
   Tile3DStylePropertySource
 } from './lib/metadata/style-input';
+export {Tiles3DSource} from '../tileset-3d/format-3d-tiles/tiles-3d-source';
+export type {ImplicitTilingStats} from '../tileset-3d/format-3d-tiles/tiles-3d-source';
+export type {ImplicitAvailability} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export type {ImplicitSubtreeReference} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export type {ImplicitTileHeader} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export type {ImplicitTilingDescriptor} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export type {MaterializedImplicitSubtree} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export type {ParsedImplicitSubtree} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export {createImplicitSubtreeReference} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export {materializeImplicitSubtree} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export {replaceImplicitUrlTemplate} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+
+export type {ImplicitTileCoordinates} from '../tileset-3d/format-3d-tiles/implicit-tiling';

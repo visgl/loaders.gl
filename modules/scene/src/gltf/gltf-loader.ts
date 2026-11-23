@@ -4,8 +4,9 @@
 
 import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {DracoLoaderOptions} from '../draco-loader-types';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
-import type {BasisLoaderOptions, TextureLoaderOptions} from '@loaders.gl/images';
+import type {ImageLoaderOptions} from '@loaders.gl/images/image';
+import type {BasisLoaderOptions} from '@loaders.gl/images/basis';
+import type {TextureLoaderOptions} from '@loaders.gl/images/texture';
 import type {ParseGLTFOptions} from './lib/parsers/parse-gltf';
 import type {GLTFWithBuffers} from './lib/types/gltf-types';
 import type {GLBLoaderOptions} from './glb-loader-types';

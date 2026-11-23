@@ -52,7 +52,7 @@ JSON Lines. Both return the same five-table [`OtlpTrace`](../formats/otlp-trace)
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {OtlpTraceJsonLoader, OtlpTraceLoader} from '@loaders.gl/traces';
+import {OtlpTraceJsonLoader, OtlpTraceLoader} from '@loaders.gl/traces/otlp';
 
 const protobufTrace = await load('traces.otlp', OtlpTraceLoader);
 const jsonTrace = await load('traces.otlp.json', OtlpTraceJsonLoader);
@@ -68,8 +68,8 @@ The package-root exports are metadata-only and support asynchronous core APIs th
 For direct access to parser-bearing loaders, use:
 
 ```typescript
-import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp-trace-loader';
-import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp-trace-json-loader';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp';
 ```
 
 ## Result
@@ -96,7 +96,7 @@ Invalid, non-finite, or non-positive batch sizes use the default.
 
 ```typescript
 import {parseInBatches} from '@loaders.gl/core';
-import {OtlpTraceLoader} from '@loaders.gl/traces';
+import {OtlpTraceLoader} from '@loaders.gl/traces/otlp';
 
 const batches = await parseInBatches(byteChunks, OtlpTraceLoader, {
   otlpTrace: {batchSize: 1024}

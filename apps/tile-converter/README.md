@@ -356,7 +356,7 @@ resources implicitly.
 
 ```ts
 import {createI3SConversionSpatialContext} from '@loaders.gl/tile-converter/v5';
-import {getI3SSpatialReference} from '@loaders.gl/tiles-3d';
+import {getI3SSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 
 const spatial = createI3SConversionSpatialContext(
   getI3SSpatialReference(layerMetadata),

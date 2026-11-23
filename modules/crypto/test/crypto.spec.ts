@@ -1,6 +1,10 @@
 import {expect, test} from 'vitest';
 import {fetchFile, loadInBatches, NullLoader, isBrowser} from '@loaders.gl/core';
-import {CRC32Hash, CRC32CHash, MD5Hash, SHA256Hash, NodeHash} from '@loaders.gl/crypto';
+import {CRC32Hash} from '@loaders.gl/crypto/crc32';
+import {CRC32CHash} from '@loaders.gl/crypto/crc32c';
+import {MD5Hash} from '@loaders.gl/crypto/md5';
+import {SHA256Hash} from '@loaders.gl/crypto/sha256';
+import {NodeHash} from '@loaders.gl/crypto/node';
 import {getBinaryData} from './test-utils/test-utils';
 import CryptoJS from 'crypto-js';
 const modules = {CryptoJS};

@@ -67,7 +67,8 @@ the viewport changes. The runtime keeps the hierarchy, requests, cache, and sele
 ```typescript
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 const source = new Tiles3DSource({
   url: 'https://assets.ion.cesium.com/43978/tileset.json',

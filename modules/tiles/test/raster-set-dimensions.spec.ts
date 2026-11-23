@@ -10,7 +10,7 @@ import type {
   RasterSourceMetadata,
   RasterViewport
 } from '@loaders.gl/core/loader-utils';
-import {RasterSet} from '@loaders.gl/tiles';
+import {RasterSet} from '@loaders.gl/tiles/raster-set';
 
 type TemporalRasterParameters = GetRasterParameters & {
   selection: {time: number};

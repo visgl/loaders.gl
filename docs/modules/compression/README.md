@@ -76,7 +76,7 @@ Import the default class for the direction you need. The default owns the built-
 policy, so application imports stay stable as runtime support improves:
 
 ```typescript
-import {GZipDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 
 const decompressor = new GZipDecompressor();
 const data = await decompressor.decompress(compressedData);
@@ -86,12 +86,8 @@ Compressors and decompressors share stable base types, which makes codec selecti
 through loaders, writers, or application code:
 
 ```typescript
-import {
-  GZipCompressor,
-  GZipDecompressor,
-  type Compressor,
-  type Decompressor
-} from '@loaders.gl/compression';
+import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression/gzip';
+import {type Compressor, type Decompressor} from '@loaders.gl/compression/codec';
 
 const compressors: Compressor[] = [new GZipCompressor()];
 const decompressors: Decompressor[] = [new GZipDecompressor()];
@@ -322,7 +318,7 @@ as the second argument, or as `compressUtils.expectedSize`. The result contains 
 bytes, which may be fewer than the capacity.
 
 ```typescript
-import {LzoDecompressor} from '@loaders.gl/compression';
+import {LzoDecompressor} from '@loaders.gl/compression/lzo';
 
 const decoder = new LzoDecompressor();
 await decoder.preload();

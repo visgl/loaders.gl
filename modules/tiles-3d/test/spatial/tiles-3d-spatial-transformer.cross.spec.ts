@@ -3,7 +3,10 @@
 
 import type {Geoid} from '@math.gl/earth/geoid';
 import {describe, expect, test} from 'vitest';
-import {createTilesetSpatialReference, Tiles3DSpatialTransformer} from '@loaders.gl/tiles-3d';
+import {
+  createTilesetSpatialReference,
+  Tiles3DSpatialTransformer
+} from '@loaders.gl/tiles-3d/spatial';
 
 describe('Tiles3DSpatialTransformer', () => {
   test('transforms packed positions and conservative boxes', () => {

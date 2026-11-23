@@ -10,7 +10,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {execFileSync, spawnSync} from 'node:child_process';
 import {encodeI3SMeshLayer, SLPKWriter, parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
-import {GZipDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {createNodeI3SConversionSource} from '../apps/tile-converter/src/v5/node-i3s-source';
 import {createNodeTilesetConversionSource} from '../apps/tile-converter/src/v5/node-source';

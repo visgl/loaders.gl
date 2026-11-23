@@ -59,7 +59,7 @@ A loader for cubemaps described by a JSON manifest.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureCubeLoader} from '@loaders.gl/images';
+import {TextureCubeLoader} from '@loaders.gl/images/texture';
 
 const imageCube = await load('environment.image-texture-cube.json', TextureCubeLoader);
 ```

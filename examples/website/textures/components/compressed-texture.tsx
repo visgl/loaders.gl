@@ -6,9 +6,11 @@ import * as React from 'react';
 import styled from 'styled-components';
 
 import {load, registerLoaders, selectLoader, fetchFile, LoaderOptions} from '@loaders.gl/core';
-import {BasisLoader, CompressedTextureLoader, CrunchLoader} from '@loaders.gl/images';
+import {BasisLoader} from '@loaders.gl/images/basis';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
+import {CrunchLoader} from '@loaders.gl/images/crunch';
 import {GL_EXTENSIONS_CONSTANTS} from '@loaders.gl/images/gl-extensions';
-import {ImageLoader, ImageType} from '@loaders.gl/images';
+import {ImageLoader, ImageType} from '@loaders.gl/images/image';
 
 import {Device, Texture} from '@luma.gl/core';
 import {Model} from '@luma.gl/engine';

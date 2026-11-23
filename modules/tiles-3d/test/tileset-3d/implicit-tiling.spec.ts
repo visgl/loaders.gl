@@ -6,14 +6,13 @@ import {expect, test} from 'vitest';
 import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@math.gl/dggs/s2';
 import {
   createImplicitSubtreeReference,
-  LOD_METRIC_TYPE,
   materializeImplicitSubtree,
   replaceImplicitUrlTemplate,
-  TILE_REFINEMENT,
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree
-} from '@loaders.gl/tiles-3d';
-import {convertS2BoundingVolumeToOBB} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/3d-tiles';
+import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles-3d/tileset';
+import {convertS2BoundingVolumeToOBB} from '@loaders.gl/tiles-3d/spatial';
 import {Tile3D} from '../../src/tileset-3d/common/tile-3d';
 import {Tileset3DTraverser} from '../../src/tileset-3d/format-3d-tiles/tileset-3d-traverser';
 /** Creates a compact descriptor that individual tests can override. */

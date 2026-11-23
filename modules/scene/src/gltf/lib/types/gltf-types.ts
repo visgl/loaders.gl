@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 
-import {ImageType} from '@loaders.gl/images';
+import {ImageType} from '@loaders.gl/images/image';
 import type {TextureLevel} from '@loaders.gl/core/schema';
 import type {GLTF} from './gltf-json-schema';
 import type {GLTFGaussianSplatPrimitive} from './gltf-ext-gaussian-splatting-schema';

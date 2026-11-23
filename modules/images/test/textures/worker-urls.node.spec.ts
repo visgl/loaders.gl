@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {getWorkerURL} from '@loaders.gl/core/worker-utils';
-import {BasisLoader} from '@loaders.gl/images';
+import {BasisLoader} from '@loaders.gl/images/basis';
 import {KTX2BasisWriterWorker} from '@loaders.gl/images/basis';
 
 test.each([

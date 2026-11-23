@@ -10,7 +10,7 @@ import {ViewState, FlyToInterpolator} from '@deck.gl/core';
 import {SourceDataDrivenTile3DLayer} from '@loaders.gl/deck-layers';
 
 import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
-import {Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {ControlPanel} from './components/control-panel';
 import {AttributeData, ColorsByAttribute} from './types';
 import {ColorizationPanel} from './components/colorization-panel';

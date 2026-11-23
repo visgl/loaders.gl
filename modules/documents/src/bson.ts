@@ -18,3 +18,4 @@ export {
   type ParseBSONOptions,
   type EncodeBSONOptions
 } from './bson-types';
+export {BSONFormat} from './bson-format';

@@ -33,7 +33,7 @@ the target equal to the source. Explicit `RUB`/`LUF` (left/up/forward) options r
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {SPZLoader} from '@loaders.gl/splats';
+import {SPZLoader} from '@loaders.gl/splats/spz';
 
 const table = await load('scene.spz', SPZLoader, {
   splats: {sourceCoordinateSystem: 'RUB', targetCoordinateSystem: 'LUF'}
@@ -70,7 +70,7 @@ import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {SPZLoader} from '@loaders.gl/splats';
+import {SPZLoader} from '@loaders.gl/splats/spz';
 
 const gltf = await load('scene.glb', [GLTFLoader, SPZLoader], {
   splats: {targetCoordinateSystem: 'LUF'}

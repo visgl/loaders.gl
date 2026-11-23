@@ -65,7 +65,7 @@ The `NPYLoader` parses an array from the [NPY format][npy-spec], a lightweight e
 ## Usage
 
 ```typescript
-import {NPYLoader} from '@loaders.gl/scientific';
+import {NPYLoader} from '@loaders.gl/scientific/npy';
 import {load} from '@loaders.gl/core';
 
 const {data, header} = await load(url, NPYLoader);

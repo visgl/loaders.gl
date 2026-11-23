@@ -1,7 +1,7 @@
 import React, {useEffect, useId, useRef, useState} from 'react';
 import {createDataSource, load} from '@loaders.gl/core';
-import {ArcGISImageServerLoader} from '@loaders.gl/arcgis';
-import type {LERCData} from '@loaders.gl/raster';
+import {ArcGISImageServerLoader} from '@loaders.gl/arcgis/image-service';
+import type {LERCData} from '@loaders.gl/raster/lerc';
 
 const SERVICE_URL =
   'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer';

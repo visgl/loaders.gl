@@ -13,8 +13,8 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {DataSource, mergeOptions, validateRasterRegion} from '@loaders.gl/core/loader-utils';
 
-import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images';
-import {ImageLoader} from '@loaders.gl/images';
+import type {ImageType, ImageLoaderOptions} from '@loaders.gl/images/image';
+import {ImageLoader} from '@loaders.gl/images/image';
 
 import type {WMSCapabilities} from './wms-capabilities-loader';
 import type {WMSFeatureInfo} from './wip/wms-feature-info-loader';
