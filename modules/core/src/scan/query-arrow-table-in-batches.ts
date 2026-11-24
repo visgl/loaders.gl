@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import * as arrow from 'apache-arrow';
-import {createRecordBatchWithMetadata, getRecordBatchMetadata} from '@math.gl/core/arrow';
+import type * as arrow from 'apache-arrow';
 import {queryArrowTableInBatches as executeArrowQueryInBatches} from '@math.gl/sql/query';
 import {validateTableQueryLimit} from '@loaders.gl/core/loader-utils';
-import {filterArrowTable} from './arrow-execution/filter-arrow-table';
-import {needsPortablePredicateCompatibility} from './arrow-execution/portable-predicate-compatibility';
 import type {ArrowQueryOptions} from './query-arrow-table';
 
 /**
@@ -38,45 +35,19 @@ export async function* queryArrowTableInBatches(
   try {
     const first = await iterator.next();
     if (first.done) return;
-    const predicate = options.predicate;
-    const compatiblePredicate =
-      predicate && needsPortablePredicateCompatibility(first.value.schema, predicate)
-        ? predicate
-        : undefined;
-    /** Replays the first batch and adapts predicate shapes RC.2 cannot bind. */
+    /** Replays the first batch after reading its schema. */
     async function* readBatches(): AsyncIterable<arrow.RecordBatch> {
-      let remaining = options.limit;
       for (
         let next: IteratorResult<arrow.RecordBatch> = first;
         !next.done;
         next = await iterator.next()
       ) {
-        const batch = next.value;
-        if (!compatiblePredicate) {
-          yield batch;
-          continue;
-        }
-        const filtered = filterArrowTable(
-          new arrow.Table(batch.schema, [batch]),
-          compatiblePredicate,
-          {
-            limit: remaining,
-            signal: options.signal
-          }
-        );
-        if (filtered.numRows) yield* filtered.batches;
-        else
-          yield createRecordBatchWithMetadata(
-            batch.schema,
-            new arrow.RecordBatch(batch.schema, undefined).data,
-            getRecordBatchMetadata(batch)
-          );
-        if (remaining !== undefined) remaining -= filtered.numRows;
+        yield next.value;
       }
     }
     yield* executeArrowQueryInBatches(readBatches(), first.value.schema, {
       select: options.select ?? options.columns,
-      where: compatiblePredicate ? undefined : predicate,
+      where: options.predicate,
       limit: options.limit,
       signal: options.signal,
       emitEmptyBatches: true

@@ -22,6 +22,20 @@ This section covers upgrades from stable loaders.gl 4.x to 5.0. Update all loade
 dependencies together and regenerate your lockfile. See [What's New](./whats-new.mdx#v50)
 for new features.
 
+### Arrow query results
+
+Relational Arrow queries use math.gl’s Arrow result types. Read `COUNT` fields as Arrow `Int64` values (JavaScript `bigint`). An empty ungrouped aggregate yields one row with `COUNT` equal to `0n` and `NULL` in aggregates such as `SUM` and `AVG`. A zero divisor in a portable `divide` expression produces `NULL`.
+
+Arrow temporal predicates use storage units. Use epoch days for numeric `Date32`
+literals and a `bigint` in the column unit for `Timestamp` literals. A JavaScript
+`Date` is converted to the column unit, including its UTC day for `Date32`.
+
+Direct and streaming Arrow predicates follow math.gl's operand restrictions.
+For predicates on `LargeUtf8` or `LargeBinary`, use a standard-width column
+when the offsets fit. Convert `Float16` to `Float32` on runtimes without
+`Float16Array`. Compare `FixedSizeBinary` values against literals of the
+column's declared byte width.
+
 ### Package and import migrations
 
 Install the grouped npm package and use its format subpath. For example, replace

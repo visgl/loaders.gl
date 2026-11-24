@@ -210,8 +210,8 @@ test('queryArrowTable performs SQL-like grouped aggregates and null handling', (
   });
 
   expect(toRows(result)).toEqual([
-    {group: 'b', countValues: 1, total: 5, average: 5},
-    {group: 'a', countValues: 1, total: 2, average: 2}
+    {group: 'b', countValues: 1n, total: 5, average: 5},
+    {group: 'a', countValues: 1n, total: 2, average: 2}
   ]);
 });
 
@@ -381,8 +381,8 @@ test('queryArrowTable computes min, max, count-all, and empty aggregates', () =>
     orderBy: [{column: 'group'}]
   });
   expect(toRows(result)).toEqual([
-    {group: 'a', rows: 2, minimum: 2, maximum: 2},
-    {group: 'b', rows: 1, minimum: 5, maximum: 5}
+    {group: 'a', rows: 2n, minimum: 2, maximum: 2},
+    {group: 'b', rows: 1n, minimum: 5, maximum: 5}
   ]);
   expect(
     toRows(
@@ -417,7 +417,7 @@ test('queryArrowTable evaluates scalar expression edge cases', () => {
     queryArrowTable(makeArrowTable({left: ['x'], right: [1]}), {
       expressions: [{name: 'invalid', expression: {op: 'add', left: 'left', right: 'right'}}]
     })
-  ).toThrow(/numeric operands/);
+  ).toThrow(/operand types must match/);
 });
 
 test('queryArrowTable orders supported scalar types and rejects unsupported types', () => {
@@ -432,10 +432,15 @@ test('queryArrowTable orders supported scalar types and rejects unsupported type
   expect(toRows(result).map(row => row.date)).toEqual([1, 2]);
 
   expect(() =>
-    queryArrowTable(makeArrowTable({bytes: [new Uint8Array([1]), new Uint8Array([2])]}), {
-      orderBy: [{column: 'bytes'}]
-    })
-  ).toThrow(/cannot compare/);
+    queryArrowTable(
+      new arrow.Table({
+        bytes: arrow.vectorFromArray([Uint8Array.of(1), Uint8Array.of(2)], new arrow.Binary())
+      }),
+      {
+        orderBy: [{column: 'bytes'}]
+      }
+    )
+  ).toThrow(/Unsupported Arrow relational key type/);
   expect(
     toRows(
       queryArrowTable(makeArrowTable({flag: [false, true]}), {
@@ -470,7 +475,7 @@ test('queryArrowTable evaluates every relational expression and aggregate bounda
   const table = makeArrowTable({
     group: ['a', 'a', 'b'],
     left: [8, 4, null],
-    right: [2, 0, 3]
+    right: [2, 1, 3]
   });
   const expressions = [
     {name: 'literal', expression: {op: 'literal' as const, value: true}},
@@ -485,9 +490,18 @@ test('queryArrowTable evaluates every relational expression and aggregate bounda
   });
   expect(toRows(result)).toEqual([
     {group: 'a', literal: true, copy: 8, add: 10, subtract: 6, divide: 4},
-    {group: 'a', literal: true, copy: 4, add: 4, subtract: 4, divide: null},
+    {group: 'a', literal: true, copy: 4, add: 5, subtract: 3, divide: 4},
     {group: 'b', literal: true, copy: null, add: null, subtract: null, divide: null}
   ]);
+
+  const integerDivision = queryArrowTable(
+    arrow.tableFromArrays({left: Int32Array.of(4, 4), right: Int32Array.of(0, 2)}),
+    {
+      expressions: [{name: 'ratio', expression: {op: 'divide', left: 'left', right: 'right'}}],
+      columns: ['ratio']
+    }
+  );
+  expect(toRows(integerDivision)).toEqual([{ratio: null}, {ratio: 2}]);
 
   const aggregates = queryArrowTable(table, {
     aggregates: [
@@ -497,18 +511,18 @@ test('queryArrowTable evaluates every relational expression and aggregate bounda
       {name: 'maximum', function: 'max', column: 'left'}
     ]
   });
-  expect(toRows(aggregates)).toEqual([{rows: 3, values: 2, minimum: 4, maximum: 8}]);
+  expect(toRows(aggregates)).toEqual([{rows: 3n, values: 2n, minimum: 4, maximum: 8}]);
 
   expect(() =>
     queryArrowTable(makeArrowTable({left: ['x'], right: [1]}), {
       expressions: [{name: 'bad', expression: {op: 'add', left: 'left', right: 'right'}}]
     })
-  ).toThrow(/requires numeric operands/);
+  ).toThrow(/operand types must match/);
   expect(() =>
     queryArrowTable(makeArrowTable({value: ['x']}), {
       aggregates: [{name: 'bad', function: 'sum', column: 'value'}]
     })
-  ).toThrow(/requires numeric values/);
+  ).toThrow(/does not support Arrow type/);
 });
 
 test('queryArrowTable covers empty-result schemas for computed values', () => {
@@ -542,7 +556,7 @@ test('queryArrowTable covers empty-result schemas for computed values', () => {
     limit: 0
   });
   expect(aggregateResult.schema.fields.map(field => field.type.toString())).toEqual([
-    'Int32',
+    'Int64',
     'Float64'
   ]);
 });
@@ -560,10 +574,10 @@ test('queryArrowTable covers scalar ordering and grouping key kinds', () => {
   expect(toRows(orderedBigints).map(row => row.value)).toEqual([1n, 2n, 2n]);
 
   const grouped = queryArrowTable(
-    makeArrowTable({
-      date: [new Date(1), new Date(1)],
-      bytes: [new Uint8Array([1, 2]), new Uint8Array([1, 2])],
-      nullable: [null, null]
+    new arrow.Table({
+      date: arrow.vectorFromArray([1, 1], new arrow.TimestampMillisecond()),
+      bytes: arrow.vectorFromArray([Uint8Array.of(1, 2), Uint8Array.of(1, 2)], new arrow.Binary()),
+      nullable: arrow.vectorFromArray([null, null], new arrow.Null())
     }),
     {
       groupBy: ['date', 'bytes', 'nullable'],
@@ -571,7 +585,7 @@ test('queryArrowTable covers scalar ordering and grouping key kinds', () => {
     }
   );
   expect(toRows(grouped)).toHaveLength(1);
-  expect(toRows(grouped)[0].rows).toBe(2);
+  expect(toRows(grouped)[0].rows).toBe(2n);
 
   expect(() =>
     queryArrowTable(makeArrowTable({left: [Number.POSITIVE_INFINITY]}), {

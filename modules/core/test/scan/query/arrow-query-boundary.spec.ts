@@ -118,7 +118,7 @@ test('queryArrowTable covers empty global aggregates and union dependencies', ()
       {name: 'average', function: 'avg', column: 'value'}
     ]
   });
-  expect(toRows(emptyAggregate)).toEqual([{rows: 0}]);
+  expect(toRows(emptyAggregate)).toEqual([{rows: 0n, sum: null, average: null}]);
 
   const union = queryArrowTable(makeArrowTable({left: [1], right: [2], ignored: [9]}), {
     union: [{source: 'child'}],
