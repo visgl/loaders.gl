@@ -1,0 +1,181 @@
+Schema module
+
+# Give loaders a common shape to return.
+
+`@loaders.gl/core/schema` defines the lightweight table, schema, and batch contracts used across loaders.gl. It follows the parts of Apache Arrow that applications need for portable category data.
+
+[Schema APIs](https://loaders.gl/docs/modules/core/schema/table-guide.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/docs/modules/core/schema/table-guide.md)[Loader categories](https://loaders.gl/docs/developer-guide/loader-categories.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/docs/developer-guide/loader-categories.md)[Apache Arrow](https://loaders.gl/docs/developer-guide/apache-arrow.md)
+
+<!-- -->
+
+[ ↗](https://loaders.gl/docs/developer-guide/apache-arrow.md)
+
+The table contract
+
+## Keep the shape explicit as the format changes.
+
+A table result tells the application where its rows, columns, schema, and batches live. The source format can change without making every consumer guess what it received.
+
+Compatible inputs
+
+**Rows**objects or arrays
+
+**Columns**typed array-like values
+
+[**Arrow**vectors and record batches↗](https://loaders.gl/docs/developer-guide/apache-arrow.md)[**Features**geometry plus properties↗](https://loaders.gl/docs/specifications/category-gis.md)
+
+declar&#x65;**→**
+
+shape
+
+Table contract
+
+schemadatabatch
+
+explicit discriminant · stable handoff
+
+us&#x65;**→**
+
+Application paths
+
+**Render**application or GPU path
+
+[**Scan**filter, project, and limit↗](https://loaders.gl/docs/developer-guide/common-scan-architecture.md)[**Convert**move between category shapes↗](https://loaders.gl/docs/developer-guide/converting-data.md)[**Write**encode another format↗](https://loaders.gl/docs/developer-guide/using-writers.md)
+
+Use the lightweight schema boundary for package interoperability; use full Arrow objects when the next operation needs columnar execution or IPC.
+
+Category data
+
+### Load many formats into one application path.
+
+Category data lets related loaders return compatible structures, so rendering, analysis, and export code can be shared.
+
+MeshTableGISImageJSONScenegraph3D Tiles
+
+Arrow TablePlain
+
+Decode
+
+[Arrow​Loader↗](https://loaders.gl/docs/modules/tables/arrow/api-reference/arrow-loader.md)[CSV​Loader↗](https://loaders.gl/docs/modules/tables/csv/api-reference/csv-loader.md)[JSON​Loader↗](https://loaders.gl/docs/modules/tables/json/api-reference/json-loader.md)[NDJSON​Loader↗](https://loaders.gl/docs/modules/tables/json/api-reference/ndjson-loader.md)[Parquet​Loader↗](https://loaders.gl/docs/modules/tables/parquet/api-reference/parquet-loader.md)
+
+Data
+
+[Arrow table datashape: 'arrow'↗](https://loaders.gl/docs/specifications/category-table.md)
+
+Encode
+
+[Arrow​Writer↗](https://loaders.gl/docs/modules/tables/arrow/api-reference/arrow-writer.md)[Parquet​Writer↗](https://loaders.gl/docs/modules/tables/parquet/api-reference/parquet-writer.md)
+
+The data-shape boundary
+
+## Decode many formats. Keep the application path stable.
+
+Schema types describe how a loader’s result is organized, without forcing every format to use the same physical representation. Applications can choose row, columnar, wrapped, or Arrow-backed shapes where supported.
+
+01
+
+Table
+
+Rows, columns, schema, and optional metadata
+
+02
+
+Schema
+
+Field names, types, and nested structure
+
+03
+
+Batch
+
+A bounded unit of records or category data
+
+04
+
+Interop
+
+Arrow-compatible shapes across loaders and writers
+
+Detailed guide
+
+## Tables, batches, and shape selection
+
+The sections below cover table APIs, runtime shape detection, loader shape options, and the category data contracts used by applications.
+
+## What the module provides[​](#what-the-module-provides "Direct link to What the module provides")
+
+### Geospatial metadata validation[​](#geospatial-metadata-validation "Direct link to Geospatial metadata validation")
+
+Geometry/GeoParquet metadata types and dependency-light metadata helpers are available from the root. Runtime validators are isolated in `@loaders.gl/core/schema/geospatial-metadata-zod-schema`, so importing the root does not load Zod. The subpath exports `GeoArrowMetadataSchema`, `GeoParquetMetadataSchema`, `GeoParquetColumnMetadataSchema` and `GeoParquetGeometryTypeSchema`.
+
+Generated schemas are available at `@loaders.gl/core/schema/geoparquet.schema.json` and `@loaders.gl/core/schema/geoarrow-metadata.schema.json`. The old GIS subpaths remain compatibility entry points.
+
+The schema module is the small contract shared by loaders, sources, converters, and writers. It describes the data shape without taking ownership of the format-specific decoder.
+
+* [`Schema`](https://loaders.gl/docs/modules/core/schema/api-reference/schema.md) describes named fields, types, nullability, and metadata.
+* [`Table`](https://loaders.gl/docs/modules/core/schema/api-reference/table.md) describes a complete result in a row, columnar, GeoJSON, or Arrow representation.
+* [`Batch`](https://loaders.gl/docs/modules/core/schema/api-reference/table-batch.md) describes one bounded result from an incremental loader or source.
+
+The types are deliberately serializable and Arrow-aligned. Applications can use the lightweight schema types at package boundaries, then convert to full Apache Arrow objects when they need Arrow execution or IPC.
+
+## Choose a table shape[​](#choose-a-table-shape "Direct link to Choose a table shape")
+
+| Shape              | Use it when                                            | Data location                         |
+| ------------------ | ------------------------------------------------------ | ------------------------------------- |
+| `array-row-table`  | Rows are easiest to pass through application code      | `data` is an array of value arrays    |
+| `object-row-table` | Fields should be addressed by name                     | `data` is an array of objects         |
+| `geojson-table`    | The result needs GeoJSON feature compatibility         | `features` contains the rows          |
+| `columnar-table`   | Typed columns are useful but Arrow is not required     | `data` is a map of array-like columns |
+| `arrow`            | The next step is columnar processing, scanning, or IPC | Native Apache Arrow table             |
+
+### Generated names for positional columns[​](#generated-names-for-positional-columns "Direct link to Generated names for positional columns")
+
+When tabular rows contain values but no field names, loaders.gl assigns the SQL-friendly, **one-based** names `column1`, `column2`, `column3`, and so on. This convention is shared by headerless CSV (default `csv.columnPrefix: 'column'`) and positional JSON row arrays. The first array element remains at JavaScript index `0` but has logical field name `column1`. The convention applies when inferring a schema or adapting positional rows to object rows or Arrow; it does not rename keys of JSON object rows.
+
+Explicit field names, including names from a supplied schema or a CSV header, take precedence. CSV continues to allow an alternate prefix via `csv.columnPrefix`.
+
+For example, positional rows `[[12.5, 34.2], [15.1, 35.8]]` can be queried as `SELECT column1 AS longitude, column2 AS latitude` after conversion to a table source.
+
+Use `getTableLength(table)` from `@loaders.gl/core/schema-utils` to count rows across native Arrow and loaders.gl table layouts.
+
+## Shapes in loaders[​](#shapes-in-loaders "Direct link to Shapes in loaders")
+
+When a loader supports multiple representations, the option belongs to that loader's namespace. The exact choices vary by format, but the result keeps the same explicit `shape` boundary:
+
+```
+const table = await load(url, MVTLoader, {
+
+  mvt: {shape: 'geojson-table'}
+
+});
+
+
+
+if (table.shape === 'geojson-table') {
+
+  renderFeatures(table.features);
+
+}
+```
+
+For batch-oriented APIs, the same category names describe each batch. That makes it possible to start with `load()` for a complete result and move to `loadInBatches()` or a source without redesigning the consumer.
+
+## Table APIs[​](#table-apis "Direct link to Table APIs")
+
+The table API is modelled after a focused subset of the Apache Arrow API:
+
+| loaders.gl type                                                                     | Arrow counterpart | Role                           |
+| ----------------------------------------------------------------------------------- | ----------------- | ------------------------------ |
+| [`Table`](https://loaders.gl/docs/modules/core/schema/api-reference/table.md)       | `Table`           | Complete table result          |
+| [`Schema`](https://loaders.gl/docs/modules/core/schema/api-reference/schema.md)     | `Schema`          | Field and metadata description |
+| [`Batch`](https://loaders.gl/docs/modules/core/schema/api-reference/table-batch.md) | `RecordBatch`     | Bounded incremental result     |
+
+Use the [table guide](https://loaders.gl/docs/modules/core/schema/table-guide.md) for the longer explanation of row and columnar representations, or continue to the [Apache Arrow interoperability page](https://loaders.gl/docs/modules/core/schema/api-reference/apache-arrow.md) when the physical memory layout matters.
