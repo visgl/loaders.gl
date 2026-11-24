@@ -2,6 +2,11 @@
 
 ## v5.0
 
+### Unreleased
+
+- Upgrade to math.gl 5.0.3 and share Arrow projection, predicate evaluation, row selection, and schema metadata.
+- Delegate WKT parsing, WKB ring traversal, and TWKB encoding and decoding to math.gl.
+
 ### v5.0.0
 
 - Remove the legacy v4 tile-converter implementation (#4606).

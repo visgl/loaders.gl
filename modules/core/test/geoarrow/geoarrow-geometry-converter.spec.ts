@@ -30,6 +30,21 @@ import {convertArrowToSchema, convert} from '@loaders.gl/core/schema-utils';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import type {GeoArrowGeometryTarget} from '../../src/geoarrow/geoarrow-converter/convert-geoarrow-geometry';
 
+test('concrete WKT conversion preserves the input Arrow chunk boundaries', () => {
+  const first = arrow.vectorFromArray(['POINT (1 2)', null], new arrow.Utf8());
+  const second = arrow.vectorFromArray(['POINT (3 4)'], new arrow.Utf8());
+  const source = arrow.makeVector([...first.data, ...second.data]);
+
+  const result = convertGeoArrowVector(source, 'geoarrow.wkt', 'geoarrow.point', {
+    dimension: 'xy',
+    coordinates: 'separated',
+    fallback: 'error'
+  });
+
+  expect(result.data.map(chunk => chunk.length)).toEqual([2, 1]);
+  expect(result.get(1)).toBeNull();
+});
+
 const GEOARROW_WKB_CONFORMANCE_CASES = [
   ...['point', 'linestring', 'polygon', 'multipoint', 'multilinestring', 'multipolygon'].flatMap(
     geometryName =>

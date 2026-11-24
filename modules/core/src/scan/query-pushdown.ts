@@ -95,7 +95,7 @@ async function planPartialProjection(
       source.supportsQueryProjectionPushdown!(selection)
   );
   if (!accepted.some(Boolean) || accepted.every(Boolean)) return null;
-  const {compileArrowProjection, getProjectionColumns} = await import(
+  const {prepareArrowProjection, getProjectionColumns} = await import(
     './arrow-execution/expressions'
   );
   const nativeSelections: NonNullable<typeof query.select>[number][] = [];
@@ -115,9 +115,8 @@ async function planPartialProjection(
   });
   const request = {...query, select: [...dependencies, ...nativeSelections]};
   if (!canPushdownQuery(request, capabilities, true)) return null;
-  const empty = new Table(inputSchema);
-  const intermediate = compileArrowProjection(inputSchema, request.select, signal)(empty);
-  const project = compileArrowProjection(intermediate.schema, residual, signal);
+  const intermediate = prepareArrowProjection(inputSchema, request.select, {signal});
+  const {projectTable: project} = prepareArrowProjection(intermediate.schema, residual, {signal});
   const plan = await source.planQueryPushdown!(request, {signal});
   const checked = validatePushdownPlan(
     plan,
