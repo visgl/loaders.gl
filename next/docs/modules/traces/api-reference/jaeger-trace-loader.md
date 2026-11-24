@@ -65,7 +65,7 @@ The sections below document usage, parser access, options, batches, and the norm
 ```
 import {load} from '@loaders.gl/core';
 
-import {JaegerTraceLoader} from '@loaders.gl/traces';
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
 
 
 
@@ -87,7 +87,7 @@ console.log(trace.links);
 The package-root export is metadata-only. Direct parser access is available from the implementation subpath:
 
 ```
-import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger-trace-loader';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger';
 ```
 
 ## Options[​](#options "Direct link to Options")
@@ -101,7 +101,7 @@ import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger-trace-loade
 ```
 import {parseInBatches} from '@loaders.gl/core';
 
-import {JaegerTraceLoader} from '@loaders.gl/traces';
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
 
 
 

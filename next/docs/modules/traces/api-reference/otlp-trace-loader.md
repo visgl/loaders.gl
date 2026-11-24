@@ -65,7 +65,7 @@ The sections below document binary and JSON loaders, parser access, result table
 ```
 import {load} from '@loaders.gl/core';
 
-import {OtlpTraceJsonLoader, OtlpTraceLoader} from '@loaders.gl/traces';
+import {OtlpTraceJsonLoader, OtlpTraceLoader} from '@loaders.gl/traces/otlp';
 
 
 
@@ -89,9 +89,9 @@ console.log(protobufTrace.links);
 The package-root exports are metadata-only and support asynchronous core APIs through `preload()`. For direct access to parser-bearing loaders, use:
 
 ```
-import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp-trace-loader';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp';
 
-import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp-trace-json-loader';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp';
 ```
 
 ## Result[​](#result "Direct link to Result")
@@ -125,7 +125,7 @@ Invalid, non-finite, or non-positive batch sizes use the default.
 ```
 import {parseInBatches} from '@loaders.gl/core';
 
-import {OtlpTraceLoader} from '@loaders.gl/traces';
+import {OtlpTraceLoader} from '@loaders.gl/traces/otlp';
 
 
 

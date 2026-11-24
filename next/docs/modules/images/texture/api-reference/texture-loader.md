@@ -73,7 +73,7 @@ The reference below covers manifest forms, URL resolution, member decoding, mip 
 ```
 import {load} from '@loaders.gl/core';
 
-import {TextureLoader} from '@loaders.gl/images';
+import {TextureLoader} from '@loaders.gl/images/texture';
 
 
 
@@ -85,7 +85,7 @@ Member images are parsed with `ImageLoader` by default:
 ```
 import {load} from '@loaders.gl/core';
 
-import {TextureLoader} from '@loaders.gl/images';
+import {TextureLoader} from '@loaders.gl/images/texture';
 
 
 

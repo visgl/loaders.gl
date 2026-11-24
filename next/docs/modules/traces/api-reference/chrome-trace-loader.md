@@ -65,7 +65,7 @@ The sections below document usage, return types, options, validation, and parser
 ```
 import {load, parse} from '@loaders.gl/core';
 
-import {ChromeTraceLoader} from '@loaders.gl/traces';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 
 
 
@@ -80,7 +80,7 @@ const traceFile = await load('trace.json', ChromeTraceLoader, {
 const parsed = await parse(jsonText, ChromeTraceLoader);
 ```
 
-The package-root export is metadata-only. Async core APIs preload the parser from `@loaders.gl/traces/chrome-trace-loader`. Synchronous code that needs a parser-bearing loader must import `ChromeTraceLoaderWithParser` from that subpath.
+The package-root export is metadata-only. Async core APIs preload the parser from `@loaders.gl/traces/chrome-trace`. Synchronous code that needs a parser-bearing loader must import `ChromeTraceLoaderWithParser` from that subpath.
 
 ## Return Types[​](#return-types "Direct link to Return Types")
 
@@ -106,7 +106,7 @@ The legacy top-level `shape` option is also accepted and takes precedence if sup
 ```
 import {parseInBatches} from '@loaders.gl/core';
 
-import {ChromeTraceLoader} from '@loaders.gl/traces';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 
 
 

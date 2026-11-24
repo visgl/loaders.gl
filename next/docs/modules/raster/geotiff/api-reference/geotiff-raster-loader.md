@@ -7,7 +7,7 @@
 ```
 import {load} from '@loaders.gl/core';
 
-import {GeoTIFFRasterLoader} from '@loaders.gl/raster';
+import {GeoTIFFRasterLoader} from '@loaders.gl/raster/geotiff';
 
 
 

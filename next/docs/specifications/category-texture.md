@@ -140,7 +140,7 @@ Manifest-driven texture loaders resolve member images through [`ImageLoader`](ht
 ```
 import {load} from '@loaders.gl/core';
 
-import {BasisLoader} from '@loaders.gl/images';
+import {BasisLoader} from '@loaders.gl/images/basis';
 
 
 

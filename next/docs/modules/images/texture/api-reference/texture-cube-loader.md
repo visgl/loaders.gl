@@ -73,7 +73,7 @@ A loader for cubemaps described by a JSON manifest.
 ```
 import {load} from '@loaders.gl/core';
 
-import {TextureCubeLoader} from '@loaders.gl/images';
+import {TextureCubeLoader} from '@loaders.gl/images/texture';
 
 
 

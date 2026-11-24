@@ -63,7 +63,7 @@ The sections below document usage, parser access, options, JSON Lines behavior, 
 ```
 import {load} from '@loaders.gl/core';
 
-import {ZipkinTraceLoader} from '@loaders.gl/traces';
+import {ZipkinTraceLoader} from '@loaders.gl/traces/zipkin';
 
 
 
@@ -77,7 +77,7 @@ console.log(trace.events);
 The package-root loader is metadata-only. The parser-bearing loader is available from:
 
 ```
-import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin-trace-loader';
+import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin';
 ```
 
 ## Options[​](#options "Direct link to Options")

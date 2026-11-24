@@ -167,7 +167,9 @@ Basic API usage is illustrated in the following snippet. Create a `Tileset3D` in
 ```
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
-import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 import {WebMercatorViewport} from '@deck.gl/core';
 

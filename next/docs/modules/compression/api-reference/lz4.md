@@ -61,7 +61,7 @@ The reference below documents imports, supported layouts, backend selection, and
 `LZ4Compressor` and `LZ4Decompressor` use lazy compress-utils WASM for frames and raw blocks. Legacy Hadoop block framing is parsed in TypeScript. Sync methods require preload. `raw: true` selects raw block encoding; raw decoding requires an output capacity.
 
 ```
-import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression';
+import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression/lz4';
 ```
 
 Both implement the shared [Compressor and Decompressor](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md) APIs. Raw block decompression may require the expected uncompressed size as the second argument.

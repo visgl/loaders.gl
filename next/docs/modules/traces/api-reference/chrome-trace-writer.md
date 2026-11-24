@@ -65,7 +65,7 @@ The sections below document usage, restored fields, options, and schema metadata
 ```
 import {load, encode, encodeText} from '@loaders.gl/core';
 
-import {ChromeTraceLoader, ChromeTraceWriter} from '@loaders.gl/traces';
+import {ChromeTraceLoader, ChromeTraceWriter} from '@loaders.gl/traces/chrome-trace';
 
 
 

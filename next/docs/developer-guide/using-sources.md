@@ -128,7 +128,7 @@ Source-only loaders such as `ArcGISFeatureServerLoader`, `WMSLoader`, and `STACL
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 
 

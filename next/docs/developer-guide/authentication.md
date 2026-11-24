@@ -59,7 +59,7 @@ The sections below cover provider presets, static and refreshing tokens, origin 
 `core.credentials` can contain JSON configuration as well as existing credential objects. Supply constructors through `core.authentications`; each constructor's static `type` selects the matching configuration:
 
 ```
-import {MapboxAuthentication} from '@loaders.gl/services';
+import {MapboxAuthentication} from '@loaders.gl/services/authentication';
 
 
 
@@ -189,7 +189,7 @@ ArcGIS presets live in `@loaders.gl/arcgis/authentication`; other provider prese
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 import {createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 
@@ -274,7 +274,7 @@ import {createDataSource} from '@loaders.gl/core';
 
 import {MVTLoader} from '@loaders.gl/tiles/mvt';
 
-import {createMapboxCredential} from '@loaders.gl/services';
+import {createMapboxCredential} from '@loaders.gl/services/authentication';
 
 
 
@@ -294,9 +294,9 @@ const source = await createDataSource(tileJSONUrl, [MVTLoader], {
 ```
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
-import {Tiles3DSource} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
 
-import {createGoogleMapsCredential} from '@loaders.gl/services';
+import {createGoogleMapsCredential} from '@loaders.gl/services/authentication';
 
 
 

@@ -29,7 +29,7 @@ import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
 
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 
 

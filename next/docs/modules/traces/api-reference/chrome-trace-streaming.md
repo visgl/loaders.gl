@@ -71,7 +71,9 @@ The reference below covers input paths, consumer helpers, options, metadata prec
 The file path uses the same JSON-to-Arrow parser as `ChromeTraceLoader`, then adapts Arrow rows back to logical events. All three paths share the same event accumulator and semantic trace builder.
 
 ```
-import {createTraceStreamSession, streamChromeTraceFileChunks} from '@loaders.gl/traces';
+import {createTraceStreamSession} from '@loaders.gl/traces/stream';
+
+import {streamChromeTraceFileChunks} from '@loaders.gl/traces/chrome-trace';
 
 
 
@@ -103,7 +105,9 @@ for await (const chunk of streamChromeTraceFileChunks(response.body, {
 The matching `consumeChromeTraceEventStream`, `consumeChromeTraceArrowStream`, and `consumeChromeTraceFileStream` helpers apply every generated chunk to a supplied session and return the latest published snapshot.
 
 ```
-import {consumeChromeTraceArrowStream, createTraceStreamSession} from '@loaders.gl/traces';
+import {consumeChromeTraceArrowStream} from '@loaders.gl/traces/chrome-trace';
+
+import {createTraceStreamSession} from '@loaders.gl/traces/stream';
 
 
 

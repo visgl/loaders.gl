@@ -9,7 +9,7 @@ A URL requires an explicit **source loader**. This lets the format choose useful
 ```
 import {query} from '@loaders.gl/core/query';
 
-import {ParquetLoader} from '@loaders.gl/tables';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 
 
 

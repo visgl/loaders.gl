@@ -227,55 +227,36 @@ Choose a data family to explore its loaders, writers, sources, supported formats
 
 #### _sections
 
-- [3D Tiles API](https://loaders.gl/next/docs/modules/_sections/3d-tiles/api-and-guides.md)
 - [Data Categories](https://loaders.gl/next/docs/modules/_sections/3d-tiles/data-categories.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/3d-tiles/formats.md)
 - [Writers](https://loaders.gl/next/docs/modules/_sections/3d-tiles/writers.md)
-- [ArcGIS API](https://loaders.gl/next/docs/modules/_sections/arcgis/api-reference.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/arcgis/formats.md)
-- [Services](https://loaders.gl/next/docs/modules/_sections/arcgis/services.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/archives/formats.md)
 - [Loaders](https://loaders.gl/next/docs/modules/_sections/archives/loaders.md)
 - [Writers](https://loaders.gl/next/docs/modules/_sections/archives/writers.md)
-- [Compression API](https://loaders.gl/next/docs/modules/_sections/compression/api-and-guides.md)
-- [Core API](https://loaders.gl/next/docs/modules/_sections/core/api-and-guides.md)
 - [Core Guide](https://loaders.gl/next/docs/modules/_sections/core/developer-guide.md)
-- [Crypto API](https://loaders.gl/next/docs/modules/_sections/crypto/api-and-guides.md)
-- [Documents API](https://loaders.gl/next/docs/modules/_sections/documents/api-and-guides.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/documents/formats.md)
 - [Data Categories](https://loaders.gl/next/docs/modules/_sections/geospatial/data-categories.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/geospatial/formats.md)
 - [Geospatial Guide](https://loaders.gl/next/docs/modules/_sections/geospatial/guide.md)
 - [Writers](https://loaders.gl/next/docs/modules/_sections/geospatial/writers.md)
-- [Graphs API](https://loaders.gl/next/docs/modules/_sections/graphs/api-reference.md)
-- [Images API](https://loaders.gl/next/docs/modules/_sections/images/api-and-guides.md)
 - [Data Categories](https://loaders.gl/next/docs/modules/_sections/images/data-categories.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/images/formats.md)
-- [Loaders](https://loaders.gl/next/docs/modules/_sections/images/loaders.md)
-- [Writers](https://loaders.gl/next/docs/modules/_sections/images/writers.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/ogc/formats.md)
 - [Services](https://loaders.gl/next/docs/modules/_sections/ogc/services.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/point-clouds/formats.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/raster/formats.md)
 - [Sources](https://loaders.gl/next/docs/modules/_sections/raster/sources.md)
 - [Writers](https://loaders.gl/next/docs/modules/_sections/raster/writers.md)
-- [Scene API](https://loaders.gl/next/docs/modules/_sections/scene/api-and-guides.md)
 - [Data Categories](https://loaders.gl/next/docs/modules/_sections/scene/data-categories.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/scene/formats.md)
-- [Scientific API](https://loaders.gl/next/docs/modules/_sections/scientific/api-and-guides.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/scientific/formats.md)
-- [Services API](https://loaders.gl/next/docs/modules/_sections/services/api-reference.md)
-- [Splats API](https://loaders.gl/next/docs/modules/_sections/splats/api-reference.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/splats/formats.md)
-- [SQL API](https://loaders.gl/next/docs/modules/_sections/sql/api-reference.md)
 - [Data Categories](https://loaders.gl/next/docs/modules/_sections/tables/data-categories.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/tables/formats.md)
 - [Tables Guide](https://loaders.gl/next/docs/modules/_sections/tables/guide.md)
-- [Tile Converter API](https://loaders.gl/next/docs/modules/_sections/tile-converter/api-and-guides.md)
 - [3D Tiles Guide](https://loaders.gl/next/docs/modules/_sections/tiles-3d/guide.md)
-- [Tiles API](https://loaders.gl/next/docs/modules/_sections/tiles/api-and-guides.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/tiles/formats.md)
-- [Traces API](https://loaders.gl/next/docs/modules/_sections/traces/api-and-guides.md)
 - [Formats](https://loaders.gl/next/docs/modules/_sections/traces/formats.md)
 
 #### arcgis
@@ -289,12 +270,21 @@ Connect your existing ArcGIS Online and Enterprise layers to JavaScript applicat
 - [ArcGIS MapServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-map-server.md): Load cached or dynamically rendered ArcGIS map tiles through one tile source.
 - [ArcGIS SceneServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-scene-server.md): Connect ArcGIS SceneServer layers to I3S and 3D tileset sources.
 - [ArcGIS VectorTileServer](https://loaders.gl/next/docs/modules/arcgis/arcgis-vector-tile-server.md): Load ArcGIS vector tiles, style metadata, and tile grids through a vector-tile source.
+- [@loaders.gl/arcgis/authentication](https://loaders.gl/next/docs/modules/arcgis/authentication.md): Create credentials and authentication handlers for supported services.
+- [@loaders.gl/arcgis/discovery](https://loaders.gl/next/docs/modules/arcgis/discovery.md): Discover ArcGIS services and select their loaders.
+- [@loaders.gl/arcgis/feature-service](https://loaders.gl/next/docs/modules/arcgis/feature-service.md): Load and query ArcGIS feature services.
 - [ArcGIS FeatureServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md): Read your published feature layers and tables as bounded queries with explicit completeness.
 - [ArcGIS ImageServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md): Choose rendered imagery or numerical pixels from your existing imagery service.
 - [ArcGIS MapServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-map-server.md): Display your published map through cached image tiles or dynamic map exports.
 - [ArcGIS SceneServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-scene-server.md): Connect an existing scene layer to the appropriate I3S content and rendering path.
 - [ArcGIS VectorTileServer protocol and formats](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-vector-tile-server.md): Read your published vector tiles and style their decoded features in your application.
+- [@loaders.gl/arcgis/image-service](https://loaders.gl/next/docs/modules/arcgis/image-service.md): Access ArcGIS imagery services and image tiles.
+- [@loaders.gl/arcgis/items](https://loaders.gl/next/docs/modules/arcgis/items.md): APIs for ITEMS data in the arcgis module.
+- [@loaders.gl/arcgis/map-service](https://loaders.gl/next/docs/modules/arcgis/map-service.md): Access ArcGIS map tiles.
+- [@loaders.gl/arcgis/scene-aggregation](https://loaders.gl/next/docs/modules/arcgis/scene-aggregation.md): APIs for SCENE-AGGREGATION data in the arcgis module.
+- [@loaders.gl/arcgis/scene-service](https://loaders.gl/next/docs/modules/arcgis/scene-service.md): Access ArcGIS scene services.
 - [ArcGIS service support](https://loaders.gl/next/docs/modules/arcgis/services.md): Operation-level support and gaps across ArcGIS data, location, analysis and enterprise services.
+- [@loaders.gl/arcgis/vector-tile-service](https://loaders.gl/next/docs/modules/arcgis/vector-tile-service.md): Discover and access ArcGIS vector tile services.
 
 #### archives
 
@@ -328,6 +318,19 @@ Compress and decompress common payloads with runtime-aware codecs.
 - [Use XZ and LZMA where the format requires it.](https://loaders.gl/next/docs/modules/compression/api-reference/xz.md): Add asynchronous XZ and LZMA compression to loaders.gl pipelines.
 - [Keep the large codec out of the common path.](https://loaders.gl/next/docs/modules/compression/api-reference/zstandard.md): Use Zstandard compression with lazy compress-utils WASM fallbacks.
 - [Compare codec paths on the machine that will run them.](https://loaders.gl/next/docs/modules/compression/benchmarks.md): Compare browser compression and decompression paths across native and loaders.gl codec implementations.
+- [@loaders.gl/compression/brotli](https://loaders.gl/next/docs/modules/compression/brotli.md): APIs for BROTLI data in the compression module.
+- [@loaders.gl/compression/bzip2](https://loaders.gl/next/docs/modules/compression/bzip2.md): APIs for BZIP2 data in the compression module.
+- [@loaders.gl/compression/codec](https://loaders.gl/next/docs/modules/compression/codec.md): Common compression options and compressor/decompressor contracts.
+- [@loaders.gl/compression/deflate](https://loaders.gl/next/docs/modules/compression/deflate.md): APIs for DEFLATE data in the compression module.
+- [@loaders.gl/compression/gzip](https://loaders.gl/next/docs/modules/compression/gzip.md): APIs for GZIP data in the compression module.
+- [@loaders.gl/compression/lz4](https://loaders.gl/next/docs/modules/compression/lz4.md): APIs for LZ4 data in the compression module.
+- [@loaders.gl/compression/lzo](https://loaders.gl/next/docs/modules/compression/lzo.md): APIs for LZO data in the compression module.
+- [@loaders.gl/compression/native-compression](https://loaders.gl/next/docs/modules/compression/native-compression.md): APIs for NATIVE-COMPRESSION data in the compression module.
+- [@loaders.gl/compression/none](https://loaders.gl/next/docs/modules/compression/none.md): Pass data through without compression.
+- [@loaders.gl/compression/snappy](https://loaders.gl/next/docs/modules/compression/snappy.md): APIs for SNAPPY data in the compression module.
+- [@loaders.gl/compression/worker](https://loaders.gl/next/docs/modules/compression/worker.md): Run compression tasks in workers.
+- [@loaders.gl/compression/xz](https://loaders.gl/next/docs/modules/compression/xz.md): APIs for XZ data in the compression module.
+- [@loaders.gl/compression/zstd](https://loaders.gl/next/docs/modules/compression/zstd.md): APIs for ZSTD data in the compression module.
 
 #### core
 
@@ -400,6 +403,14 @@ Hash data incrementally as loaders and streams process it.
 - [Hash data without coupling the pipeline to one runtime.](https://loaders.gl/next/docs/modules/crypto/api-reference/hash.md): Hash complete buffers or async binary batches with the crypto module’s portable interface.
 - [Use MD5 when compatibility is the requirement.](https://loaders.gl/next/docs/modules/crypto/api-reference/md5-hash.md): Calculate MD5 digests for compatibility with formats and systems that require them.
 - [Add a modern digest at the bytes boundary.](https://loaders.gl/next/docs/modules/crypto/api-reference/sha256-hash.md): Calculate SHA-256 digests through the loaders.gl asynchronous and streaming hash interface.
+- [@loaders.gl/crypto/crc32](https://loaders.gl/next/docs/modules/crypto/crc32.md): Compute CRC32 checksums.
+- [@loaders.gl/crypto/crc32c](https://loaders.gl/next/docs/modules/crypto/crc32c.md): Compute CRC32C checksums.
+- [@loaders.gl/crypto/encoding](https://loaders.gl/next/docs/modules/crypto/encoding.md): Encode digests and convert base64 data.
+- [@loaders.gl/crypto/hash](https://loaders.gl/next/docs/modules/crypto/hash.md): Common incremental hash interface.
+- [@loaders.gl/crypto/md5](https://loaders.gl/next/docs/modules/crypto/md5.md): Compute MD5 digests.
+- [@loaders.gl/crypto/node](https://loaders.gl/next/docs/modules/crypto/node.md): Compute hashes with the Node.js crypto API.
+- [@loaders.gl/crypto/sha256](https://loaders.gl/next/docs/modules/crypto/sha256.md): Compute SHA-256 digests.
+- [@loaders.gl/crypto/webcrypto](https://loaders.gl/next/docs/modules/crypto/webcrypto.md): Compute hashes with the Web Crypto API.
 
 #### documents
 
@@ -422,6 +433,7 @@ Basic document loaders with a lightweight package root and flat parser imports.
 - [@loaders.gl/documents/html](https://loaders.gl/next/docs/modules/documents/html.md): Parse HTML documents. This entry point exports HTMLLoader and HTMLLoaderWithParser.
 - [@loaders.gl/documents/json](https://loaders.gl/next/docs/modules/documents/json.md): Parse arbitrary JSON documents. Use the tables package for row and Arrow output. This entry point exports JSONLoader and JSONLoaderWithParser.
 - [@loaders.gl/documents/markdown](https://loaders.gl/next/docs/modules/documents/markdown.md): Read Markdown documents. This entry point exports MarkdownLoader and MarkdownLoaderWithParser.
+- [@loaders.gl/documents/sax-parser](https://loaders.gl/next/docs/modules/documents/sax-parser.md): APIs for SAX-PARSER data in the documents module.
 - [@loaders.gl/documents/toml](https://loaders.gl/next/docs/modules/documents/toml.md): Read TOML configuration files. This entry point exports TOMLLoader and TOMLLoaderWithParser.
 - [Keep document parsing separate from document meaning.](https://loaders.gl/next/docs/modules/documents/xml.md): Parse XML documents through a streaming-friendly loaders.gl module.
 - [HTMLLoader](https://loaders.gl/next/docs/modules/documents/xml/api-reference/html-loader.md): Extract useful structure from simple HTML responses.
@@ -486,6 +498,10 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 Load GraphML, DOT, and GEXF documents into Arrow node and edge tables.
 
 - [Load GraphML, DOT, and GEXF into reusable graph tables.](https://loaders.gl/next/docs/modules/graphs.md): Load GraphML, DOT, and GEXF documents into Arrow node and edge tables.
+- [@loaders.gl/graphs/dot](https://loaders.gl/next/docs/modules/graphs/dot.md): Read Graphviz DOT graphs, including nodes, edges, attributes, and subgraphs.
+- [@loaders.gl/graphs/gexf](https://loaders.gl/next/docs/modules/graphs/gexf.md): Read GEXF graph documents into node and edge tables with their authored metadata.
+- [@loaders.gl/graphs/graph](https://loaders.gl/next/docs/modules/graphs/graph.md): Shared graph node, edge, table, and output contracts.
+- [@loaders.gl/graphs/graphml](https://loaders.gl/next/docs/modules/graphs/graphml.md): Read GraphML XML documents into node and edge tables with graph attributes and defaults.
 
 #### images
 
@@ -496,11 +512,14 @@ Load image files into browser and Node.js-friendly image representations.
 - [Decode pixels into the browser’s portable image type.](https://loaders.gl/next/docs/modules/images/api-reference/image-loader.md): Decode common image files into portable ImageBitmap values.
 - [Take decoded pixels back to a file or upload body.](https://loaders.gl/next/docs/modules/images/api-reference/image-writer.md): Encode image values as browser- and Node.js-compatible image bytes.
 - [Keep image handling independent of the runtime’s image class.](https://loaders.gl/next/docs/modules/images/api-reference/parsed-image-api.md): Work with decoded images through one platform-independent helper layer.
+- [@loaders.gl/images/basis](https://loaders.gl/next/docs/modules/images/basis.md): APIs for BASIS data in the images module.
 - [Color LUTs — Cube, 3dl and PNG](https://loaders.gl/next/docs/modules/images/color-lut.md): Read color mappings as numerical tables with explicit domains, precision and image layouts.
+- [@loaders.gl/images/crunch](https://loaders.gl/next/docs/modules/images/crunch.md): APIs for CRUNCH data in the images module.
 - [@loaders.gl/images/exr](https://loaders.gl/next/docs/modules/images/exr.md): Keep HDR samples, channel names, and image windows intact.
 - [IES — measured light distributions](https://loaders.gl/next/docs/modules/images/ies.md): Keep photometric measurements and scaling separate from light objects.
 - [@loaders.gl/images/image](https://loaders.gl/next/docs/modules/images/image.md): Use this entry point to decode and encode common image formats. Pass ImageLoader to
 - [Turn a sequence of frames into a shareable GIF.](https://loaders.gl/next/docs/modules/images/image/api-reference/gif-builder.md): Build animated GIFs from browser images, image URLs, video, or webcam frames.
+- [@loaders.gl/images/radiance-hdr](https://loaders.gl/next/docs/modules/images/radiance-hdr.md): APIs for RADIANCE-HDR data in the images module.
 - [@loaders.gl/images/texture](https://loaders.gl/next/docs/modules/images/texture.md): Load compressed texture containers and transcode portable payloads into GPU-oriented formats.
 - [Let the device choose the final texture format.](https://loaders.gl/next/docs/modules/images/texture/api-reference/basis-loader.md): Transcode Basis Universal payloads into texture levels suited to the current device.
 - [Preserve the mip chain and the GPU format.](https://loaders.gl/next/docs/modules/images/texture/api-reference/compressed-texture-loader.md): Parse KTX, DDS, and PVR containers into normalized compressed texture levels.
@@ -527,9 +546,12 @@ Load image files into browser and Node.js-friendly image representations.
 @loaders.gl/ogc groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use WMS and OGC API sources or STAC sources for format-specific APIs and explicit parser entry points.
 
 - [@loaders.gl/ogc](https://loaders.gl/next/docs/modules/ogc.md): @loaders.gl/ogc groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use WMS and OGC API sources or STAC sources for format-specific APIs and explicit parser entry points.
+- [@loaders.gl/ogc/csw](https://loaders.gl/next/docs/modules/ogc/csw.md): APIs for CSW data in the ogc module.
+- [@loaders.gl/ogc/gml](https://loaders.gl/next/docs/modules/ogc/gml.md): APIs for GML data in the ogc module.
 - [@loaders.gl/ogc/stac](https://loaders.gl/next/docs/modules/ogc/stac.md): Discover cloud datasets and assets through static catalogs or the STAC API.
 - [STACLoader](https://loaders.gl/next/docs/modules/ogc/stac/api-reference/stac-loader.md): Discover and search static catalogs or STAC APIs before handing selected assets to native loaders.
 - [STAC](https://loaders.gl/next/docs/modules/ogc/stac/formats/stac.md): A catalog standard for discovering geospatial assets by space, time, collection, and links.
+- [@loaders.gl/ogc/wfs](https://loaders.gl/next/docs/modules/ogc/wfs.md): APIs for WFS data in the ogc module.
 - [@loaders.gl/ogc/wms](https://loaders.gl/next/docs/modules/ogc/wms.md): Read OGC maps, tiles, features, coverages, observations, and catalog services through source APIs.
 - [CRS and tile-grid intelligence](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/crs-and-tile-grids.md): Normalize service CRS identifiers and select compatible tile grids.
 - [Give catalog search a typed application boundary.](https://loaders.gl/next/docs/modules/ogc/wms/api-reference/csw-loader.md): Query a CSW catalog through typed capabilities, service-directory, and search methods.
@@ -550,6 +572,7 @@ Load image files into browser and Node.js-friendly image representations.
 - [Find the right endpoint before creating a source.](https://loaders.gl/next/docs/modules/ogc/wms/services/capability-discovery.md): Discover related geospatial service endpoints, preserve their capabilities, and rank candidates without forcing a universal runtime.
 - [Use the service path that matches the data.](https://loaders.gl/next/docs/modules/ogc/wms/services/ogc-api.md): Use focused HTTP source adapters for OGC API Features, Tiles, Coverages, and EDR resources.
 - [Share operational policy without hiding the protocol.](https://loaders.gl/next/docs/modules/ogc/wms/services/universal-service-runtime.md): Apply shared request policy and source caching across protocol-specific OGC service loaders.
+- [@loaders.gl/ogc/wmts](https://loaders.gl/next/docs/modules/ogc/wmts.md): APIs for WMTS data in the ogc module.
 
 #### pointclouds
 
@@ -649,6 +672,7 @@ Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK
 - [@loaders.gl/scientific/npy](https://loaders.gl/next/docs/modules/scientific/npy.md): Read NumPy arrays from NPY files. This entry point exports NPYLoader and NPYLoaderWithParser.
 - [NRRD — multidimensional sampled data](https://loaders.gl/next/docs/modules/scientific/nrrd.md): Read array samples and preserve the authored spatial mapping.
 - [PDB — molecular coordinate records](https://loaders.gl/next/docs/modules/scientific/pdb.md): Read atoms, models, and authored connectivity without choosing a molecular display.
+- [@loaders.gl/scientific/scientific-array](https://loaders.gl/next/docs/modules/scientific/scientific-array.md): APIs for SCIENTIFIC-ARRAY data in the scientific module.
 - [VTK — scientific meshes and fields](https://loaders.gl/next/docs/modules/scientific/vtk.md): Preserve cell topology and field associations before choosing a visualization.
 - [Read the chunks that cover the question.](https://loaders.gl/next/docs/modules/scientific/zarr.md): Read chunked multidimensional arrays and spatial windows from Zarr, GeoZarr, and OME-Zarr datasets.
 - [Ask a multidimensional array for a spatial slice.](https://loaders.gl/next/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md): Query GeoZarr arrays as geospatial rasters while preserving dimensions, chunks, and CRS metadata.
@@ -661,6 +685,7 @@ Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK
 This package provides authentication presets for Mapbox, Google Maps, and Cesium ion.
 
 - [@loaders.gl/services](https://loaders.gl/next/docs/modules/services.md): This package provides authentication presets for Mapbox, Google Maps, and Cesium ion.
+- [@loaders.gl/services/authentication](https://loaders.gl/next/docs/modules/services/authentication.md): Create credentials and authentication handlers for supported services.
 
 #### splats
 
@@ -672,13 +697,23 @@ Load binary Gaussian splat formats for rendering, processing, and paged level-of
 - [Turn splat points into a common table.](https://loaders.gl/next/docs/modules/splats/api-reference/splat-loader.md): Parse raw Gaussian splat files into the common Mesh Arrow table shape.
 - [Decode compressed splats without changing the application shape.](https://loaders.gl/next/docs/modules/splats/api-reference/spz-loader.md): Parse compressed Niantic Spatial SPZ Gaussian splat files into Mesh Arrow tables.
 - [Several containers. One renderer-facing table.](https://loaders.gl/next/docs/modules/splats/formats/splats.md): Compare the binary Gaussian splat containers supported by loaders.gl.
+- [@loaders.gl/splats/ksplat](https://loaders.gl/next/docs/modules/splats/ksplat.md): Read KSPLAT Gaussian splat data.
+- [@loaders.gl/splats/rad](https://loaders.gl/next/docs/modules/splats/rad.md): Load RAD Gaussian splat datasets and request their independently addressable chunks.
+- [@loaders.gl/splats/splat](https://loaders.gl/next/docs/modules/splats/splat.md): Read Gaussian splat records from the SPLAT binary format.
+- [@loaders.gl/splats/spz](https://loaders.gl/next/docs/modules/splats/spz.md): Read SPZ Gaussian splat data and convert it to the shared Gaussian splat representation.
+- [@loaders.gl/splats/types](https://loaders.gl/next/docs/modules/splats/types.md): Shared Gaussian splat data and coordinate-system contracts.
 
 #### sql
 
 Query database-backed data sources as rows or Arrow tables.
 
 - [Query databases through the source contract.](https://loaders.gl/next/docs/modules/sql.md): Query database-backed data sources as rows or Arrow tables.
+- [@loaders.gl/sql/adapter](https://loaders.gl/next/docs/modules/sql/adapter.md): Define and register SQL backend adapters and inspect their catalog metadata.
 - [SQLDataSource](https://loaders.gl/next/docs/modules/sql/api-reference/sql-source.md): A shared source contract for metadata, portable table queries, and Arrow results.
+- [@loaders.gl/sql/arrow](https://loaders.gl/next/docs/modules/sql/arrow.md): Query Arrow tables through the SQL source interface.
+- [@loaders.gl/sql/duckdb](https://loaders.gl/next/docs/modules/sql/duckdb.md): Query DuckDB databases through the loaders.gl SQL source API.
+- [@loaders.gl/sql/query](https://loaders.gl/next/docs/modules/sql/query.md): Compile portable table queries and work with SQL predicates.
+- [@loaders.gl/sql/snowflake](https://loaders.gl/next/docs/modules/sql/snowflake.md): Query Snowflake through the loaders.gl SQL source API.
 
 #### tables
 
@@ -768,6 +803,7 @@ Select and cache 2D tiles, and load MLT, MVT, and PMTiles formats.
 - [TerrainSource (experimental)](https://loaders.gl/next/docs/modules/tiles/api-reference/terrain-source.md): Share decoded terrain tiles across independent views.
 - [TileMatrix frame selection](https://loaders.gl/next/docs/modules/tiles/api-reference/tile-matrix.md): selectTileMatrixTiles selects tiles from complete TileGrid.tileMatrixSet geometry using an
 - [Tileset2D](https://loaders.gl/next/docs/modules/tiles/api-reference/tileset-2d.md): Share cache and request state across viewport-driven 2D tile consumers.
+- [@loaders.gl/tiles/image-set](https://loaders.gl/next/docs/modules/tiles/image-set.md): Select and load image tiles for an image source.
 - [Decode compact vector tiles without changing the tile path.](https://loaders.gl/next/docs/modules/tiles/mlt.md): Load compact MapLibre Tile vector data through loaders and sources.
 - [Decode a compact tile into application data.](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-loader.md): Parse MapLibre Tile payloads into reusable vector-tile data shapes.
 - [Fetch compact vector tiles through a source.](https://loaders.gl/next/docs/modules/tiles/mlt/api-reference/mlt-source.md): Read MapLibre Tile data from URL-addressed tile services.
@@ -790,7 +826,9 @@ Select and cache 2D tiles, and load MLT, MVT, and PMTiles formats.
 - [PMTilesWriter](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/pmtiles-writer.md): Package existing vector or raster tiles into a PMTiles v3 archive.
 - [Raster to PNG to PMTiles](https://loaders.gl/next/docs/modules/tiles/pmtiles/api-reference/raster-pmtiles.md): Export selected regions from a numeric raster source as PNG tiles in PMTiles v3.
 - [Keep a tileset in one range-readable file.](https://loaders.gl/next/docs/modules/tiles/pmtiles/formats/pmtiles.md): A single HTTP range-readable archive for tiled vector, raster, and terrain data.
+- [@loaders.gl/tiles/raster-set](https://loaders.gl/next/docs/modules/tiles/raster-set.md): Select and load numeric raster tiles for a raster source.
 - [@loaders.gl/tiles/terrain](https://loaders.gl/next/docs/modules/tiles/terrain.md): Load terrain tiles and reconcile their shared edges. This entry point exports TerrainSource and reconcileTerrainTiles.
+- [@loaders.gl/tiles/tileset-2d](https://loaders.gl/next/docs/modules/tiles/tileset-2d.md): Manage selection, loading, caching, and refinement of two-dimensional tiles.
 
 #### tiles-3d
 
@@ -839,12 +877,15 @@ Traverse 3D Tiles, I3S, COPC and Potree datasets with shared 3D tileset runtime 
 - [Turn a building layer tree into visible scene layers.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/recipes/building-scene-layer.md): Load a hierarchical building scene layer and render its visible sublayers.
 - [Pick an object, then inspect its data.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/recipes/picking.md): Pick 3D Object features and load the attributes for the selected object.
 - [Inspect the profile before you render it.](https://loaders.gl/next/docs/modules/tiles-3d/i3s/recipes/profile-gallery.md): Inspect I3S scene and point-cloud profiles through a metadata-first example.
+- [@loaders.gl/tiles-3d/point-cloud](https://loaders.gl/next/docs/modules/tiles-3d/point-cloud.md): Traverse and load tiled point clouds through a shared runtime.
 - [Traverse Potree clouds without loading the whole octree.](https://loaders.gl/next/docs/modules/tiles-3d/potree.md): Traverse Potree point clouds from cloud-hosted hierarchy and node resources.
 - [Connect a Potree hierarchy to a point-cloud pipeline.](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md): Load Potree point-cloud metadata and hierarchy information for tiled visualization.
 - [Traverse an octree as the view moves.](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md): Build a progressive point-cloud source from supported Potree hierarchy and node layouts.
 - [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md): encodePotreeDataset() encodes a complete Potree file collection using ArrayBuffer and typed
 - [Potree](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md): An octree point-cloud dataset format with progressive reads and explicit legacy and modern writer profiles.
 - [Let the viewport decide which data arrives.](https://loaders.gl/next/docs/modules/tiles-3d/runtime.md): Traverse source-backed 3D tilesets with selection, caching, and refreshable data sources.
+- [@loaders.gl/tiles-3d/spatial](https://loaders.gl/next/docs/modules/tiles-3d/spatial.md): Describe tileset coordinate frames, transform spatial data, and register geoid and CRS resources.
+- [@loaders.gl/tiles-3d/tileset](https://loaders.gl/next/docs/modules/tiles-3d/tileset.md): Traverse, load, and cache 3D tilesets.
 
 #### traces
 
@@ -862,11 +903,17 @@ Load, normalize, and write performance traces as structured Arrow tables.
 - [PerfettoTraceWriter](https://loaders.gl/next/docs/modules/traces/api-reference/perfetto-trace-writer.md): Serialize typed Perfetto Arrow tables as canonical TrackEvent protobuf.
 - [ZipkinTraceLoader](https://loaders.gl/next/docs/modules/traces/api-reference/zipkin-trace-loader.md): Read Zipkin JSON and JSON Lines into the shared trace Arrow projection.
 - [ZipkinTraceWriter](https://loaders.gl/next/docs/modules/traces/api-reference/zipkin-trace-writer.md): Encode the shared trace Arrow projection as Zipkin v2 JSON.
+- [@loaders.gl/traces/chrome-trace](https://loaders.gl/next/docs/modules/traces/chrome-trace.md): Read and write Chrome Trace events, build Arrow tables, and consume event streams.
 - [Keep the event stream, then make it queryable.](https://loaders.gl/next/docs/modules/traces/formats/chrome-trace.md): A JSON event format for browser, Node.js, and application performance traces.
 - [Bring Jaeger traces into a typed table path.](https://loaders.gl/next/docs/modules/traces/formats/jaeger-trace.md): Normalize Jaeger spans, processes, logs, and references into interoperable Arrow tables.
 - [Keep OpenTelemetry’s hierarchy when traces enter the browser.](https://loaders.gl/next/docs/modules/traces/formats/otlp-trace.md): Normalize OpenTelemetry distributed traces from protobuf, JSON, or JSON Lines into Arrow tables.
 - [Turn a trace stream into tables you can inspect.](https://loaders.gl/next/docs/modules/traces/formats/perfetto-trace.md): A protobuf trace envelope projected into typed Arrow tables for browser analysis.
 - [Use Zipkin JSON at the edge, then analyze it like OTLP.](https://loaders.gl/next/docs/modules/traces/formats/zipkin-trace.md): Normalize Zipkin spans, endpoints, annotations, and tags into the shared trace tables.
+- [@loaders.gl/traces/jaeger](https://loaders.gl/next/docs/modules/traces/jaeger.md): Read and write Jaeger traces and their span metadata.
+- [@loaders.gl/traces/otlp](https://loaders.gl/next/docs/modules/traces/otlp.md): Read and write OpenTelemetry traces in JSON and Protobuf form.
+- [@loaders.gl/traces/perfetto](https://loaders.gl/next/docs/modules/traces/perfetto.md): Read and write Perfetto trace data and its typed Arrow tables.
+- [@loaders.gl/traces/stream](https://loaders.gl/next/docs/modules/traces/stream.md): Publish incremental trace snapshots through a shared streaming session.
+- [@loaders.gl/traces/zipkin](https://loaders.gl/next/docs/modules/traces/zipkin.md): Read and write Zipkin traces and annotations.
 
 ### applications
 

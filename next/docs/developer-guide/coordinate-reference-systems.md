@@ -226,7 +226,7 @@ The v5 foundation normalizes these options and provides `SpatialCoordinateTransf
 Common EPSG definitions supported by Proj4 require no setup. Custom definitions, datum grids, and geoid models are application resources registered once during startup:
 
 ```
-import {registerGeoidModelFromPgm, registerSpatialCrs, registerSpatialDatumGrid} from '@loaders.gl/tiles-3d';
+import {registerGeoidModelFromPgm, registerSpatialCrs, registerSpatialDatumGrid} from '@loaders.gl/tiles-3d/spatial';
 
 
 

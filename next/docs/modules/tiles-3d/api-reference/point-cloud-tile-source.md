@@ -7,9 +7,9 @@ Creates a dynamic additive octree from a decoded point `Mesh` or `MeshArrowTable
 | Data source | `PointCloudTileSource` |
 
 ```
-import {PointCloudTileLoader} from '@loaders.gl/tiles-3d';
+import {PointCloudTileLoader} from '@loaders.gl/tiles-3d/point-cloud';
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
 
 
 

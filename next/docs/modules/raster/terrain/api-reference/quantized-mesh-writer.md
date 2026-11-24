@@ -72,7 +72,7 @@ import {encode} from '@loaders.gl/core';
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 
-import {QuantizedMeshWriter} from '@loaders.gl/raster';
+import {QuantizedMeshWriter} from '@loaders.gl/raster/terrain';
 
 
 

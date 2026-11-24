@@ -63,7 +63,7 @@ Background: The image returned by [`ImageLoader`](https://loaders.gl/next/docs/m
 E.g., the `getImageData` method enables the application to get width, height and pixel data from an image returned by an image category loader in a platform independent way:
 
 ```
-import {ImageLoader, getImageSize, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageSize, getImageData} from '@loaders.gl/images/image';
 
 import {load} from '@loaders.gl/core';
 

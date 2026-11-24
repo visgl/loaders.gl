@@ -59,7 +59,7 @@ The sections below document usage, options, fallback loading, backend choices, a
 `BrotliCompressor` and `BrotliDecompressor` provide the balanced Brotli policy. Both try a built-in stream first. Compression then lazily loads `compress-utils`; decompression lazily loads its decoder-only WASM codec. Nothing is loaded for a fallback that is not used.
 
 ```
-import {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression';
+import {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression/brotli';
 ```
 
 Both implement the shared [Compressor and Decompressor](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md) APIs.

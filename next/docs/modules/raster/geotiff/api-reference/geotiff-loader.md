@@ -67,7 +67,7 @@ The reference below covers complete-file loading, the returned raster shape, met
 ```
 import {load} from '@loaders.gl/core';
 
-import {GeoTIFFLoader} from '@loaders.gl/raster';
+import {GeoTIFFLoader} from '@loaders.gl/raster/geotiff';
 
 
 

@@ -140,7 +140,7 @@ import draco3d from 'draco3d';
 
 import {load} from '@loaders.gl/core';
 
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 
 
 

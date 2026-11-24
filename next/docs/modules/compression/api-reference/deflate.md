@@ -59,7 +59,7 @@ The sections below document wrapped and raw modes, options, backend choices, and
 `DeflateCompressor` and `DeflateDecompressor` are the recommended DEFLATE transforms. Async methods prefer built-in streams and fall back to `compress-utils`. Wrapped zlib DEFLATE and raw RFC 1951 DEFLATE remain distinct and interoperable.
 
 ```
-import {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression';
+import {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression/deflate';
 
 
 

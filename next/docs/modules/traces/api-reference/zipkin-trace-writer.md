@@ -63,7 +63,7 @@ The sections below document usage, output shapes, formatting options, reconstruc
 ```
 import {encode, load} from '@loaders.gl/core';
 
-import {ZipkinTraceLoader, ZipkinTraceWriter} from '@loaders.gl/traces';
+import {ZipkinTraceLoader, ZipkinTraceWriter} from '@loaders.gl/traces/zipkin';
 
 
 

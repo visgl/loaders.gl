@@ -119,7 +119,7 @@ Plain output retains `shape: 'plain-graph-data'`, `nodes`, and `edges`, with ori
 ```
 import {load} from '@loaders.gl/core';
 
-import {GraphMLLoader} from '@loaders.gl/graphs';
+import {GraphMLLoader} from '@loaders.gl/graphs/graphml';
 
 
 
@@ -130,7 +130,7 @@ import {Table} from 'apache-arrow';
 const graph = await load('network.graphml', GraphMLLoader);
 ```
 
-For synchronous parsing, import `GraphMLLoaderWithParser` from `@loaders.gl/graphs/graphml-loader` and pass it to `parseSync` from `@loaders.gl/core`. The package root exports metadata only; asynchronous core APIs preload the implementation.
+For synchronous parsing, import `GraphMLLoaderWithParser` from `@loaders.gl/graphs/graphml` and pass it to `parseSync` from `@loaders.gl/core`. The package root exports metadata only; asynchronous core APIs preload the implementation.
 
 The explicit plain compatibility result is `GraphData` with `shape: 'plain-graph-data'`, `nodes`, and `edges`. Nodes have `id`, optional `label`, and optional `attributes`. Edges additionally have `sourceId`, `targetId`, and `directed`. This shape is compatible with `createGraphFromData` in `@deck.gl-community/graph-layers`.
 
@@ -143,14 +143,14 @@ Only the first graph is returned. Nested graphs, hyperedges, ports, and graph-le
 ```
 import {load} from '@loaders.gl/core';
 
-import {DOTLoader} from '@loaders.gl/graphs';
+import {DOTLoader} from '@loaders.gl/graphs/dot';
 
 
 
 const graph = await load('network.dot', DOTLoader);
 ```
 
-Use `DOTLoaderWithParser` from `@loaders.gl/graphs/dot-loader` with `parseSync` for synchronous text or UTF-8 `ArrayBuffer` parsing. `DOTLoader` recognizes `.dot` and `.gv` files.
+Use `DOTLoaderWithParser` from `@loaders.gl/graphs/dot` with `parseSync` for synchronous text or UTF-8 `ArrayBuffer` parsing. `DOTLoader` recognizes `.dot` and `.gv` files.
 
 The loader returns the same named node/edge table collection as GraphML, plus typed DOT metadata: graph ID, direction, strictness, graph attributes, and subgraph descriptors. Unknown backslash sequences are preserved for downstream attribute interpretation. Backslashes followed by physical line endings join quoted identifiers and labels across lines. Identifiers remain strings, including numeric-looking IDs. Unquoted numeric attributes become numbers; quoted attributes remain strings. Node and edge `label` attributes are also exposed as record labels.
 
@@ -165,7 +165,7 @@ This is a parser for the supported DOT subset, not a Graphviz renderer. Node por
 ```
 import {load} from '@loaders.gl/core';
 
-import {GEXFLoader} from '@loaders.gl/graphs';
+import {GEXFLoader} from '@loaders.gl/graphs/gexf';
 
 
 
@@ -174,7 +174,7 @@ const graph = await load('network.gexf', GEXFLoader);
 // Optional: {gexf: {shape: 'object-row-table'}} or {gexf: {shape: 'plain-graph-data'}}
 ```
 
-For synchronous parsing, use `GEXFLoaderWithParser` from `@loaders.gl/graphs/gexf-loader` with `parseSync`. The package root exports metadata only; asynchronous core APIs preload the parser. Text and UTF-8 binary inputs are supported. The loader recognizes `.gexf` and `application/gexf+xml`.
+For synchronous parsing, use `GEXFLoaderWithParser` from `@loaders.gl/graphs/gexf` with `parseSync`. The package root exports metadata only; asynchronous core APIs preload the parser. Text and UTF-8 binary inputs are supported. The loader recognizes `.gexf` and `application/gexf+xml`.
 
 The default result contains named Arrow node and edge tables in the standard `tables` collection. Application attributes use declaration titles inside the `attributes` struct; node and edge declarations are scoped separately. Boolean, integer, long, float, double, and string declarations retain their Arrow types, even for empty graphs. Byte and short attributes use Int32. `anyURI`, date, char, bigdecimal, and biginteger values retain their text as Utf8. Long integers remain exact `bigint` values in every output shape, including plain records. Invalid or out-of-range scalar values promote the affected Arrow field to Utf8, preserving the original text.
 
@@ -192,12 +192,16 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->3<!-- -->)
+All exported subpaths (<!-- -->7<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format | Import subpath                      |
 | ------ | ----------------------------------- |
+|        | `@loaders.gl/graphs/dot`            |
 |        | `@loaders.gl/graphs/dot-loader`     |
+|        | `@loaders.gl/graphs/gexf`           |
 |        | `@loaders.gl/graphs/gexf-loader`    |
+|        | `@loaders.gl/graphs/graph`          |
+|        | `@loaders.gl/graphs/graphml`        |
 |        | `@loaders.gl/graphs/graphml-loader` |

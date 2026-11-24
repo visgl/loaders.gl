@@ -5,7 +5,7 @@ Install `@loaders.gl/scientific` and import `NetCDFLoader` from its root for asy
 ```
 import {parse} from '@loaders.gl/core';
 
-import {NetCDFLoader} from '@loaders.gl/scientific';
+import {NetCDFLoader} from '@loaders.gl/scientific/netcdf';
 
 
 

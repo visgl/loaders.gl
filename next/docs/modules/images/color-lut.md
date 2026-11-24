@@ -95,7 +95,7 @@ A Cube file stores a sampled mapping from input color values to output RGB value
 ```
 import {load} from '@loaders.gl/core';
 
-import {CubeLUTLoader} from '@loaders.gl/images';
+import {CubeLUTLoader} from '@loaders.gl/images/color-lut';
 
 
 
@@ -129,7 +129,7 @@ The first row determines the cube edge size. The supported source rows vary blue
 ```
 import {load} from '@loaders.gl/core';
 
-import {ThreeDLLUTLoader} from '@loaders.gl/images';
+import {ThreeDLLUTLoader} from '@loaders.gl/images/color-lut';
 
 
 
@@ -171,7 +171,7 @@ A PNG does not identify which layout its producer used or whether it is a LUT at
 ```
 import {load} from '@loaders.gl/core';
 
-import {ImageLUTLoader} from '@loaders.gl/images';
+import {ImageLUTLoader} from '@loaders.gl/images/color-lut';
 
 
 

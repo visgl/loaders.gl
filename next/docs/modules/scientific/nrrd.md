@@ -67,7 +67,7 @@ An attached file keeps the payload after the header's blank line. A detached hea
 ```
 import {load} from '@loaders.gl/core';
 
-import {NRRDLoader} from '@loaders.gl/scientific';
+import {NRRDLoader} from '@loaders.gl/scientific/nrrd';
 
 
 

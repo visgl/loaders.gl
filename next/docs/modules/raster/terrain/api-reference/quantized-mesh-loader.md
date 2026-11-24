@@ -75,7 +75,7 @@ The sections below document format metadata, usage, output shapes, options, and 
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {QuantizedMeshLoader} from '@loaders.gl/raster';
+import {QuantizedMeshLoader} from '@loaders.gl/raster/terrain';
 
 import {load} from '@loaders.gl/core';
 

@@ -75,7 +75,7 @@ See also: [`Radiance HDR`](https://loaders.gl/next/docs/modules/images/texture/f
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {RadianceHDRLoader} from '@loaders.gl/images';
+import {RadianceHDRLoader} from '@loaders.gl/images/radiance-hdr';
 
 import {load} from '@loaders.gl/core';
 

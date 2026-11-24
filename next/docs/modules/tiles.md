@@ -3,7 +3,9 @@
 The `@loaders.gl/tiles` root exports `Tileset2D`, `ImageSet`, and `RasterSet`. These APIs select, request, and cache 2D tiles independently of a renderer.
 
 ```
-import {Tileset2D, RasterSet} from '@loaders.gl/tiles';
+import {Tileset2D} from '@loaders.gl/tiles/tileset-2d';
+
+import {RasterSet} from '@loaders.gl/tiles/raster-set';
 ```
 
 Import format loaders and writers from separate subpaths:
@@ -34,13 +36,14 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->17<!-- -->)
+All exported subpaths (<!-- -->20<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format                                                                                                                          | Import subpath                               |
 | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md) | `@loaders.gl/tiles/arrow-table-tile-loader`  |
+|                                                                                                                                 | `@loaders.gl/tiles/image-set`                |
 |                                                                                                                                 | `@loaders.gl/tiles/mlt`                      |
 |                                                                                                                                 | `@loaders.gl/tiles/mlt-loader`               |
 |                                                                                                                                 | `@loaders.gl/tiles/mlt/bundled`              |
@@ -55,5 +58,7 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                 | `@loaders.gl/tiles/pmtiles/bundled`          |
 |                                                                                                                                 | `@loaders.gl/tiles/pmtiles/geoarrow`         |
 |                                                                                                                                 | `@loaders.gl/tiles/pmtiles/raster`           |
+|                                                                                                                                 | `@loaders.gl/tiles/raster-set`               |
 |                                                                                                                                 | `@loaders.gl/tiles/terrain`                  |
 |                                                                                                                                 | `@loaders.gl/tiles/tile-matrix`              |
+|                                                                                                                                 | `@loaders.gl/tiles/tileset-2d`               |

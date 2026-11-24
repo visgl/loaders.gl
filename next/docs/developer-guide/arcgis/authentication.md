@@ -26,7 +26,7 @@ Use Esri's [authentication comparison](https://developers.arcgis.com/documentati
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 

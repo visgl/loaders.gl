@@ -68,7 +68,7 @@ The runnable [fixed-frame example](https://github.com/visgl/loaders.gl/tree/mast
 `createTileMatrixTileset2DAdapter(grid, options)` connects the fixed-frame selector to the shared [`Tileset2D`](https://loaders.gl/next/docs/modules/tiles/api-reference/tileset-2d.md) cache. It accepts complete regular or coalesced geometry and an explicit native-CRS frame. It retains opaque matrix IDs, source coverage, canonical aliases, native bounds, CRS and per-level logical tile dimensions. It returns no parent relationship: arbitrary matrix sets need not form a quadtree.
 
 ```
-import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles';
+import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles/tileset-2d';
 
 
 

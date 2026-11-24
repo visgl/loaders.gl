@@ -3,7 +3,7 @@
 This package provides authentication presets for Mapbox, Google Maps, and Cesium ion.
 
 ```
-import {MapboxAuthentication, GoogleMapsAuthentication, CesiumIonAuthentication} from '@loaders.gl/services';
+import {MapboxAuthentication, GoogleMapsAuthentication, CesiumIonAuthentication} from '@loaders.gl/services/authentication';
 ```
 
 OGC service protocols and STAC sources are documented under [@loaders.gl/ogc](https://loaders.gl/next/docs/modules/ogc.md); ArcGIS has its own [module](https://loaders.gl/next/docs/modules/arcgis.md).

@@ -103,7 +103,7 @@ import {createDataSourceSync} from '@loaders.gl/core';
 
 import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
 
 
 

@@ -61,7 +61,7 @@ The reference below documents imports, backend subpaths, installation, batch beh
 `XZCompressor` and `XZDecompressor` provide asynchronous XZ/LZMA support through direction-specific `compress-utils` imports. The encoder or decoder is loaded only when that operation runs.
 
 ```
-import {XZCompressor, XZDecompressor} from '@loaders.gl/compression';
+import {XZCompressor, XZDecompressor} from '@loaders.gl/compression/xz';
 ```
 
 Both implement the shared [Compressor and Decompressor](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md) APIs, including incremental batch methods. Install the optional `compress-utils` peer dependency.

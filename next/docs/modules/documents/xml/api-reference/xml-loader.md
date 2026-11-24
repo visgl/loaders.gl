@@ -63,7 +63,7 @@ The goal of the `XMLLoader` is to make it easy for JavaScript applications to ac
 Load XML data into a javascript data structure and preserve the original structure
 
 ```
-import {XMLLoader} from '@loaders.gl/documents';
+import {XMLLoader} from '@loaders.gl/documents/xml';
 
 import {load} from '@loaders.gl/core';
 
@@ -75,7 +75,7 @@ const data = await load(url, XMLLoader);
 Load XML data into a javascript data structure and set options that make the returned data more "JavaScript friendly":
 
 ```
-import {XMLLoader} from '@loaders.gl/documents';
+import {XMLLoader} from '@loaders.gl/documents/xml';
 
 import {load} from '@loaders.gl/core';
 

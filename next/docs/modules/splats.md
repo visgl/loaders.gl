@@ -86,18 +86,23 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->9<!-- -->)
+All exported subpaths (<!-- -->14<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format | Import subpath                                 |
 | ------ | ---------------------------------------------- |
 |        | `@loaders.gl/splats/bundled`                   |
+|        | `@loaders.gl/splats/ksplat`                    |
 |        | `@loaders.gl/splats/ksplat-loader`             |
+|        | `@loaders.gl/splats/rad`                       |
 |        | `@loaders.gl/splats/rad-loader`                |
 |        | `@loaders.gl/splats/rad-metadata.schema.json`  |
 |        | `@loaders.gl/splats/rad-source-loader`         |
 |        | `@loaders.gl/splats/rad-zod-schema`            |
 |        | `@loaders.gl/splats/radc-metadata.schema.json` |
+|        | `@loaders.gl/splats/splat`                     |
 |        | `@loaders.gl/splats/splat-loader`              |
+|        | `@loaders.gl/splats/spz`                       |
 |        | `@loaders.gl/splats/spz-loader`                |
+|        | `@loaders.gl/splats/types`                     |

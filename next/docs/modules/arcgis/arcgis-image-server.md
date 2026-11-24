@@ -131,7 +131,7 @@ ArcGIS ImageServer endpoints expose rendered imagery and analytical raster data.
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISImageServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageServerLoader} from '@loaders.gl/arcgis/image-service';
 
 
 
@@ -187,7 +187,7 @@ Defaults can be supplied under `arcgis-image-server.exportImageParameters` and o
 `ArcGISImageTileLoader` requests one `/exportImage` response per Web Mercator tile:
 
 ```
-import {ArcGISImageTileLoader} from '@loaders.gl/arcgis';
+import {ArcGISImageTileLoader} from '@loaders.gl/arcgis/image-service';
 
 
 
@@ -255,7 +255,7 @@ LERC data is deliberately not colorized automatically. Applications should choos
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 
 

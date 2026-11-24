@@ -75,7 +75,7 @@ The reference below covers supported image formats, output behavior, browser opt
 ```
 import '@loaders.gl/core/polyfills'; // only needed if using under Node
 
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 
 import {load} from '@loaders.gl/core';
 

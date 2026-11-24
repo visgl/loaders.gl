@@ -68,7 +68,7 @@ In tolerant mode, tag matching is case-insensitive and still preserves the autho
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {HTMLLoader} from '@loaders.gl/documents';
+import {HTMLLoader} from '@loaders.gl/documents/html';
 
 import {load} from '@loaders.gl/core';
 

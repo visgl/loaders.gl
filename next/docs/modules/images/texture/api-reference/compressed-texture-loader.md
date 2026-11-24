@@ -69,7 +69,7 @@ The sections below cover container support, usage, normalized texture levels, an
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {CompressedTextureLoader} from '@loaders.gl/images';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
 
 import {load} from '@loaders.gl/core';
 

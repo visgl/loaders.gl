@@ -71,7 +71,7 @@ The reference below covers the supported file shape, decoded columns, output met
 ```
 import {load} from '@loaders.gl/core';
 
-import {KSPLATLoader} from '@loaders.gl/splats';
+import {KSPLATLoader} from '@loaders.gl/splats/ksplat';
 
 
 

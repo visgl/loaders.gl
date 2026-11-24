@@ -101,7 +101,7 @@ The sections below document the normalized output, device selection options, con
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {BasisLoader} from '@loaders.gl/images';
+import {BasisLoader} from '@loaders.gl/images/basis';
 
 import {load} from '@loaders.gl/core';
 

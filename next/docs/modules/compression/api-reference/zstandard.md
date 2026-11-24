@@ -59,7 +59,7 @@ The sections below document usage, lazy loading, options, backend choices, and p
 `ZstdCompressor` and `ZstdDecompressor` keep the large WASM codec out of the normal decode path. They try built-in streams first. Compression falls back to lazy `compress-utils`; decompression falls back to its decoder-only WASM codec.
 
 ```
-import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression';
+import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression/zstd';
 ```
 
 Both implement the shared [Compressor and Decompressor](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md) APIs.

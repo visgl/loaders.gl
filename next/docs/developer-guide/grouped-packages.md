@@ -24,7 +24,19 @@ const table = await parse(csvData, CSVLoader);
 const features = await parse(kmlData, KMLLoader);
 ```
 
-Package roots provide the common public APIs. Format subpaths provide focused access to the formats, writers, sources, types, and helpers documented for that format. Use bare format subpaths such as `/csv`, rather than appending `/index`.
+Use format and capability subpaths for domain APIs. Each entrypoint groups the loaders, writers, sources, types, and helpers for that format or capability. Core retains its general loading API at `@loaders.gl/core`. Use bare subpaths such as `/csv`, rather than appending `/index`.
+
+Capability entrypoints follow the same model:
+
+```
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
+
+import {DuckDBSQLSource} from '@loaders.gl/sql/duckdb';
+
+import {SHA256Hash} from '@loaders.gl/crypto/sha256';
+```
+
+The sidebar links each named entrypoint to its main reference page. Module overviews describe the data family, Guide pages cover workflows, and format guides describe the source formats.
 
 ## Metadata loaders and parser implementations[​](#metadata-loaders-and-parser-implementations "Direct link to Metadata loaders and parser implementations")
 

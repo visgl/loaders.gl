@@ -72,7 +72,7 @@ The `NPYLoader` parses an array from the [NPY format](https://numpy.org/doc/stab
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {NPYLoader} from '@loaders.gl/scientific';
+import {NPYLoader} from '@loaders.gl/scientific/npy';
 
 import {load} from '@loaders.gl/core';
 

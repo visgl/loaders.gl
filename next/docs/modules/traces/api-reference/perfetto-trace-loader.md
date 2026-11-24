@@ -65,7 +65,7 @@ The sections below document usage, the Arrow result, numeric fidelity, and suppo
 ```
 import {load} from '@loaders.gl/core';
 
-import {PerfettoTraceLoader} from '@loaders.gl/traces';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
 
 
 
@@ -82,7 +82,7 @@ console.log(trace.processes);
 console.log(trace.threads);
 ```
 
-The package-root export is metadata-only and supports async core APIs through `preload()`. Import `PerfettoTraceLoaderWithParser` from `@loaders.gl/traces/perfetto-trace-loader` when direct access to `parseSync` or the parser-bearing loader object is required.
+The package-root export is metadata-only and supports async core APIs through `preload()`. Import `PerfettoTraceLoaderWithParser` from `@loaders.gl/traces/perfetto` when direct access to `parseSync` or the parser-bearing loader object is required.
 
 ## Result[​](#result "Direct link to Result")
 
@@ -117,7 +117,7 @@ Invalid, non-finite, or non-positive batch sizes use the default.
 ```
 import {parseInBatches} from '@loaders.gl/core';
 
-import {PerfettoTraceLoader} from '@loaders.gl/traces';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
 
 
 

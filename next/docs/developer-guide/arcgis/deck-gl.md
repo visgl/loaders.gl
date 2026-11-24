@@ -20,7 +20,7 @@ The repository examples use `SourceLayer` from the private `@loaders.gl/deck-lay
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 
 

@@ -67,7 +67,7 @@ There are two file families: legacy .vtk files and XML datasets such as .vti, .v
 ```
 import {load} from '@loaders.gl/core';
 
-import {VTKLoader} from '@loaders.gl/scientific';
+import {VTKLoader} from '@loaders.gl/scientific/vtk';
 
 
 

@@ -61,7 +61,7 @@ The reference below documents the identity behavior, available methods, shared i
 `NoCompressor` and `NoDecompressor` are pass-through transforms. They let a pipeline represent an uncompressed format without a special branch.
 
 ```
-import {NoCompressor, NoDecompressor} from '@loaders.gl/compression';
+import {NoCompressor, NoDecompressor} from '@loaders.gl/compression/none';
 ```
 
 `compress()`, `compressSync()`, `decompress()`, and `decompressSync()` return the input unchanged. The classes implement the shared [Compressor and Decompressor](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md) APIs.

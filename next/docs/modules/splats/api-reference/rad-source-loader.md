@@ -77,7 +77,7 @@ Use `RADLoader` when working with remote LoD assets:
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {RADLoader} from '@loaders.gl/splats';
+import {RADLoader} from '@loaders.gl/splats/rad';
 
 
 
@@ -111,7 +111,7 @@ For full buffers, `RADLoader` returns just the top-level metadata:
 ```
 import {parse} from '@loaders.gl/core';
 
-import {RADLoader} from '@loaders.gl/splats';
+import {RADLoader} from '@loaders.gl/splats/rad';
 
 
 

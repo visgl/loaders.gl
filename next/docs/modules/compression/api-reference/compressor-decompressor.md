@@ -59,7 +59,7 @@ The reference below defines codec metadata, preload behavior, one-shot methods, 
 `Compressor` and `Decompressor` are the independent base classes for encoding and decoding transforms. Use the narrow type that matches the operation: applications then import only the codec direction they need.
 
 ```
-import type {Compressor, Decompressor} from '@loaders.gl/compression';
+import type {Compressor, Decompressor} from '@loaders.gl/compression/codec';
 
 
 

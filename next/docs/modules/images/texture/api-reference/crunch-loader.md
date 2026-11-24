@@ -73,7 +73,7 @@ Loader for compressed textures in the Crunch file format
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {CrunchLoader} from '@loaders.gl/images';
+import {CrunchLoader} from '@loaders.gl/images/crunch';
 
 import {load} from '@loaders.gl/core';
 

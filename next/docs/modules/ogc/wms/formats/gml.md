@@ -125,7 +125,7 @@ The streaming parser buffers incomplete XML features across network chunks and r
 GML application schemas often carry scalar types that cannot be inferred safely from text. Supply known types from `DescribeFeatureType` or application metadata:
 
 ```
-import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml-loader';
+import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml';
 
 
 

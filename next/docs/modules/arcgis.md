@@ -351,7 +351,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->11<!-- -->)
+All exported subpaths (<!-- -->16<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -366,5 +366,10 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                                    | `@loaders.gl/arcgis/authentication`                   |
 |                                                                                                                                                    | `@loaders.gl/arcgis/bundled`                          |
 |                                                                                                                                                    | `@loaders.gl/arcgis/discovery`                        |
+|                                                                                                                                                    | `@loaders.gl/arcgis/feature-service`                  |
+|                                                                                                                                                    | `@loaders.gl/arcgis/image-service`                    |
 |                                                                                                                                                    | `@loaders.gl/arcgis/items`                            |
+|                                                                                                                                                    | `@loaders.gl/arcgis/map-service`                      |
 |                                                                                                                                                    | `@loaders.gl/arcgis/scene-aggregation`                |
+|                                                                                                                                                    | `@loaders.gl/arcgis/scene-service`                    |
+|                                                                                                                                                    | `@loaders.gl/arcgis/vector-tile-service`              |

@@ -72,7 +72,7 @@ ArcGIS Server directories can publish several endpoint families. loaders.gl v5 k
 ```
 import {load} from '@loaders.gl/core';
 
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 
 

@@ -73,7 +73,7 @@ Implements the [`Hash`](https://loaders.gl/next/docs/modules/crypto/api-referenc
 Calculates an MD5 digest synchronously using the vendored JavaScript implementation. No preload or WebAssembly initialization is required. `hash()` continues to use WebAssembly for larger inputs when it is available.
 
 ```
-import {MD5Hash} from '@loaders.gl/crypto';
+import {MD5Hash} from '@loaders.gl/crypto/md5';
 
 
 

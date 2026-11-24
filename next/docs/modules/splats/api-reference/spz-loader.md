@@ -81,7 +81,7 @@ SPZ version 4 uses ZSTD-compressed attribute streams. Async SPZ parsing first pr
 
 import {load} from '@loaders.gl/core';
 
-import {SPZLoader} from '@loaders.gl/splats';
+import {SPZLoader} from '@loaders.gl/splats/spz';
 
 import {ZstdCodec} from 'zstd-codec';
 
@@ -97,7 +97,7 @@ const table = await load(url, SPZLoader, {
 The parser-bearing subpath can also be imported directly:
 
 ```
-import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
+import {SPZLoaderWithParser} from '@loaders.gl/splats/spz';
 ```
 
 ## Format support[​](#format-support "Direct link to Format support")

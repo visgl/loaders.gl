@@ -71,7 +71,7 @@ The reference below covers supported fields, output columns, options, and the re
 ```
 import {load} from '@loaders.gl/core';
 
-import {SPLATLoader} from '@loaders.gl/splats';
+import {SPLATLoader} from '@loaders.gl/splats/splat';
 
 
 

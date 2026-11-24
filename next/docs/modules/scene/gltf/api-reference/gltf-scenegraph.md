@@ -117,7 +117,7 @@ const specificScene = gltf.getScene(2);
 ```
 import {load, encode} from '@loaders.gl/core';
 
-import {ImageWriter} from '@loaders.gl/images';
+import {ImageWriter} from '@loaders.gl/images/image';
 
 import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/scene/gltf';
 

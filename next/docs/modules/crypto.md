@@ -88,7 +88,7 @@ The `@loaders.gl/crypto` module exports transforms that can be used to increment
 ```
 import {loadInBatches} from '@loaders.gl/core';
 
-import {CRC32Hash} from '@loaders.gl/crypto';
+import {CRC32Hash} from '@loaders.gl/crypto/crc32';
 
 import {CSVLoader} from '@loaders.gl/tables/csv';
 
@@ -139,9 +139,17 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->0<!-- -->)
+All exported subpaths (<!-- -->8<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
-| Format | Import subpath |
-| ------ | -------------- |
+| Format | Import subpath                 |
+| ------ | ------------------------------ |
+|        | `@loaders.gl/crypto/crc32`     |
+|        | `@loaders.gl/crypto/crc32c`    |
+|        | `@loaders.gl/crypto/encoding`  |
+|        | `@loaders.gl/crypto/hash`      |
+|        | `@loaders.gl/crypto/md5`       |
+|        | `@loaders.gl/crypto/node`      |
+|        | `@loaders.gl/crypto/sha256`    |
+|        | `@loaders.gl/crypto/webcrypto` |

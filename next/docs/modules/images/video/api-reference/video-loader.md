@@ -73,7 +73,7 @@ A basic Video element loader. Only works in the browser.
 ```
 import '@loaders.gl/core/polyfills'; // only needed if using under Node
 
-import {VideoLoader} from '@loaders.gl/images';
+import {VideoLoader} from '@loaders.gl/images/video';
 
 import {load} from '@loaders.gl/core';
 

@@ -240,17 +240,17 @@ The package root exports metadata-only loaders. Async core APIs call each loader
 Applications that need parser-bearing loader objects directly can import the implementation subpaths:
 
 ```
-import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace-loader';
+import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace';
 
-import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto-trace-loader';
+import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto';
 
-import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp-trace-loader';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp';
 
-import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp-trace-json-loader';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp';
 
-import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger-trace-loader';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger';
 
-import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin-trace-loader';
+import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin';
 ```
 
 Writers and shared public types remain available from `@loaders.gl/traces`.
@@ -298,16 +298,22 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->7<!-- -->)
+All exported subpaths (<!-- -->13<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format                                                                                                                                 | Import subpath                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| [![](/images/examples/traces/chrome.svg)Chrome Trace](https://loaders.gl/next/docs/modules/traces/formats/chrome-trace.md)        | `@loaders.gl/traces/chrome-trace`           |
 | [![](/images/examples/traces/chrome.svg)Chrome Trace](https://loaders.gl/next/docs/modules/traces/formats/chrome-trace.md)        | `@loaders.gl/traces/chrome-trace-loader`    |
+|                                                                                                                                        | `@loaders.gl/traces/jaeger`                 |
 | [![](/next/images/format-logos/jaeger-logo.svg)Jaeger](https://loaders.gl/next/docs/modules/traces/formats/jaeger-trace.md)       | `@loaders.gl/traces/jaeger-trace-loader`    |
+|                                                                                                                                        | `@loaders.gl/traces/otlp`                   |
 | [![](/next/images/format-logos/opentelemetry-logo.svg)OTLP](https://loaders.gl/next/docs/modules/traces/formats/otlp-trace.md)    | `@loaders.gl/traces/otlp-trace-json-loader` |
 | [![](/next/images/format-logos/opentelemetry-logo.svg)OTLP](https://loaders.gl/next/docs/modules/traces/formats/otlp-trace.md)    | `@loaders.gl/traces/otlp-trace-loader`      |
+|                                                                                                                                        | `@loaders.gl/traces/perfetto`               |
 | [![](/next/images/format-logos/perfetto-logo.png)Perfetto](https://loaders.gl/next/docs/modules/traces/formats/perfetto-trace.md) | `@loaders.gl/traces/perfetto-trace-loader`  |
+|                                                                                                                                        | `@loaders.gl/traces/stream`                 |
 |                                                                                                                                        | `@loaders.gl/traces/trace-worker.js`        |
+|                                                                                                                                        | `@loaders.gl/traces/zipkin`                 |
 | [![](/next/images/format-logos/zipkin-logo.svg)Zipkin](https://loaders.gl/next/docs/modules/traces/formats/zipkin-trace.md)       | `@loaders.gl/traces/zipkin-trace-loader`    |

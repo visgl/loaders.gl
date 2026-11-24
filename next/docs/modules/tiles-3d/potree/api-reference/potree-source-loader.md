@@ -67,7 +67,7 @@ import {createDataSourceSync, preload} from '@loaders.gl/core';
 
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
 
 
 
@@ -106,7 +106,7 @@ import {createDataSource} from '@loaders.gl/core';
 
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
 
 
 

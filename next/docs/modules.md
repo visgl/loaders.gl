@@ -136,8 +136,8 @@ SQL data sources and optional database backends. Portable scan/query utilities l
 
 [Package reference](https://loaders.gl/next/docs/modules/sql.md)
 
-### [@loaders.gl/tile-converter](https://loaders.gl/next/docs/modules/_sections/tile-converter/api-and-guides.md)[​](#loadersgltile-converter "Direct link to loadersgltile-converter")
+### [@loaders.gl/tile-converter](https://loaders.gl/next/docs/modules/tile-converter/api-reference.md)[​](#loadersgltile-converter "Direct link to loadersgltile-converter")
 
 Programmatic APIs for converting 3D tilesets, meshes, and point clouds.
 
-[API reference](https://loaders.gl/next/docs/modules/_sections/tile-converter/api-and-guides.md)
+[API reference](https://loaders.gl/next/docs/modules/tile-converter/api-reference.md)

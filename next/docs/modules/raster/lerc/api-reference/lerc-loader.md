@@ -73,7 +73,7 @@ LERC (Limited Error Raster Compression), also written Lerc, is a format for comp
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {LERCLoader} from '@loaders.gl/raster';
+import {LERCLoader} from '@loaders.gl/raster/lerc';
 
 import {load} from '@loaders.gl/core';
 

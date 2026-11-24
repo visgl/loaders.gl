@@ -648,7 +648,7 @@ The portable `inspectI3SMeshConversionSource` and `createSelectedI3SMeshConversi
 `convertPointCloudToTileset` connects the dynamic point tiler to the v5 PNTS sink. It accepts one loader-produced point `Mesh` or `MeshArrowTable` and emits every input row once across a flat, additive 3D Tiles 1.0 collection. Supply explicit native ECEF (EPSG:4978 XYZ meters with ellipsoidal heights); the helper does not infer or transform a CRS. Per-tile RTC centers retain small offsets at ECEF magnitudes, and `geometricError` must cover measured position reconstruction error.
 
 ```
-import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 
 import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';
 

@@ -71,7 +71,7 @@ The table loaders in `@loaders.gl/tables` return native Apache Arrow objects by 
 ```
 import {load, loadInBatches} from '@loaders.gl/core';
 
-import {CSVLoader} from '@loaders.gl/tables';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 
 
@@ -113,7 +113,7 @@ Table writers take the Apache Arrow `Table` directly. For example, load a CSV fi
 ```
 import {encode, load} from '@loaders.gl/core';
 
-import {CSVLoader} from '@loaders.gl/tables';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 import {ArrowWriter} from '@loaders.gl/tables/arrow';
 

@@ -131,7 +131,7 @@ ArcGIS VectorTileServer endpoints publish Mapbox Vector Tile (MVT) data together
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISVectorTileServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISVectorTileServerLoader} from '@loaders.gl/arcgis/vector-tile-service';
 
 
 
@@ -171,7 +171,7 @@ const source = await createDataSource(vectorTileServiceUrl, [ArcGISVectorTileSer
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 
 

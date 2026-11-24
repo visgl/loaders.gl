@@ -61,7 +61,7 @@ The reference below documents imports, backend subpaths, installation, batch beh
 `BZip2Compressor` and `BZip2Decompressor` provide asynchronous bzip2 support through direction- specific `compress-utils` imports. The encoder or decoder is loaded only when that operation runs.
 
 ```
-import {BZip2Compressor, BZip2Decompressor} from '@loaders.gl/compression';
+import {BZip2Compressor, BZip2Decompressor} from '@loaders.gl/compression/bzip2';
 ```
 
 Both implement the shared [Compressor and Decompressor](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md) APIs, including incremental batch methods. Install the optional `compress-utils` peer dependency.

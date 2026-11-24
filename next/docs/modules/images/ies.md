@@ -67,7 +67,7 @@ Candela measures luminous intensity in a direction. Lumens per lamp, rated watts
 ```
 import {load} from '@loaders.gl/core';
 
-import {IESLoader} from '@loaders.gl/images';
+import {IESLoader} from '@loaders.gl/images/ies';
 
 
 

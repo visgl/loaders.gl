@@ -131,7 +131,7 @@ ArcGIS MapServer services expose cached map tiles, dynamically rendered maps, or
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISMapTileLoader} from '@loaders.gl/arcgis';
+import {ArcGISMapTileLoader} from '@loaders.gl/arcgis/map-service';
 
 
 
@@ -191,7 +191,7 @@ Runtime parameters are merged into subsequent export requests, which makes time 
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 
 

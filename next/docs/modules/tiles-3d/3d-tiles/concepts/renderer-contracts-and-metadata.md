@@ -11,7 +11,7 @@ For tiles backed by `Tiles3DSource`, `Tile3D.contentEntries` represents single-c
 These arrays are source-dependent. The current `I3SSource` assigns `tile.content` directly and leaves both `contents` and `contentEntries` empty after loading. I3S consumers must continue to use `tile.content`; an empty entries array or `isContentRenderable(index) === false` does not establish that an I3S tile lacks a loaded payload. Custom sources must supply normalized content headers and matching load-result payloads, or explicit `TileContentLoadResult.contentEntries`, to participate in the descriptor contract. The example below is for a `Tiles3DSource` tile.
 
 ```
-import type {Tile3D} from '@loaders.gl/tiles-3d';
+import type {Tile3D} from '@loaders.gl/tiles-3d/tileset';
 
 
 

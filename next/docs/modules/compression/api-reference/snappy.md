@@ -61,7 +61,7 @@ The reference below documents imports, backend subpaths, preload behavior, and b
 `SnappyCompressor` and `SnappyDecompressor` use the `compress-utils` WASM implementation. Snappy is not exposed by the browser stream APIs, so the defaults load the required codec direction dynamically.
 
 ```
-import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression';
+import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression/snappy';
 ```
 
 Both implement the shared [Compressor and Decompressor](https://loaders.gl/next/docs/modules/compression/api-reference/compressor-decompressor.md) APIs and support synchronous one-shot operation after preload.

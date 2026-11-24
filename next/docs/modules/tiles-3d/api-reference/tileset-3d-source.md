@@ -133,7 +133,7 @@ export interface Tileset3DSource {
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 
 

@@ -61,7 +61,7 @@ The sections below document construction, attributes, precision, CRS conversion,
 ```
 import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
 
 
 

@@ -65,7 +65,7 @@ The sections below document usage, output shapes, formatting options, and recons
 ```
 import {encode, load} from '@loaders.gl/core';
 
-import {JaegerTraceLoader, JaegerTraceWriter} from '@loaders.gl/traces';
+import {JaegerTraceLoader, JaegerTraceWriter} from '@loaders.gl/traces/jaeger';
 
 
 

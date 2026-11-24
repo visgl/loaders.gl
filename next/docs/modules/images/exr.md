@@ -67,7 +67,7 @@ The data window identifies the inclusive pixel rectangle containing samples. The
 ```
 import {load} from '@loaders.gl/core';
 
-import {EXRLoader} from '@loaders.gl/images';
+import {EXRLoader} from '@loaders.gl/images/exr';
 
 
 

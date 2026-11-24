@@ -14,7 +14,7 @@
 ```
 import {load} from '@loaders.gl/core';
 
-import {TOMLLoader} from '@loaders.gl/documents';
+import {TOMLLoader} from '@loaders.gl/documents/toml';
 
 
 

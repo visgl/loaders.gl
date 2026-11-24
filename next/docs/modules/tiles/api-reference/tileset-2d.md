@@ -66,7 +66,7 @@ That lets multiple consumers reuse the same fetched tile content without duplica
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {Tileset2D} from '@loaders.gl/tiles';
+import {Tileset2D} from '@loaders.gl/tiles/tileset-2d';
 
 
 
@@ -84,7 +84,7 @@ const tileset = new Tileset2D({
 You can also construct it directly from a loaders.gl `TileSource`.
 
 ```
-import {Tileset2D} from '@loaders.gl/tiles';
+import {Tileset2D} from '@loaders.gl/tiles/tileset-2d';
 
 
 

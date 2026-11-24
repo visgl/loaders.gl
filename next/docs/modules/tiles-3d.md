@@ -44,7 +44,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->28<!-- -->)
+All exported subpaths (<!-- -->31<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -71,6 +71,7 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-node-page.schema.json`               |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-point-cloud-scene-layer.schema.json` |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-scene-layer.schema.json`             |
+|                                                                                                                                                       | `@loaders.gl/tiles-3d/point-cloud`                                 |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/point-cloud-tile-loader`                     |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/point-cloud-tile-source`                     |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree`                                      |
@@ -78,3 +79,5 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree-metadata-schema`                      |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree/bundled`                              |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree/potree-metadata.schema.json`          |
+|                                                                                                                                                       | `@loaders.gl/tiles-3d/spatial`                                     |
+|                                                                                                                                                       | `@loaders.gl/tiles-3d/tileset`                                     |

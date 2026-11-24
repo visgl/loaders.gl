@@ -5,7 +5,7 @@ Loads UTF-8 Markdown into a `MarkdownDocument` syntax tree, without a renderer o
 ```
 import {parse} from '@loaders.gl/core';
 
-import {MarkdownLoader} from '@loaders.gl/documents';
+import {MarkdownLoader} from '@loaders.gl/documents/markdown';
 
 
 

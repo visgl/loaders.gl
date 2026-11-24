@@ -14,7 +14,7 @@
 ```
 import {load} from '@loaders.gl/core';
 
-import {YAMLLoader} from '@loaders.gl/documents';
+import {YAMLLoader} from '@loaders.gl/documents/yaml';
 
 
 

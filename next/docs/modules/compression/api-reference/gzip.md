@@ -59,7 +59,7 @@ The sections below document usage, options, backend subpaths, streaming behavior
 `GZipCompressor` and `GZipDecompressor` are the recommended GZIP transforms. Their async methods prefer built-in streams and fall back to `compress-utils`; sync methods require preload and use its WASM codec.
 
 ```
-import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression';
+import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression/gzip';
 
 
 

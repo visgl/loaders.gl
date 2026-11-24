@@ -3,7 +3,7 @@
 Use `@loaders.gl/raster/terrain/heightmap` when you need elevation samples without mesh reconstruction, Arrow conversion, image loading, or worker setup. This entry point has no runtime dependencies.
 
 ```
-import {getImageData} from '@loaders.gl/images';
+import {getImageData} from '@loaders.gl/images/image';
 
 import {
 

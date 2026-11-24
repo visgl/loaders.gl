@@ -19,7 +19,7 @@ These options live under `splats`. The compatibility default is source `RUB` (ri
 ```
 import {load} from '@loaders.gl/core';
 
-import {SPZLoader} from '@loaders.gl/splats';
+import {SPZLoader} from '@loaders.gl/splats/spz';
 
 
 
@@ -53,7 +53,7 @@ import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
 
-import {SPZLoader} from '@loaders.gl/splats';
+import {SPZLoader} from '@loaders.gl/splats/spz';
 
 
 

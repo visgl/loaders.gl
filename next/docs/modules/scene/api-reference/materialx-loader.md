@@ -7,7 +7,7 @@ Loads MaterialX XML into a structural document tree. The native XML parser suppo
 ```
 import {load} from '@loaders.gl/core';
 
-import {MaterialXLoader} from '@loaders.gl/scene';
+import {MaterialXLoader} from '@loaders.gl/scene/materialx';
 
 
 

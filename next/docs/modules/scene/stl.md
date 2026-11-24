@@ -67,7 +67,7 @@ ASCII STL uses records such as `solid`, `facet normal`, `outer loop`, and `verte
 ```
 import {load} from '@loaders.gl/core';
 
-import {STLLoader} from '@loaders.gl/scene';
+import {STLLoader} from '@loaders.gl/scene/stl';
 
 
 

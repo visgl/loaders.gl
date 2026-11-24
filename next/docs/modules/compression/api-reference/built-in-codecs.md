@@ -61,7 +61,7 @@ The default GZIP, DEFLATE, Brotli, and Zstandard classes first ask the runtime f
 Most applications should simply use a format default:
 
 ```
-import {GZipDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 
 
 

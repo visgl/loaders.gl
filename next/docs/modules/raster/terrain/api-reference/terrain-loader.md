@@ -75,7 +75,7 @@ The sections below document supported inputs, output shapes, usage, elevation de
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {TerrainLoader} from '@loaders.gl/raster';
+import {TerrainLoader} from '@loaders.gl/raster/terrain';
 
 import {load} from '@loaders.gl/core';
 

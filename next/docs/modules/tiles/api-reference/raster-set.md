@@ -63,7 +63,7 @@ See [Coordinate Reference Systems](https://loaders.gl/next/docs/developer-guide/
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {RasterSet} from '@loaders.gl/tiles';
+import {RasterSet} from '@loaders.gl/tiles/raster-set';
 
 import {createDataSourceSync} from '@loaders.gl/core';
 

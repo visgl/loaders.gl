@@ -97,7 +97,7 @@ The same `load` and `parse` call works with or without a worker. Worker executio
 ```
 import {load, parse} from '@loaders.gl/core';
 
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 
 
 
@@ -159,7 +159,7 @@ CSV Arrow, Parquet, Arrow, GeoArrow, JSON, JSONTable, and NDJSON support worker 
 ```
 import {load} from '@loaders.gl/core';
 
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 
 
 

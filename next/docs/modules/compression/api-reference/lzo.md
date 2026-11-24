@@ -3,7 +3,7 @@
 `LzoDecompressor` decodes raw LZO1X blocks through the decoder-only compress-utils 0.10 WASM asset. It loads dynamically and exposes no compressor.
 
 ```
-import {LzoDecompressor} from '@loaders.gl/compression';
+import {LzoDecompressor} from '@loaders.gl/compression/lzo';
 
 
 

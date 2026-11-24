@@ -150,7 +150,7 @@ Use ArcGIS request parameters for server-side reduction whenever possible. The t
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 
 
@@ -250,7 +250,7 @@ For a scoped query token, pass `createArcGISCredential` through `core.credential
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 
 

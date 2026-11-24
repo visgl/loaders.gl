@@ -63,7 +63,7 @@ The sections below document usage, output shapes, supported attributes, metadata
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 
 import {load} from '@loaders.gl/core';
 
@@ -132,7 +132,7 @@ Draco libraries load from a CDN by default. Browser applications can bundle the 
 ```
 import {parse} from '@loaders.gl/core';
 
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 
 import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
 

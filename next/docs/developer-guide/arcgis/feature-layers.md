@@ -5,7 +5,7 @@ Use a layer URL such as `/FeatureServer/3` or a queryable `/MapServer/3`. A serv
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 
 
