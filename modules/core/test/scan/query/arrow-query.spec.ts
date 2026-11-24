@@ -494,11 +494,14 @@ test('queryArrowTable evaluates every relational expression and aggregate bounda
     {group: 'b', literal: true, copy: null, add: null, subtract: null, divide: null}
   ]);
 
-  expect(() =>
-    queryArrowTable(makeArrowTable({left: [4], right: [0]}), {
-      expressions: [{name: 'ratio', expression: {op: 'divide', left: 'left', right: 'right'}}]
-    })
-  ).toThrow(/division by zero/i);
+  const integerDivision = queryArrowTable(
+    arrow.tableFromArrays({left: Int32Array.of(4, 4), right: Int32Array.of(0, 2)}),
+    {
+      expressions: [{name: 'ratio', expression: {op: 'divide', left: 'left', right: 'right'}}],
+      columns: ['ratio']
+    }
+  );
+  expect(toRows(integerDivision)).toEqual([{ratio: null}, {ratio: 2}]);
 
   const aggregates = queryArrowTable(table, {
     aggregates: [
