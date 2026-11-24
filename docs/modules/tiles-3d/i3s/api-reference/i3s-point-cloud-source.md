@@ -47,7 +47,7 @@ It accepts a SceneServer layer URL, an SLPK URL, or an SLPK `Blob`.
 
 ```ts
 import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
-import {PointCloudTileset} from '@loaders.gl/tiles-3d';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
 
 const source = new I3SPointCloudSource(layerUrl, {
   i3s: {token: arcgisToken},

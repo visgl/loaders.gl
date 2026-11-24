@@ -9,8 +9,8 @@ in memory and gathers content only when requested. It works in browsers and Node
 | Data source | `PointCloudTileSource` |
 
 ```typescript
-import {PointCloudTileLoader} from '@loaders.gl/tiles-3d';
-import {PointCloudTileset} from '@loaders.gl/tiles-3d';
+import {PointCloudTileLoader} from '@loaders.gl/tiles-3d/point-cloud';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
 
 const runtime = await PointCloudTileLoader.preload();
 const source = runtime.createDataSourceSync(pointMesh, {

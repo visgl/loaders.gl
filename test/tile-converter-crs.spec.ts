@@ -20,8 +20,8 @@ import {
   createTilesetSpatialReference,
   getI3SSpatialReference,
   registerSpatialCrs
-} from '@loaders.gl/tiles-3d';
-import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/spatial';
+import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d/point-cloud';
 import {
   createI3SConversionSpatialContext,
   createTiles3DConversionSpatialContext,

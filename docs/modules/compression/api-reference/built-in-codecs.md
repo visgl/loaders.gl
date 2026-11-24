@@ -52,7 +52,7 @@ class has a documented fallback.
 Most applications should simply use a format default:
 
 ```typescript
-import {GZipDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 
 const data = await new GZipDecompressor().decompress(compressedData);
 ```

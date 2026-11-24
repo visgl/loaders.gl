@@ -54,7 +54,7 @@ types and mismatched endpoint families produce explicit errors.
 ```ts
 import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 const itemId = '1bc3536f33374363b828e709b6f73597';
 const item = await resolveArcGISItem(itemId);

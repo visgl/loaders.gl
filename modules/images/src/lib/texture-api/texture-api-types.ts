@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {ImageLoaderOptions} from '../../image-loader-types';
 
-export type {ImageType} from '@loaders.gl/images';
+export type {ImageType} from '@loaders.gl/images/image';
 
 /** Shared options for image texture manifests. */
 export type TextureLoaderOptions = LoaderOptions & {

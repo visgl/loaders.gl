@@ -48,7 +48,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 prefer built-in streams and fall back to `compress-utils`; sync methods require preload and use its WASM codec.
 
 ```typescript
-import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression';
+import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression/gzip';
 
 const compressed = await new GZipCompressor().compress(data);
 const restored = await new GZipDecompressor().decompress(compressed);

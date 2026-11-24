@@ -5,7 +5,7 @@
 import type {Loader} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
 import type {Mesh} from '@loaders.gl/core/schema';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {ImageLoaderOptions} from '@loaders.gl/images/image';
 import {VERSION} from './lib/utils/version';
 
 import type {TerrainOptions} from './lib/parse-terrain';

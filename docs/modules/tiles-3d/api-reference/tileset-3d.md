@@ -60,7 +60,8 @@ Loading a tileset and instantiating a `Tileset3D` instance.
 
 ```typescript
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
 const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader});
@@ -73,7 +74,8 @@ Loading a tileset from an I3S source and updating it with the viewport:
 
 ```typescript
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
-import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {WebMercatorViewport} from '@deck.gl/web-mercator';
 
 const tilesetUrl =

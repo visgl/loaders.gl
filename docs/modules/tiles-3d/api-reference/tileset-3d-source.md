@@ -101,7 +101,7 @@ export interface Tileset3DSource {
 ## Usage
 
 ```ts
-import {Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 const tileset = new Tileset3D(source, {
   onTileLoad: tile => console.log(tile.id)

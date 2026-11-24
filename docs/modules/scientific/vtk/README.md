@@ -50,7 +50,7 @@ There are two file families: legacy .vtk files and XML datasets such as .vti, .v
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {VTKLoader} from '@loaders.gl/scientific';
+import {VTKLoader} from '@loaders.gl/scientific/vtk';
 
 const dataset = await load('flow.vtu', VTKLoader);
 console.log(dataset); // Inspect the legacy or XML dataset contract before conversion.

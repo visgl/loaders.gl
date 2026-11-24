@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {load, setLoaderOptions} from '@loaders.gl/core';
-import {RadianceHDRLoader} from '@loaders.gl/images';
+import {RadianceHDRLoader} from '@loaders.gl/images/radiance-hdr';
 import {GL_RGBA32F} from '../../src/lib/gl-extensions';
 const HDR_URL = '@loaders.gl/images/test/textures/data/simple-rle.hdr';
 const POLY_HAVEN_HDR_URL = '@loaders.gl/images/test/textures/data/venice_sunset_256.hdr';

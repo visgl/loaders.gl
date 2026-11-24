@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {DuckDBSQLDataSource} from '@loaders.gl/sql';
+import {DuckDBSQLDataSource} from '@loaders.gl/sql/duckdb';
 
 // Real WASM startup and the large engine asset belong in the hermetic slow lane.
 test('DuckDB exchanges IPC with Arrow 21 for queries and uploads', async () => {

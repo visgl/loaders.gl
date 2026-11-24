@@ -15,7 +15,7 @@ import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {Matrix4} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
-import {type ParsedImplicitSubtree} from '@loaders.gl/tiles-3d';
+import type {ParsedImplicitSubtree} from '../../../tileset-3d/format-3d-tiles/implicit-tiling';
 import type {
   Tile3DBoundingVolume,
   Tiles3DTileContentJSON,

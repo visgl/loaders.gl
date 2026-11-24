@@ -67,7 +67,7 @@ Use `RADLoader` when working with remote LoD assets:
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {RADLoader} from '@loaders.gl/splats';
+import {RADLoader} from '@loaders.gl/splats/rad';
 
 const source = await createDataSource(url, RADLoader);
 const metadata = await source.getMetadata();
@@ -90,7 +90,7 @@ For full buffers, `RADLoader` returns just the top-level metadata:
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {RADLoader} from '@loaders.gl/splats';
+import {RADLoader} from '@loaders.gl/splats/rad';
 
 const metadata = await parse(arrayBuffer, RADLoader);
 ```

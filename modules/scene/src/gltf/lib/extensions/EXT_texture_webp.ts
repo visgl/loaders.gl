@@ -10,7 +10,7 @@ import type {GLTF_EXT_texture_webp} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader-types';
 
-import {isImageFormatSupported} from '@loaders.gl/images';
+import {isImageFormatSupported} from '@loaders.gl/images/image';
 import {GLTFIterator} from '../api/gltf-iterator';
 
 const EXT_TEXTURE_WEBP = 'EXT_texture_webp';

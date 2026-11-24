@@ -69,13 +69,13 @@ DOT graph metadata is available as `graph.metadata` in every output shape.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {GraphMLLoader} from '@loaders.gl/graphs';
+import {GraphMLLoader} from '@loaders.gl/graphs/graphml';
 
 const graph = await load('network.graphml', GraphMLLoader);
 ```
 
 For synchronous parsing, import `GraphMLLoaderWithParser` from
-`@loaders.gl/graphs/graphml-loader` and pass it to `parseSync` from `@loaders.gl/core`.
+`@loaders.gl/graphs/graphml` and pass it to `parseSync` from `@loaders.gl/core`.
 The package root exports metadata only; asynchronous core APIs preload the implementation.
 
 The explicit plain compatibility result is `GraphData` with `shape: 'plain-graph-data'`, `nodes`, and `edges`.
@@ -98,12 +98,12 @@ precision outside the safe integer range.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {DOTLoader} from '@loaders.gl/graphs';
+import {DOTLoader} from '@loaders.gl/graphs/dot';
 
 const graph = await load('network.dot', DOTLoader);
 ```
 
-Use `DOTLoaderWithParser` from `@loaders.gl/graphs/dot-loader` with `parseSync`
+Use `DOTLoaderWithParser` from `@loaders.gl/graphs/dot` with `parseSync`
 for synchronous text or UTF-8 `ArrayBuffer` parsing. `DOTLoader` recognizes `.dot` and `.gv` files.
 
 The loader returns the same named node/edge table collection as GraphML, plus typed
@@ -134,14 +134,14 @@ trailing content, and edge operators inconsistent with the graph declaration are
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {GEXFLoader} from '@loaders.gl/graphs';
+import {GEXFLoader} from '@loaders.gl/graphs/gexf';
 
 const graph = await load('network.gexf', GEXFLoader);
 // Optional: {gexf: {shape: 'object-row-table'}} or {gexf: {shape: 'plain-graph-data'}}
 ```
 
 For synchronous parsing, use `GEXFLoaderWithParser` from
-`@loaders.gl/graphs/gexf-loader` with `parseSync`. The package root exports metadata
+`@loaders.gl/graphs/gexf` with `parseSync`. The package root exports metadata
 only; asynchronous core APIs preload the parser. Text and UTF-8 binary inputs are supported.
 The loader recognizes `.gexf` and `application/gexf+xml`.
 

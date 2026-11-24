@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles';
-import type {TileMatrixSelectionGrid, TileMatrixViewFrame} from '@loaders.gl/tiles';
+import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles/tileset-2d';
+import type {TileMatrixSelectionGrid, TileMatrixViewFrame} from '@loaders.gl/tiles/tileset-2d';
 
 const GRID: TileMatrixSelectionGrid = {
   tileMatrixSet: {

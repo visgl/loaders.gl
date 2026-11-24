@@ -16,8 +16,8 @@ vi.mock('@loaders.gl/core', async importOriginal => {
   return {...original, load: loadingMocks.load};
 });
 
-vi.mock('@loaders.gl/tiles-3d', async importOriginal => {
-  const original = await importOriginal<typeof import('@loaders.gl/tiles-3d')>();
+vi.mock('@loaders.gl/tiles-3d/tileset', async importOriginal => {
+  const original = await importOriginal<typeof import('@loaders.gl/tiles-3d/tileset')>();
   return {
     ...original,
     /** Records source initialization without allocating rendering or traversal resources. */

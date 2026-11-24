@@ -4,7 +4,7 @@
 
 import {BlobFile, type ReadableFile} from '@loaders.gl/core/loader-utils';
 import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
-import {CRC32Hash} from '@loaders.gl/crypto';
+import {CRC32Hash} from '@loaders.gl/crypto/crc32';
 import {
   decodeZipHeader,
   decodeZipText,

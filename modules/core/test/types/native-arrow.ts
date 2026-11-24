@@ -12,13 +12,10 @@ import {
   type LoaderContext,
   type ReadableFile
 } from '@loaders.gl/core/loader-utils';
-import {
-  ArrowLoader,
-  CSVLoader,
-  JSONTableLoader,
-  ParquetLoader,
-  type ArrowLoaderOptions
-} from '@loaders.gl/tables';
+import {ArrowLoader, type ArrowLoaderOptions} from '@loaders.gl/tables/arrow';
+import {CSVLoader} from '@loaders.gl/tables/csv';
+import {JSONTableLoader} from '@loaders.gl/tables/json';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
 
 const bytes = new ArrayBuffer(0);

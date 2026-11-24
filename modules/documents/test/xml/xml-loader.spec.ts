@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
-import {XMLLoader} from '@loaders.gl/documents';
+import {XMLLoader} from '@loaders.gl/documents/xml';
 import {load} from '@loaders.gl/core';
 const FORECASTS_URL = '@loaders.gl/documents/test/xml/data/forecasts.xml';
 test('XMLLoader#forecasts.xml', async () => {

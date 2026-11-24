@@ -10,7 +10,7 @@ import {
   STRATEGY_REPLACE,
   Tileset2D,
   type Tileset2DAdapter
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles/tileset-2d';
 import {SharedTile2DView} from '../src/shared-tile-2d/shared-tile-2d-view';
 const TEST_ADAPTER: Tileset2DAdapter<any> = {
   getTileIndices: () => [

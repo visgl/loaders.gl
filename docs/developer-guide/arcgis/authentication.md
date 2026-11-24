@@ -41,7 +41,7 @@ to sensitive organizational content.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
 
 const source = await createDataSource(serviceUrl, ArcGISFeatureServerLoader, {

@@ -10,7 +10,7 @@ import {
   makeOrientedBoundingBoxFromPoints
 } from '@math.gl/geometry/culling';
 import {lngLatToWorld} from '@math.gl/geospatial/web-mercator';
-import type {Bounds, TileIndex, ZRange} from '@loaders.gl/tiles';
+import type {Bounds, TileIndex, ZRange} from '@loaders.gl/tiles/tileset-2d';
 
 const TILE_SIZE = 512;
 const MAX_MAPS = 3;

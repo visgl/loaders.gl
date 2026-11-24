@@ -100,7 +100,7 @@ Manifest-driven texture loaders resolve member images through [`ImageLoader`](/d
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {BasisLoader} from '@loaders.gl/images';
+import {BasisLoader} from '@loaders.gl/images/basis';
 
 const images = await load('texture.ktx2', BasisLoader, {
   basis: {

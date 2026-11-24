@@ -4,13 +4,13 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile, load, parse, selectLoader} from '@loaders.gl/core';
-import {getImageData, getImageType} from '@loaders.gl/images';
+import {getImageData, getImageType} from '@loaders.gl/images/image';
 import {
   TextureArrayLoader,
   TextureCubeArrayLoader,
   TextureCubeLoader,
   TextureLoader
-} from '@loaders.gl/images';
+} from '@loaders.gl/images/texture';
 const IMAGE_TEXTURE_MANIFEST_URL =
   '@loaders.gl/images/test/textures/data/composite-image/image-texture.json';
 const IMAGE_TEXTURE_MIPMAP_MANIFEST_URL =

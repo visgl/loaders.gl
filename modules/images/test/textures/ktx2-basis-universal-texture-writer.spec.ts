@@ -4,8 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {load, encode} from '@loaders.gl/core';
-import {ImageLoader, getImageData} from '@loaders.gl/images';
-import {BasisLoader} from '@loaders.gl/images';
+import {ImageLoader, getImageData} from '@loaders.gl/images/image';
+import {BasisLoader} from '@loaders.gl/images/basis';
 import {KTX2BasisWriter} from '@loaders.gl/images/basis';
 import {KTX2BasisWriterWorker} from '@loaders.gl/images/basis';
 import {processOnWorker} from '@loaders.gl/core/worker-utils';

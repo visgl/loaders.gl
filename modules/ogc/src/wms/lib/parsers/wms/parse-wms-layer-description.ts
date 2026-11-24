@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {XMLLoaderOptions} from '@loaders.gl/documents';
+import type {XMLLoaderOptions} from '@loaders.gl/documents/xml';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
 
 /** Layer description - response to a WMS `DescribeLayer` request  */

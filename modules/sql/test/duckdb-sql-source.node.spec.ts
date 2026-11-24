@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {DuckDBSQLDataSource, DuckDBSQLSource} from '@loaders.gl/sql';
+import {DuckDBSQLDataSource, DuckDBSQLSource} from '@loaders.gl/sql/duckdb';
 test('DuckDBSQLSource#createDataSource selects DuckDB source from URL', () => {
   const dataSource = createDataSourceSync('duckdb:///:memory:', [DuckDBSQLSource], {
     duckdb: {}

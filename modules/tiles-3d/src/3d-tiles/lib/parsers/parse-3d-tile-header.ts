@@ -7,12 +7,10 @@ import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/core/loader-u
 import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
 import {
   createImplicitSubtreeReference,
-  LOD_METRIC_TYPE,
-  materializeImplicitSubtree,
-  TILE_REFINEMENT,
-  TILE_TYPE
-} from '@loaders.gl/tiles-3d';
-import type {ImplicitTilingDescriptor} from '@loaders.gl/tiles-3d';
+  materializeImplicitSubtree
+} from '../../../tileset-3d/format-3d-tiles/implicit-tiling';
+import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '../../../constants';
+import type {ImplicitTilingDescriptor} from '../../../tileset-3d/format-3d-tiles/implicit-tiling';
 import {
   ImplicitTilingExensionData,
   Subtree,

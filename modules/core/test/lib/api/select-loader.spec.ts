@@ -10,8 +10,8 @@ import {
   selectLoaderSync,
   isBrowser
 } from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
-import {DracoLoader} from '@loaders.gl/scene';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {KMLLoader} from '@loaders.gl/geospatial/kml';

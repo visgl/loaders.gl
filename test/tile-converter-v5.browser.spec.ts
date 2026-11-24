@@ -28,7 +28,7 @@ import {
   createTilesetSpatialReference,
   get3DTilesSpatialReference,
   getI3SSpatialReference
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/spatial';
 import type {Schema} from '@loaders.gl/core/schema';
 
 test('tile-converter(v5)#encodes a Mesh Arrow point batch as a PNTS resource', async () => {

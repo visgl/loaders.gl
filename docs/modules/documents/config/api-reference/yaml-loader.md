@@ -14,7 +14,7 @@ both `.yaml` and `.yml` extensions.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {YAMLLoader} from '@loaders.gl/documents';
+import {YAMLLoader} from '@loaders.gl/documents/yaml';
 
 const data = await load('config.yaml', YAMLLoader);
 ```

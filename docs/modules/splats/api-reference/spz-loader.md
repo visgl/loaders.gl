@@ -69,7 +69,7 @@ precedence over the native path.
 // npm install @loaders.gl/core @loaders.gl/splats zstd-codec
 
 import {load} from '@loaders.gl/core';
-import {SPZLoader} from '@loaders.gl/splats';
+import {SPZLoader} from '@loaders.gl/splats/spz';
 import {ZstdCodec} from 'zstd-codec';
 
 const table = await load(url, SPZLoader, {
@@ -80,7 +80,7 @@ const table = await load(url, SPZLoader, {
 The parser-bearing subpath can also be imported directly:
 
 ```typescript
-import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
+import {SPZLoaderWithParser} from '@loaders.gl/splats/spz';
 ```
 
 ## Format support

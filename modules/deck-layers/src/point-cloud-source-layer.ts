@@ -17,8 +17,8 @@ import type {
   PointCloudTileset,
   PointCloudTilesetOptions,
   PointCloudTilesetSource
-} from '@loaders.gl/tiles-3d';
-import {PointCloudTileset as PointCloudTilesetManager} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/point-cloud';
+import {PointCloudTileset as PointCloudTilesetManager} from '@loaders.gl/tiles-3d/point-cloud';
 import {MeshArrowPointCloudLayer} from './mesh-arrow-point-cloud-layer';
 import {
   finalizeOwnedSource,

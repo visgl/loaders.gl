@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
-import {DuckDBSQLDataSource} from '@loaders.gl/sql';
+import {DuckDBSQLDataSource} from '@loaders.gl/sql/duckdb';
 
 const duckdbMocks = vi.hoisted(() => {
   const bindings = {

@@ -193,7 +193,11 @@ test('tile-converter core browser bundle excludes format adapters and Node APIs'
   const imports = Object.values(bundle.metafile!.outputs).flatMap(output =>
     output.imports.map(entry => entry.path)
   );
-  expect([...new Set(imports)].sort()).toEqual(['@loaders.gl/tiles-3d', '@math.gl/core/matrix']);
+  expect([...new Set(imports)].sort()).toEqual([
+    '@loaders.gl/tiles-3d/spatial',
+    '@loaders.gl/tiles-3d/tileset',
+    '@math.gl/core/matrix'
+  ]);
   expect(Object.keys(bundle.metafile!.inputs).some(path => path.includes('dist/v5/core.js'))).toBe(
     true
   );

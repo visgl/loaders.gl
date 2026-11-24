@@ -1,11 +1,11 @@
 import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s';
-import {GZipDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ConversionPanel} from '../examples/website/i3s-slpk/src/components/conversion-panel';
 import {fetchFile, load, parse} from '@loaders.gl/core';
-import {Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles-3d';
+import {Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles-3d/tileset';
 import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-source';
 import {
   inspectConversionInput,

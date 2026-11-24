@@ -49,7 +49,7 @@ transforms. Use the narrow type that matches the operation: applications then im
 codec direction they need.
 
 ```typescript
-import type {Compressor, Decompressor} from '@loaders.gl/compression';
+import type {Compressor, Decompressor} from '@loaders.gl/compression/codec';
 
 const writerCodecs: Compressor[] = [];
 const loaderCodecs: Decompressor[] = [];

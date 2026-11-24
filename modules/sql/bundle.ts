@@ -85,17 +85,11 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
-export {
-  SQLDataSource,
-  registerSQLAdapter,
-  getSQLAdapterFactory,
-  ArrowTableSource,
-  DuckDBSQLSource,
-  DuckDBSQLDataSource,
-  SnowflakeSQLSource,
-  SnowflakeSQLDataSource,
-  compileSQLTableQuery
-} from '@loaders.gl/sql';
+export {SQLDataSource, registerSQLAdapter, getSQLAdapterFactory} from '@loaders.gl/sql/adapter';
+export {ArrowTableSource} from '@loaders.gl/sql/arrow';
+export {DuckDBSQLSource, DuckDBSQLDataSource} from '@loaders.gl/sql/duckdb';
+export {SnowflakeSQLSource, SnowflakeSQLDataSource} from '@loaders.gl/sql/snowflake';
+export {compileSQLTableQuery} from '@loaders.gl/sql/query';
 export {
   ARROW_TABLE_QUERY_CAPABILITIES,
   explainArrowTableQuery,
@@ -138,7 +132,9 @@ export type {
   SQLAdapter,
   SQLAdapterCapabilities,
   SQLAdapterFactory,
-  SQLAdapterFactoryContext,
+  SQLAdapterFactoryContext
+} from '@loaders.gl/sql/adapter';
+export type {
   SQLCatalogInfo,
   SQLColumnInfo,
   SQLMetadata,
@@ -147,8 +143,9 @@ export type {
   SQLQueryOptions,
   SQLSchemaInfo,
   SQLSourceOptions,
-  SQLTableInfo,
-  ArrowTableSourceOptions,
+  SQLTableInfo
+} from '@loaders.gl/sql/adapter';
+export type {
   CompiledSQLTableQuery,
   SQLTableQuery,
   SQLTableQueryCompilerOptions,
@@ -156,4 +153,5 @@ export type {
   RelationalAggregate,
   RelationalExpression,
   RelationalOrderKey
-} from '@loaders.gl/sql';
+} from '@loaders.gl/sql/query';
+export type {ArrowTableSourceOptions} from '@loaders.gl/sql/arrow';

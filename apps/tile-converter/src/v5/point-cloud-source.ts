@@ -6,7 +6,7 @@ import type {
   PointCloudTileContent,
   PointCloudTileHeader,
   PointCloudTilesetSource
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/point-cloud';
 
 /** A source tile and its decoded point content, including null content when no payload exists. */
 export type PointCloudSourceTile = {

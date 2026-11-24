@@ -10,7 +10,7 @@ import {
   toArrayBuffer
 } from '@loaders.gl/core/loader-utils';
 import {encodeUtf8Text, validateZipPath} from './zip-entry-metadata';
-import {CRC32Hash} from '@loaders.gl/crypto';
+import {CRC32Hash} from '@loaders.gl/crypto/crc32';
 import type {ZipArchiveOptions} from '../zip-archive-types';
 import type {ZipEncodeOptions} from '../zip-encode-types';
 

@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {CRC32Hash, MD5Hash} from '@loaders.gl/crypto';
+import {CRC32Hash} from '@loaders.gl/crypto/crc32';
+import {MD5Hash} from '@loaders.gl/crypto/md5';
 import {
   encodeZipLocalHeader,
   encodeZipCentralHeader,

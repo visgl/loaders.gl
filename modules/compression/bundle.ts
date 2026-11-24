@@ -85,43 +85,32 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
+export {Compressor, Decompressor} from '@loaders.gl/compression/codec';
+export {NoCompressor, NoDecompressor} from '@loaders.gl/compression/none';
+export {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression/deflate';
+export {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression/gzip';
+export {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression/brotli';
+export {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression/snappy';
+export {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression/lz4';
+export {LzoDecompressor} from '@loaders.gl/compression/lzo';
+export {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression/zstd';
+export {BZip2Compressor, BZip2Decompressor} from '@loaders.gl/compression/bzip2';
+export {XZCompressor, XZDecompressor} from '@loaders.gl/compression/xz';
 export {
-  Compressor,
-  Decompressor,
-  NoCompressor,
-  NoDecompressor,
-  DeflateCompressor,
-  DeflateDecompressor,
-  GZipCompressor,
-  GZipDecompressor,
-  BrotliCompressor,
-  BrotliDecompressor,
-  SnappyCompressor,
-  SnappyDecompressor,
-  LZ4Compressor,
-  LZ4Decompressor,
-  LzoDecompressor,
-  ZstdCompressor,
-  ZstdDecompressor,
-  BZip2Compressor,
-  BZip2Decompressor,
-  XZCompressor,
-  XZDecompressor,
   compressBatchesWithNativeCompressionStream,
-  compressWithNativeCompressionStream,
-  CompressionWorker,
-  compressOnWorker
-} from '@loaders.gl/compression';
+  compressWithNativeCompressionStream
+} from '@loaders.gl/compression/native-compression';
+export {CompressionWorker, compressOnWorker} from '@loaders.gl/compression/worker';
+export type {CompressionOptions} from '@loaders.gl/compression/codec';
+export type {LzoDecompressorOptions} from '@loaders.gl/compression/lzo';
 export type {
-  CompressionOptions,
-  LzoDecompressorOptions,
   BrotliCompressorOptions,
-  BrotliDecompressorOptions,
+  BrotliDecompressorOptions
+} from '@loaders.gl/compression/brotli';
+export type {
   DeflateCompressorOptions,
-  DeflateDecompressorOptions,
-  GZipCompressorOptions,
-  GZipDecompressorOptions,
-  ZstdCompressorOptions,
-  ZstdDecompressorOptions,
-  CompressionWorkerOptions
-} from '@loaders.gl/compression';
+  DeflateDecompressorOptions
+} from '@loaders.gl/compression/deflate';
+export type {GZipCompressorOptions, GZipDecompressorOptions} from '@loaders.gl/compression/gzip';
+export type {ZstdCompressorOptions, ZstdDecompressorOptions} from '@loaders.gl/compression/zstd';
+export type {CompressionWorkerOptions} from '@loaders.gl/compression/worker';

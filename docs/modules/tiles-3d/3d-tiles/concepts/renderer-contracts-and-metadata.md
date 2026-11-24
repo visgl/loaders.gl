@@ -29,7 +29,7 @@ matching load-result payloads, or explicit `TileContentLoadResult.contentEntries
 the descriptor contract. The example below is for a `Tiles3DSource` tile.
 
 ```typescript
-import type {Tile3D} from '@loaders.gl/tiles-3d';
+import type {Tile3D} from '@loaders.gl/tiles-3d/tileset';
 
 function inspectTile(tile: Tile3D) {
   for (const entry of tile.contentEntries) {

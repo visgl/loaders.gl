@@ -5,7 +5,8 @@
 import {expect, test} from 'vitest';
 import {Int32, tableFromArrays, tableFromIPC, vectorFromArray} from 'apache-arrow';
 import {encode, encodeInBatches, encodeSync, fetchFile, parse} from '@loaders.gl/core';
-import {GeoJSONLoader, ParquetLoader} from '@loaders.gl/tables';
+import {GeoJSONLoader} from '@loaders.gl/tables/json';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import {ArrowWriter} from '@loaders.gl/tables/arrow';
 import {AvroWriter} from '@loaders.gl/tables/avro';
 import {CSVWriter} from '@loaders.gl/tables/csv';

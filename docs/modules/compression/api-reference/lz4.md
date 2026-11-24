@@ -51,7 +51,7 @@ Legacy Hadoop block framing is parsed in TypeScript. Sync methods require preloa
 `raw: true` selects raw block encoding; raw decoding requires an output capacity.
 
 ```typescript
-import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression';
+import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression/lz4';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs. Raw block

@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DracoBuildOptions, DracoBuilderMesh, DracoEncodingResult} from '@loaders.gl/scene';
+import type {
+  DracoBuildOptions,
+  DracoBuilderMesh,
+  DracoEncodingResult
+} from '../../../draco/lib/draco-builder';
 import type {TypedArray} from '@loaders.gl/core/schema';
 import type {GLTFWriterOptions} from '../../gltf-writer';
 import type {GLTFMeshPrimitive} from '../types/gltf-json-schema';

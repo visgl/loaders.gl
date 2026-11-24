@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
-import {USDLoader} from '@loaders.gl/scene';
+import {USDLoader} from '@loaders.gl/scene/usd';
 import {USDLoaderWithParser} from '@loaders.gl/scene/usd';
 import {parseUSDA} from '../src/usd/lib/parse-usda';
 test('USDLoader exposes metadata at the package root', () => {

@@ -188,6 +188,66 @@
     "./lzo-decompressor-compress-utils": {
       "types": "./dist/lzo-decompressor-compress-utils.d.ts",
       "import": "./dist/lzo-decompressor-compress-utils.js"
+    },
+    "./none": {
+      "types": "./dist/none.d.ts",
+      "import": "./dist/none.js",
+      "require": "./dist/none.cjs"
+    },
+    "./deflate": {
+      "types": "./dist/deflate.d.ts",
+      "import": "./dist/deflate.js",
+      "require": "./dist/deflate.cjs"
+    },
+    "./gzip": {
+      "types": "./dist/gzip.d.ts",
+      "import": "./dist/gzip.js",
+      "require": "./dist/gzip.cjs"
+    },
+    "./brotli": {
+      "types": "./dist/brotli.d.ts",
+      "import": "./dist/brotli.js",
+      "require": "./dist/brotli.cjs"
+    },
+    "./snappy": {
+      "types": "./dist/snappy.d.ts",
+      "import": "./dist/snappy.js",
+      "require": "./dist/snappy.cjs"
+    },
+    "./lz4": {
+      "types": "./dist/lz4.d.ts",
+      "import": "./dist/lz4.js",
+      "require": "./dist/lz4.cjs"
+    },
+    "./lzo": {
+      "types": "./dist/lzo.d.ts",
+      "import": "./dist/lzo.js",
+      "require": "./dist/lzo.cjs"
+    },
+    "./zstd": {
+      "types": "./dist/zstd.d.ts",
+      "import": "./dist/zstd.js",
+      "require": "./dist/zstd.cjs"
+    },
+    "./bzip2": {
+      "types": "./dist/bzip2.d.ts",
+      "import": "./dist/bzip2.js",
+      "require": "./dist/bzip2.cjs"
+    },
+    "./xz": {
+      "types": "./dist/xz.d.ts",
+      "import": "./dist/xz.js",
+      "require": "./dist/xz.cjs"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/worker.js",
+      "require": "./dist/worker.cjs"
+    },
+    "./codec": {
+      "types": "./dist/codec.d.ts",
+      "import": "./dist/codec.js",
+      "require": "./dist/codec.cjs"
     }
   },
   "sideEffects": [

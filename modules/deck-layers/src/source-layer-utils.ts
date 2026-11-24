@@ -5,7 +5,7 @@
 import {createDataSource, selectLoader} from '@loaders.gl/core';
 import type {DataSourceOptions, Loader} from '@loaders.gl/core/loader-utils';
 import {supportsSourceCreation} from '@loaders.gl/core/loader-utils';
-import {isTileset3DSource} from '@loaders.gl/tiles-3d';
+import {isTileset3DSource} from '@loaders.gl/tiles-3d/tileset';
 
 /** Visual source families supported by {@link SourceLayer}. */
 export type VisualSourceType =

@@ -8,7 +8,7 @@ import {
   createTilesetSpatialReference,
   I3SSpatialTransformer,
   SpatialCoordinateTransformer
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/spatial';
 
 describe('I3SSpatialTransformer', () => {
   test('returns stable geographic offsets for projected source positions', () => {

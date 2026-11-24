@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {Draco3DLoaderWithParser} from '../../src/draco/draco3d-loader-with-parser';
 import {DracoJavaScriptLoaderWithParser} from '../../src/draco/draco-javascript-loader-with-parser';
 import {DracoWASMLoaderWithParser} from '../../src/draco/draco-wasm-loader-with-parser';

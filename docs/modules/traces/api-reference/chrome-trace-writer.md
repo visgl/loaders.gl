@@ -51,7 +51,7 @@ Chrome Trace Event JSON container.
 
 ```typescript
 import {load, encode, encodeText} from '@loaders.gl/core';
-import {ChromeTraceLoader, ChromeTraceWriter} from '@loaders.gl/traces';
+import {ChromeTraceLoader, ChromeTraceWriter} from '@loaders.gl/traces/chrome-trace';
 
 const table = await load('input.json', ChromeTraceLoader, {
   chromeTrace: {shape: 'arrow'}

@@ -13,19 +13,21 @@ import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   IndexedArchiveTilesetSource,
-  I3SSource,
-  createImplicitSubtreeReference,
   LOD_METRIC_TYPE,
   Tile3D,
-  Tiles3DSource,
   Tileset3D,
   TILE_REFINEMENT,
-  createTilesetSpatialReference,
   isTileset3DSource,
-  type ImplicitTilingDescriptor,
   type TilesetJSON,
   type TilesetSourceResolver
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/tileset';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {
+  createImplicitSubtreeReference,
+  Tiles3DSource,
+  type ImplicitTilingDescriptor
+} from '@loaders.gl/tiles-3d/3d-tiles';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 test('Tiles3DSource lazily loads, installs and caches one implicit subtree', async () => {
   const descriptor: ImplicitTilingDescriptor = {
     contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',

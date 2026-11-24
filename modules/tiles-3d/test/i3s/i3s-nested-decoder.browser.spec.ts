@@ -3,10 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import {ImageLoader} from '@loaders.gl/images';
-import {DracoLoader} from '@loaders.gl/scene';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {I3SContentLoaderWithParser} from '../../src/i3s/i3s-content-loader-with-parser';
-import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/images';
+import {BasisLoader} from '@loaders.gl/images/basis';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
 import {parseI3STileContent} from '../../src/i3s/lib/parsers/parse-i3s-tile-content';
 
 const GEOMETRY_SCHEMA = {

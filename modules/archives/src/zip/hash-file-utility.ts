@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {MD5Hash} from '@loaders.gl/crypto';
+import {MD5Hash} from '@loaders.gl/crypto/md5';
 import {
   concatenateArrayBuffers,
   concatenateArrayBuffersFromArray

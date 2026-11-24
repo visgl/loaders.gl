@@ -50,7 +50,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 `compress-utils` imports. The encoder or decoder is loaded only when that operation runs.
 
 ```typescript
-import {XZCompressor, XZDecompressor} from '@loaders.gl/compression';
+import {XZCompressor, XZDecompressor} from '@loaders.gl/compression/xz';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs, including

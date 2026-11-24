@@ -5,7 +5,7 @@
 
 import {expect} from 'vitest';
 import {SAXParser} from '@loaders.gl/documents/sax-parser';
-import {SAXParserOptions} from '@loaders.gl/documents';
+import {SAXParserOptions} from '@loaders.gl/documents/sax-parser';
 
 type TestSAXParams = {
   xml?: string | {toString(): string};

@@ -80,7 +80,7 @@ reference names the runtime type returned by the factory.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 const source = await createDataSource(url, ArcGISFeatureServerLoader);
 const metadata = await source.getMetadata();

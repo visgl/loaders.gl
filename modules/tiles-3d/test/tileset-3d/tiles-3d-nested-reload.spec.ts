@@ -4,7 +4,8 @@
 
 import {expect, test, vi} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tile3D, Tiles3DSource, Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles-3d';
+import {Tile3D, Tileset3D, traverseTilesetContents} from '@loaders.gl/tiles-3d/tileset';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
 
 /** Creates a normalized header with a small sphere and ordered content descriptors. */
 function createHeader(id: string, contentUrls: string[] = []) {

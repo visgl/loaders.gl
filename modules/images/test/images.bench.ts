@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ImageLoader, isImageTypeSupported} from '@loaders.gl/images';
+import {ImageLoader, isImageTypeSupported} from '@loaders.gl/images/image';
 import {fetchFile, parse} from '@loaders.gl/core';
 
 const TEST_URL = '@loaders.gl/images/test/data/tiles/colortile-256x256.png';

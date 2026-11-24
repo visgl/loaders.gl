@@ -13,8 +13,8 @@ import type {ParseGLBOptions} from './parse-glb';
 
 import type {ImageType, TextureLevel} from '@loaders.gl/core/schema';
 import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/core/loader-utils';
-import {ImageLoader} from '@loaders.gl/images';
-import {BasisLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {BasisLoader} from '@loaders.gl/images/basis';
 
 import {assert} from '../utils/assert';
 import {isGLB, parseGLBSync} from './parse-glb';

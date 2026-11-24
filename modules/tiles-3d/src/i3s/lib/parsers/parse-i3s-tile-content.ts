@@ -9,10 +9,12 @@ import {Vector3, Matrix4} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/coordinates';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';
-import {ImageLoader, getImageData} from '@loaders.gl/images';
-import {DracoLoader, DracoMesh} from '@loaders.gl/scene';
-import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/images';
-import {I3SSpatialTransformer, getSpatialCoordinateFrame} from '@loaders.gl/tiles-3d';
+import {ImageLoader, getImageData} from '@loaders.gl/images/image';
+import {DracoLoader, DracoMesh} from '@loaders.gl/scene/draco';
+import {BasisLoader} from '@loaders.gl/images/basis';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
+import {I3SSpatialTransformer} from '../../../spatial/i3s-spatial-transformer';
+import {getSpatialCoordinateFrame} from '../../../spatial/get-spatial-coordinate-frame';
 
 import {
   FeatureAttribute,

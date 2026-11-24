@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import {BSONLoader} from '@loaders.gl/documents';
+import {BSONLoader} from '@loaders.gl/documents/bson';
 import {load} from '@loaders.gl/core';
 const TAGS_BSON_URL = '@loaders.gl/documents/test/bson/data/js-bson/mongodump.airpair.tags.bson';
 export default async function bsonLoaderBench(suite) {

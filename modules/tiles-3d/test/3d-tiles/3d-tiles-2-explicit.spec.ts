@@ -6,7 +6,8 @@ import {getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
 import {describe, expect, test} from 'vitest';
 import {coreApi, load, parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tile3D, Tileset3D} from '@loaders.gl/tiles-3d/tileset';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
 import {parse3DTileVectorContent} from '../../src/3d-tiles/lib/parsers/parse-3d-tile-vector-content';
 import {parse3DTiles2Tileset} from '../../src/3d-tiles/lib/parsers/parse-3d-tiles-2-gltf';
 

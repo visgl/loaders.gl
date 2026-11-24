@@ -152,34 +152,59 @@
           },
           {
             "type": "category",
-            "label": "API",
+            "label": "Loading and Parsing",
+            "link": {
+              "type": "doc",
+              "id": "modules/core/api-reference/load"
+            },
             "items": [
-              "modules/core/api-reference/loader-options",
-              "modules/core/api-reference/load",
               "modules/core/api-reference/load-in-batches",
               "modules/core/api-reference/parse",
               "modules/core/api-reference/parse-sync",
-              "modules/core/api-reference/parse-in-batches",
-              "modules/core/api-reference/select-loader",
-              "modules/core/api-reference/set-loader-options",
-              "modules/core/api-reference/register-loaders",
-              "modules/core/api-reference/select-source",
-              "modules/core/api-reference/create-data-source",
-              "modules/core/api-reference/encode",
-              "modules/core/api-reference/save",
-              "modules/core/api-reference/fetch-file",
-              "modules/core/api-reference/write-file",
-              "modules/core/api-reference/set-path-prefix",
-              "modules/core/api-reference/binary-utilities",
-              "modules/core/api-reference/iterator-utilities",
-              "specifications/loader-object-format",
-              "specifications/writer-object-format"
-            ],
+              "modules/core/api-reference/parse-in-batches"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "Sources",
             "link": {
-              "type": "generated-index",
-              "title": "Core API",
-              "slug": "/modules/_sections/core/api-and-guides"
-            }
+              "type": "doc",
+              "id": "modules/core/api-reference/create-data-source"
+            },
+            "items": [
+              "modules/core/api-reference/select-source"
+            ]
+          },
+          {
+            "type": "doc",
+            "id": "modules/core/api-reference/encode",
+            "label": "Encoding"
+          },
+          {
+            "type": "category",
+            "label": "Configuration",
+            "link": {
+              "type": "doc",
+              "id": "modules/core/api-reference/loader-options"
+            },
+            "items": [
+              "modules/core/api-reference/set-loader-options",
+              "modules/core/api-reference/select-loader",
+              "modules/core/api-reference/register-loaders",
+              "modules/core/api-reference/set-path-prefix"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "Files and Streams",
+            "link": {
+              "type": "doc",
+              "id": "modules/core/api-reference/fetch-file"
+            },
+            "items": [
+              "modules/core/api-reference/binary-utilities",
+              "modules/core/api-reference/iterator-utilities"
+            ]
           },
           {
             "type": "doc",
@@ -210,7 +235,9 @@
               "modules/core/loader-utils/api-reference/range-request-scheduler",
               "modules/core/loader-utils/api-reference/range-request-cache",
               "modules/core/loader-utils/api-reference/request-credentials",
-              "modules/core/loader-utils/api-reference/parse-with-context"
+              "modules/core/loader-utils/api-reference/parse-with-context",
+              "specifications/loader-object-format",
+              "specifications/writer-object-format"
             ],
             "link": {
               "type": "doc",
@@ -284,6 +311,10 @@
         },
         "items": [
           {
+            "type": "doc",
+            "id": "modules/documents/config/README"
+          },
+          {
             "type": "category",
             "label": "Formats",
             "items": [
@@ -302,61 +333,86 @@
           },
           {
             "type": "category",
-            "label": "API",
-            "items": [
-              "modules/documents/api-reference/json-loader",
-              "modules/documents/api-reference/markdown-loader",
-              "modules/documents/config/api-reference/toml-loader",
-              "modules/documents/config/api-reference/yaml-loader",
-              "modules/documents/xml/api-reference/xml-loader",
-              "modules/documents/xml/api-reference/html-loader",
-              "modules/documents/bson/api-reference/bson-loader",
-              "modules/documents/bson/api-reference/bson-writer",
-              {
-                "type": "doc",
-                "id": "modules/documents/config/README"
-              }
-            ],
+            "label": "@loaders.gl/documents/xml",
             "link": {
-              "type": "generated-index",
-              "title": "Documents API",
-              "slug": "/modules/_sections/documents/api-and-guides"
-            }
+              "type": "doc",
+              "id": "modules/documents/xml/README"
+            },
+            "items": [
+              "modules/documents/xml/api-reference/xml-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/documents/bson",
+            "link": {
+              "type": "doc",
+              "id": "modules/documents/bson/README"
+            },
+            "items": [
+              "modules/documents/bson/api-reference/bson-loader",
+              "modules/documents/bson/api-reference/bson-writer"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/documents/json",
+            "link": {
+              "type": "doc",
+              "id": "modules/documents/json/README"
+            },
+            "items": [
+              "modules/documents/api-reference/json-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/documents/html",
+            "link": {
+              "type": "doc",
+              "id": "modules/documents/html/README"
+            },
+            "items": [
+              "modules/documents/xml/api-reference/html-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/documents/yaml",
+            "link": {
+              "type": "doc",
+              "id": "modules/documents/yaml/README"
+            },
+            "items": [
+              "modules/documents/config/api-reference/yaml-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/documents/toml",
+            "link": {
+              "type": "doc",
+              "id": "modules/documents/toml/README"
+            },
+            "items": [
+              "modules/documents/config/api-reference/toml-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/documents/markdown",
+            "link": {
+              "type": "doc",
+              "id": "modules/documents/markdown/README"
+            },
+            "items": [
+              "modules/documents/api-reference/markdown-loader"
+            ]
           },
           {
             "type": "doc",
-            "id": "modules/documents/xml/README",
-            "label": "@loaders.gl/documents/xml"
-          },
-          {
-            "type": "doc",
-            "id": "modules/documents/bson/README",
-            "label": "@loaders.gl/documents/bson"
-          },
-          {
-            "type": "doc",
-            "id": "modules/documents/json/README",
-            "label": "@loaders.gl/documents/json"
-          },
-          {
-            "type": "doc",
-            "id": "modules/documents/html/README",
-            "label": "@loaders.gl/documents/html"
-          },
-          {
-            "type": "doc",
-            "id": "modules/documents/yaml/README",
-            "label": "@loaders.gl/documents/yaml"
-          },
-          {
-            "type": "doc",
-            "id": "modules/documents/toml/README",
-            "label": "@loaders.gl/documents/toml"
-          },
-          {
-            "type": "doc",
-            "id": "modules/documents/markdown/README",
-            "label": "@loaders.gl/documents/markdown"
+            "id": "modules/documents/sax-parser/README",
+            "label": "@loaders.gl/documents/sax-parser"
           }
         ]
       },
@@ -730,72 +786,46 @@
           },
           {
             "type": "category",
-            "label": "API",
-            "items": [
-              {
-                "type": "category",
-                "label": "Loaders",
-                "items": [
-                  "modules/images/texture/api-reference/basis-loader",
-                  "modules/images/texture/api-reference/compressed-texture-loader",
-                  "modules/images/texture/api-reference/crunch-loader",
-                  "modules/images/api-reference/image-loader",
-                  "modules/images/video/api-reference/video-loader"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "Loaders",
-                  "slug": "/modules/_sections/images/loaders"
-                }
-              },
-              {
-                "type": "category",
-                "label": "Writers",
-                "items": [
-                  "modules/images/api-reference/image-writer",
-                  "modules/images/texture/api-reference/compressed-texture-writer",
-                  "modules/images/texture/api-reference/ktx2-basis-texture-writer"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "Writers",
-                  "slug": "/modules/_sections/images/writers"
-                }
-              },
-              "modules/images/api-reference/parsed-image-api",
-              "modules/images/api-reference/binary-image-api",
-              "modules/images/texture/api-reference/radiance-hdr-loader",
-              "modules/images/texture/api-reference/texture-loader",
-              "modules/images/texture/api-reference/texture-array-loader",
-              "modules/images/texture/api-reference/texture-cube-loader",
-              "modules/images/texture/api-reference/texture-cube-array-loader"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Images API",
-              "slug": "/modules/_sections/images/api-and-guides"
-            }
-          },
-          {
-            "type": "category",
             "label": "@loaders.gl/images/image",
             "link": {
               "type": "doc",
               "id": "modules/images/image/README"
             },
             "items": [
-              "modules/images/image/api-reference/gif-builder"
+              "modules/images/image/api-reference/gif-builder",
+              "modules/images/api-reference/image-loader",
+              "modules/images/api-reference/image-writer",
+              "modules/images/api-reference/parsed-image-api",
+              "modules/images/api-reference/binary-image-api"
             ]
           },
           {
-            "type": "doc",
-            "id": "modules/images/texture/README",
-            "label": "@loaders.gl/images/texture"
+            "type": "category",
+            "label": "@loaders.gl/images/texture",
+            "link": {
+              "type": "doc",
+              "id": "modules/images/texture/README"
+            },
+            "items": [
+              "modules/images/texture/api-reference/compressed-texture-loader",
+              "modules/images/texture/api-reference/compressed-texture-writer",
+              "modules/images/texture/api-reference/ktx2-basis-texture-writer",
+              "modules/images/texture/api-reference/texture-loader",
+              "modules/images/texture/api-reference/texture-array-loader",
+              "modules/images/texture/api-reference/texture-cube-loader",
+              "modules/images/texture/api-reference/texture-cube-array-loader"
+            ]
           },
           {
-            "type": "doc",
-            "id": "modules/images/video/README",
-            "label": "@loaders.gl/images/video"
+            "type": "category",
+            "label": "@loaders.gl/images/video",
+            "link": {
+              "type": "doc",
+              "id": "modules/images/video/README"
+            },
+            "items": [
+              "modules/images/video/api-reference/video-loader"
+            ]
           },
           {
             "type": "doc",
@@ -811,6 +841,39 @@
             "type": "doc",
             "id": "modules/images/exr/README",
             "label": "@loaders.gl/images/exr"
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/images/basis",
+            "link": {
+              "type": "doc",
+              "id": "modules/images/basis/README"
+            },
+            "items": [
+              "modules/images/texture/api-reference/basis-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/images/crunch",
+            "link": {
+              "type": "doc",
+              "id": "modules/images/crunch/README"
+            },
+            "items": [
+              "modules/images/texture/api-reference/crunch-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/images/radiance-hdr",
+            "link": {
+              "type": "doc",
+              "id": "modules/images/radiance-hdr/README"
+            },
+            "items": [
+              "modules/images/texture/api-reference/radiance-hdr-loader"
+            ]
           }
         ]
       },
@@ -905,18 +968,52 @@
           },
           {
             "type": "category",
-            "label": "API",
-            "items": [
-              "modules/splats/api-reference/splat-loader",
-              "modules/splats/api-reference/ksplat-loader",
-              "modules/splats/api-reference/spz-loader",
-              "modules/splats/api-reference/rad-source-loader"
-            ],
+            "label": "@loaders.gl/splats/rad",
             "link": {
-              "type": "generated-index",
-              "title": "Splats API",
-              "slug": "/modules/_sections/splats/api-reference"
-            }
+              "type": "doc",
+              "id": "modules/splats/rad/README"
+            },
+            "items": [
+              "modules/splats/api-reference/rad-source-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/splats/splat",
+            "link": {
+              "type": "doc",
+              "id": "modules/splats/splat/README"
+            },
+            "items": [
+              "modules/splats/api-reference/splat-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/splats/ksplat",
+            "link": {
+              "type": "doc",
+              "id": "modules/splats/ksplat/README"
+            },
+            "items": [
+              "modules/splats/api-reference/ksplat-loader"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/splats/spz",
+            "link": {
+              "type": "doc",
+              "id": "modules/splats/spz/README"
+            },
+            "items": [
+              "modules/splats/api-reference/spz-loader"
+            ]
+          },
+          {
+            "type": "doc",
+            "id": "modules/splats/types/README",
+            "label": "@loaders.gl/splats/types"
           }
         ]
       },
@@ -942,20 +1039,6 @@
               "type": "generated-index",
               "title": "Formats",
               "slug": "/modules/_sections/tiles/formats"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API",
-            "items": [
-              "modules/tiles/api-reference/tileset-2d",
-              "modules/tiles/api-reference/terrain-source",
-              "modules/tiles/api-reference/raster-set"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Tiles API",
-              "slug": "/modules/_sections/tiles/api-and-guides"
             }
           },
           {
@@ -1005,6 +1088,29 @@
             "type": "doc",
             "id": "modules/tiles/terrain/README",
             "label": "@loaders.gl/tiles/terrain"
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tiles/tileset-2d",
+            "link": {
+              "type": "doc",
+              "id": "modules/tiles/tileset-2d/README"
+            },
+            "items": [
+              "modules/tiles/api-reference/tileset-2d",
+              "modules/tiles/api-reference/terrain-source",
+              "modules/tiles/api-reference/raster-set"
+            ]
+          },
+          {
+            "type": "doc",
+            "id": "modules/tiles/image-set/README",
+            "label": "@loaders.gl/tiles/image-set"
+          },
+          {
+            "type": "doc",
+            "id": "modules/tiles/raster-set/README",
+            "label": "@loaders.gl/tiles/raster-set"
           }
         ]
       },
@@ -1108,22 +1214,6 @@
           },
           {
             "type": "category",
-            "label": "API",
-            "items": [
-              "modules/tiles-3d/api-reference/tileset-3d",
-              "modules/tiles-3d/api-reference/tileset-3d-source",
-              "modules/tiles-3d/api-reference/point-cloud-tileset",
-              "modules/tiles-3d/api-reference/point-cloud-tile-source",
-              "modules/tiles-3d/api-reference/tile-3d"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "3D Tiles API",
-              "slug": "/modules/_sections/3d-tiles/api-and-guides"
-            }
-          },
-          {
-            "type": "category",
             "label": "@loaders.gl/tiles-3d/3d-tiles",
             "items": [
               "modules/tiles-3d/3d-tiles/api-reference/tiles-3d-loader",
@@ -1182,6 +1272,31 @@
               "type": "doc",
               "id": "modules/tiles-3d/potree/README"
             }
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/tiles-3d/tileset",
+            "link": {
+              "type": "doc",
+              "id": "modules/tiles-3d/tileset/README"
+            },
+            "items": [
+              "modules/tiles-3d/api-reference/tileset-3d",
+              "modules/tiles-3d/api-reference/tileset-3d-source",
+              "modules/tiles-3d/api-reference/point-cloud-tileset",
+              "modules/tiles-3d/api-reference/point-cloud-tile-source",
+              "modules/tiles-3d/api-reference/tile-3d"
+            ]
+          },
+          {
+            "type": "doc",
+            "id": "modules/tiles-3d/spatial/README",
+            "label": "@loaders.gl/tiles-3d/spatial"
+          },
+          {
+            "type": "doc",
+            "id": "modules/tiles-3d/point-cloud/README",
+            "label": "@loaders.gl/tiles-3d/point-cloud"
           }
         ]
       },
@@ -1291,18 +1406,6 @@
             }
           },
           {
-            "type": "category",
-            "label": "API",
-            "items": [
-              "modules/scientific/api-reference/npy-loader"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Scientific API",
-              "slug": "/modules/_sections/scientific/api-and-guides"
-            }
-          },
-          {
             "type": "doc",
             "id": "modules/scientific/grib2/README",
             "label": "@loaders.gl/scientific/grib2"
@@ -1351,9 +1454,20 @@
             "label": "@loaders.gl/scientific/pdb"
           },
           {
+            "type": "category",
+            "label": "@loaders.gl/scientific/npy",
+            "link": {
+              "type": "doc",
+              "id": "modules/scientific/npy/README"
+            },
+            "items": [
+              "modules/scientific/api-reference/npy-loader"
+            ]
+          },
+          {
             "type": "doc",
-            "id": "modules/scientific/npy/README",
-            "label": "@loaders.gl/scientific/npy"
+            "id": "modules/scientific/scientific-array/README",
+            "label": "@loaders.gl/scientific/scientific-array"
           }
         ]
       },
@@ -1393,19 +1507,6 @@
               "type": "generated-index",
               "title": "Formats",
               "slug": "/modules/_sections/scene/formats"
-            }
-          },
-          {
-            "type": "category",
-            "label": "API",
-            "items": [
-              "modules/scene/draco/api-reference/draco-loader",
-              "modules/scene/draco/api-reference/draco-writer"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Scene API",
-              "slug": "/modules/_sections/scene/api-and-guides"
             }
           },
           {
@@ -1450,9 +1551,16 @@
             }
           },
           {
-            "type": "doc",
-            "id": "modules/scene/draco/README",
-            "label": "@loaders.gl/scene/draco"
+            "type": "category",
+            "label": "@loaders.gl/scene/draco",
+            "link": {
+              "type": "doc",
+              "id": "modules/scene/draco/README"
+            },
+            "items": [
+              "modules/scene/draco/api-reference/draco-loader",
+              "modules/scene/draco/api-reference/draco-writer"
+            ]
           },
           {
             "type": "doc",
@@ -1554,20 +1662,24 @@
             "href": "/docs/modules/graphs#graph-output-shapes"
           },
           {
-            "type": "category",
-            "label": "API",
-            "items": [
-              {
-                "type": "link",
-                "label": "API overview",
-                "href": "/docs/modules/graphs#graphml-loader"
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Graphs API",
-              "slug": "/modules/_sections/graphs/api-reference"
-            }
+            "type": "doc",
+            "id": "modules/graphs/graphml/README",
+            "label": "@loaders.gl/graphs/graphml"
+          },
+          {
+            "type": "doc",
+            "id": "modules/graphs/graph/README",
+            "label": "@loaders.gl/graphs/graph"
+          },
+          {
+            "type": "doc",
+            "id": "modules/graphs/dot/README",
+            "label": "@loaders.gl/graphs/dot"
+          },
+          {
+            "type": "doc",
+            "id": "modules/graphs/gexf/README",
+            "label": "@loaders.gl/graphs/gexf"
           }
         ]
       },
@@ -1602,19 +1714,69 @@
           },
           {
             "type": "category",
-            "label": "API",
+            "label": "@loaders.gl/traces/chrome-trace",
+            "link": {
+              "type": "doc",
+              "id": "modules/traces/chrome-trace/README"
+            },
             "items": [
               "modules/traces/api-reference/chrome-trace-loader",
               "modules/traces/api-reference/chrome-trace-writer",
-              "modules/traces/api-reference/chrome-trace-streaming",
+              "modules/traces/api-reference/chrome-trace-streaming"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/traces/otlp",
+            "link": {
+              "type": "doc",
+              "id": "modules/traces/otlp/README"
+            },
+            "items": [
+              "modules/traces/api-reference/otlp-trace-loader",
+              "modules/traces/api-reference/otlp-trace-writer"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/traces/jaeger",
+            "link": {
+              "type": "doc",
+              "id": "modules/traces/jaeger/README"
+            },
+            "items": [
+              "modules/traces/api-reference/jaeger-trace-loader",
+              "modules/traces/api-reference/jaeger-trace-writer"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/traces/zipkin",
+            "link": {
+              "type": "doc",
+              "id": "modules/traces/zipkin/README"
+            },
+            "items": [
+              "modules/traces/api-reference/zipkin-trace-loader",
+              "modules/traces/api-reference/zipkin-trace-writer"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/traces/perfetto",
+            "link": {
+              "type": "doc",
+              "id": "modules/traces/perfetto/README"
+            },
+            "items": [
               "modules/traces/api-reference/perfetto-trace-loader",
               "modules/traces/api-reference/perfetto-trace-writer"
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Traces API",
-              "slug": "/modules/_sections/traces/api-and-guides"
-            }
+            ]
+          },
+          {
+            "type": "doc",
+            "id": "modules/traces/stream/README",
+            "label": "@loaders.gl/traces/stream"
           }
         ]
       },
@@ -1631,20 +1793,9 @@
             "id": "developer-guide/authentication"
           },
           {
-            "type": "category",
-            "label": "API",
-            "items": [
-              {
-                "type": "link",
-                "label": "API overview",
-                "href": "/docs/modules/services#package-exports"
-              }
-            ],
-            "link": {
-              "type": "generated-index",
-              "title": "Services API",
-              "slug": "/modules/_sections/services/api-reference"
-            }
+            "type": "doc",
+            "id": "modules/services/authentication/README",
+            "label": "@loaders.gl/services/authentication"
           }
         ]
       },
@@ -1711,6 +1862,26 @@
               "type": "doc",
               "id": "modules/ogc/wms/README"
             }
+          },
+          {
+            "type": "doc",
+            "id": "modules/ogc/csw/README",
+            "label": "@loaders.gl/ogc/csw"
+          },
+          {
+            "type": "doc",
+            "id": "modules/ogc/wmts/README",
+            "label": "@loaders.gl/ogc/wmts"
+          },
+          {
+            "type": "doc",
+            "id": "modules/ogc/wfs/README",
+            "label": "@loaders.gl/ogc/wfs"
+          },
+          {
+            "type": "doc",
+            "id": "modules/ogc/gml/README",
+            "label": "@loaders.gl/ogc/gml"
           }
         ]
       },
@@ -1756,31 +1927,84 @@
           },
           {
             "type": "category",
-            "label": "API",
-            "items": [
-              {
-                "type": "category",
-                "label": "Services",
-                "items": [
-                  "modules/arcgis/arcgis-map-server",
-                  "modules/arcgis/arcgis-image-server",
-                  "modules/arcgis/arcgis-feature-server",
-                  "modules/arcgis/arcgis-vector-tile-server",
-                  "modules/arcgis/arcgis-scene-server",
-                  "modules/arcgis/api-reference/arcgis"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "Services",
-                  "slug": "/modules/_sections/arcgis/services"
-                }
-              }
-            ],
+            "label": "@loaders.gl/arcgis/discovery",
             "link": {
-              "type": "generated-index",
-              "title": "ArcGIS API",
-              "slug": "/modules/_sections/arcgis/api-reference"
-            }
+              "type": "doc",
+              "id": "modules/arcgis/discovery/README"
+            },
+            "items": [
+              "modules/arcgis/api-reference/arcgis"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/arcgis/feature-service",
+            "link": {
+              "type": "doc",
+              "id": "modules/arcgis/feature-service/README"
+            },
+            "items": [
+              "modules/arcgis/arcgis-feature-server"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/arcgis/image-service",
+            "link": {
+              "type": "doc",
+              "id": "modules/arcgis/image-service/README"
+            },
+            "items": [
+              "modules/arcgis/arcgis-image-server"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/arcgis/map-service",
+            "link": {
+              "type": "doc",
+              "id": "modules/arcgis/map-service/README"
+            },
+            "items": [
+              "modules/arcgis/arcgis-map-server"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/arcgis/scene-service",
+            "link": {
+              "type": "doc",
+              "id": "modules/arcgis/scene-service/README"
+            },
+            "items": [
+              "modules/arcgis/arcgis-scene-server"
+            ]
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/arcgis/vector-tile-service",
+            "link": {
+              "type": "doc",
+              "id": "modules/arcgis/vector-tile-service/README"
+            },
+            "items": [
+              "modules/arcgis/arcgis-vector-tile-server"
+            ]
+          },
+          {
+            "type": "doc",
+            "id": "modules/arcgis/scene-aggregation/README",
+            "label": "@loaders.gl/arcgis/scene-aggregation"
+          },
+          {
+            "type": "doc",
+            "id": "modules/arcgis/authentication/README",
+            "label": "@loaders.gl/arcgis/authentication"
+          },
+          {
+            "type": "doc",
+            "id": "modules/arcgis/items/README",
+            "label": "@loaders.gl/arcgis/items"
           }
         ]
       },
@@ -1802,26 +2026,135 @@
               },
               {
                 "type": "category",
-                "label": "API",
-                "items": [
-                  "modules/compression/api-reference/compressor-decompressor",
-                  "modules/compression/api-reference/built-in-codecs",
-                  "modules/compression/api-reference/gzip",
-                  "modules/compression/api-reference/deflate",
-                  "modules/compression/api-reference/brotli",
-                  "modules/compression/api-reference/zstandard",
-                  "modules/compression/api-reference/snappy",
-                  "modules/compression/api-reference/lz4",
-                  "modules/compression/api-reference/lzo",
-                  "modules/compression/api-reference/bzip2",
-                  "modules/compression/api-reference/xz",
-                  "modules/compression/api-reference/no-compressor-decompressor"
-                ],
+                "label": "@loaders.gl/compression/codec",
                 "link": {
-                  "type": "generated-index",
-                  "title": "Compression API",
-                  "slug": "/modules/_sections/compression/api-and-guides"
-                }
+                  "type": "doc",
+                  "id": "modules/compression/codec/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/compressor-decompressor"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/none",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/none/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/no-compressor-decompressor"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/deflate",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/deflate/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/deflate"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/gzip",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/gzip/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/built-in-codecs",
+                  "modules/compression/api-reference/gzip"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/brotli",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/brotli/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/brotli"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/snappy",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/snappy/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/snappy"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/lz4",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/lz4/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/lz4"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/lzo",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/lzo/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/lzo"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/zstd",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/zstd/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/zstandard"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/bzip2",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/bzip2/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/bzip2"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/compression/xz",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/compression/xz/README"
+                },
+                "items": [
+                  "modules/compression/api-reference/xz"
+                ]
+              },
+              {
+                "type": "doc",
+                "id": "modules/compression/native-compression/README",
+                "label": "@loaders.gl/compression/native-compression"
+              },
+              {
+                "type": "doc",
+                "id": "modules/compression/worker/README",
+                "label": "@loaders.gl/compression/worker"
               }
             ]
           },
@@ -1840,19 +2173,68 @@
               },
               {
                 "type": "category",
-                "label": "API",
+                "label": "@loaders.gl/crypto/hash",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/crypto/hash/README"
+                },
                 "items": [
                   "modules/crypto/api-reference/hash",
-                  "modules/crypto/api-reference/crc32-hash",
-                  "modules/crypto/api-reference/crc32c-hash",
-                  "modules/crypto/api-reference/md5-hash",
-                  "modules/crypto/api-reference/sha256-hash"
-                ],
+                  "modules/crypto/api-reference/md5-hash"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/crypto/crc32",
                 "link": {
-                  "type": "generated-index",
-                  "title": "Crypto API",
-                  "slug": "/modules/_sections/crypto/api-and-guides"
-                }
+                  "type": "doc",
+                  "id": "modules/crypto/crc32/README"
+                },
+                "items": [
+                  "modules/crypto/api-reference/crc32-hash"
+                ]
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/crypto/crc32c",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/crypto/crc32c/README"
+                },
+                "items": [
+                  "modules/crypto/api-reference/crc32c-hash"
+                ]
+              },
+              {
+                "type": "doc",
+                "id": "modules/crypto/md5/README",
+                "label": "@loaders.gl/crypto/md5"
+              },
+              {
+                "type": "category",
+                "label": "@loaders.gl/crypto/sha256",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/crypto/sha256/README"
+                },
+                "items": [
+                  "modules/crypto/api-reference/sha256-hash"
+                ]
+              },
+              {
+                "type": "doc",
+                "id": "modules/crypto/webcrypto/README",
+                "label": "@loaders.gl/crypto/webcrypto"
+              },
+              {
+                "type": "doc",
+                "id": "modules/crypto/node/README",
+                "label": "@loaders.gl/crypto/node"
+              },
+              {
+                "type": "doc",
+                "id": "modules/crypto/encoding/README",
+                "label": "@loaders.gl/crypto/encoding"
               }
             ]
           },
@@ -1871,15 +2253,34 @@
               },
               {
                 "type": "category",
-                "label": "API",
+                "label": "@loaders.gl/sql/adapter",
+                "link": {
+                  "type": "doc",
+                  "id": "modules/sql/adapter/README"
+                },
                 "items": [
                   "modules/sql/api-reference/sql-source"
-                ],
-                "link": {
-                  "type": "generated-index",
-                  "title": "SQL API",
-                  "slug": "/modules/_sections/sql/api-reference"
-                }
+                ]
+              },
+              {
+                "type": "doc",
+                "id": "modules/sql/arrow/README",
+                "label": "@loaders.gl/sql/arrow"
+              },
+              {
+                "type": "doc",
+                "id": "modules/sql/duckdb/README",
+                "label": "@loaders.gl/sql/duckdb"
+              },
+              {
+                "type": "doc",
+                "id": "modules/sql/snowflake/README",
+                "label": "@loaders.gl/sql/snowflake"
+              },
+              {
+                "type": "doc",
+                "id": "modules/sql/query/README",
+                "label": "@loaders.gl/sql/query"
               }
             ]
           },
@@ -1887,18 +2288,6 @@
             "type": "category",
             "label": "@loaders.gl/tile-converter",
             "items": [
-              {
-                "type": "category",
-                "label": "API",
-                "link": {
-                  "type": "generated-index",
-                  "title": "Tile Converter API",
-                  "slug": "/modules/_sections/tile-converter/api-and-guides"
-                },
-                "items": [
-                  "modules/tile-converter/api-reference/README"
-                ]
-              },
               {
                 "type": "doc",
                 "id": "modules/tile-converter/api-reference/v5-conversion",

@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
 import draco3d from 'draco3d';
 const BUNNY_DRC_URL = '@loaders.gl/scene/draco/test/data/bunny.drc';

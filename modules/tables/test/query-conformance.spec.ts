@@ -14,7 +14,7 @@ import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
 import {ParquetSource} from '@loaders.gl/tables/parquet';
-import {ParquetLoader} from '@loaders.gl/tables';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import {ParquetWriter} from '@loaders.gl/tables/parquet';
 
 const rows = [

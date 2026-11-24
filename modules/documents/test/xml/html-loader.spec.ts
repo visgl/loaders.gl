@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
-import {HTMLLoader} from '@loaders.gl/documents';
+import {HTMLLoader} from '@loaders.gl/documents/html';
 import {parse} from '@loaders.gl/core';
 const HTML = `
 <HTML>

@@ -25,7 +25,7 @@ import type {
   RasterViewport
 } from '@loaders.gl/core/loader-utils';
 import {sampleRaster, computeRasterStatistics} from '@loaders.gl/core/loader-utils';
-import {RasterSet, type RasterSetRequest} from '@loaders.gl/tiles';
+import {RasterSet, type RasterSetRequest} from '@loaders.gl/tiles/raster-set';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
 import {
   finalizeOwnedSource,

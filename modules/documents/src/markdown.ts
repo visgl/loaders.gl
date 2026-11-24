@@ -12,3 +12,4 @@ export {
   type MarkdownDocument,
   type MarkdownLoaderOptions
 } from './markdown-types';
+export {MarkdownFormat} from './markdown-format';

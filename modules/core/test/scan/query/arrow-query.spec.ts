@@ -12,7 +12,7 @@ import {
   planTableQuery,
   queryArrowTable
 } from '@loaders.gl/core/query';
-import {ArrowTableSource} from '@loaders.gl/sql';
+import {ArrowTableSource} from '@loaders.gl/sql/arrow';
 
 test('Arrow executor advertises portable query capabilities', () => {
   expect(ARROW_TABLE_QUERY_CAPABILITIES).toEqual({

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GZipDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 import {BlobFile, HttpFile, path} from '@loaders.gl/core/loader-utils';
 import type {
   Loader,
@@ -11,7 +11,7 @@ import type {
   LoaderWithParser,
   ReadableFile
 } from '@loaders.gl/core/loader-utils';
-import type {TilesetSourceResolver} from '@loaders.gl/tiles-3d';
+import type {TilesetSourceResolver} from '@loaders.gl/tiles-3d/tileset';
 import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/archives/zip';
 
 type ArchiveSourceData = string | Blob;

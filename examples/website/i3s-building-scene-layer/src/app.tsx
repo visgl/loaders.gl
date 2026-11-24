@@ -17,7 +17,7 @@ import {
 } from '@loaders.gl/tiles-3d/i3s';
 import {fetchFile, load} from '@loaders.gl/core';
 import {Sublayer, buildSublayersTree} from './helpers/sublayers';
-import {Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {BuildingExplorer} from './components/building-explorer';
 import {filterTile} from './filter-tile';
 import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';

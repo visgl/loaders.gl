@@ -85,20 +85,10 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
-export {
-  SPLATFormat,
-  KSPLATFormat,
-  SPZFormat,
-  RADFormat,
-  parseSPZ,
-  parseSPZToGaussianSplats,
-  SPLATLoader,
-  KSPLATLoader,
-  SPZLoader,
-  RADLoader,
-  RADSource,
-  resolveRADChunkUrl
-} from '@loaders.gl/splats';
+export {SPLATFormat, SPLATLoader} from '@loaders.gl/splats/splat';
+export {KSPLATFormat, KSPLATLoader} from '@loaders.gl/splats/ksplat';
+export {SPZFormat, parseSPZ, parseSPZToGaussianSplats, SPZLoader} from '@loaders.gl/splats/spz';
+export {RADFormat, RADLoader, RADSource, resolveRADChunkUrl} from '@loaders.gl/splats/rad';
 export type {
   RADChunkMetadata,
   RADChunkMetadataJSON,
@@ -110,10 +100,9 @@ export type {
   RADMetadata,
   RADMetadataJSON,
   RADSplatEncoding,
-  GaussianSplats,
-  SPZCoordinateSystem,
-  SplatsLoaderOptions,
   RADChunkRequestOptions,
   RADChunkTableIteratorOptions,
   RADSourceLoaderOptions
-} from '@loaders.gl/splats';
+} from '@loaders.gl/splats/rad';
+export type {GaussianSplats, SplatsLoaderOptions} from '@loaders.gl/splats/types';
+export type {SPZCoordinateSystem} from '@loaders.gl/splats/spz';

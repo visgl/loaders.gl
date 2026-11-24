@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import {MD5Hash} from '@loaders.gl/crypto';
+import {MD5Hash} from '@loaders.gl/crypto/md5';
 import {openZipArchive, type ZipArchive} from '../zip-archive';
 import {parseHashTable} from '../hash-file-utility';
 import type {ZipArchiveOptions} from '../zip-archive-types';

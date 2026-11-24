@@ -7,7 +7,7 @@ import {
   createImplicitSubtreeReference,
   materializeImplicitSubtree,
   replaceImplicitUrlTemplate
-} from '@loaders.gl/tiles-3d';
+} from '../../../../tileset-3d/format-3d-tiles/implicit-tiling';
 import type {Subtree} from '../../../types';
 import type {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
 import type {ImplicitOptions} from '../parse-3d-tile-header';

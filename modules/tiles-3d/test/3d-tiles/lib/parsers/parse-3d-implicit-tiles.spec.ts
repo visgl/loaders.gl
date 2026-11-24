@@ -13,7 +13,8 @@ import {
   parseImplicitTiles,
   replaceContentUrlTemplate
 } from '../../../../src/3d-tiles/lib/parsers/helpers/parse-3d-implicit-tiles';
-import {LOD_METRIC_TYPE, materializeImplicitSubtree, TILE_REFINEMENT} from '@loaders.gl/tiles-3d';
+import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles-3d/tileset';
+import {materializeImplicitSubtree} from '@loaders.gl/tiles-3d/3d-tiles';
 test('parseImplicitTiles#supports a single available level', async () => {
   const subtree: Subtree = {
     buffers: [],

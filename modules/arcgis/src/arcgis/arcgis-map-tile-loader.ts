@@ -10,7 +10,7 @@ import type {
   ArcGISMapTileParameters
 } from '../arcgis-source-types';
 
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 import type {
   CoreAPI,
   GetTileDataParameters,

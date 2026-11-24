@@ -11,7 +11,7 @@ yet resolved automatically.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerLoader);
 const controller = new AbortController();

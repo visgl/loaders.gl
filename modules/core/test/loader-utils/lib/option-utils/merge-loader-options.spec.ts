@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {mergeOptions} from '@loaders.gl/core/loader-utils';
-import type {XMLLoaderOptions} from '@loaders.gl/documents';
+import type {XMLLoaderOptions} from '@loaders.gl/documents/xml';
 // NOTE: addAliases is not a public export, already used by test setup
 // import {_addAliases} from '@loaders.gl/core/loader-utils';
 test('mergeOptions', () => {

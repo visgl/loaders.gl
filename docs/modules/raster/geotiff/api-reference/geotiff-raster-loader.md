@@ -12,7 +12,7 @@ including metadata for every selected image and band.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {GeoTIFFRasterLoader} from '@loaders.gl/raster';
+import {GeoTIFFRasterLoader} from '@loaders.gl/raster/geotiff';
 
 const dataset = await load('geoid.tif', GeoTIFFRasterLoader);
 const image = dataset.images[0];

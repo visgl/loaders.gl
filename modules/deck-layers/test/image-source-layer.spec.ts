@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {ImageSourceLayer, type ImageSourceLayerProps} from '@loaders.gl/deck-layers';
-import {ImageSet} from '@loaders.gl/tiles';
+import {ImageSet} from '@loaders.gl/tiles/image-set';
 const TEST_IMAGE_SOURCE = {
   async getMetadata() {
     return {name: 'test', keywords: [], layers: []};

@@ -50,7 +50,7 @@ The data window identifies the inclusive pixel rectangle containing samples. The
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {EXRLoader} from '@loaders.gl/images';
+import {EXRLoader} from '@loaders.gl/images/exr';
 
 const image = await load('render.exr', EXRLoader);
 const red = image.channels.find(channel => channel.name === 'R');

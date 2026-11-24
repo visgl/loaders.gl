@@ -66,6 +66,26 @@
       "types": "./dist/stac-loader.d.ts",
       "import": "./dist/stac-loader.js",
       "require": "./dist/stac-loader.cjs"
+    },
+    "./csw": {
+      "types": "./dist/csw.d.ts",
+      "import": "./dist/csw.js",
+      "require": "./dist/csw.cjs"
+    },
+    "./wmts": {
+      "types": "./dist/wmts.d.ts",
+      "import": "./dist/wmts.js",
+      "require": "./dist/wmts.cjs"
+    },
+    "./wfs": {
+      "types": "./dist/wfs.d.ts",
+      "import": "./dist/wfs.js",
+      "require": "./dist/wfs.cjs"
+    },
+    "./gml": {
+      "types": "./dist/gml.d.ts",
+      "import": "./dist/gml.js",
+      "require": "./dist/gml.cjs"
     }
   },
   "sideEffects": false,

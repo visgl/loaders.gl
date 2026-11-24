@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {encodeNumber, encodeHex, encodeBase64} from '@loaders.gl/crypto';
+import {encodeNumber, encodeHex, encodeBase64} from '@loaders.gl/crypto/encoding';
 const loadJSON = async (relativePath: string) => {
   const url = new URL(relativePath, import.meta.url);
   if (url.protocol === 'file:' && typeof window === 'undefined') {

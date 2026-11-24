@@ -63,7 +63,7 @@ See also: [`Radiance HDR`](/docs/modules/images/texture/formats/hdr)
 ## Usage
 
 ```typescript
-import {RadianceHDRLoader} from '@loaders.gl/images';
+import {RadianceHDRLoader} from '@loaders.gl/images/radiance-hdr';
 import {load} from '@loaders.gl/core';
 
 const texture = await load(url, RadianceHDRLoader);

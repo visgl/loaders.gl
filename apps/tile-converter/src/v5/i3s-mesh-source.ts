@@ -7,7 +7,7 @@ import type {
   Tileset3D,
   TilesetSourceMetadata,
   TilesetContentTraversalItem
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/tileset';
 import {
   TileConversionError,
   createTilesetConversionSource

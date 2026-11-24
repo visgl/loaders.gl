@@ -5,9 +5,10 @@
 import {Table as NativeArrowTable} from 'apache-arrow';
 import {describe, expect, test, vi} from 'vitest';
 import {ArcGISVectorSource, ArcGISFeatureQueryError} from '@loaders.gl/arcgis/bundled';
-import {ArcGISFeatureServerLoader, ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 import {createDataSource, load} from '@loaders.gl/core';
-import type {ArcGISFeatureQueryProgress} from '@loaders.gl/arcgis';
+import type {ArcGISFeatureQueryProgress} from '@loaders.gl/arcgis/feature-service';
 
 const LAYER_URL = 'https://example.com/FeatureServer/0?token=fixture';
 const METADATA = {

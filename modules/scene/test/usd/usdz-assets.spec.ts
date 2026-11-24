@@ -3,7 +3,7 @@
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {USDLoaderWithParser} from '@loaders.gl/scene/usd';
-import type {USDAssetPath, USDEmbeddedAsset, USDStage} from '@loaders.gl/scene';
+import type {USDAssetPath, USDEmbeddedAsset, USDStage} from '@loaders.gl/scene/usd';
 
 // Original MIT fixtures: one-pixel PNG and its JPEG conversion (macOS sips), plus USDA sources.
 // Regenerate from data/embedded-assets using usdzip ../embedded-assets.usdz scene/root.usda

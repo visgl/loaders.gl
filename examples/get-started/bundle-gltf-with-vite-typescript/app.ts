@@ -4,7 +4,7 @@
 
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {CompressedTextureLoader} from '@loaders.gl/images';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
 
 const TEXTURE_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/images/test/textures/data/shannon-astc-12x12.pvr';

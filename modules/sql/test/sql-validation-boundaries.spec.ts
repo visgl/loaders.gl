@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {compileSQLTableQuery} from '@loaders.gl/sql';
+import {compileSQLTableQuery} from '@loaders.gl/sql/query';
 import {
   explainTableQuery,
   isSQLPredicate,
@@ -11,7 +11,7 @@ import {
   validateSQLPredicate
 } from '@loaders.gl/core/query';
 import type {SQLPredicate} from '@loaders.gl/core/query';
-import type {SQLTableQuery} from '@loaders.gl/sql';
+import type {SQLTableQuery} from '@loaders.gl/sql/query';
 
 describe('SQL predicate structural boundaries', () => {
   test.each([

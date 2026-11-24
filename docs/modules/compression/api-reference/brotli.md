@@ -48,7 +48,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 stream first. Compression then lazily loads `compress-utils`; decompression lazily loads its decoder-only WASM codec. Nothing is loaded for a fallback that is not used.
 
 ```typescript
-import {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression';
+import {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression/brotli';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs.

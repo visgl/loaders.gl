@@ -8,7 +8,7 @@ import {
   createTilesetSpatialReference,
   get3DTilesSpatialReference,
   getI3SSpatialReference
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/spatial';
 
 test('createTilesetSpatialReference freezes PROJJSON compatibility aliases', () => {
   const sourceCrs = {

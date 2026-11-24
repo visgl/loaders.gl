@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {SPZLoader} from '@loaders.gl/splats';
+import {SPZLoader} from '@loaders.gl/splats/spz';
 
 /** Creates a glTF document with a one-splat SPZ v2 payload. */
 function makeGLTF(): string {
