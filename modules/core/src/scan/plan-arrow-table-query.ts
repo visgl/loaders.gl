@@ -103,7 +103,7 @@ export function explainArrowTableQuery(
 type ExecuteLinearArrowQuery = (
   table: arrow.Table,
   options: Readonly<{
-    select?: readonly string[];
+    select?: readonly TableSelection[];
     where?: SQLPredicate;
     limit?: number;
     signal?: AbortSignal;
@@ -136,18 +136,12 @@ export function queryArrowTable(
     if (options.columns !== undefined || hasRelationalOperators(options) || options.join) {
       throw new Error('Arrow select cannot be combined with columns or relational operators.');
     }
-    // Validate aliases before evaluating any predicate, then apply them after filtering.
-    projectArrowTable(sourceTable, options.select);
-    const columns = [
-      ...new Set(
-        options.select.map(selection =>
-          typeof selection === 'string' ? selection : selection.column
-        )
-      )
-    ];
-    const {select, ...remainingOptions} = options;
-    const result = queryArrowTable(sourceTable, {...remainingOptions, columns}, executeLinear);
-    return projectArrowTable(result, select);
+    return executeLinear(sourceTable, {
+      where: options.predicate,
+      select: options.select,
+      limit: options.limit,
+      signal: options.signal
+    });
   }
 
   if (options.join) {
@@ -210,7 +204,7 @@ function queryArrowTableRelational(
     const union = options.union.map(child => {
       const input = options.tables?.[child.source];
       if (!input) throw new Error('Arrow union source not found: ' + child.source);
-      return queryArrowTable(input, {...child.query, columns, signal: options.signal});
+      return queryArrowTable(input, {...child.query, columns, signal: options.signal}, execute);
     });
     table = execute(projectArrowTable(table, columns), {union, signal: options.signal});
   }
@@ -256,11 +250,18 @@ function toArrowExpression(
 ) {
   if (expression.op === 'literal') return literal(expression.value);
   const operators = {add: '+', subtract: '-', multiply: '*', divide: '/'} as const;
-  return {
+  const binary = {
     type: 'BinaryExpression' as const,
     operator: operators[expression.op],
     left: identifier(expression.left),
     right: identifier(expression.right)
+  };
+  if (expression.op !== 'divide') return binary;
+  return {
+    type: 'ConditionalExpression' as const,
+    test: {...binary, operator: '===', left: binary.right, right: literal(0)},
+    consequent: literal(null),
+    alternate: binary
   };
 }
 
@@ -290,12 +291,14 @@ function queryArrowJoin(
   if (!join) throw new Error('Arrow join query is missing a join definition.');
   const childTable = options.tables?.[join.child.source];
   if (!childTable) throw new Error(`Arrow join source not found: ${join.child.source}`);
-  const left = queryArrowTable(sourceTable, {
-    predicate: options.predicate,
+  const left = executeRelational(sourceTable, {
+    where: options.predicate,
     signal: options.signal
   });
-  const right = queryArrowTable(childTable, {
-    ...join.child.query,
+  const right = executeRelational(childTable, {
+    where: join.child.query?.predicate,
+    select: join.child.query?.columns,
+    limit: join.child.query?.limit,
     signal: options.signal
   });
   return executeRelational(left, {
