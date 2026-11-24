@@ -213,3 +213,19 @@ describe('compileSQLTableQuery', () => {
     );
   });
 });
+
+test('compiles a left join for DuckDB and Snowflake', () => {
+  for (const dialect of ['duckdb', 'snowflake'] as const) {
+    const result = compileSQLTableQuery(
+      {
+        tableName: 'roads',
+        columns: ['incidents.count'],
+        join: {type: 'left', child: {source: 'incidents'}, left: 'id', right: 'road_id'}
+      },
+      {dialect}
+    );
+    expect(result.sql).toContain(
+      'LEFT JOIN "incidents" AS "incidents" ON "roads"."id" = "incidents"."road_id"'
+    );
+  }
+});

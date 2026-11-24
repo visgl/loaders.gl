@@ -141,3 +141,6 @@ const predicate = SQLPredicateSchema.parse(untrustedPayload);
 
 See [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md) for implementation lineage
 and applicable notices, and the project-wide [Attributions and Credits](https://loaders.gl/docs/references-and-credits).
+
+Set `join.type` to `'left'` to retain source rows without a matching child row.
+The child columns are null in those rows. The default join type is `'inner'`.

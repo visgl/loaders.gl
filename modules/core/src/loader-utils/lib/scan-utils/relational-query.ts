@@ -73,7 +73,13 @@ export type RelationalQueryOptions<
     /** Additional child queries to concatenate. */
     union?: readonly RelationalChildQuery<PredicateT>[];
     /** Optional equi-join child and key mapping. */
-    join?: Readonly<{child: RelationalChildQuery<PredicateT>; left: string; right: string}>;
+    join?: Readonly<{
+      /** Keep unmatched root rows with null child columns when set to left. */
+      type?: 'inner' | 'left';
+      child: RelationalChildQuery<PredicateT>;
+      left: string;
+      right: string;
+    }>;
   }>;
 
 /** Logical operator in a relational query plan. */

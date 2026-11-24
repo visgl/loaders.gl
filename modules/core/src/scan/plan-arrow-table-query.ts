@@ -48,7 +48,13 @@ export type ArrowQueryOptions = TableQueryOptions &
     /** Additional Arrow tables concatenated in source order before relational operators. */
     union?: readonly ArrowChildQuery[];
     /** Optional equi-join against a table supplied in `tables`. */
-    join?: Readonly<{child: ArrowChildQuery; left: string; right: string}>;
+    join?: Readonly<{
+      child: ArrowChildQuery;
+      left: string;
+      right: string;
+      /** Keep unmatched root rows with null child fields. Defaults to inner. */
+      type?: 'inner' | 'left';
+    }>;
     /** Named in-memory child tables used by union and join operators. */
     tables?: Readonly<Record<string, arrow.Table>>;
   }>;
@@ -293,7 +299,13 @@ function queryArrowJoin(
     signal: options.signal
   });
   return executeRelational(left, {
-    join: {table: right, left: join.left, right: join.right, rightPrefix: `${join.child.source}.`},
+    join: {
+      table: right,
+      type: join.type,
+      left: join.left,
+      right: join.right,
+      rightPrefix: `${join.child.source}.`
+    },
     select: options.columns,
     limit: options.limit,
     signal: options.signal
