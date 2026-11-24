@@ -30,6 +30,12 @@ Arrow temporal predicates use storage units. Use epoch days for numeric `Date32`
 literals and a `bigint` in the column unit for `Timestamp` literals. A JavaScript
 `Date` is converted to the column unit, including its UTC day for `Date32`.
 
+Direct and streaming Arrow predicates follow math.gl's operand restrictions.
+For predicates on `LargeUtf8` or `LargeBinary`, use a standard-width column
+when the offsets fit. Convert `Float16` to `Float32` on runtimes without
+`Float16Array`. Compare `FixedSizeBinary` values against literals of the
+column's declared byte width.
+
 ### Package and import migrations
 
 Install the grouped npm package and use its format subpath. For example, replace
