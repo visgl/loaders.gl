@@ -22,6 +22,14 @@ import {
 const OMM_JSON_URL = '@loaders.gl/geospatial/omm/test/data/stations.omm.json';
 const OMM_KVN_URL = '@loaders.gl/geospatial/omm/test/data/stations.omm';
 
+/** GP metadata values omitted from the CelesTrak JSON fixture. */
+const GP_METADATA = {
+  CENTER_NAME: 'EARTH',
+  REF_FRAME: 'TEME',
+  TIME_SYSTEM: 'UTC',
+  MEAN_ELEMENT_THEORY: 'SGP4'
+};
+
 let jsonText: string;
 let sourceObjects: Record<string, unknown>[];
 
@@ -41,6 +49,12 @@ function parseRows(text: string, options: Record<string, unknown> = {}): OMMRow[
 /** Returns a copy of the ISS element set with some fields changed. */
 function makeObject(changes: Record<string, unknown>): Record<string, unknown> {
   return {...sourceObjects[0], ...changes};
+}
+
+/** Serializes one test element set as KVN. */
+function makeKVNText(object: Record<string, unknown>): string {
+  const lines = Object.entries(object).map(([keyword, value]) => `${keyword} = ${value}`);
+  return ['CCSDS_OMM_VERS = 2.0', ...lines].join('\n');
 }
 
 describe('OMMLoader', () => {
@@ -81,6 +95,40 @@ describe('OMMLoader', () => {
     const rows = parseRows(kvnText);
     expect(rows).toEqual([sourceObjects[0], sourceObjects[13]]);
     expect(OMMFormat.tests[0](new TextEncoder().encode(kvnText).buffer)).toBe(true);
+  });
+
+  test.each([
+    ['explicit values', GP_METADATA],
+    [
+      'lower-case values with surrounding whitespace',
+      {
+        CENTER_NAME: ' earth ',
+        REF_FRAME: ' teme ',
+        TIME_SYSTEM: ' utc ',
+        MEAN_ELEMENT_THEORY: ' sgp4 '
+      }
+    ],
+    ['the SGP/SGP4 alias', {...GP_METADATA, MEAN_ELEMENT_THEORY: 'SGP/SGP4'}],
+    ['blank values', {CENTER_NAME: '', REF_FRAME: ' ', TIME_SYSTEM: '', MEAN_ELEMENT_THEORY: ''}]
+  ])('returns the same rows as omitted GP metadata for %s', (_label, metadata) => {
+    const object = makeObject(metadata);
+    expect(parseRows(JSON.stringify(object))).toEqual(parseRows(JSON.stringify(sourceObjects[0])));
+    expect(parseRows(makeKVNText(object))).toEqual(parseRows(makeKVNText(sourceObjects[0])));
+  });
+
+  test.each([
+    ['TIME_SYSTEM', 'TAI'],
+    ['REF_FRAME', 'EME2000'],
+    ['CENTER_NAME', 'MOON'],
+    ['MEAN_ELEMENT_THEORY', 'SGP4-XP']
+  ])('rejects incompatible GP metadata %s = %s in JSON and KVN', (keyword, value) => {
+    const object = makeObject({[keyword]: value});
+    expect(() => parseRows(JSON.stringify([sourceObjects[0], object]))).toThrow(
+      `OMMLoader: element set 2: ${keyword} must be`
+    );
+    const kvnText = makeKVNText(object);
+    const lineNumber = kvnText.split('\n').findIndex(line => line.startsWith(`${keyword} = `)) + 1;
+    expect(() => parseRows(kvnText)).toThrow(`OMMLoader: line ${lineNumber}: ${keyword} must be`);
   });
 
   test('accepts one object, numeric strings, a byte order mark and the ArrayBuffer API', async () => {
@@ -239,7 +287,28 @@ describe('orbit element helpers', () => {
     );
     expect(parseOMMEpoch('2026-11-23T21:54:38Z')).toBe(Date.UTC(2026, 10, 23, 21, 54, 38));
     expect(parseOMMEpoch('2024-366T00:00:00.5')).toBe(Date.UTC(2024, 11, 31, 0, 0, 0, 500));
-    expect(() => parseOMMEpoch('2026-000T00:00:00')).toThrow('invalid epoch');
-    expect(() => parseOMMEpoch('2026-11-23T24:00:00')).toThrow('invalid epoch');
+    expect(parseOMMEpoch('2024-366T00:00:00')).toBe(Date.parse('2024-12-31T00:00:00Z'));
+    expect(parseOMMEpoch('2024-02-29T00:00:00')).toBe(Date.parse('2024-02-29T00:00:00Z'));
+    expect(parseOMMEpoch('2016-12-31T23:59:60')).toBe(Date.parse('2017-01-01T00:00:00Z'));
+  });
+
+  test.each([
+    '2026-02-31T00:00:00',
+    '2026-366T00:00:00',
+    '2026-02-29T00:00:00',
+    '2026-13-01T00:00:00',
+    '2026-000T00:00:00',
+    '1900-02-29T00:00:00',
+    '2026-11-23T24:00:00',
+    '2026-11-23T00:60:00',
+    '2026-11-23T00:00:61'
+  ])('rejects out-of-range OMM epoch %s', epoch => {
+    expect(() => parseOMMEpoch(epoch)).toThrow(`invalid epoch "${epoch}"`);
+  });
+
+  test('preserves years 0000–0099 in OMM epochs', () => {
+    const date = new Date(0);
+    expect(parseOMMEpoch('0099-001T00:00:00')).toBe(date.setUTCFullYear(99, 0, 1));
+    expect(parseOMMEpoch('0000-02-29T00:00:00')).toBe(date.setUTCFullYear(0, 1, 29));
   });
 });

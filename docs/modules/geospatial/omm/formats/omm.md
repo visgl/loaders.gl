@@ -2,9 +2,9 @@
 
 ## loaders.gl support
 
-| Type   | API                                                   |
-| ------ | ----------------------------------------------------- |
-| Loader | [`OMMLoader`](../api-reference/omm-loader.md)         |
+| Type   | API                                           |
+| ------ | --------------------------------------------- |
+| Loader | [`OMMLoader`](../api-reference/omm-loader.md) |
 
 ## Format
 
@@ -13,6 +13,11 @@ Committee for Space Data Systems (CCSDS). An OMM gives the mean Keplerian elemen
 at one epoch, for a specified mean element theory. For SGP4 element sets
 (`MEAN_ELEMENT_THEORY = SGP4`), the message also has the TLE-related parameters: catalog
 number, element set number, revolution number, `BSTAR` and the mean motion derivatives.
+
+`OMMLoader` reads the general perturbations (GP) subset for SGP4. This subset uses Earth as the
+center, TEME as the frame, UTC as the time system, and SGP4 as the theory. The loader assumes
+these values when metadata is omitted or blank, as in CelesTrak GP JSON. It also accepts
+`SGP/SGP4` as the theory. It rejects other explicit values in JSON and KVN.
 
 The standard defines three encodings:
 

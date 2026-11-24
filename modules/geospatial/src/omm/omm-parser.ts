@@ -41,6 +41,14 @@ const INTEGER_KEYWORDS = ['EPHEMERIS_TYPE', 'ELEMENT_SET_NO', 'REV_AT_EPOCH'] as
 /** Keywords with a text value. */
 const STRING_KEYWORDS = ['OBJECT_NAME', 'OBJECT_ID', 'CLASSIFICATION_TYPE'] as const;
 
+/** Supported values for optional GP metadata keywords. */
+const GP_METADATA = {
+  CENTER_NAME: ['EARTH'],
+  REF_FRAME: ['TEME'],
+  TIME_SYSTEM: ['UTC'],
+  MEAN_ELEMENT_THEORY: ['SGP4', 'SGP/SGP4']
+};
+
 /**
  * Parses OMM text. The function reads the JSON form (an array of OMM objects, as CelesTrak
  * and Space-Track serve it) and the KVN (keyword = value) form.
@@ -98,8 +106,8 @@ export function parseOMMJSON(json: unknown, options: OrbitRecordErrorOptions = {
 
 /**
  * Parses the KVN form of OMM. Each `CCSDS_OMM_VERS` line starts a new element set.
- * The parser ignores `COMMENT` lines, `USER_DEFINED_*` keywords, other metadata keywords and
- * units in square brackets.
+ * The parser validates GP metadata and ignores `COMMENT` lines, `USER_DEFINED_*` keywords,
+ * other metadata keywords and units in square brackets.
  *
  * @param text - OMM KVN text.
  * @param options - Options that select throw or skip for invalid element sets.
@@ -149,6 +157,7 @@ export function parseOMMKVNText(text: string, options: OrbitRecordErrorOptions =
 
 /**
  * Converts one OMM object, with CCSDS keyword names, to a validated row.
+ * Omitted or blank GP metadata implies Earth, TEME, UTC and SGP4.
  * Number fields can be JSON numbers or numeric strings (Space-Track writes strings).
  *
  * @param object - OMM object, for example one element of CelesTrak `FORMAT=json` output.
@@ -158,6 +167,19 @@ export function convertOMMObjectToRow(object: Record<string, unknown>): OMMRow {
   for (const keyword of REQUIRED_KEYWORDS) {
     if (isEmpty(object[keyword])) {
       throw new OrbitFieldError(`required keyword ${keyword} is missing`, keyword);
+    }
+  }
+  for (const [keyword, supportedValues] of Object.entries(GP_METADATA)) {
+    const value = object[keyword];
+    if (isEmpty(value)) {
+      continue;
+    }
+    if (typeof value !== 'string' || !supportedValues.includes(value.trim().toUpperCase())) {
+      const description = typeof value === 'string' ? `"${value}"` : typeof value;
+      throw new OrbitFieldError(
+        `${keyword} must be ${supportedValues.join(' or ')}, found ${description}`,
+        keyword
+      );
     }
   }
 

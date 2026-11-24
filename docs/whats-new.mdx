@@ -35,7 +35,8 @@ for stable v4 migrations.
 - **3D content and tiles.** [Scene](./modules/scene/README.md) groups glTF, Draco, and mesh
   formats. [Tile Converter](./modules/tile-converter/README.md) defaults to the v5 engine.
 - **Satellite orbit elements.** [`OMMLoader`](./modules/geospatial/omm/api-reference/omm-loader.md)
-  reads CCSDS OMM in the JSON and KVN forms, and [`TLELoader`](./modules/geospatial/tle/api-reference/tle-loader.md)
+  reads the SGP4 subset of CCSDS OMM in JSON and KVN. It validates GP metadata and epoch dates.
+  [`TLELoader`](./modules/geospatial/tle/api-reference/tle-loader.md)
   reads two-line element sets. Both return one table schema with the OMM keyword names.
 - **Documents and images.** [Documents](./modules/documents/README.md) groups text and
   structured formats. [Images](./modules/images/README.md) adds OpenEXR, color lookup

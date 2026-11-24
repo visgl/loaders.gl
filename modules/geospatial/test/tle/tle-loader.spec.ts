@@ -236,6 +236,10 @@ describe('TLELoader', () => {
       'line 1: invalid epoch day of year 400'
     ],
     [
+      (lines: string[]) => [editLine(lines[1], 19, '26366.00000000'), lines[2]],
+      'line 1: invalid epoch day of year 366'
+    ],
+    [
       (lines: string[]) => [editLine(lines[1], 19, '26327x91294507'), lines[2]],
       'line 1: invalid epoch'
     ],

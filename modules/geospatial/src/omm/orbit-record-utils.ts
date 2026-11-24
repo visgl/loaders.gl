@@ -82,6 +82,9 @@ export function parseAlpha5CatalogNumber(text: string): number {
 const EPOCH_PATTERN =
   /^(\d{4})-(?:(\d{2})-(\d{2})|(\d{3}))T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z)?$/;
 
+/** Days in each calendar month in a common year. */
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
 /**
  * Converts a CCSDS OMM epoch string to milliseconds since the Unix epoch.
  *
@@ -97,22 +100,46 @@ export function parseOMMEpoch(epoch: string): number {
   if (!match) {
     throw new OrbitFieldError(`invalid epoch "${epoch}"`, 'EPOCH');
   }
-  const [, year, month, day, dayOfYear, hours, minutes, seconds, fraction = ''] = match;
-  const fractionMs = fraction ? Number(`0.${fraction}`) * 1000 : 0;
-  const date = dayOfYear
-    ? Date.UTC(Number(year), 0, Number(dayOfYear))
-    : Date.UTC(Number(year), Number(month) - 1, Number(day));
-  const time = Date.UTC(1970, 0, 1, Number(hours), Number(minutes), Number(seconds));
+  const [
+    ,
+    yearText,
+    monthText = '01',
+    dayText,
+    ordinalText,
+    hoursText,
+    minutesText,
+    secondsText,
+    fraction = ''
+  ] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(ordinalText ?? dayText);
+  const hours = Number(hoursText);
+  const minutes = Number(minutesText);
+  const seconds = Number(secondsText);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const maximumDay = ordinalText ? (leapYear ? 366 : 365) : getDaysInMonth(month, leapYear);
   if (
-    Number(month || 1) < 1 ||
-    Number(day || dayOfYear) < 1 ||
-    Number(month || 1) > 12 ||
-    Number(day || dayOfYear) > (dayOfYear ? 366 : 31) ||
-    Number(hours) > 23 ||
-    Number(minutes) > 59 ||
-    Number(seconds) > 60
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > maximumDay ||
+    hours > 23 ||
+    minutes > 59 ||
+    seconds > 60
   ) {
     throw new OrbitFieldError(`invalid epoch "${epoch}"`, 'EPOCH');
   }
-  return Math.round(date + time + fractionMs);
+
+  // setUTCFullYear preserves years 0000–0099. An ordinal day is counted from January 1.
+  const date = new Date(0);
+  date.setUTCFullYear(year, month - 1, day);
+  date.setUTCHours(hours, minutes, seconds);
+  const fractionMs = fraction ? Number(`0.${fraction}`) * 1000 : 0;
+  return Math.round(date.getTime() + fractionMs);
+}
+
+/** Returns the day count for a 1-based calendar month, or zero for an invalid month. */
+function getDaysInMonth(month: number, leapYear: boolean): number {
+  return month === 2 && leapYear ? 29 : (DAYS_IN_MONTH[month - 1] ?? 0);
 }
