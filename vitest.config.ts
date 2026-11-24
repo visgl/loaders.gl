@@ -104,6 +104,7 @@ const vitestConfiguration = getVitestConfig({
         'apache-arrow/type',
         'brotli/decompress',
         '@math.gl/geospatial/terrain > cdt2d',
+        '@math.gl/geospatial/st-functions > polygon-clipping',
         'copc',
         'crypto-js',
         'd3-dsv',
