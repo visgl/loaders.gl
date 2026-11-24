@@ -123,11 +123,11 @@ export function parseOMMKVNText(text: string, options: OrbitRecordErrorOptions =
     if (line.length === 0 || line === 'COMMENT' || line.startsWith('COMMENT ')) {
       continue;
     }
-    const match = /^([A-Z0-9_]+)\s*=\s*(.*?)\s*(?:\[[^\]]*\])?$/.exec(line);
-    if (!match) {
+    const keywordValue = splitKVNLine(line);
+    if (!keywordValue) {
       throw new Error(`OMMLoader: line ${lineNumber}: expected "KEYWORD = value", found "${line}"`);
     }
-    const [, keyword, value] = match;
+    const [keyword, value] = keywordValue;
     if (keyword === 'CCSDS_OMM_VERS') {
       finishRecord();
     }
@@ -320,4 +320,30 @@ function isEmpty(value: unknown): boolean {
  */
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * Splits a KVN line into its keyword and its value, and removes a trailing `[unit]`.
+ * String operations only, so that the time is linear in the line length.
+ *
+ * @param line - Trimmed KVN line.
+ * @returns `[keyword, value]`, or `null` when the line is not `KEYWORD = value`.
+ */
+function splitKVNLine(line: string): [string, string] | null {
+  const equals = line.indexOf('=');
+  if (equals < 0) {
+    return null;
+  }
+  const keyword = line.slice(0, equals).trim();
+  if (!/^[A-Z0-9_]+$/.test(keyword)) {
+    return null;
+  }
+  let value = line.slice(equals + 1).trim();
+  if (value.endsWith(']')) {
+    const unitStart = value.lastIndexOf('[');
+    if (unitStart >= 0 && value.indexOf(']') === value.length - 1) {
+      value = value.slice(0, unitStart).trim();
+    }
+  }
+  return [keyword, value];
 }

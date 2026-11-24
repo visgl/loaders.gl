@@ -166,6 +166,19 @@ describe('OMMLoader', () => {
     consoleWarn.mockRestore();
   });
 
+  test('reads KVN units and long lines in linear time', async () => {
+    const kvnText = await (await fetchFile(OMM_KVN_URL)).text();
+    const withUnit = kvnText.replace(/^INCLINATION = (\S+).*$/m, 'INCLINATION =   $1   [deg]');
+    expect(parseRows(withUnit)[0].INCLINATION).toBe(parseRows(kvnText)[0].INCLINATION);
+
+    const longLine = `OBJECT_NAME = A${' '.repeat(200_000)}B${' '.repeat(200_000)}[`;
+    const start = performance.now();
+    expect(() => parseRows(kvnText.replace(/^OBJECT_NAME = .*$/m, longLine))).not.toThrow(
+      'expected "KEYWORD = value"'
+    );
+    expect(performance.now() - start).toBeLessThan(1000);
+  });
+
   test('reports KVN errors with the line number', async () => {
     const kvnText = await (await fetchFile(OMM_KVN_URL)).text();
     const badText = kvnText.replace('ECCENTRICITY = 0.0007379', 'ECCENTRICITY = 1.5');
