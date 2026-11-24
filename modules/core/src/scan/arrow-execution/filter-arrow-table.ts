@@ -7,7 +7,8 @@ import {selectArrowBatchRows} from '@math.gl/core/arrow';
 import {
   compileColumnarPredicate,
   type ColumnarPredicate,
-  type ColumnarPredicateReader
+  type ColumnarPredicateReader,
+  type ColumnarPredicateValue
 } from '@math.gl/sql/columnar-predicate';
 import {validateColumnarPredicate} from '@loaders.gl/core/loader-utils';
 
@@ -26,10 +27,11 @@ export function filterArrowTable(
   options: ArrowFilterOptions = {}
 ): arrow.Table {
   validateColumnarPredicate(predicate, new Set(source.schema.fields.map(field => field.name)));
+  const boundPredicate = normalizeArrowDatePredicate(predicate as ColumnarPredicate);
   return filterArrowRows(
     source,
     batch => {
-      const evaluate = compileColumnarPredicate(predicate as ColumnarPredicate, path =>
+      const evaluate = compileColumnarPredicate(boundPredicate, path =>
         bindPredicateColumn(batch, path)
       );
       return rowIndex => evaluate(rowIndex) === true;
@@ -51,8 +53,32 @@ function bindPredicateColumn(
       if (value == null) return null;
       value = value[property];
     }
-    return value;
+    return dateToMilliseconds(value);
   };
+}
+
+/** Normalizes date literals to the millisecond values exposed by Arrow row accessors. */
+function normalizeArrowDatePredicate(predicate: ColumnarPredicate): ColumnarPredicate {
+  switch (predicate.op) {
+    case 'and':
+    case 'or':
+      return {...predicate, args: predicate.args.map(normalizeArrowDatePredicate)};
+    case 'not':
+      return {...predicate, args: [normalizeArrowDatePredicate(predicate.args[0])]};
+    case 'isNull':
+      return predicate;
+    case 'in':
+      return {...predicate, args: [predicate.args[0], predicate.args[1].map(dateToMilliseconds)]};
+    default:
+      return {...predicate, args: [predicate.args[0], dateToMilliseconds(predicate.args[1])]};
+  }
+}
+
+/** Converts logical dates while retaining all other portable predicate values. */
+function dateToMilliseconds<Value extends ColumnarPredicateValue | null | undefined>(
+  value: Value
+): Value | number {
+  return value instanceof Date ? value.getTime() : value;
 }
 
 /** Retains matching rows while preserving Arrow schema and batch metadata. */

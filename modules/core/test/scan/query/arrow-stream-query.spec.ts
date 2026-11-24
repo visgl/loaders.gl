@@ -41,6 +41,17 @@ test('Arrow filter uses all-pass, all-reject, contiguous and scattered paths', (
   expect(() => filterArrowTable(source, predicate, {signal: AbortSignal.abort()})).toThrow();
 });
 
+test('Arrow residual filters compare date literals to Arrow epoch values', () => {
+  const source = new arrow.Table({
+    value: arrow.vectorFromArray([0, 86_400_000, null], new arrow.DateDay())
+  });
+  const filtered = filterArrowTable(source, {
+    op: 'in',
+    args: [{property: 'value'}, [new Date(86_400_000)]]
+  });
+  expect(Array.from(filtered.getChild('value')!)).toEqual([86_400_000]);
+});
+
 test('sparse Arrow filters preserve dictionary encoding and batch metadata', () => {
   const dictionary = arrow.vectorFromArray(
     ['first', 'skip', 'last'],
