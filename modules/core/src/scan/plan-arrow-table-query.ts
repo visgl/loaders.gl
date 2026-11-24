@@ -122,15 +122,14 @@ const executePortableArrowQuery: ExecuteLinearArrowQuery = (
 export function queryArrowTable(
   sourceTable: arrow.Table,
   options: ArrowQueryOptions = {},
-  executeLinear: ExecuteLinearArrowQuery = executePortableArrowQuery,
-  executeRelational?: (table: arrow.Table, query: ArrowTableQuery) => arrow.Table
+  execute?: (table: arrow.Table, query: ArrowTableQuery) => arrow.Table
 ): arrow.Table {
   throwIfAborted(options.signal);
   if (options.select !== undefined) {
     if (options.columns !== undefined || hasRelationalOperators(options) || options.join) {
       throw new Error('Arrow select cannot be combined with columns or relational operators.');
     }
-    return executeLinear(sourceTable, {
+    return (execute ?? executePortableArrowQuery)(sourceTable, {
       where: options.predicate,
       select: options.select,
       limit: options.limit,
@@ -138,21 +137,17 @@ export function queryArrowTable(
     });
   }
 
-  if (options.join) {
-    validateArrowJoinQuery(sourceTable, options);
-  }
-
-  if (options.join && hasRelationalOperators(options)) {
-    throw new Error('Arrow joins cannot yet be combined with other relational operators.');
-  }
-  if (options.join) {
-    if (!executeRelational) throw new Error('Arrow joins require the SQL executor.');
-    return queryArrowJoin(sourceTable, options, executeRelational);
-  }
-
-  if (hasRelationalOperators(options)) {
-    if (!executeRelational) throw new Error('Arrow relational queries require the SQL executor.');
-    return queryArrowTableRelational(sourceTable, options, executeRelational);
+  if (options.join || hasRelationalOperators(options)) {
+    if (options.join) {
+      validateArrowJoinQuery(sourceTable, options);
+      if (hasRelationalOperators(options)) {
+        throw new Error('Arrow joins cannot yet be combined with other relational operators.');
+      }
+    }
+    if (!execute) throw new Error('Relational queries require the SQL executor.');
+    return options.join
+      ? queryArrowJoin(sourceTable, options, execute)
+      : queryArrowTableRelational(sourceTable, options, execute);
   }
 
   const plan = planTableQuery(
@@ -160,7 +155,7 @@ export function queryArrowTable(
     options
   );
   const projection = plan.find(step => step.kind === 'project');
-  return executeLinear(sourceTable, {
+  return (execute ?? executePortableArrowQuery)(sourceTable, {
     where: options.predicate,
     select: projection?.columns,
     limit: options.limit,
@@ -281,8 +276,7 @@ function queryArrowJoin(
   options: ArrowQueryOptions,
   executeRelational: (table: arrow.Table, query: ArrowTableQuery) => arrow.Table
 ): arrow.Table {
-  const join = options.join;
-  if (!join) throw new Error('Arrow join query is missing a join definition.');
+  const join = options.join!;
   const childTable = options.tables?.[join.child.source];
   if (!childTable) throw new Error(`Arrow join source not found: ${join.child.source}`);
   const left = executeRelational(sourceTable, {
