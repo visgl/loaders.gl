@@ -384,6 +384,18 @@
       "@loaders.gl/traces/test": [
         "modules/traces/test"
       ],
+      "@loaders.gl/geospatial/omm": [
+        "modules/geospatial/src/omm/index.ts"
+      ],
+      "@loaders.gl/geospatial/omm/test": [
+        "modules/geospatial/test/omm"
+      ],
+      "@loaders.gl/geospatial/tle": [
+        "modules/geospatial/src/tle/index.ts"
+      ],
+      "@loaders.gl/geospatial/tle/test": [
+        "modules/geospatial/test/tle"
+      ],
       "@loaders.gl/geospatial/wkt": [
         "modules/geospatial/src/wkt/index.ts"
       ],
@@ -632,6 +644,12 @@
       ],
       "@loaders.gl/geospatial/geopackage/bundled": [
         "modules/geospatial/src/geopackage/bundled.ts"
+      ],
+      "@loaders.gl/geospatial/omm/bundled": [
+        "modules/geospatial/src/omm/bundled.ts"
+      ],
+      "@loaders.gl/geospatial/tle/bundled": [
+        "modules/geospatial/src/tle/bundled.ts"
       ],
       "@loaders.gl/geospatial/wkt/bundled": [
         "modules/geospatial/src/wkt/bundled.ts"
