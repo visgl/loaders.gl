@@ -685,3 +685,52 @@ test('queryArrowTable left join keeps unmatched rows and the right column type',
   );
   expect(Array.from(unmatched.getChild('lookup.count')!)).toEqual([null, null, null]);
 });
+
+test('queryArrowTable preserves physical root columns and makes required lookup fields nullable in a left join', () => {
+  const source = new arrow.Table({
+    id: arrow.vectorFromArray([1, 2, 3], new arrow.Int32()),
+    positions: arrow.vectorFromArray(
+      [
+        [0, 0],
+        [1, 1],
+        [2, 2]
+      ],
+      new arrow.FixedSizeList(2, new arrow.Field('xy', new arrow.Float64()))
+    ),
+    label: arrow.vectorFromArray(
+      ['first', 'second', null],
+      new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32())
+    ),
+    time: arrow.vectorFromArray([0, 1000, 2000], new arrow.TimestampMillisecond())
+  });
+  const lookupSchema = new arrow.Schema([
+    new arrow.Field('id', new arrow.Int64(), false),
+    new arrow.Field('radius', new arrow.Float32(), false)
+  ]);
+  const lookup = new arrow.Table(lookupSchema, {
+    id: arrow.vectorFromArray([2n, 2n], new arrow.Int64()),
+    radius: arrow.vectorFromArray([5, 7], new arrow.Float32())
+  });
+  expect(lookup.schema.fields[1].nullable).toBe(false);
+
+  const joined = queryArrowTable(source, {
+    join: {type: 'left', child: {source: 'lookup'}, left: 'id', right: 'id'},
+    tables: {lookup}
+  });
+
+  expect([...joined.getChild('id')!]).toEqual([1, 2, 2, 3]);
+  expect([...joined.getChild('positions')!].map(position => [...position!])).toEqual([
+    [0, 0],
+    [1, 1],
+    [1, 1],
+    [2, 2]
+  ]);
+  expect(joined.getChild('label')!.type.toString()).toBe(source.getChild('label')!.type.toString());
+  expect([...joined.getChild('label')!]).toEqual(['first', 'second', 'second', null]);
+  expect([...joined.getChild('time')!]).toEqual([0, 1000, 1000, 2000]);
+
+  const radius = joined.schema.fields.find(field => field.name === 'lookup.radius')!;
+  expect(radius.nullable).toBe(true);
+  expect(radius.type.toString()).toBe(lookup.schema.fields[1].type.toString());
+  expect([...joined.getChild('lookup.radius')!]).toEqual([null, 5, 7, null]);
+});
