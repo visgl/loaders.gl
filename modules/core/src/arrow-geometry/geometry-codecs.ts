@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {inspectWKTHeader, parseWKB, parseWKTWithMetadata, writeWKB} from '@math.gl/core/arrow';
+import {ensureArrayBuffer} from '../loader-utils/lib/binary-utils/memory-conversion-utils';
 import type {WellKnownDimension, WellKnownGeometry, WKTParseResult} from '@math.gl/core/arrow';
 import type {Feature, Geometry, GeoArrowDimension} from '@loaders.gl/core/schema';
 import {normalizeEmptyPoints} from './geometry-utils';
@@ -53,7 +54,7 @@ export function convertGeometryToWKB(
       ? 'xym'
       : 'xy';
   const bytes = writeWKB(describeGeometry(geometry, dimension));
-  return bytes.buffer as ArrayBuffer;
+  return ensureArrayBuffer(bytes);
 }
 
 /** Supplies each collection member's effective dimension to the math.gl writer. */

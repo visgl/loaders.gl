@@ -69,7 +69,7 @@ test('Arrow collection refines metadata without rewriting earlier batches', asyn
   expect((await makeArrowTableFromBatches([final]))!.schema.metadata.get('stage')).toBe('final');
   await expect(
     makeArrowTableFromBatches([second, arrow.tableFromArrays({other: [1]}).batches[0]])
-  ).rejects.toThrow('schemas must be equivalent');
+  ).rejects.toThrow('expected field value, got other');
 });
 
 test.each([

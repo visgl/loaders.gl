@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {parseTWKB, writeTWKB, type WellKnownDimension} from '@math.gl/core/twkb';
+import {ensureArrayBuffer} from '../../loader-utils/lib/binary-utils/memory-conversion-utils';
 import type {Geometry} from '@loaders.gl/core/schema';
 
 /** Checks the TWKB family nibble in a potential binary payload. */
@@ -29,7 +30,7 @@ export function convertGeometryToTWKB(
     : options?.hasM
       ? 'xym'
       : 'xy';
-  return writeTWKB(normalizeGeometry(geometry, dimension), {dimension}).buffer as ArrayBuffer;
+  return ensureArrayBuffer(writeTWKB(normalizeGeometry(geometry, dimension), {dimension}));
 }
 
 /** Adapts legacy coordinate tuples to the selected TWKB dimension. */

@@ -466,7 +466,7 @@ function convertGeometryColumnWithMath(
     sourceEncoding === 'geoarrow.wkt' &&
     isConcreteNativeEncoding(targetEncoding) &&
     options?.dimension &&
-    options.maxGeometryCollectionDepth === undefined
+    options.maxGeometryCollectionDepth === DEFAULT_MAX_GEOMETRY_COLLECTION_DEPTH
   ) {
     try {
       const source = makeGeoArrowColumnFromArrowVector(column, {encoding: sourceEncoding});

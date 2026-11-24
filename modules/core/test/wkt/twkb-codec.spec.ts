@@ -50,6 +50,13 @@ test('convertGeometryToTWKB marks M-only data and rejects unsupported geometry t
   );
 });
 
+test('TWKB returns exactly the bytes of a canonical quantized point', () => {
+  const geometry: Geometry = {type: 'Point', coordinates: [1, -2]};
+  expect(new Uint8Array(convertGeometryToTWKB(geometry))).toEqual(
+    Uint8Array.of(0xa1, 0, 0xc0, 0x9a, 0x0c, 0xff, 0xb4, 0x18)
+  );
+});
+
 test('TWKB rejects incomplete binary headers', () => {
   expect(isTWKB(new ArrayBuffer(0))).toBe(false);
   expect(isTWKB(Uint8Array.of(1).buffer)).toBe(false);

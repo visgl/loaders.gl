@@ -269,15 +269,23 @@ async function* queryAppendBatches(
     }
     const sourceSchema = inMemory ? inMemory.schema : convertSchemaToArrow(metadata!.schema);
     const names = sourceSchema.fields.map(field => field.name);
-    const {select, where, ...controls} = logicalQuery;
+    const {select: requestedSelect, where, ...controls} = logicalQuery;
     const computedProjection =
-      Array.isArray(select) &&
-      select.some(
+      Array.isArray(requestedSelect) &&
+      requestedSelect.some(
         selection =>
           selection &&
           typeof selection === 'object' &&
           ('expression' in selection || 'array' in selection)
       );
+    // Resolve the public scan aliases before planning either native or residual projection.
+    const select = computedProjection
+      ? requestedSelect.map((item, index) =>
+          item && typeof item === 'object' && ('expression' in item || 'array' in item)
+            ? {...item, as: item.as ?? `column${index + 1}`}
+            : item
+        )
+      : requestedSelect;
     const expressionFilter =
       where && typeof where === 'object' && 'expression' in where ? where : undefined;
     const portablePredicate = expressionFilter ? undefined : (where as TableQuery['where']);
@@ -369,7 +377,7 @@ async function* queryAppendBatches(
       (source as TableScanSource).planQueryPushdown
         ? await (await import('./query-pushdown')).planQueryPushdown(
             source as TableScanSource,
-            logicalQuery,
+            {...logicalQuery, select},
             capabilities,
             comparisonSchema,
             Boolean(computedProjection || expressionFilter),
