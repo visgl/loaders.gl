@@ -22,7 +22,8 @@ describe('WKB helper boundary behavior', () => {
     expect(getWKTGeometryType(new TextEncoder().encode('MULTIPOLYGON(').buffer)).toBe(
       WKBGeometryType.MultiPolygon
     );
-    expect(isWKT(' point(1 2)')).toBe(false);
+    expect(isWKT(' point(1 2)')).toBe(true);
+    expect(isWKT('SRID=4326;POINT (1 2)')).toBe(true);
     expect(isWKB(makeHeader(1))).toBe(true);
     expect(isWKB(makeHeader(1002, false))).toBe(true);
     expect(isWKB(makeHeader(EWKB_FLAG_Z | 1))).toBe(true);

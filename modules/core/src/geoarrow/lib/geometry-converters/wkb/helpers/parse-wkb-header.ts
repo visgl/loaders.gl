@@ -7,34 +7,12 @@ import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@
 import type {WKBGeometryType, WKBHeader} from './wkb-types';
 import {MAX_SRID, WKT_MAGIC_STRINGS, WKT_MAGIC_BYTES} from './wkb-types';
 
-/** 
- * Check if a string is WKT.
- * @param input A potential WKT geometry string
- * @return `true` if input appears to be a WKT geometry string, `false` otherwise
-
- * @note We only support the "geojson" subset of the OGC simple features standard
- * @todo Does not handle leading spaces which appear to be permitted per the spec:
- * "A WKT string contains no white space outside of double quotes. 
- * However padding with white space to improve human readability is permitted; 
- * the examples of WKT that are included in this document have 
- * spaces and line feeds inserted to improve clarity. Any padding is stripped out or ignored by parsers."
- */
+/** Checks whether the input starts with a supported WKT geometry header. */
 export function isWKT(input: string | ArrayBufferLike): boolean {
   return getWKTGeometryType(input) !== null;
 }
 
-/** 
- * Get the geometry type of a WKT string.
- * @param input A potential WKT geometry string
- * @return `true` if input appears to be a WKT geometry string, `false` otherwise
-
- * @note We only support the "geojson" subset of the OGC simple features standard
- * @todo Does not handle leading spaces which appear to be permitted per the spec:
- * "A WKT string contains no white space outside of double quotes. 
- * However padding with white space to improve human readability is permitted; 
- * the examples of WKT that are included in this document have 
- * spaces and line feeds inserted to improve clarity. Any padding is stripped out or ignored by parsers."
- */
+/** Classifies string WKT/EWKT headers or binary WKT prefixes without parsing coordinates. */
 export function getWKTGeometryType(input: string | ArrayBufferLike): WKBGeometryType | null {
   if (typeof input === 'string') {
     const header = inspectWKTHeader(input);
