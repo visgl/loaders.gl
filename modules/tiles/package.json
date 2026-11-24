@@ -105,6 +105,21 @@
       "types": "./dist/tile-matrix.d.ts",
       "import": "./dist/tile-matrix.js",
       "require": "./dist/tile-matrix.cjs"
+    },
+    "./tileset-2d": {
+      "types": "./dist/tileset-2d-api.d.ts",
+      "import": "./dist/tileset-2d-api.js",
+      "require": "./dist/tileset-2d-api.cjs"
+    },
+    "./image-set": {
+      "types": "./dist/image-set.d.ts",
+      "import": "./dist/image-set.js",
+      "require": "./dist/image-set.cjs"
+    },
+    "./raster-set": {
+      "types": "./dist/raster-set.d.ts",
+      "import": "./dist/raster-set.js",
+      "require": "./dist/raster-set.cjs"
     }
   },
   "sideEffects": false,

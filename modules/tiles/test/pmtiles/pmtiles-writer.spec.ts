@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
-import {GZipCompressor} from '@loaders.gl/compression';
+import {GZipCompressor} from '@loaders.gl/compression/gzip';
 import {PMTiles, type Source} from 'pmtiles';
 import {encodePMTiles, PMTilesWriter, PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
 import type {PMTilesEncodeOptions, PMTilesTile} from '@loaders.gl/tiles/pmtiles';

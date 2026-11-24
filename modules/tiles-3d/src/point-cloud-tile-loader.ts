@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
-import {PointCloudTileSource} from '@loaders.gl/tiles-3d/point-cloud-tile-source';
+import {PointCloudTileSource} from './point-cloud-tile-source';
 import {PointCloudTileLoader} from './point-cloud-tile-loader-types';
 import type {
   PointCloudTileSourceInput,

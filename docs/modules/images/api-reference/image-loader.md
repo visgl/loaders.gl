@@ -62,7 +62,7 @@ The preferred image loader for new code. `ImageLoader` returns `ImageBitmap` in 
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // only needed if using under Node
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 import {load} from '@loaders.gl/core';
 
 const image = await load(url, ImageLoader, options);

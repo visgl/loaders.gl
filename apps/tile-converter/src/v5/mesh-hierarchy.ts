@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Matrix4} from '@math.gl/core/matrix';
-import {get3DTilesSpatialReference} from '@loaders.gl/tiles-3d';
+import {get3DTilesSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {
   TileConversionError,
   createBoundedMemoryTileConversionSink,

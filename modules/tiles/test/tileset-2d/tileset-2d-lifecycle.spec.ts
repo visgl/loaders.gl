@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {Tileset2D, type Tileset2DAdapter} from '@loaders.gl/tiles';
+import {Tileset2D, type Tileset2DAdapter} from '@loaders.gl/tiles/tileset-2d';
 
 /** Minimal renderer-independent traversal adapter for cache lifecycle tests. */
 const TEST_ADAPTER: Tileset2DAdapter<null> = {

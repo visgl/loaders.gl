@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {fetchFile, parse, encode} from '@loaders.gl/core';
 // import {getMeshSize} from '@loaders.gl/core/schema-utils';
-import {DracoLoader} from '@loaders.gl/scene';
+import {DracoLoader} from '@loaders.gl/scene/draco';
 import {DracoWriter} from '@loaders.gl/scene/draco';
 import {validateMeshCategoryData} from 'test/common/conformance';
 import {isBrowser} from '@loaders.gl/core/worker-utils';

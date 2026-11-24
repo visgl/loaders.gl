@@ -19,15 +19,12 @@ import type {
   PointCloudTileContent,
   PointCloudTileHeader,
   PointCloudTilesetSource,
-  PointCloudCoordinateSystem,
-  TilesetSpatialOptions,
-  TilesetSpatialReference
-} from '@loaders.gl/tiles-3d';
-import {
-  applyTilesetSpatialOptions,
-  getI3SSpatialReference,
-  I3SSpatialTransformer
-} from '@loaders.gl/tiles-3d';
+  PointCloudCoordinateSystem
+} from '../point-cloud/types';
+import type {TilesetSpatialOptions, TilesetSpatialReference} from '../spatial/spatial-types';
+import {applyTilesetSpatialOptions} from '../spatial/spatial-types';
+import {getI3SSpatialReference} from '../spatial/format-spatial-reference';
+import {I3SSpatialTransformer} from '../spatial/i3s-spatial-transformer';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 import type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';

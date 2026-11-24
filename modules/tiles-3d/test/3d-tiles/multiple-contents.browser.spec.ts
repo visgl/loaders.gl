@@ -2,7 +2,7 @@ import {describe, expect, test} from 'vitest';
 import {Tiles3DTilesetSchema} from '../../src/3d-tiles/tileset-zod-schema';
 import {normalizeTileData} from '../../src/3d-tiles/lib/parsers/parse-3d-tile-header';
 import {Tiles3DLoader} from '../../src/3d-tiles/tiles-3d-loader';
-import {Tiles3DSource} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
 
 describe('3D Tiles multiple contents', () => {
   test('accepts and preserves an array of content references', () => {

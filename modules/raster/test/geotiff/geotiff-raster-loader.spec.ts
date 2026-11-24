@@ -4,8 +4,8 @@
 
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, load, parse} from '@loaders.gl/core';
-import {GeoTIFFRasterLoader} from '@loaders.gl/raster';
-import type {GeoTIFFRasterData} from '@loaders.gl/raster';
+import {GeoTIFFRasterLoader} from '@loaders.gl/raster/geotiff';
+import type {GeoTIFFRasterData} from '@loaders.gl/raster/geotiff';
 import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff';
 
 /** Resolve an authored, local numeric TIFF fixture. */

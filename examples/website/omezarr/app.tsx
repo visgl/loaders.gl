@@ -7,7 +7,7 @@ import {createRoot} from 'react-dom/client';
 
 import {createDataSourceSync} from '@loaders.gl/core';
 import type {RasterData, RasterViewport} from '@loaders.gl/core/loader-utils';
-import {RasterSet} from '@loaders.gl/tiles';
+import {RasterSet} from '@loaders.gl/tiles/raster-set';
 import type {
   GetOMEZarrParameters,
   OMEZarrImageSource,

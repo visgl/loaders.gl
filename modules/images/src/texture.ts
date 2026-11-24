@@ -75,3 +75,6 @@ export {
   type ImageTextureSource,
   type ImageTextureTemplateSource
 } from './texture-manifest-schema';
+export type {GPUTextureFormat} from '@loaders.gl/core/schema';
+export type {TextureFormat} from '@loaders.gl/core/schema';
+export type {CompressedTextureLoaderOptions as TextureLoaderOptions} from './compressed-texture-loader-types';

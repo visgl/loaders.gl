@@ -49,7 +49,7 @@ They try built-in streams first. Compression falls back to lazy `compress-utils`
 falls back to its decoder-only WASM codec.
 
 ```typescript
-import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression';
+import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression/zstd';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs.

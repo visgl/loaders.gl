@@ -169,7 +169,7 @@ export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
 export {ImageSource} from './lib/deprecated/image-source-compatibility';
 /** @deprecated Compatibility alias for deck.gl 10.0.0-alpha.1. Use WMSLoader. */
 export {WMSLoader as WMSSource} from './wms-loader';
-export type {ImageType} from '@loaders.gl/images';
+export type {ImageType} from '@loaders.gl/images/image';
 
 export {ManagedVectorSource} from './managed-vector-source';
 export type {ManagedVectorSourceOptions} from './managed-vector-source';

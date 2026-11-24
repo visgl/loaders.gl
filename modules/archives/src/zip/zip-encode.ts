@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {DeflateCompressor} from '@loaders.gl/compression/deflate-compressor';
-import {CRC32Hash} from '@loaders.gl/crypto';
+import {CRC32Hash} from '@loaders.gl/crypto/crc32';
 import {decodeZipText, encodeUtf8Text, validateZipPath} from './lib/zip-entry-metadata';
 import {
   encodeZipLocalHeader,

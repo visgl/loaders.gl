@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {TerrainLoader} from '@loaders.gl/raster';
+import {TerrainLoader} from '@loaders.gl/raster/terrain';
 
 test('terrain worker resolves its nested image decoder without registered loaders', async () => {
   const canvas = new OffscreenCanvas(2, 2);

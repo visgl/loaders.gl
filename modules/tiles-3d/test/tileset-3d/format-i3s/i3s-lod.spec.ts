@@ -2,7 +2,8 @@ import {expect, test} from 'vitest';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {coreApi} from '@loaders.gl/core';
 import {getI3sTileHeader} from '@loaders.gl/tiles-3d/i3s/test/test-utils/load-utils';
-import {getFrameState, I3SSource, Tile3D, Tileset3D, getLodStatus} from '@loaders.gl/tiles-3d';
+import {getFrameState, Tile3D, Tileset3D, getLodStatus} from '@loaders.gl/tiles-3d/tileset';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
 import {
   getBigLodMetricTileHeader,
   getNextAfterRootTileHeader,

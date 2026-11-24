@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import {SnowflakeSQLDataSource} from '@loaders.gl/sql';
+import {SnowflakeSQLDataSource} from '@loaders.gl/sql/snowflake';
 
 /** Creates a Snowflake source whose SQL API requests stay entirely in memory. */
 function createSource(fetchFunction: typeof fetch, token = 'token'): SnowflakeSQLDataSource {

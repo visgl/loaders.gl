@@ -5,8 +5,8 @@
 import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
 import {TOMLLoaderWithParser as BundledTOMLLoader} from '@loaders.gl/documents/toml';
-import {TOMLLoader as UnbundledTOMLLoader} from '@loaders.gl/documents';
-import {TOMLFormat, TOMLLoader} from '@loaders.gl/documents';
+import {TOMLLoader as UnbundledTOMLLoader} from '@loaders.gl/documents/toml';
+import {TOMLFormat, TOMLLoader} from '@loaders.gl/documents/toml';
 
 const TOML_TEXT = `
 title = "TOML Example"

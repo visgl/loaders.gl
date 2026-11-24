@@ -50,7 +50,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 not exposed by the browser stream APIs, so the defaults load the required codec direction dynamically.
 
 ```typescript
-import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression';
+import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression/snappy';
 ```
 
 Both implement the shared [Compressor and Decompressor](./compressor-decompressor) APIs and support

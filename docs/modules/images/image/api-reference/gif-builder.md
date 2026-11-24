@@ -61,7 +61,7 @@ Build a GIF from images
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 import {GIFBuilder} from '@loaders.gl/images/image';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});

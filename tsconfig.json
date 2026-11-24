@@ -88,52 +88,52 @@
         "modules/geospatial/src/*"
       ],
       "@loaders.gl/graphs/dot-loader": [
-        "modules/graphs/src/dot-loader"
+        "modules/graphs/src/dot-loader.ts"
       ],
       "@loaders.gl/graphs": [
         "modules/graphs/src"
       ],
       "@loaders.gl/graphs/graphml-loader": [
-        "modules/graphs/src/graphml-loader"
+        "modules/graphs/src/graphml-loader.ts"
       ],
       "@loaders.gl/graphs/gexf-loader": [
-        "modules/graphs/src/gexf-loader"
+        "modules/graphs/src/gexf-loader.ts"
       ],
       "@loaders.gl/arcgis": [
         "modules/arcgis/src"
       ],
       "@loaders.gl/arcgis/items": [
-        "modules/arcgis/src/arcgis-items"
+        "modules/arcgis/src/arcgis-items.ts"
       ],
       "@loaders.gl/arcgis/authentication": [
-        "modules/arcgis/src/authentication"
+        "modules/arcgis/src/authentication.ts"
       ],
       "@loaders.gl/arcgis/discovery": [
-        "modules/arcgis/src/arcgis/arcgis-capability-graph"
+        "modules/arcgis/src/discovery.ts"
       ],
       "@loaders.gl/arcgis/scene-aggregation": [
-        "modules/arcgis/src/arcgis/arcgis-scene-aggregation"
+        "modules/arcgis/src/arcgis/arcgis-scene-aggregation.ts"
       ],
       "@loaders.gl/arcgis/bundled": [
-        "modules/arcgis/src/bundled"
+        "modules/arcgis/src/bundled.ts"
       ],
       "@loaders.gl/arcgis/arcgis-feature-server-loader": [
-        "modules/arcgis/src/arcgis/arcgis-feature-server-loader"
+        "modules/arcgis/src/arcgis-feature-server-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-image-server-loader": [
-        "modules/arcgis/src/arcgis/arcgis-image-server-loader"
+        "modules/arcgis/src/arcgis-image-server-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-image-tile-loader": [
-        "modules/arcgis/src/arcgis/arcgis-image-tile-loader"
+        "modules/arcgis/src/arcgis-image-tile-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-map-tile-loader": [
-        "modules/arcgis/src/arcgis/arcgis-map-tile-loader"
+        "modules/arcgis/src/arcgis-map-tile-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-scene-server-loader": [
-        "modules/arcgis/src/arcgis/arcgis-scene-server-loader"
+        "modules/arcgis/src/arcgis-scene-server-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-vector-tile-server-loader": [
-        "modules/arcgis/src/arcgis/arcgis-vector-tile-server-loader"
+        "modules/arcgis/src/arcgis-vector-tile-server-loader.ts"
       ],
       "@loaders.gl/core/constants": [
         "modules/core/src/constants"
@@ -184,7 +184,7 @@
         "modules/compression/test"
       ],
       "@loaders.gl/tiles-3d/copc": [
-        "modules/tiles-3d/src/copc"
+        "modules/tiles-3d/src/copc/index.ts"
       ],
       "@loaders.gl/tiles-3d/copc/test": [
         "modules/tiles-3d/test/copc"
@@ -196,7 +196,7 @@
         "modules/crypto/test"
       ],
       "@loaders.gl/tiles-3d/3d-tiles": [
-        "modules/tiles-3d/src/3d-tiles"
+        "modules/tiles-3d/src/3d-tiles/index.ts"
       ],
       "@loaders.gl/3d-tiles": [
         "modules/tiles-3d/src/3d-tiles"
@@ -229,7 +229,7 @@
         "modules/images/src"
       ],
       "@loaders.gl/tiles-3d/i3s": [
-        "modules/tiles-3d/src/i3s"
+        "modules/tiles-3d/src/i3s/index.ts"
       ],
       "@loaders.gl/tiles-3d/i3s/*": [
         "modules/tiles-3d/src/i3s/*"
@@ -256,19 +256,19 @@
         "modules/raster/test/lerc"
       ],
       "@loaders.gl/tiles/mlt": [
-        "modules/tiles/src/mlt"
+        "modules/tiles/src/mlt/index.ts"
       ],
       "@loaders.gl/tiles/mlt/test": [
         "modules/tiles/test/mlt"
       ],
       "@loaders.gl/tiles/mvt": [
-        "modules/tiles/src/mvt"
+        "modules/tiles/src/mvt/index.ts"
       ],
       "@loaders.gl/tiles/arrow-table-tile-loader": [
-        "modules/tiles/src/mvt/arrow-table-tile-loader.ts"
+        "modules/tiles/src/arrow-table-tile-loader.ts"
       ],
       "@loaders.gl/tiles/mvt-geojson-loader": [
-        "modules/tiles/src/mvt/mvt-geojson-loader.ts"
+        "modules/tiles/src/mvt-geojson-loader.ts"
       ],
       "@loaders.gl/tiles/mvt/test": [
         "modules/tiles/test/mvt"
@@ -298,7 +298,7 @@
         "modules/pointclouds/test/pcd"
       ],
       "@loaders.gl/tiles/pmtiles": [
-        "modules/tiles/src/pmtiles"
+        "modules/tiles/src/pmtiles/index.ts"
       ],
       "@loaders.gl/tiles/pmtiles/test": [
         "modules/tiles/test/pmtiles"
@@ -331,10 +331,10 @@
         "modules/scene/test"
       ],
       "@loaders.gl/tiles-3d/potree-loader": [
-        "modules/tiles-3d/src/potree/potree-loader.ts"
+        "modules/tiles-3d/src/potree-loader.ts"
       ],
       "@loaders.gl/tiles-3d/potree": [
-        "modules/tiles-3d/src/potree"
+        "modules/tiles-3d/src/potree/index.ts"
       ],
       "@loaders.gl/tiles-3d/potree/test": [
         "modules/tiles-3d/test/potree"
@@ -403,31 +403,31 @@
         "modules/documents/test/xml"
       ],
       "@loaders.gl/archives/indexed-zip-writer": [
-        "modules/archives/src/zip/indexed-zip-writer"
+        "modules/archives/src/indexed-zip-writer.ts"
       ],
       "@loaders.gl/archives/zip-loader": [
-        "modules/archives/src/zip/zip-loader"
+        "modules/archives/src/zip-loader.ts"
       ],
       "@loaders.gl/archives/zip-writer": [
-        "modules/archives/src/zip/zip-writer"
+        "modules/archives/src/zip-writer.ts"
       ],
       "@loaders.gl/tiles-3d/3d-tiles-archive-writer": [
-        "modules/tiles-3d/src/3d-tiles/3d-tiles-archive-writer"
+        "modules/tiles-3d/src/3d-tiles-archive-writer.ts"
       ],
       "@loaders.gl/archives": [
         "modules/archives/src"
       ],
       "@loaders.gl/archives/tar": [
-        "modules/archives/src/tar"
+        "modules/archives/src/tar/index.ts"
       ],
       "@loaders.gl/archives/tar-loader": [
-        "modules/archives/src/tar/tar-loader"
+        "modules/archives/src/tar-loader.ts"
       ],
       "@loaders.gl/archives/tar-writer": [
-        "modules/archives/src/tar/tar-writer"
+        "modules/archives/src/tar-writer.ts"
       ],
       "@loaders.gl/archives/zip": [
-        "modules/archives/src/zip"
+        "modules/archives/src/zip/index.ts"
       ],
       "@loaders.gl/archives/zip/test": [
         "modules/archives/test"
@@ -511,7 +511,7 @@
         "modules/ogc/test"
       ],
       "@loaders.gl/ogc/wms": [
-        "modules/ogc/src/wms"
+        "modules/ogc/src/wms/index.ts"
       ],
       "@loaders.gl/ogc/wms/*": [
         "modules/ogc/src/wms/*"
@@ -520,7 +520,7 @@
         "modules/ogc/test/wms"
       ],
       "@loaders.gl/ogc/stac": [
-        "modules/ogc/src/stac"
+        "modules/ogc/src/stac/index.ts"
       ],
       "@loaders.gl/ogc/stac/*": [
         "modules/ogc/src/stac/*"
@@ -1012,7 +1012,7 @@
         "modules/images/src/types.ts"
       ],
       "@loaders.gl/images/color-lut": [
-        "./modules/images/src/color-lut.ts"
+        "modules/images/src/color-lut.ts"
       ],
       "@loaders.gl/images/texture": [
         "modules/images/src/texture.ts"
@@ -1061,6 +1061,168 @@
       ],
       "@loaders.gl/images/exr/bundled": [
         "modules/images/src/exr-bundled.ts"
+      ],
+      "@loaders.gl/arcgis/feature-service": [
+        "modules/arcgis/src/feature-service.ts"
+      ],
+      "@loaders.gl/arcgis/image-service": [
+        "modules/arcgis/src/image-service.ts"
+      ],
+      "@loaders.gl/arcgis/map-service": [
+        "modules/arcgis/src/map-service.ts"
+      ],
+      "@loaders.gl/arcgis/scene-service": [
+        "modules/arcgis/src/scene-service.ts"
+      ],
+      "@loaders.gl/arcgis/vector-tile-service": [
+        "modules/arcgis/src/vector-tile-service.ts"
+      ],
+      "@loaders.gl/crypto/hash": [
+        "modules/crypto/src/hash.ts"
+      ],
+      "@loaders.gl/crypto/crc32": [
+        "modules/crypto/src/crc32.ts"
+      ],
+      "@loaders.gl/crypto/crc32c": [
+        "modules/crypto/src/crc32c.ts"
+      ],
+      "@loaders.gl/crypto/md5": [
+        "modules/crypto/src/md5.ts"
+      ],
+      "@loaders.gl/crypto/sha256": [
+        "modules/crypto/src/sha256.ts"
+      ],
+      "@loaders.gl/crypto/webcrypto": [
+        "modules/crypto/src/webcrypto.ts"
+      ],
+      "@loaders.gl/crypto/node": [
+        "modules/crypto/src/node.ts"
+      ],
+      "@loaders.gl/crypto/encoding": [
+        "modules/crypto/src/encoding.ts"
+      ],
+      "@loaders.gl/graphs/graphml": [
+        "modules/graphs/src/graphml.ts"
+      ],
+      "@loaders.gl/graphs/graph": [
+        "modules/graphs/src/graph.ts"
+      ],
+      "@loaders.gl/graphs/dot": [
+        "modules/graphs/src/dot.ts"
+      ],
+      "@loaders.gl/graphs/gexf": [
+        "modules/graphs/src/gexf.ts"
+      ],
+      "@loaders.gl/ogc/gml-loader": [
+        "modules/ogc/src/gml-loader.ts"
+      ],
+      "@loaders.gl/ogc/stac-loader": [
+        "modules/ogc/src/stac-loader.ts"
+      ],
+      "@loaders.gl/ogc/csw": [
+        "modules/ogc/src/csw.ts"
+      ],
+      "@loaders.gl/ogc/wmts": [
+        "modules/ogc/src/wmts.ts"
+      ],
+      "@loaders.gl/ogc/wfs": [
+        "modules/ogc/src/wfs.ts"
+      ],
+      "@loaders.gl/ogc/gml": [
+        "modules/ogc/src/gml.ts"
+      ],
+      "@loaders.gl/scientific/pdb/bundled": [
+        "modules/scientific/src/pdb-bundled.ts"
+      ],
+      "@loaders.gl/services/bundled": [
+        "modules/services/src/bundled.ts"
+      ],
+      "@loaders.gl/services/authentication": [
+        "modules/services/src/authentication.ts"
+      ],
+      "@loaders.gl/sql/adapter": [
+        "modules/sql/src/adapter.ts"
+      ],
+      "@loaders.gl/sql/arrow": [
+        "modules/sql/src/arrow.ts"
+      ],
+      "@loaders.gl/sql/duckdb": [
+        "modules/sql/src/duckdb.ts"
+      ],
+      "@loaders.gl/sql/snowflake": [
+        "modules/sql/src/snowflake.ts"
+      ],
+      "@loaders.gl/sql/query": [
+        "modules/sql/src/query.ts"
+      ],
+      "@loaders.gl/tiles/terrain": [
+        "modules/tiles/src/terrain/index.ts"
+      ],
+      "@loaders.gl/tiles/mlt-loader": [
+        "modules/tiles/src/mlt-loader.ts"
+      ],
+      "@loaders.gl/tiles/mvt-loader": [
+        "modules/tiles/src/mvt-loader.ts"
+      ],
+      "@loaders.gl/tiles/mlt/bundled": [
+        "modules/tiles/src/mlt/bundled.ts"
+      ],
+      "@loaders.gl/tiles/mvt/tilejson-zod-schema": [
+        "modules/tiles/src/mvt/tilejson-zod-schema.ts"
+      ],
+      "@loaders.gl/tiles/mvt/bundled": [
+        "modules/tiles/src/mvt/bundled.ts"
+      ],
+      "@loaders.gl/tiles/pmtiles/bundled": [
+        "modules/tiles/src/pmtiles/bundled.ts"
+      ],
+      "@loaders.gl/tiles/pmtiles/geoarrow": [
+        "modules/tiles/src/pmtiles/geoarrow.ts"
+      ],
+      "@loaders.gl/tiles/pmtiles/raster": [
+        "modules/tiles/src/pmtiles/raster.ts"
+      ],
+      "@loaders.gl/tiles/tile-matrix": [
+        "modules/tiles/src/tile-matrix.ts"
+      ],
+      "@loaders.gl/tiles/tileset-2d": [
+        "modules/tiles/src/tileset-2d-api.ts"
+      ],
+      "@loaders.gl/tiles/image-set": [
+        "modules/tiles/src/image-set.ts"
+      ],
+      "@loaders.gl/tiles/raster-set": [
+        "modules/tiles/src/raster-set.ts"
+      ],
+      "@loaders.gl/tiles-3d/potree/bundled": [
+        "modules/tiles-3d/src/potree/bundled.ts"
+      ],
+      "@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema": [
+        "modules/tiles-3d/src/3d-tiles/tileset-zod-schema.ts"
+      ],
+      "@loaders.gl/tiles-3d/3d-tiles/subtree-zod-schema": [
+        "modules/tiles-3d/src/3d-tiles/subtree-zod-schema.ts"
+      ],
+      "@loaders.gl/tiles-3d/3d-tiles/bundled": [
+        "modules/tiles-3d/src/3d-tiles/bundled.ts"
+      ],
+      "@loaders.gl/tiles-3d/i3s-lepcc-loader": [
+        "modules/tiles-3d/src/i3s-lepcc-loader.ts"
+      ],
+      "@loaders.gl/tiles-3d/i3s-slpk-writer": [
+        "modules/tiles-3d/src/i3s-slpk-writer.ts"
+      ],
+      "@loaders.gl/tiles-3d/i3s-mesh-writer": [
+        "modules/tiles-3d/src/i3s-mesh-writer.ts"
+      ],
+      "@loaders.gl/tiles-3d/tileset": [
+        "modules/tiles-3d/src/tileset.ts"
+      ],
+      "@loaders.gl/tiles-3d/spatial": [
+        "modules/tiles-3d/src/spatial-api.ts"
+      ],
+      "@loaders.gl/tiles-3d/point-cloud": [
+        "modules/tiles-3d/src/point-cloud-api.ts"
       ]
     },
     "plugins": [

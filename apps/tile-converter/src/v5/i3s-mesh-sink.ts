@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
-import {GZipDecompressor, GZipCompressor} from '@loaders.gl/compression';
+import {GZipDecompressor, GZipCompressor} from '@loaders.gl/compression/gzip';
 import {
   TileConversionError,
   createBoundedMemoryTileConversionSink

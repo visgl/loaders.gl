@@ -61,7 +61,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ## Usage
 
 ```typescript
-import {TerrainLoader} from '@loaders.gl/raster';
+import {TerrainLoader} from '@loaders.gl/raster/terrain';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, TerrainLoader, options);

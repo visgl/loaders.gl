@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {ImageSet} from '@loaders.gl/tiles';
+import {ImageSet} from '@loaders.gl/tiles/image-set';
 function createImageSource() {
   return {
     async getMetadata() {

@@ -50,7 +50,7 @@ ASCII STL uses records such as `solid`, `facet normal`, `outer loop`, and `verte
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {STLLoader} from '@loaders.gl/scene';
+import {STLLoader} from '@loaders.gl/scene/stl';
 
 const mesh = await load('part.stl', STLLoader);
 const positions = mesh.attributes.POSITION.value;

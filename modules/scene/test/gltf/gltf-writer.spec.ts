@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {validateWriter} from 'test/common/conformance';
 import {parse, encodeSync, encode, load} from '@loaders.gl/core';
 import {GLTFLoader, GLTFWriter, GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
-import {ImageWriter} from '@loaders.gl/images';
+import {ImageWriter} from '@loaders.gl/images/image';
 import {getMeshAttributes} from './utils/get-mesh-attributes';
 const GLTF_BINARY_URL = '@loaders.gl/scene/gltf/test/data/3d-tiles/143.glb';
 const EXTRA_DATA = {extraData: 1};

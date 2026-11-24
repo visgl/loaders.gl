@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getBinaryImageMetadata} from '@loaders.gl/images';
+import {getBinaryImageMetadata} from '@loaders.gl/images/image';
 import type {GLTFMaterial, GLTFImage, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';

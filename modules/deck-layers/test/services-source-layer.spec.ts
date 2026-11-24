@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {resolveVisualSource} from '../src/source-layer-utils';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 import {describe, expect, test} from 'vitest';
 
 describe('SourceLayer service integration', () => {

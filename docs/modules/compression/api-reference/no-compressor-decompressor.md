@@ -50,7 +50,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 uncompressed format without a special branch.
 
 ```typescript
-import {NoCompressor, NoDecompressor} from '@loaders.gl/compression';
+import {NoCompressor, NoDecompressor} from '@loaders.gl/compression/none';
 ```
 
 `compress()`, `compressSync()`, `decompress()`, and `decompressSync()` return the input unchanged.

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {expect, test} from 'vitest';
 import {parseI3STileContent} from '../../src/i3s/lib/parsers/parse-i3s-tile-content';
 

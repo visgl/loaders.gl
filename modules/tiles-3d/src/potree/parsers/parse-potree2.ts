@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {BrotliDecompressor} from '@loaders.gl/compression';
+import {BrotliDecompressor} from '@loaders.gl/compression/brotli';
 import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
 import type {Potree2AttributeType, Potree2Metadata, Potree2HierarchyNode} from '../potree2-types';
 

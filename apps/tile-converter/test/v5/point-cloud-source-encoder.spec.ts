@@ -2,7 +2,7 @@ import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
-import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d';
+import type {PointCloudTilesetSource} from '@loaders.gl/tiles-3d/point-cloud';
 import type {PointCloudSourceTile} from '../../src/v5/point-cloud-source';
 import {
   encodePointCloudSource,

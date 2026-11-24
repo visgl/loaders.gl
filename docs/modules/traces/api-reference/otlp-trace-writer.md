@@ -52,11 +52,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import {encode, load} from '@loaders.gl/core';
-import {
-  OtlpTraceJsonLoader,
-  OtlpTraceJsonWriter,
-  OtlpTraceWriter
-} from '@loaders.gl/traces';
+import {OtlpTraceJsonLoader, OtlpTraceJsonWriter, OtlpTraceWriter} from '@loaders.gl/traces/otlp';
 
 const trace = await load('traces.otlp.json', OtlpTraceJsonLoader);
 const protobuf = await encode(trace, OtlpTraceWriter);

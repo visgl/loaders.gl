@@ -53,7 +53,7 @@ loaders.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {JaegerTraceLoader} from '@loaders.gl/traces';
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
 
 const trace = await load('trace.jaeger.json', JaegerTraceLoader);
 
@@ -68,7 +68,7 @@ The package-root export is metadata-only. Direct parser access is available from
 subpath:
 
 ```typescript
-import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger-trace-loader';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger';
 ```
 
 ## Options
@@ -81,7 +81,7 @@ import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger-trace-loade
 
 ```typescript
 import {parseInBatches} from '@loaders.gl/core';
-import {JaegerTraceLoader} from '@loaders.gl/traces';
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
 
 const batches = await parseInBatches(chunks, JaegerTraceLoader, {
   jaegerTrace: {batchSize: 1024}

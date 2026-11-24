@@ -4,7 +4,12 @@
 
 import {expect, test, vi} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
-import {ImageWriter, ImageLoader, getBinaryImageMetadata, getImageData} from '@loaders.gl/images';
+import {
+  ImageWriter,
+  ImageLoader,
+  getBinaryImageMetadata,
+  getImageData
+} from '@loaders.gl/images/image';
 const IMAGE = {
   width: 2,
   height: 3,

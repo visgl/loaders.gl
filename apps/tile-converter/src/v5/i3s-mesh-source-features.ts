@@ -4,7 +4,10 @@
 
 import {I3SAttributeLoader} from '@loaders.gl/tiles-3d/i3s';
 import type {AttributeStorageInfo, I3STileContent, I3SMeshFeatures} from '@loaders.gl/tiles-3d/i3s';
-import type {TilesetContentTraversalItem, TilesetSourceMetadata} from '@loaders.gl/tiles-3d';
+import type {
+  TilesetContentTraversalItem,
+  TilesetSourceMetadata
+} from '@loaders.gl/tiles-3d/tileset';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 import type {MeshSourceFeatureOptions} from './mesh-source-features.js';

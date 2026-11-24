@@ -34,3 +34,5 @@ export {
 } from './basis-module-loader';
 
 export {KTX2BasisWriterWorker} from './ktx2-basis-writer-worker-loader';
+export {BasisTextureFormat} from './texture-format';
+export {KTX2BasisTextureFormat} from './texture-format';

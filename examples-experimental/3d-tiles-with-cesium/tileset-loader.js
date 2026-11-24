@@ -6,7 +6,7 @@
 import {Vector3} from '@math.gl/core/matrix';
 import {setLoaderOptions} from '@loaders.gl/core';
 import {_getIonTilesetMetadata} from '@loaders.gl/3d-tiles';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {Plane} from '@math.gl/geometry/culling';
 import {loadBatchedModelTile, loadPointTile} from './tile-parsers.js';
 

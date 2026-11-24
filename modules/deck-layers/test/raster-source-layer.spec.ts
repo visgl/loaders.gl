@@ -4,7 +4,7 @@
 
 import {describe, expect, test, vi} from 'vitest';
 import type {RasterData, RasterSourceMetadata} from '@loaders.gl/core/loader-utils';
-import {RasterSet} from '@loaders.gl/tiles';
+import {RasterSet} from '@loaders.gl/tiles/raster-set';
 import {
   RasterSourceLayer,
   colorizeRasterData,

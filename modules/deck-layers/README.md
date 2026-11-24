@@ -73,7 +73,7 @@ new SourceLayer({data: tilesetUrl, loaders: [Tiles3DLoader, I3SLoader, SLPKLoade
 Service packages expose ordered registries for a single clean integration point:
 
 ```ts
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 new SourceLayer({data: arcgisUrl, loaders: ARCGIS_LOADERS});
 ```

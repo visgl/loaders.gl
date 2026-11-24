@@ -50,7 +50,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ZipkinTraceLoader} from '@loaders.gl/traces';
+import {ZipkinTraceLoader} from '@loaders.gl/traces/zipkin';
 
 const trace = await load('trace.zipkin.json', ZipkinTraceLoader);
 console.log(trace.spans);
@@ -60,7 +60,7 @@ console.log(trace.events);
 The package-root loader is metadata-only. The parser-bearing loader is available from:
 
 ```typescript
-import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin-trace-loader';
+import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin';
 ```
 
 ## Options

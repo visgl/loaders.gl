@@ -9,8 +9,8 @@ import {
   type TileGrid,
   LoaderOptions
 } from '@loaders.gl/core/loader-utils';
-import type {TileJSON} from '@loaders.gl/tiles/mvt';
-import {parseTileJSON} from '@loaders.gl/tiles/mvt';
+import type {TileJSON} from '../../mvt/lib/parse-tilejson';
+import {parseTileJSON} from '../../mvt/lib/parse-tilejson';
 // import {Source, PMTiles, Header, TileType} from 'pmtiles';
 import * as pmtiles from 'pmtiles';
 const {TileType} = pmtiles;

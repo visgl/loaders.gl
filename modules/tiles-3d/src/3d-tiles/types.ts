@@ -15,9 +15,9 @@ export type {FeatureTableJson};
 
 import {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
-import {TILESET_TYPE, LOD_METRIC_TYPE, TILE_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles-3d';
-import type {ImplicitSubtreeReference} from '@loaders.gl/tiles-3d';
-import type {TilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {TILESET_TYPE, LOD_METRIC_TYPE, TILE_TYPE, TILE_REFINEMENT} from '../constants';
+import type {ImplicitSubtreeReference} from '../tileset-3d/format-3d-tiles/implicit-tiling';
+import type {TilesetSpatialReference} from '../spatial/spatial-types';
 import type {TypedArray} from '@loaders.gl/core/schema';
 
 export type B3DMContent = {

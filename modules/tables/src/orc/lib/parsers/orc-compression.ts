@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  LZ4Decompressor,
-  LzoDecompressor,
-  SnappyDecompressor,
-  ZstdDecompressor
-} from '@loaders.gl/compression';
+import {LZ4Decompressor} from '@loaders.gl/compression/lz4';
+import {LzoDecompressor} from '@loaders.gl/compression/lzo';
+import {SnappyDecompressor} from '@loaders.gl/compression/snappy';
+import {ZstdDecompressor} from '@loaders.gl/compression/zstd';
 import {DeflateDecompressor} from '@loaders.gl/compression/deflate-decompressor';
-import type {Decompressor} from '@loaders.gl/compression';
+import type {Decompressor} from '@loaders.gl/compression/codec';
 import type {ORCCompression} from './parse-orc';
 
 const DEFLATE_DECOMPRESSOR = new DeflateDecompressor({useNative: false});

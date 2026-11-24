@@ -11,7 +11,7 @@ import {
   STRATEGY_REPLACE,
   Tile2DHeader,
   type Tileset2D
-} from '@loaders.gl/tiles';
+} from '@loaders.gl/tiles/tileset-2d';
 import {getCullBounds, transformBox} from './deck-tileset-adapter';
 
 const TILE_STATE_VISITED = 1;

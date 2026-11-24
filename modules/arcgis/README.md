@@ -10,7 +10,7 @@ exporting or republishing the data.
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 // Copy your layer's REST URL from its ArcGIS item page or Services Directory.
 const source = await createDataSource(featureLayerUrl, ArcGISFeatureServerLoader);

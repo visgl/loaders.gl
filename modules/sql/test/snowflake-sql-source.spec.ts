@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {SnowflakeSQLDataSource, SnowflakeSQLSource} from '@loaders.gl/sql';
+import {SnowflakeSQLDataSource, SnowflakeSQLSource} from '@loaders.gl/sql/snowflake';
 test('SnowflakeSQLSource#createDataSource selects Snowflake source from URL', () => {
   const dataSource = createDataSourceSync('sql+snowflake://example-account', [SnowflakeSQLSource], {
     snowflake: {token: 'token'}

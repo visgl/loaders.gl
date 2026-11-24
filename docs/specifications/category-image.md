@@ -59,7 +59,7 @@ The preferred loader for new code is `ImageLoader`:
 
 ```typescript
 import '@loaders.gl/core/polyfills'; // Only required if loading images under Node.js
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 import {registerLoaders, load} from '@loaders.gl/core';
 registerLoaders(ImageLoader);
 const image = await load('image.jpeg');
@@ -70,7 +70,7 @@ If application code needs raw pixels, convert the loaded image explicitly:
 ```typescript
 import '@loaders.gl/core/polyfills'; // Only required if loading images under Node.js
 import {load} from '@loaders.gl/core';
-import {ImageLoader, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageData} from '@loaders.gl/images/image';
 
 const image = await load('image.jpeg', ImageLoader);
 const imageData = getImageData(image);

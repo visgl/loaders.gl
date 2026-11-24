@@ -6,7 +6,7 @@ Loads MaterialX XML into a structural document tree. The native XML parser suppo
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {MaterialXLoader} from '@loaders.gl/scene';
+import {MaterialXLoader} from '@loaders.gl/scene/materialx';
 
 const document = await load('material.mtlx', MaterialXLoader);
 console.log(document.version, document.root.children);

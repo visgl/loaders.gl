@@ -5,8 +5,9 @@
 import {coreApi, parse} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 import type {I3STileHeader, SceneLayer3D} from '@loaders.gl/tiles-3d/i3s';
-import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
-import type {TilesetSourceResolver} from '@loaders.gl/tiles-3d';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
+import type {TilesetSourceResolver} from '@loaders.gl/tiles-3d/tileset';
 import {
   createI3SConversionSpatialContext,
   TileConversionError

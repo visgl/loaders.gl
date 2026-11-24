@@ -59,7 +59,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {KSPLATLoader} from '@loaders.gl/splats';
+import {KSPLATLoader} from '@loaders.gl/splats/ksplat';
 
 const table = await load(url, KSPLATLoader);
 ```

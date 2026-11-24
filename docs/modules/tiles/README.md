@@ -13,7 +13,8 @@ The `@loaders.gl/tiles` root exports `Tileset2D`, `ImageSet`, and `RasterSet`.
 These APIs select, request, and cache 2D tiles independently of a renderer.
 
 ```ts
-import {Tileset2D, RasterSet} from '@loaders.gl/tiles';
+import {Tileset2D} from '@loaders.gl/tiles/tileset-2d';
+import {RasterSet} from '@loaders.gl/tiles/raster-set';
 ```
 
 Import format loaders and writers from separate subpaths:

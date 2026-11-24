@@ -87,7 +87,7 @@ the [authentication guide](/docs/developer-guide/authentication).
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISMapTileLoader} from '@loaders.gl/arcgis';
+import {ArcGISMapTileLoader} from '@loaders.gl/arcgis/map-service';
 
 const source = await createDataSource(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
@@ -127,7 +127,7 @@ controls inexpensive to implement.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const layer = new SourceLayer({
   id: 'world-imagery',

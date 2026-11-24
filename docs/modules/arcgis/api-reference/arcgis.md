@@ -57,7 +57,7 @@ source loader per visual data contract and a shared registry for automatic selec
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const source = await load(serviceUrl, ARCGIS_LOADERS);
 ```

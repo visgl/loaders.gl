@@ -1,19 +1,11 @@
 import {expect, test} from 'vitest';
-import {
-  CompressionWorker,
-  NoCompressor,
-  NoDecompressor,
-  DeflateCompressor,
-  DeflateDecompressor,
-  GZipCompressor,
-  GZipDecompressor,
-  LZ4Compressor,
-  LZ4Decompressor,
-  SnappyCompressor,
-  SnappyDecompressor,
-  ZstdCompressor,
-  ZstdDecompressor
-} from '@loaders.gl/compression';
+import {CompressionWorker} from '@loaders.gl/compression/worker';
+import {NoCompressor, NoDecompressor} from '@loaders.gl/compression/none';
+import {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression/deflate';
+import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression/gzip';
+import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression/lz4';
+import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression/snappy';
+import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression/zstd';
 import {
   decompressBatchesWithNativeDecompressionStream,
   decompressWithNativeDecompressionStream

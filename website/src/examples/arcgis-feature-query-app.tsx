@@ -2,8 +2,8 @@ import React, {useEffect, useId, useRef, useState} from 'react';
 import ArcGISMap from '../../../examples/website/shared/arcgis-map';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {createDataSource, load} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
-import type {ArcGISFeatureQueryProgress} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
+import type {ArcGISFeatureQueryProgress} from '@loaders.gl/arcgis/feature-service';
 import type {Feature} from '@loaders.gl/core/schema';
 
 /** Existing public gallery dataset; all records come from the live service. */

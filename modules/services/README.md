@@ -3,7 +3,7 @@
 Authentication presets for Mapbox, Google Maps, and Cesium ion services.
 
 ```ts
-import {MapboxAuthentication, GoogleMapsAuthentication, CesiumIonAuthentication} from '@loaders.gl/services';
+import {MapboxAuthentication, GoogleMapsAuthentication, CesiumIonAuthentication} from '@loaders.gl/services/authentication';
 ```
 
 OGC protocol and STAC sources live in [`@loaders.gl/ogc`](https://loaders.gl/docs/modules/ogc/wms); ArcGIS sources remain in [`@loaders.gl/arcgis`](https://loaders.gl/docs/modules/arcgis).

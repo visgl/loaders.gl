@@ -6,7 +6,7 @@ title: LzoDecompressor API Reference
 It loads dynamically and exposes no compressor.
 
 ```typescript
-import {LzoDecompressor} from '@loaders.gl/compression';
+import {LzoDecompressor} from '@loaders.gl/compression/lzo';
 
 const decoder = new LzoDecompressor();
 const data = await decoder.decompress(compressedBlock, outputCapacity);

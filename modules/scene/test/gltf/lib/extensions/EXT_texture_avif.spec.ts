@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 
-import {getSupportedImageFormats} from '@loaders.gl/images';
+import {getSupportedImageFormats} from '@loaders.gl/images/image';
 
 test('EXT_texture_avif detects Chromium AVIF decode support asynchronously', async () => {
   const supportedImageFormats = await getSupportedImageFormats();

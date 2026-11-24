@@ -4,9 +4,10 @@
 
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
-import {ImageLoader} from '@loaders.gl/images';
-import {DracoLoader} from '@loaders.gl/scene';
-import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {DracoLoader} from '@loaders.gl/scene/draco';
+import {BasisLoader} from '@loaders.gl/images/basis';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
 import {I3STileContent, I3STileOptions, I3STilesetOptions} from './types';
 import {I3SContentLoader as I3SContentLoaderMetadata} from './i3s-content-loader';

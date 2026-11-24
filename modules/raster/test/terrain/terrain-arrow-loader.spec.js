@@ -5,7 +5,7 @@ import * as terrain from '@loaders.gl/raster/terrain';
 import * as bundledTerrain from '@loaders.gl/raster/terrain/bundled';
 import * as unbundledTerrain from '@loaders.gl/raster/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 import {validateArrowTableSchema} from '@math.gl/core/arrow';
 import {indexedMeshArrowSchema} from '@loaders.gl/core/schema';
 registerLoaders([ImageLoader]);

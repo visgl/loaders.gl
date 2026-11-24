@@ -8,7 +8,7 @@ import {createRoot, type Root} from 'react-dom/client';
 import {Tiles3DArchiveSource, Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles';
 import {SLPKSource} from '@loaders.gl/tiles-3d/i3s';
 import {fetchFile, load, parse} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {GLTFScenegraph, GLTFWriter, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
 import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-source';
 

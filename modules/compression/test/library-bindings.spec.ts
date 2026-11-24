@@ -5,28 +5,16 @@ import {ZstdCompressUtilsCompressor} from '@loaders.gl/compression/zstd-compress
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {
-  BrotliCompressor,
-  BrotliDecompressor,
-  BZip2Compressor,
-  BZip2Decompressor,
-  DeflateCompressor,
-  DeflateDecompressor,
-  GZipCompressor,
-  GZipDecompressor,
-  LZ4Compressor,
-  LZ4Decompressor,
-  NoCompressor,
-  NoDecompressor,
-  SnappyCompressor,
-  SnappyDecompressor,
-  XZCompressor,
-  XZDecompressor,
-  ZstdCompressor,
-  ZstdDecompressor,
-  type Compressor,
-  type Decompressor
-} from '@loaders.gl/compression';
+import {BrotliCompressor, BrotliDecompressor} from '@loaders.gl/compression/brotli';
+import {BZip2Compressor, BZip2Decompressor} from '@loaders.gl/compression/bzip2';
+import {DeflateCompressor, DeflateDecompressor} from '@loaders.gl/compression/deflate';
+import {GZipCompressor, GZipDecompressor} from '@loaders.gl/compression/gzip';
+import {LZ4Compressor, LZ4Decompressor} from '@loaders.gl/compression/lz4';
+import {NoCompressor, NoDecompressor} from '@loaders.gl/compression/none';
+import {SnappyCompressor, SnappyDecompressor} from '@loaders.gl/compression/snappy';
+import {XZCompressor, XZDecompressor} from '@loaders.gl/compression/xz';
+import {ZstdCompressor, ZstdDecompressor} from '@loaders.gl/compression/zstd';
+import {type Compressor, type Decompressor} from '@loaders.gl/compression/codec';
 import {GZipCompressor as DirectGZipCompressor} from '../src/gzip-compressor';
 import {GZipDecompressor as DirectGZipDecompressor} from '../src/gzip-decompressor';
 import {DeflateCompressor as DirectDeflateCompressor} from '../src/deflate-compressor';

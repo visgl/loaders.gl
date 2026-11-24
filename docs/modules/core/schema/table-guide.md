@@ -51,7 +51,7 @@ when called through the core parsing and loading APIs.
 
 ```typescript
 import {load, loadInBatches} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const table = await load('data.csv', CSVLoader);
 console.log(table.numRows, table.getChild('name')); // arrow.Table
@@ -90,7 +90,7 @@ CSV file and encode the resulting table as Arrow IPC:
 
 ```typescript
 import {encode, load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/tables';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 import {ArrowWriter} from '@loaders.gl/tables/arrow';
 
 const table = await load('data.csv', CSVLoader);

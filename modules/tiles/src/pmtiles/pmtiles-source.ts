@@ -20,9 +20,10 @@ import {
   resolveXYZTileParameters,
   waitForPromiseWithSignal
 } from '@loaders.gl/core/loader-utils';
-import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
-import {MLTLoader, MLTLoaderOptions} from '@loaders.gl/tiles/mlt';
-import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/tiles/mvt';
+import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images/image';
+import {MLTLoader, MLTLoaderOptions} from '../mlt/mlt-loader';
+import {MVTLoader, MVTLoaderOptions} from '../mvt/mvt-loader';
+import {TileJSONLoaderOptions} from '../mvt/tilejson-loader';
 
 import * as pmtiles from 'pmtiles';
 const {PMTiles} = pmtiles;

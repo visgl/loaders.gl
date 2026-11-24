@@ -7,7 +7,9 @@ import {expect, test, vi} from 'vitest';
 import {coreApi} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {getI3sTileHeader} from '@loaders.gl/tiles-3d/i3s/test/test-utils/load-utils';
-import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tile3D, Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import type {Tileset3DProps} from '../../src/tileset-3d/common/tileset-3d';
 const TILESET_URL =
   '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';

@@ -3,7 +3,7 @@ import {validateLoader, validateMeshCategoryData} from 'test/common/conformance'
 import {TerrainLoader} from '@loaders.gl/raster/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 // Should be possible to remove this
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 registerLoaders([ImageLoader]);
 const MAPBOX_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/mapbox.png';
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/raster/test/terrain/data/terrarium.png';

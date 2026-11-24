@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ImageLoaderOptions} from '@loaders.gl/images';
-import {ImageLoader} from '@loaders.gl/images';
+import type {ImageLoaderOptions} from '@loaders.gl/images/image';
+import {ImageLoader} from '@loaders.gl/images/image';
 import type {
   CoreAPI,
   DataSourceOptions,

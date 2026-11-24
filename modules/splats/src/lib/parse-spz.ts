@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GZipDecompressor, ZstdDecompressor} from '@loaders.gl/compression';
+import {GZipDecompressor} from '@loaders.gl/compression/gzip';
+import {ZstdDecompressor} from '@loaders.gl/compression/zstd';
 import type {Table} from 'apache-arrow';
 import type {GaussianSplats, SPZCoordinateSystem, SplatsLoaderOptions} from '../types';
 import {makeGaussianSplatsArrowTable} from './splats-arrow-table';

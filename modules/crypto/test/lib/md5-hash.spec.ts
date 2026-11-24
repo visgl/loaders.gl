@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {MD5Hash} from '@loaders.gl/crypto';
+import {MD5Hash} from '@loaders.gl/crypto/md5';
 
 const textEncoder = new TextEncoder();
 

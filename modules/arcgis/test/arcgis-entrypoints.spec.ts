@@ -4,7 +4,8 @@
 
 import {describe, expect, test} from 'vitest';
 import {createDataSource, createDataSourceSync, preload} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader, ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
+import {ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis/discovery';
 import {ArcGISAuthentication, createArcGISCredential} from '@loaders.gl/arcgis/authentication';
 import {
   ARCGIS_LOADERS as BUNDLED_ARCGIS_LOADERS,

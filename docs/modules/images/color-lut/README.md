@@ -79,7 +79,7 @@ A Cube file stores a sampled mapping from input color values to output RGB value
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {CubeLUTLoader} from '@loaders.gl/images';
+import {CubeLUTLoader} from '@loaders.gl/images/color-lut';
 
 const table = await load('grade.cube', CubeLUTLoader);
 console.log(table.dimension, table.size, table.domainMinimum, table.domainMaximum);
@@ -108,7 +108,7 @@ The first row determines the cube edge size. The supported source rows vary blue
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ThreeDLLUTLoader} from '@loaders.gl/images';
+import {ThreeDLLUTLoader} from '@loaders.gl/images/color-lut';
 
 const table = await load('grade.3dl', ThreeDLLUTLoader, {
   lut: {outputBitDepth: 12}
@@ -144,7 +144,7 @@ A PNG does not identify which layout its producer used or whether it is a LUT at
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ImageLUTLoader} from '@loaders.gl/images';
+import {ImageLUTLoader} from '@loaders.gl/images/color-lut';
 
 // A 16-edge cube with 16 blue slices in one horizontal row: 256 × 16 pixels.
 const table = await load('grade.png', ImageLUTLoader, {

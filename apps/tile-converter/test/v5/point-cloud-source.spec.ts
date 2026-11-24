@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import type {PointCloudTileHeader, PointCloudTilesetSource} from '@loaders.gl/tiles-3d';
+import type {PointCloudTileHeader, PointCloudTilesetSource} from '@loaders.gl/tiles-3d/point-cloud';
 import {traversePointCloudSource} from '../../src/v5/point-cloud-source';
 
 const ROOT_TILE: PointCloudTileHeader = {

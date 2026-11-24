@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {DataSourceOptions, SourceLoader} from '@loaders.gl/core/loader-utils';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {ImageLoaderOptions} from '@loaders.gl/images/image';
 import type {MVTLoaderOptions} from '@loaders.gl/tiles/mvt';
 
 /** Static source metadata shared by lazy descriptors and runtime loaders. */

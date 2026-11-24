@@ -22,7 +22,8 @@ Install `@loaders.gl/tiles-3d` once, then import the format subpath you use.
 
 ```ts
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 const source = new Tiles3DSource({url, loader: Tiles3DLoader});
 const tileset = new Tileset3D(source, options);
@@ -55,7 +56,7 @@ The shared `Tileset3DSource` contract owns:
 Conversion and inspection jobs can visit the complete dataset without creating a viewport:
 
 ```ts
-import {traverseTilesetContents} from '@loaders.gl/tiles-3d';
+import {traverseTilesetContents} from '@loaders.gl/tiles-3d/tileset';
 
 for await (const {tile, contents} of traverseTilesetContents(tileset, {signal})) {
   // `contents` preserves the tile's declared content order.

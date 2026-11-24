@@ -7,3 +7,5 @@ export {type GLBLoaderOptions, GLBLoader} from './glb-loader-types';
 export {GLBLoaderWithParser} from './glb-loader';
 
 export {type GLBChunk, type GLBWriterOptions, GLBWriter} from './glb-writer';
+export {GLBFormat} from './gltf/gltf-format';
+export type {GLB} from './gltf/index';

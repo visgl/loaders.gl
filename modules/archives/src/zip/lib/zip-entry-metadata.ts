@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {CRC32Hash} from '@loaders.gl/crypto';
+import {CRC32Hash} from '@loaders.gl/crypto/crc32';
 import {parseZip64ExtraField} from './zip64-extra-field';
 import type {Zip64ExtraFieldDescription} from './zip64-extra-field';
 

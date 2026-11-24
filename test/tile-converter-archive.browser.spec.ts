@@ -11,7 +11,7 @@ import {
   createTileConversionArchive as createRootArchive,
   encodeTileConversionArchiveInBatches as encodeRootArchiveInBatches
 } from '@loaders.gl/tile-converter/v5';
-import {GZipCompressor} from '@loaders.gl/compression';
+import {GZipCompressor} from '@loaders.gl/compression/gzip';
 import {readZip} from 'test/common/read-zip';
 
 // Format owners test archive structure exhaustively; this only checks converter handoff/diagnostics.

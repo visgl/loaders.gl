@@ -4,17 +4,14 @@
 
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {
-  KMLLoader,
-  KMZLoader,
-  GPXLoader,
-  TCXLoader,
-  ShapefileLoader,
-  SHPLoader,
-  DBFLoader,
-  FlatGeobufLoader,
-  GeoPackageLoader
-} from '@loaders.gl/geospatial';
+import {KMLLoader, KMZLoader} from '@loaders.gl/geospatial/kml';
+import {GPXLoader} from '@loaders.gl/geospatial/gpx';
+import {TCXLoader} from '@loaders.gl/geospatial/tcx';
+import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
+import {SHPLoader} from '@loaders.gl/geospatial/shp';
+import {DBFLoader} from '@loaders.gl/geospatial/dbf';
+import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
+import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 import {KMLLoaderWithParser} from '@loaders.gl/geospatial/kml';
 import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
 import {GPXLoaderWithParser} from '@loaders.gl/geospatial/gpx';

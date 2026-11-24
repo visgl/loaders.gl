@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {XMLLoaderOptions} from '@loaders.gl/documents';
+import type {XMLLoaderOptions} from '@loaders.gl/documents/xml';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
 import {convertXMLFieldToArrayInPlace} from '@loaders.gl/documents/xml-utils';
 import {parseExceptionReport} from './parse-exception-report';

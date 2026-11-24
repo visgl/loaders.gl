@@ -4,18 +4,18 @@
 
 import {expect, test} from 'vitest';
 import type {Schema} from '@loaders.gl/core/schema';
-import {SQLDataSource, getSQLAdapterFactory, registerSQLAdapter} from '@loaders.gl/sql';
+import {SQLDataSource, getSQLAdapterFactory, registerSQLAdapter} from '@loaders.gl/sql/adapter';
 import {parseSQLPredicate, query as queryTables} from '@loaders.gl/core/query';
 import {convertRowsToArrowTable} from '../src/sql-utils';
+import type {SQLAdapter} from '@loaders.gl/sql/adapter';
 import type {
-  SQLAdapter,
   SQLCatalogInfo,
   SQLMetadata,
   SQLQueryOptions,
   SQLSchemaInfo,
   SQLSourceOptions,
   SQLTableInfo
-} from '@loaders.gl/sql';
+} from '@loaders.gl/sql/adapter';
 class StubSQLDataSource extends SQLDataSource {
   constructor(data: string, options: SQLSourceOptions, sourceType = 'stub-sql') {
     super(data, options, sourceType);

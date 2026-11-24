@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 
-import {compileSQLTableQuery} from '@loaders.gl/sql';
+import {compileSQLTableQuery} from '@loaders.gl/sql/query';
 import {parseSQLPredicate} from '@loaders.gl/core/query';
 
 describe('compileSQLTableQuery', () => {

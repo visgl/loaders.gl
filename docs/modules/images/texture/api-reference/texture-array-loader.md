@@ -59,7 +59,7 @@ A loader for texture arrays described by a JSON manifest.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureArrayLoader} from '@loaders.gl/images';
+import {TextureArrayLoader} from '@loaders.gl/images/texture';
 
 const images = await load('texture-array.image-texture-array.json', TextureArrayLoader);
 ```

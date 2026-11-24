@@ -85,17 +85,17 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
+export {Hash} from '@loaders.gl/crypto/hash';
+export {CRC32Hash} from '@loaders.gl/crypto/crc32';
+export {CRC32CHash} from '@loaders.gl/crypto/crc32c';
+export {MD5Hash} from '@loaders.gl/crypto/md5';
+export {SHA256Hash} from '@loaders.gl/crypto/sha256';
+export {CryptoHash} from '@loaders.gl/crypto/webcrypto';
+export {NodeHash} from '@loaders.gl/crypto/node';
 export {
-  Hash,
-  CRC32Hash,
-  CRC32CHash,
-  MD5Hash,
-  SHA256Hash,
-  CryptoHash,
-  NodeHash,
   encodeNumber,
   encodeHex,
   encodeBase64,
   asciiToBase64,
   base64ToAscii
-} from '@loaders.gl/crypto';
+} from '@loaders.gl/crypto/encoding';

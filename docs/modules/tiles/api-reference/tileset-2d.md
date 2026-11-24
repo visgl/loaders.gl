@@ -53,7 +53,7 @@ overwriting each other's traversal state.
 ## Usage
 
 ```typescript
-import {Tileset2D} from '@loaders.gl/tiles';
+import {Tileset2D} from '@loaders.gl/tiles/tileset-2d';
 
 const tileset = new Tileset2D({
   getTileData: async ({index, signal}) => fetchTile(index, signal),
@@ -65,7 +65,7 @@ const tileset = new Tileset2D({
 You can also construct it directly from a loaders.gl `TileSource`.
 
 ```typescript
-import {Tileset2D} from '@loaders.gl/tiles';
+import {Tileset2D} from '@loaders.gl/tiles/tileset-2d';
 
 const tileset = Tileset2D.fromTileSource(tileSource, {
   maxCacheByteSize: 32 * 1024 * 1024

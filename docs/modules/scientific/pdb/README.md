@@ -51,7 +51,7 @@ PDB files describe coordinates and records, not a particular ball-and-stick or r
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {PDBLoader} from '@loaders.gl/scientific';
+import {PDBLoader} from '@loaders.gl/scientific/pdb';
 
 const structure = await load('molecule.pdb', PDBLoader);
 for (const model of structure.models) {

@@ -5,9 +5,9 @@
 import type {
   PointCloudBoundingVolume,
   PointCloudCoordinateSystem,
-  PointCloudTilesetSource,
-  TilesetSpatialReference
-} from '@loaders.gl/tiles-3d';
+  PointCloudTilesetSource
+} from '@loaders.gl/tiles-3d/point-cloud';
+import type {TilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {transformPointCloudSourceTile} from './point-cloud-spatial.js';
 import type {PointCloudSpatialOptions} from './point-cloud-spatial.js';
 import {encodePointCloudTileWithMetadata} from './point-cloud.js';

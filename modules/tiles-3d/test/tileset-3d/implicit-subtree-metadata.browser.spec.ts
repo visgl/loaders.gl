@@ -1,12 +1,11 @@
 import {describe, expect, test} from 'vitest';
 import {
   createImplicitSubtreeReference,
-  LOD_METRIC_TYPE,
   materializeImplicitSubtree,
-  TILE_REFINEMENT,
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree
-} from '@loaders.gl/tiles-3d';
+} from '@loaders.gl/tiles-3d/3d-tiles';
+import {LOD_METRIC_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles-3d/tileset';
 
 const descriptor: ImplicitTilingDescriptor = {
   contentUrlTemplate: 'https://example.com/content/{level}/{x}/{y}.b3dm',

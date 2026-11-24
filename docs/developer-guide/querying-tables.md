@@ -16,7 +16,7 @@ making core depend on format implementations.
 
 ```ts
 import {query} from '@loaders.gl/core/query';
-import {ParquetLoader} from '@loaders.gl/tables';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 
 const result = await query(
   {

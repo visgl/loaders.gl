@@ -4,7 +4,7 @@ Loads UTF-8 Markdown into a `MarkdownDocument` syntax tree, without a renderer o
 
 ```typescript
 import {parse} from '@loaders.gl/core';
-import {MarkdownLoader} from '@loaders.gl/documents';
+import {MarkdownLoader} from '@loaders.gl/documents/markdown';
 
 const document = await parse('# Title\n\nA **bold** statement.', MarkdownLoader);
 ```

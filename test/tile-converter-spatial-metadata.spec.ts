@@ -5,7 +5,8 @@
 import {afterEach, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {Tiles3DLoader, type Tiles3DTilesetJSON} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {createMeshTilesetConversionSource} from '@loaders.gl/tile-converter/v5/adapters';
 
 /** Dedicated runtimes released after each qualification attempt. */

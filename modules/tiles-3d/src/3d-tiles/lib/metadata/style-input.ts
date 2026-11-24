@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Tile3DContent, Tile3DMetadataContext} from '@loaders.gl/tiles-3d';
+import type {
+  Tile3DContent,
+  Tile3DMetadataContext
+} from '../../../tileset-3d/common/tile-3d-contracts';
 
 /** Origin of a property exposed to a renderer-neutral style input. */
 export type Tile3DStylePropertySource =

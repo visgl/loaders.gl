@@ -10,7 +10,7 @@ import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
 This package provides authentication presets for Mapbox, Google Maps, and Cesium ion.
 
 ```ts
-import {MapboxAuthentication, GoogleMapsAuthentication, CesiumIonAuthentication} from '@loaders.gl/services';
+import {MapboxAuthentication, GoogleMapsAuthentication, CesiumIonAuthentication} from '@loaders.gl/services/authentication';
 ```
 
 OGC service protocols and STAC sources are documented under [@loaders.gl/ogc](/docs/modules/ogc); ArcGIS has its own [module](/docs/modules/arcgis).

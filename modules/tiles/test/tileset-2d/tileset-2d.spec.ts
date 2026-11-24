@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {Tileset2D, type Tileset2DAdapter} from '@loaders.gl/tiles';
+import {Tileset2D, type Tileset2DAdapter} from '@loaders.gl/tiles/tileset-2d';
 const TEST_ADAPTER: Tileset2DAdapter<null> = {
   getTileIndices: () => [
     {x: 0, y: 0, z: 0},

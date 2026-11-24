@@ -8,3 +8,4 @@ export {parseVTKXML} from './vtk-xml';
 export type {VTKXMLDataset, VTKXMLPiece, VTKXMLArray, VTKXMLNumericArray} from './vtk-xml';
 
 export {VTKLoaderWithParser} from '../vtk-loader';
+export {VTKLoader} from '../vtk-loader-types';

@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {Table as NativeArrowTable} from 'apache-arrow';
-import {ImageLoader} from '@loaders.gl/images';
-import {LERCLoader} from '@loaders.gl/raster';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {LERCLoader} from '@loaders.gl/raster/lerc';
 import {
   ArcGISFeatureServerLoader,
   ArcGISVectorSource,

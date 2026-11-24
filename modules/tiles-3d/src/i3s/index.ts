@@ -135,3 +135,5 @@ export type {
   I3SMeshMaterial,
   I3SMeshTexture
 } from './i3s-mesh-writer';
+
+export {I3SSource} from '../tileset-3d/format-i3s/i3s-source';

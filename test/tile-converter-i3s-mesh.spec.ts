@@ -12,7 +12,8 @@ import {
   getGLTFAccessorValue,
   setGLTFAccessorValue
 } from '@loaders.gl/scene/gltf';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
 import {Matrix4} from '@math.gl/core/matrix';
