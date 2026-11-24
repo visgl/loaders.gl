@@ -11,7 +11,7 @@
  * `yarn test-audit`, which fails when this value differs from the target branch or when a test
  * hard-codes a different branch.
  */
-export const LOADERS_GL_FIXTURE_BRANCH = 'master';
+export const LOADERS_GL_FIXTURE_BRANCH = '5.0-release';
 
 /** Raw GitHub URL of the repository root at {@link LOADERS_GL_FIXTURE_BRANCH}, with a trailing slash. */
 export const LOADERS_GL_RAW_FIXTURE_URL = `https://raw.githubusercontent.com/visgl/loaders.gl/${LOADERS_GL_FIXTURE_BRANCH}/`;
@@ -20,4 +20,4 @@ export const LOADERS_GL_RAW_FIXTURE_URL = `https://raw.githubusercontent.com/vis
 export const LOADERS_GL_REDIRECTING_FIXTURE_URL = `https://github.com/visgl/loaders.gl/raw/${LOADERS_GL_FIXTURE_BRANCH}/`;
 
 /** Default npm distribution tag for worker assets on this branch. */
-export const NPM_TAG = 'beta';
+export const NPM_TAG = 'latest';
