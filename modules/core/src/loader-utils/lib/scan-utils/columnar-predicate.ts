@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {
+  compileColumnarPredicate,
+  type ColumnarPredicateReader
+} from '@math.gl/sql/columnar-predicate';
 import type {ArrayType} from '@loaders.gl/core/schema';
 
 /** Scalar values supported by format-neutral columnar predicates. */
@@ -236,9 +240,10 @@ export function filterColumnarRowIndices(
   rowCount: number
 ): number[] {
   if (!predicate) return Array.from({length: rowCount}, (_, index) => index);
+  const evaluate = compileColumnarPredicate(predicate, path => bindColumnarReader(columns, path));
   const result: number[] = [];
   for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-    if (evaluateColumnarPredicate(predicate, columns, rowIndex) === true) result.push(rowIndex);
+    if (evaluate(rowIndex) === true) result.push(rowIndex);
   }
   return result;
 }
@@ -255,54 +260,6 @@ export function gatherColumnarColumns(
     }
   }
   return result;
-}
-
-function evaluateColumnarPredicate(
-  predicate: ColumnarPredicate,
-  columns: Record<string, ArrayType>,
-  rowIndex: number
-): boolean | null {
-  if (predicate.op === 'and' || predicate.op === 'or') {
-    const results = predicate.args.map(child =>
-      evaluateColumnarPredicate(child, columns, rowIndex)
-    );
-    return predicate.op === 'and'
-      ? results.includes(false)
-        ? false
-        : results.includes(null)
-          ? null
-          : true
-      : results.includes(true)
-        ? true
-        : results.includes(null)
-          ? null
-          : false;
-  }
-  if (predicate.op === 'not') {
-    const value = evaluateColumnarPredicate(predicate.args[0], columns, rowIndex);
-    return value === null ? null : !value;
-  }
-  const leaf = predicate as
-    | ColumnarComparisonPredicate
-    | ColumnarInPredicate
-    | ColumnarNullPredicate;
-  const value = getColumnarValue(columns, getColumnarPredicatePath(leaf.args[0]), rowIndex);
-  if (leaf.op === 'isNull') return value === null || value === undefined;
-  if (value === null || value === undefined) return null;
-  if (leaf.op === 'in')
-    return leaf.args[1].some(candidate => compareColumnarValues(value, candidate) === 0);
-  const comparison = compareColumnarValues(value, leaf.args[1]);
-  return leaf.op === '='
-    ? comparison === 0
-    : leaf.op === '<>'
-      ? comparison !== 0
-      : leaf.op === '<'
-        ? comparison < 0
-        : leaf.op === '<='
-          ? comparison <= 0
-          : leaf.op === '>'
-            ? comparison > 0
-            : comparison >= 0;
 }
 
 function visitColumnarPredicate<ValueT, PropertyT extends ColumnarPredicateProperty>(
@@ -346,52 +303,24 @@ function copyColumnarPredicateProperty<PropertyT extends ColumnarPredicateProper
   } as PropertyT;
 }
 
-function getColumnarValue(
+/** Binds a portable predicate path to one source column. */
+function bindColumnarReader(
   columns: Record<string, ArrayType>,
-  path: string[],
-  rowIndex: number
-): unknown {
-  let value: any = columns[path[0]]?.[rowIndex];
-  for (let index = 1; index < path.length && value != null; index++) value = value[path[index]];
-  return value;
+  [name, ...path]: readonly string[]
+): ColumnarPredicateReader {
+  const column = columns[name];
+  return rowIndex => {
+    let value = column?.[rowIndex];
+    for (const property of path) {
+      if (value == null) return null;
+      value = value[property];
+    }
+    return value as ReturnType<ColumnarPredicateReader>;
+  };
 }
 
 function copyColumnarPredicateValue(value: ColumnarPredicateValue): ColumnarPredicateValue {
   if (value instanceof Uint8Array) return value.slice();
   if (value instanceof Date) return new Date(value.getTime());
   return value;
-}
-
-function compareColumnarValues(left: unknown, right: ColumnarPredicateValue): number {
-  if (left instanceof Uint8Array && right instanceof Uint8Array) return compareBytes(left, right);
-  if (left instanceof Uint8Array || right instanceof Uint8Array)
-    throw new Error('Columnar binary predicates require binary values on both sides');
-  if (left instanceof Date || right instanceof Date) {
-    if (!(left instanceof Date) || !(right instanceof Date))
-      throw new Error('Columnar date predicates require date values on both sides');
-    return compareNumbers(left.getTime(), right.getTime());
-  }
-  const leftType = typeof left;
-  const rightType = typeof right;
-  const numeric =
-    (leftType === 'number' || leftType === 'bigint') &&
-    (rightType === 'number' || rightType === 'bigint');
-  if (!numeric && leftType !== rightType)
-    throw new Error(`Columnar predicate cannot compare ${leftType} with ${rightType}`);
-  if (!numeric && leftType !== 'string' && leftType !== 'boolean')
-    throw new Error(`Columnar predicate does not support ${leftType} values`);
-  return (left as any) < (right as any) ? -1 : (left as any) > (right as any) ? 1 : 0;
-}
-
-function compareNumbers(left: number, right: number): number {
-  if (!Number.isFinite(left) || !Number.isFinite(right))
-    throw new Error('Non-finite values cannot be ordered by a columnar predicate');
-  return left < right ? -1 : left > right ? 1 : 0;
-}
-
-function compareBytes(left: Uint8Array, right: Uint8Array): number {
-  const length = Math.min(left.length, right.length);
-  for (let index = 0; index < length; index++)
-    if (left[index] !== right[index]) return left[index] < right[index] ? -1 : 1;
-  return left.length - right.length;
 }

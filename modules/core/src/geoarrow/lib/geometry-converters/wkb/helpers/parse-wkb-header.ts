@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {inspectWKBHeader} from '@math.gl/core/arrow';
+import {inspectWKBHeader, inspectWKTHeader} from '@math.gl/core/arrow';
 import type {WellKnownDimension, WKBGeometryType as MathWKBGeometryType} from '@math.gl/core/arrow';
 import type {WKBGeometryType, WKBHeader} from './wkb-types';
 import {MAX_SRID, WKT_MAGIC_STRINGS, WKT_MAGIC_BYTES} from './wkb-types';
@@ -37,12 +37,10 @@ export function isWKT(input: string | ArrayBufferLike): boolean {
  */
 export function getWKTGeometryType(input: string | ArrayBufferLike): WKBGeometryType | null {
   if (typeof input === 'string') {
-    const match = input.match(
-      /^(POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|GEOMETRYCOLLECTION)(?:\s+(?:ZM|Z|M))?(?:\s|\()/i
-    );
-    if (!match?.[1]) return null;
+    const header = inspectWKTHeader(input);
+    if (!header) return null;
     const geometryType = WKT_MAGIC_STRINGS.findIndex(magicString =>
-      magicString.startsWith(match[1].toUpperCase())
+      magicString.startsWith(header.geometryType.toUpperCase())
     );
     return geometryType >= 0 ? ((geometryType + 1) as WKBGeometryType) : null;
   }

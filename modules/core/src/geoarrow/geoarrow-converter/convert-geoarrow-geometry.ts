@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {convertGeoArrowColumn, decodeGeoArrowWKB} from '@math.gl/core/arrow';
+import {convertGeoArrowColumn, decodeGeoArrowWKB, decodeGeoArrowWKT} from '@math.gl/core/arrow';
 import type {DecodeGeoArrowWKBOptions} from '@math.gl/core/arrow';
 import {
   convertGeometryToWKB,
@@ -462,6 +462,27 @@ function convertGeometryColumnWithMath(
   targetEncoding: GeoArrowEncoding,
   options?: GeoArrowGeometryConvertOptions
 ): arrow.Vector | null {
+  if (
+    sourceEncoding === 'geoarrow.wkt' &&
+    isConcreteNativeEncoding(targetEncoding) &&
+    options?.dimension &&
+    options.maxGeometryCollectionDepth === undefined
+  ) {
+    try {
+      const source = makeGeoArrowColumnFromArrowVector(column, {encoding: sourceEncoding});
+      return makeArrowVectorFromGeoArrowColumn(
+        decodeGeoArrowWKT(source, {
+          encoding: targetEncoding,
+          dimension: options.dimension,
+          coordinateLayout: options.coordinates,
+          offsetType: options.offsetType
+        })
+      );
+    } catch {
+      // Keep the existing promotion and diagnostic paths for incompatible rows.
+      return null;
+    }
+  }
   const sourceIsNative = isMathGeoArrowNativeEncoding(sourceEncoding);
   const targetIsNative = isMathGeoArrowNativeEncoding(targetEncoding);
   const supportsConversion =

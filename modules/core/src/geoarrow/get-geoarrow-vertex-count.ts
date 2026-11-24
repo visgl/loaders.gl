@@ -3,9 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {scanWKB} from '@math.gl/core/arrow';
-import type {Geometry} from '@loaders.gl/core/schema';
-import {convertWKTToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
+import {countWKTVertices, scanWKB} from '@math.gl/core/arrow';
 
 import {
   isGeoArrowBox,
@@ -155,38 +153,15 @@ function getWKTDataVertexCount(data: arrow.Data): number {
   for (let rowIndex = 0; rowIndex < vector.length; rowIndex++) {
     const value = vector.get(rowIndex);
     if (value == null) continue;
-    const geometry = convertWKTToGeometry(String(value));
-    if (!geometry) throw new Error(`Invalid WKT geometry at row ${rowIndex}.`);
-    vertexCount += countGeometryVertices(geometry);
+    try {
+      if (/\(\s*\)\s*$/.test(String(value))) throw new Error('Empty WKT geometry body');
+      vertexCount += countWKTVertices(String(value), {inferDimensions: true});
+    } catch (cause) {
+      throw new Error(`Invalid WKT geometry at row ${rowIndex}.`, {cause});
+    }
   }
 
   return vertexCount;
-}
-
-/** Counts coordinate tuples in a parsed geometry, including nested collections. */
-function countGeometryVertices(geometry: Geometry): number {
-  switch (geometry.type) {
-    case 'Point':
-      return geometry.coordinates.length > 0 ? 1 : 0;
-    case 'MultiPoint':
-    case 'LineString':
-      return geometry.coordinates.length;
-    case 'Polygon':
-      return geometry.coordinates.reduce((count, ring) => count + ring.length, 0);
-    case 'MultiLineString':
-      return geometry.coordinates.reduce((count, line) => count + line.length, 0);
-    case 'MultiPolygon':
-      return geometry.coordinates.reduce(
-        (count, polygon) =>
-          count + polygon.reduce((polygonCount, ring) => polygonCount + ring.length, 0),
-        0
-      );
-    case 'GeometryCollection':
-      return geometry.geometries.reduce(
-        (count, childGeometry) => count + countGeometryVertices(childGeometry),
-        0
-      );
-  }
 }
 
 /**

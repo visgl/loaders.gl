@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {parseWKTWithMetadata, type WKTParseResult} from '@math.gl/core/arrow';
 import type {
   GeoArrowCoordinateLayout,
   GeoArrowDimension,
@@ -47,21 +48,10 @@ const UNION_GEOMETRY_KINDS: readonly Exclude<WKTGeometryKind, 'GeometryCollectio
   'MultiPolygon'
 ];
 
-const GEOMETRY_KINDS: readonly WKTGeometryKind[] = [
-  'Point',
-  'LineString',
-  'Polygon',
-  'MultiPoint',
-  'MultiLineString',
-  'MultiPolygon',
-  'GeometryCollection'
-];
-
 /**
  * Decodes homogeneous WKT rows directly into native GeoArrow buffers.
  *
- * The parser produces only numeric coordinate arrays and immediately feeds them to the
- * two-pass GeoArrow builder. It deliberately does not construct GeoJSON geometry objects.
+ * Parsed coordinate tuples are passed to the two-pass GeoArrow builder.
  * Mixed WKT columns and geometry collections use the matching typed union kernels.
  *
  * @param column WKT Arrow vector.
@@ -487,266 +477,30 @@ function writeMultiPolygon(builder: GeoArrowBuilder, coordinates: number[][][][]
   for (const polygon of coordinates) writePolygon(builder, polygon);
 }
 
-class WKTParser {
-  private index = 0;
-  private geometryCollectionDepth = 0;
-
-  /** Creates a parser for one WKT value. */
-  constructor(
-    private readonly input: string,
-    private readonly maxGeometryCollectionDepth: number
-  ) {}
-
-  /** Parses one WKT value, including an optional SRID prefix. */
-  parse(): ParsedWKTGeometry | null {
-    this.skipWhitespace();
-    if (this.readLiteral('SRID')) {
-      this.skipWhitespace();
-      if (!this.readCharacter('=')) return null;
-      if (this.readNumber() === null) return null;
-      this.skipWhitespace();
-      if (!this.readCharacter(';')) return null;
-    }
-    const geometry = this.parseGeometry();
-    this.skipWhitespace();
-    return geometry && this.index === this.input.length ? geometry : null;
-  }
-
-  private parseGeometry(): ParsedWKTGeometry | null {
-    this.skipWhitespace();
-    const kind = this.readGeometryKind();
-    if (!kind) return null;
-    this.skipWhitespace();
-    const dimensionToken = this.readDimensionToken();
-    this.skipWhitespace();
-    if (this.readLiteral('EMPTY')) {
-      return {kind, dimension: dimensionToken || 'xy', coordinates: getEmptyCoordinates(kind)};
-    }
-    if (!this.readCharacter('(')) return null;
-
-    let coordinates: WKTCoordinates | null | undefined;
-    let geometries: ParsedWKTGeometry[] | null | undefined;
-    switch (kind) {
-      case 'Point':
-        coordinates = this.parseCoordinate();
-        break;
-      case 'LineString':
-        coordinates = this.parseCoordinateList();
-        break;
-      case 'Polygon':
-        coordinates = this.parseNestedCoordinates(1);
-        break;
-      case 'MultiPoint':
-        coordinates = this.parseMultiPointCoordinates();
-        break;
-      case 'MultiLineString':
-        coordinates = this.parseNestedCoordinates(1);
-        break;
-      case 'MultiPolygon':
-        coordinates = this.parseNestedCoordinates(2);
-        break;
-      case 'GeometryCollection':
-        this.geometryCollectionDepth++;
-        if (this.geometryCollectionDepth > this.maxGeometryCollectionDepth) return null;
-        geometries = this.parseGeometryList();
-        this.geometryCollectionDepth--;
-        break;
-    }
-    if (
-      coordinates === null ||
-      geometries === null ||
-      (coordinates === undefined && geometries === undefined)
-    )
-      return null;
-    if (!this.readCharacter(')')) return null;
-
-    const parsedCoordinates = coordinates || undefined;
-    const parsedGeometries = geometries || undefined;
-    const inferredDimension = dimensionToken || inferDimension(parsedCoordinates, parsedGeometries);
-    if (
-      kind !== 'GeometryCollection' &&
-      !hasValidArity(parsedCoordinates, undefined, inferredDimension)
-    ) {
-      return null;
-    }
-    return {
-      kind,
-      dimension: inferredDimension,
-      coordinates: parsedCoordinates,
-      geometries: parsedGeometries
-    };
-  }
-
-  private parseCoordinateList(): number[][] | null {
-    const coordinates: number[][] = [];
-    while (true) {
-      const coordinate = this.parseCoordinate();
-      if (!coordinate) return null;
-      coordinates.push(coordinate);
-      this.skipWhitespace();
-      if (!this.readCharacter(',')) return coordinates;
-    }
-  }
-
-  private parseNestedCoordinates(depth: number): WKTCoordinates | null {
-    const values: WKTCoordinates[] = [];
-    while (true) {
-      if (!this.readCharacter('(')) return null;
-      const value =
-        depth === 1 ? this.parseCoordinateList() : this.parseNestedCoordinates(depth - 1);
-      if (!value || !this.readCharacter(')')) return null;
-      values.push(value);
-      this.skipWhitespace();
-      if (!this.readCharacter(',')) return values;
-    }
-  }
-
-  private parseMultiPointCoordinates(): number[][] | null {
-    this.skipWhitespace();
-    if (this.peekCharacter('(')) {
-      const coordinates: number[][] = [];
-      while (true) {
-        if (!this.readCharacter('(')) return null;
-        const coordinate = this.parseCoordinate();
-        if (!coordinate || !this.readCharacter(')')) return null;
-        coordinates.push(coordinate);
-        this.skipWhitespace();
-        if (!this.readCharacter(',')) return coordinates;
-      }
-    }
-    return this.parseCoordinateList();
-  }
-
-  private parseGeometryList(): ParsedWKTGeometry[] | null {
-    const geometries: ParsedWKTGeometry[] = [];
-    while (true) {
-      const geometry = this.parseGeometry();
-      if (!geometry) return null;
-      geometries.push(geometry);
-      this.skipWhitespace();
-      if (!this.readCharacter(',')) return geometries;
-    }
-  }
-
-  private parseCoordinate(): number[] | null {
-    const coordinate: number[] = [];
-    while (true) {
-      this.skipWhitespace();
-      const value = this.readNumber();
-      if (value === null) break;
-      coordinate.push(value);
-    }
-    return coordinate.length >= 2 ? coordinate : null;
-  }
-
-  private readGeometryKind(): WKTGeometryKind | null {
-    const word = this.readWord()?.toUpperCase();
-    const kind = GEOMETRY_KINDS.find(value => value.toUpperCase() === word);
-    return kind || null;
-  }
-
-  private readDimensionToken(): GeoArrowDimension | null {
-    const position = this.index;
-    const word = this.readWord()?.toUpperCase();
-    if (word === 'Z') return 'xyz';
-    if (word === 'M') return 'xym';
-    if (word === 'ZM') return 'xyzm';
-    this.index = position;
+/** Parses WKT while retaining the converter's null-on-invalid convention. */
+function parseWKT(input: string, maxGeometryCollectionDepth = 64): ParsedWKTGeometry | null {
+  try {
+    if (/\(\s*\)/.test(input)) return null;
+    const result = parseWKTWithMetadata(input, {
+      inferDimensions: true,
+      allowMissingInheritedOrdinates: true,
+      maximumDepth: maxGeometryCollectionDepth
+    });
+    return adaptParsedWKT(result);
+  } catch {
     return null;
   }
+}
 
-  private readWord(): string | null {
-    const match = this.input.slice(this.index).match(/^[A-Za-z]+/);
-    if (!match) return null;
-    this.index += match[0].length;
-    return match[0];
+/** Adapts math.gl geometry metadata to the seeded union and collection kernels. */
+function adaptParsedWKT({geometry, dimension, children}: WKTParseResult): ParsedWKTGeometry {
+  if (geometry.type === 'GeometryCollection') {
+    const geometries = children?.map(adaptParsedWKT);
+    return {
+      kind: geometry.type,
+      dimension: dimension === 'xy' ? (geometries?.[0]?.dimension ?? dimension) : dimension,
+      geometries
+    };
   }
-
-  private readNumber(): number | null {
-    const match = this.input
-      .slice(this.index)
-      .match(/^[+-]?(?:(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?)/);
-    if (!match) return null;
-    this.index += match[0].length;
-    const value = Number(match[0]);
-    return Number.isFinite(value) ? value : null;
-  }
-
-  private readLiteral(literal: string): boolean {
-    const position = this.index;
-    const word = this.readWord();
-    if (word?.toUpperCase() === literal) return true;
-    this.index = position;
-    return false;
-  }
-
-  private readCharacter(character: string): boolean {
-    if (this.input[this.index] !== character) return false;
-    this.index++;
-    this.skipWhitespace();
-    return true;
-  }
-
-  private peekCharacter(character: string): boolean {
-    return this.input[this.index] === character;
-  }
-
-  private skipWhitespace(): void {
-    while (/\s/.test(this.input[this.index] || '')) this.index++;
-  }
-}
-
-function parseWKT(input: string, maxGeometryCollectionDepth = 64): ParsedWKTGeometry | null {
-  return new WKTParser(input, maxGeometryCollectionDepth).parse();
-}
-
-function getEmptyCoordinates(kind: WKTGeometryKind): WKTCoordinates {
-  return kind === 'Point' ? [] : [];
-}
-
-function inferDimension(
-  coordinates: WKTCoordinates | undefined,
-  geometries: readonly ParsedWKTGeometry[] | undefined
-): GeoArrowDimension {
-  const coordinateSize = findCoordinateSize(coordinates);
-  if (coordinateSize) return dimensionFromSize(coordinateSize);
-  for (const geometry of geometries || []) return geometry.dimension;
-  return 'xy';
-}
-
-function findCoordinateSize(coordinates: WKTCoordinates | undefined): number | null {
-  if (!coordinates) return null;
-  if (coordinates.length === 0) return null;
-  if (isCoordinate(coordinates)) return coordinates.length;
-  for (const value of coordinates) {
-    const size = findCoordinateSize(value as WKTCoordinates);
-    if (size) return size;
-  }
-  return null;
-}
-
-function dimensionFromSize(size: number): GeoArrowDimension {
-  return size === 4 ? 'xyzm' : size === 3 ? 'xyz' : 'xy';
-}
-
-function hasValidArity(
-  coordinates: WKTCoordinates | undefined,
-  geometries: readonly ParsedWKTGeometry[] | undefined,
-  dimension: GeoArrowDimension
-): boolean {
-  const expectedSize = dimension === 'xy' ? 2 : dimension === 'xyzm' ? 4 : 3;
-  if (coordinates && !hasCoordinateArity(coordinates, expectedSize)) return false;
-  return (geometries || []).every(
-    geometry => geometry.dimension === dimension || geometry.kind === 'GeometryCollection'
-  );
-}
-
-function hasCoordinateArity(value: WKTCoordinates, expectedSize: number): boolean {
-  if (value.length === 0) return true;
-  if (isCoordinate(value)) return value.length === expectedSize;
-  return value.every(child => hasCoordinateArity(child, expectedSize));
-}
-
-function isCoordinate(value: WKTCoordinates): value is number[] {
-  return typeof value[0] === 'number';
+  return {kind: geometry.type, dimension, coordinates: geometry.coordinates as WKTCoordinates};
 }

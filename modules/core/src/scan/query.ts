@@ -355,12 +355,10 @@ async function* queryAppendBatches(
     if (compiledFilter && !arrow.DataType.isBool(compiledFilter.outputField.type))
       throw new Error('SQL WHERE expression must return Boolean.');
     const project = computedProjection
-      ? expressionTools!.compileArrowProjection(
-          inputSchema,
-          select!,
-          options.signal,
-          options.functions
-        )
+      ? expressionTools!.prepareArrowProjection(inputSchema, select!, {
+          signal: options.signal,
+          functions: options.functions
+        }).projectTable
       : (data: arrow.Table) => projectArrowTable(data, normalized.select);
     const empty = project(new arrow.Table(inputSchema));
     const comparisonSchema = convertSchemaToArrow(convertArrowToSchema(empty.schema));

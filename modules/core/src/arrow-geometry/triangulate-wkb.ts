@@ -30,7 +30,7 @@
 
 /* eslint-disable */
 
-import {EWKB_FLAG_M, EWKB_FLAG_SRID, EWKB_FLAG_Z, WKBGeometryType} from './wkb-types';
+import {getWellKnownDimensionSize, visitWKB} from '@math.gl/core/arrow';
 
 type WKBPolygonLayout = {
   ringStart: number;
@@ -47,23 +47,48 @@ type WKBPolygonLayout = {
  */
 export function triangulateWKB(wkb: ArrayBufferLike | ArrayBufferView): number[] {
   const dataView = getWKBDataView(wkb);
-  const wkbHeader = parseWKBHeaderFast(dataView);
   const triangles: number[] = [];
   resetVertexPool();
   resetRingLayoutPool();
 
-  switch (wkbHeader.geometryType) {
-    case WKBGeometryType.Polygon: {
-      const parsedPolygon = parseWKBPolygonLayout(dataView, wkbHeader.byteOffset, wkbHeader, 0);
-      triangulateWKBPolygon(dataView, parsedPolygon.layout, triangles);
-      return triangles;
+  let polygon: WKBPolygonLayout | undefined;
+  let vertexOffset = 0;
+  try {
+    visitWKB(dataView, {
+      geometry(header, count, depth) {
+        if (
+          depth === 0 &&
+          header.geometryType !== 'Polygon' &&
+          header.geometryType !== 'MultiPolygon'
+        ) {
+          throw new Error(`WKB: Expected Polygon or MultiPolygon, found ${header.geometryType}`);
+        }
+        if (header.geometryType !== 'Polygon') return;
+        if (polygon) triangulateWKBPolygon(dataView, polygon, triangles);
+        polygon = {
+          ringStart: ringLayoutPoolLength,
+          ringCount: count ?? 0,
+          vertexCount: 0,
+          dimensions: getWellKnownDimensionSize(header.dimension),
+          littleEndian: header.littleEndian
+        };
+      },
+      ring(pointCount, _ringIndex, _depth, byteOffset) {
+        ringPointCounts[ringLayoutPoolLength] = pointCount;
+        ringCoordinateByteOffsets[ringLayoutPoolLength] = byteOffset;
+        ringVertexOffsets[ringLayoutPoolLength++] = vertexOffset;
+        polygon!.vertexCount += pointCount;
+        vertexOffset += pointCount;
+      }
+    });
+  } catch (cause) {
+    if (cause instanceof Error && cause.message.startsWith('WKB Polygon collection contains')) {
+      throw new Error('WKB: Inner geometries of MultiPolygon must be Polygon geometries.', {cause});
     }
-    case WKBGeometryType.MultiPolygon:
-      triangulateWKBMultiPolygon(dataView, wkbHeader.byteOffset, wkbHeader.littleEndian, triangles);
-      return triangles;
-    default:
-      throw new Error(`WKB: Expected Polygon or MultiPolygon, found ${wkbHeader.geometryType}`);
+    throw cause;
   }
+  if (polygon) triangulateWKBPolygon(dataView, polygon, triangles);
+  return triangles;
 }
 
 /**
@@ -76,163 +101,6 @@ function getWKBDataView(wkb: ArrayBufferLike | ArrayBufferView): DataView {
     return new DataView(wkb.buffer, wkb.byteOffset, wkb.byteLength);
   }
   return new DataView(wkb);
-}
-
-/**
- * Triangulates each polygon in a WKB MultiPolygon.
- * @param dataView Binary WKB input view.
- * @param byteOffset Offset to the multipolygon payload.
- * @param littleEndian Whether the multipolygon count is little endian.
- * @param triangles Output triangle index array.
- */
-function triangulateWKBMultiPolygon(
-  dataView: DataView,
-  byteOffset: number,
-  littleEndian: boolean,
-  triangles: number[]
-): void {
-  const polygonCount = dataView.getUint32(byteOffset, littleEndian);
-  byteOffset += 4;
-
-  let vertexOffset = 0;
-  const polygonHeader = {byteOffset} as WKBHeader;
-  for (let polygonIndex = 0; polygonIndex < polygonCount; polygonIndex++) {
-    parseWKBHeaderFast(dataView, byteOffset, polygonHeader);
-    if (polygonHeader.geometryType !== WKBGeometryType.Polygon) {
-      throw new Error('WKB: Inner geometries of MultiPolygon must be Polygon geometries.');
-    }
-
-    const parsedPolygon = parseWKBPolygonLayout(
-      dataView,
-      polygonHeader.byteOffset,
-      polygonHeader,
-      vertexOffset
-    );
-    triangulateWKBPolygon(dataView, parsedPolygon.layout, triangles);
-    vertexOffset += parsedPolygon.layout.vertexCount;
-    byteOffset = parsedPolygon.byteOffset;
-  }
-}
-
-/**
- * Parses a binary WKB header without generic WKT checks or object merging.
- * @param dataView Binary WKB input view.
- * @param byteOffset Header byte offset.
- * @param target Optional reusable header object.
- * @returns Parsed WKB header.
- */
-function parseWKBHeaderFast(
-  dataView: DataView,
-  byteOffset: number = 0,
-  target?: WKBHeader
-): WKBHeader {
-  const wkbHeader = target || ({} as WKBHeader);
-  const littleEndian = dataView.getUint8(byteOffset) === 1;
-  byteOffset++;
-
-  const geometryCode = dataView.getUint32(byteOffset, littleEndian);
-  byteOffset += 4;
-
-  const geometryType = (geometryCode & 0x7) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
-  let dimensions: 2 | 3 | 4 = 2;
-  let coordinates: 'xy' | 'xyz' | 'xym' | 'xyzm' = 'xy';
-  let variant: 'wkb' | 'ewkb' | 'iso-wkb' = 'wkb';
-
-  const isoType = (geometryCode - geometryType) / 1000;
-  if (isoType === 1) {
-    variant = 'iso-wkb';
-    dimensions = 3;
-    coordinates = 'xyz';
-  } else if (isoType === 2) {
-    variant = 'iso-wkb';
-    dimensions = 3;
-    coordinates = 'xym';
-  } else if (isoType === 3) {
-    variant = 'iso-wkb';
-    dimensions = 4;
-    coordinates = 'xyzm';
-  } else if (isoType !== 0) {
-    const ewkbZ = geometryCode & EWKB_FLAG_Z;
-    const ewkbM = geometryCode & EWKB_FLAG_M;
-    const ewkbSRID = geometryCode & EWKB_FLAG_SRID;
-
-    if (ewkbZ && ewkbM) {
-      variant = 'ewkb';
-      dimensions = 4;
-      coordinates = 'xyzm';
-    } else if (ewkbZ) {
-      variant = 'ewkb';
-      dimensions = 3;
-      coordinates = 'xyz';
-    } else if (ewkbM) {
-      variant = 'ewkb';
-      dimensions = 3;
-      coordinates = 'xym';
-    }
-
-    if (ewkbSRID) {
-      variant = 'ewkb';
-      wkbHeader.srid = dataView.getUint32(byteOffset, littleEndian);
-      byteOffset += 4;
-    } else {
-      wkbHeader.srid = undefined;
-    }
-  } else {
-    wkbHeader.srid = undefined;
-  }
-
-  wkbHeader.type = 'wkb';
-  wkbHeader.variant = variant;
-  wkbHeader.geometryType = geometryType;
-  wkbHeader.dimensions = dimensions;
-  wkbHeader.coordinates = coordinates;
-  wkbHeader.littleEndian = littleEndian;
-  wkbHeader.byteOffset = byteOffset;
-
-  return wkbHeader;
-}
-
-/**
- * Parses one WKB Polygon payload into ring byte ranges.
- * @param dataView Binary WKB input view.
- * @param byteOffset Offset to the polygon payload.
- * @param wkbHeader Parsed polygon header.
- * @param vertexOffset First vertex index of this polygon in the source WKB geometry.
- * @returns Parsed polygon layout and the next unread byte offset.
- */
-function parseWKBPolygonLayout(
-  dataView: DataView,
-  byteOffset: number,
-  wkbHeader: WKBHeader,
-  vertexOffset: number
-): {layout: WKBPolygonLayout; byteOffset: number} {
-  const ringCount = dataView.getUint32(byteOffset, wkbHeader.littleEndian);
-  byteOffset += 4;
-
-  const ringStart = ringLayoutPoolLength;
-  let vertexCount = 0;
-
-  for (let ringIndex = 0; ringIndex < ringCount; ringIndex++) {
-    const pointCount = dataView.getUint32(byteOffset, wkbHeader.littleEndian);
-    byteOffset += 4;
-    ringPointCounts[ringLayoutPoolLength] = pointCount;
-    ringCoordinateByteOffsets[ringLayoutPoolLength] = byteOffset;
-    ringVertexOffsets[ringLayoutPoolLength] = vertexOffset + vertexCount;
-    ringLayoutPoolLength++;
-    byteOffset += pointCount * wkbHeader.dimensions * 8;
-    vertexCount += pointCount;
-  }
-
-  return {
-    layout: {
-      ringStart,
-      ringCount,
-      vertexCount,
-      dimensions: wkbHeader.dimensions,
-      littleEndian: wkbHeader.littleEndian
-    },
-    byteOffset
-  };
 }
 
 /**
