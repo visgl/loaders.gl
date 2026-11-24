@@ -26,6 +26,10 @@ for new features.
 
 Relational Arrow queries use math.gl’s Arrow result types. Read `COUNT` fields as Arrow `Int64` values (JavaScript `bigint`). An empty ungrouped aggregate yields one row with `COUNT` equal to `0n` and `NULL` in aggregates such as `SUM` and `AVG`. Division by zero throws a SQL evaluation error. Use a nullable divisor to produce a null result instead.
 
+Arrow temporal predicates use storage units. Use epoch days for numeric `Date32`
+literals and a `bigint` in the column unit for `Timestamp` literals. A JavaScript
+`Date` is converted to the column unit, including its UTC day for `Date32`.
+
 ### Package and import migrations
 
 Install the grouped npm package and use its format subpath. For example, replace

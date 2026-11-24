@@ -279,14 +279,14 @@ test('streaming retains portable comparisons for Arrow time columns', async () =
 });
 
 test.each([
-  [new arrow.DateDay(), {op: '=', args: [{property: 'value'}, new Date(43_200_000)]}, []],
-  [new arrow.DateDay(), {op: '=', args: [{property: 'value'}, 86_400_000]}, [86_400_000]],
+  [new arrow.DateDay(), {op: '=', args: [{property: 'value'}, new Date(43_200_000)]}, [0]],
+  [new arrow.DateDay(), {op: '=', args: [{property: 'value'}, 1]}, [86_400_000]],
   [
     new arrow.TimestampMicrosecond(),
-    {op: '>', args: [{property: 'value'}, 43_200_000]},
+    {op: '>', args: [{property: 'value'}, 43_200_000_000n]},
     [86_400_000]
   ]
-] as const)('direct Arrow queries preserve temporal literal semantics for %s', async (type, predicate, expected) => {
+] as const)('direct Arrow queries bind literals in Arrow temporal units for %s', async (type, predicate, expected) => {
   const table = new arrow.Table({
     value: arrow.vectorFromArray([0, 86_400_000, null], type)
   });
