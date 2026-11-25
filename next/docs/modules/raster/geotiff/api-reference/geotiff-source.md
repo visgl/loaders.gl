@@ -204,7 +204,7 @@ The returned `RasterData` contains:
 
 ## Notes[​](#notes "Direct link to Notes")
 
-* GeoTIFF overview selection compares both source pixel resolutions with the requested region; `geotiff.js` decodes the selected image window.
+* GeoTIFF overview selection compares both source pixel resolutions with the requested region; `geotiff.js` decodes the selected image window. An overview may be up to 1% coarser than requested on each axis to account for target-size rounding and floating-point error.
 * For remote COGs, `GeoTIFFLoader` can share a `RangeRequestScheduler` with other sources to coalesce overlapping byte-range requests.
 
 ## Explicit numeric region reads[​](#explicit-numeric-region-reads "Direct link to Explicit numeric region reads")
@@ -212,6 +212,8 @@ The returned `RasterData` contains:
 `GeoTIFFRasterSource.supportsRegion` is `true`. Use `getRasterForRegion({bounds, crs, width, height, bands, signal})` when coverage is already available independently of a viewport. Bounds are finite, ordered, non-wrapped rectangles in canonical x/y order. CRS must explicitly match the source. Missing georeferencing and unsupported conversion fail instead of assuming geographic degrees. Each antimeridian split remains a separate payload.
 
 Both region and viewport requests use the same window pipeline. Available TIFF overview images are selected by requested resolution on both axes. Results include the selected overview, effective resolution, per-band source indices, owned arrays, and the window affine transform. A rotated window can cover more than the requested rectangle; its affine, rather than its enclosing bbox, places individual samples. TIFF decoder metadata remains separate from raw samples. Native point registration is normalized to area registration in returned windows by shifting the affine origin half a native pixel. Returned sample centers therefore retain their source coordinates. Resized windows use shared validity-aware nearest/bilinear sampling; bilinear samples with invalid contributing neighbors remain invalid. Continuous band values retain the decoder's typed representation, while categorical bands use nearest sampling. This sample-center normalization can change boundary samples compared with the earlier GeoTIFF bbox resampling convention.
+
+The returned grid is not always the requested rectangle. The read window snaps outward to whole pixels of the selected overview, so `boundingBox` can be slightly larger than the requested bounds. When the request extends past the source, `width` and `height` are scaled to the part inside the source and rounded, so they can be smaller than requested. Place samples with the returned `transform` and `boundingBox`, not with the requested bounds and size.
 
 `maxPixels` (default 16,000,000) and `maxDecodedBytes` (default 256 MiB) may be set per region or in `geotiff` source options. These bound returned samples and conservatively estimate native window and tile allocations before decoding. Third-party decoder scratch allocations are not directly observable. Range schedulers additionally bound concurrency, queue size, and individual range sizes. Invalid output lengths and decoded-byte overflow fail. A non-overlapping payload has an explicit invalid mask, so valid zero is never confused with missing coverage.
 
