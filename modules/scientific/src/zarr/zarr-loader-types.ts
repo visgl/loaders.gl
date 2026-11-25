@@ -4,6 +4,7 @@
 
 import type {CoreAPI, SourceLoader} from '@loaders.gl/core/loader-utils';
 import type {GeoZarrRasterSource, GeoZarrLoaderOptions} from './geo-zarr-loader';
+import {GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS} from './lib/geo-zarr-defaults';
 import type {OMEZarrImageSource, ZarrLoaderOptions} from './ome-zarr-loader';
 import type {SpatialDataSource, SpatialDataLoaderOptions} from './spatial-data-loader';
 import type {ZarrArraySource, ZarrArrayLoaderOptions} from './zarr-array-loader';
@@ -69,7 +70,9 @@ export const GeoZarrLoader = {
       spatialDimensions: undefined!,
       transform: undefined!,
       coordinateReferenceSystem: undefined!,
-      defaultSelection: undefined!
+      defaultSelection: undefined!,
+      fillValueAsNoData: undefined!,
+      maxConcurrentRequests: GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS
     }
   } as GeoZarrLoaderOptions,
   defaultOptions: {
@@ -79,7 +82,9 @@ export const GeoZarrLoader = {
       spatialDimensions: undefined!,
       transform: undefined!,
       coordinateReferenceSystem: undefined!,
-      defaultSelection: undefined!
+      defaultSelection: undefined!,
+      fillValueAsNoData: undefined!,
+      maxConcurrentRequests: GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS
     }
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),

@@ -32,6 +32,7 @@ for stable v4 migrations.
 - **Raster and scientific data.** [Raster](./modules/raster/README.md) supports range reads
   and terrain meshes. [Scientific](./modules/scientific/README.md) groups multidimensional
   arrays and VTK, NRRD, and PDB formats.
+- **GeoZarr pyramids.** [GeoZarrRasterSource](./modules/scientific/zarr/api-reference/geo-zarr-loader.md) opens xarray level groups, resolves CF CRS and nodata, and selects native overviews by viewport.
 - **3D content and tiles.** [Scene](./modules/scene/README.md) groups glTF, Draco, and mesh
   formats. [Tile Converter](./modules/tile-converter/README.md) defaults to the v5 engine.
 - **Documents and images.** [Documents](./modules/documents/README.md) groups text and

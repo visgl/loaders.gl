@@ -67,7 +67,7 @@ function createViewport(bounds: RasterBoundingBox): RasterViewport {
 
 test('GeoZarrRasterSource discovers OME-NGFF levels georeferenced by per-level CF metadata', async () => {
   const metadata = await createSource('0/values').getMetadata();
-  expect(metadata.crs).toMatch(/^PROJCS\["WGS 84 \/ UTM zone 19N"/);
+  expect(metadata.crs).toBe('EPSG:32619');
   expect(metadata.boundingBox).toEqual([
     [500000, 4649992],
     [500008, 4650000]
@@ -132,7 +132,7 @@ test('GeoZarrRasterSource takes a level transform from its own coordinates, not 
     await rm(join(store, '1', 'spatial_ref'), {recursive: true});
 
     const metadata = await createSource('1/values', pathToFileURL(store).href).getMetadata();
-    expect(metadata.crs).toMatch(/^PROJCS\["WGS 84 \/ UTM zone 19N"/);
+    expect(metadata.crs).toBe('EPSG:32619');
     expect(metadata.boundingBox).toEqual([
       [500000, 4649992],
       [500008, 4650000]
