@@ -69,21 +69,23 @@ See the [Parquet source API](./parquet-source) for query options.
 Load a Parquet file as object rows when a row-oriented result is required.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables';
 import {load} from '@loaders.gl/core';
 
 const loaderOptions = {parquet: {batchSize: 10_000, shape: 'object-row-table'}};
 const rows = await load(url, ParquetLoader, loaderOptions);
 ```
 
-Applications normally import metadata loaders from the package root. Code that needs a
-parser-bearing loader directly can import `ParquetLoaderWithParser` from
-`@loaders.gl/tables/parquet`.
+Import the metadata loader from `@loaders.gl/tables` to keep the parser out of the
+initial browser bundle. The `@loaders.gl/tables/parquet` entry point also exports
+parsers, writers, and sources; bundlers can include some of that code even when
+only the metadata loader is imported. Use that entry point when you need format
+APIs such as `ParquetLoaderWithParser`.
 
 Load a Parquet file as Arrow using the primary loader.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables';
 import {load} from '@loaders.gl/core';
 
 const abortController = new AbortController();
@@ -112,7 +114,7 @@ const arrowTable = await load(url, ParquetLoader, {
 The ParquetLoader supports streaming parsing, in which case it will yield "batches" of rows.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables';
 import {loadInBatches} from '@loaders.gl/core';
 
 const batches = await loadInBatches('geo.parquet', ParquetLoader, {
