@@ -21,12 +21,11 @@ import {OtlpTraceLoaderWithParser} from '../src/otlp-trace-loader';
 
 import {
   OtlpTraceJsonLoader,
-  OtlpTraceJsonWriter,
   OtlpTraceLoader,
-  OtlpTraceWriter,
   type OtlpTrace,
   type OtlpTraceBatch
-} from '../src';
+} from '@loaders.gl/traces/otlp';
+import {OtlpTraceJsonWriter, OtlpTraceWriter} from '@loaders.gl/traces/otlp/bundled';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
 setLoaderOptions({core: {worker: false}});

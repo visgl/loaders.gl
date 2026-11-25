@@ -99,7 +99,7 @@ to gather service pages in `getFeatures()` before converting to the requested en
 values. Exhausting a bound throws instead of returning a silently truncated aggregate.
 
 ```ts
-import {OGCAPIFeaturesSource} from '@loaders.gl/ogc/wms';
+import {OGCAPIFeaturesSource} from '@loaders.gl/ogc/wms/bundled';
 
 const source = new OGCAPIFeaturesSource(serviceUrl, {'ogc-api': {collectionId: 'roads'}});
 for await (const page of source.getFeaturesInPages({
@@ -132,7 +132,7 @@ materialized rather than a network-streamed feature parser. These rules follow
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPIFeaturesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIFeaturesLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const source = createDataSourceSync(
   'https://demo.ldproxy.net/daraa',
@@ -166,7 +166,7 @@ const features = await source.getFeatures({
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const source = createDataSourceSync(landingPageUrl, [OGCAPITilesLoader], {
   'ogc-api': {
@@ -280,7 +280,7 @@ const {tileGrid} = await source.getMetadata();
 ```
 
 ```ts
-import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/ogc/wms';
+import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/ogc/wms/api';
 
 const response = await fetch('https://example.com/ogcapi/tileMatrixSets/UTM18N');
 const tileGrid = convertOGCTileMatrixSetToTileGrid(await response.json(), {metersPerUnit: 1});
@@ -307,7 +307,7 @@ const tileBytes = await source.getTile({z: 3, x: 4, y: 5, tileMatrix: 'UTM18N:3'
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPICoveragesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPICoveragesLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const source = createDataSourceSync(landingPageUrl, [OGCAPICoveragesLoader], {
   'ogc-api-coverages': {collectionId: 'temperature'}
@@ -343,7 +343,7 @@ level, and parameter.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPIEDRLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIEDRLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const source = createDataSourceSync(edrUrl, [OGCAPIEDRLoader], {
   'ogc-api-edr': {collectionId: 'weather'}

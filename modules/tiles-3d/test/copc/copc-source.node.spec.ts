@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import '@loaders.gl/core/polyfills';
-import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
+import {COPCLoader} from '@loaders.gl/tiles-3d/copc/bundled';
 import {expect, test, vi} from 'vitest';
 
 const COPC_FILE_PATH = 'modules/tiles-3d/test/copc/data/ellipsoid.copc.laz';

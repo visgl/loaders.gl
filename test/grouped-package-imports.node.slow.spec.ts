@@ -13,27 +13,30 @@ import {expect, test} from 'vitest';
 const REPOSITORY_ROOT = process.cwd();
 
 test.each([
-  ['tables', 'ParquetLoader', 'parquet', 'ParquetLoaderWithParser'],
-  ['tables', 'ORCLoader', 'orc', 'ORCLoaderWithParser'],
-  ['tables', 'LanceLoader', 'lance', 'LanceLoaderWithParser'],
-  ['tables', 'JSONLoader', 'json', 'JSONLoaderWithParser'],
-  ['tables', 'ArrowLoader', 'arrow', 'ArrowLoaderWithParser'],
-  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoaderWithParser'],
-  ['geospatial', 'GeoPackageLoader', 'geopackage', 'GeoPackageLoaderWithParser'],
-  ['tables', 'CSVLoader', 'csv', 'CSVLoaderWithParser'],
-  ['pointclouds', 'PCDLoader', 'pcd', 'PCDLoaderWithParser'],
-  ['pointclouds', 'PLYLoader', 'ply', 'PLYLoaderWithParser'],
-  ['scene', 'OBJLoader', 'obj', 'OBJLoaderWithParser'],
-  ['scientific', 'NPYLoader', 'npy', 'NPYLoaderWithParser'],
-  ['geospatial', 'KMLLoader', 'kml', 'KMLLoaderWithParser']
+  ['tables', 'ParquetLoader', 'parquet', 'ParquetLoader'],
+  ['tables', 'GeoParquetLoader', 'parquet', 'GeoParquetLoader'],
+  ['tables', 'ORCLoader', 'orc', 'ORCLoader'],
+  ['tables', 'LanceLoader', 'lance', 'LanceLoader'],
+  ['tables', 'JSONLoader', 'json', 'JSONLoader'],
+  ['tables', 'ArrowLoader', 'arrow', 'ArrowLoader'],
+  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoader'],
+  ['geospatial', 'GeoPackageLoader', 'geopackage', 'GeoPackageLoader'],
+  ['tables', 'CSVLoader', 'csv', 'CSVLoader'],
+  ['pointclouds', 'PCDLoader', 'pcd', 'PCDLoader'],
+  ['pointclouds', 'PLYLoader', 'ply', 'PLYLoader'],
+  ['scene', 'OBJLoader', 'obj', 'OBJLoader'],
+  ['scientific', 'NPYLoader', 'npy', 'NPYLoader'],
+  ['geospatial', 'KMLLoader', 'kml', 'KMLLoader']
 ])(
   'published %s %s metadata preloads through its format export',
   (group, metadata, parserEntry, parser) => {
     // A separate Node process bypasses Vitest source aliases and checks the published layout.
-    const source = `import {${metadata}} from '@loaders.gl/${group}';
-    import {${parser}} from '@loaders.gl/${group}/${parserEntry}';
-    if (await ${metadata}.preload() !== ${parser}) process.exit(1);
-    if (${metadata}.loadWorker && ${metadata}.loadWorker !== ${parser}.loadWorker) process.exit(1);`;
+    const metadataPath = `${group}/${parserEntry}`;
+    const parserPath = `${parserEntry}/bundled`;
+    const source = `import {${metadata}} from '@loaders.gl/${metadataPath}';
+    import {${parser} as bundledParser} from '@loaders.gl/${group}/${parserPath}';
+    if (await ${metadata}.preload() !== bundledParser) process.exit(1);
+    if (${metadata}.loadWorker && ${metadata}.loadWorker !== bundledParser.loadWorker) process.exit(1);`;
     expect(() =>
       execFileSync(process.execPath, ['--input-type=module', '-e', source], {
         cwd: REPOSITORY_ROOT,
@@ -46,15 +49,8 @@ test.each([
 );
 
 test.each([
-  ['tables', 'ArrowLoader'],
-  ['tables', 'JSONLoader'],
-  ['tables', 'LanceLoader'],
-  ['tables', 'ORCLoader'],
-  ['tables', 'ParquetLoader'],
-  ['tables', 'GeoJSONLoader'],
-  ['geospatial', 'GeoPackageLoader'],
-  ['tables', 'CSVLoader'],
-  ['geospatial', 'KMLLoader']
+  ['geospatial/geopackage', 'GeoPackageLoader'],
+  ['geospatial/kml', 'KMLLoader']
 ])(
   'grouped %s %s metadata keeps parser loaders out of the initial browser chunk',
   async (group, loader) => {
@@ -104,11 +100,6 @@ test.each([
         /node_modules\/(?:sql\.js|xlsx|apache-arrow|bson)\//.test(filename)
       )
     ).toEqual([]);
-    if (group === 'tables') {
-      expect(
-        eagerInputs.filter(filename => filename.endsWith('/lib/sources/data-source.js'))
-      ).toEqual([]);
-    }
     expect(
       Object.values(outputs).some(output =>
         output.imports.some(imported => imported.kind === 'dynamic-import')
@@ -119,16 +110,59 @@ test.each([
 );
 
 test.each([
-  ['tables', 'arrow', 'ArrowTableSource'],
+  'ParquetLoader',
+  'GeoParquetLoader'
+])('the Parquet format entry does not pull unrelated format helpers into %s preload', async loader => {
+  const {metafile} = await build({
+    stdin: {
+      contents: `export {${loader}} from '@loaders.gl/tables/parquet';`,
+      resolveDir: REPOSITORY_ROOT,
+      sourcefile: 'parquet-metadata-entry.js'
+    },
+    tsconfigRaw: {},
+    bundle: true,
+    minify: true,
+    splitting: true,
+    format: 'esm',
+    platform: 'browser',
+    outdir: 'grouped-package-test-output',
+    write: false,
+    metafile: true
+  });
+  const outputs = metafile.outputs;
+  const entry = Object.keys(outputs).find(
+    filename => outputs[filename].entryPoint === 'parquet-metadata-entry.js'
+  );
+  expect(entry).toBeDefined();
+  const eager = new Set([entry!]);
+  for (const filename of eager) {
+    for (const dependency of outputs[filename].imports) {
+      if (dependency.kind !== 'dynamic-import' && !dependency.external) {
+        eager.add(dependency.path);
+      }
+    }
+  }
+  const eagerBytes = [...eager].reduce((sum, filename) => sum + outputs[filename].bytes, 0);
+  const eagerInputs = [...eager].flatMap(filename => Object.keys(outputs[filename].inputs));
+  expect(
+    eagerInputs.filter(filename =>
+      /(?:parquet-loader|parquet-source|parquet-writer|geoparquet-loader)\.js$/.test(filename)
+    )
+  ).toEqual([]);
+  expect(eagerBytes).toBeLessThan(8 * 1024);
+});
+
+test.each([
+  ['tables', 'arrow/bundled', 'ArrowTableSource'],
   ['tables', 'arrow/geometry', 'WKBBuilder'],
-  ['tables', 'json', 'NDJSONTableSource'],
-  ['tables', 'lance', 'LanceSource'],
-  ['tables', 'orc', 'ORCLoaderWithParser'],
-  ['tables', 'parquet', 'ParquetLoaderWithParser'],
-  ['tables', 'parquet', 'ParquetDatasetSource'],
+  ['tables', 'json/bundled', 'NDJSONTableSource'],
+  ['tables', 'lance/bundled', 'LanceSource'],
+  ['tables', 'orc/bundled', 'ORCLoaderWithParser'],
+  ['tables', 'parquet/bundled', 'ParquetLoaderWithParser'],
+  ['tables', 'parquet/bundled', 'ParquetDatasetSource'],
   ['tables', 'iceberg', 'IcebergTableSource'],
   ['tables', 'iceberg', 'IcebergRestCatalog'],
-  ['tables', 'delta', 'DeltaLoaderWithParser']
+  ['tables', 'delta/bundled', 'DeltaLoaderWithParser']
 ])(
   'published %s/%s exposes %s after forwarding removal',
   (group, subpath, exportName) => {

@@ -21,12 +21,10 @@ import {
   type TilesetJSON,
   type TilesetSourceResolver
 } from '@loaders.gl/tiles-3d/tileset';
-import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
-import {
-  createImplicitSubtreeReference,
-  Tiles3DSource,
-  type ImplicitTilingDescriptor
-} from '@loaders.gl/tiles-3d/3d-tiles';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {createImplicitSubtreeReference} from '@loaders.gl/tiles-3d/api';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {type ImplicitTilingDescriptor} from '@loaders.gl/tiles-3d/3d-tiles';
 import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 test('Tiles3DSource lazily loads, installs and caches one implicit subtree', async () => {
   const descriptor: ImplicitTilingDescriptor = {

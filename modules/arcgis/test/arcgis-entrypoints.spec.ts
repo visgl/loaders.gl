@@ -7,10 +7,8 @@ import {createDataSource, createDataSourceSync, preload} from '@loaders.gl/core'
 import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 import {ARCGIS_LOADERS, getArcGISLoader} from '@loaders.gl/arcgis/discovery';
 import {ArcGISAuthentication, createArcGISCredential} from '@loaders.gl/arcgis/authentication';
-import {
-  ARCGIS_LOADERS as BUNDLED_ARCGIS_LOADERS,
-  getArcGISLoader as getBundledArcGISLoader
-} from '@loaders.gl/arcgis/bundled';
+import {ARCGIS_LOADERS as BUNDLED_ARCGIS_LOADERS} from '@loaders.gl/arcgis/bundled';
+import {getArcGISLoader as getBundledArcGISLoader} from '@loaders.gl/arcgis/api';
 import {resolveCredentials} from '@loaders.gl/core/loader-utils';
 
 describe('ArcGIS public entrypoints', () => {

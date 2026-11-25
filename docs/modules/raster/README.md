@@ -14,13 +14,14 @@ GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh
 npm install @loaders.gl/core @loaders.gl/raster
 ```
 
-The root exports metadata loaders. Asynchronous `load()` and `parse()` load their implementations
+The format subpaths export metadata loaders. Asynchronous `load()` and `parse()` load their implementations
 through `preload()`. Synchronous parsing requires a parser-bearing format entry point:
 
 ```ts
 import {parse, parseSync} from '@loaders.gl/core';
-import {GeoTIFFRasterLoader, QuantizedMeshLoader} from '@loaders.gl/raster';
-import {QuantizedMeshLoaderWithParser} from '@loaders.gl/raster/quantized-mesh';
+import {GeoTIFFRasterLoader} from '@loaders.gl/raster/geotiff';
+import {QuantizedMeshLoader} from '@loaders.gl/raster/terrain';
+import {QuantizedMeshLoaderWithParser} from '@loaders.gl/raster/quantized-mesh/bundled';
 
 const raster = await parse(tiffBytes, GeoTIFFRasterLoader);
 const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
@@ -38,7 +39,7 @@ const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 | <FormatLogo slug="geotiff" /> | `@loaders.gl/raster/geotiff` | Synchronous GeoTIFF/COG source constructor |
 | <FormatLogo slug="geotiff" /> | `@loaders.gl/raster/geotiff` | Synchronous OME-TIFF source constructor |
 
-GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronous `createDataSource()`
+GeoTIFF and OME-TIFF source metadata is available from `@loaders.gl/raster/geotiff`. Use asynchronous `createDataSource()`
 with metadata or import an explicit source implementation for synchronous `createDataSourceSync()`.
 Use the named source, discovery, and heightmap subpaths for advanced APIs; their references list the exported constructors and helpers.
 

@@ -4,7 +4,8 @@
 
 import {createDataSource} from '@loaders.gl/core';
 import {expect, test, vi} from 'vitest';
-import {encodePotreeDataset, PotreeLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {Potree2Source} from '../../src/potree/potree2-source';
 import {createPoints, createDatasetFetch} from './potree-format-fixtures';
@@ -17,7 +18,7 @@ test.each([
   const base = vi
     .spyOn(document, 'baseURI', 'get')
     .mockReturnValue('https://example.com/viewer/../');
-  const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
+  const transport = createDatasetFetch(await PotreeWriter.encodeDataset(createPoints()));
   const prefix = getPathPrefix();
   setPathPrefix('');
   const source = new Potree2Source(input, {core: {fetch: transport.fetch}});
@@ -32,7 +33,7 @@ test.each([
 });
 
 test('uses the resolved source path prefix before opening a dataset', async () => {
-  const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
+  const transport = createDatasetFetch(await PotreeWriter.encodeDataset(createPoints()));
   const prefix = getPathPrefix();
   setPathPrefix('https://example.com/');
   const source = await createDataSource('dataset/metadata.json', PotreeLoader, {
@@ -49,7 +50,7 @@ test('uses the resolved source path prefix before opening a dataset', async () =
 
 test('legacy URL query text does not select the modern dataset reader', async () => {
   const transport = createDatasetFetch(
-    await encodePotreeDataset(createPoints(), {potree: {version: '1.8'}})
+    await PotreeWriter.encodeDataset(createPoints(), {potree: {version: '1.8'}})
   );
   const source = await createDataSource(
     'https://example.com/dataset/cloud.js?token=/metadata.json',

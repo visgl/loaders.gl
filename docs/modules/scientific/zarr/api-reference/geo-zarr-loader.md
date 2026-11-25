@@ -74,7 +74,7 @@ raster's `crs`.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {GeoZarrLoader} from '@loaders.gl/scientific/zarr';
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const source = createDataSourceSync('https://example.com/reanalysis.zarr', [GeoZarrLoader], {
   zarr: {

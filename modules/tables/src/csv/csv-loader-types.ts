@@ -10,7 +10,7 @@ export type {CSVLoaderOptions} from './csv-loader-definition';
 
 /** Preloads the parser-bearing CSV loader implementation. */
 async function preloadCSVLoader() {
-  const {CSVLoaderWithParser} = await import('@loaders.gl/tables/csv');
+  const {CSVLoaderWithParser} = await import('@loaders.gl/tables/csv/bundled');
   return CSVLoaderWithParser;
 }
 

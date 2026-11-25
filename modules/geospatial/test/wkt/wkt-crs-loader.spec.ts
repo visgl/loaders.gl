@@ -4,7 +4,8 @@
 
 import {describe, expect, test} from 'vitest';
 import {encodeTextSync, parse, parseSync} from '@loaders.gl/core';
-import {WKTCRSLoader as MetadataWKTCRSLoader, WKTCRSWriter} from '@loaders.gl/geospatial/wkt';
+import {WKTCRSLoader as MetadataWKTCRSLoader} from '@loaders.gl/geospatial/wkt';
+import {WKTCRSWriter} from '@loaders.gl/geospatial/wkt/bundled';
 import {WKTCRSLoader as BundledWKTCRSLoader} from '@loaders.gl/geospatial/wkt/bundled';
 
 const WKT1 =

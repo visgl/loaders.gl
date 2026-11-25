@@ -8,7 +8,7 @@ import {afterEach, expect, test, vi} from 'vitest';
 import {PMTiles, type Source} from 'pmtiles';
 import {tableToIPC} from 'apache-arrow';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
-import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/bundled';
 import {createTiffFixture} from '../modules/raster/test/geotiff/lib/tiff/tiff-fixture';
 import PMTilesAuthoringApp from '../examples/website/tiles/authoring-app';
 import {createPMTilesArchiveInWorker} from '../examples/website/tiles/pmtiles-worker-client';

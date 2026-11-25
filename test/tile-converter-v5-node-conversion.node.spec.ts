@@ -12,14 +12,13 @@ import {
   encodeMeshTile,
   convertFeatureAttributesToArrowBatches
 } from '@loaders.gl/tile-converter/v5/adapters';
-import {GLTFLoader, GLTFScenegraph, GLTFWriter} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {
-  parse3DTilesArchive,
-  Tile3DWriter,
-  Tiles3DArchiveWriter
-} from '@loaders.gl/tiles-3d/3d-tiles';
-import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
+import {parse3DTilesArchive} from '@loaders.gl/tiles-3d/api';
+import {Tile3DWriter, Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/api';
 import {
   convertNodeTileset,
   writeNodeTileConversionOutput

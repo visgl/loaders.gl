@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {COPCWriter, type COPCWriterOptions} from '@loaders.gl/tiles-3d/copc';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
+import {type COPCWriterOptions} from '@loaders.gl/tiles-3d/copc';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {TileConversionError, type TileConversionCodec} from '@loaders.gl/tile-converter/v5/core';
 import {

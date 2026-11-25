@@ -45,7 +45,7 @@ getTileset3DTraversalSnapshot(tileset) returns a serializable
 Tileset3DTraversalSnapshot with sorted IDs and numeric counters:
 
 ~~~typescript
-import {getTileset3DTraversalSnapshot, Tileset3D} from '@loaders.gl/tiles-3d';
+import {getTileset3DTraversalSnapshot, Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 await tileset.selectTiles(viewport);
 const snapshot = getTileset3DTraversalSnapshot(tileset);

@@ -4,7 +4,7 @@
 
 import {Table as NativeArrowTable} from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {WFSLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms/bundled';
 const WFS_URL = 'https://example.com/geoserver/wfs';
 test('WFSLoader#getFeaturesURL', () => {
   const source = WFSLoader.createDataSourceSync(WFS_URL, {});

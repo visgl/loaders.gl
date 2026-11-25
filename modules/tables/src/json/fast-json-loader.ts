@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {FastJSONLoaderMetadata} from './fast-json-loader-metadata';
 import type {RecordBatch} from 'apache-arrow';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
@@ -11,33 +12,11 @@ import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {convertTableBatchesToArrow} from './lib/parsers/convert-row-table-to-arrow';
 import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
 /**
  * Experimental JSON loader that uses the fast streaming parser backend.
  */
 export const FastJSONLoader = {
-  dataType: null as unknown,
-  batchType: null as unknown as TableBatch | RecordBatch | MetadataBatch | JSONBatch,
-
-  name: 'Fast JSON',
-  id: 'fast-json',
-  module: 'tables',
-  version: VERSION,
-  extensions: ['json', 'geojson'],
-  mimeTypes: ['application/json'],
-  category: 'table',
-  text: true,
-  options: {
-    json: {
-      backend: 'fast',
-      shape: undefined,
-      table: false,
-      jsonpaths: []
-    }
-  },
+  ...FastJSONLoaderMetadata,
   parse,
   parseTextSync,
   parseInBatches

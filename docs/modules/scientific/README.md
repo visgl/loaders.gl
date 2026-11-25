@@ -22,13 +22,12 @@ npm install @loaders.gl/core @loaders.gl/scientific
 | — | `/scientific-array` | Common scientific-array interfaces and helpers | Shared source contracts |
 | — | `/vector-field` | Vector-field processing helpers | Explicit processing entrypoint |
 
-The root exports NetCDF, Zarr, NRRD, VTK and PDB metadata loaders and shared types. It does not re-export every
-parser or experimental source. For direct NetCDF parsing:
+Import scientific loader metadata and types from the format subpath. For direct NetCDF parsing:
 
 ```ts
 import {parse, parseSync} from '@loaders.gl/core';
-import {NetCDFLoader} from '@loaders.gl/scientific';
-import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
+import {NetCDFLoader} from '@loaders.gl/scientific/netcdf';
+import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf/bundled';
 
 const result = await parse(bytes, NetCDFLoader);
 const synchronousResult = parseSync(bytes, NetCDFLoaderWithParser);

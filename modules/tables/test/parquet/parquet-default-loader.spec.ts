@@ -5,7 +5,8 @@
 import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
 import {encode, parse, parseInBatches, load} from '@loaders.gl/core';
-import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {ParquetLoader as BundledParquetLoader} from '@loaders.gl/tables/parquet/bundled';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 

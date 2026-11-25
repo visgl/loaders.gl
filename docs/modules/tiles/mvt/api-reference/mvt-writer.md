@@ -61,7 +61,7 @@ npm install @loaders.gl/core
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {MVTWriter} from '@loaders.gl/tiles/mvt';
+import {MVTWriter} from '@loaders.gl/tiles/mvt/bundled';
 
 const arrayBuffer = await encode(geojson, MVTWriter, {
   mvt: {

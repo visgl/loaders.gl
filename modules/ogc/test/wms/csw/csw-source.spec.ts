@@ -5,7 +5,7 @@
 import {describe, expect, test, vi} from 'vitest';
 
 import type {CSWCapabilities, CSWRecords} from '@loaders.gl/ogc/wms';
-import {CSWCatalogSource, CSWLoader} from '@loaders.gl/ogc/wms';
+import {CSWCatalogSource, CSWLoader} from '@loaders.gl/ogc/wms/bundled';
 import {CSWCapabilitiesLoaderWithParser} from '../../../src/wms/csw-capabilities-loader-with-parser';
 import {CSWDomainLoaderWithParser} from '../../../src/wms/csw-domain-loader-with-parser';
 import {CSWRecordsLoaderWithParser} from '../../../src/wms/csw-records-loader-with-parser';

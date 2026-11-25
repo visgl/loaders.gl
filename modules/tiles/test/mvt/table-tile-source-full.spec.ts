@@ -5,7 +5,8 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {TableVectorTileSource, TableTileLoaderOptions} from '@loaders.gl/tiles/mvt';
+import {TableVectorTileSource} from '@loaders.gl/tiles/mvt/bundled';
+import {TableTileLoaderOptions} from '@loaders.gl/tiles/mvt';
 const DATA_PATH = '@loaders.gl/tiles/mvt/test/data/geojson-vt';
 const TEST_CASES = [
   {

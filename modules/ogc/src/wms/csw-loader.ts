@@ -1,3 +1,4 @@
+import {CSWLoaderMetadata} from './csw-loader-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -24,10 +25,6 @@ import type {CSWDomain} from './csw-domain-loader';
 import {CSWDomainLoaderWithParser} from './csw-domain-loader-with-parser';
 
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Describes a service or resource exposed by the catalog */
 export type Service = {
@@ -85,23 +82,7 @@ export type CSWCatalogQuery = {
 };
 
 export const CSWLoader = {
-  dataType: null as unknown as CSWCatalogSource,
-  batchType: null as never,
-  name: 'CSW',
-  id: 'csw',
-  module: 'ogc',
-  version: VERSION,
-  extensions: [],
-  mimeTypes: [],
-  type: 'csw',
-  fromUrl: true,
-  fromBlob: false,
-
-  options: {csw: {}},
-
-  defaultOptions: {csw: {}},
-
-  testURL: (url: string): boolean => CSWCatalogSource.testURL(url),
+  ...CSWLoaderMetadata,
   createDataSourceSync: (
     url: string,
     options: CSWLoaderOptions,

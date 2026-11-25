@@ -19,9 +19,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /** Options for the GeoParquet loader. */
 export type GeoParquetLoaderOptions = SharedParquetLoaderOptions;
 
-/** Preloads the parser-bearing GeoParquet loader implementation. */
+/** Preloads the parser without pulling the full format barrel into the chunk graph. */
 async function preloadGeoParquetLoader() {
-  const {GeoParquetLoaderWithParser} = await import('@loaders.gl/tables/parquet');
+  const {GeoParquetLoaderWithParser} = await import('./geoparquet-loader.js');
   return GeoParquetLoaderWithParser;
 }
 

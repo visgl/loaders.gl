@@ -6,9 +6,9 @@ import {ParquetLoaderDefinition} from './parquet-loader-definition';
 
 export type {ParquetLoaderOptions} from './parquet-loader-definition';
 
-/** Preloads the parser-bearing TypeScript Parquet loader implementation. */
+/** Preloads the parser without pulling the full format barrel into the chunk graph. */
 async function preloadParquetLoader() {
-  const {ParquetLoaderWithParser} = await import('@loaders.gl/tables/parquet');
+  const {ParquetLoaderWithParser} = await import('../parquet-loader.js');
   return ParquetLoaderWithParser;
 }
 

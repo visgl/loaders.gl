@@ -9,10 +9,7 @@ import type {
   STACItem,
   STACLink
 } from '@loaders.gl/ogc/stac';
-import type {
-  ParquetDatasetFile,
-  ParquetDatasetFileQuery
-} from '@loaders.gl/tables/parquet';
+import type {ParquetDatasetFile, ParquetDatasetFileQuery} from '@loaders.gl/tables/parquet';
 
 const OVERTURE_STAC_ROOT = 'https://stac.overturemaps.org/catalog.json';
 const PARQUET_MEDIA_TYPE = 'application/vnd.apache.parquet';

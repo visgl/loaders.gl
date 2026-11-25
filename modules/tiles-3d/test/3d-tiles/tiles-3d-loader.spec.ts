@@ -10,7 +10,7 @@ import {coreApi, parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Tiles3DLoader as BundledTiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {DracoLoader} from '@loaders.gl/scene/draco';
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 const TILE_B3DM_WITH_DRACO_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/143.b3dm';
 const TILESET_URL =

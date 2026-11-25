@@ -155,10 +155,7 @@ Atomic Arrow parses attach the file header as JSON in `table.schema.metadata.get
 PDRF 4, 5, 9, and 10 store a fixed-width packet reference with each point, while the variable-length sample packet lives in an internal LAS waveform data record or a companion WDP file. The loader keeps the exact uint64 packet offset in the `WAVEFORM` Arrow column. Waveform helpers parse that reference and issue a byte-range read only when samples are requested:
 
 ```typescript
-import {
-  parseLASWaveformPacketReference,
-  readLASWaveformPacket
-} from '@loaders.gl/pointclouds/las';
+import {parseLASWaveformPacketReference, readLASWaveformPacket} from '@loaders.gl/pointclouds/las/api';
 import {HttpFile} from '@loaders.gl/core/loader-utils';
 
 const header = JSON.parse(table.schema.metadata.get('loaders.gl.las.header')!, (key, value) =>

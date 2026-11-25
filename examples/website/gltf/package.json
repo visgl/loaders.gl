@@ -14,7 +14,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "10.0.0-alpha.1",
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch",
     "@deck.gl/mesh-layers": "10.0.0-alpha.1",
     "@deck.gl/react": "10.0.0-alpha.1",
     "@loaders.gl/core": "workspace:*",

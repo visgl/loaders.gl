@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
-import {QuantizedMeshLoader, QuantizedMeshWriter} from '@loaders.gl/raster/terrain';
+import {QuantizedMeshLoader} from '@loaders.gl/raster/terrain';
+import {QuantizedMeshWriter} from '@loaders.gl/raster/terrain/bundled';
 import {encode, parse} from '@loaders.gl/core';
 import {convertMeshToArrowTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 const attributes = {

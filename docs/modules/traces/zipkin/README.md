@@ -3,7 +3,8 @@
 Read and write Zipkin traces and annotations.
 
 ```typescript
-import {ZipkinTraceLoader, ZipkinTraceWriter} from '@loaders.gl/traces/zipkin';
+import {ZipkinTraceLoader} from '@loaders.gl/traces/zipkin';
+import {ZipkinTraceWriter} from '@loaders.gl/traces/zipkin/bundled';
 ```
 
 ## API

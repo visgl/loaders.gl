@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GeoZarrRasterSource} from '@loaders.gl/scientific/zarr';
+import {GeoZarrRasterSource} from '@loaders.gl/scientific/zarr/bundled';
 import {getSpatialMultiscaleLevels} from '../../src/zarr/lib/spatial-multiscales';
 
 const BASE_URL = 'https://example.com/spatial.zarr';

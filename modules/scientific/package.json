@@ -21,14 +21,14 @@
       "require": "./dist/index.cjs"
     },
     "./netcdf": {
-      "types": "./dist/netcdf/index.d.ts",
-      "import": "./dist/netcdf/index.js",
-      "require": "./dist/netcdf/index.cjs"
+      "types": "./dist/netcdf/metadata-entry.d.ts",
+      "import": "./dist/netcdf/metadata-entry.js",
+      "require": "./dist/netcdf/metadata-entry.cjs"
     },
     "./zarr": {
-      "types": "./dist/zarr/index.d.ts",
-      "import": "./dist/zarr/index.js",
-      "require": "./dist/zarr/index.cjs"
+      "types": "./dist/zarr/metadata-entry.d.ts",
+      "import": "./dist/zarr/metadata-entry.js",
+      "require": "./dist/zarr/metadata-entry.cjs"
     },
     "./grib2": {
       "types": "./dist/grib2/index.d.ts",
@@ -46,9 +46,9 @@
       "require": "./dist/hdf5/index.cjs"
     },
     "./vtk": {
-      "types": "./dist/vtk/index.d.ts",
-      "import": "./dist/vtk/index.js",
-      "require": "./dist/vtk/index.cjs"
+      "types": "./dist/vtk/metadata-entry.d.ts",
+      "import": "./dist/vtk/metadata-entry.js",
+      "require": "./dist/vtk/metadata-entry.cjs"
     },
     "./vector-field": {
       "types": "./dist/vector-field/index.d.ts",
@@ -59,29 +59,29 @@
       "import": "./dist/npy-worker.js"
     },
     "./npy": {
-      "types": "./dist/npy.d.ts",
-      "import": "./dist/npy.js",
-      "require": "./dist/npy.cjs"
+      "types": "./dist/npy/metadata-entry.d.ts",
+      "import": "./dist/npy/metadata-entry.js",
+      "require": "./dist/npy/metadata-entry.cjs"
     },
     "./nrrd": {
-      "types": "./dist/nrrd.d.ts",
-      "import": "./dist/nrrd.js",
-      "require": "./dist/nrrd.cjs"
+      "types": "./dist/nrrd/metadata-entry.d.ts",
+      "import": "./dist/nrrd/metadata-entry.js",
+      "require": "./dist/nrrd/metadata-entry.cjs"
     },
     "./netcdf/bundled": {
-      "types": "./dist/netcdf-bundled.d.ts",
-      "import": "./dist/netcdf-bundled.js",
-      "require": "./dist/netcdf-bundled.cjs"
+      "types": "./dist/netcdf-bundled-entry.d.ts",
+      "import": "./dist/netcdf-bundled-entry.js",
+      "require": "./dist/netcdf-bundled-entry.cjs"
     },
     "./zarr/bundled": {
-      "types": "./dist/zarr-bundled.d.ts",
-      "import": "./dist/zarr-bundled.js",
-      "require": "./dist/zarr-bundled.cjs"
+      "types": "./dist/zarr-bundled-entry.d.ts",
+      "import": "./dist/zarr-bundled-entry.js",
+      "require": "./dist/zarr-bundled-entry.cjs"
     },
     "./vtk/bundled": {
-      "types": "./dist/vtk-bundled.d.ts",
-      "import": "./dist/vtk-bundled.js",
-      "require": "./dist/vtk-bundled.cjs"
+      "types": "./dist/vtk-bundled-entry.d.ts",
+      "import": "./dist/vtk-bundled-entry.js",
+      "require": "./dist/vtk-bundled-entry.cjs"
     },
     "./npy/bundled": {
       "types": "./dist/npy-bundled.d.ts",
@@ -94,14 +94,29 @@
       "require": "./dist/nrrd-bundled.cjs"
     },
     "./pdb": {
-      "types": "./dist/pdb.d.ts",
-      "import": "./dist/pdb.js",
-      "require": "./dist/pdb.cjs"
+      "types": "./dist/pdb/metadata-entry.d.ts",
+      "import": "./dist/pdb/metadata-entry.js",
+      "require": "./dist/pdb/metadata-entry.cjs"
     },
     "./pdb/bundled": {
       "types": "./dist/pdb-bundled.d.ts",
       "import": "./dist/pdb-bundled.js",
       "require": "./dist/pdb-bundled.cjs"
+    },
+    "./netcdf/api": {
+      "types": "./dist/netcdf-api.d.ts",
+      "import": "./dist/netcdf-api.js",
+      "require": "./dist/netcdf-api.cjs"
+    },
+    "./zarr/api": {
+      "types": "./dist/zarr-api.d.ts",
+      "import": "./dist/zarr-api.js",
+      "require": "./dist/zarr-api.cjs"
+    },
+    "./vtk/api": {
+      "types": "./dist/vtk-api.d.ts",
+      "import": "./dist/vtk-api.js",
+      "require": "./dist/vtk-api.cjs"
     }
   },
   "sideEffects": false,
@@ -115,10 +130,10 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field && npm run build-npy-worker && npm run build-metadata && npm run build-cjs-vtk-loader && npm run build-cjs-nrrd && npm run build-cjs-pdb",
-    "build-bundle": "ocular-bundle ./netcdf-bundle.ts --output=dist/netcdf.min.js && ocular-bundle ./zarr-bundle.ts --output=dist/zarr.min.js",
-    "build-bundle-dev": "ocular-bundle ./netcdf-bundle.ts --env=dev --output=dist/netcdf.dev.js && ocular-bundle ./zarr-bundle.ts --env=dev --output=dist/zarr.dev.js",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./netcdf-bundle.ts --output=dist/netcdf.min.js && node ../../scripts/build-codec-bundle.mjs ./zarr-bundle.ts --output=dist/zarr.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./netcdf-bundle.ts --env=dev --output=dist/netcdf.dev.js && node ../../scripts/build-codec-bundle.mjs ./zarr-bundle.ts --env=dev --output=dist/zarr.dev.js",
     "build-cjs-netcdf": "esbuild src/netcdf/*.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist/netcdf --out-extension:.js=.cjs --external:@loaders.gl/* --external:@math.gl/*",
-    "build-cjs-zarr": "esbuild src/zarr/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr/index.cjs --external:@loaders.gl/* --external:@math.gl/*",
+    "build-cjs-zarr": "esbuild src/zarr-bundled-entry.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr-bundled-entry.cjs --external:@loaders.gl/* --external:@math.gl/* && esbuild src/zarr-api.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr-api.cjs --external:@loaders.gl/* --external:@math.gl/*",
     "build-cjs-grib2": "esbuild src/grib2/index.ts src/scientific-array.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist --out-extension:.js=.cjs --external:@loaders.gl/*",
     "build-cjs-hdf5": "esbuild src/hdf5/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/hdf5/index.cjs --external:@loaders.gl/*",
     "build-cjs-vtk": "esbuild src/vtk/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vtk/index.cjs --external:@loaders.gl/*",

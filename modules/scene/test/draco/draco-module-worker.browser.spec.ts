@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/scene/draco';
-import {DracoWriter} from '@loaders.gl/scene/draco';
+import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
 import {processOnWorker} from '@loaders.gl/core/worker-utils';
 import {getDracoLibraryOptions} from '../../src/draco/draco-library-options';
 

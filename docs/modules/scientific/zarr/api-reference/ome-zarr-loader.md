@@ -56,7 +56,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OMEZarrLoader} from '@loaders.gl/scientific/zarr';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const source = createDataSourceSync('https://example.com/spatialdata.zarr', [OMEZarrLoader], {
   zarr: {

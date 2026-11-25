@@ -7,7 +7,7 @@ import {RecordBatch} from 'apache-arrow';
 import {parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {NDJSONLoader} from '@loaders.gl/tables/json';
-import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json';
+import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json/bundled';
 
 afterEach(() => destroyWorkerTasks());
 

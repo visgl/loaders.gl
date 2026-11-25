@@ -14,10 +14,8 @@ import {
 import {DeckGL} from '@deck.gl/react';
 import {FullscreenWidget} from '@deck.gl/widgets';
 import {GeoArrowLayer} from '@loaders.gl/deck-layers';
-import {
-  ParquetDatasetSource,
-  type ParquetDatasetTelemetry
-} from '@loaders.gl/tables/parquet';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/bundled';
+import {type ParquetDatasetTelemetry} from '@loaders.gl/tables/parquet';
 import type {Table as ArrowTable} from 'apache-arrow';
 import * as maplibregl from 'maplibre-gl';
 import {Map} from 'react-map-gl/maplibre';

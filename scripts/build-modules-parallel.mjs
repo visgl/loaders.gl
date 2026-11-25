@@ -189,6 +189,10 @@ async function runModuleBuild(moduleName) {
     ],
     moduleDirectory
   );
+  const packageManifest = JSON.parse(fs.readFileSync(path.join(moduleDirectory, 'package.json'), 'utf8'));
+  if (packageManifest.scripts?.['prepare-cjs-assets']) {
+    await runCommand('npm', ['run', 'prepare-cjs-assets'], moduleDirectory);
+  }
   await runCommand(process.execPath, [commonJsBuildPath], moduleDirectory);
 }
 

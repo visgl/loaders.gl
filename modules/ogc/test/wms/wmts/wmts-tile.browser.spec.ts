@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WMTSLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms/bundled';
 import {IMAGE_DATA_URL} from '../../../../images/test/lib/test-cases';
 
 test('WMTS valid tiles still decode through the public source loader and forward cancellation', async () => {

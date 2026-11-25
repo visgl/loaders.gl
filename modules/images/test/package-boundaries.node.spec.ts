@@ -18,9 +18,10 @@ test.each([
     import assert from 'node:assert/strict';
     import {createRequire} from 'node:module';
     const require = createRequire(import.meta.url);
-    const metadata = ${format === 'esm' ? "await import('@loaders.gl/images')" : "require('@loaders.gl/images')"};
+    const readPackage = ${format === 'esm' ? 'specifier => import(specifier)' : 'require'};
+    const metadata = Object.assign({}, ...await Promise.all(['image', 'basis', 'texture', 'video'].map(format => readPackage('@loaders.gl/images/' + format))));
     const packageVersion = require('./modules/images/package.json').version;
-    const parser = ${format === 'esm' ? "await import('@loaders.gl/images/image')" : "require('@loaders.gl/images/image')"};
+    const parser = ${format === 'esm' ? "await import('@loaders.gl/images/image/bundled')" : "require('@loaders.gl/images/image/bundled')"};
     for (const name of ['ImageLoader', 'BasisLoader', 'TextureLoader', 'VideoLoader']) {
       assert.equal(metadata[name].module, 'images');
       assert.equal(metadata[name].version, packageVersion);
@@ -30,8 +31,22 @@ test.each([
     assert.equal(metadata.ImageBitmapLoader, undefined);
     assert.equal(metadata.ImageLoaderWithParser, undefined);
     assert.equal(typeof parser.ImageLoaderWithParser.parse, 'function');
-    assert.equal(parser.ImageLoader.parse, undefined);
-    assert.equal(typeof parser.GIFBuilder, 'function');
+    assert.equal(typeof parser.ImageLoader.parse, 'function');
+    const api = await readPackage('@loaders.gl/images/api');
+    assert.equal(api.GIFBuilder, undefined);
+    const gif = await readPackage('@loaders.gl/images/gif-builder');
+    assert.equal(typeof gif.GIFBuilder, 'function');
+    assert.equal(typeof api.getSupportedBasisFormats, 'function');
+    assert.equal(typeof api.selectSupportedBasisFormat, 'function');
+    for (const name of ['loadBasisEncoderModule', 'loadBasisTranscoderModule', 'loadCrunchModule', 'BASIS_EXTERNAL_LIBRARIES', 'CRUNCH_EXTERNAL_LIBRARIES']) {
+      assert.equal(Object.hasOwn(api, name), false, name);
+    }
+    assert.ok(api.ImageTextureManifestSchema);
+    assert.equal(typeof api.getBinaryImageMetadata, 'function');
+    assert.equal(api.ImageLoader, undefined);
+    assert.equal(api.ImageWriter, undefined);
+    assert.equal(parser.getBinaryImageMetadata, undefined);
+    assert.equal(parser.GIFBuilder, undefined);
 
     const implementation = await metadata.ImageLoader.preload();
     assert.equal(typeof implementation.parse, 'function');
@@ -78,6 +93,27 @@ test('the image root does not statically import parsers, schema validators, vide
   expect(
     publishedSourceMap.sources.filter((filename: string) =>
       /\/lib\/parsers\/|\/lib\/composite-image\/parse-|composite-image-manifest-schema\.ts|\/lib\/gifshot\/|\/libs\//.test(
+        filename
+      )
+    )
+  ).toEqual([]);
+});
+
+test('the images API excludes the GIF implementation and eager format loaders', async () => {
+  const {build} = await import('esbuild');
+  const result = await build({
+    entryPoints: ['modules/images/src/api.ts'],
+    tsconfigRaw: {compilerOptions: {}},
+    bundle: true,
+    packages: 'external',
+    platform: 'browser',
+    format: 'esm',
+    metafile: true,
+    write: false
+  });
+  expect(
+    Object.keys(result.metafile!.inputs).filter(filename =>
+      /\/gifshot\/|\/(?:image|texture|basis|crunch)-loader\.ts$|\/(?:basis|crunch)-module-loader\.ts$|\.wasm$/.test(
         filename
       )
     )

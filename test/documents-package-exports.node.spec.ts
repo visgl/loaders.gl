@@ -22,17 +22,7 @@ test('published documents root stays lightweight in CommonJS', () => {
     {encoding: 'utf8'}
   );
   const result = JSON.parse(output);
-  expect(result.exports).toEqual(
-    expect.arrayContaining([
-      'XMLLoader',
-      'HTMLLoader',
-      'YAMLLoader',
-      'TOMLLoader',
-      'BSONLoader',
-      'MarkdownLoader'
-    ])
-  );
-  expect(result.exports).not.toContain('BSONWriter');
+  expect(result.exports).toEqual([]);
   expect(result.exports.some((name: string) => name.endsWith('WithParser'))).toBe(false);
   expect(
     result.files.filter((filename: string) =>
@@ -59,7 +49,7 @@ test.each([
   'BSON',
   'Markdown'
 ])('published %s metadata preloads its format parser', async format => {
-  const documents = requireModule('@loaders.gl/documents');
+  const documents = requireModule('@loaders.gl/documents/' + format.toLowerCase());
   const loader = documents[format + 'Loader'];
   expect(loader.module).toBe('documents');
   expect(loader.parse).toBeUndefined();
@@ -67,7 +57,7 @@ test.each([
   const parser = await loader.preload();
   expect(parser.id).toBe(loader.id);
   expect(parser.parse).toBeTypeOf('function');
-  const direct = requireModule('@loaders.gl/documents/' + format.toLowerCase());
+  const direct = requireModule('@loaders.gl/documents/' + format.toLowerCase() + '/bundled');
   expect(direct[format + 'LoaderWithParser'].id).toBe(loader.id);
 });
 

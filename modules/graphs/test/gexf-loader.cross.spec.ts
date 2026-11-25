@@ -5,7 +5,7 @@
 import {Table as ArrowTable} from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
-import {GEXFLoader} from '../src';
+import {GEXFLoader} from '@loaders.gl/graphs/gexf';
 import {GEXFLoaderWithParser} from '../src/gexf-loader';
 
 const DOCUMENT = '<gexf version="1.3"><graph><nodes><node id="n"/></nodes><edges/></graph></gexf>';

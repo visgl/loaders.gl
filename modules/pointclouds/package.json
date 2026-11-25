@@ -33,19 +33,19 @@
       "require": "./dist/index.cjs"
     },
     "./las": {
-      "types": "./dist/las/index.d.ts",
-      "import": "./dist/las/index.js",
-      "require": "./dist/las/index.cjs"
+      "types": "./dist/las/metadata-entry.d.ts",
+      "import": "./dist/las/metadata-entry.js",
+      "require": "./dist/las/metadata-entry.cjs"
     },
     "./las/bundled": {
-      "types": "./dist/las/bundled.d.ts",
-      "import": "./dist/las/bundled.js",
-      "require": "./dist/las/bundled.cjs"
+      "types": "./dist/las/bundled-entry.d.ts",
+      "import": "./dist/las/bundled-entry.js",
+      "require": "./dist/las/bundled-entry.cjs"
     },
     "./pcd": {
-      "types": "./dist/pcd/index.d.ts",
-      "import": "./dist/pcd/index.js",
-      "require": "./dist/pcd/index.cjs"
+      "types": "./dist/pcd/metadata-entry.d.ts",
+      "import": "./dist/pcd/metadata-entry.js",
+      "require": "./dist/pcd/metadata-entry.cjs"
     },
     "./pcd/bundled": {
       "types": "./dist/pcd/bundled.d.ts",
@@ -53,9 +53,9 @@
       "require": "./dist/pcd/bundled.cjs"
     },
     "./ply": {
-      "types": "./dist/ply/index.d.ts",
-      "import": "./dist/ply/index.js",
-      "require": "./dist/ply/index.cjs"
+      "types": "./dist/ply/metadata-entry.d.ts",
+      "import": "./dist/ply/metadata-entry.js",
+      "require": "./dist/ply/metadata-entry.cjs"
     },
     "./ply/bundled": {
       "types": "./dist/ply/bundled.d.ts",
@@ -70,6 +70,11 @@
     },
     "./ply-worker.js": {
       "import": "./dist/ply-worker.js"
+    },
+    "./las/api": {
+      "types": "./dist/las/api.d.ts",
+      "import": "./dist/las/api.js",
+      "require": "./dist/las/api.cjs"
     }
   },
   "sideEffects": false,

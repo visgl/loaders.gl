@@ -1,9 +1,9 @@
 import {
   ArcGISImageServerLoader,
   ArcGISImageTileLoader,
-  ArcGISMapTileLoader,
-  getArcGISServices
+  ArcGISMapTileLoader
 } from '@loaders.gl/arcgis/bundled';
+import {getArcGISServices} from '@loaders.gl/arcgis/api';
 import {expect, test, vi} from 'vitest';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';

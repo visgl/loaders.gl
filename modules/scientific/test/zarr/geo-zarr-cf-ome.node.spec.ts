@@ -8,7 +8,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
 import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
-import {GeoZarrRasterSource, GeoZarrLoader} from '@loaders.gl/scientific/zarr';
+import {GeoZarrRasterSource, GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 
 // OME-NGFF v0.4 datasets list level groups with scale-only transforms; each level group holds

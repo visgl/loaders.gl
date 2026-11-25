@@ -10,7 +10,8 @@ import type {
 import {expect, test, vi} from 'vitest';
 import {sampleRaster} from '@loaders.gl/core/loader-utils';
 import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source';
-import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';
+import type {TiffSourceImage} from '../../src/geotiff/lib/tiff/tiff-source-decoder';
 import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-loader';
 
 /** Creates the minimal viewport shape accepted by raster sources. */
@@ -22,11 +23,12 @@ function createViewport(bounds: RasterBoundingBox, crs = 'EPSG:4326', width = 10
 function installGeoTIFFState(
   source: GeoTIFFRasterSource,
   metadata: Record<string, unknown>,
-  readRasters: ReturnType<typeof vi.fn> = vi.fn()
+  readRasters: ReturnType<typeof vi.fn> = vi.fn(),
+  images: Partial<TiffSourceImage>[] = []
 ): ReturnType<typeof vi.fn> {
   (source as any)._initPromise = Promise.resolve({
     tiff: {readRasters},
-    images: [],
+    images,
     metadata: {
       name: 'memory.tif',
       width: 10,
@@ -554,6 +556,68 @@ test('GeoTIFF regions choose an existing overview from both resolution axes and 
     overzoom: false
   });
   expect(state.images[0].readRasters).not.toHaveBeenCalled();
+});
+
+test.each([
+  {percentFinerX: 0.5, percentFinerY: 0.5, expectedOverview: 1, expectedWindowSize: 5},
+  {percentFinerX: 5, percentFinerY: 5, expectedOverview: 0, expectedWindowSize: 10},
+  {percentFinerX: 5, percentFinerY: 0.5, expectedOverview: 0, expectedWindowSize: 10},
+  {percentFinerX: 0.5, percentFinerY: 5, expectedOverview: 0, expectedWindowSize: 10}
+])('GeoTIFF selects overview $expectedOverview for a request $percentFinerX% finer on x and $percentFinerY% finer on y', async ({
+  percentFinerX,
+  percentFinerY,
+  expectedOverview,
+  expectedWindowSize
+}) => {
+  const source = new GeoTIFFRasterSource(new Blob([]), {});
+  /** Creates a square image with an observable native raster read. */
+  const createImage = (size: number, subfileType: number) => ({
+    fileDirectory: {NewSubfileType: subfileType},
+    getWidth: () => size,
+    getHeight: () => size,
+    readRasters: vi.fn(async () =>
+      Object.assign([new Uint16Array(size * size)], {width: size, height: size})
+    )
+  });
+  const fullImage = {
+    ...createImage(10, 0),
+    getOrigin: () => [0, 10],
+    getResolution: () => [1, -1]
+  };
+  const overviewImage = createImage(5, 1);
+  const images = [fullImage, overviewImage];
+  installGeoTIFFState(
+    source,
+    {
+      bandCount: 1,
+      overviews: [
+        {index: 0, width: 10, height: 10, resolution: [1, -1]},
+        {index: 1, width: 5, height: 5, resolution: [2, -2]}
+      ]
+    },
+    undefined,
+    images
+  );
+
+  const raster = await source.getRasterForRegion({
+    bounds: [
+      [0, 0],
+      [10 * (1 - percentFinerX / 100), 10 * (1 - percentFinerY / 100)]
+    ],
+    crs: 'EPSG:4326',
+    width: 5,
+    height: 5
+  });
+
+  expect(raster).toMatchObject({overview: expectedOverview, overzoom: false});
+  expect(images[expectedOverview].readRasters).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({
+      width: expectedWindowSize,
+      height: expectedWindowSize,
+      window: [0, 0, expectedWindowSize, expectedWindowSize]
+    })
+  );
+  source.finalize();
 });
 
 test('GeoTIFF mixed region results retain planar array types and reject interleaving', async () => {

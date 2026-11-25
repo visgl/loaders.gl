@@ -1,3 +1,4 @@
+import {WCSCoverageLoaderMetadata} from './wcs-coverage-loader-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -165,20 +166,7 @@ export class WCSCoverageSource extends DataSource<string, WCSCoverageLoaderOptio
 
 /** Source loader for WCS coverage services. */
 export const WCSCoverageLoader = {
-  dataType: null as unknown as WCSCoverageSource,
-  batchType: null as never,
-  name: 'WCS Coverage',
-  id: 'wcs-coverage',
-  module: 'ogc',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: ['application/xml', 'image/tiff', 'image/lerc'],
-  type: 'wcs-coverage',
-  fromUrl: true,
-  fromBlob: false,
-  options: {wcs: {}},
-  defaultOptions: {wcs: {}},
-  testURL: (url: string): boolean => url.toLowerCase().includes('wcs'),
+  ...WCSCoverageLoaderMetadata,
   createDataSourceSync: (url: string, options: WCSCoverageLoaderOptions = {}, coreApi?: CoreAPI) =>
     new WCSCoverageSource(url, options, coreApi)
 } as const satisfies SourceLoader<WCSCoverageSource>;

@@ -1,12 +1,16 @@
 # @loaders.gl/geospatial
 
-Geospatial loaders and writers for vector files and geometry encodings.
+Geospatial loaders and writers for vector files, geometry encodings, and satellite orbit elements.
 
-Supported formats: KML, KMZ, GPX, TCX, Shapefile, SHP, SHX, DBF, CPG, PRJ, FlatGeobuf, GeoPackage, WKT, WKT CRS, WKB, TWKB.
+Supported formats: KML, KMZ, GPX, TCX, Shapefile, SHP, SHX, DBF, CPG, PRJ, FlatGeobuf, GeoPackage, WKT, WKT CRS, WKB, TWKB, CCSDS OMM (JSON, KVN), TLE.
+
+`OMMLoader` reads the general perturbations (GP) subset of OMM for SGP4. The loader assumes an
+Earth center, a TEME frame, UTC, and SGP4 theory when metadata is omitted or blank. It accepts
+`SGP/SGP4` as an alias and rejects other explicit values.
 
 Proof of concept for [RFC #4248](https://github.com/visgl/loaders.gl/issues/4248).
 
-This package owns the KML, Shapefile, FlatGeobuf, GeoPackage, and WKT/WKB implementations. Its root exports metadata-only loaders, writer APIs, and shared types. Import a format subpath for its parser-bearing loader. Existing format packages forward to this package.
+This package owns the KML, Shapefile, FlatGeobuf, GeoPackage, and WKT/WKB implementations. Each format subpath exports loader metadata and types. Its bundled subpath exports the parser-bearing loader and writer APIs. Existing format packages forward to this package.
 
 See [the POC guide](../../docs/developer-guide/grouped-packages.md) for examples, compatibility limits, and dependency tradeoffs.
 

@@ -8,7 +8,7 @@ import type {Mesh} from '@loaders.gl/core/schema';
 
 /** Loads the STL parser on demand. */
 async function preload() {
-  const {STLLoaderWithParser} = await import('@loaders.gl/scene/stl');
+  const {STLLoaderWithParser} = await import('@loaders.gl/scene/stl/bundled');
   return STLLoaderWithParser;
 }
 

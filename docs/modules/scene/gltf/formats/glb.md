@@ -121,7 +121,7 @@ buffer's `chunk` index in the JSON remains the application's responsibility and 
 unchanged.
 
 ```typescript
-import {GLBWriter} from '@loaders.gl/scene/gltf';
+import {GLBWriter} from '@loaders.gl/scene/gltf/bundled';
 
 const encoded = GLBWriter.encodeSync(glb, {glb: {version: 3}});
 ```

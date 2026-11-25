@@ -6,20 +6,18 @@ import {expect, test, vi} from 'vitest';
 import {Table} from 'apache-arrow';
 import {convertGeoArrowTableToGeoJSON} from '@loaders.gl/core/arrow-geometry/geojson-table';
 import {encode, parse} from '@loaders.gl/core';
+import {KMLLoader, KMZLoader} from '@loaders.gl/geospatial/kml';
+import {KMZVectorSource, KMZWriter, KMLWriter} from '@loaders.gl/geospatial/kml/bundled';
 import {
-  KMLLoader,
-  KMZLoader,
-  KMZVectorSource,
-  KMZWriter,
-  KMLWriter,
   _openKMZArchive,
   _parseKMLDocument,
   _resolveKMZResourcePath
-} from '@loaders.gl/geospatial/kml';
+} from '@loaders.gl/geospatial/kml/api';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
-import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
-import {ZipWriter, ZipFileSystem} from '@loaders.gl/archives/zip';
+import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz/bundled';
+import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
+import {ZipFileSystem} from '@loaders.gl/archives/api';
 import {validateLoader, validateWriter} from 'test/common/conformance';
 
 const SAMPLE_KML = `<?xml version="1.0" encoding="UTF-8"?>

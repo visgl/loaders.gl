@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {CSVTableSource} from '@loaders.gl/tables/csv';
+import {CSVTableSource} from '@loaders.gl/tables/csv/bundled';
 import type {ScanQueryMetadata} from '@loaders.gl/core/query';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 

@@ -54,7 +54,7 @@ export type PotreeWriterOptions = WriterOptions & {
 // @ts-ignore __VERSION__ is injected by the package build.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** Standard JSON metadata writer; use encodePotreeDataset for a complete dataset. */
+/** Writer for Potree metadata and complete datasets. */
 export const PotreeWriter = {
   name: 'Potree metadata',
   id: 'potree',
@@ -67,8 +67,12 @@ export const PotreeWriter = {
   options: {},
   /** Encodes one already validated dataset declaration. */
   encode: async (metadata: PotreeMetadata | Potree2Metadata) => encodeMetadata(metadata),
-  encodeSync: encodeMetadata
-} as const satisfies WriterWithEncoder<PotreeMetadata | Potree2Metadata>;
+  encodeSync: encodeMetadata,
+  /** Encodes the metadata, hierarchy and point data for a complete Potree dataset. */
+  encodeDataset: encodePotreeDataset
+} as const satisfies WriterWithEncoder<PotreeMetadata | Potree2Metadata> & {
+  encodeDataset: typeof encodePotreeDataset;
+};
 
 /** Encodes metadata as UTF-8 JSON. */
 function encodeMetadata(metadata: PotreeMetadata | Potree2Metadata): ArrayBuffer {
@@ -440,7 +444,7 @@ function getDirectory(id: string, step: number): string {
  * This preserves point ownership supplied by the caller; it does not sample or duplicate points.
  * Version 2.0 output uses DEFAULT encoding; readers also accept upstream BROTLI data.
  */
-export async function encodePotreeDataset(
+async function encodePotreeDataset(
   input: Mesh | MeshArrowTable | readonly PotreeWriterNode[],
   options: PotreeWriterOptions = {}
 ): Promise<PotreeDataset> {
