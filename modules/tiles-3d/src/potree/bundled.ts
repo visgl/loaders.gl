@@ -11,7 +11,6 @@ export {
   PotreeHierarchyChunkFormat,
   PotreeBinFormat,
   type PotreeDatasetMetadata,
-  PotreeNodesSource,
   type HierarchyItem,
   type PotreeAttribute,
   type PotreeBoundingBox,
@@ -28,3 +27,5 @@ export {
   type PotreeWriterNode,
   type PotreeDataset
 } from './index';
+
+export {PotreeNodesSource} from './lib/potree-node-source';

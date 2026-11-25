@@ -6,7 +6,7 @@ import {encodeDraco} from '@loaders.gl/scene/draco/bundled';
 import type {GLTFWithBuffers} from '../../src/gltf/lib/types/gltf-types';
 import {compressGLTFWithDraco} from '../../src/gltf/lib/encoders/encode-gltf-draco';
 
-vi.mock('@loaders.gl/scene/draco', () => ({encodeDraco: vi.fn()}));
+vi.mock('@loaders.gl/scene/draco/bundled', () => ({encodeDraco: vi.fn()}));
 
 const encodeDracoMock = vi.mocked(encodeDraco);
 const ENABLED_OPTIONS = {gltf: {draco: {enabled: true}}};
