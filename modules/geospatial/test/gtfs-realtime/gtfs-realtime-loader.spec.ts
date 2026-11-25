@@ -250,6 +250,7 @@ test('GTFS Realtime decodes supported messages, translations, enums and deletion
           ],
           cause: 'MAINTENANCE',
           effect: 'DETOUR',
+          severityLevel: 'UNKNOWN_SEVERITY',
           url: {translation: [{text: 'https://example.com/alert'}]},
           headerText: {
             translation: [

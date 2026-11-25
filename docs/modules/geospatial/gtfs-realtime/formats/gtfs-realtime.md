@@ -10,11 +10,15 @@
 
 GTFS Realtime describes vehicle observations, estimated stop times, and service alerts that
 reference a [GTFS Schedule feed](../../gtfs/formats/gtfs.md). Each response is a protobuf
-`FeedMessage`. The loader supports vehicle positions and carriage details, trip descriptors
-and stop predictions, and alert periods, selectors, causes, effects, and translated text.
-It skips unknown fields, proto2 extensions, and payloads outside those supported messages
-and fields. It decodes each feed independently and exposes differential deletion markers to
-the caller.
+`FeedMessage`. The decoded feed includes vehicle positions and carriage details, trip and
+stop-time properties, alerts with localized images and text-to-speech fields, and realtime
+shape, stop, and trip modification entities. Trip properties identify duplicated trips so
+consumers can match them to vehicle reports. Stop-time properties carry platform assignments
+and pickup and drop-off changes.
+
+The loader decodes each feed independently and exposes differential deletion markers to
+the caller. It skips unknown protobuf fields, including the proto2 extension ranges
+`1000`–`1999` and `9000`–`9999`.
 
 Protobuf has no format signature. Automatic selection uses the `.gtfs-realtime` suffix.
 For generic extensions and content types such as `.pb` and `application/x-protobuf`,

@@ -43,6 +43,12 @@ export type GTFSRealtimeEntity = {
   vehicle?: GTFSRealtimeVehiclePosition;
   /** Service alert. */
   alert?: GTFSRealtimeAlert;
+  /** Realtime trip path. */
+  shape?: GTFSRealtimeShape;
+  /** Realtime stop definition. */
+  stop?: GTFSRealtimeStop;
+  /** Changes to the stops served by selected trips. */
+  tripModifications?: GTFSRealtimeTripModifications;
 };
 
 /** An observation of a transit vehicle. */
@@ -73,7 +79,7 @@ export type GTFSRealtimeVehiclePosition = {
 
 /** Identification for an instance of a trip. */
 export type GTFSRealtimeTripDescriptor = {
-  /** GTFS Schedule trip identifier. */
+  /** Trip identifier, which identifies the duplicate in a duplicated trip's vehicle report. */
   tripId?: string;
   /** GTFS Schedule route identifier. */
   routeId?: string;
@@ -153,6 +159,24 @@ export type GTFSRealtimeTripUpdate = {
   timestamp?: number;
   /** Schedule deviation in seconds. */
   delay?: number;
+  /** Duplicate trip identity and trip-level overrides. */
+  tripProperties?: GTFSRealtimeTripProperties;
+};
+
+/** Properties supplied by a realtime trip update. */
+export type GTFSRealtimeTripProperties = {
+  /** Identifier of the duplicate trip. */
+  tripId?: string;
+  /** Service date of the duplicate in YYYYMMDD form. */
+  startDate?: string;
+  /** Service-day departure time of the duplicate. */
+  startTime?: string;
+  /** Shape identifier in the schedule or realtime feed. */
+  shapeId?: string;
+  /** Updated trip headsign. */
+  tripHeadsign?: string;
+  /** Updated short name for the trip. */
+  tripShortName?: string;
 };
 
 /** Predictions or schedule changes at one stop. */
@@ -167,8 +191,22 @@ export type GTFSRealtimeStopTimeUpdate = {
   departure?: GTFSRealtimeStopTimeEvent;
   /** Stop schedule relationship enum name. */
   scheduleRelationship: string;
+  /** Platform assignment and other stop-time overrides. */
+  stopTimeProperties?: GTFSRealtimeStopTimeProperties;
   /** Expected occupancy on departure, as an enum name. */
   departureOccupancyStatus?: string;
+};
+
+/** Properties supplied by a realtime stop-time update. */
+export type GTFSRealtimeStopTimeProperties = {
+  /** Assigned GTFS Schedule stop or platform identifier. */
+  assignedStopId?: string;
+  /** Updated headsign at this stop. */
+  stopHeadsign?: string;
+  /** Pickup arrangement enum name. */
+  pickupType?: string;
+  /** Drop-off arrangement enum name. */
+  dropOffType?: string;
 };
 
 /** Timing information for an arrival or departure. */
@@ -203,6 +241,20 @@ export type GTFSRealtimeAlert = {
   headerText?: GTFSRealtimeTranslatedString;
   /** Translated descriptions. */
   descriptionText?: GTFSRealtimeTranslatedString;
+  /** Translated headlines for text-to-speech. */
+  ttsHeaderText?: GTFSRealtimeTranslatedString;
+  /** Translated descriptions for text-to-speech. */
+  ttsDescriptionText?: GTFSRealtimeTranslatedString;
+  /** Alert severity enum name. */
+  severityLevel: string;
+  /** Localized images associated with the alert. */
+  image?: GTFSRealtimeTranslatedImage;
+  /** Translated alternative text for the image. */
+  imageAlternativeText?: GTFSRealtimeTranslatedString;
+  /** Translated details about the cause. */
+  causeDetail?: GTFSRealtimeTranslatedString;
+  /** Translated details about the effect. */
+  effectDetail?: GTFSRealtimeTranslatedString;
 };
 
 /** A time range with optional start and end bounds. */
@@ -241,6 +293,114 @@ export type GTFSRealtimeTranslation = {
   text: string;
   /** BCP 47 language tag. */
   language?: string;
+};
+
+/** All localized versions of an image. */
+export type GTFSRealtimeTranslatedImage = {
+  /** Localized images in wire order. */
+  localizedImage: GTFSRealtimeLocalizedImage[];
+};
+
+/** An image reference for one language. */
+export type GTFSRealtimeLocalizedImage = {
+  /** Image URL. */
+  url: string;
+  /** IANA image media type. */
+  mediaType: string;
+  /** BCP 47 language tag. */
+  language?: string;
+};
+
+/** Path of a transit trip supplied by the realtime feed. */
+export type GTFSRealtimeShape = {
+  /** Shape identifier. */
+  shapeId?: string;
+  /** Encoded polyline of the trip path. */
+  encodedPolyline?: string;
+};
+
+/** Stop definition supplied by the realtime feed. */
+export type GTFSRealtimeStop = {
+  /** Stop identifier. */
+  stopId?: string;
+  /** Localized passenger-facing stop code. */
+  stopCode?: GTFSRealtimeTranslatedString;
+  /** Localized stop name. */
+  stopName?: GTFSRealtimeTranslatedString;
+  /** Localized stop name for text-to-speech. */
+  ttsStopName?: GTFSRealtimeTranslatedString;
+  /** Localized stop description. */
+  stopDesc?: GTFSRealtimeTranslatedString;
+  /** Latitude in decimal degrees. */
+  stopLat?: number;
+  /** Longitude in decimal degrees. */
+  stopLon?: number;
+  /** Fare zone identifier. */
+  zoneId?: string;
+  /** Localized URLs with stop information. */
+  stopUrl?: GTFSRealtimeTranslatedString;
+  /** Identifier of the parent station. */
+  parentStation?: string;
+  /** Time zone of the stop. */
+  stopTimezone?: string;
+  /** Wheelchair boarding availability enum name. */
+  wheelchairBoarding: string;
+  /** Identifier of the station level. */
+  levelId?: string;
+  /** Localized platform code. */
+  platformCode?: GTFSRealtimeTranslatedString;
+};
+
+/** Realtime changes to a set of trips. */
+export type GTFSRealtimeTripModifications = {
+  /** Groups of affected trips in wire order. */
+  selectedTrips: GTFSRealtimeSelectedTrips[];
+  /** Service-day start times of affected departures. */
+  startTimes: string[];
+  /** Affected service dates in YYYYMMDD form. */
+  serviceDates: string[];
+  /** Stop changes in wire order. */
+  modifications: GTFSRealtimeModification[];
+};
+
+/** Group of affected trips that share a new shape. */
+export type GTFSRealtimeSelectedTrips = {
+  /** Affected trip identifiers in wire order. */
+  tripIds: string[];
+  /** Shape identifier in the schedule or realtime feed. */
+  shapeId?: string;
+};
+
+/** Change to a span of stops on affected trips. */
+export type GTFSRealtimeModification = {
+  /** First affected stop in the original trip. */
+  startStopSelector?: GTFSRealtimeStopSelector;
+  /** Last replaced stop in the original trip, inclusive. */
+  endStopSelector?: GTFSRealtimeStopSelector;
+  /** Delay in seconds applied after the modified stop span. */
+  propagatedModificationDelay: number;
+  /** Replacement stops in wire order. */
+  replacementStops: GTFSRealtimeReplacementStop[];
+  /** Feed entity identifier of an associated service alert. */
+  serviceAlertId?: string;
+  /** Time this modification last changed, in Unix seconds. */
+  lastModifiedTime?: number;
+};
+
+/** Reference to a stop in the original trip. */
+export type GTFSRealtimeStopSelector = {
+  /** Stop sequence in the scheduled trip. */
+  stopSequence?: number;
+  /** GTFS Schedule stop identifier. */
+  stopId?: string;
+};
+
+/** Stop to visit in a modified trip. */
+export type GTFSRealtimeReplacementStop = {
+  /** Arrival offset from the reference stop in seconds. */
+  travelTimeToStop?: number;
+  /** Stop identifier in the schedule or realtime feed. */
+  stopId?: string;
 };
 
 /** One positioned transit vehicle in a GTFS Realtime snapshot. */

@@ -9,14 +9,25 @@ import type {
   GTFSRealtimeEntitySelector,
   GTFSRealtimeFeed,
   GTFSRealtimeHeader,
+  GTFSRealtimeLocalizedImage,
+  GTFSRealtimeModification,
   GTFSRealtimeModifiedTrip,
   GTFSRealtimePosition,
+  GTFSRealtimeReplacementStop,
+  GTFSRealtimeSelectedTrips,
+  GTFSRealtimeShape,
+  GTFSRealtimeStop,
+  GTFSRealtimeStopSelector,
   GTFSRealtimeStopTimeEvent,
+  GTFSRealtimeStopTimeProperties,
   GTFSRealtimeStopTimeUpdate,
   GTFSRealtimeTimeRange,
+  GTFSRealtimeTranslatedImage,
   GTFSRealtimeTranslatedString,
   GTFSRealtimeTranslation,
   GTFSRealtimeTripDescriptor,
+  GTFSRealtimeTripModifications,
+  GTFSRealtimeTripProperties,
   GTFSRealtimeTripUpdate,
   GTFSRealtimeVehicleDescriptor,
   GTFSRealtimeVehiclePosition
@@ -255,6 +266,17 @@ const stopTimeEvent = messageField<GTFSRealtimeStopTimeEvent>({
   4: ['scheduledTime', signedTimestamp]
 });
 
+/** Names of the pickup and drop-off arrangements at a stop. */
+const dropOffPickupType = enumField(['REGULAR', 'NONE', 'PHONE_AGENCY', 'COORDINATE_WITH_DRIVER']);
+
+/** Reads platform assignment and passenger-facing changes for one stop. */
+const stopTimeProperties = messageField<GTFSRealtimeStopTimeProperties>({
+  1: ['assignedStopId', stringField],
+  2: ['stopHeadsign', stringField],
+  3: ['pickupType', dropOffPickupType],
+  4: ['dropOffType', dropOffPickupType]
+});
+
 /** Reads predictions and schedule changes for one stop. */
 const stopTimeUpdate = messageField<GTFSRealtimeStopTimeUpdate>(
   {
@@ -263,10 +285,21 @@ const stopTimeUpdate = messageField<GTFSRealtimeStopTimeUpdate>(
     3: ['departure', stopTimeEvent],
     4: ['stopId', stringField],
     5: ['scheduleRelationship', enumField(['SCHEDULED', 'SKIPPED', 'NO_DATA', 'UNSCHEDULED'])],
+    6: ['stopTimeProperties', stopTimeProperties],
     7: ['departureOccupancyStatus', occupancyStatus]
   },
   () => ({scheduleRelationship: 'SCHEDULED'})
 );
+
+/** Reads a duplicate trip's identity and overrides for a trip's shape or signage. */
+const tripProperties = messageField<GTFSRealtimeTripProperties>({
+  1: ['tripId', stringField],
+  2: ['startDate', stringField],
+  3: ['startTime', stringField],
+  4: ['shapeId', stringField],
+  5: ['tripHeadsign', stringField],
+  6: ['tripShortName', stringField]
+});
 
 /** Reads trip-level updates and their stop predictions. */
 const tripUpdate = messageField<GTFSRealtimeTripUpdate>(
@@ -275,7 +308,8 @@ const tripUpdate = messageField<GTFSRealtimeTripUpdate>(
     2: ['stopTimeUpdate', stopTimeUpdate, true],
     3: ['vehicle', vehicleDescriptor],
     4: ['timestamp', unsignedTimestamp],
-    5: ['delay', integerField]
+    5: ['delay', integerField],
+    6: ['tripProperties', tripProperties]
   },
   () => ({stopTimeUpdate: []}),
   ['trip']
@@ -308,6 +342,19 @@ const translation = messageField<GTFSRealtimeTranslation>(
 const translatedString = messageField<GTFSRealtimeTranslatedString>(
   {1: ['translation', translation, true]},
   () => ({translation: []})
+);
+
+/** Reads an image URL and media type with its optional language tag. */
+const localizedImage = messageField<GTFSRealtimeLocalizedImage>(
+  {1: ['url', stringField], 2: ['mediaType', stringField], 3: ['language', stringField]},
+  undefined,
+  ['url', 'mediaType']
+);
+
+/** Reads all localized variants of an alert image. */
+const translatedImage = messageField<GTFSRealtimeTranslatedImage>(
+  {1: ['localizedImage', localizedImage, true]},
+  () => ({localizedImage: []})
 );
 
 /** Reads a service alert and its localized descriptions. */
@@ -355,7 +402,14 @@ const alert = messageField<GTFSRealtimeAlert>(
     ],
     8: ['url', translatedString],
     10: ['headerText', translatedString],
-    11: ['descriptionText', translatedString]
+    11: ['descriptionText', translatedString],
+    12: ['ttsHeaderText', translatedString],
+    13: ['ttsDescriptionText', translatedString],
+    14: ['severityLevel', enumField([undefined, 'UNKNOWN_SEVERITY', 'INFO', 'WARNING', 'SEVERE'])],
+    15: ['image', translatedImage],
+    16: ['imageAlternativeText', translatedString],
+    17: ['causeDetail', translatedString],
+    18: ['effectDetail', translatedString]
   },
   () => ({
     activePeriod: [],
@@ -363,7 +417,8 @@ const alert = messageField<GTFSRealtimeAlert>(
     impactPeriod: [],
     informedEntity: [],
     cause: 'UNKNOWN_CAUSE',
-    effect: 'UNKNOWN_EFFECT'
+    effect: 'UNKNOWN_EFFECT',
+    severityLevel: 'UNKNOWN_SEVERITY'
   })
 );
 
@@ -379,6 +434,75 @@ const feedHeader = messageField<GTFSRealtimeHeader>(
   ['gtfsRealtimeVersion']
 );
 
+/** Reads the identity and encoded polyline of a trip path. */
+const shape = messageField<GTFSRealtimeShape>({
+  1: ['shapeId', stringField],
+  2: ['encodedPolyline', stringField]
+});
+
+/** Reads realtime stop metadata and localized passenger information. */
+const stop = messageField<GTFSRealtimeStop>(
+  {
+    1: ['stopId', stringField],
+    2: ['stopCode', translatedString],
+    3: ['stopName', translatedString],
+    4: ['ttsStopName', translatedString],
+    5: ['stopDesc', translatedString],
+    6: ['stopLat', floatField],
+    7: ['stopLon', floatField],
+    8: ['zoneId', stringField],
+    9: ['stopUrl', translatedString],
+    11: ['parentStation', stringField],
+    12: ['stopTimezone', stringField],
+    13: ['wheelchairBoarding', enumField(['UNKNOWN', 'AVAILABLE', 'NOT_AVAILABLE'])],
+    14: ['levelId', stringField],
+    15: ['platformCode', translatedString]
+  },
+  () => ({wheelchairBoarding: 'UNKNOWN'})
+);
+
+/** Reads a reference to a stop by sequence or identifier. */
+const stopSelector = messageField<GTFSRealtimeStopSelector>({
+  1: ['stopSequence', unsignedIntegerField],
+  2: ['stopId', stringField]
+});
+
+/** Reads a stop to visit as part of a modified trip. */
+const replacementStop = messageField<GTFSRealtimeReplacementStop>({
+  1: ['travelTimeToStop', integerField],
+  2: ['stopId', stringField]
+});
+
+/** Reads one modification to a span of stops. */
+const modification = messageField<GTFSRealtimeModification>(
+  {
+    1: ['startStopSelector', stopSelector],
+    2: ['endStopSelector', stopSelector],
+    3: ['propagatedModificationDelay', integerField],
+    4: ['replacementStops', replacementStop, true],
+    5: ['serviceAlertId', stringField],
+    6: ['lastModifiedTime', unsignedTimestamp]
+  },
+  () => ({propagatedModificationDelay: 0, replacementStops: []})
+);
+
+/** Reads a group of trips affected by the same shape change. */
+const selectedTrips = messageField<GTFSRealtimeSelectedTrips>(
+  {1: ['tripIds', stringField, true], 2: ['shapeId', stringField]},
+  () => ({tripIds: []})
+);
+
+/** Reads the trips, service dates and stop changes in a trip modification entity. */
+const tripModifications = messageField<GTFSRealtimeTripModifications>(
+  {
+    1: ['selectedTrips', selectedTrips, true],
+    2: ['startTimes', stringField, true],
+    3: ['serviceDates', stringField, true],
+    4: ['modifications', modification, true]
+  },
+  () => ({selectedTrips: [], startTimes: [], serviceDates: [], modifications: []})
+);
+
 /** Reads one feed entity, including deletion markers. */
 const feedEntity = messageField<GTFSRealtimeEntity>(
   {
@@ -386,7 +510,10 @@ const feedEntity = messageField<GTFSRealtimeEntity>(
     2: ['isDeleted', booleanField],
     3: ['tripUpdate', tripUpdate],
     4: ['vehicle', vehiclePosition],
-    5: ['alert', alert]
+    5: ['alert', alert],
+    6: ['shape', shape],
+    7: ['stop', stop],
+    8: ['tripModifications', tripModifications]
   },
   () => ({isDeleted: false}),
   ['id']

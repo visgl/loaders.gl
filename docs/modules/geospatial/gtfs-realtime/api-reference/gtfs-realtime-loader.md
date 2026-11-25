@@ -7,7 +7,8 @@
 
 `GTFSRealtimeLoader` decodes a binary [GTFS Realtime snapshot](../formats/gtfs-realtime.md).
 The default output contains one row per vehicle-position entity with coordinates. Use the feed
-shape to access trip updates, alerts, deletion markers, and vehicle reports without positions.
+shape to access trip updates, alerts, shapes, stops, trip modifications, deletion markers, and
+vehicle reports without positions.
 
 | Loader | Characteristic |
 | --- | --- |
@@ -47,7 +48,7 @@ appear as `null`. The default stop status is `IN_TRANSIT_TO`.
 | `timestamp` | float64 | Vehicle observation time in Unix seconds. |
 | `id` | string | Feed entity identifier. |
 | `vehicleId`, `vehicleLabel` | string | Vehicle identifier and passenger-facing label. |
-| `tripId`, `routeId` | string | Identifiers in the associated GTFS Schedule feed. |
+| `tripId`, `routeId` | string | Trip and route identifiers from the vehicle's trip descriptor. |
 | `directionId` | uint32 | Trip direction. |
 | `startDate`, `startTime` | string | Trip start date and service-day time. |
 | `longitude`, `latitude` | float64 | Decimal degrees, east and north positive. |
@@ -66,6 +67,21 @@ object-row table.
 ## Decoded feed
 
 `GTFSRealtimeFeed` contains `shape: 'gtfs-realtime-feed'`, `header`, and an `entity` array
-in wire order. It uses camelCase property names and protobuf enum names. Each translated text
-or URL field contains a `translation` array with every supplied text and language tag.
-Timestamps are JavaScript numbers in Unix seconds and must fit the safe integer range.
+in wire order. It uses camelCase property names and protobuf enum names. Repeated fields are
+arrays, and omitted optional fields are absent unless the protocol declares an explicit default.
+Each translated text or URL field contains a `translation` array with every supplied text and
+language tag. Timestamps are JavaScript numbers in Unix seconds and must fit the safe integer range.
+
+| Feed property | Contents |
+| --- | --- |
+| `tripUpdate.tripProperties` | Duplicate trip `tripId`, `startDate`, and `startTime`, plus `shapeId`, `tripHeadsign`, and `tripShortName` overrides. |
+| `tripUpdate.stopTimeUpdate[].stopTimeProperties` | `assignedStopId` for platform assignments, `stopHeadsign`, and the `pickupType` and `dropOffType` enum names `REGULAR`, `NONE`, `PHONE_AGENCY`, and `COORDINATE_WITH_DRIVER`. |
+| `alert` | Includes `ttsHeaderText`, `ttsDescriptionText`, `severityLevel` (default `UNKNOWN_SEVERITY`), `imageAlternativeText`, `causeDetail`, and `effectDetail`. `image.localizedImage` entries contain `url`, `mediaType`, and an optional `language`. |
+| `shape` | `shapeId` and `encodedPolyline` as supplied by the feed. |
+| `stop` | `stopId`, `stopLat`, `stopLon`, `zoneId`, `parentStation`, `stopTimezone`, `levelId`, and `wheelchairBoarding` (default `UNKNOWN`). `stopCode`, `stopName`, `ttsStopName`, `stopDesc`, `stopUrl`, and `platformCode` are translated fields. |
+| `tripModifications` | `selectedTrips` groups contain `tripIds` and `shapeId`. The entity also contains `startTimes`, `serviceDates`, and `modifications`. Each modification has `startStopSelector` and `endStopSelector` (with `stopSequence` or `stopId`), `propagatedModificationDelay` (default `0` seconds), `replacementStops` (with `travelTimeToStop` in seconds and `stopId`), `serviceAlertId`, and `lastModifiedTime`. |
+
+For a `DUPLICATED` trip, `tripUpdate.trip.tripId` identifies the original scheduled trip.
+Join its update to a vehicle report by matching `tripUpdate.tripProperties.tripId` to
+`vehicle.trip.tripId`. A platform assignment is available at
+`tripUpdate.stopTimeUpdate[].stopTimeProperties.assignedStopId`.
