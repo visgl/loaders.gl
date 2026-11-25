@@ -86,7 +86,8 @@ runtime sources.
 
 `RasterSourceLayer` requests the active viewport through `RasterSet` and renders typed samples with
 `BitmapLayer`. The default colorizer uses tagged RGB or grayscale bands when available, with
-sampled 2nd/98th percentile scaling and a blue-to-yellow single-band ramp. Tagged alpha sets
+sampled 2nd/98th percentile scaling and a blue-to-yellow single-band ramp. Tagged 8-bit RGB
+shows as stored, without scaling. Tagged alpha sets
 opacity using the unsigned type's full range, the range 0–1 for floats, or clamped byte values
 for signed integers. With color metadata and no alpha, RGB pixels are transparent when all
 three channels match nodata. Masks and non-finite samples also make pixels transparent.

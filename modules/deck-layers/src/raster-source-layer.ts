@@ -644,9 +644,11 @@ function scaleAlphaToByte(value: number | undefined, maximum: number): number {
 export function colorizeRasterData(
   raster: NumericRasterData,
   options: {
-    /** Opt in to min/max stretch; default preserves the historical percentile stretch. */ stretch?:
-      | 'range'
-      | 'percentile';
+    /**
+     * Opt in to min/max or percentile stretch. By default, tagged 8-bit RGB shows as stored and
+     * other bands use the historical percentile stretch.
+     */
+    stretch?: 'range' | 'percentile';
   } = {}
 ): RasterBitmapImage {
   const pixelCount = raster.width * raster.height;
