@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 import {AvroLoader, AvroSchemaLoader} from '@loaders.gl/tables/avro';
@@ -104,4 +104,30 @@ test.each([
   const implementation = await loader.preload();
   expect(implementation.createDataSourceSync).toBeTypeOf('function');
   expect(implementation.parse).toBeTypeOf('function');
+});
+
+test.each([
+  {loader: ArrowLoader, filename: 'arrow-worker'},
+  {loader: GeoArrowLoader, filename: 'geoarrow-worker'}
+])('$filename metadata starts a module worker when supported', ({loader, filename}) => {
+  const startWorker = vi.fn();
+  class StubWorker {
+    constructor(url: URL, options: WorkerOptions) {
+      startWorker(url, options);
+    }
+  }
+  try {
+    vi.stubGlobal('Worker', undefined);
+    expect(loader.loadWorker()).toBeNull();
+
+    vi.stubGlobal('Worker', StubWorker);
+    expect(loader.loadWorker()).toBeInstanceOf(StubWorker);
+    expect(startWorker).toHaveBeenCalledOnce();
+    const [url, options] = startWorker.mock.calls[0];
+    const workerFile = new URL(url).pathname.split('/').pop();
+    expect([filename + '.ts', filename + '.js']).toContain(workerFile);
+    expect(options).toMatchObject({type: 'module'});
+  } finally {
+    vi.unstubAllGlobals();
+  }
 });
