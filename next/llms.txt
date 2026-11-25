@@ -469,6 +469,9 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 - [Put places, paths, and views in an Earth-ready document.](https://loaders.gl/next/docs/modules/geospatial/kml/formats/kml.md): An XML standard for geographic annotation, visualization, and Earth-browser content.
 - [Keep activity data with its useful measurements.](https://loaders.gl/next/docs/modules/geospatial/kml/formats/tcx.md): Garmin's XML exchange format for activities, laps, and fitness metrics.
 - [@loaders.gl/geospatial/kmz](https://loaders.gl/next/docs/modules/geospatial/kmz.md): Read zipped KML data and open it as a vector source. This entry point exports KMZLoader and createKMZSource.
+- [🧪 @loaders.gl/geospatial/omm](https://loaders.gl/next/docs/modules/geospatial/omm.md): Read the general perturbations (GP) subset of CCSDS Orbit Mean-Elements Message (OMM) for SGP4.
+- [🧪 OMMLoader](https://loaders.gl/next/docs/modules/geospatial/omm/api-reference/omm-loader.md): OMMLoader reads the general perturbations (GP) subset of
+- [🧪 OMM (Orbit Mean-Elements Message)](https://loaders.gl/next/docs/modules/geospatial/omm/formats/omm.md): loaders.gl support
 - [Read the geometry and attributes that travel together.](https://loaders.gl/next/docs/modules/geospatial/shapefile.md): Load Shapefile geometry and attributes as geospatial table data.
 - [DBFLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/dbf-loader.md): Decode the attribute table component of a Shapefile dataset.
 - [ShapefileLoader](https://loaders.gl/next/docs/modules/geospatial/shapefile/api-reference/shapefile-loader.md): Load Shapefile geometry, attributes, indexes, and CRS metadata into geospatial tables.
@@ -477,6 +480,9 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 - [Treat the sidecars as part of the dataset.](https://loaders.gl/next/docs/modules/geospatial/shapefile/formats/shapefile.md): Read the multi-file ESRI vector format and its sidecar metadata as one geospatial dataset.
 - [@loaders.gl/geospatial/shp](https://loaders.gl/next/docs/modules/geospatial/shp.md): Read the geometry component of an ESRI Shapefile. This entry point exports SHPLoader and SHPLoaderWithParser.
 - [@loaders.gl/geospatial/tcx](https://loaders.gl/next/docs/modules/geospatial/tcx.md): Read training activities and tracks. This entry point exports TCXLoader and TCXLoaderWithParser.
+- [🧪 @loaders.gl/geospatial/tle](https://loaders.gl/next/docs/modules/geospatial/tle.md): Read satellite orbit elements in the two-line element set (TLE) format. This entry point exports
+- [🧪 TLELoader](https://loaders.gl/next/docs/modules/geospatial/tle/api-reference/tle-loader.md): TLELoader parses two-line element sets (TLE). It converts each set to a row
+- [🧪 TLE (Two-Line Element Set)](https://loaders.gl/next/docs/modules/geospatial/tle/formats/tle.md): loaders.gl support
 - [@loaders.gl/geospatial/wkb](https://loaders.gl/next/docs/modules/geospatial/wkb.md): Decode binary geometry and write WKB. This entry point exports WKBLoader, HexWKBLoader, TWKBLoader, and WKBWriter.
 - [Keep geometry and coordinate systems interoperable.](https://loaders.gl/next/docs/modules/geospatial/wkt.md): Parse and write geometry and coordinate reference systems in OGC text and binary forms.
 - [HexWKBLoader](https://loaders.gl/next/docs/modules/geospatial/wkt/api-reference/hex-wkb-loader.md): Parse hexadecimal WKB strings into structured geometry data.
