@@ -247,14 +247,15 @@ describe('RasterSourceLayer lifecycle', () => {
       })
     );
     expect(firstBitmap.props.raster.data).toBe(firstRaster.data[0]);
-    const pick = (red: number, green: number) => {
-      const parameters = {info: {color: new Uint8Array([red, green, 0])}, mode: 'hover'};
+    // The 2 x 2 raster packs the texel index as column + row * 2 in the red channel.
+    const pick = (column: number, row: number) => {
+      const parameters = {info: {color: new Uint8Array([column + row * 2, 0, 0])}, mode: 'hover'};
       const info = firstBitmap.getPickingInfo(parameters);
       return layer.getPickingInfo({...parameters, info, sourceLayer: firstBitmap}).value;
     };
-    expect(pick(64, 64)).toBe(2);
-    expect(pick(192, 64)).toBeNull();
-    expect(pick(64, 192)).toBeNull();
+    expect(pick(0, 0)).toBe(2);
+    expect(pick(1, 0)).toBeNull();
+    expect(pick(0, 1)).toBeNull();
 
     const nextViewport = createViewport([30, 35, 60, 55]);
     layer.requestRaster(nextViewport, 0);
