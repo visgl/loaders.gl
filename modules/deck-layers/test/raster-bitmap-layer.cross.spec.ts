@@ -8,6 +8,7 @@ import type {RasterData} from '@loaders.gl/core/loader-utils';
 import {resolveShaderPlugins, WGSLShaderAssembler} from '@luma.gl/shaders';
 import {expect, test, vi} from 'vitest';
 import {colorizeRasterData, RasterBitmapLayer, RasterSourceLayer} from '../src';
+import {getRasterUploadData} from '../src/raster-bitmap-layer';
 import {createRasterViewport} from '../src/raster-source-layer';
 
 test('inherits BitmapLayer and defaults to a linear scale with the default colormap', () => {
@@ -39,6 +40,7 @@ test('matches CPU RGBA within one byte using the GPU percentile stretch and defa
     validityMasks: [{width, height: 1, data: mask}]
   };
   const source = new RasterSourceLayer({
+    id: 'raster-bitmap-cpu-parity',
     rendering: 'gpu',
     data: {getMetadata: async () => metadata, getRaster: async () => raster}
   });
@@ -124,6 +126,30 @@ test('assembles WebGPU BitmapLayer shaders with an unfilterable float texture bi
   expect(result.source).not.toContain('bitmapTextureSampler');
 });
 
+test.each([
+  {data: new Uint32Array([16777216, 16777217]), noData: 16777217, expected: [16777216, NaN]},
+  {data: new Int16Array([-20, 15]), noData: -20, expected: [NaN, 15]},
+  {data: new Uint8Array([0, 255]), noData: 255, expected: [0, NaN]},
+  {data: new Uint8Array([0, 255]), noData: null, expected: [0, 255]}
+])('masks converted upload samples before rounding ($data, noData=$noData)', ({
+  data,
+  noData,
+  expected
+}) => {
+  const upload = getRasterUploadData({width: 2, height: 1, data}, noData);
+  expect(upload.data).toEqual(new Float32Array(expected));
+  expect(upload.useNoData).toBe(false);
+});
+
+test('uploads Float32Array samples without copying and compares a finite sentinel in the shader', () => {
+  const data = new Float32Array([0.1, 1]);
+  const raster = {width: 2, height: 1, data};
+  const upload = getRasterUploadData(raster, 0.1);
+  expect(upload.data).toBe(data);
+  expect(upload.useNoData).toBe(true);
+  expect(getRasterUploadData(raster, null).useNoData).toBe(false);
+});
+
 test('converts raster uploads and replaces only the changed textures', () => {
   const makeTexture = () => ({destroy: vi.fn()});
   const initialRasterTexture = makeTexture();
@@ -174,7 +200,7 @@ test('converts raster uploads and replaces only the changed textures', () => {
   expect(gray).toMatchObject({format: 'rgba8unorm', width: 256, height: 1});
   expect(gray.data.slice(-8)).toEqual(new Uint8Array([254, 254, 254, 255, 255, 255, 255, 255]));
 
-  updateLayer({valueRange: [-10, 10], noData: -20, valueScale: 'log', interpolation: 'nearest'});
+  updateLayer({valueRange: [-10, 10], valueScale: 'log', interpolation: 'nearest'});
   expect(createTexture).toHaveBeenCalledTimes(2);
   const customColormap = new Uint8Array(1024).fill(123);
   updateLayer({colormap: customColormap});
@@ -194,6 +220,84 @@ test('converts raster uploads and replaces only the changed textures', () => {
   layer.finalizeState({} as any);
   expect(updatedRasterTexture.destroy).toHaveBeenCalledOnce();
   expect(updatedColormapTexture.destroy).toHaveBeenCalledOnce();
+});
+
+test.each([
+  {
+    name: 'converted',
+    data: new Uint32Array([16777216, 16777217]),
+    noData: 16777217,
+    textureCount: 3,
+    uniform: {noData: 0, useNoData: 0}
+  },
+  {
+    name: 'Float32Array',
+    data: new Float32Array([0.1, 1]),
+    noData: 0.1,
+    textureCount: 2,
+    uniform: {noData: Math.fround(0.1), useNoData: 1}
+  }
+])('applies a noData change to $name rasters', ({data, noData, textureCount, uniform}) => {
+  const initialLayer = new RasterBitmapLayer({raster: {width: 2, height: 1, data}});
+  const createTexture = vi.fn((_options: {data: Float32Array | Uint8Array}) => ({
+    destroy: vi.fn()
+  }));
+  const setProps = vi.fn();
+  initialLayer.context = {device: {createTexture}} as any;
+  initialLayer.state = {
+    subdivisionStep: 0,
+    bounds: [0, 0, 0, 0],
+    coordinateConversion: 0,
+    model: {shaderInputs: {setProps}, draw: vi.fn()} as any
+  };
+  initialLayer.updateState({
+    props: initialLayer.props,
+    oldProps: initialLayer.clone({raster: null}).props,
+    changeFlags: {propsChanged: 'test raster'},
+    context: initialLayer.context
+  } as Parameters<RasterBitmapLayer['updateState']>[0]);
+  const initialRasterTexture = initialLayer.state.rasterTexture;
+  const initialColormapTexture = initialLayer.state.colormapTexture;
+
+  const layer = initialLayer.clone({noData});
+  layer.context = initialLayer.context;
+  layer.state = initialLayer.state;
+  layer.updateState({
+    props: layer.props,
+    oldProps: initialLayer.props,
+    changeFlags: {propsChanged: 'test noData'},
+    context: layer.context
+  } as Parameters<RasterBitmapLayer['updateState']>[0]);
+  layer.draw({shaderModuleProps: {picking: {isActive: false}}} as Parameters<
+    RasterBitmapLayer['draw']
+  >[0]);
+
+  expect(createTexture).toHaveBeenCalledTimes(textureCount);
+  expect(layer.state.colormapTexture).toBe(initialColormapTexture);
+  expect(setProps.mock.calls[0][0].rasterBitmap).toMatchObject(uniform);
+  if (data instanceof Float32Array) {
+    expect(layer.state.rasterTexture).toBe(initialRasterTexture);
+    expect(initialRasterTexture?.destroy).not.toHaveBeenCalled();
+  } else {
+    expect(layer.state.rasterTexture).not.toBe(initialRasterTexture);
+    expect(initialRasterTexture?.destroy).toHaveBeenCalledOnce();
+    expect(createTexture.mock.calls[2][0].data).toEqual(new Float32Array([16777216, NaN]));
+  }
+});
+
+test('picks a valid Uint32 texel that would round to the same float32 as noData', () => {
+  const layer = new RasterBitmapLayer({
+    raster: {width: 2, height: 1, data: new Uint32Array([16777216, 16777217])},
+    noData: 16777217
+  });
+  const pick = (red: number) =>
+    layer.getPickingInfo({
+      info: {color: new Uint8Array([red, 128, 0])},
+      mode: 'hover',
+      sourceLayer: null
+    } as any);
+  expect(pick(64).value).toBe(16777216);
+  expect(pick(192).value).toBeNull();
 });
 
 test('returns original picked texels and null for no-data, NaN, or a miss', () => {
