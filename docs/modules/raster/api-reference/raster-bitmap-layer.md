@@ -36,4 +36,5 @@ const layer = new RasterBitmapLayer({
 With `pickable: true`, picking info includes `bitmap` and `value`. The latter is the original CPU
 sample at `bitmap.pixel`, or `null` for a missing, non-finite, or no-data sample. Linear
 interpolation can draw color over an invalid texel using neighboring values, while picking that
-texel still returns `null`. Picking uses BitmapLayer's 12-bit UV encoding.
+texel still returns `null`. The reported UV is the center of the picked texel.
+Picking requires `ceil(log2(width)) + ceil(log2(height)) <= 24`. Larger rasters return `null` for both `bitmap` and `value`.
