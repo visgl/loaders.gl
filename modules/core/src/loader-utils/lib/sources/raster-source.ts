@@ -126,6 +126,16 @@ export type GetRasterParameters = {
   signal?: AbortSignal;
 };
 
+/** Experimental request for one tile of the source's native raster grid. */
+export type GetRasterTileParameters = Omit<GetRasterParameters, 'viewport' | 'resampleMethod'> & {
+  /** Identifier of a matrix in the source's tile grid. */
+  tileMatrix: string;
+  /** Native tile column. */
+  x: number;
+  /** Native tile row. */
+  y: number;
+};
+
 /**
  * Description of one available overview level.
  */
@@ -176,7 +186,7 @@ export type RasterSourceMetadata = {
   supportsRegion?: boolean;
   /** Native tile dimensions when the source is tiled. */
   tileSize?: {width: number; height: number};
-  /** Native tiled overview geometry; matrix IDs are source image indices. Edge tiles may extend beyond raster bounds. */
+  /** Native tiled overview geometry with source-assigned matrix IDs. Edge tiles may extend beyond raster bounds. */
   tileGrid?: TileGrid;
   /** Available overview levels. */
   overviews?: RasterOverview[];
@@ -206,6 +216,8 @@ export interface RasterSource<
   }): Promise<MetadataT>;
   /** Loads raster samples for the supplied viewport request. */
   getRaster(parameters: ParametersT): Promise<DataT>;
+  /** Experimental. Reads one native tile without resampling, or null for an unavailable tile. */
+  getRasterTile?(parameters: GetRasterTileParameters): Promise<NumericRasterData | null>;
 }
 
 /**

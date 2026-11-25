@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import type {TiffSourceDecoder, TiffSourceImage} from './lib/tiff/tiff-source-decoder';
+import type {
+  TiffRasterReadOptions,
+  TiffSourceDecoder,
+  TiffSourceImage
+} from './lib/tiff/tiff-source-decoder';
 
 import type {
   DataSourceOptions,
@@ -11,6 +15,7 @@ import type {
   RasterRegionParameters,
   RasterSourceMetadata,
   GetRasterParameters,
+  GetRasterTileParameters,
   RasterData,
   NumericRasterData,
   RasterMixedData,
@@ -26,6 +31,7 @@ import type {
   ScanQueryMetadataProvider
 } from '@loaders.gl/core/loader-utils';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
+import {getTileBounds} from '@math.gl/geospatial/tiles';
 import {
   createTileGrid,
   createTileGridMatrix,
@@ -36,6 +42,7 @@ import {
   waitForPromiseWithSignal,
   waitForPromiseWithSignals,
   sampleRaster,
+  resolveTileGridTile,
   validateRasterRegion,
   createScanQueryMetadata
 } from '@loaders.gl/core/loader-utils';
@@ -114,6 +121,14 @@ type GeoTIFFReadRasterResult = {width: number; height: number} & (
   | RasterData['data']
   | TypedArray[]
 );
+
+/** Decoded planar samples and their optional validity masks in the same pixel window. */
+type GeoTIFFNativeWindow = {
+  /** Source samples with their native dimensions. */
+  raster: GeoTIFFReadRasterResult;
+  /** Shared and per-band validity in the order-independent RasterData mask layout. */
+  validityMasks?: RasterData['validityMasks'];
+};
 
 /**
  * Viewport-driven raster source backed by a GeoTIFF dataset.
@@ -264,6 +279,136 @@ export class GeoTIFFRasterSource
     return this._readRegion(parameters, true);
   }
 
+  /** Experimental. Decodes one storage tile at the requested IFD's native resolution. */
+  getRasterTile(parameters: GetRasterTileParameters): Promise<NumericRasterData | null> {
+    return waitForPromiseWithSignals(
+      signal => this._decodeTile({...parameters, signal}),
+      [parameters.signal, this._finalizationController.signal]
+    );
+  }
+
+  /** Addresses the IFD in integer pixels and georeferences the full, possibly padded output. */
+  private async _decodeTile(
+    parameters: GetRasterTileParameters
+  ): Promise<NumericRasterData | null> {
+    const {tileMatrix, signal} = parameters;
+    signal?.throwIfAborted();
+    if (parameters.selection && Object.keys(parameters.selection).length)
+      throw new Error('GeoTIFF does not support non-spatial raster selections');
+    const {images, metadata} = await this._getInitPromise(signal);
+    signal?.throwIfAborted();
+    const tileGrid = metadata.tileGrid;
+    const matrixSet = tileGrid?.tileMatrixSet;
+    if (!matrixSet?.crs || !matrixSet.matrices.length)
+      throw new Error('GeoTIFF native tile reads require a complete native tile matrix set');
+    const tile = resolveTileGridTile(tileGrid, {...parameters, z: 0});
+    if (!tile) return null;
+    const matrix = matrixSet.matrices.find(candidate => candidate.id === tileMatrix)!;
+    const overview = Number(tileMatrix);
+    const image = images[overview];
+    const selectedBands = getSelectedBands(metadata, parameters.bands);
+    if (
+      !image ||
+      String(overview) !== tileMatrix ||
+      (overview !== 0 && !isCompatibleOverview(image, images, metadata, selectedBands))
+    )
+      throw new Error(`GeoTIFF IFD ${tileMatrix} is incompatible with native tile decoding`);
+
+    const overviewNoData = overview === 0 ? undefined : image.getGDALNoData?.();
+    const noData = overviewNoData ?? metadata.noData;
+    const bands = getSelectedBandMetadata(metadata, selectedBands, metadata.dtype);
+    for (const band of bands)
+      band.noData = overviewNoData ?? (band.noData === undefined ? noData : band.noData);
+    const dtype = bands[0].dtype;
+    const mixed = bands.some(band => band.dtype !== dtype);
+    const interleaved = parameters.interleaved ?? this.options.geotiff?.interleaved ?? false;
+    if (mixed && interleaved) throw new Error('Mixed-type GeoTIFF tiles require planar arrays');
+    const [width, height] = matrix.tileSize;
+    const window = [
+      tile.x * width,
+      tile.y * height,
+      Math.min((tile.x + 1) * width, image.getWidth()),
+      Math.min((tile.y + 1) * height, image.getHeight())
+    ];
+    if (window[2] <= window[0] || window[3] <= window[1])
+      throw new Error(`GeoTIFF matrix "${tileMatrix}" is inconsistent with its IFD dimensions`);
+
+    const [minimumX, minimumY, maximumX, maximumY] = getTileBounds(matrix, tile.x, tile.y);
+    const boundingBox: RasterBoundingBox = [
+      [minimumX, minimumY],
+      [maximumX, maximumY]
+    ];
+    const resolution: [number, number] = [
+      matrix.resolution,
+      matrix.resolutionY ?? matrix.resolution
+    ];
+    const topLeft = matrix.cornerOfOrigin === 'topLeft';
+    const transform: RasterAffineTransform = [
+      resolution[0],
+      0,
+      minimumX,
+      0,
+      topLeft ? -resolution[1] : resolution[1],
+      topLeft ? maximumY : minimumY
+    ];
+    const bytesPerPixel = bands.reduce((bytes, band) => bytes + getDataTypeBytes(band.dtype), 0);
+    const maxDecodedBytes = this.options.geotiff?.maxDecodedBytes ?? 256 * 1024 * 1024;
+    const pixels = validateRasterRegion(
+      boundingBox,
+      width,
+      height,
+      bytesPerPixel,
+      this.options.geotiff?.maxPixels,
+      maxDecodedBytes
+    );
+    const maskImage = getMatchingMaskImage(images, image);
+    validateNativeDecodeBudget(image, maskImage, window, metadata, {
+      bytesPerPixel,
+      bandCount: bands.length,
+      pixels,
+      maxDecodedBytes
+    });
+    const native = await readNativeRasterWindow(
+      image,
+      maskImage,
+      window,
+      bands,
+      maxDecodedBytes,
+      {samples: parameters.bands, fillValue: noData ?? undefined, signal},
+      tile
+    );
+    const padded = padNativeRasterWindow(native, bands, width, height);
+    const raster = interleaved
+      ? await interleaveRasterBands(padded.raster, dtype, signal)
+      : padded.raster;
+    signal?.throwIfAborted();
+    const result = {
+      data: normalizeRasterReadResult(raster, interleaved),
+      width,
+      height,
+      bandCount: bands.length,
+      dtype,
+      interleaved,
+      noData,
+      boundingBox,
+      crs: metadata.crs,
+      metadata: metadata.metadata,
+      bands,
+      transform,
+      pixelRegistration: 'area',
+      validityMasks: padded.validityMasks,
+      overview,
+      resolution,
+      nativeResolution: resolution,
+      overzoom: false,
+      provenance: {sourceType: 'geotiff'},
+      ownership: 'owned'
+    } satisfies RasterData;
+    return mixed
+      ? {...result, data: padded.raster as TypedArray[], dtype: 'mixed', interleaved: false}
+      : result;
+  }
+
   /** Validates and decodes one source-coordinate window for both public entry points. */
   private _readRegion(
     parameters: RasterRegionParameters,
@@ -292,15 +437,8 @@ export class GeoTIFFRasterSource
         'GeoTIFFRasterSource does not support reprojection; source and request CRS must match'
       );
     if (!metadata.boundingBox) throw new Error('GeoTIFFRasterSource requires source bounds');
-    const bandCount = parameters.bands?.length ?? metadata.bandCount;
-    if (
-      !bandCount ||
-      parameters.bands?.some(
-        band => !Number.isInteger(band) || band < 0 || band >= metadata.bandCount
-      )
-    )
-      throw new Error('Invalid raster bands');
-    const selectedBands = parameters.bands ?? Array.from({length: bandCount}, (_, index) => index);
+    const selectedBands = getSelectedBands(metadata, parameters.bands);
+    const bandCount = selectedBands.length;
     const outputDtype = metadata.bands?.[selectedBands[0]]?.dtype ?? metadata.dtype;
     const mixed = selectedBands.some(
       index => metadata.bands?.[index] && metadata.bands[index].dtype !== outputDtype
@@ -310,9 +448,7 @@ export class GeoTIFFRasterSource
       throw new Error('Mixed-type GeoTIFF viewport reads require separate single-band requests');
     if (mixed && interleaved) throw new Error('Mixed-type GeoTIFF regions require planar arrays');
     const bytesPerPixel = selectedBands.reduce(
-      (bytes, index) =>
-        bytes +
-        Number((metadata.bands?.[index]?.dtype ?? metadata.dtype).match(/\d+/)?.[0] ?? 64) / 8,
+      (bytes, index) => bytes + getDataTypeBytes(metadata.bands?.[index]?.dtype ?? metadata.dtype),
       0
     );
     const maxPixels = parameters.maxPixels ?? this.options.geotiff?.maxPixels ?? 16_000_000;
@@ -397,47 +533,7 @@ export class GeoTIFFRasterSource
     if (images.length) {
       for (let index = 1; index < images.length; index++) {
         const image = images[index];
-        const directory = image.fileDirectory;
-        if (directory.NewSubfileType & 4) continue;
-        if (!(directory.NewSubfileType & 1) && directory.SubfileType !== 2) continue;
-        if (
-          images.some(candidate => candidate.fileDirectory?.NewSubfileType & 4) &&
-          !images.some(
-            candidate =>
-              candidate.fileDirectory?.NewSubfileType & 4 &&
-              candidate.getWidth() === image.getWidth() &&
-              candidate.getHeight() === image.getHeight()
-          )
-        )
-          continue;
-        const registration = image.getGeoKeys?.()?.GTRasterTypeGeoKey;
-        if (
-          (registration === 2 ? 'point' : 'area') !== (metadata.pixelRegistration ?? 'area') &&
-          registration !== undefined
-        )
-          continue;
-        if (
-          typeof image.getSamplesPerPixel === 'function' &&
-          selectedBands.some(band => band >= image.getSamplesPerPixel())
-        )
-          continue;
-        if (
-          typeof image.getBitsPerSample === 'function' &&
-          typeof image.getSampleFormat === 'function'
-        ) {
-          try {
-            if (
-              selectedBands.some(
-                band =>
-                  getImageDataType(image, band) !==
-                  (metadata.bands?.[band]?.dtype ?? metadata.dtype)
-              )
-            )
-              continue;
-          } catch {
-            continue;
-          }
-        }
+        if (!isCompatibleOverview(image, images, metadata, selectedBands)) continue;
         const resolution = getImageResolution(image, images[0]);
         if (
           resolution &&
@@ -470,33 +566,13 @@ export class GeoTIFFRasterSource
         Math.min(image.getWidth(), Math.ceil(Math.max(...grid.map(point => point[0])))),
         Math.min(image.getHeight(), Math.ceil(Math.max(...grid.map(point => point[1]))))
       ];
-      const maskImages = images.filter(
-        candidate =>
-          candidate.fileDirectory?.NewSubfileType & 4 &&
-          candidate.getWidth() === image.getWidth() &&
-          candidate.getHeight() === image.getHeight()
-      );
-      if (maskImages.length > 1) throw new Error('Ambiguous GeoTIFF validity mask');
-      const nativePixelCount = (window[2] - window[0]) * (window[3] - window[1]);
-      const nativeBytes = nativePixelCount * bytesPerPixel;
-      const maskBytes = maskImages.length
-        ? nativePixelCount * 3 + estimateImageTileBytes(maskImages[0], window, 2)
-        : 0;
-      const sourceBytesPerPixel =
-        image.fileDirectory?.PlanarConfiguration === 2
-          ? bytesPerPixel
-          : metadata.bands
-            ? metadata.bands.reduce(
-                (bytes, band) => bytes + Number(band.dtype.match(/\d+/)?.[0] ?? 64) / 8,
-                0
-              )
-            : (metadata.bandCount * Number(metadata.dtype.match(/\d+/)?.[0] ?? 64)) / 8;
-      const tileBytes = estimateImageTileBytes(image, window, sourceBytesPerPixel);
-      if (
-        nativeBytes * 2 + maskBytes + pixels * (bytesPerPixel + bandCount) + tileBytes >
+      const maskImage = getMatchingMaskImage(images, image);
+      validateNativeDecodeBudget(image, maskImage, window, metadata, {
+        bytesPerPixel,
+        bandCount,
+        pixels,
         maxDecodedBytes
-      )
-        throw new Error('Native decode window exceeds decoded-byte budget');
+      });
       if (window[2] <= window[0] || window[3] <= window[1])
         throw new Error('Region does not intersect the source grid');
       const scaleX = (window[2] - window[0]) / targetSize.width;
@@ -529,70 +605,17 @@ export class GeoTIFFRasterSource
           Math.max(...sourceCorners.map(point => point[1]))
         ]
       ];
-      const nativeRaster = (await image.readRasters({
-        ...readOptions,
-        // geotiff.js interleaving chooses a type from every source band, including unselected bands.
-        interleave: false,
-        width: window[2] - window[0],
-        height: window[3] - window[1],
-        window,
-        resampleMethod: 'nearest'
-      })) as unknown as GeoTIFFReadRasterResult;
-      if (
-        nativeRaster.width !== window[2] - window[0] ||
-        nativeRaster.height !== window[3] - window[1]
-      )
-        throw new Error('Invalid native raster dimensions');
-      const nativeArrays = Array.isArray(nativeRaster) ? nativeRaster : [nativeRaster];
-      if (
-        nativeArrays.reduce((length, array) => length + array.length, 0) !==
-          nativeRaster.width * nativeRaster.height * bandCount ||
-        nativeArrays.reduce((length, array) => length + array.byteLength, 0) > maxDecodedBytes
-      )
-        throw new Error('Invalid or oversized native raster');
-      if (
-        nativeArrays.length !== bandCount ||
-        nativeArrays.some(
-          (array, index) =>
-            array.constructor !==
-            createFilledTypedArray(
-              metadata.bands?.[selectedBands[index]]?.dtype ?? metadata.dtype,
-              0,
-              0
-            ).constructor
-        )
-      )
-        throw new Error('Native raster representation does not match selected band metadata');
-      let nativeValidityMasks: RasterData['validityMasks'];
-      if (maskImages.length) {
-        parameters.signal?.throwIfAborted();
-        const maskRaster = (await maskImages[0].readRasters({
-          window,
-          samples: [0],
-          interleave: true,
-          signal: parameters.signal
-        })) as unknown as TypedArray;
-        if (maskRaster.length !== nativePixelCount || maskRaster.byteLength > nativePixelCount * 2)
-          throw new Error('Invalid GeoTIFF validity mask');
-        nativeValidityMasks = [
-          {
-            data: Uint8Array.from(maskRaster, value =>
-              Number.isFinite(value) && value !== 0 ? 1 : 0
-            ),
-            width: nativeRaster.width,
-            height: nativeRaster.height,
-            pixelStride: 1,
-            rowStride: nativeRaster.width
-          }
-        ];
-      }
+      const bands = getSelectedBandMetadata(metadata, selectedBands, outputDtype);
+      const {raster: nativeRaster, validityMasks: nativeValidityMasks} =
+        await readNativeRasterWindow(image, maskImage, window, bands, maxDecodedBytes, {
+          ...readOptions,
+          width: window[2] - window[0],
+          height: window[3] - window[1],
+          resampleMethod: 'nearest'
+        });
       const resized = await resizeRasterWindow(
         nativeRaster,
-        selectedBands.map(index =>
-          metadata.bands?.[index]
-            ? {...metadata.bands[index]}
-            : {index, dtype: outputDtype, noData: metadata.noData}
-        ),
+        bands,
         interleaved,
         targetSize,
         readOptions.resampleMethod ?? 'nearest',
@@ -642,12 +665,7 @@ export class GeoTIFFRasterSource
       boundingBox: actualBoundingBox,
       crs: metadata.crs,
       metadata: metadata.metadata,
-      bands: (parameters.bands ?? Array.from({length: bandCount}, (_, index) => index)).map(
-        index =>
-          metadata.bands?.[index]
-            ? {...metadata.bands[index]}
-            : {index, dtype: metadata.dtype, noData: metadata.noData}
-      ),
+      bands: getSelectedBandMetadata(metadata, selectedBands, outputDtype),
       transform,
       pixelRegistration: 'area',
       validityMasks,
@@ -888,6 +906,319 @@ export class GeoTIFFRasterSource
       }
     };
   }
+}
+
+/** Validates and resolves source band indices in the caller's requested order. */
+function getSelectedBands(metadata: RasterSourceMetadata, requestedBands?: number[]): number[] {
+  if (
+    !(requestedBands?.length ?? metadata.bandCount) ||
+    requestedBands?.some(band => !Number.isInteger(band) || band < 0 || band >= metadata.bandCount)
+  )
+    throw new Error('Invalid raster bands');
+  return requestedBands ?? Array.from({length: metadata.bandCount}, (_, index) => index);
+}
+
+/** Copies original band declarations in payload order, supplying defaults for legacy metadata. */
+function getSelectedBandMetadata(
+  metadata: RasterSourceMetadata,
+  selectedBands: number[],
+  fallbackDtype: RasterChannelDataType
+): RasterBandMetadata[] {
+  return selectedBands.map(index =>
+    metadata.bands?.[index]
+      ? {...metadata.bands[index]}
+      : {index, dtype: fallbackDtype, noData: metadata.noData}
+  );
+}
+
+/** Returns the decoded storage size of a raster sample. */
+function getDataTypeBytes(dtype: RasterChannelDataType): number {
+  return Number(dtype.match(/\d+/)?.[0] ?? 64) / 8;
+}
+
+/** Checks whether a reduced image preserves the selected bands and reference validity semantics. */
+function isCompatibleOverview(
+  image: TiffSourceImage,
+  images: TiffSourceImage[],
+  metadata: RasterSourceMetadata,
+  selectedBands: number[]
+): boolean {
+  const directory = image.fileDirectory;
+  if (directory.NewSubfileType & 4) return false;
+  if (!(directory.NewSubfileType & 1) && directory.SubfileType !== 2) return false;
+  if (
+    images.some(candidate => candidate.fileDirectory?.NewSubfileType & 4) &&
+    !images.some(
+      candidate =>
+        candidate.fileDirectory?.NewSubfileType & 4 &&
+        candidate.getWidth() === image.getWidth() &&
+        candidate.getHeight() === image.getHeight()
+    )
+  )
+    return false;
+  const registration = image.getGeoKeys?.()?.GTRasterTypeGeoKey;
+  if (
+    (registration === 2 ? 'point' : 'area') !== (metadata.pixelRegistration ?? 'area') &&
+    registration !== undefined
+  )
+    return false;
+  if (
+    typeof image.getSamplesPerPixel === 'function' &&
+    selectedBands.some(band => band >= image.getSamplesPerPixel())
+  )
+    return false;
+  if (typeof image.getBitsPerSample === 'function' && typeof image.getSampleFormat === 'function') {
+    try {
+      if (
+        selectedBands.some(
+          band =>
+            getImageDataType(image, band) !== (metadata.bands?.[band]?.dtype ?? metadata.dtype)
+        )
+      )
+        return false;
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** Resolves the internal transparency mask by dimensions and rejects ambiguous pairings. */
+function getMatchingMaskImage(
+  images: TiffSourceImage[],
+  image: TiffSourceImage
+): TiffSourceImage | undefined {
+  const masks = images.filter(
+    candidate =>
+      candidate.fileDirectory?.NewSubfileType & 4 &&
+      candidate.getWidth() === image.getWidth() &&
+      candidate.getHeight() === image.getHeight()
+  );
+  if (masks.length > 1) throw new Error('Ambiguous GeoTIFF validity mask');
+  return masks[0];
+}
+
+/** Budgets peak native raster, decoder blocks, masks, and output allocations. */
+function validateNativeDecodeBudget(
+  image: TiffSourceImage,
+  maskImage: TiffSourceImage | undefined,
+  window: number[],
+  metadata: RasterSourceMetadata,
+  {
+    bytesPerPixel,
+    bandCount,
+    pixels,
+    maxDecodedBytes
+  }: {
+    /** Decoded size of the selected samples per pixel. */
+    bytesPerPixel: number;
+    /** Number of selected bands, each of which may need a validity mask. */
+    bandCount: number;
+    /** Number of output pixels. */
+    pixels: number;
+    /** Maximum allowed peak decoded allocation. */
+    maxDecodedBytes: number;
+  }
+): void {
+  const nativePixelCount = (window[2] - window[0]) * (window[3] - window[1]);
+  const nativeBytes = nativePixelCount * bytesPerPixel;
+  const maskBytes = maskImage
+    ? nativePixelCount * 3 + estimateImageTileBytes(maskImage, window, 2)
+    : 0;
+  const sourceBytesPerPixel =
+    image.fileDirectory?.PlanarConfiguration === 2
+      ? bytesPerPixel
+      : metadata.bands
+        ? metadata.bands.reduce((bytes, band) => bytes + getDataTypeBytes(band.dtype), 0)
+        : metadata.bandCount * getDataTypeBytes(metadata.dtype);
+  const tileBytes = estimateImageTileBytes(image, window, sourceBytesPerPixel);
+  if (
+    nativeBytes * 2 + maskBytes + pixels * (bytesPerPixel + bandCount) + tileBytes >
+    maxDecodedBytes
+  )
+    throw new Error('Native decode window exceeds decoded-byte budget');
+}
+
+/** Decodes and validates a planar native window, skipping known absent storage blocks for tile reads. */
+async function readNativeRasterWindow(
+  image: TiffSourceImage,
+  maskImage: TiffSourceImage | undefined,
+  window: number[],
+  bands: RasterBandMetadata[],
+  maxDecodedBytes: number,
+  options: TiffRasterReadOptions,
+  tile?: Pick<GetRasterTileParameters, 'x' | 'y'>
+): Promise<GeoTIFFNativeWindow> {
+  const {signal} = options;
+  const width = window[2] - window[0];
+  const height = window[3] - window[1];
+  const pixels = width * height;
+  const selectedSamples = options.samples ?? bands.map((_band, index) => index);
+  const presentBands = bands
+    .map((_band, index) => index)
+    .filter(index => !tile || !isMissingImageTile(image, tile.x, tile.y, selectedSamples[index]));
+  signal?.throwIfAborted();
+  if (!presentBands.length) {
+    const data = bands.map(band => createFilledTypedArray(band.dtype, pixels, band.noData ?? 0));
+    return {
+      raster: Object.assign(data, {width, height}),
+      validityMasks: [{data: new Uint8Array(pixels), width, height}]
+    };
+  }
+
+  const sparse = presentBands.length !== bands.length;
+  const readOptions = {
+    ...options,
+    window,
+    samples: sparse ? presentBands.map(index => selectedSamples[index]) : options.samples,
+    // The decoder's packed representation can depend on the types of unselected bands.
+    interleave: false
+  };
+  const separateSampleReads =
+    tile &&
+    image.fileDirectory.PlanarConfiguration === 2 &&
+    presentBands.some(
+      index =>
+        getDataTypeBytes(bands[index].dtype) !== getDataTypeBytes(bands[presentBands[0]].dtype)
+    );
+  let raster = separateSampleReads
+    ? await readSeparateTileSamples(
+        image,
+        readOptions,
+        presentBands.map(index => selectedSamples[index]),
+        width,
+        height
+      )
+    : await image.readRasters(readOptions);
+  signal?.throwIfAborted();
+  if (raster.width !== width || raster.height !== height)
+    throw new Error('Invalid native raster dimensions');
+  const arrays = Array.isArray(raster) ? raster : [raster];
+  if (
+    arrays.reduce((length, array) => length + array.length, 0) !== pixels * presentBands.length ||
+    arrays.reduce((length, array) => length + array.byteLength, 0) > maxDecodedBytes
+  )
+    throw new Error('Invalid or oversized native raster');
+  if (
+    arrays.length !== presentBands.length ||
+    arrays.some(
+      (array, index) =>
+        array.constructor !==
+        createFilledTypedArray(bands[presentBands[index]].dtype, 0, 0).constructor
+    )
+  )
+    throw new Error('Native raster representation does not match selected band metadata');
+
+  const validityMasks: NonNullable<RasterData['validityMasks']> = [];
+  if (sparse) {
+    let presentIndex = 0;
+    const filled = bands.map((band, index) => {
+      if (presentBands[presentIndex] === index) return arrays[presentIndex++];
+      validityMasks.push({data: new Uint8Array(pixels), band: index, width, height});
+      return createFilledTypedArray(band.dtype, pixels, band.noData ?? 0);
+    });
+    raster = Object.assign(filled, {width, height});
+  }
+  if (maskImage) {
+    const maskData =
+      tile && isMissingMaskWindow(maskImage, window)
+        ? new Uint8Array(pixels)
+        : await maskImage.readRasters({window, samples: [0], interleave: true, signal});
+    signal?.throwIfAborted();
+    const maskRaster = maskData as unknown as TypedArray;
+    if (maskRaster.length !== pixels || maskRaster.byteLength > pixels * 2)
+      throw new Error('Invalid GeoTIFF validity mask');
+    validityMasks.push({
+      data: Uint8Array.from(maskRaster, value => (Number.isFinite(value) && value !== 0 ? 1 : 0)),
+      width,
+      height,
+      pixelStride: 1,
+      rowStride: width
+    });
+  }
+  return {raster, validityMasks: validityMasks.length ? validityMasks : undefined};
+}
+
+/** Reads each heterogeneous sample plane separately because GeoTIFF.js shares the stride within a read. */
+async function readSeparateTileSamples(
+  image: TiffSourceImage,
+  options: TiffRasterReadOptions,
+  samples: number[],
+  width: number,
+  height: number
+): Promise<GeoTIFFReadRasterResult> {
+  const planes = await Promise.all(
+    samples.map(async sample => {
+      const raster = await image.readRasters({...options, samples: [sample]});
+      options.signal?.throwIfAborted();
+      if (raster.width !== width || raster.height !== height)
+        throw new Error('Invalid native raster dimensions');
+      const arrays = Array.isArray(raster) ? raster : [raster];
+      if (arrays.length !== 1 || arrays[0].length !== width * height)
+        throw new Error('Invalid or oversized native raster');
+      return arrays[0];
+    })
+  );
+  return Object.assign(planes, {width, height});
+}
+
+/** Checks indexed TIFF block tags without issuing a range request for the chunk. */
+function isMissingImageTile(image: TiffSourceImage, x: number, y: number, sample: number): boolean {
+  const {TileOffsets, TileByteCounts, PlanarConfiguration} = image.fileDirectory;
+  if (!TileOffsets && !TileByteCounts) return false;
+  const columns = Math.ceil(image.getWidth() / image.getTileWidth());
+  const rows = Math.ceil(image.getHeight() / image.getTileHeight());
+  const index = y * columns + x + (PlanarConfiguration === 2 ? sample * columns * rows : 0);
+  const offset = TileOffsets?.[index];
+  const byteCount = TileByteCounts?.[index];
+  return offset === 0 || offset === 0n || byteCount === 0 || byteCount === 0n;
+}
+
+/** Detects an absent mask tile when it covers the entire native data window. */
+function isMissingMaskWindow(mask: TiffSourceImage, window: number[]): boolean {
+  if (!mask.fileDirectory.TileOffsets && !mask.fileDirectory.TileByteCounts) return false;
+  const width = mask.getTileWidth();
+  const height = mask.getTileHeight();
+  const x = Math.floor(window[0] / width);
+  const y = Math.floor(window[1] / height);
+  return (
+    window[2] <= (x + 1) * width &&
+    window[3] <= (y + 1) * height &&
+    isMissingImageTile(mask, x, y, 0)
+  );
+}
+
+/** Extends short native rows with per-band fill and marks all padded pixels invalid. */
+function padNativeRasterWindow(
+  native: GeoTIFFNativeWindow,
+  bands: RasterBandMetadata[],
+  width: number,
+  height: number
+): GeoTIFFNativeWindow {
+  const {raster, validityMasks} = native;
+  if (raster.width === width && raster.height === height) return native;
+
+  const arrays = Array.isArray(raster) ? raster : [raster];
+  const data = arrays.map((array, index) => {
+    const band = bands[index];
+    const padded = createFilledTypedArray(band.dtype, width * height, band.noData ?? 0);
+    for (let row = 0; row < raster.height; row++) {
+      padded.set(array.subarray(row * raster.width, (row + 1) * raster.width), row * width);
+    }
+    return padded;
+  });
+  const masks = validityMasks ?? [];
+  const edgeMasks = masks.some(mask => mask.band === undefined) ? masks : [...masks, undefined];
+  const paddedMasks = edgeMasks.map(mask => {
+    const data = new Uint8Array(width * height);
+    for (let row = 0; row < raster.height; row++) {
+      if (mask)
+        data.set(mask.data.subarray(row * raster.width, (row + 1) * raster.width), row * width);
+      else data.fill(1, row * width, row * width + raster.width);
+    }
+    return {data, width, height, band: mask?.band};
+  });
+  return {raster: Object.assign(data, {width, height}), validityMasks: paddedMasks};
 }
 
 /** Flattens the internal tuple bounding box to GeoTIFF's `[minX, minY, maxX, maxY]` form. */

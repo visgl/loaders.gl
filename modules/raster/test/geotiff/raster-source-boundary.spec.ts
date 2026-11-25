@@ -9,9 +9,13 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import {expect, test, vi} from 'vitest';
 import {sampleRaster} from '@loaders.gl/core/loader-utils';
-import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source';
+import {GeoTIFFRasterSource, getImageTileGrid} from '../../src/geotiff/geotiff-source';
 import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';
-import type {TiffSourceImage} from '../../src/geotiff/lib/tiff/tiff-source-decoder';
+import type {
+  TiffRasterReadOptions,
+  TiffRasterReadResult,
+  TiffSourceImage
+} from '../../src/geotiff/lib/tiff/tiff-source-decoder';
 import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-loader';
 import {createTiffFixture} from './lib/tiff/tiff-fixture';
 
@@ -144,7 +148,7 @@ function installGeoTIFFState(
   images: Partial<TiffSourceImage>[] = []
 ): ReturnType<typeof vi.fn> {
   (source as any)._initPromise = Promise.resolve({
-    tiff: {readRasters},
+    tiff: {readRasters, close: async () => {}},
     images,
     metadata: {
       name: 'memory.tif',
@@ -1150,4 +1154,159 @@ test('rotated GeoTIFF pixel vectors control overview selection and native resolu
   expect(state.images[0].readRasters).toHaveBeenCalledTimes(1);
   expect(state.images[1].readRasters).toHaveBeenCalledTimes(1);
   source.finalize();
+});
+
+/** Creates a GeoTIFF image whose planar decoder exposes exact read options and band order. */
+function createNativeTileImage(
+  size: number,
+  subfileType: number,
+  overrides: Partial<TiffSourceImage> = {}
+) {
+  return {
+    fileDirectory: {NewSubfileType: subfileType, TileWidth: 2, TileLength: 2},
+    getWidth: () => size,
+    getHeight: () => size,
+    getTileWidth: () => 2,
+    getTileHeight: () => 2,
+    getGeoKeys: () => ({ProjectedCSTypeGeoKey: 3857}),
+    getOrigin: () => [900719925474099, 200],
+    getResolution: () => [0.065, -0.15],
+    getSamplesPerPixel: () => 3,
+    getBitsPerSample: () => 16,
+    getSampleFormat: () => 1,
+    getGDALMetadata: () => null,
+    getGDALNoData: () => null,
+    getBoundingBox: () => [0, 0, 10, 10],
+    ...overrides,
+    readRasters: vi.fn(
+      async ({
+        window,
+        samples = [0, 1, 2]
+      }: TiffRasterReadOptions): Promise<TiffRasterReadResult> => {
+        const width = window![2] - window![0];
+        const height = window![3] - window![1];
+        const arrays = samples.map(band =>
+          Uint16Array.from({length: width * height}, (_, pixel) => 1 + pixel + band * 10)
+        );
+        return Object.assign(arrays, {width, height});
+      }
+    )
+  } satisfies TiffSourceImage;
+}
+
+/** Sets up a fine image and a reduced IFD with tiled metadata and an optional internal mask. */
+function createNativeTileSource(
+  overviewOverrides: Partial<TiffSourceImage> = {},
+  mask?: TiffSourceImage
+) {
+  const source = new GeoTIFFRasterSource(new Blob([]), {geotiff: {resampleMethod: 'bilinear'}});
+  const reference = createNativeTileImage(10, 0);
+  const overview = createNativeTileImage(5, 1, overviewOverrides);
+  const images = mask ? [reference, overview, mask] : [reference, overview];
+  installGeoTIFFState(
+    source,
+    {bandCount: 3, crs: 'EPSG:3857', tileGrid: getImageTileGrid(images, reference)},
+    undefined,
+    images
+  );
+  return {source, reference, overview};
+}
+
+test('GeoTIFF tile addresses its IFD in integers even when coordinate subtraction shifts the window', async () => {
+  const {source, reference, overview} = createNativeTileSource();
+  const raster = await source.getRasterTile({
+    tileMatrix: '1',
+    x: 1,
+    y: 1,
+    bands: [2, 0],
+    interleaved: true,
+    selection: {}
+  });
+  expect(overview.readRasters).toHaveBeenCalledExactlyOnceWith({
+    window: [2, 2, 4, 4],
+    samples: [2, 0],
+    interleave: false,
+    fillValue: undefined,
+    signal: expect.any(AbortSignal)
+  });
+  expect(reference.readRasters).not.toHaveBeenCalled();
+  expect(raster?.data).toBeInstanceOf(Uint16Array);
+  expect(Array.from(raster?.data as Uint16Array)).toEqual([21, 1, 22, 2, 23, 3, 24, 4]);
+  expect(raster).toMatchObject({
+    width: 2,
+    height: 2,
+    overview: 1,
+    nativeResolution: [0.13, 0.3],
+    transform: [0.13, 0, 900719925474099.25, 0, -0.3, 199.4],
+    interleaved: true,
+    overzoom: false,
+    bands: [{index: 2}, {index: 0}]
+  });
+});
+
+test.each([
+  false,
+  true
+])('GeoTIFF pads edge tiles and combines validity with an internal mask (%s)', async hasMask => {
+  const mask = hasMask ? createNativeTileImage(5, 4) : undefined;
+  mask?.readRasters.mockResolvedValueOnce(
+    // Mask decoding requests one packed band rather than the planar mock default.
+    Object.assign(new Uint8Array([255, 0]), {width: 1, height: 2})
+  );
+  const {source, overview} = createNativeTileSource({getGDALNoData: () => 999}, mask);
+  const raster = await source.getRasterTile({tileMatrix: '1', x: 2, y: 1, bands: [0]});
+  expect(overview.readRasters).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({window: [4, 2, 5, 4]})
+  );
+  if (mask)
+    expect(mask.readRasters).toHaveBeenCalledExactlyOnceWith({
+      window: [4, 2, 5, 4],
+      samples: [0],
+      interleave: true,
+      signal: expect.any(AbortSignal)
+    });
+  expect(raster).toMatchObject({
+    data: new Uint16Array([1, 999, 2, 999]),
+    noData: 999,
+    bands: [{noData: 999}],
+    boundingBox: [
+      [900719925474099.5, 198.8],
+      [900719925474099.8, 199.4]
+    ],
+    width: 2,
+    height: 2,
+    validityMasks: [{data: new Uint8Array([1, 0, hasMask ? 0 : 1, 0]), width: 2, height: 2}]
+  });
+});
+
+test('GeoTIFF rejects incompatible advertised IFDs, invalid selections and unknown tile IDs', async () => {
+  const {source, overview} = createNativeTileSource({getBitsPerSample: () => 8});
+  const address = {tileMatrix: '1', x: 0, y: 0};
+  expect((await source.getMetadata()).tileGrid?.matrixIds).toContain('1');
+  await expect(source.getRasterTile({...address, x: 3})).resolves.toBeNull();
+  await expect(source.getRasterTile({...address, tileMatrix: '01'})).rejects.toThrow(
+    /Unknown tile matrix/
+  );
+  await expect(source.getRasterTile(address)).rejects.toThrow(/IFD 1 is incompatible/);
+  await expect(source.getRasterTile({...address, bands: [3]})).rejects.toThrow(
+    /Invalid raster bands/
+  );
+  await expect(source.getRasterTile({...address, selection: {time: 0}})).rejects.toThrow(
+    /non-spatial/
+  );
+  await expect(
+    source.getRasterTile({...address, signal: AbortSignal.abort()})
+  ).rejects.toMatchObject({
+    name: 'AbortError'
+  });
+  expect(overview.readRasters).not.toHaveBeenCalled();
+});
+
+test('GeoTIFF does not silently replace a requested overview that lacks its own validity mask', async () => {
+  const {source, reference, overview} = createNativeTileSource({}, createNativeTileImage(10, 4));
+  await expect(source.getRasterTile({tileMatrix: '1', x: 0, y: 0})).rejects.toThrow(
+    /IFD 1 is incompatible/
+  );
+  expect(reference.readRasters).not.toHaveBeenCalled();
+  expect(overview.readRasters).not.toHaveBeenCalled();
 });
