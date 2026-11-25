@@ -1464,23 +1464,25 @@ function parseFiniteMetadataValue(value: unknown): number | undefined {
   return Number.isFinite(numericValue) ? numericValue : undefined;
 }
 
-/** Maps TIFF photometric and extra-sample tags to a display role for one band. */
-function getImageColorInterpretation(
+/** Maps TIFF photometric and extra-sample tags to a band's display role and alpha association. */
+function getImageBandInterpretation(
   image: TiffSourceImage,
   index: number
-): RasterBandMetadata['colorInterpretation'] {
+): Pick<RasterBandMetadata, 'colorInterpretation' | 'alphaMode'> {
   const photometric = image.fileDirectory?.PhotometricInterpretation;
-  if (photometric === 2 && index < 3) return (['red', 'green', 'blue'] as const)[index];
-  if (index === 0 && (photometric === 0 || photometric === 1)) return 'gray';
-  if (index === 0 && photometric === 3) return 'palette';
+  if (photometric === 2 && index < 3)
+    return {colorInterpretation: (['red', 'green', 'blue'] as const)[index]};
+  if (index === 0 && (photometric === 0 || photometric === 1)) return {colorInterpretation: 'gray'};
+  if (index === 0 && photometric === 3) return {colorInterpretation: 'palette'};
 
   const extraSamples = image.fileDirectory?.ExtraSamples;
   if (extraSamples) {
     const extraSample = extraSamples[index - (image.getSamplesPerPixel() - extraSamples.length)];
-    if (extraSample === 1 || extraSample === 2) return 'alpha';
-    if (extraSample === 0) return 'undefined';
+    if (extraSample === 1) return {colorInterpretation: 'alpha', alphaMode: 'premultiplied'};
+    if (extraSample === 2) return {colorInterpretation: 'alpha', alphaMode: 'straight'};
+    if (extraSample === 0) return {colorInterpretation: 'undefined'};
   }
-  return undefined;
+  return {colorInterpretation: undefined};
 }
 
 /** Interprets optional TIFF and GDAL band attributes while retaining samples in the raw domain. */
@@ -1503,7 +1505,7 @@ function getImageBandMetadata(
   const hasMaximum = maximumValue !== undefined;
   const hasDeclaredRange =
     (hasMinimum || hasMaximum) && !(hasMinimum && hasMaximum && minimumValue > maximumValue);
-  const colorInterpretation = getImageColorInterpretation(image, index);
+  const interpretation = getImageBandInterpretation(image, index);
   return {
     index,
     declaredStatistics: hasDeclaredRange
@@ -1517,8 +1519,8 @@ function getImageBandMetadata(
         }
       : undefined,
     dtype: getImageDataType(image, index),
-    colorInterpretation,
-    categorical: colorInterpretation === 'palette' ? true : undefined,
+    ...interpretation,
+    categorical: interpretation.colorInterpretation === 'palette' ? true : undefined,
     name: typeof metadata.DESCRIPTION === 'string' ? metadata.DESCRIPTION : undefined,
     units: typeof metadata.UNITTYPE === 'string' ? metadata.UNITTYPE : undefined,
     scale,

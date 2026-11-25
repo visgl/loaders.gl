@@ -239,6 +239,7 @@ replace these declarations or guess their value domain. `bands[index].colorInter
 reports RGB, grayscale, or palette roles from TIFF `PhotometricInterpretation` and alpha
 or explicitly unspecified roles from `ExtraSamples`. Both associated and unassociated
 alpha are labeled `alpha`, with color samples kept in their stored representation.
+The alpha band's `alphaMode` is `premultiplied` for TIFF `ExtraSamples` 1 and `straight` for `ExtraSamples` 2.
 External `.msk` files are unsupported.
 
 Coverage reuse is opt-in through `canReuseRasterCoverage` and RasterSet's existing

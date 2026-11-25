@@ -238,6 +238,8 @@ export type RasterBandMetadata = {
   dtype: RasterChannelDataType;
   /** GDAL-style display role. `'undefined'` denotes an explicitly unspecified role. */
   colorInterpretation?: 'gray' | 'red' | 'green' | 'blue' | 'alpha' | 'palette' | 'undefined';
+  /** Alpha band only. `'premultiplied'` is associated alpha (TIFF ExtraSamples 1). Omission means straight alpha. */
+  alphaMode?: 'straight' | 'premultiplied';
   /** Human-readable band name. */
   name?: string;
   /** Physical units. */

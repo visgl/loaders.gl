@@ -53,7 +53,13 @@ function createColorTiffSource(photometric: number, bandCount: number, extraSamp
 }
 
 test.each([
-  {name: 'RGBA', photometric: 2, extras: [2], roles: ['red', 'green', 'blue', 'alpha']},
+  {
+    name: 'RGBA',
+    photometric: 2,
+    extras: [2],
+    roles: ['red', 'green', 'blue', 'alpha'],
+    alphaMode: 'straight'
+  },
   {name: 'RGB', photometric: 2, extras: [], roles: ['red', 'green', 'blue']},
   {name: 'black-is-zero gray', photometric: 1, extras: [], roles: ['gray']},
   {name: 'white-is-zero gray', photometric: 0, extras: [], roles: ['gray']},
@@ -62,20 +68,35 @@ test.each([
     name: 'RGB with an unspecified sample and associated alpha',
     photometric: 2,
     extras: [0, 1],
-    roles: ['red', 'green', 'blue', 'undefined', 'alpha']
+    roles: ['red', 'green', 'blue', 'undefined', 'alpha'],
+    alphaMode: 'premultiplied'
   }
-])('reads $name TIFF band roles from a tiny strip', async ({photometric, extras, roles}) => {
+])('reads $name TIFF band roles from a tiny strip', async ({
+  photometric,
+  extras,
+  roles,
+  alphaMode
+}) => {
   const source = createColorTiffSource(photometric, roles.length, extras);
   try {
     const metadata = await source.getMetadata();
     expect(metadata.bands?.map(band => band.colorInterpretation)).toEqual(roles);
+    expect(metadata.bands?.map(band => band.alphaMode)).toEqual(
+      roles.map(role => (role === 'alpha' ? alphaMode : undefined))
+    );
   } finally {
     await source.finalize();
   }
 });
 
-test('carries alpha and nodata separately from masks through a resized TIFF viewport', async () => {
-  const source = createColorTiffSource(2, 4, [2]);
+test.each([
+  {extraSample: 1, alphaMode: 'premultiplied'},
+  {extraSample: 2, alphaMode: 'straight'}
+])('carries $alphaMode alpha and nodata separately from masks through a resized TIFF viewport', async ({
+  extraSample,
+  alphaMode
+}) => {
+  const source = createColorTiffSource(2, 4, [extraSample]);
   try {
     const raster = await source.getRaster({
       viewport: createViewport(
@@ -96,6 +117,7 @@ test('carries alpha and nodata separately from masks through a resized TIFF view
       'green',
       'blue'
     ]);
+    expect(raster.bands?.[0].alphaMode).toBe(alphaMode);
     expect(Array.from(raster.data as Uint8Array)).toEqual([
       0, 128, 40, 60, 0, 128, 40, 60, 128, 20, 50, 70, 128, 20, 50, 70
     ]);

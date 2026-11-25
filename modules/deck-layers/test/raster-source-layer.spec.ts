@@ -135,6 +135,61 @@ describe('raster colorization', () => {
     ]);
   });
 
+  test('renders equivalent premultiplied and straight byte RGB as straight RGBA', () => {
+    const bands = createBandMetadata('uint8', 'red', 'green', 'blue', 'alpha');
+    const raster = createRaster(new Uint8Array([255, 0, 0, 128, 0, 0, 0, 0]), {
+      width: 2,
+      height: 1,
+      bandCount: 4,
+      dtype: 'uint8',
+      interleaved: true,
+      bands
+    });
+    bands[3].alphaMode = 'straight';
+    const straight = colorizeRasterData(raster);
+    bands[3].alphaMode = 'premultiplied';
+    const premultiplied = colorizeRasterData({
+      ...raster,
+      data: new Uint8Array([128, 0, 0, 128, 255, 0, 0, 0])
+    });
+
+    expect(Array.from(straight.data)).toEqual([255, 0, 0, 128, 0, 0, 0, 0]);
+    expect(premultiplied.data).toEqual(straight.data);
+  });
+
+  test('renders and computes gray percentiles in straight color values', () => {
+    const bands = createBandMetadata('uint8', 'gray', 'alpha');
+    const raster = createRaster(new Uint8Array([10, 255, 100, 51, 60, 255, 90, 255, 255, 0]), {
+      width: 5,
+      height: 1,
+      bandCount: 2,
+      dtype: 'uint8',
+      interleaved: true,
+      bands
+    });
+    const straight = colorizeRasterData(raster);
+    bands[1].alphaMode = 'premultiplied';
+    const premultiplied = colorizeRasterData({
+      ...raster,
+      data: new Uint8Array([10, 255, 20, 51, 60, 255, 90, 255, 255, 0])
+    });
+
+    expect(premultiplied.data).toEqual(straight.data);
+  });
+
+  test('uses native uint16 alpha for straight RGB range stretch and clamps to the color dtype', () => {
+    const bands = createBandMetadata('uint16', 'red', 'green', 'blue', 'alpha');
+    bands[3].alphaMode = 'premultiplied';
+    const raster = createRaster(
+      new Uint16Array([0, 0, 0, 65535, 16384, 0, 0, 32768, 10001, 0, 0, 10000]),
+      {width: 3, height: 1, bandCount: 4, dtype: 'uint16', interleaved: true, bands}
+    );
+
+    expect(Array.from(colorizeRasterData(raster, {stretch: 'range'}).data)).toEqual([
+      0, 0, 0, 255, 128, 0, 0, 128, 255, 0, 0, 39
+    ]);
+  });
+
   test('excludes transparent fill from an explicit percentile stretch of the color bands', () => {
     const image = colorizeRasterData(
       createRaster(
