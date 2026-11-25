@@ -160,7 +160,16 @@
         "modules/images/src/video-bundled.ts",
         "modules/images/src/exr-bundled.ts",
         "modules/images/src/basis.ts",
-        "modules/images/src/color-lut.ts"
+        "modules/images/src/color-lut.ts",
+        "modules/images/src/basis/metadata-entry.ts",
+        "modules/images/src/color-lut/metadata-entry.ts",
+        "modules/images/src/crunch/bundled.ts",
+        "modules/images/src/crunch/metadata-entry.ts",
+        "modules/images/src/image/metadata-entry.ts",
+        "modules/images/src/package-exports.ts",
+        "modules/images/src/radiance-hdr/metadata-entry.ts",
+        "modules/images/src/texture/metadata-entry.ts",
+        "modules/images/src/video/metadata-entry.ts"
       ],
       "sourcePathReason": "Preserve the original image implementation gate, including its 89% function requirement. Texture and video implementations retain their unchanged independent images/textures and images/video gates; all image-package production files are checked for a coverage owner."
     },
@@ -230,7 +239,10 @@
         "modules/scene/src/glb-writer.ts",
         "modules/scene/src/materialx-bundled.ts",
         "modules/scene/src/draco-bundled.ts",
-        "modules/scene/src/gltf-source.ts"
+        "modules/scene/src/gltf-source.ts",
+        "modules/scene/src/glb/metadata-entry.ts",
+        "modules/scene/src/mtl/metadata-entry.ts",
+        "modules/scene/src/package-exports.ts"
       ],
       "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf and scene/draco gates; every scene implementation belongs to one of these gates. New STL implementations are included in this existing gate without changing its thresholds."
     },
@@ -501,7 +513,14 @@
         "modules/documents/src/html.ts",
         "modules/documents/src/bson.ts",
         "modules/documents/src/bson-bundled.ts",
-        "modules/documents/src/markdown-bundled.ts"
+        "modules/documents/src/markdown-bundled.ts",
+        "modules/documents/src/bson/metadata-entry.ts",
+        "modules/documents/src/html/metadata-entry.ts",
+        "modules/documents/src/json/metadata-entry.ts",
+        "modules/documents/src/markdown/metadata-entry.ts",
+        "modules/documents/src/toml/metadata-entry.ts",
+        "modules/documents/src/xml/metadata-entry.ts",
+        "modules/documents/src/yaml/metadata-entry.ts"
       ],
       "sourcePathReason": "Retain the original XML package ratchet. Config, BSON, and new Markdown implementations have independent format gates; the documents source inventory requires an owner for every production file."
     }
