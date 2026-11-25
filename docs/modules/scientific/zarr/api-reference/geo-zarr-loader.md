@@ -131,6 +131,10 @@ const source = openRaster(store);
 ### `zarr`
 
 - `store?: AsyncReadable` supplies the backing store for metadata and chunks.
+- `chunkCacheProps?: {maxEntries?: number; maxBytes?: number} | false` controls the per-source
+  cache for encoded chunks. It defaults to 256 entries and 64 MiB. Set it to `false` to disable
+  encoded chunk caching. Metadata and byte-range reads bypass this cache. GeoZarr also retains up
+  to 1,024 decoded chunk-aligned selections and 128 MiB per open array for overlapping windows.
 - `path?: string | null` selects the group that contains the data and coordinate variables.
 - `metadataPath?: 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json'` controls consolidated
   metadata discovery.

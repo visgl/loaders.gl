@@ -80,6 +80,12 @@ options have no effect. For stores with only per-group and per-array metadata, s
 `zarr.requireConsolidatedMetadata` to `false`. `SpatialDataSource` requires element URLs and
 rejects `zarr.store`.
 
+Zarr sources cache up to 256 encoded chunks and 64 MiB per source, including when using a custom
+store. Set `zarr.chunkCacheProps.maxEntries` and `zarr.chunkCacheProps.maxBytes` to change those
+limits, or pass `zarr.chunkCacheProps: false` to disable encoded chunk caching. Metadata and
+byte-range reads bypass the cache. GeoZarr reads spatial windows on chunk boundaries and retains up
+to 1,024 decoded selections and 128 MiB per open array so overlapping windows can reuse decoded data.
+
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
 import {GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';

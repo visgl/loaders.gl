@@ -29,12 +29,8 @@ import {getMultiscaleVariablePaths, getSpatialMultiscaleLevels} from './lib/spat
 import type {SpatialMultiscaleLevel} from './lib/spatial-multiscales';
 import type {SupportedTypedArray} from './types';
 import {ZarrSource, type ZarrLoaderOptions} from './ome-zarr-loader';
-import {
-  awaitWithAbort,
-  cloneZarrSelection,
-  getCachedZarrSelection,
-  getZarrSelectionKey
-} from './lib/zarr-data-cache';
+import {awaitWithAbort} from './lib/zarr-data-cache';
+import {readChunkAlignedWindow, type PixelWindow} from './lib/read-chunk-aligned-window';
 import {GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS} from './lib/geo-zarr-defaults';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -141,18 +137,6 @@ type GeoZarrGrid = {
   metadata: GeoZarrSourceMetadata;
   /** Open arrays in advertised level order. */
   levels: (GeoZarrInit | undefined)[];
-};
-
-/** Inclusive start and exclusive stop coordinates for a pixel window. */
-type PixelWindow = {
-  /** First included column. */
-  columnStart: number;
-  /** First excluded column. */
-  columnStop: number;
-  /** First included row. */
-  rowStart: number;
-  /** First excluded row. */
-  rowStop: number;
 };
 
 /** Source factory for GeoZarr and regular CF/xarray Zarr raster arrays. */
@@ -414,32 +398,17 @@ export class GeoZarrRasterSource
     }
 
     const selection = normalizeSelection(parameters.selection, metadata.selectionDimensions);
-    const zarritaSelection = metadata.dimensions.map((dimensionName, dimensionIndex) => {
-      if (dimensionIndex === xDimensionIndex) {
-        return zarrita.slice(pixelWindow.columnStart, pixelWindow.columnStop);
-      }
-      if (dimensionIndex === yDimensionIndex) {
-        return zarrita.slice(pixelWindow.rowStart, pixelWindow.rowStop);
-      }
-      return selection[dimensionName];
-    });
-    const chunk = await getCachedZarrSelection(
+    const typedData = await readChunkAlignedWindow(
       array,
-      getZarrSelectionKey(zarritaSelection),
-      () =>
-        zarrita.get(array, zarritaSelection) as Promise<{
-          data: SupportedTypedArray;
-          shape: number[];
-        }>,
+      pixelWindow,
+      yDimensionIndex,
+      xDimensionIndex,
+      metadata.dimensions.map(dimensionName => selection[dimensionName] ?? 0),
       parameters.signal
     );
-    if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
-      throw new Error('Failed to read GeoZarr raster selection.');
-    }
 
     const width = pixelWindow.columnStop - pixelWindow.columnStart;
     const height = pixelWindow.rowStop - pixelWindow.rowStart;
-    const typedData = cloneZarrSelection(chunk).data as SupportedTypedArray;
     const data =
       xDimensionIndex < yDimensionIndex ? transposeRaster(typedData, width, height) : typedData;
     const transform = getPixelWindowTransform(pixelWindow, metadata.transform);

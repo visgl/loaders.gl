@@ -8,6 +8,7 @@ import {
   ZarrArrayLoader
 } from '@loaders.gl/scientific/zarr/bundled';
 import {afterEach, beforeEach, expect, test, vi} from 'vitest';
+import * as zarrita from 'zarrita';
 import type {AsyncReadable} from 'zarrita';
 import {limitZarrStore} from '../../src/zarr/lib/limited-zarr-store';
 
@@ -16,12 +17,17 @@ const SOURCE_LABEL = 'memory://test';
 
 /** A viewport covering both raster chunks. */
 const VIEWPORT: RasterViewport = {
+  id: 'memory',
   bounds: [
     [0, 0],
     [2, 2]
   ],
   width: 2,
-  height: 2
+  height: 2,
+  zoom: 0,
+  center: [1, 1],
+  project: coordinates => coordinates,
+  unprojectPosition: position => [position[0], position[1], position[2] ?? 0]
 };
 
 beforeEach(() => {
@@ -75,6 +81,137 @@ test('ZarrArraySource reads array metadata and values from a custom store', asyn
 
   await expect(source.getMetadata()).resolves.toMatchObject({path: 'raster', shape: [2, 2]});
   expect((await source.getArray()).data).toEqual(new Uint8Array([1, 2, 3, 4]));
+});
+
+test.each([
+  {chunkCacheProps: undefined, expectedReads: ['/raster/1.0']},
+  {chunkCacheProps: false as const, expectedReads: ['/raster/0.0', '/raster/1.0']}
+])('encoded chunk reuse across distinct windows with chunkCacheProps=$chunkCacheProps', async ({
+  chunkCacheProps,
+  expectedReads
+}) => {
+  const store = createMemoryStore(true);
+  const get = vi.spyOn(store, 'get');
+  const source = createDataSourceSync(SOURCE_LABEL, [ZarrArrayLoader], {
+    zarr: {store, chunkCacheProps},
+    zarrArray: {path: 'raster'}
+  });
+  await source.getMetadata();
+  get.mockClear();
+  const top = await source.getArray({selection: [{start: 0, stop: 1}, null]});
+  expect(top.data).toEqual(new Uint8Array([1, 2]));
+  expect(get.mock.calls.map(([key]) => key)).toEqual(['/raster/0.0']);
+
+  get.mockClear();
+  const right = await source.getArray({
+    selection: [
+      {start: 0, stop: 2},
+      {start: 1, stop: 2}
+    ]
+  });
+  expect(right.data).toEqual(new Uint8Array([2, 4]));
+  expect(get.mock.calls.map(([key]) => key).sort()).toEqual(expectedReads);
+});
+
+test('overlapping GeoZarr windows decode only newly entered chunks', async () => {
+  const store = createMemoryStore(true);
+  const source = createDataSourceSync(SOURCE_LABEL, [GeoZarrLoader], {
+    zarr: {store, chunkCacheProps: false},
+    geozarr: {array: 'raster'}
+  });
+  await source.getMetadata();
+  const getChunk = vi.spyOn(zarrita.Array.prototype, 'getChunk');
+  const first = await source.getRaster({
+    viewport: {
+      ...VIEWPORT,
+      bounds: [
+        [0, 1],
+        [1, 2]
+      ],
+      width: 1,
+      height: 1
+    }
+  });
+  expect(first.data).toEqual(new Uint8Array([1]));
+  expect(getChunk.mock.calls.map(([coordinates]) => coordinates)).toEqual([[0, 0]]);
+
+  getChunk.mockClear();
+  const second = await source.getRaster({viewport: VIEWPORT});
+  expect(second.data).toEqual(new Uint8Array([1, 2, 3, 4]));
+  expect(getChunk.mock.calls.map(([coordinates]) => coordinates)).toEqual([[1, 0]]);
+});
+
+test.each([
+  {transposed: false, columnMajor: false},
+  {transposed: true, columnMajor: false},
+  {transposed: false, columnMajor: true},
+  {transposed: true, columnMajor: true}
+])('GeoZarr matches a whole-window read with transposed=$transposed and columnMajor=$columnMajor', async ({
+  transposed,
+  columnMajor
+}) => {
+  const files = new Map<zarrita.AbsolutePath, Uint8Array>();
+  const group = await zarrita.create(files);
+  const dimensions = transposed ? ['x', 'band', 'y'] : ['y', 'band', 'x'];
+  const array = await zarrita.create(group.resolve('raster'), {
+    shape: transposed ? [7, 2, 5] : [5, 2, 7],
+    chunkShape: transposed ? [3, 2, 2] : [2, 2, 3],
+    dimensionNames: dimensions,
+    dtype: 'uint16',
+    codecs: [
+      ...(columnMajor ? [{name: 'transpose', configuration: {order: [2, 1, 0]}}] : []),
+      {name: 'bytes', configuration: {endian: 'little'}}
+    ],
+    fillValue: 999,
+    attributes: {
+      'proj:code': 'EPSG:4326',
+      'spatial:transform': [1, 0, 0, 0, -1, 5]
+    }
+  });
+  // Leave the bottom edge chunks absent to exercise Zarrita's fill handling.
+  const populatedShape = transposed ? [7, 2, 4] : [4, 2, 7];
+  await zarrita.set(
+    array,
+    dimensions.map(name => (name === 'y' ? zarrita.slice(0, 4) : null)),
+    {
+      data: Uint16Array.from({length: 56}, (_, index) => 256 + index),
+      shape: populatedShape,
+      stride: [2 * populatedShape[2], populatedShape[2], 1]
+    }
+  );
+  const store: AsyncReadable = {get: async key => files.get(key)};
+  const source = createDataSourceSync(SOURCE_LABEL, [GeoZarrLoader], {
+    zarr: {store, requireConsolidatedMetadata: false},
+    geozarr: {array: 'raster'}
+  });
+  const width = 6;
+  const height = 4;
+  const raster = await source.getRaster({
+    viewport: {
+      ...VIEWPORT,
+      bounds: [
+        [1, 0],
+        [7, 4]
+      ],
+      width,
+      height
+    },
+    selection: {band: 1}
+  });
+  const selection = dimensions.map(name =>
+    name === 'band' ? 1 : zarrita.slice(1, name === 'y' ? 5 : 7)
+  );
+  const whole = (await zarrita.get(array, selection)) as {data: Uint16Array};
+  // GeoZarr's whole-window path applied this transpose when x preceded y.
+  const expected = transposed
+    ? Uint16Array.from(
+        whole.data,
+        (_, index) => whole.data[(index % width) * height + Math.floor(index / width)]
+      )
+    : whole.data;
+  expect(raster.data).toBeInstanceOf(Uint16Array);
+  expect(raster.data).toEqual(expected);
+  expect(expected).toContain(999);
 });
 
 test('GeoZarr limits concurrent chunk reads from a custom store', async () => {
@@ -175,3 +312,43 @@ function createMemoryStore(consolidated: boolean): AsyncReadable {
   ]);
   return {get: async key => files.get(key)};
 }
+
+test('a GeoZarr window with more than 32 chunks keeps all its decoded chunks', async () => {
+  const files = new Map<zarrita.AbsolutePath, Uint8Array>();
+  const group = await zarrita.create(files);
+  const array = await zarrita.create(group.resolve('raster'), {
+    shape: [8, 8],
+    chunkShape: [1, 1],
+    dimensionNames: ['y', 'x'],
+    dtype: 'uint8',
+    attributes: {
+      'proj:code': 'EPSG:4326',
+      'spatial:transform': [1, 0, 0, 0, -1, 8]
+    }
+  });
+  await zarrita.set(array, [null, null], {
+    data: Uint8Array.from({length: 64}, (_, index) => index),
+    shape: [8, 8],
+    stride: [8, 1]
+  });
+  const store: AsyncReadable = {get: async key => files.get(key)};
+  const source = createDataSourceSync(SOURCE_LABEL, [GeoZarrLoader], {
+    zarr: {store, requireConsolidatedMetadata: false, chunkCacheProps: false},
+    geozarr: {array: 'raster'}
+  });
+  const viewport: RasterViewport = {
+    ...VIEWPORT,
+    bounds: [
+      [0, 0],
+      [8, 8]
+    ],
+    width: 8,
+    height: 8
+  };
+  await source.getRaster({viewport});
+  const getChunk = vi.spyOn(zarrita.Array.prototype, 'getChunk');
+  const raster = await source.getRaster({viewport});
+  expect(raster.data).toEqual(Uint8Array.from({length: 64}, (_, index) => index));
+  expect(getChunk).not.toHaveBeenCalled();
+  getChunk.mockRestore();
+});
