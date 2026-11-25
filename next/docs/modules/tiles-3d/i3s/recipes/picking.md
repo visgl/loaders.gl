@@ -137,7 +137,7 @@ import Map from 'react-map-gl';
 
 import maplibregl from 'maplibre-gl';
 
-import {loadFeatureAttributes} from '@loaders.gl/tiles-3d/i3s';
+import {loadFeatureAttributes} from '@loaders.gl/tiles-3d/api';
 
 
 

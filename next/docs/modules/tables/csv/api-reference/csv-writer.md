@@ -63,7 +63,7 @@ import {encode} from '@loaders.gl/core';
 
 import type {Table} from 'apache-arrow';
 
-import {CSVWriter} from '@loaders.gl/tables/csv';
+import {CSVWriter} from '@loaders.gl/tables/csv/bundled';
 
 
 

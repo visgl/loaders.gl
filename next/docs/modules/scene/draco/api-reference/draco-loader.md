@@ -134,7 +134,7 @@ import {parse} from '@loaders.gl/core';
 
 import {DracoLoader} from '@loaders.gl/scene/draco';
 
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/api';
 
 
 

@@ -288,9 +288,9 @@ Connect your existing ArcGIS Online and Enterprise layers to JavaScript applicat
 
 #### archives
 
-@loaders.gl/archives provides ZIP and TAR archive loaders and writers. Install @loaders.gl/core and @loaders.gl/archives. The root exports metadata loaders and writers; import format-specific helpers from @loaders.gl/archives/zip or @loaders.gl/archives/tar.
+@loaders.gl/archives provides ZIP and TAR archive loaders and writers. Install @loaders.gl/core and @loaders.gl/archives. Use the bundled subpaths for writers and @loaders.gl/archives/api for archive utilities. See @loaders.gl/archives/zip or @loaders.gl/archives/tar.
 
-- [Archives](https://loaders.gl/next/docs/modules/archives.md): @loaders.gl/archives provides ZIP and TAR archive loaders and writers. Install @loaders.gl/core and @loaders.gl/archives. The root exports metadata loaders and writers; import format-specific helpers from @loaders.gl/archives/zip or @loaders.gl/archives/tar.
+- [Archives](https://loaders.gl/next/docs/modules/archives.md): @loaders.gl/archives provides ZIP and TAR archive loaders and writers. Install @loaders.gl/core and @loaders.gl/archives. Use the bundled subpaths for writers and @loaders.gl/archives/api for archive utilities. See @loaders.gl/archives/zip or @loaders.gl/archives/tar.
 - [TAR](https://loaders.gl/next/docs/modules/archives/tar.md): @loaders.gl/archives/tar exports TarLoader, TarWriter, TarBuilder, and readTarArchive. Import TarLoaderWithParser from @loaders.gl/archives/tar-loader for synchronous parser access; the metadata loader loads it through preload().
 - [Open archives at the edge of your data pipeline.](https://loaders.gl/next/docs/modules/archives/zip.md): Read and write ZIP archives with loaders.gl.
 - [encodeZip](https://loaders.gl/next/docs/modules/archives/zip/api-reference/encode-zip.md): encodeZip(files, options) writes a native ZIP32/ZIP64 archive and returns an ArrayBuffer.
@@ -520,7 +520,7 @@ Load image files into browser and Node.js-friendly image representations.
 - [Keep image handling independent of the runtime’s image class.](https://loaders.gl/next/docs/modules/images/api-reference/parsed-image-api.md): Work with decoded images through one platform-independent helper layer.
 - [@loaders.gl/images/basis](https://loaders.gl/next/docs/modules/images/basis.md): APIs for BASIS data in the images module.
 - [Color LUTs — Cube, 3dl and PNG](https://loaders.gl/next/docs/modules/images/color-lut.md): Read color mappings as numerical tables with explicit domains, precision and image layouts.
-- [@loaders.gl/images/crunch](https://loaders.gl/next/docs/modules/images/crunch.md): APIs for CRUNCH data in the images module.
+- [@loaders.gl/images/crunch](https://loaders.gl/next/docs/modules/images/crunch.md): The Crunch loader initializes its decoder when needed.
 - [@loaders.gl/images/exr](https://loaders.gl/next/docs/modules/images/exr.md): Keep HDR samples, channel names, and image windows intact.
 - [IES — measured light distributions](https://loaders.gl/next/docs/modules/images/ies.md): Keep photometric measurements and scaling separate from light objects.
 - [@loaders.gl/images/image](https://loaders.gl/next/docs/modules/images/image.md): Use this entry point to decode and encode common image formats. Pass ImageLoader to
@@ -549,9 +549,9 @@ Load image files into browser and Node.js-friendly image representations.
 
 #### ogc
 
-@loaders.gl/ogc groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use WMS and OGC API sources or STAC sources for format-specific APIs and explicit parser entry points.
+@loaders.gl/ogc groups open geospatial service protocols and STAC catalog sources. The format subpaths export metadata loaders for asynchronous APIs. Use WMS and OGC API sources or STAC sources for format-specific APIs and explicit parser entry points.
 
-- [@loaders.gl/ogc](https://loaders.gl/next/docs/modules/ogc.md): @loaders.gl/ogc groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use WMS and OGC API sources or STAC sources for format-specific APIs and explicit parser entry points.
+- [@loaders.gl/ogc](https://loaders.gl/next/docs/modules/ogc.md): @loaders.gl/ogc groups open geospatial service protocols and STAC catalog sources. The format subpaths export metadata loaders for asynchronous APIs. Use WMS and OGC API sources or STAC sources for format-specific APIs and explicit parser entry points.
 - [@loaders.gl/ogc/csw](https://loaders.gl/next/docs/modules/ogc/csw.md): APIs for CSW data in the ogc module.
 - [@loaders.gl/ogc/gml](https://loaders.gl/next/docs/modules/ogc/gml.md): APIs for GML data in the ogc module.
 - [@loaders.gl/ogc/stac](https://loaders.gl/next/docs/modules/ogc/stac.md): Discover cloud datasets and assets through static catalogs or the STAC API.
@@ -608,6 +608,8 @@ Point-cloud decoders and writers for LAS/LAZ, PCD and PLY. PLY keeps both point-
 GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh.
 
 - [@loaders.gl/raster](https://loaders.gl/next/docs/modules/raster.md): GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh.
+- [RasterBitmapLayer](https://loaders.gl/next/docs/modules/raster/api-reference/raster-bitmap-layer.md): RasterBitmapLayer from @loaders.gl/deck-layers draws one band of numeric samples with a
+- [RasterSourceLayer](https://loaders.gl/next/docs/modules/raster/api-reference/raster-source-layer.md): RasterSourceLayer from @loaders.gl/deck-layers requests the active viewport from a
 - [GeoTIFF and OME-TIFF](https://loaders.gl/next/docs/modules/raster/geotiff.md): Read GeoTIFF, Cloud Optimized GeoTIFF, and OME-TIFF rasters with windows, bands, and metadata.
 - [GeoTIFFLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-loader.md): Read georeferenced TIFF imagery and its spatial metadata.
 - [GeoTIFFRasterLoader](https://loaders.gl/next/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md): GeoTIFFRasterLoader decodes original numeric TIFF samples for elevation models,
@@ -887,7 +889,7 @@ Traverse 3D Tiles, I3S, COPC and Potree datasets with shared 3D tileset runtime 
 - [Traverse Potree clouds without loading the whole octree.](https://loaders.gl/next/docs/modules/tiles-3d/potree.md): Traverse Potree point clouds from cloud-hosted hierarchy and node resources.
 - [Connect a Potree hierarchy to a point-cloud pipeline.](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-loader.md): Load Potree point-cloud metadata and hierarchy information for tiled visualization.
 - [Traverse an octree as the view moves.](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md): Build a progressive point-cloud source from supported Potree hierarchy and node layouts.
-- [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md): encodePotreeDataset() encodes a complete Potree file collection using ArrayBuffer and typed
+- [Potree writers](https://loaders.gl/next/docs/modules/tiles-3d/potree/api-reference/potree-writer.md): PotreeWriter.encodeDataset() encodes a complete Potree file collection using ArrayBuffer and typed
 - [Potree](https://loaders.gl/next/docs/modules/tiles-3d/potree/formats/potree.md): An octree point-cloud dataset format with progressive reads and explicit legacy and modern writer profiles.
 - [Let the viewport decide which data arrives.](https://loaders.gl/next/docs/modules/tiles-3d/runtime.md): Traverse source-backed 3D tilesets with selection, caching, and refreshable data sources.
 - [@loaders.gl/tiles-3d/spatial](https://loaders.gl/next/docs/modules/tiles-3d/spatial.md): Describe tileset coordinate frames, transform spatial data, and register geoid and CRS resources.

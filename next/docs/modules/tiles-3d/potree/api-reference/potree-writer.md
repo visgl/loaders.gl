@@ -1,13 +1,13 @@
 # Potree writers
 
-`encodePotreeDataset()` encodes a complete Potree file collection using ArrayBuffer and typed arrays. `PotreeWriter` encodes a metadata document through the standard loaders.gl writer API.
+`PotreeWriter.encodeDataset()` encodes a complete Potree file collection using ArrayBuffer and typed arrays. `PotreeWriter` encodes a metadata document through the standard loaders.gl writer API.
 
 ```
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 
 
 
-const dataset = await encodePotreeDataset(pointMeshOrArrowTable, {
+const dataset = await PotreeWriter.encodeDataset(pointMeshOrArrowTable, {
 
   potree: {version: '2.0', scale: [0.001, 0.001, 0.001], projection: 'EPSG:4978'}
 

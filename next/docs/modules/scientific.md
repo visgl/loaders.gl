@@ -18,14 +18,14 @@ npm install @loaders.gl/core @loaders.gl/scientific
 | —                                                                                                                                     | `/scientific-array` | Common scientific-array interfaces and helpers                                | Shared source contracts                                                                       |
 | —                                                                                                                                     | `/vector-field`     | Vector-field processing helpers                                               | Explicit processing entrypoint                                                                |
 
-The root exports NetCDF, Zarr, NRRD, VTK and PDB metadata loaders and shared types. It does not re-export every parser or experimental source. For direct NetCDF parsing:
+Import scientific loader metadata and types from the format subpath. For direct NetCDF parsing:
 
 ```
 import {parse, parseSync} from '@loaders.gl/core';
 
-import {NetCDFLoader} from '@loaders.gl/scientific';
+import {NetCDFLoader} from '@loaders.gl/scientific/netcdf';
 
-import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
+import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf/bundled';
 
 
 
@@ -58,7 +58,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->17<!-- -->)
+All exported subpaths (<!-- -->20<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -67,6 +67,7 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                       | `@loaders.gl/scientific/grib2`            |
 |                                                                                                                                       | `@loaders.gl/scientific/hdf5`             |
 | [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf`           |
+| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/api`       |
 | [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/bundled`   |
 |                                                                                                                                       | `@loaders.gl/scientific/npy`              |
 |                                                                                                                                       | `@loaders.gl/scientific/npy-worker.js`    |
@@ -78,6 +79,8 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                       | `@loaders.gl/scientific/scientific-array` |
 |                                                                                                                                       | `@loaders.gl/scientific/vector-field`     |
 | [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk`              |
+| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/api`          |
 | [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/bundled`      |
 | [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr`             |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/api`         |
 | [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/bundled`     |

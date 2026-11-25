@@ -118,7 +118,7 @@ Hybrid-36 numbering, mmCIF, inferred bonds/elements, colors/radii, ANISOU interp
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {PDBLoaderWithParser} from '@loaders.gl/scientific/pdb';
+import {PDBLoaderWithParser} from '@loaders.gl/scientific/pdb/bundled';
 
 
 

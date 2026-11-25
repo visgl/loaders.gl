@@ -103,7 +103,7 @@ The guide below covers writer selection, category-compatible input data, asynchr
 As an example, to Draco-compress a mesh using the `DracoWriter`:
 
 ```
-import {DracoWriter} from '@loaders.gl/scene/draco';
+import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
 
 import {encode} from '@loaders.gl/core';
 

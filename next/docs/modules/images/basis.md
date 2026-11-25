@@ -6,6 +6,8 @@ APIs for BASIS data in the images module.
 import {BasisTextureFormat, KTX2BasisTextureFormat, BasisLoaderOptions, BasisASTCBlockSize} from '@loaders.gl/images/basis';
 ```
 
+Import `getSupportedBasisFormats` and `selectSupportedBasisFormat` from `@loaders.gl/images/api` to choose a GPU transcode target. The Basis loader and writer initialize their codecs when needed.
+
 ## API[​](#api "Direct link to API")
 
 | Export                          | Kind    |
@@ -28,9 +30,6 @@ import {BasisTextureFormat, KTX2BasisTextureFormat, BasisLoaderOptions, BasisAST
 | `BasisImageData`                | Type    |
 | `selectSupportedBasisFormat`    | Utility |
 | `getSupportedBasisFormats`      | Utility |
-| `loadBasisTranscoderModule`     | Utility |
-| `loadBasisEncoderModule`        | Utility |
-| `BASIS_EXTERNAL_LIBRARIES`      | Utility |
 | `KTX2BasisWriterWorker`         | Utility |
 | `BasisTextureFormat`            | Utility |
 | `KTX2BasisTextureFormat`        | Utility |

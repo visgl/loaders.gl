@@ -73,7 +73,7 @@ The file path uses the same JSON-to-Arrow parser as `ChromeTraceLoader`, then ad
 ```
 import {createTraceStreamSession} from '@loaders.gl/traces/stream';
 
-import {streamChromeTraceFileChunks} from '@loaders.gl/traces/chrome-trace';
+import {streamChromeTraceFileChunks} from '@loaders.gl/traces/chrome-trace/api';
 
 
 
@@ -105,7 +105,7 @@ for await (const chunk of streamChromeTraceFileChunks(response.body, {
 The matching `consumeChromeTraceEventStream`, `consumeChromeTraceArrowStream`, and `consumeChromeTraceFileStream` helpers apply every generated chunk to a supplied session and return the latest published snapshot.
 
 ```
-import {consumeChromeTraceArrowStream} from '@loaders.gl/traces/chrome-trace';
+import {consumeChromeTraceArrowStream} from '@loaders.gl/traces/chrome-trace/api';
 
 import {createTraceStreamSession} from '@loaders.gl/traces/stream';
 

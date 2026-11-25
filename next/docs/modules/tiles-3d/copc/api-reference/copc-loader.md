@@ -101,9 +101,9 @@ The sections below document source creation, tile methods, column selection, bat
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
+import {COPCLoader} from '@loaders.gl/tiles-3d/copc/bundled';
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/api';
 
 
 

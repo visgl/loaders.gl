@@ -49,12 +49,13 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->30<!-- -->)
+All exported subpaths (<!-- -->31<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format                                                                                                                       | Import subpath                                   |
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+|                                                                                                                              | `@loaders.gl/scene/api`                          |
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco`                        |
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco-worker-node.js`         |
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco-worker.js`              |

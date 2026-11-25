@@ -91,7 +91,9 @@ The sections below cover usage, input arrays, options, and the resulting Arrow I
 ```
 import {encodeSync} from '@loaders.gl/core';
 
-import {ArrowWriter, VECTOR_TYPES} from '@loaders.gl/tables/arrow';
+import {ArrowWriter} from '@loaders.gl/tables/arrow/bundled';
+
+import {VECTOR_TYPES} from '@loaders.gl/tables/arrow/api';
 
 
 

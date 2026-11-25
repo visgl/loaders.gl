@@ -87,7 +87,9 @@ The sections below cover usage, geospatial metadata precedence, options, and wri
 `ParquetWriter` supports native Arrow tables and schema-bearing row tables. The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```
-import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
+
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 ```
 
 ## Geospatial Metadata[​](#geospatial-metadata "Direct link to Geospatial Metadata")
@@ -128,7 +130,9 @@ Without GeoParquet `geo` metadata, a `geoarrow.wkb` field is still written using
 ```
 import {load, encode} from '@loaders.gl/core';
 
-import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
+
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 
 
 
@@ -263,7 +267,7 @@ Per-column keys, key rotation, and plaintext-footer signatures are opt-in. The k
 ```
 import {encode} from '@loaders.gl/core';
 
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 
 
 

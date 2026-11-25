@@ -104,7 +104,7 @@ GeoJSON is a geospatial interchange format that uses JSON encoding. Use `GeoJSON
 For simple usage, load a GeoJSON `FeatureCollection` as a loaders.gl Arrow table:
 
 ```
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 
 import {load} from '@loaders.gl/core';
 
@@ -146,7 +146,7 @@ const nativeTable = await load(url, GeoJSONLoader, {
 For larger files, GeoJSONLoader supports streaming JSON parsing, in which case it yields batches of rows from one array. By default, streamed GeoJSON reads `$.features`. You can override `options.json.jsonpaths` when the feature array is stored elsewhere.
 
 ```
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 
 import {loadInBatches} from '@loaders.gl/core';
 
@@ -184,7 +184,7 @@ With `geojson.shape: 'geojson-table'`, when batch parsing an embedded JSON array
 The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result` respectively.
 
 ```
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 
 import {loadInBatches} from '@loaders.gl/core';
 

@@ -3,7 +3,7 @@
 Read and replace accessor storage directly on `GLTFWithBuffers`, without changing numeric scene, mesh, material, or texture references into linked objects.
 
 ```
-import {getGLTFAccessor, getGLTFAccessorValue, setGLTFAccessorValue} from '@loaders.gl/scene/gltf';
+import {getGLTFAccessor, getGLTFAccessorValue, setGLTFAccessorValue} from '@loaders.gl/scene/api';
 
 
 

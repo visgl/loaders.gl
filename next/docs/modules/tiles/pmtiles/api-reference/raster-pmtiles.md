@@ -27,7 +27,7 @@ Try the [browser PMTiles export example](https://loaders.gl/next/examples/tiles/
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFRasterSource} from '@loaders.gl/raster/geotiff/bundled';
 
 import {encodeRasterPMTiles} from '@loaders.gl/tiles/pmtiles/raster';
 

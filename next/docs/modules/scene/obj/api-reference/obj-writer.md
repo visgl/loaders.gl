@@ -69,7 +69,7 @@ import {encode} from '@loaders.gl/core';
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 
-import {OBJWriter} from '@loaders.gl/scene/obj';
+import {OBJWriter} from '@loaders.gl/scene/obj/bundled';
 
 
 

@@ -9,7 +9,7 @@ Creates a dynamic additive octree from a decoded point `Mesh` or `MeshArrowTable
 ```
 import {PointCloudTileLoader} from '@loaders.gl/tiles-3d/point-cloud';
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/api';
 
 
 

@@ -59,13 +59,7 @@ Detailed guide
 The reference below covers vector and table conversion, view-type selection, runtime detection, and preservation guarantees.
 
 ```
-import {
-
-  convertArrowTableVariableWidthTypes,
-
-  convertArrowVariableWidthVector
-
-} from '@loaders.gl/tables/arrow';
+import {convertArrowTableVariableWidthTypes, convertArrowVariableWidthVector} from '@loaders.gl/tables/arrow/api';
 
 
 

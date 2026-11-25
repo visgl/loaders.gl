@@ -3,7 +3,9 @@
 Read and write Perfetto trace data and its typed Arrow tables.
 
 ```
-import {PerfettoTraceLoader, PerfettoTraceWriter} from '@loaders.gl/traces/perfetto';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
+
+import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
 ```
 
 ## API[​](#api "Direct link to API")

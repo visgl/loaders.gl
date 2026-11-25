@@ -105,7 +105,7 @@ The sections below cover source construction, metadata, viewport requests, raste
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';
 
 
 

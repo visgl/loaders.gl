@@ -74,7 +74,7 @@ The reference below defines graph contents, ranking inputs, serialization, inval
 | Source creation                  | ✅ Explicit               | Select an endpoint, then use its concrete source loader          |
 
 ```
-import {discoverServiceGraph} from '@loaders.gl/ogc/wms';
+import {discoverServiceGraph} from '@loaders.gl/ogc/wms/api';
 
 
 

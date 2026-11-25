@@ -296,7 +296,7 @@ All Parquet options remain under their existing `parquet` namespace. The Iceberg
 `DeltaTableSource` is the read-only Delta adapter under `@loaders.gl/tables/delta`. It accepts a commit-log URL or an in-memory `Blob`, replays all JSON commits through the selected version, and delegates active Parquet files to `ParquetDatasetSource`. A commit URL with a twenty-digit version selects that snapshot automatically; callers can override it with `delta.version` or per-scan `version`.
 
 ```
-import {DeltaTableSource} from '@loaders.gl/tables/delta';
+import {DeltaTableSource} from '@loaders.gl/tables/delta/bundled';
 
 
 

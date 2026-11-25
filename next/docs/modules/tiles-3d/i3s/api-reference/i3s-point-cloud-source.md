@@ -59,9 +59,9 @@ The sections below document construction, attributes, precision, CRS conversion,
 `I3SPointCloudSource` adapts an I3S 2.x Point Cloud layer to the shared [`PointCloudTileset`](https://loaders.gl/next/docs/modules/tiles-3d/api-reference/point-cloud-tileset.md) traversal API. It accepts a SceneServer layer URL, an SLPK URL, or an SLPK `Blob`.
 
 ```
-import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
+import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/api';
 
 
 

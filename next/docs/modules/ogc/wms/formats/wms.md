@@ -130,7 +130,7 @@ The sections below cover supported protocol operations, quick start usage, CRS h
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WMSLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 

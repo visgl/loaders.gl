@@ -88,7 +88,7 @@ If you pass:
 ```
 import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
 
-import {ArrowConverter} from '@loaders.gl/tables/arrow';
+import {ArrowConverter} from '@loaders.gl/core/schema-utils';
 
 
 

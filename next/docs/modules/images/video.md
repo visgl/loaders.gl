@@ -83,7 +83,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 ```
 import {load} from '@loaders.gl/core';
 
-import {VideoLoader} from '@loaders.gl/images';
+import {VideoLoader} from '@loaders.gl/images/video';
 
 import GIFBuilder from '@loaders.gl/images/image';
 ```

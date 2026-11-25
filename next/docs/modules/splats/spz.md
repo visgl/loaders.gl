@@ -3,7 +3,9 @@
 Read SPZ Gaussian splat data and convert it to the shared Gaussian splat representation.
 
 ```
-import {SPZFormat, parseSPZ, parseSPZToGaussianSplats, SPZLoader} from '@loaders.gl/splats/spz';
+import {SPZFormat, SPZLoader} from '@loaders.gl/splats/spz';
+
+import {parseSPZ, parseSPZToGaussianSplats} from '@loaders.gl/splats/spz/api';
 ```
 
 ## API[​](#api "Direct link to API")

@@ -76,7 +76,7 @@ The reference below covers registry scope, source caching, shared options, custo
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {ServiceRuntime} from '@loaders.gl/ogc/wms';
+import {ServiceRuntime} from '@loaders.gl/ogc/wms/api';
 
 
 

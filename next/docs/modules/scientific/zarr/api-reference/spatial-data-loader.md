@@ -17,7 +17,7 @@
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {SpatialDataLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 
 

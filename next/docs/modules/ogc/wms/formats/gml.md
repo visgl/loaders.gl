@@ -88,12 +88,12 @@ The reference below covers supported geometry encodings, CRS metadata, streaming
 
 ## Parse a document[​](#parse-a-document "Direct link to Parse a document")
 
-The package root exports metadata-only loaders; async core APIs preload the parser automatically:
+The GML format entry point exports metadata. The async core API loads the parser when needed.
 
 ```
 import {load} from '@loaders.gl/core';
 
-import {GMLLoader} from '@loaders.gl/ogc/wms';
+import {GMLLoader} from '@loaders.gl/ogc/gml';
 
 
 
@@ -107,7 +107,7 @@ console.log(table.numRows);
 ```
 import {loadInBatches} from '@loaders.gl/core';
 
-import {GMLLoader} from '@loaders.gl/ogc/wms';
+import {GMLLoader} from '@loaders.gl/ogc/gml';
 
 
 
@@ -125,7 +125,7 @@ The streaming parser buffers incomplete XML features across network chunks and r
 GML application schemas often carry scalar types that cannot be inferred safely from text. Supply known types from `DescribeFeatureType` or application metadata:
 
 ```
-import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml';
+import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml/bundled';
 
 
 

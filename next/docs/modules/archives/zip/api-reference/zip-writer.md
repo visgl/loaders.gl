@@ -73,7 +73,7 @@ import {encode} from '@loaders.gl/core';
 
 import {writeFile} from 'node:fs/promises';
 
-import {ZipWriter} from '@loaders.gl/archives/zip';
+import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
 
 
 

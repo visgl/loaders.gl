@@ -1,6 +1,6 @@
 # 2D tiles
 
-The `@loaders.gl/tiles` root exports `Tileset2D`, `ImageSet`, and `RasterSet`. These APIs select, request, and cache 2D tiles independently of a renderer.
+Import `Tileset2D`, `ImageSet`, and `RasterSet` from the tileset, image-set, and raster-set subpaths. These APIs select, request, and cache 2D tiles independently of a renderer.
 
 ```
 import {Tileset2D} from '@loaders.gl/tiles/tileset-2d';
@@ -36,7 +36,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->20<!-- -->)
+All exported subpaths (<!-- -->22<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -50,11 +50,13 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                 | `@loaders.gl/tiles/mvt`                      |
 |                                                                                                                                 | `@loaders.gl/tiles/mvt-geojson-loader`       |
 |                                                                                                                                 | `@loaders.gl/tiles/mvt-loader`               |
+|                                                                                                                                 | `@loaders.gl/tiles/mvt/api`                  |
 |                                                                                                                                 | `@loaders.gl/tiles/mvt/bundled`              |
 |                                                                                                                                 | `@loaders.gl/tiles/mvt/mvt-worker.js`        |
 |                                                                                                                                 | `@loaders.gl/tiles/mvt/tilejson-zod-schema`  |
 |                                                                                                                                 | `@loaders.gl/tiles/mvt/tilejson.schema.json` |
 |                                                                                                                                 | `@loaders.gl/tiles/pmtiles`                  |
+|                                                                                                                                 | `@loaders.gl/tiles/pmtiles/api`              |
 |                                                                                                                                 | `@loaders.gl/tiles/pmtiles/bundled`          |
 |                                                                                                                                 | `@loaders.gl/tiles/pmtiles/geoarrow`         |
 |                                                                                                                                 | `@loaders.gl/tiles/pmtiles/raster`           |

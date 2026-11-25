@@ -53,7 +53,9 @@ This makes it suitable for implementing glTF extensions that transform the stand
 ```
 import {load} from '@loaders.gl/core';
 
-import {GLTFIterator, GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFIterator} from '@loaders.gl/scene/api';
+
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 
 
 

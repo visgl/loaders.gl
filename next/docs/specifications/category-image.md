@@ -107,7 +107,9 @@ import '@loaders.gl/core/polyfills'; // Only required if loading images under No
 
 import {load} from '@loaders.gl/core';
 
-import {ImageLoader, getImageData} from '@loaders.gl/images/image';
+import {ImageLoader} from '@loaders.gl/images/image';
+
+import {getImageData} from '@loaders.gl/images/api';
 
 
 

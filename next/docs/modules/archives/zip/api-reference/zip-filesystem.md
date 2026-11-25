@@ -3,7 +3,7 @@
 `ZipFileSystem` adapts the shared ZIP32/ZIP64 reader to the loaders.gl `FileSystem` interface. It owns its input file and caches archive initialization and the directory index. Inputs can be an `ArrayBuffer`, typed-array view, `Blob`, `ReadableFile`, or a Node file path. The optional second argument accepts the same [limits and cancellation options as ZipArchive](https://loaders.gl/next/docs/modules/archives/zip/api-reference/zip-archive.md).
 
 ```
-import {ZipFileSystem} from '@loaders.gl/archives/zip';
+import {ZipFileSystem} from '@loaders.gl/archives/api';
 
 
 

@@ -69,7 +69,7 @@ The reference below covers accepted image values, output MIME types, quality opt
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {ImageWriter} from '@loaders.gl/images/image';
+import {ImageWriter} from '@loaders.gl/images/image/bundled';
 
 import {encode} from '@loaders.gl/core';
 

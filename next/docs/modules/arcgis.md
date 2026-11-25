@@ -98,7 +98,7 @@ The reference below covers supported ArcGIS services, installation, source const
 
 Read the [ArcGIS developer guide](https://loaders.gl/next/docs/developer-guide/arcgis.md), [authentication recipes](https://loaders.gl/next/docs/developer-guide/arcgis/authentication.md), and [examples gallery](https://loaders.gl/next/examples/arcgis). The [complete service inventory](https://loaders.gl/next/docs/modules/arcgis/services.md) includes unsupported operations and service families.
 
-The root exports lightweight service loaders. Authentication and discovery have dedicated `/authentication` and `/discovery` entrypoints. Async `load()` imports the selected implementation. For synchronous `createDataSourceSync()` or direct source classes, use `@loaders.gl/arcgis/bundled`; see [import patterns](https://loaders.gl/next/docs/developer-guide/arcgis.md#how-imports-work).
+The format subpaths export metadata loaders. Authentication and discovery have dedicated `/authentication` and `/discovery` entrypoints. Async `load()` imports the selected implementation. For synchronous `createDataSourceSync()` or direct source classes, use `@loaders.gl/arcgis/bundled`; see [import patterns](https://loaders.gl/next/docs/developer-guide/arcgis.md#how-imports-work).
 
 ## Start with your published data[​](#start-with-your-published-data "Direct link to Start with your published data")
 
@@ -144,7 +144,7 @@ For a `SourceLoader`, `load` returns a source object rather than downloading an 
 ```
 import {load} from '@loaders.gl/core';
 
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 
 
@@ -160,7 +160,7 @@ Use `load` when the application already knows the service type:
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 
 
@@ -182,7 +182,7 @@ const features = await source.getFeatures({
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 
 
@@ -261,7 +261,7 @@ For viewport updates, debounce requests and cancel obsolete work with `AbortSign
 Applications can discover an ArcGIS REST directory and select its services by kind, format, and coordinate system. Discovery is optional: direct source construction is simpler when the endpoint is already known.
 
 ```
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 import {discoverArcGISCapabilities, selectArcGISService} from '@loaders.gl/arcgis/discovery';
 
@@ -351,12 +351,13 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->16<!-- -->)
+All exported subpaths (<!-- -->24<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format                                                                                                                                             | Import subpath                                        |
 | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+|                                                                                                                                                    | `@loaders.gl/arcgis/api`                              |
 | [![](/next/images/format-logos/arcgis-logo.svg)Feature](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-feature-server.md)         | `@loaders.gl/arcgis/arcgis-feature-server-loader`     |
 | [![](/next/images/format-logos/arcgis-logo.svg)Image](https://loaders.gl/next/docs/modules/arcgis/formats/arcgis-image-server.md)             | `@loaders.gl/arcgis/arcgis-image-server-loader`       |
 | [![](/next/images/format-logos/arcgis-logo.svg)API](https://loaders.gl/next/docs/modules/arcgis.md)                                           | `@loaders.gl/arcgis/arcgis-image-tile-loader`         |
@@ -367,9 +368,16 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                                    | `@loaders.gl/arcgis/bundled`                          |
 |                                                                                                                                                    | `@loaders.gl/arcgis/discovery`                        |
 |                                                                                                                                                    | `@loaders.gl/arcgis/feature-service`                  |
+|                                                                                                                                                    | `@loaders.gl/arcgis/feature-service/api`              |
+|                                                                                                                                                    | `@loaders.gl/arcgis/feature-service/bundled`          |
 |                                                                                                                                                    | `@loaders.gl/arcgis/image-service`                    |
+|                                                                                                                                                    | `@loaders.gl/arcgis/image-service/bundled`            |
 |                                                                                                                                                    | `@loaders.gl/arcgis/items`                            |
 |                                                                                                                                                    | `@loaders.gl/arcgis/map-service`                      |
+|                                                                                                                                                    | `@loaders.gl/arcgis/map-service/bundled`              |
 |                                                                                                                                                    | `@loaders.gl/arcgis/scene-aggregation`                |
 |                                                                                                                                                    | `@loaders.gl/arcgis/scene-service`                    |
+|                                                                                                                                                    | `@loaders.gl/arcgis/scene-service/api`                |
+|                                                                                                                                                    | `@loaders.gl/arcgis/scene-service/bundled`            |
 |                                                                                                                                                    | `@loaders.gl/arcgis/vector-tile-service`              |
+|                                                                                                                                                    | `@loaders.gl/arcgis/vector-tile-service/bundled`      |

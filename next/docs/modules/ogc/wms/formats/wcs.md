@@ -89,7 +89,7 @@ The reference below covers capabilities, subsets, CRS selection, binary response
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WCSCoverageLoader} from '@loaders.gl/ogc/wms';
+import {WCSCoverageLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 

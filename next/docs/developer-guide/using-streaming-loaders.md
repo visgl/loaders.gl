@@ -128,7 +128,7 @@ Inspect streamed GeoJSON features
 ```
 import {loadInBatches} from '@loaders.gl/core';
 
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 
 
 

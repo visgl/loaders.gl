@@ -191,7 +191,7 @@ The [GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geo
 Arrow-capable geospatial loaders accept a common encoding preference. The option is placed at `geoarrow.encodingPreference` alongside the loader-specific options:
 
 ```
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 
 import {load} from '@loaders.gl/core';
 

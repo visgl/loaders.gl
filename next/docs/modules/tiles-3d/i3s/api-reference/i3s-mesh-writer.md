@@ -68,7 +68,7 @@ For raw geometry, Cesium 1.146.0 independently decodes and renders the represent
 ```
 import {encodeI3SMeshLayerWithDraco} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/api';
 
 
 

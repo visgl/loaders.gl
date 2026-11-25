@@ -107,9 +107,9 @@ The standard loader validates legacy connectivity and point/cell attribute count
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {VTKLoaderWithParser} from '@loaders.gl/scientific/vtk';
+import {VTKLoaderWithParser} from '@loaders.gl/scientific/vtk/bundled';
 
-import {parseVTKLegacy, parseVTKXML} from '@loaders.gl/scientific/vtk';
+import {parseVTKLegacy, parseVTKXML} from '@loaders.gl/scientific/vtk/api';
 
 
 

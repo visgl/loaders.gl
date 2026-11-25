@@ -140,12 +140,13 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->65<!-- -->)
+All exported subpaths (<!-- -->70<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format                                                                                                                                 | Import subpath                                                |
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+|                                                                                                                                        | `@loaders.gl/core/api`                                        |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry`                             |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/binary-features`             |
 | [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/core/arrow-geometry/binary-geometry-to-wkb`      |
@@ -176,10 +177,14 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/get-representative-point`          |
 | [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/map-geoarrow-coordinates`          |
 | [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/core/geoarrow/rewind-geoarrow`                   |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/core/json`                                       |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/core/json/bundled`                               |
 |                                                                                                                                        | `@loaders.gl/core/loader-utils`                               |
 |                                                                                                                                        | `@loaders.gl/core/loader-utils/tile-grid`                     |
+|                                                                                                                                        | `@loaders.gl/core/null`                                       |
 |                                                                                                                                        | `@loaders.gl/core/null-worker-node.js`                        |
 |                                                                                                                                        | `@loaders.gl/core/null-worker.js`                             |
+|                                                                                                                                        | `@loaders.gl/core/null/bundled`                               |
 |                                                                                                                                        | `@loaders.gl/core/polyfills`                                  |
 |                                                                                                                                        | `@loaders.gl/core/query`                                      |
 |                                                                                                                                        | `@loaders.gl/core/query/arrow-execution`                      |

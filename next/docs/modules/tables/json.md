@@ -94,7 +94,7 @@ The JSON loaders also support batched parsing which can be useful when loading v
 [`convertJSONToArrow`](https://loaders.gl/next/docs/modules/tables/json/api-reference/convert-json-to-arrow.md) converts application-built arrays or already-parsed JSON into a native Apache Arrow table synchronously. It uses the same nested schema inference and conversion policies as `JSONTableLoader`, without serializing your data.
 
 ```
-import {convertJSONToArrow} from '@loaders.gl/tables/json';
+import {convertJSONToArrow} from '@loaders.gl/tables/json/api';
 
 
 

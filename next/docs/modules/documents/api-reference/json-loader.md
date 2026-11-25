@@ -17,7 +17,7 @@ The root loader is metadata-only. Async APIs preload the native parser automatic
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {JSONLoaderWithParser} from '@loaders.gl/documents/json';
+import {JSONLoaderWithParser} from '@loaders.gl/documents/json/bundled';
 
 
 

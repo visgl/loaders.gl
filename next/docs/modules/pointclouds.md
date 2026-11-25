@@ -17,7 +17,7 @@ import {parse, parseSync} from '@loaders.gl/core';
 
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 
-import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply';
+import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply/bundled';
 
 
 
@@ -42,7 +42,7 @@ See the [pointclouds notice inventory](https://github.com/visgl/loaders.gl/blob/
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->9<!-- -->)
+All exported subpaths (<!-- -->10<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -50,6 +50,7 @@ These are the package's public exports, including format entry points, parsers, 
 | ------ | --------------------------------------- |
 |        | `@loaders.gl/pointclouds/las`           |
 |        | `@loaders.gl/pointclouds/las-worker.js` |
+|        | `@loaders.gl/pointclouds/las/api`       |
 |        | `@loaders.gl/pointclouds/las/bundled`   |
 |        | `@loaders.gl/pointclouds/pcd`           |
 |        | `@loaders.gl/pointclouds/pcd-worker.js` |

@@ -11,7 +11,9 @@ npm install @loaders.gl/tables @loaders.gl/core
 ```
 import {load, encode} from '@loaders.gl/core';
 
-import {AvroLoader, AvroWriter} from '@loaders.gl/tables/avro';
+import {AvroLoader} from '@loaders.gl/tables/avro';
+
+import {AvroWriter} from '@loaders.gl/tables/avro/bundled';
 
 
 

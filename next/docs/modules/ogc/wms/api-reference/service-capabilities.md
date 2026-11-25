@@ -59,7 +59,7 @@ Detailed guide
 The reference below covers the common shape, native metadata preservation, supported normalizers, and where protocol-specific APIs remain necessary.
 
 ```
-import {normalizeWMTSCapabilities} from '@loaders.gl/ogc/wms';
+import {normalizeWMTSCapabilities} from '@loaders.gl/ogc/wms/api';
 
 
 

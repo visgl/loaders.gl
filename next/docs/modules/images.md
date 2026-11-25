@@ -109,14 +109,20 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Texture and video loaders[​](#texture-and-video-loaders "Direct link to Texture and video loaders")
 
-The images package also owns texture and video loaders. Its root exports metadata; async core APIs preload implementations when needed:
+The images package also owns texture and video loaders. Its format subpaths export metadata; async core APIs preload implementations when needed:
 
 Browse [texture formats and APIs](https://loaders.gl/next/docs/modules/images/texture.md) or [video loading and GIF writing](https://loaders.gl/next/docs/modules/images/video.md).
 
 ```
 import {load} from '@loaders.gl/core';
 
-import {ImageLoader, BasisLoader, TextureLoader, VideoLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
+
+import {BasisLoader} from '@loaders.gl/images/basis';
+
+import {TextureLoader} from '@loaders.gl/images/texture';
+
+import {VideoLoader} from '@loaders.gl/images/video';
 
 
 
@@ -140,7 +146,7 @@ npm install @loaders.gl/images @loaders.gl/core sharp
 ```
 import '@loaders.gl/core/polyfills';
 
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 ```
 
 The Node backend detects formats from encoded bytes and returns RGBA pixels through an `ImageBitmap` wrapper. It supports PNG, JPEG, GIF, WebP, AVIF, TIFF, and SVG. Browser support remains platform-dependent. The Node wrapper supports pixel access and `close()`; it is not a full browser canvas or transferable bitmap implementation. Sharp is loaded only when Node image decoding or encoding is requested.
@@ -169,12 +175,13 @@ The Node backend detects formats from encoded bytes and returns RGBA pixels thro
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->29<!-- -->)
+All exported subpaths (<!-- -->32<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format | Import subpath                                         |
 | ------ | ------------------------------------------------------ |
+|        | `@loaders.gl/images/api`                               |
 |        | `@loaders.gl/images/basis`                             |
 |        | `@loaders.gl/images/basis-worker-node.cjs`             |
 |        | `@loaders.gl/images/basis-worker-node.js`              |
@@ -186,8 +193,10 @@ These are the package's public exports, including format entry points, parsers, 
 |        | `@loaders.gl/images/compressed-texture-worker.js`      |
 |        | `@loaders.gl/images/crunch`                            |
 |        | `@loaders.gl/images/crunch-worker.js`                  |
+|        | `@loaders.gl/images/crunch/bundled`                    |
 |        | `@loaders.gl/images/exr`                               |
 |        | `@loaders.gl/images/exr/bundled`                       |
+|        | `@loaders.gl/images/gif-builder`                       |
 |        | `@loaders.gl/images/gl-extensions`                     |
 |        | `@loaders.gl/images/ies`                               |
 |        | `@loaders.gl/images/ies/bundled`                       |

@@ -65,7 +65,9 @@ The sections below document usage, input contracts, encoding behavior, and suppo
 ```
 import {load, encode} from '@loaders.gl/core';
 
-import {PerfettoTraceLoader, PerfettoTraceWriter} from '@loaders.gl/traces/perfetto';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
+
+import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
 
 
 

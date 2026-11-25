@@ -15,55 +15,58 @@ Table and record formats share one package, with format-specific metadata and pa
 | [![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)               | [`/orc`](https://loaders.gl/next/docs/modules/tables/orc.md)                | [Apache ORC](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)                                                                                                                                                                                                                 |
 | [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)   | [`/parquet`](https://loaders.gl/next/docs/modules/tables/parquet.md)        | [Parquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md) and [GeoParquet](https://loaders.gl/next/docs/modules/tables/parquet/formats/geoparquet.md)                                                                                                           |
 
-Import metadata from `@loaders.gl/tables` or a bare format subpath such as `@loaders.gl/tables/csv`. Import parser-bearing loaders from named implementation subpaths such as `@loaders.gl/tables/csv`. See [Get Started](https://loaders.gl/next/docs/developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
+Import metadata loaders from the format subpath, such as `@loaders.gl/tables/parquet`. Use `@loaders.gl/tables/parquet/bundled` for the parser-bearing loader, writer, and sources. See [Get Started](https://loaders.gl/next/docs/developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
 
 BSON document loaders and codecs live in [`@loaders.gl/documents`](https://loaders.gl/next/docs/modules/documents.md). Parquet BSON logical columns use that codec automatically.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->40<!-- -->)
+All exported subpaths (<!-- -->43<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
-| Format                                                                                                                                 | Import subpath                                             |
-| -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow`                                 |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow-worker-node.cjs`                 |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/arrow-worker.js`                 |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/bundled`                         |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/exports/*`                       |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/geometry`                        |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/triangulate-on-worker`           |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/triangulate-wkb-geometry-column` |
-| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/types`                           |
-| [![](/next/images/format-logos/avro-logo.svg)Avro](https://loaders.gl/next/docs/modules/tables/avro.md)                           | `@loaders.gl/tables/avro`                                  |
-| [![](/next/images/format-logos/avro-logo.svg)Avro](https://loaders.gl/next/docs/modules/tables/avro.md)                           | `@loaders.gl/tables/avro/bundled`                          |
-|                                                                                                                                        | `@loaders.gl/tables/csv`                                   |
-|                                                                                                                                        | `@loaders.gl/tables/csv-worker-node.js`                    |
-|                                                                                                                                        | `@loaders.gl/tables/csv-worker.js`                         |
-|                                                                                                                                        | `@loaders.gl/tables/csv/bundled`                           |
-| [![](/next/images/format-logos/delta-lake-mark.svg)Delta Lake](https://loaders.gl/next/docs/modules/tables/delta/format.md)       | `@loaders.gl/tables/delta`                                 |
-| [![](/next/images/format-logos/delta-lake-mark.svg)Delta Lake](https://loaders.gl/next/docs/modules/tables/delta/format.md)       | `@loaders.gl/tables/delta/bundled`                         |
-| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/tables/geoarrow`                              |
-| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/tables/geoarrow-worker-node.cjs`              |
-| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/tables/geoarrow/bundled`                      |
-|                                                                                                                                        | `@loaders.gl/tables/geojson`                               |
-|                                                                                                                                        | `@loaders.gl/tables/geojson/bundled`                       |
-| [![](/next/images/format-logos/hudi-logo.png)](https://loaders.gl/next/docs/modules/tables/hudi/format.md)                        | `@loaders.gl/tables/hudi`                                  |
-| [![](/next/images/format-logos/iceberg-logo.svg)](https://loaders.gl/next/docs/modules/tables/iceberg/format.md)                  | `@loaders.gl/tables/iceberg`                               |
-| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json`                                  |
-| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json-worker-node.cjs`                  |
-| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json-worker.js`                        |
-| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json/bundled`                          |
-| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json/geojson-worker.js`                |
-| [![](/next/images/format-logos/lance-logo.png)](https://loaders.gl/next/docs/modules/tables/lance.md)                             | `@loaders.gl/tables/lance`                                 |
-| [![](/next/images/format-logos/lance-logo.png)](https://loaders.gl/next/docs/modules/tables/lance.md)                             | `@loaders.gl/tables/lance/bundled`                         |
-| [![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)                     | `@loaders.gl/tables/orc`                                   |
-| [![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)                     | `@loaders.gl/tables/orc/bundled`                           |
-| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet`                               |
-| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/bundled`                       |
-| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/parquet-source-worker.js`      |
-| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/parquet-worker-node.cjs`       |
-| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/parquet-worker.js`             |
-|                                                                                                                                        | `@loaders.gl/tables/triangulation-worker-node.js`          |
-|                                                                                                                                        | `@loaders.gl/tables/triangulation-worker.js`               |
+| Format                                                                                                                                 | Import subpath                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow`                            |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow-worker-node.cjs`            |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/arrow-worker.js`            |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/bundled`                    |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/exports/*`                  |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/geometry`                   |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/triangulate-on-worker`      |
+| [![](/next/images/format-logos/apache-arrow-logo.png)](https://loaders.gl/next/docs/modules/tables/arrow/formats/arrow.md)        | `@loaders.gl/tables/arrow/types`                      |
+| [![](/next/images/format-logos/avro-logo.svg)Avro](https://loaders.gl/next/docs/modules/tables/avro.md)                           | `@loaders.gl/tables/avro`                             |
+| [![](/next/images/format-logos/avro-logo.svg)Avro](https://loaders.gl/next/docs/modules/tables/avro.md)                           | `@loaders.gl/tables/avro/bundled`                     |
+|                                                                                                                                        | `@loaders.gl/tables/csv`                              |
+|                                                                                                                                        | `@loaders.gl/tables/csv-worker-node.js`               |
+|                                                                                                                                        | `@loaders.gl/tables/csv-worker.js`                    |
+|                                                                                                                                        | `@loaders.gl/tables/csv/api`                          |
+|                                                                                                                                        | `@loaders.gl/tables/csv/bundled`                      |
+| [![](/next/images/format-logos/delta-lake-mark.svg)Delta Lake](https://loaders.gl/next/docs/modules/tables/delta/format.md)       | `@loaders.gl/tables/delta`                            |
+| [![](/next/images/format-logos/delta-lake-mark.svg)Delta Lake](https://loaders.gl/next/docs/modules/tables/delta/format.md)       | `@loaders.gl/tables/delta/bundled`                    |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/tables/geoarrow`                         |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/tables/geoarrow-worker-node.cjs`         |
+| [![](/next/images/format-logos/geoarrow-logo.png)GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) | `@loaders.gl/tables/geoarrow/bundled`                 |
+|                                                                                                                                        | `@loaders.gl/tables/geojson`                          |
+|                                                                                                                                        | `@loaders.gl/tables/geojson/bundled`                  |
+| [![](/next/images/format-logos/hudi-logo.png)](https://loaders.gl/next/docs/modules/tables/hudi/format.md)                        | `@loaders.gl/tables/hudi`                             |
+| [![](/next/images/format-logos/iceberg-logo.svg)](https://loaders.gl/next/docs/modules/tables/iceberg/format.md)                  | `@loaders.gl/tables/iceberg`                          |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json`                             |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json-worker-node.cjs`             |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json-worker.js`                   |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json/api`                         |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json/bundled`                     |
+| [![](/next/images/format-logos/json-logo.gif)JSON](https://loaders.gl/next/docs/modules/tables/json/formats/json.md)              | `@loaders.gl/tables/json/geojson-worker.js`           |
+| [![](/next/images/format-logos/lance-logo.png)](https://loaders.gl/next/docs/modules/tables/lance.md)                             | `@loaders.gl/tables/lance`                            |
+| [![](/next/images/format-logos/lance-logo.png)](https://loaders.gl/next/docs/modules/tables/lance.md)                             | `@loaders.gl/tables/lance/api`                        |
+| [![](/next/images/format-logos/lance-logo.png)](https://loaders.gl/next/docs/modules/tables/lance.md)                             | `@loaders.gl/tables/lance/bundled`                    |
+| [![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)                     | `@loaders.gl/tables/orc`                              |
+| [![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)                     | `@loaders.gl/tables/orc/api`                          |
+| [![](/next/images/format-logos/orc-logo.png)](https://loaders.gl/next/docs/modules/tables/orc/formats/orc.md)                     | `@loaders.gl/tables/orc/bundled`                      |
+| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet`                          |
+| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/bundled`                  |
+| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/parquet-source-worker.js` |
+| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/parquet-worker-node.cjs`  |
+| [![](/next/images/format-logos/parquet-logo.png)](https://loaders.gl/next/docs/modules/tables/parquet/formats/parquet.md)         | `@loaders.gl/tables/parquet/parquet-worker.js`        |
+|                                                                                                                                        | `@loaders.gl/tables/triangulation-worker-node.js`     |
+|                                                                                                                                        | `@loaders.gl/tables/triangulation-worker.js`          |

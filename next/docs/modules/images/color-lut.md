@@ -199,7 +199,7 @@ High-bit-depth, nonopaque, metadata-bearing, or differently arranged images need
 ### Convert already decoded pixels[​](#convert-already-decoded-pixels "Direct link to Convert already decoded pixels")
 
 ```
-import {parseImageLUT} from '@loaders.gl/images/color-lut';
+import {parseImageLUT} from '@loaders.gl/images/api';
 
 
 

@@ -25,7 +25,9 @@ Package encoded MVT, MLT or image tiles into one range-readable PMTiles v3 file.
 ```
 import {encode} from '@loaders.gl/core';
 
-import {PMTilesWriter, encodePMTiles} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesWriter} from '@loaders.gl/tiles/pmtiles/bundled';
+
+import {encodePMTiles} from '@loaders.gl/tiles/pmtiles/api';
 
 
 

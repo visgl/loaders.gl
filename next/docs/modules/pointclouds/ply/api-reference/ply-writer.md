@@ -69,7 +69,7 @@ import {encode} from '@loaders.gl/core';
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 
-import {PLYWriter} from '@loaders.gl/pointclouds/ply';
+import {PLYWriter} from '@loaders.gl/pointclouds/ply/bundled';
 
 
 

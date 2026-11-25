@@ -69,7 +69,7 @@ The `GLTFWriter` is a writer for glTF scenegraphs.
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {GLTFWriter} from '@loaders.gl/scene/gltf';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 
 import {encodeSync} from '@loaders.gl/core';
 

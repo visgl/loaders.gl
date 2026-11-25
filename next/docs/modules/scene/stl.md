@@ -109,7 +109,7 @@ Malformed facets, truncated binary payloads, trailing bytes that disagree with t
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {STLLoaderWithParser} from '@loaders.gl/scene/stl';
+import {STLLoaderWithParser} from '@loaders.gl/scene/stl/bundled';
 
 
 

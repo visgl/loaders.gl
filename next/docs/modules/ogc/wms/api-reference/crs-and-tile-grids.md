@@ -59,7 +59,7 @@ The sections below document the helpers and how WMS/WMTS sources use them with c
 The WMS package exposes utilities for services that use different CRS spellings:
 
 ```
-import {normalizeServiceCRS, selectServiceCRS} from '@loaders.gl/ogc/wms';
+import {normalizeServiceCRS, selectServiceCRS} from '@loaders.gl/ogc/wms/api';
 
 
 

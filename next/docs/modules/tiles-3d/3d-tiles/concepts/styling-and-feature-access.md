@@ -51,13 +51,7 @@ The @loaders.gl/tiles-3d/3d-tiles APIs in this guide are intentionally renderer-
 ## Build a style input[​](#build-a-style-input "Direct link to Build a style input")
 
 ```
-import {
-
-  createTile3DStyleInput,
-
-  getTile3DStyleProperty
-
-} from '@loaders.gl/tiles-3d/3d-tiles';
+import {createTile3DStyleInput, getTile3DStyleProperty} from '@loaders.gl/tiles-3d/api';
 
 
 
@@ -100,7 +94,7 @@ The most specific defined value wins. A batch-table hierarchy row therefore over
 Structural metadata columns must already be decoded by glTF parsing. getStructuralMetadataRow returns one row and applies class default values and noData sentinels. getStructuralMetadataProperty is the named-value convenience form:
 
 ```
-import {getStructuralMetadataProperty} from '@loaders.gl/tiles-3d/3d-tiles';
+import {getStructuralMetadataProperty} from '@loaders.gl/tiles-3d/api';
 
 
 
@@ -124,7 +118,7 @@ These helpers preserve typed arrays for vector and array values. They do not map
 Legacy b3dm, i3dm, and pnts batch tables expose getProperty, getPropertyNames, hasProperty, and class queries. getTile3DBatchTableProperties copies the visible row into a plain object:
 
 ```
-import {getTile3DBatchTableProperties} from '@loaders.gl/tiles-3d/3d-tiles';
+import {getTile3DBatchTableProperties} from '@loaders.gl/tiles-3d/api';
 
 
 

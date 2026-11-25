@@ -86,12 +86,12 @@ console.log(protobufTrace.events);
 console.log(protobufTrace.links);
 ```
 
-The package-root exports are metadata-only and support asynchronous core APIs through `preload()`. For direct access to parser-bearing loaders, use:
+The `@loaders.gl/traces/otlp` entry point exports metadata loaders for async core APIs. For direct access to parser-bearing loaders, use:
 
 ```
-import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp/bundled';
 
-import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp/bundled';
 ```
 
 ## Result[​](#result "Direct link to Result")

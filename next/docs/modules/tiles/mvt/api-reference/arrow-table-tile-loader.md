@@ -29,7 +29,7 @@ URLs and blobs work through async `load` with an explicit Arrow-producing loader
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 
 import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
 
