@@ -14,7 +14,7 @@ test.each(['esm', 'commonjs'])('numeric raster exports work through built %s pac
        import {discoverGeoTIFF} from '@loaders.gl/raster/geotiff/bundled';
 import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';`
       : `const {sampleRaster} = require('@loaders.gl/core/loader-utils');
-       const {GeoTIFFLoaderWithParser, discoverGeoTIFF} = require('@loaders.gl/raster/geotiff');`;
+       const {GeoTIFFLoaderWithParser, discoverGeoTIFF} = require('@loaders.gl/raster/geotiff/bundled');`;
   const result = spawnSync(
     process.execPath,
     [
