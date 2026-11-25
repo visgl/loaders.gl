@@ -12,7 +12,6 @@ export type {
   ZipWriterOptions,
   IndexedZipFiles,
   IndexedZipOptions,
-  ZipCompositionOptions,
   ZipFileStat,
   ZipArchiveInput,
   ZipArchiveOptions,

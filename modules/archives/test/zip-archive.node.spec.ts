@@ -12,11 +12,21 @@ test('installed ESM/CJS ZIP entrypoints expose portable reading and writing', as
   const require = createRequire(import.meta.url);
   const entrypointUrl = new URL(
     './api.js',
-    pathToFileURL(require.resolve('@loaders.gl/archives/zip'))
+    pathToFileURL(require.resolve('@loaders.gl/archives/api'))
   );
-  const modules = [await import(entrypointUrl.href), require('@loaders.gl/archives/zip/api')];
+  const modules = [await import(entrypointUrl.href), require('@loaders.gl/archives/api')];
   const bytes = new Uint8Array(readFileSync(new URL('./fixtures/python.zip', import.meta.url)));
   for (const module of modules) {
+    expect(Object.keys(module).sort()).toEqual([
+      'IndexedArchive',
+      'ZipArchive',
+      'ZipFileSystem',
+      'encodeTar',
+      'encodeZip',
+      'encodeZipInBatches',
+      'openZipArchive',
+      'readTarArchive'
+    ]);
     const archive = await module.openZipArchive(bytes);
     try {
       for (const path of ['folder/abc.txt', 'café.txt']) {

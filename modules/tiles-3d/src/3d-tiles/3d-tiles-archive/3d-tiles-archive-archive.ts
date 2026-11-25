@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import {IndexedArchive} from '@loaders.gl/archives/zip/api';
+import {IndexedArchive} from '@loaders.gl/archives/api';
 import {type ZipArchiveOptions} from '@loaders.gl/archives/zip';
 
 /**

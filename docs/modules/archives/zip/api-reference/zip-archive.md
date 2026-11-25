@@ -6,7 +6,7 @@ The input must remain immutable while the archive is open. Always close the arch
 when a read fails; closing also closes a supplied `ReadableFile`.
 
 ```typescript
-import {openZipArchive} from '@loaders.gl/archives/zip/api';
+import {openZipArchive} from '@loaders.gl/archives/api';
 
 const archive = await openZipArchive(blob);
 try {

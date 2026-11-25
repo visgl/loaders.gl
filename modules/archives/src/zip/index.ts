@@ -10,7 +10,6 @@ export type {ZipWriterFiles} from './zip-writer';
 export type {ZipWriterOptions} from './zip-writer';
 export type {IndexedZipFiles} from './indexed-zip-writer';
 export type {IndexedZipOptions} from './indexed-zip-writer';
-export type {ZipCompositionOptions} from './lib/zip-composition';
 export type {ZipFileStat} from './filesystems/zip-filesystem';
 export type {ZipArchiveInput} from './zip-archive-types';
 export type {ZipArchiveOptions} from './zip-archive-types';

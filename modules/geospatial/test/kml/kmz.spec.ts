@@ -17,7 +17,7 @@ import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz/bundled';
 import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
-import {ZipFileSystem} from '@loaders.gl/archives/zip/api';
+import {ZipFileSystem} from '@loaders.gl/archives/api';
 import {validateLoader, validateWriter} from 'test/common/conformance';
 
 const SAMPLE_KML = `<?xml version="1.0" encoding="UTF-8"?>
