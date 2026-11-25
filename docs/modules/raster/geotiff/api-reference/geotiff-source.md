@@ -168,6 +168,13 @@ decoder's typed representation, while categorical bands use nearest sampling. Th
 sample-center normalization can change boundary samples compared with the earlier
 GeoTIFF bbox resampling convention.
 
+The returned grid is not always the requested rectangle. The read window snaps
+outward to whole pixels of the selected overview, so `boundingBox` can be slightly
+larger than the requested bounds. When the request extends past the source,
+`width` and `height` are scaled to the part inside the source and rounded, so they
+can be smaller than requested. Place samples with the returned `transform` and
+`boundingBox`, not with the requested bounds and size.
+
 `maxPixels` (default 16,000,000) and `maxDecodedBytes` (default 256 MiB) may be set
 per region or in `geotiff` source options. These bound returned samples and conservatively estimate native window and tile
 allocations before decoding. Third-party decoder scratch allocations are not directly
