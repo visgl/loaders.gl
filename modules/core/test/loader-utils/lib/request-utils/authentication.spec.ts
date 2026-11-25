@@ -7,6 +7,7 @@ import {
   BearerTokenAuthentication,
   QueryParameterAuthentication,
   createAuthenticatedFetch,
+  createSourceLoadOptionsResolver,
   createBearerTokenCredential,
   getAuthenticatedFetch,
   redactCredentialURL,
@@ -93,6 +94,22 @@ describe('declarative authentication', () => {
     expect(
       await resolveLoaderAuthenticationOptions(undefined, '', {core: {credentials: []}})
     ).toEqual({core: {credentials: []}});
+  });
+
+  test('retries a failed source discovery and reuses the successful options', async () => {
+    const getAuthentications = vi
+      .fn(async () => [BearerTokenAuthentication])
+      .mockRejectedValueOnce(new Error('discovery unavailable'));
+    const resolveOptions = createSourceLoadOptionsResolver(
+      {getAuthentications} as unknown as Loader,
+      ORIGIN,
+      {core: {credentials: [{type: 'bearer-token', id: 'test', origins: [ORIGIN], token: 'token'}]}}
+    );
+    await expect(resolveOptions()).rejects.toThrow('discovery unavailable');
+    const options = await resolveOptions();
+    expect(options.core.credentials[0]).toBeInstanceOf(BearerTokenAuthentication);
+    expect(await resolveOptions()).toBe(options);
+    expect(getAuthentications).toHaveBeenCalledTimes(2);
   });
 
   test('reports missing types, invalid configurations and invalid class results without secrets', () => {
