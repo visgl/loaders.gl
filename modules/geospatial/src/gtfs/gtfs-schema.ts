@@ -17,7 +17,7 @@ export type GTFSTable = ObjectRowTable & {
 
 /** Counts of GTFS Schedule CSV records whose field count differs from the header. */
 export type GTFSFileWarnings = {
-  /** Rows with missing fields, padded with empty values. */
+  /** Rows with missing trailing fields. The missing fields stay absent from the row. */
   shortRows: number;
   /** Rows with extra fields, truncated to the header length. */
   longRows: number;

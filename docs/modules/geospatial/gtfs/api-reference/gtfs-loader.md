@@ -37,6 +37,7 @@ with the import.
 | `gtfs.files` | All root `.txt` files except `stop_times.txt` | Select entries by file name, with an optional `.txt` suffix. Include `stop_times` explicitly to read it. |
 | `gtfs.maxRows` | `1_000_000` | Maximum rows per file, excluding the header. An excess row causes the parse to reject. |
 | `gtfs.maxEntryBytes` | `64 * 1024 * 1024` | Compressed and decoded byte limit for each selected ZIP entry. |
+| `gtfs.maxTotalBytes` | `256 * 1024 * 1024` | Decoded byte limit for all selected entries together. |
 
 If the archive has no root `.txt` files and all `.txt` files are under the same top-level
 folder, the loader uses that folder as the feed root. Use file names relative to that root.
@@ -65,8 +66,8 @@ const feed = await load('schedule.zip', GTFSLoader, {
   time columns. These count from the start of the service day. For example, `25:00:00`
   gives `90000`. Empty times give `null` in the derived column.
 - `warnings` contains `GTFSFileWarnings` values keyed by file name without `.txt`.
-  `shortRows` counts rows padded with empty fields and `longRows` counts rows whose extra
-  fields were dropped. Files with neither kind of warning are omitted.
+  `shortRows` counts rows with missing trailing fields, which stay absent from the row, and
+  `longRows` counts rows whose extra fields were dropped. Files with neither kind of warning are omitted.
 - `stops` is a `geojson-table` with Point features in longitude, latitude order. Properties
   contain the corresponding stop row. The layer includes rows with usable coordinates.
 - `shapes` is a `geojson-table` with one LineString per shape ID with at least two usable

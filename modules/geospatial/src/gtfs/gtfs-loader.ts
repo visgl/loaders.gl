@@ -17,6 +17,7 @@ export const GTFSLoaderWithParser = {
     parseGTFS(arrayBuffer, {
       files: options?.gtfs?.files,
       maxRows: options?.gtfs?.maxRows ?? GTFSLoaderMetadata.options.gtfs.maxRows,
-      maxEntryBytes: options?.gtfs?.maxEntryBytes ?? GTFSLoaderMetadata.options.gtfs.maxEntryBytes
+      maxEntryBytes: options?.gtfs?.maxEntryBytes ?? GTFSLoaderMetadata.options.gtfs.maxEntryBytes,
+      maxTotalBytes: options?.gtfs?.maxTotalBytes ?? GTFSLoaderMetadata.options.gtfs.maxTotalBytes
     })
 } as const satisfies LoaderWithParser<GTFSData, never, GTFSLoaderOptions>;

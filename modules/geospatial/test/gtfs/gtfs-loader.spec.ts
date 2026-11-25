@@ -194,7 +194,25 @@ test('GTFS Schedule selects entries and enforces per-file row and byte limits', 
   await expect(GTFSLoader.parse(archive, {gtfs: {maxRows: -1}})).rejects.toThrow(/maxRows/);
 });
 
-test('GTFS Schedule pads short rows, drops extra fields, and counts warnings per file', async () => {
+test('GTFS Schedule limits the decoded bytes of all selected files together', async () => {
+  const twoFileArchive = await ZipWriter.encode({
+    'stops.txt': `stop_id\n${'1\n'.repeat(40)}`,
+    'routes.txt': `route_id\n${'2\n'.repeat(40)}`
+  });
+  expect(GTFSLoader.options.gtfs.maxTotalBytes).toBe(256 * 1024 * 1024);
+  await expect(GTFSLoader.parse(twoFileArchive, {gtfs: {maxTotalBytes: 100}})).rejects.toThrow(
+    'GTFS selected files are larger than gtfs.maxTotalBytes (100 bytes). Increase gtfs.maxTotalBytes or select fewer files with gtfs.files.'
+  );
+  const oneFile = await GTFSLoader.parse(twoFileArchive, {
+    gtfs: {files: ['stops'], maxTotalBytes: 100}
+  });
+  expect(oneFile.tables.stops?.data).toHaveLength(40);
+  await expect(GTFSLoader.parse(twoFileArchive, {gtfs: {maxTotalBytes: 0}})).rejects.toThrow(
+    /maxTotalBytes/
+  );
+});
+
+test('GTFS Schedule leaves missing fields absent, drops extra fields, and counts warnings per file', async () => {
   const unevenArchive = await ZipWriter.encode({
     'stops.txt':
       'stop_id,stop_lat,stop_lon,stop_name\n001, 42.5 , -71.25 \n002, , ,  5" gauge  ,extra',
@@ -204,9 +222,10 @@ test('GTFS Schedule pads short rows, drops extra fields, and counts warnings per
   });
   const result = await GTFSLoader.parse(unevenArchive, {gtfs: {files: ['stops', 'stop_times']}});
   expect(result.tables.stops?.data).toEqual([
-    {stop_id: '001', stop_lat: 42.5, stop_lon: -71.25, stop_name: ''},
+    {stop_id: '001', stop_lat: 42.5, stop_lon: -71.25},
     {stop_id: '002', stop_lat: null, stop_lon: null, stop_name: '  5" gauge  '}
   ]);
+  expect(result.tables.stops?.data[0]).not.toHaveProperty('stop_name');
   expect(result.tables.stop_times?.data[0]).toEqual({
     trip_id: '0003',
     stop_id: '001',

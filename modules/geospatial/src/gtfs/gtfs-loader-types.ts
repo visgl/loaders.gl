@@ -24,6 +24,8 @@ export type GTFSLoaderOptions = LoaderOptions & {
     maxRows?: number;
     /** Maximum compressed and decoded byte length of each selected entry. Default 64 MiB. */
     maxEntryBytes?: number;
+    /** Maximum decoded byte length of all selected entries together. Default 256 MiB. */
+    maxTotalBytes?: number;
   };
 };
 
@@ -40,6 +42,13 @@ export const GTFSLoader = {
 
   ...GTFSFormat,
   version: VERSION,
-  options: {gtfs: {files: undefined, maxRows: 1_000_000, maxEntryBytes: 64 * 1024 * 1024}},
+  options: {
+    gtfs: {
+      files: undefined,
+      maxRows: 1_000_000,
+      maxEntryBytes: 64 * 1024 * 1024,
+      maxTotalBytes: 256 * 1024 * 1024
+    }
+  },
   preload: preloadGTFSLoader
 } as const satisfies Loader<GTFSData, never, GTFSLoaderOptions>;

@@ -22,6 +22,8 @@ type ParseOptions = {
   maxRows: number;
   /** Maximum compressed and decoded length of any selected entry. */
   maxEntryBytes: number;
+  /** Maximum decoded bytes read across all selected entries. */
+  maxTotalBytes: number;
 };
 
 /** A CSV column and its optional GTFS-specific conversion. */
@@ -55,7 +57,11 @@ export async function parseGTFS(
   if (!Number.isSafeInteger(options.maxEntryBytes) || options.maxEntryBytes < 1) {
     throw new RangeError('GTFS maxEntryBytes must be a positive safe integer');
   }
+  if (!Number.isSafeInteger(options.maxTotalBytes) || options.maxTotalBytes < 1) {
+    throw new RangeError('GTFS maxTotalBytes must be a positive safe integer');
+  }
   const maxEntryBytes = BigInt(options.maxEntryBytes);
+  const totalBytes = {read: 0, limit: options.maxTotalBytes};
   const selectedFiles = options.files?.map(name => (name.endsWith('.txt') ? name : `${name}.txt`));
   const archive = await openZipArchive(arrayBuffer, {
     maxCompressedBytes: maxEntryBytes,
@@ -79,7 +85,7 @@ export async function parseGTFS(
         }
         const name = fileName.slice(0, -4);
         const result = await parseTable(
-          archive.readInBatches(entry),
+          limitTotalBytes(archive.readInBatches(entry), totalBytes),
           name,
           entry.path,
           options.maxRows
@@ -100,6 +106,22 @@ export async function parseGTFS(
     stops: makeStops(tables.stops?.data ?? []),
     shapes: makeShapes(tables.shapes?.data ?? [])
   };
+}
+
+/** Counts decoded bytes across all selected entries and stops at the total limit. */
+async function* limitTotalBytes(
+  chunks: AsyncIterable<Uint8Array>,
+  totalBytes: {read: number; limit: number}
+): AsyncGenerator<Uint8Array> {
+  for await (const chunk of chunks) {
+    totalBytes.read += chunk.byteLength;
+    if (totalBytes.read > totalBytes.limit) {
+      throw new RangeError(
+        `GTFS selected files are larger than gtfs.maxTotalBytes (${totalBytes.limit} bytes). Increase gtfs.maxTotalBytes or select fewer files with gtfs.files.`
+      );
+    }
+    yield chunk;
+  }
 }
 
 /** Names the file and the option when a ZIP entry exceeds the per-entry byte limit. */
@@ -162,9 +184,11 @@ async function parseTable(
     if (record.length < columns.length) warnings.shortRows++;
     if (record.length > columns.length) warnings.longRows++;
     const row: GTFSRow = {};
-    for (let index = 0; index < columns.length; index++) {
+    // Missing trailing fields stay absent, so memory grows only with the bytes read.
+    const fieldCount = Math.min(columns.length, record.length);
+    for (let index = 0; index < fieldCount; index++) {
       const column = columns[index];
-      const value = record[index] ?? '';
+      const value = record[index];
       const parsedValue = parseValue(value, column, location);
       if (column.defineOwnProperty) {
         Object.defineProperty(row, column.name, {

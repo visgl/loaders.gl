@@ -32,7 +32,7 @@ const feed = await load('schedule.zip', GTFSLoader, {
 });
 ```
 
-Rows with missing fields are padded with empty values. Extra fields are dropped. The
+Missing trailing fields stay absent from the row. Extra fields are dropped. The
 result reports both counts per affected file in `warnings`.
 
 Automatic selection uses the `.gtfs` suffix. Pass the loader explicitly for ordinary
