@@ -377,7 +377,7 @@ test('parents use the canonical child bounds and require coverage at the next le
   expect(restricted.getParentIndex!(aliasedChild)).toBeNull();
 });
 
-test('parents map by center across offset origins and non-binary scales', () => {
+test('parents map by center across offset origins and non-binary scales, including straddling tiles', () => {
   const grid: TileMatrixSelectionGrid = {
     tileMatrixSet: {
       crs: 'native',
@@ -395,7 +395,7 @@ test('parents map by center across offset origins and non-binary scales', () => 
           resolution: 1,
           origin: [0, 12],
           cornerOfOrigin: 'topLeft',
-          tileSize: [2, 2],
+          tileSize: [3, 2],
           matrixSize: [6, 6]
         }
       ]
@@ -404,8 +404,16 @@ test('parents map by center across offset origins and non-binary scales', () => 
   const adapter = createTileMatrixTileset2DAdapter(grid, {cacheNamespace: 'offset'});
   const child = {x: 1, y: 1, z: 1, tileMatrix: 'child'};
   const parent = {x: 1, y: 0, z: 0, tileMatrix: 'parent'};
+  const straddlingChild = {...child, x: 0};
+  const centerParent = {...parent, x: 0};
+  const viewState: TileMatrixViewFrame = {crs: 'native', extent: [0, 8, 3, 10], resolution: 1};
+  const context = {viewState, tileSize: 3};
   expect(adapter.getParentIndex!(parent)).toBeNull();
   expect(adapter.getParentIndex!(child)).toEqual(parent);
+  expect(adapter.getTileBoundingBox(context, centerParent)).toMatchObject({left: -4, right: 2});
+  expect(adapter.getTileBoundingBox(context, parent)).toMatchObject({left: 2, right: 8});
+  expect(adapter.getTileBoundingBox(context, straddlingChild)).toMatchObject({left: 0, right: 3});
+  expect(adapter.getParentIndex!(straddlingChild)).toEqual(centerParent);
   expect(adapter.getParentIndex!({...child, x: 5})).toBeNull();
   const limited = createTileMatrixTileset2DAdapter(
     {

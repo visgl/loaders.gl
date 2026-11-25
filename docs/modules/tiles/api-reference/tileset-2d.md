@@ -191,6 +191,11 @@ retain the deck.gl-community-style traversal contract. The optional hooks extend
   These fields are retained on the tile header and passed to `getTileData`.
 - `getParentIndex(index)` returns an established parent or `null`. A returned parent must have a
   lower compatibility level index; a non-decreasing parent throws rather than looping forever.
+  With the TileMatrix adapter, the single parent is the coarse tile that contains the fine
+  tile's center. In a nested grid, each fine tile fits inside one coarse tile, so its parent
+  covers the full tile. In a non-nested grid, placeholder coverage is best effort. Any part
+  of the fine tile outside that parent has no placeholder from refinement until the fine tile
+  loads, even if another overlapping coarse tile is cached.
 - `getTileOutline(context, index)` optionally supplies a geographic ring for deck.gl culling and
   request priority. It is unused by the loaders.gl `Tileset2D`.
 

@@ -94,6 +94,11 @@ Ties keep source order. `tileMatrix` is the native ID. A tile's parent is the ti
 coarser level that contains its center. If the center falls outside that matrix or the containing
 tile is outside advertised coverage, the adapter returns `null` for the parent.
 
+In a nested grid, each fine tile fits inside a single coarse tile, so its parent covers the full
+tile. In a non-nested grid, refinement uses the center-containing parent for best-effort
+placeholder coverage. Any part of the fine tile outside that parent has no placeholder from
+refinement until the fine tile loads, even if another overlapping coarse tile is cached.
+
 ```typescript
 import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles/tileset-2d';
 

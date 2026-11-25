@@ -300,6 +300,12 @@ export function createTileMatrixTileset2DAdapter(
       const {matrix} = resolveMatrixIndex(index);
       return {tileMatrix: matrix.id, crs: matrixSet.crs, tileSize: matrix.tileSize};
     },
+    /**
+     * Selects the tile at the next coarser level that contains the fine tile's center.
+     * In a nested grid, each fine tile fits inside one coarse tile, so its parent covers it.
+     * In a non-nested grid, placeholder coverage is best effort. Any part of the fine tile
+     * outside its parent has no placeholder from refinement until the fine tile loads.
+     */
     getParentIndex: index => {
       const {matrix, rank, resolved} = resolveMatrixIndex(index);
       const parentMatrix = levels[rank - 1];
