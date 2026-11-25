@@ -11,8 +11,8 @@ test.each([
 ])('published scientific Zarr parser entrypoint loads in Node %s', moduleType => {
   const load =
     moduleType === 'commonjs'
-      ? "const packageExports = require('@loaders.gl/scientific/zarr');"
-      : "import * as packageExports from '@loaders.gl/scientific/zarr';";
+      ? "const packageExports = require('@loaders.gl/scientific/zarr/bundled');"
+      : "import * as packageExports from '@loaders.gl/scientific/zarr/bundled';";
   const output = execFileSync(
     process.execPath,
     [

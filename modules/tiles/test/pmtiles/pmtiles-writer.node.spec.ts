@@ -10,8 +10,8 @@ import {expect, test} from 'vitest';
 const require = createRequire(import.meta.url);
 
 test('PMTiles writer is available through built ESM and CommonJS package entrypoints', async () => {
-  const esm = await import('../../dist/pmtiles/index.js');
-  const commonjs = require('../../dist/pmtiles/index.cjs');
+  const esm = await import('@loaders.gl/tiles/pmtiles/bundled');
+  const commonjs = require('@loaders.gl/tiles/pmtiles/bundled');
   const options = {tileType: 'png' as const};
   const tiles = [{z: 0, x: 0, y: 0, data: new Uint8Array([1, 2])}];
   const expected = await esm.encodePMTiles(tiles, options);

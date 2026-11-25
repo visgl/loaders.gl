@@ -240,7 +240,7 @@ test('representative capability APIs are available through ESM and CommonJS entr
     ['@loaders.gl/crypto/sha256', 'SHA256Hash'],
     ['@loaders.gl/sql/adapter', 'SQLDataSource'],
     ['@loaders.gl/graphs/graphml', 'GraphMLLoader'],
-    ['@loaders.gl/arcgis/image-service', 'ArcGISImageSource'],
+    ['@loaders.gl/arcgis/image-service/bundled', 'ArcGISImageSource'],
     ['@loaders.gl/traces/chrome-trace', 'ChromeTraceLoader'],
     ['@loaders.gl/tiles/tileset-2d', 'Tileset2D']
   ]) {

@@ -89,7 +89,8 @@
     },
     "./pmtiles/bundled": {
       "types": "./dist/pmtiles/bundled.d.ts",
-      "import": "./dist/pmtiles/bundled.js"
+      "import": "./dist/pmtiles/bundled.js",
+      "require": "./dist/pmtiles/bundled.cjs"
     },
     "./pmtiles/geoarrow": {
       "types": "./dist/pmtiles/geoarrow.d.ts",
