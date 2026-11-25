@@ -41,7 +41,15 @@ dimensions.
 ## Requests and placement
 
 Use `rasterParameters` to override inferred request fields and `getRasterParameters` for custom
-viewport logic. The layer infers placement for EPSG:4326 and EPSG:3857 and uses a pixel-coordinate
-plane for ungeoreferenced rasters. For a projected CRS that requires custom placement, supply
-`getRasterParameters` and provide `bounds` and `coordinateSystem` in `bitmapLayerProps` for
-the GPU path or return them from `colorizeRaster` for the CPU path.
+viewport logic. MapView and GlobeView support EPSG:4326, EPSG:3857, and projected CRSs that
+math.gl can resolve, such as UTM EPSG:32626. For a projected source, the layer requests the
+visible portion of the source extent and places the CPU or GPU bitmap in source coordinates.
+Ungeoreferenced rasters use a pixel-coordinate plane.
+
+A large bitmap in a projected CRS draws as one quad by default. Set deck.gl's
+`bitmapLayerProps._projectionTolerance` for adaptive refinement, or set the view's `resolution`
+to subdivide the bitmap on a grid.
+
+For a CRS that requires custom placement, supply `getRasterParameters` and provide `bounds`
+and `coordinateSystem` in `bitmapLayerProps` for the GPU path or return them from
+`colorizeRaster` for the CPU path.

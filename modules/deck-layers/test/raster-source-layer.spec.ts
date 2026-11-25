@@ -146,9 +146,9 @@ describe('raster viewport and placement', () => {
   });
 
   test('requires a custom request projection for unsupported CRS values', () => {
-    const metadata = {...GEOGRAPHIC_METADATA, crs: 'EPSG:27700'};
+    const metadata = {...GEOGRAPHIC_METADATA, crs: 'EPSG:999999'};
     expect(() => createRasterViewport(createViewport([0, 0, 1, 1]), metadata)).toThrow(
-      'Provide getRasterParameters()'
+      /EPSG:999999.*Provide getRasterParameters/
     );
     expect(() =>
       createRasterViewport(createViewport([0, 0, 1, 1]), metadata, 1024, true)
@@ -420,6 +420,7 @@ describe('RasterSourceLayer lifecycle', () => {
       rasterSet: {requestRaster},
       unsubscribeRasterSetEvents: null,
       metadata: {...GEOGRAPHIC_METADATA, bandCount: 4},
+      projectedCRS: null,
       renderResult: null
     };
     layer.requestRaster(createViewport([-10, -5, 20, 15]));
@@ -629,7 +630,7 @@ function createRasterLayer(overrides: Record<string, unknown> = {}) {
   } as any) as any;
 }
 
-test('raster placement retains affine shear and refuses to infer geographic projected coordinates', () => {
+test('raster placement retains affine shear and reports unsupported CRS values', () => {
   const raster = createRaster(new Float32Array([0, 1, 2, 3]), {
     transform: [1, 0.5, 10, 0.25, -1, 20],
     pixelRegistration: 'area'
@@ -643,16 +644,16 @@ test('raster placement retains affine shear and refuses to infer geographic proj
     [12, 20.5],
     [13, 18.5]
   ]);
-  const projected = {...raster, crs: 'EPSG:32633'};
+  const projected = {...raster, crs: 'EPSG:999999'};
   expect(() =>
     createDefaultRasterRenderResult(projected, parameters, {
       ...GEOGRAPHIC_METADATA,
-      crs: 'EPSG:32633'
+      crs: 'EPSG:999999'
     })
-  ).toThrow('unsupported source CRS');
+  ).toThrow('unsupported source CRS (EPSG:999999)');
   const custom = createRasterRenderResult(
     {requestId: 0, raster: projected, parameters},
-    {...GEOGRAPHIC_METADATA, crs: 'EPSG:32633'},
+    {...GEOGRAPHIC_METADATA, crs: 'EPSG:999999'},
     () => ({
       image: colorizeRasterData(projected),
       bounds: [0, 0, 1, 1],
