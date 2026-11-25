@@ -96,11 +96,14 @@ or `GEOGRAPHY` for spherical, Vincenty, Thomas, Andoyer, or Karney edges. It car
 PROJJSON into the logical type, uses Parquet's default `OGC:CRS84` when CRS is omitted, and writes
 `srid:0` when GeoParquet explicitly declares `crs: null`.
 
-Every row group receives native `GeospatialStatistics`: a bounding box with independent X, Y, Z,
-and M handling plus the unique ISO WKB codes for XY, XYZ, XYM, and XYZM geometry families.
+Row groups record unique ISO WKB type codes. Planar groups and geography groups containing
+only Point or MultiPoint values also record finite bounds for each available dimension.
+Groups containing geography lines or polygons omit bounds because edges can extend beyond their vertices.
 
 Without GeoParquet `geo` metadata, a `geoarrow.wkb` field is still written using native Parquet
-geospatial types. GeoArrow inline or authority-code CRS values are carried directly; an omitted
+geospatial types. Supply inline PROJJSON for a non-default CRS. To retain an authority identifier such as
+`EPSG:3857` on the native type alone, set `parquet.nativeGeospatialOnly: true`, which omits the
+entire GeoParquet footer. An omitted
 GeoArrow CRS means unknown and is written as `srid:0`, rather than being silently changed to the
 Parquet default CRS84.
 
