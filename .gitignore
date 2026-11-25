@@ -62,6 +62,3 @@ data/**
 
 # Generated website SWC plugins
 website/.swc/
-
-# Generated MapLibre ESM decoder
-/modules/tiles/src/mlt/libs/mlt-decoder.mjs
