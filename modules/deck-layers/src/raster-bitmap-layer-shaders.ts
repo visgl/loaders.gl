@@ -30,7 +30,8 @@ export const rasterBitmapUniforms: ShaderModule = {
     useNoData: 'f32',
     valueScale: 'f32',
     linearInterpolation: 'f32',
-    interpolateColormap: 'f32'
+    interpolateColormap: 'f32',
+    pickingRowStride: 'u32'
   },
   fs: /* glsl */ `
 layout(std140) uniform rasterBitmapUniforms {
@@ -40,6 +41,7 @@ layout(std140) uniform rasterBitmapUniforms {
   float valueScale;
   float linearInterpolation;
   float interpolateColormap;
+  highp uint pickingRowStride;
 } rasterBitmap;
 
 uniform highp sampler2D rasterTexture;
@@ -94,12 +96,14 @@ vec4 raster_sample(vec2 uv) {
   return texelFetch(rasterColormap, ivec2(int(floor(colorIndex + 0.5)), 0), 0);
 }
 
-vec2 raster_pickingUV(vec2 uv) {
+vec3 raster_pickingColor(vec2 uv) {
+  if (rasterBitmap.pickingRowStride == 0u) {
+    return vec3(0.0);
+  }
   vec2 size = vec2(textureSize(rasterTexture, 0));
-  vec2 pixel = min(floor(clamp(uv, 0.0, 1.0) * size), size - 1.0);
-  // Round up only when BitmapLayer's truncation would address the previous texel.
-  vec2 firstCode = ceil(pixel * 4096.0 / size);
-  return clamp(max(uv, firstCode / 4096.0), 0.0, 4095.0 / 4096.0);
+  highp uvec2 pixel = uvec2(min(clamp(uv, 0.0, 1.0) * size, size - 1.0));
+  highp uint index = pixel.x + pixel.y * rasterBitmap.pickingRowStride;
+  return vec3(index & 255u, (index >> 8u) & 255u, index >> 16u) / 255.0;
 }
 `,
   source: /* wgsl */ `
@@ -110,6 +114,7 @@ struct RasterBitmapUniforms {
   valueScale: f32,
   linearInterpolation: f32,
   interpolateColormap: f32,
+  pickingRowStride: u32,
 };
 
 @group(0) @binding(auto) var<uniform> rasterBitmap: RasterBitmapUniforms;
@@ -169,12 +174,14 @@ fn raster_sample(uv: vec2<f32>) -> vec4<f32> {
   return textureLoad(rasterColormap, vec2<i32>(i32(floor(colorIndex + 0.5)), 0), 0);
 }
 
-fn raster_pickingUV(uv: vec2<f32>) -> vec2<f32> {
+fn raster_pickingColor(uv: vec2<f32>) -> vec3<f32> {
+  if (rasterBitmap.pickingRowStride == 0u) {
+    return vec3<f32>(0.0);
+  }
   let size = vec2<f32>(textureDimensions(rasterTexture));
-  let pixel = min(floor(clamp(uv, vec2<f32>(0.0), vec2<f32>(1.0)) * size), size - 1.0);
-  // Round up only when BitmapLayer's truncation would address the previous texel.
-  let firstCode = ceil(pixel * 4096.0 / size);
-  return clamp(max(uv, firstCode / 4096.0), vec2<f32>(0.0), vec2<f32>(4095.0 / 4096.0));
+  let pixel = vec2<u32>(min(clamp(uv, vec2<f32>(0.0), vec2<f32>(1.0)) * size, size - 1.0));
+  let index = pixel.x + pixel.y * rasterBitmap.pickingRowStride;
+  return vec3<f32>(f32(index & 255u), f32((index >> 8u) & 255u), f32(index >> 16u)) / 255.0;
 }
 `
 };

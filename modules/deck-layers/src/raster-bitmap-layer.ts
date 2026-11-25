@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
-import type {
-  DefaultProps,
-  GetPickingInfoParams,
-  LayerContext,
-  UpdateParameters
+import {
+  type DefaultProps,
+  type GetPickingInfoParams,
+  type LayerContext,
+  type UpdateParameters,
+  log
 } from '@deck.gl/core';
 import {BitmapLayer, type BitmapLayerPickingInfo, type BitmapLayerProps} from '@deck.gl/layers';
 import type {Texture} from '@luma.gl/core';
@@ -52,7 +53,10 @@ export type RasterBitmapLayerProps = Omit<BitmapLayerProps, 'data'> & RasterBitm
 
 /** Bitmap picking info augmented with the original CPU texel value. */
 export type RasterBitmapLayerPickingInfo = BitmapLayerPickingInfo & {
-  /** Original sample, or null for a missing or invalid texel. */
+  /**
+   * Original sample, or null for a missing or invalid texel or unsupported raster dimensions.
+   * Picking requires ceil(log2(width)) + ceil(log2(height)) <= 24.
+   */
   value: number | null;
 };
 
@@ -94,7 +98,7 @@ export class RasterBitmapLayer extends BitmapLayer<RasterBitmapExtraProps> {
     colormapTexture?: Texture;
   };
 
-  /** Replaces only the base shader's image read, retaining its projection and color hooks. */
+  /** Replaces the base shader's image read and picking payload, retaining its projection and color hooks. */
   override getShaders() {
     const shaders = super.getShaders();
     const modules: ShaderModule[] = shaders.modules;
@@ -206,39 +210,47 @@ export class RasterBitmapLayer extends BitmapLayer<RasterBitmapExtraProps> {
         useNoData: Number(sentinel !== null),
         valueScale: VALUE_SCALES[valueScale ?? 'linear'],
         linearInterpolation: Number(interpolation !== 'nearest'),
-        interpolateColormap: Number(colormap === 'default')
+        interpolateColormap: Number(colormap === 'default'),
+        pickingRowStride: raster ? getPickingRowStride(raster) : 0
       }
     });
     model.draw(this.context.renderPass);
   }
 
-  /** Decodes BitmapLayer's picking payload and reads the matching CPU texel. */
+  /** Decodes the packed RGB texel index and reads the matching CPU sample. */
   override getPickingInfo(parameters: GetPickingInfoParams): RasterBitmapLayerPickingInfo {
     const info = parameters.info as RasterBitmapLayerPickingInfo;
     const {raster, noData} = this.props;
-    if (!raster || (!info.bitmap && !info.color)) {
-      info.bitmap = null;
-      info.value = null;
+    info.bitmap = null;
+    info.value = null;
+    if (!raster || !info.color) {
       return info;
     }
-    const {width, height, data} = raster;
-    // BitmapLayer normally decodes this color only when its image prop is set.
-    if (!info.bitmap) {
-      const [red, green, blue] = info.color!;
-      const uv: [number, number] = [
-        (red * 16 + (blue & 15)) / 4096,
-        (green * 16 + (blue >> 4)) / 4096
-      ];
-      info.index = 0;
-      info.bitmap = {
-        size: {width, height},
-        uv,
-        pixel: [Math.floor(uv[0] * width), Math.floor(uv[1] * height)]
-      };
+    // RGB encodes the texel. The picking pass identifies the layer separately in alpha.
+    info.index = 0;
+    const rowStride = getPickingRowStride(raster);
+    if (!rowStride) {
+      if (!warnedPickingLimit) {
+        warnedPickingLimit = true;
+        log.warn('RasterBitmapLayer picking requires at most 24 bits across both raster axes')();
+      }
+      return info;
     }
-    const [column, row] = info.bitmap.pixel;
-    const value =
-      column >= 0 && column < width && row >= 0 && row < height ? data[row * width + column] : NaN;
+
+    const {width, height, data} = raster;
+    const [red, green, blue] = info.color;
+    const packedIndex = red + green * 256 + blue * 65536;
+    const column = packedIndex % rowStride;
+    const row = Math.floor(packedIndex / rowStride);
+    if (column >= width || row >= height) {
+      return info;
+    }
+    info.bitmap = {
+      size: {width, height},
+      uv: [(column + 0.5) / width, (row + 0.5) / height],
+      pixel: [column, row]
+    };
+    const value = data[row * width + column];
     const sentinel = getFloat32NoData(raster, noData) ?? noData;
     info.value = Number.isFinite(value) && value !== sentinel ? value : null;
     return info;
@@ -280,14 +292,24 @@ function getFloat32NoData(raster: RasterBitmapData | null, noData?: number | nul
     : null;
 }
 
-/** Replaces the sample expression and keeps picking UVs in BitmapLayer's 12-bit range. */
+/** Warns once when a raster is too large for the packed picking index. */
+let warnedPickingLimit = false;
+
+/** Returns the power-of-two picking row stride, or zero if the texel index exceeds 24 bits. */
+function getPickingRowStride({width, height}: RasterBitmapData): number {
+  const bitsX = Math.max(0, Math.ceil(Math.log2(width)));
+  const bitsY = Math.max(0, Math.ceil(Math.log2(height)));
+  return bitsX + bitsY <= 24 ? 2 ** bitsX : 0;
+}
+
+/** Replaces BitmapLayer's sampling and RGB picking expressions. */
 function replaceBitmapSample(shader: string, sampleExpression: string): string {
   if (!shader.includes(sampleExpression)) {
     throw new Error('RasterBitmapLayer could not find the BitmapLayer texture sample');
   }
   return shader
     .replace(sampleExpression, 'raster_sample(uv)')
-    .replaceAll('packUVsIntoRGB(uv)', 'packUVsIntoRGB(raster_pickingUV(uv))');
+    .replaceAll('packUVsIntoRGB(uv)', 'raster_pickingColor(uv)');
 }
 
 /** Builds a 256-entry preset or validates a custom RGBA table. */
