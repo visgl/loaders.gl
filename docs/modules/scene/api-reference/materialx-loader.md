@@ -12,7 +12,7 @@ const document = await load('material.mtlx', MaterialXLoader);
 console.log(document.version, document.root.children);
 ```
 
-The package root exports metadata only. Asynchronous core APIs load the parser through `preload()`.
+The `@loaders.gl/scene/materialx` entry point exports metadata. Asynchronous core APIs load the parser through `preload()`.
 
 ## Direct parser access
 

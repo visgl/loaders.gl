@@ -57,7 +57,7 @@ The injectable `draco3d` npm backend is an `optionalDependency`. The default loa
 vendored runtimes and work with `npm install --omit=optional`. If you omit optional dependencies and
 want to inject `options.modules.draco3d`, install `draco3d` explicitly.
 
-The scene root exports loader metadata and public Draco types. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco` for direct parsing, and import writers and encoding helpers from `@loaders.gl/scene/draco`. Bundled runtime URL helpers use `@loaders.gl/scene/draco` (an ESM entry point).
+Import `DracoLoader` from `@loaders.gl/scene/draco` to defer loading the parser. Use `@loaders.gl/scene/draco/bundled` for direct parsing, writers, encoding helpers, and runtime URL helpers.
 
 ## Loaders and Writers
 
