@@ -19,8 +19,8 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 | <FormatLogo slug="wkt" /> | [`/wkt`](./wkt/README.md) | WKT and WKT CRS |
 | <FormatLogo slug="wkb" /> | [`/wkb`](./wkt/formats/wkb.md) | WKB and Hex WKB |
 | — | [`/twkb`](./wkt/formats/twkb.md) | Tiny WKB |
-| — | [`/omm`](./omm/README.md) | CCSDS OMM satellite orbit mean elements (JSON, KVN) |
-| — | [`/tle`](./tle/README.md) | Two-line element sets (TLE) |
+| — | [`/omm`](./omm/README.md) | 🧪 CCSDS OMM satellite orbit mean elements (JSON, KVN) |
+| — | [`/tle`](./tle/README.md) | 🧪 Two-line element sets (TLE) |
 
 Import metadata from the package root or format subpaths. Parser-bearing loaders use named implementation entrypoints, such as `@loaders.gl/geospatial/wkb`. GeoPackage requires the optional `sql.js` peer dependency. See [Get Started](../../developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
 
