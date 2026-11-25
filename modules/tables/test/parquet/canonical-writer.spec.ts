@@ -7,7 +7,8 @@ import {encode, parse} from '@loaders.gl/core';
 import {encodeWKBGeometryValue} from '@loaders.gl/core/arrow-geometry/geometry-field';
 import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {ParquetWasmWriter} from '../../../../website/src/alternate-loaders/parquet/parquet-wasm-writer';
 import {
   ParquetWasmLoaderWithParser,

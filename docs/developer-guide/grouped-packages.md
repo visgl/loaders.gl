@@ -44,7 +44,7 @@ A metadata loader describes the format, options, default values, and output type
 parsing methods; its `preload()` function imports the parser implementation. Core asynchronous
 APIs such as `load`, `parse`, and `parseInBatches` can preload it automatically.
 
-The tables, geospatial, pointclouds, and scene roots and bare format entrypoints expose metadata
+Table loaders are exported from their format subpaths. The geospatial, pointclouds, and scene roots and bare format entrypoints expose metadata
 loaders. Other packages have entrypoint-specific contracts: raster's root exposes metadata,
 while `/geotiff` and `/lerc` expose parser-bearing loaders. Follow each package reference rather
 than assuming every entrypoint exports the same loader names.

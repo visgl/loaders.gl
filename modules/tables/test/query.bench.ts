@@ -8,8 +8,8 @@ import {query, queryInBatches} from '@loaders.gl/core/query';
 import {CSVTableSource} from '@loaders.gl/tables/csv';
 import {NDJSONTableSource} from '@loaders.gl/tables/json';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 
 /** Adds hermetic cross-format query benchmarks with identical logical input. */

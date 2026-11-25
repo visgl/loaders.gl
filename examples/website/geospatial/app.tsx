@@ -37,7 +37,8 @@ import {
   type GeoArrowEncoding,
   type GeoArrowMetadata
 } from '@loaders.gl/core/geoarrow';
-import {GeoParquetLoader, ParquetLoader, preloadCompressions} from '@loaders.gl/tables/parquet';
+import {GeoParquetLoader, ParquetLoader} from '@loaders.gl/tables/parquet';
+import {preloadCompressions} from '@loaders.gl/tables/parquet/bundled';
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
 import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';

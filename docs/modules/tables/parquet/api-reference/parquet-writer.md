@@ -58,7 +58,8 @@ import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-g
 The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```typescript
-import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 ```
 
 ## Geospatial Metadata
@@ -107,7 +108,8 @@ Parquet default CRS84.
 
 ```typescript
 import {load, encode} from '@loaders.gl/core';
-import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 
 const arrowTable = await load(url, ParquetLoader);
 
@@ -224,7 +226,7 @@ the corresponding footer or column metadata and key material is never serialized
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 
 const parquetBuffer = await encode(table, ParquetWriter, {
   core: {worker: false},

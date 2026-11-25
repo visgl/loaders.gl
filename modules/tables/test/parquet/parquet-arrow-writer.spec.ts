@@ -8,18 +8,14 @@ import { encode, load } from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import * as parquet from '@loaders.gl/tables/parquet';
 import * as bundledParquet from '@loaders.gl/tables/parquet/bundled';
-import * as parquetSource from '@loaders.gl/tables/parquet';
-import {ParquetWriter, ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import * as arrow from 'apache-arrow';
 test('ParquetWriter#writer objects', () => {
     expect(ParquetJSLoader, 'ParquetJSLoader').toBeTruthy();
     expect(ParquetWriter, 'ParquetWriter').toBeTruthy();
 });
 test('ParquetSource#public exports', () => {
-    expect(parquet.ParquetSource, 'format exports runtime ParquetSource').toBeTruthy();
-    expect(parquet.PARQUET_SOURCE_CAPABILITIES, 'root exports source capabilities').toBeTruthy();
-    expect(parquetSource.ParquetSource, 'source subpath exports runtime source').toBeTruthy();
-    expect(parquetSource.PARQUET_SOURCE_CAPABILITIES, 'source subpath exports capabilities').toBeTruthy();
     expect(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource').toBeTruthy();
     expect(bundledParquet.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities').toBeTruthy();
 });

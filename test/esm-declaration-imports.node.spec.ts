@@ -64,8 +64,8 @@ test('emitted Parquet package exports typecheck for a strict NodeNext consumer',
     const entry = join(root, 'consumer.mts');
     writeFileSync(
       entry,
-      "export {ParquetLoader as Metadata} from '@loaders.gl/tables';\n" +
-        "export {ParquetLoader, ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';\n"
+      "export {ParquetLoader as Metadata} from '@loaders.gl/tables/parquet';\n" +
+        "export {ParquetLoader, ParquetLoaderWithParser} from '@loaders.gl/tables/parquet/bundled';\n"
     );
     const consumer = ts.createProgram([entry], {
       types: [],

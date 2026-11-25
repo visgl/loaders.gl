@@ -5,11 +5,9 @@
 import {beforeAll, describe, expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
-import {
-  ParquetDatasetSource,
-  type ParquetDatasetFileQuery
-} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/bundled';
+import {type ParquetDatasetFileQuery} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
 let westernFile: Blob;

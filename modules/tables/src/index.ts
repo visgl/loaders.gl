@@ -3,25 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 export {CSVFormat} from './csv/csv-format';
-export {CSVLoader} from './csv/csv-loader-types';
 export type {CSVLoaderOptions} from './csv/csv-loader-options';
 export type {CSVWriterOptions} from './csv/csv-writer';
 export {AvroFormat} from './avro/avro-format';
-export {AvroLoader} from './avro/avro-loader-types';
 export type {AvroLoaderOptions} from './avro/avro-loader-types';
-export {AvroSchemaLoader} from './avro/avro-schema-loader-types';
 export type {AvroWriterOptions} from './avro/avro-writer';
-export {ArrowLoader} from './arrow/arrow-loader-types';
-export {GeoArrowLoader} from './arrow/geoarrow-loader-types';
-export {JSONLoader} from './json/json-loader-types';
-export {JSONTableLoader} from './json/json-table-loader-types';
-export {NDJSONLoader} from './json/ndjson-loader-types';
-export {GeoJSONLoader} from './json/geojson-loader-types';
-export {NDGeoJSONLoader} from './json/ndgeojson-loader-types';
-export {LanceLoader} from './lance/lance-loader-types';
-export {ORCLoader} from './orc/orc-loader-types';
-export {ParquetLoader} from './parquet/parquet-loader-types';
-export {GeoParquetLoader} from './parquet/geoparquet-loader-types';
 export {ArrowFormat} from './arrow/exports/arrow-format';
 export type {ArrowLoaderOptions} from './arrow/arrow-loader-types';
 export type {ArrowWriterOptions} from './arrow/arrow-writer';

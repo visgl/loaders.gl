@@ -16,6 +16,24 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   links={[{label: 'What’s new', to: '/docs/whats-new'}]}
 />
 
+## Updating from 5.0.0
+
+Move metadata loader imports from `@loaders.gl/tables` to the format subpath.
+
+| Loaders | Subpath under `@loaders.gl/tables` |
+| --- | --- |
+| `CSVLoader` | `/csv` |
+| `AvroLoader`, `AvroSchemaLoader` | `/avro` |
+| `ArrowLoader`, `GeoArrowLoader` | `/arrow` |
+| `JSONLoader`, `JSONTableLoader`, `NDJSONLoader`, `GeoJSONLoader`, `NDGeoJSONLoader` | `/json` |
+| `LanceLoader` | `/lance` |
+| `ORCLoader` | `/orc` |
+| `ParquetLoader`, `GeoParquetLoader` | `/parquet` |
+
+For eager Parquet parsers, writers, sources, and low-level helpers, change the import path from
+`@loaders.gl/tables/parquet` to `@loaders.gl/tables/parquet/bundled`. The bundled entry point exports
+the parser-bearing loaders as `ParquetLoader` and `GeoParquetLoader`.
+
 ## Upgrading to v5.0
 
 This section covers upgrades from stable loaders.gl 4.x to 5.0. Update all loaders.gl
