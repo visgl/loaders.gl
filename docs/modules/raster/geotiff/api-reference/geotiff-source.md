@@ -142,6 +142,8 @@ The returned `RasterData` contains:
 ## Notes
 
 - GeoTIFF overview selection compares both source pixel resolutions with the requested region; `geotiff.js` decodes the selected image window.
+  An overview may be up to 1% coarser than requested on each axis to account for target-size
+  rounding and floating-point error.
 - For remote COGs, `GeoTIFFLoader` can share a `RangeRequestScheduler` with other sources to
   coalesce overlapping byte-range requests.
 
@@ -167,6 +169,13 @@ with invalid contributing neighbors remain invalid. Continuous band values retai
 decoder's typed representation, while categorical bands use nearest sampling. This
 sample-center normalization can change boundary samples compared with the earlier
 GeoTIFF bbox resampling convention.
+
+The returned grid is not always the requested rectangle. The read window snaps
+outward to whole pixels of the selected overview, so `boundingBox` can be slightly
+larger than the requested bounds. When the request extends past the source,
+`width` and `height` are scaled to the part inside the source and rounded, so they
+can be smaller than requested. Place samples with the returned `transform` and
+`boundingBox`, not with the requested bounds and size.
 
 `maxPixels` (default 16,000,000) and `maxDecodedBytes` (default 256 MiB) may be set
 per region or in `geotiff` source options. These bound returned samples and conservatively estimate native window and tile
