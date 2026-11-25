@@ -123,6 +123,7 @@ test('assembles WebGPU BitmapLayer shaders with an unfilterable float texture bi
     expect.objectContaining({name: rasterBinding.name, location: rasterBinding.location})
   );
   expect(result.source).toContain('let bitmapColor = raster_sample(uv);');
+  expect(result.source.match(/raster_pickingColor\(uv\)/g)).toHaveLength(2);
   expect(result.source).not.toContain('bitmapTextureSampler');
 });
 
@@ -292,12 +293,12 @@ test('picks a valid Uint32 texel that would round to the same float32 as noData'
   });
   const pick = (red: number) =>
     layer.getPickingInfo({
-      info: {color: new Uint8Array([red, 128, 0])},
+      info: {color: new Uint8Array([red, 0, 0, 1])},
       mode: 'hover',
       sourceLayer: null
     } as any);
-  expect(pick(64).value).toBe(16777216);
-  expect(pick(192).value).toBeNull();
+  expect(pick(0).value).toBe(16777216);
+  expect(pick(1).value).toBeNull();
 });
 
 test('returns original picked texels and null for no-data, NaN, or a miss', () => {
@@ -309,18 +310,15 @@ test('returns original picked texels and null for no-data, NaN, or a miss', () =
   const pick = (color: Uint8Array | null) =>
     layer.getPickingInfo({info: {color}, mode: 'hover', sourceLayer: null} as any);
 
-  expect(pick(new Uint8Array([64, 64, 0]))).toMatchObject({
+  expect(pick(new Uint8Array([0, 0, 0, 1]))).toMatchObject({
     bitmap: {pixel: [0, 0], uv: [0.25, 0.25], size: {width: 2, height: 2}},
     index: 0,
     value: 1.00000001
   });
-  expect(pick(new Uint8Array([192, 64, 0])).value).toBeNull();
-  expect(pick(new Uint8Array([64, 192, 0])).value).toBeNull();
-  expect(pick(new Uint8Array([192, 192, 0])).value).toBe(4);
+  expect(pick(new Uint8Array([1, 0, 0, 1])).value).toBeNull();
+  expect(pick(new Uint8Array([2, 0, 0, 1])).value).toBeNull();
+  expect(pick(new Uint8Array([3, 0, 0, 1])).value).toBe(4);
   expect(pick(null)).toMatchObject({bitmap: null, value: null});
-  const info = pick(new Uint8Array([64, 64, 0]));
-  info.bitmap!.pixel = [1, 1];
-  expect(layer.getPickingInfo({info, mode: 'hover', sourceLayer: null}).value).toBe(4);
 
   const float32Layer = new RasterBitmapLayer({
     raster: {width: 1, height: 1, data: new Float32Array([-0.1])},
@@ -329,9 +327,93 @@ test('returns original picked texels and null for no-data, NaN, or a miss', () =
   });
   expect(
     float32Layer.getPickingInfo({
-      info: {color: new Uint8Array([0, 0, 0])},
+      info: {color: new Uint8Array([0, 0, 0, 1])},
       mode: 'hover',
       sourceLayer: null
     } as any).value
   ).toBeNull();
+});
+
+test.each([
+  {width: 1, height: 1, pixels: [[0, 0]]},
+  {
+    width: 4096,
+    height: 4096,
+    pixels: [
+      [4095, 0],
+      [0, 1],
+      [4095, 4095]
+    ]
+  },
+  {
+    width: 8192,
+    height: 1,
+    pixels: [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [8191, 0]
+    ]
+  },
+  {
+    width: 1,
+    height: 8192,
+    pixels: [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+      [0, 8191]
+    ]
+  },
+  {
+    width: 16384,
+    height: 1024,
+    pixels: [
+      [16383, 0],
+      [0, 1],
+      [16383, 1023]
+    ]
+  },
+  {
+    width: 3,
+    height: 5,
+    pixels: [
+      [2, 0],
+      [0, 1],
+      [2, 4]
+    ]
+  }
+])('round-trips picking colors for a $width x $height raster', ({width, height, pixels}) => {
+  const data = new Uint8Array(width * height);
+  const layer = new RasterBitmapLayer({raster: {width, height, data}});
+  const rowStride = 2 ** Math.ceil(Math.log2(width));
+  for (const [index, [column, row]] of pixels.entries()) {
+    const value = index + 10;
+    data[row * width + column] = value;
+    const packedIndex = column + row * rowStride;
+    const color = new Uint8Array([packedIndex, packedIndex >>> 8, packedIndex >>> 16, 1]);
+    expect(
+      layer.getPickingInfo({info: {color}, mode: 'hover', sourceLayer: null} as any)
+    ).toMatchObject({
+      bitmap: {
+        pixel: [column, row],
+        uv: [(column + 0.5) / width, (row + 0.5) / height],
+        size: {width, height}
+      },
+      index: 0,
+      value
+    });
+  }
+});
+
+test('returns no texel when the raster needs more than 24 picking bits', () => {
+  const width = 8192;
+  const height = 4096;
+  const data = new Uint8Array(width * height);
+  data[0] = 42;
+  const layer = new RasterBitmapLayer({raster: {width, height, data}});
+  const color = new Uint8Array([0, 0, 0, 1]);
+  expect(
+    layer.getPickingInfo({info: {color}, mode: 'hover', sourceLayer: null} as any)
+  ).toMatchObject({bitmap: null, index: 0, value: null});
 });

@@ -241,9 +241,9 @@ describe('raster viewport and placement', () => {
   });
 
   test('requires a custom request projection for unsupported CRS values', () => {
-    const metadata = {...GEOGRAPHIC_METADATA, crs: 'EPSG:27700'};
+    const metadata = {...GEOGRAPHIC_METADATA, crs: 'EPSG:999999'};
     expect(() => createRasterViewport(createViewport([0, 0, 1, 1]), metadata)).toThrow(
-      'Provide getRasterParameters()'
+      /EPSG:999999.*Provide getRasterParameters/
     );
     expect(() =>
       createRasterViewport(createViewport([0, 0, 1, 1]), metadata, 1024, true)
@@ -343,14 +343,15 @@ describe('RasterSourceLayer lifecycle', () => {
       })
     );
     expect(firstBitmap.props.raster.data).toBe(firstRaster.data[0]);
-    const pick = (red: number, green: number) => {
-      const parameters = {info: {color: new Uint8Array([red, green, 0])}, mode: 'hover'};
+    // The 2 x 2 raster packs the texel index as column + row * 2 in the red channel.
+    const pick = (column: number, row: number) => {
+      const parameters = {info: {color: new Uint8Array([column + row * 2, 0, 0])}, mode: 'hover'};
       const info = firstBitmap.getPickingInfo(parameters);
       return layer.getPickingInfo({...parameters, info, sourceLayer: firstBitmap}).value;
     };
-    expect(pick(64, 64)).toBe(2);
-    expect(pick(192, 64)).toBeNull();
-    expect(pick(64, 192)).toBeNull();
+    expect(pick(0, 0)).toBe(2);
+    expect(pick(1, 0)).toBeNull();
+    expect(pick(0, 1)).toBeNull();
 
     const nextViewport = createViewport([30, 35, 60, 55]);
     layer.requestRaster(nextViewport, 0);
@@ -516,6 +517,7 @@ describe('RasterSourceLayer lifecycle', () => {
       rasterSet: {requestRaster},
       unsubscribeRasterSetEvents: null,
       metadata: {...GEOGRAPHIC_METADATA, bandCount: 4},
+      projectedCRS: null,
       renderResult: null
     };
     layer.requestRaster(createViewport([-10, -5, 20, 15]));
@@ -757,7 +759,7 @@ function createRasterLayer(overrides: Record<string, unknown> = {}) {
   } as any) as any;
 }
 
-test('raster placement retains affine shear and refuses to infer geographic projected coordinates', () => {
+test('raster placement retains affine shear and reports unsupported CRS values', () => {
   const raster = createRaster(new Float32Array([0, 1, 2, 3]), {
     transform: [1, 0.5, 10, 0.25, -1, 20],
     pixelRegistration: 'area'
@@ -771,16 +773,16 @@ test('raster placement retains affine shear and refuses to infer geographic proj
     [12, 20.5],
     [13, 18.5]
   ]);
-  const projected = {...raster, crs: 'EPSG:32633'};
+  const projected = {...raster, crs: 'EPSG:999999'};
   expect(() =>
     createDefaultRasterRenderResult(projected, parameters, {
       ...GEOGRAPHIC_METADATA,
-      crs: 'EPSG:32633'
+      crs: 'EPSG:999999'
     })
-  ).toThrow('unsupported source CRS');
+  ).toThrow('unsupported source CRS (EPSG:999999)');
   const custom = createRasterRenderResult(
     {requestId: 0, raster: projected, parameters},
-    {...GEOGRAPHIC_METADATA, crs: 'EPSG:32633'},
+    {...GEOGRAPHIC_METADATA, crs: 'EPSG:999999'},
     () => ({
       image: colorizeRasterData(projected),
       bounds: [0, 0, 1, 1],
