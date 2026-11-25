@@ -5,7 +5,7 @@
 /* eslint-disable camelcase */
 import {afterEach, describe, expect, test, vi} from 'vitest';
 
-vi.mock('@loaders.gl/images/image', async importOriginal => ({
+vi.mock('@loaders.gl/images/image/bundled', async importOriginal => ({
   ...(await importOriginal()),
   getSupportedImageFormats: vi.fn(),
   isImageFormatSupported: vi.fn()

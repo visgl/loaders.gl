@@ -176,7 +176,8 @@
     "build-draco-loader-worker-node": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-draco-writer-worker": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-draco-writer-worker-node": "node ../../scripts/build-codec-worker.mjs src/draco/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.cjs --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "copy-libs-usd": "mkdir -p dist/usd/libs && cp src/usd/libs/usdc-parser.js src/usd/libs/THREE-LICENSE src/usd/libs/README.md dist/usd/libs/"
+    "copy-libs-usd": "mkdir -p dist/usd/libs && cp src/usd/libs/usdc-parser.js src/usd/libs/THREE-LICENSE src/usd/libs/README.md dist/usd/libs/",
+    "prepare-cjs-assets": "npm run copy-libs-gltf"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~5.0.0-alpha.0",

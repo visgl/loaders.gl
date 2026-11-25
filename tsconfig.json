@@ -136,7 +136,7 @@
         "modules/core/src/api.ts"
       ],
       "@loaders.gl/tiles-3d/api": [
-        "modules/tiles-3d/src/tileset.ts"
+        "modules/tiles-3d/src/api.ts"
       ],
       "@loaders.gl/tables": [
         "modules/tables/src"
