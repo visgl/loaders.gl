@@ -1,65 +1,173 @@
 diff --git a/dist/index.cjs b/dist/index.cjs
-index 14896c4bcb8685641d3a1a0205da873f0e6c4ff5..2a2b748b73226b003dabf1aa1f63dbb2e8d56ab7 100644
+index 14896c4bcb8685641d3a1a0205da873f0e6c4ff5..8fdc93fb83cb30c437f5fff976c73eb2de0e4732 100644
 --- a/dist/index.cjs
 +++ b/dist/index.cjs
-@@ -3513,7 +3513,7 @@ function getMeshGeometry(contentAttributes) {
- // dist/terrain-layer/terrain-layer.js
- var import_core17 = require("@deck.gl/core");
- var import_mesh_layers3 = require("@deck.gl/mesh-layers");
--var import_terrain = require("@loaders.gl/raster/terrain/index");
-+var import_terrain = require("@loaders.gl/raster/terrain");
- var DUMMY_DATA = [1];
- var TILE_OVERLAP_PIXELS = 1;
- var MIN_TERRAIN_MESH_MAX_ERROR = 1;
-diff --git a/dist/terrain-layer/terrain-layer.js b/dist/terrain-layer/terrain-layer.js
-index 1122a4439a11973d54eee5d1ab44bc997ca45d1e..f78b88b407529802a6625c3886e62b758e858a9a 100644
---- a/dist/terrain-layer/terrain-layer.js
-+++ b/dist/terrain-layer/terrain-layer.js
-@@ -3,7 +3,7 @@
- // Copyright (c) vis.gl contributors
- import { CompositeLayer, _GlobeViewport as GlobeViewport, log } from '@deck.gl/core';
- import { SimpleMeshLayer } from '@deck.gl/mesh-layers';
--import { TerrainWorkerLoader } from '@loaders.gl/raster/terrain/index';
-+import { TerrainWorkerLoader } from '@loaders.gl/raster/terrain';
- import TileLayer from "../tile-layer/tile-layer.js";
- import { getURLFromTemplate, urlType } from "../tileset-2d/index.js";
- const DUMMY_DATA = [1];
+@@ -290,7 +290,7 @@ var a5_layer_default = A5Layer;
+ var import_core4 = require("@deck.gl/core");
+ var import_layers2 = require("@deck.gl/layers");
+ var import_core5 = require("@loaders.gl/core");
+-var import_wms = require("@loaders.gl/ogc/wms");
++var import_wms = require("@loaders.gl/ogc/wms/bundled");
+ 
+ // dist/wms-layer/utils.js
+ var import_web_mercator = require("@math.gl/web-mercator");
+@@ -3191,7 +3191,9 @@ var mesh_layer_default = MeshLayer;
+ 
+ // dist/tile-3d-layer/tile-3d-layer.js
+ var import_core16 = require("@loaders.gl/core");
+-var import_tiles_3d = require("@loaders.gl/tiles-3d");
++var import_tiles_3d = require("@loaders.gl/tiles-3d/api");
++var import_tiles_source = require("@loaders.gl/tiles-3d/3d-tiles/bundled");
++var import_i3s_source = require("@loaders.gl/tiles-3d/i3s/bundled");
+ var import_d_tiles = require("@loaders.gl/tiles-3d/3d-tiles");
+ var SINGLE_DATA = [0];
+ var LEGACY_COORDINATE_SYSTEMS = {
+@@ -3324,7 +3326,7 @@ var Tile3DLayer = class extends import_core15.CompositeLayer {
+     const { tileset: tilesetOptions, ...remainingLoadOptions } = loadOptions;
+     const options = { loadOptions: { ...remainingLoadOptions }, ...tilesetOptions };
+     const sourceInput = { url: tilesetUrl, loader, coreApi: import_core16.coreApi };
+-    const source3 = loader.id === "i3s" ? new import_tiles_3d.I3SSource(sourceInput, options.loadOptions) : new import_tiles_3d.Tiles3DSource(sourceInput, options.loadOptions);
++    const source3 = loader.id === "i3s" ? new import_i3s_source.I3SSource(sourceInput, options.loadOptions) : new import_tiles_source.Tiles3DSource(sourceInput, options.loadOptions);
+     const tileset3d = new import_tiles_3d.Tileset3D(source3, {
+       onTileLoad: this._onTileLoad.bind(this),
+       onTileUnload: this._onTileUnload.bind(this),
+diff --git a/dist/tile-3d-layer/tile-3d-layer.d.ts b/dist/tile-3d-layer/tile-3d-layer.d.ts
+index 2ace60db278b872f27b1657c06a2417523d7c1d3..a8e163d51567c9ef45453bbd2d5357d732ef0919 100644
+--- a/dist/tile-3d-layer/tile-3d-layer.d.ts
++++ b/dist/tile-3d-layer/tile-3d-layer.d.ts
+@@ -1,5 +1,5 @@
+ import { Accessor, Color, CompositeLayer, CompositeLayerProps, CoordinateSystem, FilterContext, GetPickingInfoParams, Layer, LayersList, PickingInfo, UpdateParameters, Viewport, DefaultProps, LayerContext } from '@deck.gl/core';
+-import { Tileset3D, Tile3D } from '@loaders.gl/tiles-3d';
++import {Tileset3D, Tile3D} from '@loaders.gl/tiles-3d/api';
+ import { Tiles3DLoader } from '@loaders.gl/tiles-3d/3d-tiles';
+ /** @internal Exported for testing. */
+ export declare function normalizeCoordinateSystem(coordinateSystem: CoordinateSystem | number): CoordinateSystem | number;
+diff --git a/dist/tile-3d-layer/tile-3d-layer.js b/dist/tile-3d-layer/tile-3d-layer.js
+index 26b763e918d22301edccbe26d37c3415a0a177b0..0d03afcf7a70262f0b49d71b3876c269cf0aa33e 100644
+--- a/dist/tile-3d-layer/tile-3d-layer.js
++++ b/dist/tile-3d-layer/tile-3d-layer.js
+@@ -7,7 +7,9 @@ import { PointCloudLayer } from '@deck.gl/layers';
+ import { ScenegraphLayer } from '@deck.gl/mesh-layers';
+ import { default as MeshLayer } from "../mesh-layer/mesh-layer.js";
+ import { coreApi } from '@loaders.gl/core';
+-import { Tileset3D, Tiles3DSource, I3SSource, TILE_TYPE } from '@loaders.gl/tiles-3d';
++import {Tileset3D, TILE_TYPE} from '@loaders.gl/tiles-3d/api';
++import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
++import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+ import { Tiles3DLoader } from '@loaders.gl/tiles-3d/3d-tiles';
+ const SINGLE_DATA = [0];
+ /**
+diff --git a/dist/wms-layer/wms-layer.d.ts b/dist/wms-layer/wms-layer.d.ts
+index 30630dc1dc2312018523602ff26008f1f2b285d3..6e2a4db09debfa6f515c3dbf30e579d0483610fe 100644
+--- a/dist/wms-layer/wms-layer.d.ts
++++ b/dist/wms-layer/wms-layer.d.ts
+@@ -1,6 +1,6 @@
+ import { Layer, CompositeLayer, CompositeLayerProps, UpdateParameters, DefaultProps, Viewport } from '@deck.gl/core';
+ import type { ImageSourceMetadata, ImageType } from '@loaders.gl/core/loader-utils';
+-import { ImageSource } from '@loaders.gl/ogc/wms';
++import { ImageSource } from '@loaders.gl/ogc/wms/bundled';
+ /** All props supported by the TileLayer */
+ export type WMSLayerProps = CompositeLayerProps & _WMSLayerProps;
+ /** Props added by the TileLayer */
+diff --git a/dist/wms-layer/wms-layer.js b/dist/wms-layer/wms-layer.js
+index 45920459112ded8eebc08b50f7a0db8080e718dc..bb80d5d1e9534c0b62a9077b549516317448904c 100644
+--- a/dist/wms-layer/wms-layer.js
++++ b/dist/wms-layer/wms-layer.js
+@@ -9,7 +9,7 @@
+ import { CompositeLayer, _deepEqual as deepEqual } from '@deck.gl/core';
+ import { BitmapLayer } from '@deck.gl/layers';
+ import { createDataSourceSync } from '@loaders.gl/core';
+-import { ImageSource, WMSSource } from '@loaders.gl/ogc/wms';
++import { ImageSource, WMSSource } from '@loaders.gl/ogc/wms/bundled';
+ import { WGS84ToPseudoMercator } from "./utils.js";
+ const defaultProps = {
+     id: 'imagery-layer',
 diff --git a/dist.webgl-only/index.cjs b/dist.webgl-only/index.cjs
-index 976b401683064d77147196278b1c4eafc2c08d7e..9f8da010bd568502d515326e405f8bbe4d617768 100644
+index 976b401683064d77147196278b1c4eafc2c08d7e..7325eba400e028927eff38e737d7ec60ddf39f84 100644
 --- a/dist.webgl-only/index.cjs
 +++ b/dist.webgl-only/index.cjs
-@@ -3324,7 +3324,7 @@ function getMeshGeometry(contentAttributes) {
- // dist/terrain-layer/terrain-layer.js
- var import_core17 = require("@deck.gl/core");
- var import_mesh_layers3 = require("@deck.gl/mesh-layers");
--var import_terrain = require("@loaders.gl/raster/terrain/index");
-+var import_terrain = require("@loaders.gl/raster/terrain");
- var DUMMY_DATA = [1];
- var TILE_OVERLAP_PIXELS = 1;
- var MIN_TERRAIN_MESH_MAX_ERROR = 1;
-diff --git a/dist.webgl-only/terrain-layer/terrain-layer.js b/dist.webgl-only/terrain-layer/terrain-layer.js
-index 1122a4439a11973d54eee5d1ab44bc997ca45d1e..f78b88b407529802a6625c3886e62b758e858a9a 100644
---- a/dist.webgl-only/terrain-layer/terrain-layer.js
-+++ b/dist.webgl-only/terrain-layer/terrain-layer.js
-@@ -3,7 +3,7 @@
- // Copyright (c) vis.gl contributors
- import { CompositeLayer, _GlobeViewport as GlobeViewport, log } from '@deck.gl/core';
- import { SimpleMeshLayer } from '@deck.gl/mesh-layers';
--import { TerrainWorkerLoader } from '@loaders.gl/raster/terrain/index';
-+import { TerrainWorkerLoader } from '@loaders.gl/raster/terrain';
- import TileLayer from "../tile-layer/tile-layer.js";
- import { getURLFromTemplate, urlType } from "../tileset-2d/index.js";
- const DUMMY_DATA = [1];
-diff --git a/src/terrain-layer/terrain-layer.ts b/src/terrain-layer/terrain-layer.ts
-index ea3e76913eef07af2d8ab85c75fddf1251bde177..bac89c2d1ce91b1622054f388614753b679bb08a 100644
---- a/src/terrain-layer/terrain-layer.ts
-+++ b/src/terrain-layer/terrain-layer.ts
-@@ -17,7 +17,7 @@ import {
- } from '@deck.gl/core';
- import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
- import type {MeshAttributes} from '@loaders.gl/core/schema';
--import {TerrainWorkerLoader} from '@loaders.gl/raster/terrain/index';
-+import {TerrainWorkerLoader} from '@loaders.gl/raster/terrain';
- import TileLayer, {TileLayerProps} from '../tile-layer/tile-layer';
- import type {
-   Bounds,
+@@ -290,7 +290,7 @@ var a5_layer_default = A5Layer;
+ var import_core4 = require("@deck.gl/core");
+ var import_layers2 = require("@deck.gl/layers");
+ var import_core5 = require("@loaders.gl/core");
+-var import_wms = require("@loaders.gl/ogc/wms");
++var import_wms = require("@loaders.gl/ogc/wms/bundled");
+ 
+ // dist/wms-layer/utils.js
+ var import_web_mercator = require("@math.gl/web-mercator");
+@@ -3002,7 +3002,9 @@ var mesh_layer_default = MeshLayer;
+ 
+ // dist/tile-3d-layer/tile-3d-layer.js
+ var import_core16 = require("@loaders.gl/core");
+-var import_tiles_3d = require("@loaders.gl/tiles-3d");
++var import_tiles_3d = require("@loaders.gl/tiles-3d/api");
++var import_tiles_source = require("@loaders.gl/tiles-3d/3d-tiles/bundled");
++var import_i3s_source = require("@loaders.gl/tiles-3d/i3s/bundled");
+ var import_d_tiles = require("@loaders.gl/tiles-3d/3d-tiles");
+ var SINGLE_DATA = [0];
+ var LEGACY_COORDINATE_SYSTEMS = {
+@@ -3135,7 +3137,7 @@ var Tile3DLayer = class extends import_core15.CompositeLayer {
+     const { tileset: tilesetOptions, ...remainingLoadOptions } = loadOptions;
+     const options = { loadOptions: { ...remainingLoadOptions }, ...tilesetOptions };
+     const sourceInput = { url: tilesetUrl, loader, coreApi: import_core16.coreApi };
+-    const source3 = loader.id === "i3s" ? new import_tiles_3d.I3SSource(sourceInput, options.loadOptions) : new import_tiles_3d.Tiles3DSource(sourceInput, options.loadOptions);
++    const source3 = loader.id === "i3s" ? new import_i3s_source.I3SSource(sourceInput, options.loadOptions) : new import_tiles_source.Tiles3DSource(sourceInput, options.loadOptions);
+     const tileset3d = new import_tiles_3d.Tileset3D(source3, {
+       onTileLoad: this._onTileLoad.bind(this),
+       onTileUnload: this._onTileUnload.bind(this),
+diff --git a/dist.webgl-only/tile-3d-layer/tile-3d-layer.js b/dist.webgl-only/tile-3d-layer/tile-3d-layer.js
+index 26b763e918d22301edccbe26d37c3415a0a177b0..0d03afcf7a70262f0b49d71b3876c269cf0aa33e 100644
+--- a/dist.webgl-only/tile-3d-layer/tile-3d-layer.js
++++ b/dist.webgl-only/tile-3d-layer/tile-3d-layer.js
+@@ -7,7 +7,9 @@ import { PointCloudLayer } from '@deck.gl/layers';
+ import { ScenegraphLayer } from '@deck.gl/mesh-layers';
+ import { default as MeshLayer } from "../mesh-layer/mesh-layer.js";
+ import { coreApi } from '@loaders.gl/core';
+-import { Tileset3D, Tiles3DSource, I3SSource, TILE_TYPE } from '@loaders.gl/tiles-3d';
++import {Tileset3D, TILE_TYPE} from '@loaders.gl/tiles-3d/api';
++import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
++import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+ import { Tiles3DLoader } from '@loaders.gl/tiles-3d/3d-tiles';
+ const SINGLE_DATA = [0];
+ /**
+diff --git a/dist.webgl-only/wms-layer/wms-layer.js b/dist.webgl-only/wms-layer/wms-layer.js
+index 45920459112ded8eebc08b50f7a0db8080e718dc..bb80d5d1e9534c0b62a9077b549516317448904c 100644
+--- a/dist.webgl-only/wms-layer/wms-layer.js
++++ b/dist.webgl-only/wms-layer/wms-layer.js
+@@ -9,7 +9,7 @@
+ import { CompositeLayer, _deepEqual as deepEqual } from '@deck.gl/core';
+ import { BitmapLayer } from '@deck.gl/layers';
+ import { createDataSourceSync } from '@loaders.gl/core';
+-import { ImageSource, WMSSource } from '@loaders.gl/ogc/wms';
++import { ImageSource, WMSSource } from '@loaders.gl/ogc/wms/bundled';
+ import { WGS84ToPseudoMercator } from "./utils.js";
+ const defaultProps = {
+     id: 'imagery-layer',
+diff --git a/src/tile-3d-layer/tile-3d-layer.ts b/src/tile-3d-layer/tile-3d-layer.ts
+index a0006fd8e8ffeff4221c5f594f22d0f39e1af40a..aeaabf6344c0ebe0a4ae22e493661e5ff883c050 100644
+--- a/src/tile-3d-layer/tile-3d-layer.ts
++++ b/src/tile-3d-layer/tile-3d-layer.ts
+@@ -27,7 +27,9 @@ import {default as MeshLayer} from '../mesh-layer/mesh-layer';
+ 
+ import {coreApi} from '@loaders.gl/core';
+ import {MeshAttributes} from '@loaders.gl/core/schema';
+-import {Tileset3D, Tiles3DSource, I3SSource, Tile3D, TILE_TYPE} from '@loaders.gl/tiles-3d';
++import {Tileset3D, Tile3D, TILE_TYPE} from '@loaders.gl/tiles-3d/api';
++import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
++import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+ import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+ 
+ const SINGLE_DATA = [0];
+diff --git a/src/wms-layer/wms-layer.ts b/src/wms-layer/wms-layer.ts
+index 438f3a783862fbcd5aecb1cdce811365d27507c8..16cba4f056f252efc2bbef5e32de5b6bea43cbc6 100644
+--- a/src/wms-layer/wms-layer.ts
++++ b/src/wms-layer/wms-layer.ts
+@@ -25,7 +25,7 @@ import type {
+   ImageType
+ } from '@loaders.gl/core/loader-utils';
+ import {createDataSourceSync} from '@loaders.gl/core';
+-import {ImageSource, WMSSource} from '@loaders.gl/ogc/wms';
++import {ImageSource, WMSSource} from '@loaders.gl/ogc/wms/bundled';
+ import {WGS84ToPseudoMercator} from './utils';
+ 
+ /** All props supported by the TileLayer */

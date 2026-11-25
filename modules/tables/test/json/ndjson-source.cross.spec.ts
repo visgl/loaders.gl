@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest';
 import {createDataSourceSync, load, preload} from '@loaders.gl/core';
-import {NDJSONLoader, NDJSONTableSource} from '@loaders.gl/tables/json';
+import {NDJSONLoader} from '@loaders.gl/tables/json';
+import {NDJSONTableSource} from '@loaders.gl/tables/json/bundled';
 
 test('NDJSONTableSource discovers schema and applies projection and limit', async () => {
   const source = new NDJSONTableSource(

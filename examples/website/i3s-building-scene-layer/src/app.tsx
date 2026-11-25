@@ -9,12 +9,8 @@ import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator} from '@deck.gl/core';
 import {SourceDataDrivenTile3DLayer} from '@loaders.gl/deck-layers';
 
-import {
-  BuildingSceneSublayer,
-  COORDINATE_SYSTEM,
-  I3SBuildingSceneLayerLoader,
-  I3SLoader
-} from '@loaders.gl/tiles-3d/i3s';
+import {BuildingSceneSublayer, I3SBuildingSceneLayerLoader, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+import {COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {fetchFile, load} from '@loaders.gl/core';
 import {Sublayer, buildSublayersTree} from './helpers/sublayers';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';

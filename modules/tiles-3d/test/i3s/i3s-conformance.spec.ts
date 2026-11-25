@@ -6,12 +6,12 @@ import {fetchFile, parse} from '@loaders.gl/core';
 import {
   getI3SFeatureSupportReport,
   I3S_CONFORMANCE_PROFILES,
-  I3SNodePageLoader,
   I3SUnsupportedProfileError,
   normalizeI3SRendererMetadata,
   normalizeI3SServiceMetadata,
   parseI3SSceneLayerMetadata
-} from '@loaders.gl/tiles-3d/i3s';
+} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {I3SNodePageLoader} from '@loaders.gl/tiles-3d/i3s';
 import {
   I3SPointCloudSceneLayerSchema,
   I3SPointSceneLayerSchema,

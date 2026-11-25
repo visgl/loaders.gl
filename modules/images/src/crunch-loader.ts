@@ -33,6 +33,11 @@ export const CrunchLoader = {
   extensions: ['crn'],
   mimeTypes: ['image/crn', 'image/x-crn', 'application/octet-stream'],
   binary: true,
+  /** Loads the decoder when running without a worker. */
+  async preload() {
+    const implementation = await import('@loaders.gl/images/crunch/bundled');
+    return implementation.CrunchLoader;
+  },
   options: {
     crunch: {}
   }

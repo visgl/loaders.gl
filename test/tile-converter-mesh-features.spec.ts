@@ -7,13 +7,13 @@ import {expect, test} from 'vitest';
 import {validateBytes} from 'gltf-validator';
 import {extractMeshFeatures} from '../apps/tile-converter/src/v5/mesh-source-features';
 import {parse} from '@loaders.gl/core';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {
-  GLTFLoader,
   GLTFScenegraph,
   getGLTFAccessorValue,
   getGLTFAccessor,
   setGLTFAccessorValue
-} from '@loaders.gl/scene/gltf';
+} from '@loaders.gl/scene/gltf/bundled';
 import type {Field, MeshGeometry} from '@loaders.gl/core/schema';
 import {
   encodeMeshTile,

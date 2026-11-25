@@ -68,7 +68,7 @@ The package-root export is metadata-only. Direct parser access is available from
 subpath:
 
 ```typescript
-import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger/bundled';
 ```
 
 ## Options

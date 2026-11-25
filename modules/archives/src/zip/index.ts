@@ -4,35 +4,21 @@
 
 export {ZipFormat} from './zip-format';
 export {ZipLoader} from './zip-loader-types';
-export type {ZipFileMap, ZipLoaderOptions} from './zip-loader-types';
-export type {ZipWriterFiles, ZipWriterOptions} from './zip-writer';
-export {ZipWriter} from './zip-writer';
-export {encodeIndexedZip} from './indexed-zip-writer';
-export type {IndexedZipFiles, IndexedZipOptions} from './indexed-zip-writer';
-
-export {addOneFile, createZip} from './lib/zip-composition';
+export type {ZipFileMap} from './zip-loader-types';
+export type {ZipLoaderOptions} from './zip-loader-types';
+export type {ZipWriterFiles} from './zip-writer';
+export type {ZipWriterOptions} from './zip-writer';
+export type {IndexedZipFiles} from './indexed-zip-writer';
+export type {IndexedZipOptions} from './indexed-zip-writer';
 export type {ZipCompositionOptions} from './lib/zip-composition';
-
-export {IndexedArchive} from './filesystems/IndexedArchive';
-export {parseHashTable, composeHashFile} from './hash-file-utility';
-
-export {ZipFileSystem} from './filesystems/zip-filesystem';
 export type {ZipFileStat} from './filesystems/zip-filesystem';
-
-export {ZipArchive, openZipArchive} from './zip-archive';
-export type {
-  ZipArchiveInput,
-  ZipArchiveOptions,
-  ZipEntry,
-  ZipReadOptions,
-  ZipRangeOptions
-} from './zip-archive-types';
-
-export {encodeZip, encodeZipInBatches} from './zip-encode';
-export type {
-  ZipByteChunk,
-  ZipByteSource,
-  ZipEncodeEntry,
-  ZipEncodeFiles,
-  ZipEncodeOptions
-} from './zip-encode-types';
+export type {ZipArchiveInput} from './zip-archive-types';
+export type {ZipArchiveOptions} from './zip-archive-types';
+export type {ZipEntry} from './zip-archive-types';
+export type {ZipReadOptions} from './zip-archive-types';
+export type {ZipRangeOptions} from './zip-archive-types';
+export type {ZipByteChunk} from './zip-encode-types';
+export type {ZipByteSource} from './zip-encode-types';
+export type {ZipEncodeEntry} from './zip-encode-types';
+export type {ZipEncodeFiles} from './zip-encode-types';
+export type {ZipEncodeOptions} from './zip-encode-types';

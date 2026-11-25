@@ -34,8 +34,10 @@ test('shared Tileset2D requests canonical native tiles through the actual OGC so
   const {MATRIX_SET, FRAME} = await import(
     '../../../../examples-experimental/tile-matrix-fixed-frame/example.mjs'
   );
-  const {OGCAPITilesSource} = await import('@loaders.gl/ogc/wms');
-  const {Tileset2D, createTileMatrixTileset2DAdapter} = await import('@loaders.gl/tiles');
+  const {OGCAPITilesSource} = await import('@loaders.gl/ogc/wms/bundled');
+  const {Tileset2D, createTileMatrixTileset2DAdapter} = await import(
+    '@loaders.gl/tiles/tileset-2d'
+  );
   const fetcher = vi.fn((url: RequestInfo | URL, _options?: RequestInit) => fetchExampleData(url));
   const source = new OGCAPITilesSource('https://example.invalid/ogc', {
     core: {fetch: fetcher},

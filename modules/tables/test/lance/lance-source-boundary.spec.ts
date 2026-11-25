@@ -21,7 +21,7 @@ vi.mock('../../src/lance/lance-arrow', () => ({
   readLanceRemoteFileToArrow: lanceMocks.readRemoteFileToArrow
 }));
 
-import {LanceLoaderWithParser} from '@loaders.gl/tables/lance';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance/bundled';
 
 const MOCK_TABLE = tableFromArrays({value: new Int32Array([1, 2])});
 const MOCK_FILE_METADATA = {majorVersion: 2, minorVersion: 0, fileSizeBytes: 64};

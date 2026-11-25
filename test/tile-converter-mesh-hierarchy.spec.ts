@@ -6,7 +6,8 @@ import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core/matrix';
 import {parse} from '@loaders.gl/core';
-import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFWriter, GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
 import {
   createBrowserTilesetConversionSource,
   createTiles3DConversionSpatialContext

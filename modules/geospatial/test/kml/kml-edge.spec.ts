@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
-import {ZipWriter} from '@loaders.gl/archives/zip';
+import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
 import {
   KMLWriter,
   KMZVectorSource,
@@ -12,8 +12,8 @@ import {
   convertKMLDocumentToFeatureCollection,
   _openKMZArchive,
   _parseKMLDocument
-} from '@loaders.gl/geospatial/kml';
-import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
+} from '@loaders.gl/geospatial/kml/bundled';
+import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz/bundled';
 import {parseGPXTextToFeatureCollection} from '../../src/kml/gpx-loader';
 import {parseTCXTextToFeatureCollection} from '../../src/kml/tcx-loader';
 

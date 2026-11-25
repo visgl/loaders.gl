@@ -17,12 +17,11 @@ no third-party XML or JSON parser is installed by this package.
 npm install @loaders.gl/core @loaders.gl/documents
 ```
 
-The root exports metadata loaders, format descriptors, and shared types. It does not eagerly
-load parsers, XML dependencies, BSON codecs, or writers. Async core APIs preload implementations:
+Format subpaths export metadata loaders, format descriptors, and shared types. Bundled subpaths export parsers and writers. Async core APIs preload implementations:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {MarkdownLoader} from '@loaders.gl/documents';
+import {MarkdownLoader} from '@loaders.gl/documents/markdown';
 
 const document = await load('README.md', MarkdownLoader);
 ```
@@ -41,7 +40,7 @@ Each parser subpath exports the corresponding `*LoaderWithParser`. Use it for sy
 
 ```typescript
 import {parseSync} from '@loaders.gl/core';
-import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown';
+import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown/bundled';
 
 const document = parseSync('# Hello', MarkdownLoaderWithParser);
 ```

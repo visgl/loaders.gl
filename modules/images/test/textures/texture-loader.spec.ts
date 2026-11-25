@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile, load, parse, selectLoader} from '@loaders.gl/core';
-import {getImageData, getImageType} from '@loaders.gl/images/image';
+import {getImageData, getImageType} from '@loaders.gl/images/image/bundled';
 import {
   TextureArrayLoader,
   TextureCubeArrayLoader,

@@ -371,7 +371,7 @@ test('failure closes asynchronous selections and source errors are preserved', a
 });
 
 test('real GeoTIFF Blob source exports an independently decoded geographic image', async () => {
-  const {GeoTIFFRasterSource} = await import('@loaders.gl/raster/geotiff');
+  const {GeoTIFFRasterSource} = await import('@loaders.gl/raster/geotiff/bundled');
   const {createTiffFixture} = await import('../../../raster/test/geotiff/lib/tiff/tiff-fixture');
   const latitude = 85.0511287798066;
   const bytes = createTiffFixture({
@@ -421,7 +421,7 @@ test('default tile dimensions and valid band metadata preserve an identity byte 
     0,
     0
   );
-  const {getBinaryImageMetadata} = await import('@loaders.gl/images');
+  const {getBinaryImageMetadata} = await import('@loaders.gl/images/image/bundled');
   expect(getBinaryImageMetadata(tile!.data)).toMatchObject({
     width: 256,
     height: 256,

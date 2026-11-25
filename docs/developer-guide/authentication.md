@@ -243,7 +243,7 @@ const source = await createDataSource(tileJSONUrl, [MVTLoader], {
 
 ```ts
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {createGoogleMapsCredential} from '@loaders.gl/services/authentication';
 
 const source = new Tiles3DSource(
@@ -260,7 +260,8 @@ without replacing an explicit child parameter.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {resolveCesiumIonTileset, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const endpoint = await resolveCesiumIonTileset(accessToken, 123);
 const tileset = await load(endpoint.url, Tiles3DLoader, {

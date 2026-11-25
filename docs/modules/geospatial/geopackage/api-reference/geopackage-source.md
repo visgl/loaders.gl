@@ -48,7 +48,7 @@ Use `GeoPackageLoader` to open a reusable GeoPackage source. It is a GeoPackage-
 
 ```typescript
 import {createDataSourceSync} from '@loaders.gl/core';
-import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage/bundled';
 
 const dataSource = createDataSourceSync(url, [GeoPackageLoaderWithParser], {geopackage: {}});
 const metadata = await dataSource.getMetadata();

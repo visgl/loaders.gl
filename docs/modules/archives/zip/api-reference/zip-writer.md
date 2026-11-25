@@ -57,7 +57,7 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 ```typescript
 import {encode} from '@loaders.gl/core';
 import {writeFile} from 'node:fs/promises';
-import {ZipWriter} from '@loaders.gl/archives/zip';
+import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
 
 const FILE_MAP = {
   filename1: arrayBuffer1,

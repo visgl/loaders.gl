@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import type {OGCAPILoaderOptions, OGCTileMatrixSet} from '@loaders.gl/ogc/wms';
-import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms/bundled';
 import DATASET_TILESET from './data/ogc-api-tiles/tileset-dataset.json';
 import COLLECTION_TILESET from './data/ogc-api-tiles/tileset-collection.json';
 import TILE_MATRIX_SETS from './data/ogc-api-tiles/tile-matrix-sets.json';

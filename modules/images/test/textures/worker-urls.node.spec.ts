@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {getWorkerURL} from '@loaders.gl/core/worker-utils';
 import {BasisLoader} from '@loaders.gl/images/basis';
-import {KTX2BasisWriterWorker} from '@loaders.gl/images/basis';
+import {KTX2BasisWriterWorker} from '@loaders.gl/images/basis/bundled';
 
 test.each([
   {worker: BasisLoader, filename: 'basis-worker-node.cjs'},

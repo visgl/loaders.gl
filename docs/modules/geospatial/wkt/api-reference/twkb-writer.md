@@ -69,7 +69,7 @@ npm install @loaders.gl/core
 ## Usage
 
 ```typescript
-import {TWKBWriter} from '@loaders.gl/geospatial/wkb';
+import {TWKBWriter} from '@loaders.gl/geospatial/wkb/bundled';
 import {encodeSync} from '@loaders.gl/core';
 
 const geometry = {

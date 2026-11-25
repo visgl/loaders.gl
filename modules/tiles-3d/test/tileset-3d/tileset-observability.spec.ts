@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'vitest';
 
-import {getTileset3DTraversalSnapshot} from '../../src';
+import {getTileset3DTraversalSnapshot} from '@loaders.gl/tiles-3d/api';
 
 function createTile(id: string, renderable = false): any {
   return {

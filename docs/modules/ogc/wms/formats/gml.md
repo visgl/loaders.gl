@@ -107,7 +107,7 @@ GML application schemas often carry scalar types that cannot be inferred safely 
 known types from `DescribeFeatureType` or application metadata:
 
 ```ts
-import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml';
+import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml/bundled';
 
 const table = GMLLoaderWithParser.parseTextSync(xml, {
   gml: {

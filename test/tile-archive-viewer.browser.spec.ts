@@ -5,11 +5,11 @@
 import {beforeAll, afterAll, afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot, type Root} from 'react-dom/client';
-import {Tiles3DArchiveSource, Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles';
-import {SLPKSource} from '@loaders.gl/tiles-3d/i3s';
+import {Tiles3DArchiveSource, Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {SLPKSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {fetchFile, load, parse} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
-import {GLTFScenegraph, GLTFWriter, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph, GLTFWriter, getGLTFAccessorValue} from '@loaders.gl/scene/gltf/bundled';
 import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-source';
 
 const layerMock = vi.hoisted(() => ({selections: [] as any[], viewState: null as any}));

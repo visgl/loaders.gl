@@ -50,7 +50,7 @@ The `I3SSource` class implements [`Tileset3DSource`](/docs/modules/tiles-3d/api-
 
 ```ts
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s'
-import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 const source = new I3SSource({

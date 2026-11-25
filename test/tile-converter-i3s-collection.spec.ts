@@ -3,11 +3,11 @@ import {createI3SMeshSink} from '../apps/tile-converter/src/v5/i3s-mesh-sink';
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s';
+import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {expect, test} from 'vitest';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
-import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s';
+import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {I3SNodePageSchema, I3SSceneLayerSchema} from '@loaders.gl/tiles-3d/i3s-zod-schema';
 import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {

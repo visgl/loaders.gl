@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {BoxShape, CapsuleShape, SphereShape} from '@math.gl/geometry/culling';
-import {getGLTFCullingShape, getGLTFNodeCullingShape} from '@loaders.gl/scene/gltf';
+import {getGLTFCullingShape, getGLTFNodeCullingShape} from '@loaders.gl/scene/gltf/bundled';
 import type {GLTFWithBuffers} from '../../src/gltf/lib/types/gltf-types';
 
 describe('glTF 2.1 culling shapes', () => {

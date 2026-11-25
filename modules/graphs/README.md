@@ -76,7 +76,7 @@ const graph = await load('network.graphml', GraphMLLoader);
 
 For synchronous parsing, import `GraphMLLoaderWithParser` from
 `@loaders.gl/graphs/graphml` and pass it to `parseSync` from `@loaders.gl/core`.
-The package root exports metadata only; asynchronous core APIs preload the implementation.
+Each format subpath exports loader metadata; asynchronous core APIs preload the implementation.
 
 The explicit plain compatibility result is `GraphData` with `shape: 'plain-graph-data'`, `nodes`, and `edges`.
 Nodes have `id`, optional `label`, and optional `attributes`. Edges additionally have
@@ -141,7 +141,7 @@ const graph = await load('network.gexf', GEXFLoader);
 ```
 
 For synchronous parsing, use `GEXFLoaderWithParser` from
-`@loaders.gl/graphs/gexf` with `parseSync`. The package root exports metadata
+`@loaders.gl/graphs/gexf/bundled` with `parseSync`. The format subpath exports metadata
 only; asynchronous core APIs preload the parser. Text and UTF-8 binary inputs are supported.
 The loader recognizes `.gexf` and `application/gexf+xml`.
 

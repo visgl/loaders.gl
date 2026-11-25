@@ -4,7 +4,7 @@
 
 import {beforeAll, describe, expect, test} from 'vitest';
 import {parseDOT} from '../src/lib/parse-dot';
-import type {DOTGraphData} from '../src';
+import type {DOTGraphData} from '@loaders.gl/graphs/dot';
 import clusterDot from './data/cluster.dot?raw';
 import karateDot from './data/karate.dot?raw';
 

@@ -4,7 +4,7 @@
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {PointCloudTiler, type PointCloudTilerOptions} from '@loaders.gl/core/schema-utils';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/bundled';
 import type {
   PotreeDataset,
   PotreeWriterNode,

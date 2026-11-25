@@ -2,7 +2,7 @@
 
 import {beforeEach, expect, test, vi} from 'vitest';
 import {type DracoEncodingResult} from '@loaders.gl/scene/draco';
-import {encodeDraco} from '@loaders.gl/scene/draco';
+import {encodeDraco} from '@loaders.gl/scene/draco/bundled';
 import type {GLTFWithBuffers} from '../../src/gltf/lib/types/gltf-types';
 import {compressGLTFWithDraco} from '../../src/gltf/lib/encoders/encode-gltf-draco';
 

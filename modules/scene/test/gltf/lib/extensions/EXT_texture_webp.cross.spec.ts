@@ -10,7 +10,7 @@ vi.mock('@loaders.gl/images/image', async importOriginal => ({
   isImageFormatSupported: vi.fn()
 }));
 
-import {isImageFormatSupported} from '@loaders.gl/images/image';
+import {isImageFormatSupported} from '@loaders.gl/images/image/bundled';
 import {preprocess} from '../../../../src/gltf/lib/extensions/EXT_texture_webp';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
 

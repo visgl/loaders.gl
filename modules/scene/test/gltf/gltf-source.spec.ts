@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GLTFSource} from '@loaders.gl/scene/gltf';
+import {GLTFSource} from '@loaders.gl/scene/gltf/bundled';
 import {createGLBV3} from './test-utils/create-glb-v3';
 
 const model = {

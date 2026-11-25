@@ -4,11 +4,8 @@
 
 import {expect, test, vi} from 'vitest';
 import {Field, Float64, Int32, Schema, Table} from 'apache-arrow';
-import {
-  convertJSONToArrow,
-  JSONTableLoaderWithParser,
-  type ConvertJSONToArrowOptions
-} from '@loaders.gl/tables/json';
+import {convertJSONToArrow, JSONTableLoaderWithParser} from '@loaders.gl/tables/json/bundled';
+import {type ConvertJSONToArrowOptions} from '@loaders.gl/tables/json';
 import type {Schema as LoadersSchema} from '@loaders.gl/core/schema';
 
 const ROWS = [

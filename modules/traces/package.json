@@ -101,6 +101,31 @@
       "types": "./dist/stream.d.ts",
       "import": "./dist/stream.js",
       "require": "./dist/stream.cjs"
+    },
+    "./chrome-trace/bundled": {
+      "types": "./dist/chrome-trace-bundled.d.ts",
+      "import": "./dist/chrome-trace-bundled.js",
+      "require": "./dist/chrome-trace-bundled.cjs"
+    },
+    "./otlp/bundled": {
+      "types": "./dist/otlp-bundled.d.ts",
+      "import": "./dist/otlp-bundled.js",
+      "require": "./dist/otlp-bundled.cjs"
+    },
+    "./jaeger/bundled": {
+      "types": "./dist/jaeger-bundled.d.ts",
+      "import": "./dist/jaeger-bundled.js",
+      "require": "./dist/jaeger-bundled.cjs"
+    },
+    "./zipkin/bundled": {
+      "types": "./dist/zipkin-bundled.d.ts",
+      "import": "./dist/zipkin-bundled.js",
+      "require": "./dist/zipkin-bundled.cjs"
+    },
+    "./perfetto/bundled": {
+      "types": "./dist/perfetto-bundled.d.ts",
+      "import": "./dist/perfetto-bundled.js",
+      "require": "./dist/perfetto-bundled.cjs"
     }
   },
   "sideEffects": false,

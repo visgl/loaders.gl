@@ -3,7 +3,8 @@
 Load RAD Gaussian splat datasets and request their independently addressable chunks.
 
 ```typescript
-import {RADFormat, RADLoader, RADSource, resolveRADChunkUrl} from '@loaders.gl/splats/rad';
+import {RADFormat, RADLoader} from '@loaders.gl/splats/rad';
+import {RADSource, resolveRADChunkUrl} from '@loaders.gl/splats/rad/bundled';
 ```
 
 ## API

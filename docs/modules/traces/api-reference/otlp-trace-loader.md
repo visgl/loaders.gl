@@ -68,8 +68,8 @@ The package-root exports are metadata-only and support asynchronous core APIs th
 For direct access to parser-bearing loaders, use:
 
 ```typescript
-import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp';
-import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp/bundled';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp/bundled';
 ```
 
 ## Result

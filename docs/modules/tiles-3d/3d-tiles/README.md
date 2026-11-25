@@ -120,7 +120,8 @@ Basic API usage is illustrated in the following snippet. Load the tileset header
 ```typescript
 import {coreApi} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {Tileset3D} from '@loaders.gl/tiles-3d/api';
 
 const tilesetUrl = 'https://example.com/tileset.json';
 const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader, coreApi});

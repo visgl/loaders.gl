@@ -1,6 +1,7 @@
 import {expect, test, vi} from 'vitest';
 import {validateLoader, validateWriter} from 'test/common/conformance';
-import {ZipWriter, ZipLoader, encodeZip} from '@loaders.gl/archives/zip';
+import {ZipWriter, encodeZip} from '@loaders.gl/archives/zip/bundled';
+import {ZipLoader} from '@loaders.gl/archives/zip';
 import {encode, parse} from '@loaders.gl/core';
 import {readZip} from 'test/common/read-zip';
 const FILE_MAP = {

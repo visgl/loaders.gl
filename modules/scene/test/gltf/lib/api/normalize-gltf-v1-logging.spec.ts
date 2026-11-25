@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/gltf';
+import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/gltf/bundled';
 import {createAccessorAsset} from '../../test-utils/create-gltf-v1-accessor';
 
 /** Tiny unsigned color fixture requiring an explicit normalization assumption. */

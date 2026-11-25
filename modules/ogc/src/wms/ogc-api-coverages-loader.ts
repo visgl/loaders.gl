@@ -1,3 +1,4 @@
+import {OGCAPICoveragesLoaderMetadata} from './ogc-api-coverages-loader-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -89,21 +90,7 @@ export class OGCAPICoveragesSource extends DataSource<string, OGCAPICoveragesLoa
 
 /** Source loader for minimal OGC API Coverages support. */
 export const OGCAPICoveragesLoader = {
-  dataType: null as unknown as OGCAPICoveragesSource,
-  batchType: null as never,
-  name: 'OGC API Coverages',
-  id: 'ogc-api-coverages',
-  module: 'ogc',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: ['application/json', 'image/tiff', 'application/octet-stream'],
-  type: 'ogc-api-coverages',
-  fromUrl: true,
-  fromBlob: false,
-  options: {'ogc-api-coverages': {}},
-  defaultOptions: {'ogc-api-coverages': {}},
-  testURL: (url: string): boolean =>
-    /(?:\/coverage(?:s)?(?:\/|$)|ogc[/-]?api[/-]?coverages)/i.test(url),
+  ...OGCAPICoveragesLoaderMetadata,
   createDataSourceSync: (
     url: string,
     options: OGCAPICoveragesLoaderOptions = {},

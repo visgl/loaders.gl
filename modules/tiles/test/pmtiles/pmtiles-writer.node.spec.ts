@@ -23,7 +23,7 @@ test('PMTiles writer is available through built ESM and CommonJS package entrypo
 test('exported PMTiles option types work with direct and standard writer APIs', () => {
   const filename = path.join(process.cwd(), 'modules/tiles/test/pmtiles/pmtiles-consumer.mts');
   const source = `import {encode} from '@loaders.gl/core';
-    import {encodePMTiles, PMTilesWriter} from '@loaders.gl/tiles/pmtiles';
+    import {encodePMTiles, PMTilesWriter} from '@loaders.gl/tiles/pmtiles/bundled';
     import type {PMTilesEncodeOptions, PMTilesWriterOptions, PMTilesTile} from '@loaders.gl/tiles/pmtiles';
     import {encodeGeoArrowPMTiles} from '@loaders.gl/tiles/pmtiles/geoarrow';
     import {encodeRasterPMTiles} from '@loaders.gl/tiles/pmtiles/raster';

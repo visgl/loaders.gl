@@ -17,7 +17,7 @@ The package root exports metadata only. Asynchronous core APIs load the parser t
 ## Direct parser access
 
 ```typescript
-import {MaterialXLoaderWithParser} from '@loaders.gl/scene/materialx';
+import {MaterialXLoaderWithParser} from '@loaders.gl/scene/materialx/bundled';
 
 const document = MaterialXLoaderWithParser.parseTextSync(
   '<materialx version="1.39"/>'

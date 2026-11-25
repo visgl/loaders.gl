@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
-import {OBJLoader, OBJWriter} from '@loaders.gl/scene/obj';
+import {OBJLoader} from '@loaders.gl/scene/obj';
+import {OBJWriter} from '@loaders.gl/scene/obj/bundled';
 import {encode, parse} from '@loaders.gl/core';
 import {convertMeshToArrowTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 const attributes = {

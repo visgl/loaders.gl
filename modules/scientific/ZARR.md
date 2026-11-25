@@ -32,7 +32,7 @@ coordinate variables used by xarray climate and weather stores.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {GeoZarrLoader} from '@loaders.gl/scientific/zarr';
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const source = createDataSourceSync('https://example.com/weather.zarr', [GeoZarrLoader], {
   geozarr: {
@@ -65,7 +65,7 @@ climatology data directly from a public Zarr store and renders it on an interact
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OMEZarrLoader} from '@loaders.gl/scientific/zarr';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const source = createDataSourceSync('https://example.com/image.zarr', [OMEZarrLoader], {
   omezarr: {}
@@ -82,7 +82,7 @@ arrays directly.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {SpatialDataLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const rootUrl = 'https://example.com/spatialdata.zarr';
 const spatialDataSource = createDataSourceSync(rootUrl, [SpatialDataLoader]);

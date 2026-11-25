@@ -30,7 +30,7 @@ does not select a parser or override its output options. Configure the parser to
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
 
 const source = await createDataSource('/features.geojson', ArrowTableTileLoader, {

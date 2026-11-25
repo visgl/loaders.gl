@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {beforeAll, expect, test, vi} from 'vitest';
-import {WMTSImageTileSource, WMTSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
+import {WMTSImageTileSource} from '@loaders.gl/ogc/wms/bundled';
+import {WMTSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
 import type {WMTSCapabilities} from '@loaders.gl/ogc/wms';
 
 const CAPABILITIES_XML = `<wmts:Capabilities xmlns:wmts="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"><wmts:Contents>

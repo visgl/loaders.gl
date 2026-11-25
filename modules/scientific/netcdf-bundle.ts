@@ -87,12 +87,8 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
-export {
-  NetCDFReader,
-  NetCDFFormat,
-  NetCDFLoader,
-  NetCDFLoaderWithParser
-} from '@loaders.gl/scientific/netcdf';
+export {NetCDFReader, NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf/bundled';
+export {NetCDFFormat, NetCDFLoader} from '@loaders.gl/scientific/netcdf';
 export type {
   NetCDF,
   NetCDFLoaderOptions,

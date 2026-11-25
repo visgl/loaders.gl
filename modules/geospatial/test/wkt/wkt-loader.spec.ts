@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {WKTLoader} from '@loaders.gl/geospatial/wkt/bundled';
 import {setLoaderOptions, fetchFile, parseSync, encodeTextSync} from '@loaders.gl/core';
-import {WKTWriter} from '@loaders.gl/geospatial/wkt';
+import {WKTWriter} from '@loaders.gl/geospatial/wkt/bundled';
 import fuzzer from 'fuzzer';
 const GEOMETRYCOLLECTION_WKT_URL =
   '@loaders.gl/geospatial/wkt/test/data/wkt/geometrycollection.wkt';

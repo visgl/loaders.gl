@@ -35,9 +35,9 @@
       "require": "./dist/index.cjs"
     },
     "./obj": {
-      "types": "./dist/obj/index.d.ts",
-      "import": "./dist/obj/index.js",
-      "require": "./dist/obj/index.cjs"
+      "types": "./dist/obj/metadata-entry.d.ts",
+      "import": "./dist/obj/metadata-entry.js",
+      "require": "./dist/obj/metadata-entry.cjs"
     },
     "./obj/bundled": {
       "types": "./dist/obj/bundled.d.ts",
@@ -45,9 +45,9 @@
       "require": "./dist/obj/bundled.cjs"
     },
     "./gltf": {
-      "types": "./dist/gltf/index.d.ts",
-      "import": "./dist/gltf/index.js",
-      "require": "./dist/gltf/index.cjs"
+      "types": "./dist/gltf/metadata-entry.d.ts",
+      "import": "./dist/gltf/metadata-entry.js",
+      "require": "./dist/gltf/metadata-entry.cjs"
     },
     "./gltf/bundled": {
       "types": "./dist/gltf/bundled.d.ts",
@@ -69,9 +69,9 @@
     "./gltf/gltf-all.schema.json": "./dist/gltf/gltf-all.schema.json",
     "./gltf/schemas/*": "./dist/gltf/schemas/*",
     "./usd": {
-      "types": "./dist/usd/index.d.ts",
-      "import": "./dist/usd/index.js",
-      "require": "./dist/usd/index.cjs"
+      "types": "./dist/usd/metadata-entry.d.ts",
+      "import": "./dist/usd/metadata-entry.js",
+      "require": "./dist/usd/metadata-entry.cjs"
     },
     "./obj-worker.js": {
       "import": "./dist/obj-worker.js"
@@ -94,29 +94,29 @@
       "default": "./dist/draco-writer-worker-node.cjs"
     },
     "./mtl": {
-      "types": "./dist/mtl.d.ts",
-      "import": "./dist/mtl.js",
-      "require": "./dist/mtl.cjs"
+      "types": "./dist/mtl/metadata-entry.d.ts",
+      "import": "./dist/mtl/metadata-entry.js",
+      "require": "./dist/mtl/metadata-entry.cjs"
     },
     "./glb": {
-      "types": "./dist/glb.d.ts",
-      "import": "./dist/glb.js",
-      "require": "./dist/glb.cjs"
+      "types": "./dist/glb/metadata-entry.d.ts",
+      "import": "./dist/glb/metadata-entry.js",
+      "require": "./dist/glb/metadata-entry.cjs"
     },
     "./draco": {
-      "types": "./dist/draco.d.ts",
-      "import": "./dist/draco.js",
-      "require": "./dist/draco.cjs"
+      "types": "./dist/draco/metadata-entry.d.ts",
+      "import": "./dist/draco/metadata-entry.js",
+      "require": "./dist/draco/metadata-entry.cjs"
     },
     "./materialx": {
-      "types": "./dist/materialx.d.ts",
-      "import": "./dist/materialx.js",
-      "require": "./dist/materialx.cjs"
+      "types": "./dist/materialx/metadata-entry.d.ts",
+      "import": "./dist/materialx/metadata-entry.js",
+      "require": "./dist/materialx/metadata-entry.cjs"
     },
     "./stl": {
-      "types": "./dist/stl.d.ts",
-      "import": "./dist/stl.js",
-      "require": "./dist/stl.cjs"
+      "types": "./dist/stl/metadata-entry.d.ts",
+      "import": "./dist/stl/metadata-entry.js",
+      "require": "./dist/stl/metadata-entry.cjs"
     },
     "./usd/bundled": {
       "types": "./dist/usd-bundled.d.ts",
@@ -164,8 +164,8 @@
   ],
   "scripts": {
     "pre-build": "npm run copy-libs-usd && npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev && npm run copy-libs-draco && npm run build-draco-workers",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker-obj": "node ../../scripts/build-codec-worker.mjs src/obj/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
     "generate-gltf-schemas": "node scripts/gltf/generate-json-schema.mjs",

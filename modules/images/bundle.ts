@@ -85,10 +85,8 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
+export {ImageFormat, ImageBitmapFormat, ImageLoader} from '@loaders.gl/images/image';
 export {
-  ImageFormat,
-  ImageBitmapFormat,
-  ImageLoader,
   ImageWriter,
   getBinaryImageMetadata,
   isImageTypeSupported,
@@ -99,7 +97,7 @@ export {
   getImageData,
   getSupportedImageFormats,
   isImageFormatSupported
-} from '@loaders.gl/images/image';
+} from '@loaders.gl/images/image/bundled';
 export type {
   ImageDataType,
   ImageType,

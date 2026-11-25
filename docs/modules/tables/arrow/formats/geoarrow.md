@@ -175,7 +175,7 @@ Arrow-capable geospatial loaders accept a common encoding preference. The option
 `geoarrow.encodingPreference` alongside the loader-specific options:
 
 ```typescript
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 import {load} from '@loaders.gl/core';
 
 const table = await load('cities.geojson', GeoJSONLoader, {

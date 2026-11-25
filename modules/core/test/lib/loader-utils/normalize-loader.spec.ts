@@ -7,10 +7,10 @@ import {isLoaderObject, normalizeLoader} from '../../../src/lib/loader-utils/nor
 import * as threeDTiles from '@loaders.gl/tiles-3d/3d-tiles';
 import * as arrow from '@loaders.gl/tables/arrow';
 import * as csv from '@loaders.gl/tables/csv';
-import * as draco from '@loaders.gl/scene';
+import * as draco from '@loaders.gl/scene/draco';
 import * as tables from '@loaders.gl/core/schema-utils';
 import * as gltf from '@loaders.gl/scene/gltf';
-import * as images from '@loaders.gl/images';
+import * as images from '@loaders.gl/images/image';
 import * as kml from '@loaders.gl/geospatial/kml';
 import * as las from '@loaders.gl/pointclouds/las';
 import * as obj from '@loaders.gl/scene/obj';

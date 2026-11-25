@@ -5,16 +5,15 @@
 import {isBrowser} from '@loaders.gl/core';
 import {expect, test} from 'vitest';
 import {fetchFile, load} from '@loaders.gl/core';
+import {ImageLoader, ImageType} from '@loaders.gl/images/image';
 import {
-  ImageLoader,
-  ImageType,
   getDefaultImageType,
   isImageTypeSupported,
   isImage,
   getImageType,
   getImageSize,
   getImageData
-} from '@loaders.gl/images/image';
+} from '@loaders.gl/images/image/bundled';
 type ImageT = 'auto' | 'image' | 'imagebitmap' | 'data';
 const IMAGE_TYPES: ImageT[] = ['auto', 'image', 'imagebitmap', 'data'];
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';

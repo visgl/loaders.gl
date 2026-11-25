@@ -7,7 +7,7 @@ import {MemoryLog} from 'probe.gl/log';
 import {parse, load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import type {Schema} from '@loaders.gl/core/schema';
 import {JSONLoader, JSONTableLoader} from '@loaders.gl/tables/json';
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 import type {JSONLoaderOptions, JSONTableLoaderOptions} from '@loaders.gl/tables/json';
 import {
   JSONLoader as BundledJSONLoader,

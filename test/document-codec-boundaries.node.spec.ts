@@ -17,7 +17,7 @@ test('XML consumers depend on native documents rather than fast-xml-parser', () 
 test.each([
   'esm',
   'commonjs'
-])('installed %s scientific root remains metadata-only and preloads flat NPY', format => {
+])('installed %s scientific NPY entry remains metadata-only and preloads flat NPY', format => {
   const output = execFileSync(
     process.execPath,
     [
@@ -27,7 +27,7 @@ test.each([
     import assert from 'node:assert/strict';
     import {createRequire} from 'node:module';
     const require = createRequire(import.meta.url);
-    const scientific = ${format === 'esm' ? "await import('@loaders.gl/scientific')" : "require('@loaders.gl/scientific')"};
+    const scientific = ${format === 'esm' ? "await import('@loaders.gl/scientific/npy')" : "require('@loaders.gl/scientific/npy')"};
     assert.equal(scientific.NPYLoader.module, 'scientific');
     assert.equal(scientific.NPYLoader.parse, undefined);
     assert.equal(scientific.NPYLoaderWithParser, undefined);

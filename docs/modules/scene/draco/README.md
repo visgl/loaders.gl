@@ -101,7 +101,7 @@ Using the bundled WebAssembly decoder and encoder assets:
 
 ```typescript
 import {setLoaderOptions} from '@loaders.gl/core';
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco/bundled';
 setLoaderOptions(getDracoLibraryOptions());
 ```
 

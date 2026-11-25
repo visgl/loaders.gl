@@ -4,7 +4,7 @@
 
 import type {I3STileContent, I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
 import type {GLTFMaterial, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
-import {getBinaryImageMetadata} from '@loaders.gl/images/image';
+import {getBinaryImageMetadata} from '@loaders.gl/images/image/bundled';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {MeshTilesetSourceOptions} from './mesh-source.js';
 import {mapMeshSourceMaterial} from './mesh-source.js';

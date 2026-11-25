@@ -31,16 +31,14 @@ test('published raster exports and packaged assets exist', () => {
 test('native ESM metadata preloads implementations through package exports', () => {
   const source = `import assert from 'node:assert/strict';
     import {createRequire} from 'node:module';
-    const commonJs = createRequire(import.meta.url)('@loaders.gl/raster');
-    import * as metadata from '@loaders.gl/raster';
-    import * as geotiff from '@loaders.gl/raster/geotiff';
-    import * as lerc from '@loaders.gl/raster/lerc';
-    import * as terrain from '@loaders.gl/raster/terrain';
-    import * as quantized from '@loaders.gl/raster/quantized-mesh';
-    for (const [name, implementation] of [['GeoTIFFLoader', geotiff.GeoTIFFLoaderWithParser], ['GeoTIFFRasterLoader', geotiff.GeoTIFFRasterLoaderWithParser], ['LERCLoader', lerc.LERCLoaderWithParser], ['TerrainLoader', terrain.TerrainLoaderWithParser], ['QuantizedMeshLoader', quantized.QuantizedMeshLoaderWithParser]]) {
-      assert.equal(await metadata[name].preload(), implementation);
-      assert.equal(await commonJs[name].preload(), implementation);
-      assert.equal(metadata[name].parse, undefined);
+    const require = createRequire(import.meta.url);
+    for (const [format, name] of [['geotiff', 'GeoTIFFLoader'], ['geotiff', 'GeoTIFFRasterLoader'], ['lerc', 'LERCLoader'], ['terrain', 'TerrainLoader'], ['quantized-mesh', 'QuantizedMeshLoader']]) {
+      const specifier = '@loaders.gl/raster/' + format;
+      const metadata = (await import(specifier))[name];
+      const implementation = (await import(specifier + '/bundled'))[name];
+      assert.equal(await metadata.preload(), implementation);
+      assert.equal(await require(specifier)[name].preload(), implementation);
+      assert.equal(metadata.parse, undefined);
     }`;
   expect(() =>
     execFileSync(process.execPath, ['--input-type=module', '-e', source], {
@@ -52,7 +50,7 @@ test('native ESM metadata preloads implementations through package exports', () 
 
 test('CommonJS metadata root can asynchronously preload the ESM parser', async () => {
   const requirePackage = createRequire(path.resolve('package.json'));
-  const metadata = requirePackage('@loaders.gl/raster');
+  const metadata = requirePackage('@loaders.gl/raster/terrain');
   expect(metadata.TerrainLoader).not.toHaveProperty('parse');
   expect(typeof (await metadata.TerrainLoader.preload()).parse).toBe('function');
 });
@@ -60,7 +58,7 @@ test('CommonJS metadata root can asynchronously preload the ESM parser', async (
 test('terrain metadata bundle does not eagerly include optional raster decoders', async () => {
   const result = await build({
     stdin: {
-      contents: "export {TerrainLoader} from '@loaders.gl/raster';",
+      contents: "export {TerrainLoader} from '@loaders.gl/raster/terrain';",
       resolveDir: process.cwd(),
       sourcefile: 'raster-entry.js'
     },

@@ -11,11 +11,11 @@ import {
   GLTFWriter,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from '@loaders.gl/scene/gltf';
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+} from '@loaders.gl/scene/gltf/bundled';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {Matrix4} from '@math.gl/core/matrix';
 import {
   convertTileset,

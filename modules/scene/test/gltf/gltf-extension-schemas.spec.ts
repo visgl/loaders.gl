@@ -20,7 +20,9 @@ import {
   GLTFMPEGAudioSpatialSchema,
   getMaterialVariantMappings,
   getMeshInstances,
-  getXMPMetadata,
+  getXMPMetadata
+} from '@loaders.gl/scene/gltf/bundled';
+import {
   type GLTF,
   type GLTF_KHR_materials_variants,
   type GLTF_EXT_mesh_gpu_instancing,

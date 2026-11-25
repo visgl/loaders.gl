@@ -158,7 +158,7 @@ PDRF 4, 5, 9, and 10 store a fixed-width packet reference with each point, while
 import {
   parseLASWaveformPacketReference,
   readLASWaveformPacket
-} from '@loaders.gl/pointclouds/las';
+} from '@loaders.gl/pointclouds/las/bundled';
 import {HttpFile} from '@loaders.gl/core/loader-utils';
 
 const header = JSON.parse(table.schema.metadata.get('loaders.gl.las.header')!, (key, value) =>

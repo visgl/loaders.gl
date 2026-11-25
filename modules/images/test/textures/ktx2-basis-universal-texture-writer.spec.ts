@@ -4,10 +4,11 @@
 
 import {expect, test} from 'vitest';
 import {load, encode} from '@loaders.gl/core';
-import {ImageLoader, getImageData} from '@loaders.gl/images/image';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {getImageData} from '@loaders.gl/images/image/bundled';
 import {BasisLoader} from '@loaders.gl/images/basis';
-import {KTX2BasisWriter} from '@loaders.gl/images/basis';
-import {KTX2BasisWriterWorker} from '@loaders.gl/images/basis';
+import {KTX2BasisWriter} from '@loaders.gl/images/basis/bundled';
+import {KTX2BasisWriterWorker} from '@loaders.gl/images/basis/bundled';
 import {processOnWorker} from '@loaders.gl/core/worker-utils';
 const shannonPNG = '@loaders.gl/images/test/textures/data/shannon.png';
 const shannonJPG = '@loaders.gl/images/test/textures/data/shannon.jpg';

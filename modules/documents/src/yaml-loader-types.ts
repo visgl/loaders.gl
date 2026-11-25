@@ -12,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Preloads the parser-bearing YAML loader implementation. */
 async function preload() {
-  const {YAMLLoaderWithParser} = await import('@loaders.gl/documents/yaml');
+  const {YAMLLoaderWithParser} = await import('@loaders.gl/documents/yaml/bundled');
   return YAMLLoaderWithParser;
 }
 

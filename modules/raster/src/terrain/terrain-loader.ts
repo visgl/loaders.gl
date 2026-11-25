@@ -11,7 +11,8 @@ import {parseFromContext} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
 import type {Mesh} from '@loaders.gl/core/schema';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {ImageLoader, getImageData} from '@loaders.gl/images/image';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {getImageData} from '@loaders.gl/images/image/bundled';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
 import {
   TerrainLoader as TerrainLoaderMetadata,
