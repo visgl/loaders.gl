@@ -543,7 +543,7 @@ describe('RasterSourceLayer lifecycle', () => {
       bandCount: 3,
       bands: createBandMetadata('uint8', 'alpha', 'gray', 'undefined')
     };
-    layer.state = {rasterSet: {requestRaster}, metadata};
+    layer.state = {rasterSet: {requestRaster}, metadata, projectedCRS: null};
     layer.requestRaster(createViewport([-10, -5, 20, 15]));
 
     expect(requestRaster).toHaveBeenCalledWith(
