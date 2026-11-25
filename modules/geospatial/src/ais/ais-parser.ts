@@ -5,9 +5,10 @@
 import type {AISRow} from './ais-schema';
 import {decodeAISMessage} from './decode-ais-message';
 
-/** AIVDM or AIVDO framing, including optional tag blocks and a log suffix after the checksum. */
+/** AIVDM or AIVDO framing, including optional tag blocks and a log suffix after the checksum.
+ * The payload uses the 64 six-bit armor characters: `0`-`9`, `:;<=>?@`, `A`-`W`, a backtick and `a`-`w`. */
 const AIS_SENTENCE =
-  /^((?:\\[^\\]*\\[ \t]*)*)!((AIVD[MO]),([1-9]),([1-9]),(\d?),([AB12]?),([0-W`-w]+),([0-5]))\*([0-9a-fA-F]{2})(?=$|[,\s])/;
+  /^((?:\\[^\\]*\\[ \t]*)*)!((AIVD[MO]),([1-9]),([1-9]),(\d?),([AB12]?),([0-9:;<=>?@A-W`a-w]+),([0-5]))\*([0-9a-fA-F]{2})(?=$|[,\s])/;
 
 /** Options that control handling of AIS input errors. */
 type AISParseOptions = {
