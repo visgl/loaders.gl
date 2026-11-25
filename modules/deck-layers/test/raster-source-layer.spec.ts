@@ -3,8 +3,10 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
+import {BitmapLayer} from '@deck.gl/layers';
 import type {RasterData, RasterSourceMetadata} from '@loaders.gl/core/loader-utils';
 import {RasterSet} from '@loaders.gl/tiles/raster-set';
+import {RasterBitmapLayer} from '../src/raster-bitmap-layer';
 import {
   RasterSourceLayer,
   colorizeRasterData,
@@ -206,6 +208,176 @@ describe('raster viewport and placement', () => {
 });
 
 describe('RasterSourceLayer lifecycle', () => {
+  test('stretches each single-band response and applies explicit styling without reloading', async () => {
+    const firstRaster = createRaster([new Float32Array([2, -9999, NaN, 10])]);
+    const secondRaster = createRaster(new Float32Array([100, 150, 200, 300]));
+    const getRaster = vi
+      .fn()
+      .mockResolvedValueOnce(firstRaster)
+      .mockResolvedValueOnce(secondRaster);
+    const source = {getMetadata: async () => GEOGRAPHIC_METADATA, getRaster};
+    const metadata = {...GEOGRAPHIC_METADATA, noData: -9999};
+    const colorizeRaster = vi.fn();
+    const onRasterLoad = vi.fn();
+    const renderSubLayer = vi.fn(props => new RasterBitmapLayer(props));
+    const layer = createRasterLayer({
+      data: source,
+      metadata,
+      rendering: 'gpu',
+      pickable: true,
+      colorizeRaster,
+      onRasterLoad,
+      renderSubLayer
+    });
+    layer.context = {viewport: createViewport([-10, -5, 20, 15])};
+    layer.initializeState();
+    let matchedLayer = layer;
+    layer.getCurrentLayer = () => matchedLayer;
+
+    await layer.resolveSource(layer.props);
+    await vi.waitFor(() => expect(onRasterLoad).toHaveBeenCalledTimes(1));
+    const firstBitmap = layer.renderLayers();
+    expect(renderSubLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        valueRange: [2, 3],
+        valueScale: 'sqrt',
+        colormap: 'default',
+        pickable: true,
+        noData: -9999
+      })
+    );
+    expect(firstBitmap.props.raster.data).toBe(firstRaster.data[0]);
+    const pick = (red: number, green: number) => {
+      const parameters = {info: {color: new Uint8Array([red, green, 0])}, mode: 'hover'};
+      const info = firstBitmap.getPickingInfo(parameters);
+      return layer.getPickingInfo({...parameters, info, sourceLayer: firstBitmap}).value;
+    };
+    expect(pick(64, 64)).toBe(2);
+    expect(pick(192, 64)).toBeNull();
+    expect(pick(64, 192)).toBeNull();
+
+    const nextViewport = createViewport([30, 35, 60, 55]);
+    layer.requestRaster(nextViewport, 0);
+    await vi.waitFor(() => expect(onRasterLoad).toHaveBeenCalledTimes(2));
+    const secondBitmap = layer.renderLayers();
+    expect(secondBitmap.props.valueRange).toEqual([100, 200]);
+    expect(secondBitmap.props.raster.data).toBe(secondRaster.data);
+
+    const styledLayer = createRasterLayer({
+      ...layer.props,
+      valueRange: [100, 300],
+      colormap: 'gray',
+      valueScale: 'log'
+    });
+    styledLayer.state = layer.state;
+    styledLayer.context = {viewport: nextViewport};
+    matchedLayer = styledLayer;
+    styledLayer.updateState({
+      props: styledLayer.props,
+      oldProps: layer.props,
+      changeFlags: {propsChanged: 'valueRange, colormap, valueScale'}
+    });
+    const styledBitmap = styledLayer.renderLayers();
+    expect(styledBitmap.props).toMatchObject({
+      valueRange: [100, 300],
+      colormap: 'gray',
+      valueScale: 'log'
+    });
+    expect(styledBitmap.props.raster).toBe(secondBitmap.props.raster);
+    expect(getRaster).toHaveBeenCalledTimes(2);
+    expect(colorizeRaster).not.toHaveBeenCalled();
+
+    const replacementLayer = createRasterLayer({
+      ...layer.props,
+      data: {...source, getRaster: async () => secondRaster}
+    });
+    replacementLayer.state = layer.state;
+    replacementLayer.context = styledLayer.context;
+    matchedLayer = replacementLayer;
+    await replacementLayer.resolveSource(replacementLayer.props);
+    await vi.waitFor(() => expect(onRasterLoad).toHaveBeenCalledTimes(3));
+    expect(replacementLayer.renderLayers().props.valueRange).toEqual([100, 200]);
+    replacementLayer.releaseRasterSet();
+  });
+
+  test('keeps CPU colorization as the default and for multiband requests', () => {
+    const metadata = {...GEOGRAPHIC_METADATA, bandCount: 3};
+    const parameters = {viewport: createRasterViewport(createViewport([-1, -1, 1, 1]), metadata)};
+    const rasters = [
+      {layer: createRasterLayer(), raster: createRaster(new Float32Array([1, 2, 3, 4]))},
+      {
+        layer: createRasterLayer({rendering: 'gpu'}),
+        raster: createRaster(new Uint8Array(12), {bandCount: 3, dtype: 'uint8', interleaved: true})
+      }
+    ];
+    expect(rasters[0].layer.props.rendering).toBe('cpu');
+    for (const {layer, raster} of rasters) {
+      layer.initializeState();
+      layer.state.metadata = metadata;
+      layer.handleRasterLoad({requestId: 0, raster, parameters});
+      const bitmap = layer.renderLayers();
+      expect(bitmap.constructor).toBe(BitmapLayer);
+      expect(bitmap.props.image).toEqual(colorizeRasterData(raster));
+    }
+  });
+
+  test('stretches the current raster when an explicit range is cleared', () => {
+    const layer = createRasterLayer({rendering: 'gpu', valueRange: [0, 1]});
+    const parameters = {
+      viewport: createRasterViewport(createViewport([-1, -1, 1, 1]), GEOGRAPHIC_METADATA)
+    };
+    layer.initializeState();
+    layer.state.metadata = GEOGRAPHIC_METADATA;
+    layer.handleRasterLoad({
+      requestId: 0,
+      raster: createRaster(new Float32Array([2, 4, 6, 8])),
+      parameters
+    });
+    layer.handleRasterLoad({
+      requestId: 1,
+      raster: createRaster(new Float32Array([20, 30, 40, 50])),
+      parameters
+    });
+    const explicitBitmap = layer.renderLayers();
+    expect(explicitBitmap.props.valueRange).toEqual([0, 1]);
+
+    const automatic = createRasterLayer({
+      ...layer.props,
+      valueRange: undefined,
+      valueScale: undefined,
+      colormap: undefined
+    });
+    automatic.state = layer.state;
+    automatic.updateState({
+      props: automatic.props,
+      oldProps: layer.props,
+      changeFlags: {propsChanged: 'valueRange'}
+    });
+    const automaticBitmap = automatic.renderLayers();
+    expect(automaticBitmap.props).toMatchObject({
+      valueRange: [20, 40],
+      valueScale: 'sqrt',
+      colormap: 'default'
+    });
+    expect(automaticBitmap.props.raster).toBe(explicitBitmap.props.raster);
+  });
+
+  test('renders transparently when the CPU sampling pattern finds no valid samples', () => {
+    const layer = createRasterLayer({rendering: 'gpu'});
+    const samples = new Float32Array(4097).fill(NaN);
+    samples[samples.length - 1] = 17;
+    const raster = createRaster(samples, {width: samples.length, height: 1});
+    const parameters = {
+      viewport: createRasterViewport(createViewport([-1, -1, 1, 1]), GEOGRAPHIC_METADATA)
+    };
+    layer.initializeState();
+    layer.state.metadata = GEOGRAPHIC_METADATA;
+    layer.handleRasterLoad({requestId: 0, raster, parameters});
+
+    expect(layer.renderLayers().props.raster).toBeNull();
+    expect(colorizeRasterData(raster).data.every(byte => byte === 0)).toBe(true);
+  });
+
   test('initializes, updates, and renders accepted raster results', () => {
     const layer = createRasterLayer();
     layer.initializeState();

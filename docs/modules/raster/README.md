@@ -42,6 +42,11 @@ GeoTIFF and OME-TIFF source metadata is available from the root. Use asynchronou
 with metadata or import an explicit source implementation for synchronous `createDataSourceSync()`.
 Use the named source, discovery, and heightmap subpaths for advanced APIs; their references list the exported constructors and helpers.
 
+## Rendering with deck.gl
+
+- [RasterSourceLayer](./api-reference/raster-source-layer.md) requests a raster for the current viewport.
+- [RasterBitmapLayer](./api-reference/raster-bitmap-layer.md) draws a single-band raster with GPU styling.
+
 ## Optional decoder packages
 
 Install `geotiff` for the GeoTIFF image parser, GeoTIFF/COG source, and OME-TIFF source:
