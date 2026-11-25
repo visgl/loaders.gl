@@ -166,30 +166,15 @@
       "import": "./dist/crunch/bundled-entry.js",
       "require": "./dist/crunch/bundled-entry.cjs"
     },
-    "./image/api": {
-      "types": "./dist/image-api.d.ts",
-      "import": "./dist/image-api.js",
-      "require": "./dist/image-api.cjs"
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
     },
-    "./color-lut/api": {
-      "types": "./dist/color-lut-api.d.ts",
-      "import": "./dist/color-lut-api.js",
-      "require": "./dist/color-lut-api.cjs"
-    },
-    "./texture/api": {
-      "types": "./dist/texture-api.d.ts",
-      "import": "./dist/texture-api.js",
-      "require": "./dist/texture-api.cjs"
-    },
-    "./basis/api": {
-      "types": "./dist/basis-api.d.ts",
-      "import": "./dist/basis-api.js",
-      "require": "./dist/basis-api.cjs"
-    },
-    "./crunch/api": {
-      "types": "./dist/crunch/api.d.ts",
-      "import": "./dist/crunch/api.js",
-      "require": "./dist/crunch/api.cjs"
+    "./gif-builder": {
+      "types": "./dist/gif-builder.d.ts",
+      "import": "./dist/gif-builder.js",
+      "require": "./dist/gif-builder.cjs"
     }
   },
   "sideEffects": false,

@@ -23,7 +23,7 @@ import with `@loaders.gl/<package>/<format>`. For eager parsing, writers, and di
 construction, use `@loaders.gl/<package>/<format>/bundled`. Both paths export loaders
 under their ordinary names. The core framework is available at `@loaders.gl/core/api`,
 and tileset traversal at `@loaders.gl/tiles-3d/tileset`. Existing core root imports remain supported.
-Image utilities such as `getBinaryImageMetadata` now use `@loaders.gl/images/image/api`.
+Image utilities such as `getBinaryImageMetadata` now use `@loaders.gl/images/api`.
 
 
 For table formats, use the following subpaths.

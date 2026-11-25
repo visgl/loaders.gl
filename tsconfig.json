@@ -1158,9 +1158,6 @@
       "@loaders.gl/images/basis/bundled": [
         "modules/images/src/basis-bundled-entry.ts"
       ],
-      "@loaders.gl/images/image/api": [
-        "modules/images/src/image-api.ts"
-      ],
       "@loaders.gl/images/image/bundled": [
         "modules/images/src/image-bundled.ts"
       ],
@@ -1380,18 +1377,6 @@
       "@loaders.gl/geospatial/wkb/api": [
         "modules/geospatial/src/wkb-api.ts"
       ],
-      "@loaders.gl/images/color-lut/api": [
-        "modules/images/src/color-lut-api.ts"
-      ],
-      "@loaders.gl/images/texture/api": [
-        "modules/images/src/texture-api.ts"
-      ],
-      "@loaders.gl/images/basis/api": [
-        "modules/images/src/basis-api.ts"
-      ],
-      "@loaders.gl/images/crunch/api": [
-        "modules/images/src/crunch/api.ts"
-      ],
       "@loaders.gl/ogc/wms/bundled": [
         "modules/ogc/src/wms/bundled-entry.ts"
       ],
@@ -1484,6 +1469,12 @@
       ],
       "@loaders.gl/traces/chrome-trace/api": [
         "modules/traces/src/chrome-trace-api.ts"
+      ],
+      "@loaders.gl/images/api": [
+        "modules/images/src/api.ts"
+      ],
+      "@loaders.gl/images/gif-builder": [
+        "modules/images/src/gif-builder.ts"
       ]
     },
     "plugins": [

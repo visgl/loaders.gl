@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {load, encode} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images/image';
-import {getImageData} from '@loaders.gl/images/image/api';
+import {getImageData} from '@loaders.gl/images/api';
 import {BasisLoader} from '@loaders.gl/images/basis';
 import {KTX2BasisWriter} from '@loaders.gl/images/basis/bundled';
 import {KTX2BasisWriterWorker} from '@loaders.gl/images/basis/bundled';

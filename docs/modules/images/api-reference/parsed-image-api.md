@@ -50,7 +50,7 @@ E.g., the `getImageData` method enables the application to get width, height and
 
 ```typescript
 import {ImageLoader} from '@loaders.gl/images/image';
-import {getImageSize, getImageData} from '@loaders.gl/images/image/api';
+import {getImageSize, getImageData} from '@loaders.gl/images/api';
 import {load} from '@loaders.gl/core';
 
 const image = await load(URL, ImageLoader);

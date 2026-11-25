@@ -10,7 +10,7 @@ import type {GLTF_EXT_texture_avif} from '../types/gltf-json-schema';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader-types';
 
-import {getSupportedImageFormats} from '@loaders.gl/images/image/api';
+import {getSupportedImageFormats} from '@loaders.gl/images/api';
 import {GLTFIterator} from '../api/gltf-iterator';
 
 const EXT_TEXTURE_AVIF = 'EXT_texture_avif';
