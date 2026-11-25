@@ -70,8 +70,9 @@ vec4 raster_sample(vec2 uv) {
   } else {
     weightedValue = raster_read(ivec2(position), size, 1.0);
   }
+  // Invalid texels are transparent, so BitmapLayer applies transparentColor as on the CPU path.
   if (weightedValue.y == 0.0) {
-    discard;
+    return vec4(0.0);
   }
 
   float value = weightedValue.x / weightedValue.y;
@@ -142,8 +143,9 @@ fn raster_sample(uv: vec2<f32>) -> vec4<f32> {
   } else {
     weightedValue = raster_read(vec2<i32>(position), size, 1.0);
   }
+  // Invalid texels are transparent, so BitmapLayer applies transparentColor as on the CPU path.
   if (weightedValue.y == 0.0) {
-    discard;
+    return vec4<f32>(0.0);
   }
 
   let value = weightedValue.x / weightedValue.y;
