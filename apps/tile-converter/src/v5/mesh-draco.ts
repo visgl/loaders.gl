@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {DracoLoader, type DracoMesh} from '@loaders.gl/scene/draco';
-import {encodeDraco, hasSameDracoMeshTriangles} from '@loaders.gl/scene/draco';
+import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
+import {hasSameDracoMeshTriangles} from '@loaders.gl/scene/api';
 import type {GLTFAccessor} from '@loaders.gl/scene/gltf';
 import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {LoadLibraryOptions} from '@loaders.gl/core/worker-utils';
@@ -40,7 +41,7 @@ export async function encodeDracoMeshTile(
   const {modules, useLocalLibraries, CDN: contentDeliveryNetwork} = libraryOptions;
   const runtimeOptions = {modules, core: {useLocalLibraries, CDN: contentDeliveryNetwork}};
   const {scenegraph, materialIndex} = createMeshTileScenegraph(options, geometry);
-  const encoded = await encodeDraco(geometry, {
+  const encoded = await DracoWriter.encodeGeometry(geometry, {
     ...runtimeOptions,
     draco: {method: 'MESH_EDGEBREAKER_ENCODING'}
   });

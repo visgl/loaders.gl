@@ -1,3 +1,4 @@
+import {COPCLoaderMetadata} from './copc-loader-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -50,17 +51,16 @@ import type {Projection} from '@math.gl/geospatial/projection';
 import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
 import {
   createLASTypedExtraBytesAttributes,
+  populateLASTypedExtraBytes
+} from '@loaders.gl/pointclouds/las/api';
+import {
   LASLoader,
   type LASLoaderOptions,
-  populateLASTypedExtraBytes,
   type LASTypedExtraBytesAttribute
 } from '@loaders.gl/pointclouds/las';
 
 import {normalizeCOPCProjectionDefinition} from './lib/copc-wkt';
 
-// __VERSION__ is injected by the package build.
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const COPC_PREFIX_CACHE_LENGTH = 65536;
 const COORDINATE_SYSTEM = {
   CARTESIAN: 'cartesian',
@@ -164,7 +164,6 @@ type COPCPointDataArrays = {
   typedExtraBytes: LASTypedExtraBytesAttribute[];
 };
 
-import {COPCFormat} from './copc-format';
 import {
   formatCOPCKey,
   getCOPCKeyBounds,
@@ -265,30 +264,7 @@ export type COPCTileContent = {
  * Creates point cloud tile source for COPC urls or blobs
  */
 export const COPCLoader = {
-  ...COPCFormat,
-  dataType: null as unknown as COPCTileSource,
-  batchType: null as never,
-  name: 'COPC',
-  id: 'copc',
-  module: 'tiles-3d',
-  version: VERSION,
-  encoding: 'binary',
-  format: 'copc',
-  extensions: ['laz'],
-  mimeTypes: ['application/octet-stream'],
-  type: 'copc',
-  fromUrl: true,
-  fromBlob: true,
-
-  options: {
-    copc: {colorFormat: 'uint8norm'}
-  },
-
-  defaultOptions: {
-    copc: {colorFormat: 'uint8norm'}
-  },
-
-  testURL: (url: string) => /\.copc\.laz($|\?)/i.test(url),
+  ...COPCLoaderMetadata,
   createDataSourceSync: (url: string | Blob, options: COPCLoaderOptions, coreApi?: CoreAPI) =>
     new COPCTileSource(url, options, coreApi)
 } as const satisfies SourceLoader<COPCTileSource>;

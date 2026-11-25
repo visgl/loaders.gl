@@ -9,15 +9,16 @@ test('TAR package subpaths expose metadata and parser APIs', async () => {
   const parserPackage = require('@loaders.gl/archives/tar-loader');
   const writerPackage = require('@loaders.gl/archives/tar-writer');
 
-  expect(archivePackage.TarLoader.parse).toBeUndefined();
+  expect(Object.keys(archivePackage)).toEqual([]);
   expect(tarPackage.TarLoader.parse).toBeUndefined();
   expect(parserPackage.TarLoaderWithParser.parse).toBeTypeOf('function');
   expect(writerPackage.TarWriter.encode).toBeTypeOf('function');
-  expect(tarPackage.readTarArchive).toBeTypeOf('function');
+  expect(require('@loaders.gl/archives/api').readTarArchive).toBeTypeOf('function');
 });
 
 test('TAR writer preserves the exact bytes of a Node Buffer slice', async () => {
-  const {TarWriter, readTarArchive} = require('@loaders.gl/archives/tar');
+  const {TarWriter} = require('@loaders.gl/archives/tar/bundled');
+  const {readTarArchive} = require('@loaders.gl/archives/api');
   const pooled = Buffer.from([99, 1, 2, 3, 99]);
   const archive = await TarWriter.encode({'buffer.bin': pooled.subarray(1, 4)});
   expect(new Uint8Array(readTarArchive(archive)['buffer.bin'])).toEqual(new Uint8Array([1, 2, 3]));

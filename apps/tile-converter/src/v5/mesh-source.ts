@@ -5,7 +5,7 @@
 import {Matrix4} from '@math.gl/core/matrix';
 import type {MeshAttribute} from '@loaders.gl/core/schema';
 import type {GLTFWithBuffers, GLTFMeshPrimitive, GLTFMaterial} from '@loaders.gl/scene/gltf';
-import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
+import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/api';
 import type {Tileset3D, TilesetSourceMetadata} from '@loaders.gl/tiles-3d/tileset';
 import {TileConversionError} from '@loaders.gl/tile-converter/v5/core';
 import type {TileConversionSource} from '@loaders.gl/tile-converter/v5/core';

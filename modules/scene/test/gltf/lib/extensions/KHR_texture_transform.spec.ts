@@ -6,7 +6,8 @@
 import {expect, test} from 'vitest';
 
 import {parse, fetchFile} from '@loaders.gl/core';
-import {GLTFLoader, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {getGLTFAccessorValue} from '@loaders.gl/scene/api';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
 import type {GLTFLoaderOptions} from '../../../../src/gltf/gltf-loader-types';
 import {decode as decodeTextureTransform} from '../../../../src/gltf/lib/extensions/KHR_texture_transform';

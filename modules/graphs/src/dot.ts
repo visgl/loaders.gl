@@ -8,4 +8,3 @@ export type {DOTMetadata} from './dot-types';
 export type {DOTSubgraph} from './dot-types';
 export type {DOTOutput} from './dot-types';
 export type {DOTLoaderOptions} from './dot-loader-types';
-export {DOTLoaderWithParser} from './dot-loader';

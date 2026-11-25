@@ -1,5 +1,5 @@
 import {describe, expect, test, vi} from 'vitest';
-import {getGaussianSplatPrimitives} from '@loaders.gl/scene/gltf';
+import {getGaussianSplatPrimitives} from '@loaders.gl/scene/api';
 import {decode} from '../../../../src/gltf/lib/extensions/KHR_gaussian_splatting';
 
 const baseAttributes = {

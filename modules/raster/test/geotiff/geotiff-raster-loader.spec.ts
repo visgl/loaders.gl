@@ -6,7 +6,7 @@ import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, load, parse} from '@loaders.gl/core';
 import {GeoTIFFRasterLoader} from '@loaders.gl/raster/geotiff';
 import type {GeoTIFFRasterData} from '@loaders.gl/raster/geotiff';
-import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';
 
 /** Resolve an authored, local numeric TIFF fixture. */
 const fixture = (name: string) => `@loaders.gl/raster/test/geotiff/data/numeric/${name}.tif`;

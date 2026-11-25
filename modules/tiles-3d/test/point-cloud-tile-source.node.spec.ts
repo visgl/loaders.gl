@@ -30,7 +30,7 @@ test('installed ESM and CommonJS point sources expose the same decoded-data API'
         assert.equal((await source.getRootTile()).id, 'r');
       } finally { source.close(); }
     }
-    for (const metadata of [await import('@loaders.gl/tiles-3d'), require('@loaders.gl/tiles-3d')]) {
+    for (const metadata of [await import('@loaders.gl/tiles-3d/point-cloud'), require('@loaders.gl/tiles-3d/point-cloud')]) {
       assert.equal(metadata.PointCloudTileSource, undefined);
       assert.throws(() => metadata.PointCloudTileLoader.createDataSourceSync(), /preload/);
     }

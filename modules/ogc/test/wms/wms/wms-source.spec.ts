@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {withFetchMock, mockResults, requestInits} from '../test-utils/fetch-spy';
-import {WMSLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms/bundled';
 const WMS_SERVICE_URL = 'https:/mock-wms-service';
 const WMS_VERSION = '1.3.0';
 test('WMSLoader#constructor', async () => {

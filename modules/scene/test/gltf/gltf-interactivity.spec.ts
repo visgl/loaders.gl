@@ -6,14 +6,14 @@ import {beforeAll, expect, expectTypeOf, test} from 'vitest';
 import {encodeSync, load, parse} from '@loaders.gl/core';
 import {
   GLTFLoader,
-  GLTFWriter,
-  getGLTFInteractivity,
   type GLTF,
   type GLTFWithBuffers,
   type GLTFInteractivityValue,
   type GLTFInteractivityEvent,
   type GLTFInteractivityDeclaration
 } from '@loaders.gl/scene/gltf';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
+import {getGLTFInteractivity} from '@loaders.gl/scene/api';
 
 let parsed: GLTFWithBuffers;
 beforeAll(async () => {

@@ -5,7 +5,7 @@ title: Archives
 import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
 
 
-`@loaders.gl/archives` provides ZIP and TAR archive loaders and writers. Install `@loaders.gl/core` and `@loaders.gl/archives`. The root exports metadata loaders and writers; import format-specific helpers from [`@loaders.gl/archives/zip`](./zip/README.md) or [`@loaders.gl/archives/tar`](./tar/README.md).
+`@loaders.gl/archives` provides ZIP and TAR archive loaders and writers. Install `@loaders.gl/core` and `@loaders.gl/archives`. Use the bundled subpaths for writers and `@loaders.gl/archives/api` for archive utilities. See [`@loaders.gl/archives/zip`](./zip/README.md) or [`@loaders.gl/archives/tar`](./tar/README.md).
 
 ## Sources and credits
 

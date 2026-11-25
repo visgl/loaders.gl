@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
+import {OMEZarrImageSource} from '@loaders.gl/scientific/zarr/bundled';
 import {expect, test} from 'vitest';
 
 test('OMEZarrImageSource selects channels from an interleaved _c array', async () => {

@@ -5,7 +5,8 @@
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {createAuthenticatedFetch, type FetchLike} from '@loaders.gl/core/loader-utils';
 import {load} from '@loaders.gl/core';
-import {resolveCesiumIonTileset, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {resolveCesiumIonTileset} from '../../src/3d-tiles/lib/ion/ion';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 afterEach(() => vi.unstubAllGlobals());
 

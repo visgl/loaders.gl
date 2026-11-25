@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {NPYLoader} from '@loaders.gl/scientific/npy';
 import {setLoaderOptions, load, fetchFile} from '@loaders.gl/core';
-import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy';
+import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy/bundled';
 const NPY_UINT8_URL = '@loaders.gl/scientific/test/npy/data/uint8.npy';
 setLoaderOptions({core: {_workerType: 'test'}});
 test('NPYLoader#loader objects', async () => {

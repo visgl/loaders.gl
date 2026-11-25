@@ -50,39 +50,39 @@
       "require": "./dist/bson-codec.cjs"
     },
     "./json": {
-      "types": "./dist/json.d.ts",
-      "import": "./dist/json.js",
-      "require": "./dist/json.cjs"
+      "types": "./dist/json/metadata-entry.d.ts",
+      "import": "./dist/json/metadata-entry.js",
+      "require": "./dist/json/metadata-entry.cjs"
     },
     "./xml": {
-      "types": "./dist/xml.d.ts",
-      "import": "./dist/xml.js",
-      "require": "./dist/xml.cjs"
+      "types": "./dist/xml/metadata-entry.d.ts",
+      "import": "./dist/xml/metadata-entry.js",
+      "require": "./dist/xml/metadata-entry.cjs"
     },
     "./html": {
-      "types": "./dist/html.d.ts",
-      "import": "./dist/html.js",
-      "require": "./dist/html.cjs"
+      "types": "./dist/html/metadata-entry.d.ts",
+      "import": "./dist/html/metadata-entry.js",
+      "require": "./dist/html/metadata-entry.cjs"
     },
     "./yaml": {
-      "types": "./dist/yaml.d.ts",
-      "import": "./dist/yaml.js",
-      "require": "./dist/yaml.cjs"
+      "types": "./dist/yaml/metadata-entry.d.ts",
+      "import": "./dist/yaml/metadata-entry.js",
+      "require": "./dist/yaml/metadata-entry.cjs"
     },
     "./toml": {
-      "types": "./dist/toml.d.ts",
-      "import": "./dist/toml.js",
-      "require": "./dist/toml.cjs"
+      "types": "./dist/toml/metadata-entry.d.ts",
+      "import": "./dist/toml/metadata-entry.js",
+      "require": "./dist/toml/metadata-entry.cjs"
     },
     "./bson": {
-      "types": "./dist/bson.d.ts",
-      "import": "./dist/bson.js",
-      "require": "./dist/bson.cjs"
+      "types": "./dist/bson/metadata-entry.d.ts",
+      "import": "./dist/bson/metadata-entry.js",
+      "require": "./dist/bson/metadata-entry.cjs"
     },
     "./markdown": {
-      "types": "./dist/markdown.d.ts",
-      "import": "./dist/markdown.js",
-      "require": "./dist/markdown.cjs"
+      "types": "./dist/markdown/metadata-entry.d.ts",
+      "import": "./dist/markdown/metadata-entry.js",
+      "require": "./dist/markdown/metadata-entry.cjs"
     },
     "./json/bundled": {
       "types": "./dist/json-bundled.d.ts",
@@ -110,14 +110,19 @@
       "require": "./dist/toml-bundled.cjs"
     },
     "./bson/bundled": {
-      "types": "./dist/bson-bundled.d.ts",
-      "import": "./dist/bson-bundled.js",
-      "require": "./dist/bson-bundled.cjs"
+      "types": "./dist/bson-bundled-entry.d.ts",
+      "import": "./dist/bson-bundled-entry.js",
+      "require": "./dist/bson-bundled-entry.cjs"
     },
     "./markdown/bundled": {
       "types": "./dist/markdown-bundled.d.ts",
       "import": "./dist/markdown-bundled.js",
       "require": "./dist/markdown-bundled.cjs"
+    },
+    "./bson/api": {
+      "types": "./dist/bson-api.d.ts",
+      "import": "./dist/bson-api.js",
+      "require": "./dist/bson-api.cjs"
     }
   },
   "sideEffects": false,

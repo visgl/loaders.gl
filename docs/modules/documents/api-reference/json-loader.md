@@ -15,7 +15,7 @@ The root loader is metadata-only. Async APIs preload the native parser automatic
 
 ```typescript
 import {parseSync} from '@loaders.gl/core';
-import {JSONLoaderWithParser} from '@loaders.gl/documents/json';
+import {JSONLoaderWithParser} from '@loaders.gl/documents/json/bundled';
 
 const value = parseSync('[1,2,3]', JSONLoaderWithParser);
 ```

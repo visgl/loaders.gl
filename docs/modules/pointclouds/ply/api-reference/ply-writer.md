@@ -56,7 +56,7 @@ The `PLYWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow
 ```typescript
 import {encode} from '@loaders.gl/core';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
-import {PLYWriter} from '@loaders.gl/pointclouds/ply';
+import {PLYWriter} from '@loaders.gl/pointclouds/ply/bundled';
 
 declare const mesh: Mesh | MeshArrowTable;
 

@@ -1,4 +1,5 @@
-import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 
 /** Authored glTF wrapping/filtering exercised by the source mapping tests. */
 export const TEXTURE_SAMPLER = {

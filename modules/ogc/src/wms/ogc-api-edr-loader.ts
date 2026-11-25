@@ -1,3 +1,4 @@
+import {OGCAPIEDRLoaderMetadata} from './ogc-api-edr-loader-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -99,23 +100,7 @@ export class OGCAPIEDRSource extends DataSource<string, OGCAPIEDRLoaderOptions> 
 
 /** Source loader for OGC API EDR services. */
 export const OGCAPIEDRLoader = {
-  dataType: null as unknown as OGCAPIEDRSource,
-  batchType: null as never,
-  name: 'OGC API EDR',
-  id: 'ogc-api-edr',
-  module: 'ogc',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: ['application/json', 'application/geo+json'],
-  type: 'ogc-api-edr',
-  fromUrl: true,
-  fromBlob: false,
-  options: {'ogc-api-edr': {}},
-  defaultOptions: {'ogc-api-edr': {}},
-  testURL: (url: string): boolean =>
-    /(?:\/edr(?:\/|$)|ogc[/-]?api[/-]?edr|\/collections\/[^/]+\/(?:position|radius|area|cube|trajectory|corridor|locations)(?:\/|$))/i.test(
-      url
-    ),
+  ...OGCAPIEDRLoaderMetadata,
   createDataSourceSync: (url: string, options: OGCAPIEDRLoaderOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPIEDRSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPIEDRSource>;

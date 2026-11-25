@@ -5,7 +5,9 @@
 import {describe, expect, test, vi} from 'vitest';
 import {validateString, validateBytes} from 'gltf-validator';
 import {parse, encodeSync} from '@loaders.gl/core';
-import {convertGLTFV1ToGLTF2, GLTFLoader, GLTFWriter} from '@loaders.gl/scene/gltf';
+import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/api';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
 
 const COMMON = 'KHR_materials_common';

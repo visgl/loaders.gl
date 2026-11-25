@@ -70,7 +70,8 @@ Use the core writer API to encode loaded glTF data:
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {GLTFLoader, GLTFWriter} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {load} from '@loaders.gl/core';
 
 const gltf = await load(url, GLTFLoader);
@@ -136,7 +137,7 @@ glTF parsing does not initialize the decoder.
 extensions. It preserves the original JSON and provides scene traversal and lazy byte access:
 
 ```typescript
-import {GLTFSource} from '@loaders.gl/scene/gltf';
+import {GLTFSource} from '@loaders.gl/scene/gltf/bundled';
 
 const source = await GLTFSource.open('https://example.com/model.glb');
 try {

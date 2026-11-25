@@ -52,7 +52,7 @@ In your application's TypeScript entry point:
 import {Deck} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 const serviceUrl =
   'https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0';
@@ -115,7 +115,7 @@ a source. With ESM code splitting, unused service implementations stay out of th
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const source = await load(serviceUrl, ARCGIS_LOADERS, {
   core: {type: 'arcgis-feature-server'}
@@ -133,14 +133,13 @@ const source = createDataSourceSync(serviceUrl, [ArcGISFeatureServerLoader], {})
 
 Source construction is synchronous in this example; network methods remain asynchronous.
 Authentication, discovery and scene aggregation have dedicated entrypoints so applications can
-import these helpers without retaining service implementations. `/bundled` also exports them for
-applications already using runtime source classes.
+import these helpers without retaining service implementations. The `@loaders.gl/arcgis/api` entry point also groups the standalone service APIs.
 
 
 | Import | Use |
 | --- | --- |
 | `@loaders.gl/arcgis` | Async `load()`, deck.gl `SourceLayer`, lightweight registry and shared types |
-| `@loaders.gl/arcgis/bundled` | Synchronous `createDataSourceSync()`, runtime registry, direct source classes and helpers |
+| `@loaders.gl/arcgis/bundled` | Synchronous `createDataSourceSync()`, runtime registry, and direct source classes |
 | `@loaders.gl/arcgis/authentication` | `ArcGISAuthentication` and `createArcGISCredential` |
 | `@loaders.gl/arcgis/discovery` | `getArcGISServices`, `discoverArcGISCapabilities` and `selectArcGISService` |
 | `@loaders.gl/arcgis/scene-aggregation` | `aggregateArcGISSceneFeatures` |

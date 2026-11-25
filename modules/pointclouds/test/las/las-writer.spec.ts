@@ -5,7 +5,8 @@
 import {LASCOPCLoaderWithParser as LASCOPCLoader} from '../../../../website/src/alternate-loaders/las/las-copc-loader';
 import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
-import {LASLoader, LASWriter, type LASExtraBytesWriter} from '@loaders.gl/pointclouds/las';
+import {LASLoader, type LASExtraBytesWriter} from '@loaders.gl/pointclouds/las';
+import {LASWriter} from '@loaders.gl/pointclouds/las/bundled';
 import {encode, parse} from '@loaders.gl/core';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/core/loader-utils';
 import {convertMeshToTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';

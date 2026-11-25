@@ -91,10 +91,9 @@ export {
   PotreeBinFormat,
   PotreeLoader,
   PotreeHierarchyChunkLoader,
-  PotreeBinLoader,
-  PotreeWriter,
-  encodePotreeDataset
+  PotreeBinLoader
 } from '@loaders.gl/tiles-3d/potree';
+export {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 export type {
   PotreeDatasetMetadata,
   HierarchyItem,

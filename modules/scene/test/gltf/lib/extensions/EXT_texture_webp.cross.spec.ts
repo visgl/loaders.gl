@@ -5,12 +5,12 @@
 /* eslint-disable camelcase */
 import {afterEach, describe, expect, test, vi} from 'vitest';
 
-vi.mock('@loaders.gl/images/image', async importOriginal => ({
+vi.mock('@loaders.gl/images/api', async importOriginal => ({
   ...(await importOriginal()),
   isImageFormatSupported: vi.fn()
 }));
 
-import {isImageFormatSupported} from '@loaders.gl/images/image';
+import {isImageFormatSupported} from '@loaders.gl/images/api';
 import {preprocess} from '../../../../src/gltf/lib/extensions/EXT_texture_webp';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
 

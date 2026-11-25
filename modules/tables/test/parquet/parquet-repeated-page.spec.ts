@@ -5,7 +5,7 @@
 import {encode} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {createParquetPagePruningPlan} from '../../src/parquet/lib/parquet-page-index';
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 import {expect, test} from 'vitest';

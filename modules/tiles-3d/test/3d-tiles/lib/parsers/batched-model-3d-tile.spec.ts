@@ -7,7 +7,9 @@
 
 import {expect, test} from 'vitest';
 import {parse, encodeSync, fetchFile} from '@loaders.gl/core';
-import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tile3DWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {TILE3D_TYPE} from '@loaders.gl/tiles-3d/api';
 import {ImageLoader} from '@loaders.gl/images/image';
 import {loadRootTileFromTileset, loadRootTile} from '../utils/load-utils';
 const EPSILON = 1e-12;

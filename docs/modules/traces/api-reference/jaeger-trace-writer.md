@@ -51,7 +51,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import {encode, load} from '@loaders.gl/core';
-import {JaegerTraceLoader, JaegerTraceWriter} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceWriter} from '@loaders.gl/traces/jaeger/bundled';
 
 const trace = await load('trace.jaeger.json', JaegerTraceLoader);
 const queryResponse = await encode(trace, JaegerTraceWriter, {

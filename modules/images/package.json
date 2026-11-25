@@ -33,9 +33,9 @@
       "require": "./dist/index.cjs"
     },
     "./bundled": {
-      "types": "./dist/bundled.d.ts",
-      "import": "./dist/bundled.js",
-      "require": "./dist/bundled.cjs"
+      "types": "./dist/bundled-entry.d.ts",
+      "import": "./dist/bundled-entry.js",
+      "require": "./dist/bundled-entry.cjs"
     },
     "./basis-worker.js": {
       "import": "./dist/basis-worker.js"
@@ -77,64 +77,64 @@
       "require": "./dist/types.cjs"
     },
     "./color-lut": {
-      "types": "./dist/color-lut.d.ts",
-      "import": "./dist/color-lut.js",
-      "require": "./dist/color-lut.cjs"
+      "types": "./dist/color-lut/metadata-entry.d.ts",
+      "import": "./dist/color-lut/metadata-entry.js",
+      "require": "./dist/color-lut/metadata-entry.cjs"
     },
     "./texture": {
-      "types": "./dist/texture.d.ts",
-      "import": "./dist/texture.js",
-      "require": "./dist/texture.cjs"
+      "types": "./dist/texture/metadata-entry.d.ts",
+      "import": "./dist/texture/metadata-entry.js",
+      "require": "./dist/texture/metadata-entry.cjs"
     },
     "./basis": {
-      "types": "./dist/basis.d.ts",
-      "import": "./dist/basis.js",
-      "require": "./dist/basis.cjs"
+      "types": "./dist/basis/metadata-entry.d.ts",
+      "import": "./dist/basis/metadata-entry.js",
+      "require": "./dist/basis/metadata-entry.cjs"
     },
     "./image": {
-      "types": "./dist/image.d.ts",
-      "import": "./dist/image.js",
-      "require": "./dist/image.cjs"
+      "types": "./dist/image/metadata-entry.d.ts",
+      "import": "./dist/image/metadata-entry.js",
+      "require": "./dist/image/metadata-entry.cjs"
     },
     "./video": {
-      "types": "./dist/video.d.ts",
-      "import": "./dist/video.js",
-      "require": "./dist/video.cjs"
+      "types": "./dist/video/metadata-entry.d.ts",
+      "import": "./dist/video/metadata-entry.js",
+      "require": "./dist/video/metadata-entry.cjs"
     },
     "./radiance-hdr": {
-      "types": "./dist/radiance-hdr.d.ts",
-      "import": "./dist/radiance-hdr.js",
-      "require": "./dist/radiance-hdr.cjs"
+      "types": "./dist/radiance-hdr/metadata-entry.d.ts",
+      "import": "./dist/radiance-hdr/metadata-entry.js",
+      "require": "./dist/radiance-hdr/metadata-entry.cjs"
     },
     "./crunch": {
-      "types": "./dist/crunch.d.ts",
-      "import": "./dist/crunch.js",
-      "require": "./dist/crunch.cjs"
+      "types": "./dist/crunch/metadata-entry.d.ts",
+      "import": "./dist/crunch/metadata-entry.js",
+      "require": "./dist/crunch/metadata-entry.cjs"
     },
     "./ies": {
-      "types": "./dist/ies.d.ts",
-      "import": "./dist/ies.js",
-      "require": "./dist/ies.cjs"
+      "types": "./dist/ies/metadata-entry.d.ts",
+      "import": "./dist/ies/metadata-entry.js",
+      "require": "./dist/ies/metadata-entry.cjs"
     },
     "./exr": {
-      "types": "./dist/exr.d.ts",
-      "import": "./dist/exr.js",
-      "require": "./dist/exr.cjs"
+      "types": "./dist/exr/metadata-entry.d.ts",
+      "import": "./dist/exr/metadata-entry.js",
+      "require": "./dist/exr/metadata-entry.cjs"
     },
     "./color-lut/bundled": {
-      "types": "./dist/color-lut-bundled.d.ts",
-      "import": "./dist/color-lut-bundled.js",
-      "require": "./dist/color-lut-bundled.cjs"
+      "types": "./dist/color-lut-bundled-entry.d.ts",
+      "import": "./dist/color-lut-bundled-entry.js",
+      "require": "./dist/color-lut-bundled-entry.cjs"
     },
     "./texture/bundled": {
-      "types": "./dist/texture-bundled.d.ts",
-      "import": "./dist/texture-bundled.js",
-      "require": "./dist/texture-bundled.cjs"
+      "types": "./dist/texture-bundled-entry.d.ts",
+      "import": "./dist/texture-bundled-entry.js",
+      "require": "./dist/texture-bundled-entry.cjs"
     },
     "./basis/bundled": {
-      "types": "./dist/basis-bundled.d.ts",
-      "import": "./dist/basis-bundled.js",
-      "require": "./dist/basis-bundled.cjs"
+      "types": "./dist/basis-bundled-entry.d.ts",
+      "import": "./dist/basis-bundled-entry.js",
+      "require": "./dist/basis-bundled-entry.cjs"
     },
     "./image/bundled": {
       "types": "./dist/image-bundled.d.ts",
@@ -160,6 +160,21 @@
       "types": "./dist/exr-bundled.d.ts",
       "import": "./dist/exr-bundled.js",
       "require": "./dist/exr-bundled.cjs"
+    },
+    "./crunch/bundled": {
+      "types": "./dist/crunch/bundled-entry.d.ts",
+      "import": "./dist/crunch/bundled-entry.js",
+      "require": "./dist/crunch/bundled-entry.cjs"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
+    },
+    "./gif-builder": {
+      "types": "./dist/gif-builder.d.ts",
+      "import": "./dist/gif-builder.js",
+      "require": "./dist/gif-builder.cjs"
     }
   },
   "sideEffects": false,
@@ -173,8 +188,8 @@
   ],
   "scripts": {
     "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers && npm run build-metadata",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/texture-manifest-schema.js --export CompositeImageManifestSchema --output ./dist/texture-manifest.schema.json --id https://unpkg.com/@loaders.gl/images/texture-manifest.schema.json --title 'loaders.gl composite image texture manifest'",
     "copy-libs": "mkdir -p ./dist/libs && cp -rf ./src/libs/. ./dist/libs && node ../../scripts/build-library-modules.mjs images",
     "build-workers": "npm run build-basis-worker && npm run build-basis-worker-node && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-worker-node",

@@ -87,8 +87,18 @@ export const DracoWriter = {
     draco: DEFAULT_DRACO_WRITER_OPTIONS
   },
   encode,
-  encodeInBatches
-} as const satisfies WriterWithEncoder<DracoWriterInput, unknown, DracoWriterOptions>;
+  encodeInBatches,
+  /** Encodes one geometry and returns its Draco attribute mapping. */
+  encodeGeometry: encodeDraco,
+  /** Encodes an array using a shared encoder and returns per-geometry metadata. */
+  encodeGeometryBatch: encodeDracoBatch,
+  /** Encodes a stream of geometries and returns the result for each geometry. */
+  encodeGeometryInBatches: encodeDracoInBatches
+} as const satisfies WriterWithEncoder<DracoWriterInput, unknown, DracoWriterOptions> & {
+  encodeGeometry: typeof encodeDraco;
+  encodeGeometryBatch: typeof encodeDracoBatch;
+  encodeGeometryInBatches: typeof encodeDracoInBatches;
+};
 
 /** Encode Draco mesh category data. */
 async function encode(

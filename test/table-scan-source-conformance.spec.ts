@@ -5,11 +5,11 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
-import {ArrowTableSource} from '@loaders.gl/tables/arrow';
-import {CSVTableSource} from '@loaders.gl/tables/csv';
-import {NDJSONTableSource} from '@loaders.gl/tables/json';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow/bundled';
+import {CSVTableSource} from '@loaders.gl/tables/csv/bundled';
+import {NDJSONTableSource} from '@loaders.gl/tables/json/bundled';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 
 import {describeTableScanSourceConformance} from './common/table-scan-source-conformance';
 

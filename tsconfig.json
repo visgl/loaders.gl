@@ -24,29 +24,140 @@
       "zarr": [
         "node_modules/zarr/types/zarr.d.ts"
       ],
+      "@loaders.gl/archives/zip/bundled": [
+        "modules/archives/src/zip/bundled-entry.ts"
+      ],
+      "@loaders.gl/archives/tar/bundled": [
+        "modules/archives/src/tar/bundled-entry.ts"
+      ],
+      "@loaders.gl/graphs/graphml/bundled": [
+        "modules/graphs/src/graphml-bundled.ts"
+      ],
+      "@loaders.gl/graphs/dot/bundled": [
+        "modules/graphs/src/dot-bundled.ts"
+      ],
+      "@loaders.gl/graphs/gexf/bundled": [
+        "modules/graphs/src/gexf-bundled.ts"
+      ],
+      "@loaders.gl/traces/chrome-trace/bundled": [
+        "modules/traces/src/chrome-trace-bundled-entry.ts"
+      ],
+      "@loaders.gl/traces/otlp/bundled": [
+        "modules/traces/src/otlp-bundled.ts"
+      ],
+      "@loaders.gl/traces/jaeger/bundled": [
+        "modules/traces/src/jaeger-bundled.ts"
+      ],
+      "@loaders.gl/traces/zipkin/bundled": [
+        "modules/traces/src/zipkin-bundled.ts"
+      ],
+      "@loaders.gl/traces/perfetto/bundled": [
+        "modules/traces/src/perfetto-bundled.ts"
+      ],
+      "@loaders.gl/arcgis/feature-service/bundled": [
+        "modules/arcgis/src/feature-service/bundled-entry.ts"
+      ],
+      "@loaders.gl/arcgis/image-service/bundled": [
+        "modules/arcgis/src/image-service/bundled.ts"
+      ],
+      "@loaders.gl/arcgis/map-service/bundled": [
+        "modules/arcgis/src/map-service/bundled.ts"
+      ],
+      "@loaders.gl/arcgis/scene-service/bundled": [
+        "modules/arcgis/src/scene-service/bundled-entry.ts"
+      ],
+      "@loaders.gl/arcgis/vector-tile-service/bundled": [
+        "modules/arcgis/src/vector-tile-service/bundled.ts"
+      ],
+      "@loaders.gl/images/crunch/bundled": [
+        "modules/images/src/crunch/bundled-entry.ts"
+      ],
+      "@loaders.gl/ogc/stac/bundled": [
+        "modules/ogc/src/stac/bundled.ts"
+      ],
+      "@loaders.gl/ogc/csw/bundled": [
+        "modules/ogc/src/csw/bundled.ts"
+      ],
+      "@loaders.gl/ogc/wmts/bundled": [
+        "modules/ogc/src/wmts/bundled.ts"
+      ],
+      "@loaders.gl/ogc/wfs/bundled": [
+        "modules/ogc/src/wfs/bundled.ts"
+      ],
+      "@loaders.gl/ogc/gml/bundled": [
+        "modules/ogc/src/gml/bundled.ts"
+      ],
+      "@loaders.gl/scientific/pdb": [
+        "modules/scientific/src/pdb/metadata-entry.ts"
+      ],
+      "@loaders.gl/splats/rad": [
+        "modules/splats/src/rad/metadata-entry.ts"
+      ],
+      "@loaders.gl/splats/rad/bundled": [
+        "modules/splats/src/rad/bundled-entry.ts"
+      ],
+      "@loaders.gl/splats/splat": [
+        "modules/splats/src/splat/metadata-entry.ts"
+      ],
+      "@loaders.gl/splats/splat/bundled": [
+        "modules/splats/src/splat/bundled.ts"
+      ],
+      "@loaders.gl/splats/ksplat": [
+        "modules/splats/src/ksplat/metadata-entry.ts"
+      ],
+      "@loaders.gl/splats/ksplat/bundled": [
+        "modules/splats/src/ksplat/bundled.ts"
+      ],
+      "@loaders.gl/splats/spz": [
+        "modules/splats/src/spz/metadata-entry.ts"
+      ],
+      "@loaders.gl/splats/spz/bundled": [
+        "modules/splats/src/spz/bundled-entry.ts"
+      ],
+      "@loaders.gl/tiles-3d/copc/bundled": [
+        "modules/tiles-3d/src/copc/bundled-entry.ts"
+      ],
+      "@loaders.gl/tiles-3d/point-cloud/bundled": [
+        "modules/tiles-3d/src/point-cloud/bundled-entry.ts"
+      ],
+      "@loaders.gl/core/null": [
+        "modules/core/src/null-loader-metadata.ts"
+      ],
+      "@loaders.gl/core/null/bundled": [
+        "modules/core/src/null-loader.ts"
+      ],
+      "@loaders.gl/core/json": [
+        "modules/core/src/loader-utils/json-loader-metadata.ts"
+      ],
+      "@loaders.gl/core/json/bundled": [
+        "modules/core/src/loader-utils/json-loader.ts"
+      ],
+      "@loaders.gl/core/api": [
+        "modules/core/src/api.ts"
+      ],
       "@loaders.gl/tables": [
         "modules/tables/src"
       ],
       "@loaders.gl/tables/csv": [
-        "modules/tables/src/csv/index.ts"
+        "modules/tables/src/csv/metadata-entry.ts"
       ],
       "@loaders.gl/tables/avro": [
-        "modules/tables/src/avro/index.ts"
+        "modules/tables/src/avro/metadata-entry.ts"
       ],
       "@loaders.gl/tables/excel": [
         "modules/tables/src/excel"
       ],
       "@loaders.gl/tables/arrow": [
-        "modules/tables/src/arrow/index.ts"
+        "modules/tables/src/arrow/metadata-entry.ts"
       ],
       "@loaders.gl/tables/json": [
-        "modules/tables/src/json/index.ts"
+        "modules/tables/src/json/metadata-entry.ts"
       ],
       "@loaders.gl/tables/lance": [
-        "modules/tables/src/lance/index.ts"
+        "modules/tables/src/lance/metadata-entry.ts"
       ],
       "@loaders.gl/tables/orc": [
-        "modules/tables/src/orc/index.ts"
+        "modules/tables/src/orc/metadata-entry.ts"
       ],
       "@loaders.gl/tables/parquet": [
         "modules/tables/src/parquet/index.ts"
@@ -58,31 +169,31 @@
         "modules/geospatial/src/index.ts"
       ],
       "@loaders.gl/geospatial/kml": [
-        "modules/geospatial/src/kml/index.ts"
+        "modules/geospatial/src/kml/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/gpx": [
-        "modules/geospatial/src/gpx.ts"
+        "modules/geospatial/src/gpx/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/tcx": [
-        "modules/geospatial/src/tcx.ts"
+        "modules/geospatial/src/tcx/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/kmz": [
-        "modules/geospatial/src/kmz.ts"
+        "modules/geospatial/src/kmz/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/shapefile": [
-        "modules/geospatial/src/shapefile/index.ts"
+        "modules/geospatial/src/shapefile/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/shp": [
-        "modules/geospatial/src/shp.ts"
+        "modules/geospatial/src/shp/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/dbf": [
-        "modules/geospatial/src/dbf.ts"
+        "modules/geospatial/src/dbf/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/flatgeobuf": [
-        "modules/geospatial/src/flatgeobuf/index.ts"
+        "modules/geospatial/src/flatgeobuf/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/geopackage": [
-        "modules/geospatial/src/geopackage/index.ts"
+        "modules/geospatial/src/geopackage/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/*": [
         "modules/geospatial/src/*"
@@ -115,7 +226,7 @@
         "modules/arcgis/src/arcgis/arcgis-scene-aggregation.ts"
       ],
       "@loaders.gl/arcgis/bundled": [
-        "modules/arcgis/src/bundled.ts"
+        "modules/arcgis/src/bundled-entry.ts"
       ],
       "@loaders.gl/arcgis/arcgis-feature-server-loader": [
         "modules/arcgis/src/arcgis-feature-server-loader.ts"
@@ -184,7 +295,7 @@
         "modules/compression/test"
       ],
       "@loaders.gl/tiles-3d/copc": [
-        "modules/tiles-3d/src/copc/index.ts"
+        "modules/tiles-3d/src/copc/metadata-entry.ts"
       ],
       "@loaders.gl/tiles-3d/copc/test": [
         "modules/tiles-3d/test/copc"
@@ -196,7 +307,7 @@
         "modules/crypto/test"
       ],
       "@loaders.gl/tiles-3d/3d-tiles": [
-        "modules/tiles-3d/src/3d-tiles/index.ts"
+        "modules/tiles-3d/src/3d-tiles/metadata-entry.ts"
       ],
       "@loaders.gl/3d-tiles": [
         "modules/tiles-3d/src/3d-tiles"
@@ -208,13 +319,13 @@
         "modules/scene/test/draco"
       ],
       "@loaders.gl/raster/geotiff": [
-        "modules/raster/src/geotiff/index.ts"
+        "modules/raster/src/geotiff/metadata-entry.ts"
       ],
       "@loaders.gl/raster/test/geotiff": [
         "modules/raster/test/geotiff"
       ],
       "@loaders.gl/scene/gltf": [
-        "modules/scene/src/gltf/index.ts"
+        "modules/scene/src/gltf/metadata-entry.ts"
       ],
       "@loaders.gl/scene/gltf/test": [
         "modules/scene/test/gltf"
@@ -229,7 +340,7 @@
         "modules/images/src"
       ],
       "@loaders.gl/tiles-3d/i3s": [
-        "modules/tiles-3d/src/i3s/index.ts"
+        "modules/tiles-3d/src/i3s/metadata-entry.ts"
       ],
       "@loaders.gl/tiles-3d/i3s/*": [
         "modules/tiles-3d/src/i3s/*"
@@ -241,7 +352,7 @@
         "modules/documents/test/config"
       ],
       "@loaders.gl/pointclouds/las": [
-        "modules/pointclouds/src/las/index.ts"
+        "modules/pointclouds/src/las/metadata-entry.ts"
       ],
       "@loaders.gl/pointclouds/las/*": [
         "modules/pointclouds/src/las/*"
@@ -250,19 +361,19 @@
         "modules/pointclouds/test/las"
       ],
       "@loaders.gl/raster/lerc": [
-        "modules/raster/src/lerc/index.ts"
+        "modules/raster/src/lerc/metadata-entry.ts"
       ],
       "@loaders.gl/raster/test/lerc": [
         "modules/raster/test/lerc"
       ],
       "@loaders.gl/tiles/mlt": [
-        "modules/tiles/src/mlt/index.ts"
+        "modules/tiles/src/mlt/metadata-entry.ts"
       ],
       "@loaders.gl/tiles/mlt/test": [
         "modules/tiles/test/mlt"
       ],
       "@loaders.gl/tiles/mvt": [
-        "modules/tiles/src/mvt/index.ts"
+        "modules/tiles/src/mvt/metadata-entry.ts"
       ],
       "@loaders.gl/tiles/arrow-table-tile-loader": [
         "modules/tiles/src/arrow-table-tile-loader.ts"
@@ -286,19 +397,19 @@
         "modules/scientific/test/*"
       ],
       "@loaders.gl/scene/obj": [
-        "modules/scene/src/obj/index.ts"
+        "modules/scene/src/obj/metadata-entry.ts"
       ],
       "@loaders.gl/scene/obj/test": [
         "modules/scene/test/obj"
       ],
       "@loaders.gl/pointclouds/pcd": [
-        "modules/pointclouds/src/pcd/index.ts"
+        "modules/pointclouds/src/pcd/metadata-entry.ts"
       ],
       "@loaders.gl/pointclouds/pcd/test": [
         "modules/pointclouds/test/pcd"
       ],
       "@loaders.gl/tiles/pmtiles": [
-        "modules/tiles/src/pmtiles/index.ts"
+        "modules/tiles/src/pmtiles/metadata-entry.ts"
       ],
       "@loaders.gl/tiles/pmtiles/test": [
         "modules/tiles/test/pmtiles"
@@ -310,7 +421,7 @@
         "modules/sql/test"
       ],
       "@loaders.gl/pointclouds/ply": [
-        "modules/pointclouds/src/ply/index.ts"
+        "modules/pointclouds/src/ply/metadata-entry.ts"
       ],
       "@loaders.gl/pointclouds/ply/test": [
         "modules/pointclouds/test/ply"
@@ -334,7 +445,7 @@
         "modules/tiles-3d/src/potree-loader.ts"
       ],
       "@loaders.gl/tiles-3d/potree": [
-        "modules/tiles-3d/src/potree/index.ts"
+        "modules/tiles-3d/src/potree/metadata-entry.ts"
       ],
       "@loaders.gl/tiles-3d/potree/test": [
         "modules/tiles-3d/test/potree"
@@ -370,7 +481,7 @@
         "apps/tile-converter/test"
       ],
       "@loaders.gl/raster/terrain": [
-        "modules/raster/src/terrain/index.ts"
+        "modules/raster/src/terrain/metadata-entry.ts"
       ],
       "@loaders.gl/raster/test/terrain": [
         "modules/raster/test/terrain"
@@ -385,7 +496,7 @@
         "modules/traces/test"
       ],
       "@loaders.gl/geospatial/wkt": [
-        "modules/geospatial/src/wkt/index.ts"
+        "modules/geospatial/src/wkt/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/wkt/*": [
         "modules/geospatial/src/wkt/*"
@@ -511,7 +622,7 @@
         "modules/ogc/test"
       ],
       "@loaders.gl/ogc/wms": [
-        "modules/ogc/src/wms/index.ts"
+        "modules/ogc/src/wms/metadata-entry.ts"
       ],
       "@loaders.gl/ogc/wms/*": [
         "modules/ogc/src/wms/*"
@@ -520,7 +631,7 @@
         "modules/ogc/test/wms"
       ],
       "@loaders.gl/ogc/stac": [
-        "modules/ogc/src/stac/index.ts"
+        "modules/ogc/src/stac/metadata-entry.ts"
       ],
       "@loaders.gl/ogc/stac/*": [
         "modules/ogc/src/stac/*"
@@ -598,7 +709,7 @@
         "modules/pointclouds/src/index.ts"
       ],
       "@loaders.gl/pointclouds/las/bundled": [
-        "modules/pointclouds/src/las/bundled.ts"
+        "modules/pointclouds/src/las/bundled-entry.ts"
       ],
       "@loaders.gl/pointclouds/pcd/bundled": [
         "modules/pointclouds/src/pcd/bundled.ts"
@@ -610,7 +721,7 @@
         "modules/scene/src/obj/bundled.ts"
       ],
       "@loaders.gl/scene/gltf/bundled": [
-        "modules/scene/src/gltf/bundled.ts"
+        "modules/scene/src/gltf/bundled-entry.ts"
       ],
       "@loaders.gl/scene/gltf/mesh-arrow": [
         "modules/scene/src/gltf/mesh-arrow.ts"
@@ -619,25 +730,25 @@
         "modules/scene/src/gltf/schema.ts"
       ],
       "@loaders.gl/scene/usd": [
-        "modules/scene/src/usd/index.ts"
+        "modules/scene/src/usd/metadata-entry.ts"
       ],
       "@loaders.gl/geospatial/kml/bundled": [
-        "modules/geospatial/src/kml/bundled.ts"
+        "modules/geospatial/src/kml/bundled-entry.ts"
       ],
       "@loaders.gl/geospatial/shapefile/bundled": [
-        "modules/geospatial/src/shapefile/bundled.ts"
+        "modules/geospatial/src/shapefile/bundled-entry.ts"
       ],
       "@loaders.gl/geospatial/flatgeobuf/bundled": [
-        "modules/geospatial/src/flatgeobuf/bundled.ts"
+        "modules/geospatial/src/flatgeobuf/bundled-entry.ts"
       ],
       "@loaders.gl/geospatial/geopackage/bundled": [
-        "modules/geospatial/src/geopackage/bundled.ts"
+        "modules/geospatial/src/geopackage/bundled-entry.ts"
       ],
       "@loaders.gl/geospatial/wkt/bundled": [
         "modules/geospatial/src/wkt/bundled.ts"
       ],
       "@loaders.gl/geospatial/wkb": [
-        "modules/geospatial/src/wkb.ts"
+        "modules/geospatial/src/wkb/metadata-entry.ts"
       ],
       "@loaders.gl/pointclouds/pcd/*": [
         "modules/pointclouds/src/pcd/*"
@@ -691,58 +802,55 @@
         "modules/raster/src/terrain/lib/delatin/index.ts"
       ],
       "@loaders.gl/tables/geoarrow": [
-        "modules/tables/src/geoarrow.ts"
+        "modules/tables/src/geoarrow/metadata-entry.ts"
       ],
       "@loaders.gl/tables/geojson": [
-        "modules/tables/src/geojson.ts"
+        "modules/tables/src/geojson/metadata-entry.ts"
       ],
       "@loaders.gl/documents/json": [
-        "modules/documents/src/json.ts"
+        "modules/documents/src/json/metadata-entry.ts"
       ],
       "@loaders.gl/tables/iceberg": [
         "modules/tables/src/iceberg/index.ts"
       ],
       "@loaders.gl/tables/delta": [
-        "modules/tables/src/delta/index.ts"
+        "modules/tables/src/delta/metadata-entry.ts"
       ],
       "@loaders.gl/tables/hudi": [
         "modules/tables/src/hudi/index.ts"
       ],
       "@loaders.gl/tables/csv/bundled": [
-        "modules/tables/src/csv/bundled.ts"
+        "modules/tables/src/csv/bundled-entry.ts"
       ],
       "@loaders.gl/tables/arrow/triangulate-on-worker": [
         "modules/tables/src/arrow/triangulate-on-worker.ts"
-      ],
-      "@loaders.gl/tables/arrow/triangulate-wkb-geometry-column": [
-        "modules/tables/src/arrow/triangulate-wkb-geometry-column.ts"
       ],
       "@loaders.gl/tables/arrow/types": [
         "modules/tables/src/arrow/types.ts"
       ],
       "@loaders.gl/tables/arrow/bundled": [
-        "modules/tables/src/arrow/bundled.ts"
+        "modules/tables/src/arrow/bundled-entry.ts"
       ],
       "@loaders.gl/tables/arrow/geometry": [
         "modules/tables/src/arrow/geometry/index.ts"
       ],
       "@loaders.gl/tables/json/bundled": [
-        "modules/tables/src/json/bundled.ts"
+        "modules/tables/src/json/bundled-entry.ts"
       ],
       "@loaders.gl/tables/orc/bundled": [
-        "modules/tables/src/orc/bundled.ts"
+        "modules/tables/src/orc/bundled-entry.ts"
       ],
       "@loaders.gl/tables/parquet/bundled": [
-        "modules/tables/src/parquet/bundled.ts"
+        "modules/tables/src/parquet/bundled-entry.ts"
       ],
       "@loaders.gl/tables/delta/bundled": [
         "modules/tables/src/delta-bundled.ts"
       ],
       "@loaders.gl/tables/avro/bundled": [
-        "modules/tables/src/avro-bundled.ts"
+        "modules/tables/src/avro-bundled-entry.ts"
       ],
       "@loaders.gl/tables/lance/bundled": [
-        "modules/tables/src/lance-bundled.ts"
+        "modules/tables/src/lance-bundled-entry.ts"
       ],
       "@loaders.gl/tables/geojson/bundled": [
         "modules/tables/src/geojson-bundled.ts"
@@ -751,25 +859,25 @@
         "modules/tables/src/geoarrow-bundled.ts"
       ],
       "@loaders.gl/geospatial/gpx/bundled": [
-        "modules/geospatial/src/gpx-bundled.ts"
+        "modules/geospatial/src/gpx-bundled-entry.ts"
       ],
       "@loaders.gl/geospatial/tcx/bundled": [
-        "modules/geospatial/src/tcx-bundled.ts"
+        "modules/geospatial/src/tcx-bundled-entry.ts"
       ],
       "@loaders.gl/geospatial/kmz/bundled": [
-        "modules/geospatial/src/kmz-bundled.ts"
+        "modules/geospatial/src/kmz-bundled-entry.ts"
       ],
       "@loaders.gl/geospatial/shp/bundled": [
-        "modules/geospatial/src/shp-bundled.ts"
+        "modules/geospatial/src/shp-bundled-entry.ts"
       ],
       "@loaders.gl/geospatial/dbf/bundled": [
         "modules/geospatial/src/dbf-bundled.ts"
       ],
       "@loaders.gl/geospatial/wkb/bundled": [
-        "modules/geospatial/src/wkb-bundled.ts"
+        "modules/geospatial/src/wkb-bundled-entry.ts"
       ],
       "@loaders.gl/raster/geotiff/bundled": [
-        "modules/raster/src/geotiff/bundled.ts"
+        "modules/raster/src/geotiff/bundled-entry.ts"
       ],
       "@loaders.gl/raster/geotiff/discover-geotiff": [
         "modules/raster/src/geotiff/discover-geotiff.ts"
@@ -835,16 +943,16 @@
         "modules/raster/src/geotiff/types.ts"
       ],
       "@loaders.gl/raster/lerc/bundled": [
-        "modules/raster/src/lerc/bundled.ts"
+        "modules/raster/src/lerc/bundled-entry.ts"
       ],
       "@loaders.gl/raster/lerc/lib/parsers/lerc/lerc-types": [
         "modules/raster/src/lerc/lib/parsers/lerc/lerc-types.ts"
       ],
       "@loaders.gl/raster/quantized-mesh": [
-        "modules/raster/src/quantized-mesh.ts"
+        "modules/raster/src/quantized-mesh/metadata-entry.ts"
       ],
       "@loaders.gl/raster/terrain/bundled": [
-        "modules/raster/src/terrain/bundled.ts"
+        "modules/raster/src/terrain/bundled-entry.ts"
       ],
       "@loaders.gl/raster/terrain/heightmap": [
         "modules/raster/src/terrain/heightmap.ts"
@@ -877,22 +985,22 @@
         "modules/raster/src/quantized-mesh-bundled.ts"
       ],
       "@loaders.gl/scene/mtl": [
-        "modules/scene/src/mtl.ts"
+        "modules/scene/src/mtl/metadata-entry.ts"
       ],
       "@loaders.gl/scene/glb": [
-        "modules/scene/src/glb.ts"
+        "modules/scene/src/glb/metadata-entry.ts"
       ],
       "@loaders.gl/scene/draco": [
-        "modules/scene/src/draco.ts"
+        "modules/scene/src/draco/metadata-entry.ts"
       ],
       "@loaders.gl/scene/materialx": [
-        "modules/scene/src/materialx.ts"
+        "modules/scene/src/materialx/metadata-entry.ts"
       ],
       "@loaders.gl/scene/stl": [
-        "modules/scene/src/stl.ts"
+        "modules/scene/src/stl/metadata-entry.ts"
       ],
       "@loaders.gl/scene/usd/bundled": [
-        "modules/scene/src/usd-bundled.ts"
+        "modules/scene/src/usd-bundled-entry.ts"
       ],
       "@loaders.gl/scene/mtl/bundled": [
         "modules/scene/src/mtl-bundled.ts"
@@ -901,7 +1009,7 @@
         "modules/scene/src/glb-bundled.ts"
       ],
       "@loaders.gl/scene/draco/bundled": [
-        "modules/scene/src/draco-bundled.ts"
+        "modules/scene/src/draco-bundled-entry.ts"
       ],
       "@loaders.gl/scene/materialx/bundled": [
         "modules/scene/src/materialx-bundled.ts"
@@ -910,10 +1018,10 @@
         "modules/scene/src/stl-bundled.ts"
       ],
       "@loaders.gl/scientific/netcdf": [
-        "modules/scientific/src/netcdf/index.ts"
+        "modules/scientific/src/netcdf/metadata-entry.ts"
       ],
       "@loaders.gl/scientific/zarr": [
-        "modules/scientific/src/zarr/index.ts"
+        "modules/scientific/src/zarr/metadata-entry.ts"
       ],
       "@loaders.gl/scientific/grib2": [
         "modules/scientific/src/grib2/index.ts"
@@ -925,25 +1033,25 @@
         "modules/scientific/src/hdf5/index.ts"
       ],
       "@loaders.gl/scientific/vtk": [
-        "modules/scientific/src/vtk/index.ts"
+        "modules/scientific/src/vtk/metadata-entry.ts"
       ],
       "@loaders.gl/scientific/vector-field": [
         "modules/scientific/src/vector-field/index.ts"
       ],
       "@loaders.gl/scientific/npy": [
-        "modules/scientific/src/npy.ts"
+        "modules/scientific/src/npy/metadata-entry.ts"
       ],
       "@loaders.gl/scientific/nrrd": [
-        "modules/scientific/src/nrrd.ts"
+        "modules/scientific/src/nrrd/metadata-entry.ts"
       ],
       "@loaders.gl/scientific/netcdf/bundled": [
-        "modules/scientific/src/netcdf-bundled.ts"
+        "modules/scientific/src/netcdf-bundled-entry.ts"
       ],
       "@loaders.gl/scientific/zarr/bundled": [
-        "modules/scientific/src/zarr-bundled.ts"
+        "modules/scientific/src/zarr-bundled-entry.ts"
       ],
       "@loaders.gl/scientific/vtk/bundled": [
-        "modules/scientific/src/vtk-bundled.ts"
+        "modules/scientific/src/vtk-bundled-entry.ts"
       ],
       "@loaders.gl/scientific/npy/bundled": [
         "modules/scientific/src/npy-bundled.ts"
@@ -964,22 +1072,22 @@
         "modules/documents/src/bson-codec.ts"
       ],
       "@loaders.gl/documents/xml": [
-        "modules/documents/src/xml.ts"
+        "modules/documents/src/xml/metadata-entry.ts"
       ],
       "@loaders.gl/documents/html": [
-        "modules/documents/src/html.ts"
+        "modules/documents/src/html/metadata-entry.ts"
       ],
       "@loaders.gl/documents/yaml": [
-        "modules/documents/src/yaml.ts"
+        "modules/documents/src/yaml/metadata-entry.ts"
       ],
       "@loaders.gl/documents/toml": [
-        "modules/documents/src/toml.ts"
+        "modules/documents/src/toml/metadata-entry.ts"
       ],
       "@loaders.gl/documents/bson": [
-        "modules/documents/src/bson.ts"
+        "modules/documents/src/bson/metadata-entry.ts"
       ],
       "@loaders.gl/documents/markdown": [
-        "modules/documents/src/markdown.ts"
+        "modules/documents/src/markdown/metadata-entry.ts"
       ],
       "@loaders.gl/documents/json/bundled": [
         "modules/documents/src/json-bundled.ts"
@@ -997,13 +1105,13 @@
         "modules/documents/src/toml-bundled.ts"
       ],
       "@loaders.gl/documents/bson/bundled": [
-        "modules/documents/src/bson-bundled.ts"
+        "modules/documents/src/bson-bundled-entry.ts"
       ],
       "@loaders.gl/documents/markdown/bundled": [
         "modules/documents/src/markdown-bundled.ts"
       ],
       "@loaders.gl/images/bundled": [
-        "modules/images/src/bundled.ts"
+        "modules/images/src/bundled-entry.ts"
       ],
       "@loaders.gl/images/gl-extensions": [
         "modules/images/src/gl-extensions.ts"
@@ -1012,40 +1120,40 @@
         "modules/images/src/types.ts"
       ],
       "@loaders.gl/images/color-lut": [
-        "modules/images/src/color-lut.ts"
+        "modules/images/src/color-lut/metadata-entry.ts"
       ],
       "@loaders.gl/images/texture": [
-        "modules/images/src/texture.ts"
+        "modules/images/src/texture/metadata-entry.ts"
       ],
       "@loaders.gl/images/basis": [
-        "modules/images/src/basis.ts"
+        "modules/images/src/basis/metadata-entry.ts"
       ],
       "@loaders.gl/images/image": [
-        "modules/images/src/image.ts"
+        "modules/images/src/image/metadata-entry.ts"
       ],
       "@loaders.gl/images/video": [
-        "modules/images/src/video.ts"
+        "modules/images/src/video/metadata-entry.ts"
       ],
       "@loaders.gl/images/radiance-hdr": [
-        "modules/images/src/radiance-hdr.ts"
+        "modules/images/src/radiance-hdr/metadata-entry.ts"
       ],
       "@loaders.gl/images/crunch": [
-        "modules/images/src/crunch.ts"
+        "modules/images/src/crunch/metadata-entry.ts"
       ],
       "@loaders.gl/images/ies": [
-        "modules/images/src/ies.ts"
+        "modules/images/src/ies/metadata-entry.ts"
       ],
       "@loaders.gl/images/exr": [
-        "modules/images/src/exr.ts"
+        "modules/images/src/exr/metadata-entry.ts"
       ],
       "@loaders.gl/images/color-lut/bundled": [
-        "modules/images/src/color-lut-bundled.ts"
+        "modules/images/src/color-lut-bundled-entry.ts"
       ],
       "@loaders.gl/images/texture/bundled": [
-        "modules/images/src/texture-bundled.ts"
+        "modules/images/src/texture-bundled-entry.ts"
       ],
       "@loaders.gl/images/basis/bundled": [
-        "modules/images/src/basis-bundled.ts"
+        "modules/images/src/basis-bundled-entry.ts"
       ],
       "@loaders.gl/images/image/bundled": [
         "modules/images/src/image-bundled.ts"
@@ -1063,19 +1171,19 @@
         "modules/images/src/exr-bundled.ts"
       ],
       "@loaders.gl/arcgis/feature-service": [
-        "modules/arcgis/src/feature-service.ts"
+        "modules/arcgis/src/feature-service/metadata-entry.ts"
       ],
       "@loaders.gl/arcgis/image-service": [
-        "modules/arcgis/src/image-service.ts"
+        "modules/arcgis/src/image-service/metadata-entry.ts"
       ],
       "@loaders.gl/arcgis/map-service": [
-        "modules/arcgis/src/map-service.ts"
+        "modules/arcgis/src/map-service/metadata-entry.ts"
       ],
       "@loaders.gl/arcgis/scene-service": [
-        "modules/arcgis/src/scene-service.ts"
+        "modules/arcgis/src/scene-service/metadata-entry.ts"
       ],
       "@loaders.gl/arcgis/vector-tile-service": [
-        "modules/arcgis/src/vector-tile-service.ts"
+        "modules/arcgis/src/vector-tile-service/metadata-entry.ts"
       ],
       "@loaders.gl/crypto/hash": [
         "modules/crypto/src/hash.ts"
@@ -1120,22 +1228,19 @@
         "modules/ogc/src/stac-loader.ts"
       ],
       "@loaders.gl/ogc/csw": [
-        "modules/ogc/src/csw.ts"
+        "modules/ogc/src/csw/metadata-entry.ts"
       ],
       "@loaders.gl/ogc/wmts": [
-        "modules/ogc/src/wmts.ts"
+        "modules/ogc/src/wmts/metadata-entry.ts"
       ],
       "@loaders.gl/ogc/wfs": [
-        "modules/ogc/src/wfs.ts"
+        "modules/ogc/src/wfs/metadata-entry.ts"
       ],
       "@loaders.gl/ogc/gml": [
-        "modules/ogc/src/gml.ts"
+        "modules/ogc/src/gml/metadata-entry.ts"
       ],
       "@loaders.gl/scientific/pdb/bundled": [
         "modules/scientific/src/pdb-bundled.ts"
-      ],
-      "@loaders.gl/services/bundled": [
-        "modules/services/src/bundled.ts"
       ],
       "@loaders.gl/services/authentication": [
         "modules/services/src/authentication.ts"
@@ -1171,10 +1276,10 @@
         "modules/tiles/src/mvt/tilejson-zod-schema.ts"
       ],
       "@loaders.gl/tiles/mvt/bundled": [
-        "modules/tiles/src/mvt/bundled.ts"
+        "modules/tiles/src/mvt/bundled-entry.ts"
       ],
       "@loaders.gl/tiles/pmtiles/bundled": [
-        "modules/tiles/src/pmtiles/bundled.ts"
+        "modules/tiles/src/pmtiles/bundled-entry.ts"
       ],
       "@loaders.gl/tiles/pmtiles/geoarrow": [
         "modules/tiles/src/pmtiles/geoarrow.ts"
@@ -1195,7 +1300,7 @@
         "modules/tiles/src/raster-set.ts"
       ],
       "@loaders.gl/tiles-3d/potree/bundled": [
-        "modules/tiles-3d/src/potree/bundled.ts"
+        "modules/tiles-3d/src/potree/bundled-entry.ts"
       ],
       "@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema": [
         "modules/tiles-3d/src/3d-tiles/tileset-zod-schema.ts"
@@ -1204,7 +1309,7 @@
         "modules/tiles-3d/src/3d-tiles/subtree-zod-schema.ts"
       ],
       "@loaders.gl/tiles-3d/3d-tiles/bundled": [
-        "modules/tiles-3d/src/3d-tiles/bundled.ts"
+        "modules/tiles-3d/src/3d-tiles/bundled-entry.ts"
       ],
       "@loaders.gl/tiles-3d/i3s-lepcc-loader": [
         "modules/tiles-3d/src/i3s-lepcc-loader.ts"
@@ -1222,7 +1327,121 @@
         "modules/tiles-3d/src/spatial-api.ts"
       ],
       "@loaders.gl/tiles-3d/point-cloud": [
-        "modules/tiles-3d/src/point-cloud-api.ts"
+        "modules/tiles-3d/src/point-cloud/metadata-entry.ts"
+      ],
+      "@loaders.gl/arcgis/api": [
+        "modules/arcgis/src/api.ts"
+      ],
+      "@loaders.gl/arcgis/feature-service/api": [
+        "modules/arcgis/src/feature-service/api.ts"
+      ],
+      "@loaders.gl/arcgis/scene-service/api": [
+        "modules/arcgis/src/scene-service/api.ts"
+      ],
+      "@loaders.gl/documents/bson/api": [
+        "modules/documents/src/bson-api.ts"
+      ],
+      "@loaders.gl/geospatial/kml/api": [
+        "modules/geospatial/src/kml/api.ts"
+      ],
+      "@loaders.gl/geospatial/shapefile/api": [
+        "modules/geospatial/src/shapefile/api.ts"
+      ],
+      "@loaders.gl/geospatial/flatgeobuf/api": [
+        "modules/geospatial/src/flatgeobuf/api.ts"
+      ],
+      "@loaders.gl/geospatial/geopackage/api": [
+        "modules/geospatial/src/geopackage/api.ts"
+      ],
+      "@loaders.gl/geospatial/gpx/api": [
+        "modules/geospatial/src/gpx-api.ts"
+      ],
+      "@loaders.gl/geospatial/tcx/api": [
+        "modules/geospatial/src/tcx-api.ts"
+      ],
+      "@loaders.gl/geospatial/kmz/api": [
+        "modules/geospatial/src/kmz-api.ts"
+      ],
+      "@loaders.gl/geospatial/shp/api": [
+        "modules/geospatial/src/shp-api.ts"
+      ],
+      "@loaders.gl/geospatial/wkb/api": [
+        "modules/geospatial/src/wkb-api.ts"
+      ],
+      "@loaders.gl/ogc/wms/bundled": [
+        "modules/ogc/src/wms/bundled-entry.ts"
+      ],
+      "@loaders.gl/ogc/wms/api": [
+        "modules/ogc/src/wms/api.ts"
+      ],
+      "@loaders.gl/pointclouds/las/api": [
+        "modules/pointclouds/src/las/api.ts"
+      ],
+      "@loaders.gl/raster/geotiff/api": [
+        "modules/raster/src/geotiff/api.ts"
+      ],
+      "@loaders.gl/raster/lerc/api": [
+        "modules/raster/src/lerc/api.ts"
+      ],
+      "@loaders.gl/raster/terrain/api": [
+        "modules/raster/src/terrain/api.ts"
+      ],
+      "@loaders.gl/scientific/netcdf/api": [
+        "modules/scientific/src/netcdf-api.ts"
+      ],
+      "@loaders.gl/scientific/zarr/api": [
+        "modules/scientific/src/zarr-api.ts"
+      ],
+      "@loaders.gl/scientific/vtk/api": [
+        "modules/scientific/src/vtk-api.ts"
+      ],
+      "@loaders.gl/services/api": [
+        "modules/services/src/api.ts"
+      ],
+      "@loaders.gl/splats/rad/api": [
+        "modules/splats/src/rad/api.ts"
+      ],
+      "@loaders.gl/splats/spz/api": [
+        "modules/splats/src/spz/api.ts"
+      ],
+      "@loaders.gl/tables/csv/api": [
+        "modules/tables/src/csv/api.ts"
+      ],
+      "@loaders.gl/tables/json/api": [
+        "modules/tables/src/json/api.ts"
+      ],
+      "@loaders.gl/tables/orc/api": [
+        "modules/tables/src/orc/api.ts"
+      ],
+      "@loaders.gl/tables/lance/api": [
+        "modules/tables/src/lance-api.ts"
+      ],
+      "@loaders.gl/tiles/mvt/api": [
+        "modules/tiles/src/mvt/api.ts"
+      ],
+      "@loaders.gl/tiles/pmtiles/api": [
+        "modules/tiles/src/pmtiles/api.ts"
+      ],
+      "@loaders.gl/tiles-3d/i3s/bundled": [
+        "modules/tiles-3d/src/i3s/bundled-entry.ts"
+      ],
+      "@loaders.gl/traces/chrome-trace/api": [
+        "modules/traces/src/chrome-trace-api.ts"
+      ],
+      "@loaders.gl/images/api": [
+        "modules/images/src/api.ts"
+      ],
+      "@loaders.gl/images/gif-builder": [
+        "modules/images/src/gif-builder.ts"
+      ],
+      "@loaders.gl/archives/api": [
+        "modules/archives/src/api.ts"
+      ],
+      "@loaders.gl/scene/api": [
+        "modules/scene/src/api.ts"
+      ],
+      "@loaders.gl/tiles-3d/api": [
+        "modules/tiles-3d/src/api.ts"
       ]
     },
     "plugins": [

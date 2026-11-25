@@ -4,7 +4,7 @@ Read and replace accessor storage directly on `GLTFWithBuffers`, without changin
 mesh, material, or texture references into linked objects.
 
 ```typescript
-import {getGLTFAccessor, getGLTFAccessorValue, setGLTFAccessorValue} from '@loaders.gl/scene/gltf';
+import {getGLTFAccessor, getGLTFAccessorValue, setGLTFAccessorValue} from '@loaders.gl/scene/api';
 
 const primitive = gltf.json.meshes[0].primitives[0];
 const accessor = getGLTFAccessor(gltf, primitive.attributes.POSITION);

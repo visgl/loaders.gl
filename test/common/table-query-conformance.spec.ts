@@ -6,8 +6,8 @@ import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
 import {encode} from '@loaders.gl/core';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
-import {ParquetDatasetSource} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/bundled';
 import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 

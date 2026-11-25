@@ -8,7 +8,7 @@ import {TILE_REFINEMENT} from '../../src/constants';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {coreApi} from '@loaders.gl/core';
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {TilesetTraverser} from '../../src/tileset-3d/common/tileset-traverser';
 import {getFrameState} from '../../src/tileset-3d/helpers/frame-state';

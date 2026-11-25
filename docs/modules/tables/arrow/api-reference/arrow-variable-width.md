@@ -45,10 +45,7 @@ The `@loaders.gl/tables/arrow` module can convert Apache Arrow `Utf8`, `Utf8View
 />
 
 ```ts
-import {
-  convertArrowTableVariableWidthTypes,
-  convertArrowVariableWidthVector
-} from '@loaders.gl/tables/arrow';
+import {convertArrowTableVariableWidthTypes, convertArrowVariableWidthVector} from '@loaders.gl/tables/arrow/api';
 
 const viewVector = convertArrowVariableWidthVector(utf8Vector, {viewTypes: 'prefer'});
 const standardVector = convertArrowVariableWidthVector(viewVector, {viewTypes: 'never'});

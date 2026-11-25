@@ -18,7 +18,7 @@ import type {ImageType} from '@loaders.gl/images/image';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {GLTFIterator} from '../../api/gltf-iterator';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
-import {getImageData} from '@loaders.gl/images/image';
+import {getImageData} from '@loaders.gl/images/api';
 import {ensureArrayBuffer} from '@loaders.gl/core/loader-utils';
 
 function emod(n: number): number {

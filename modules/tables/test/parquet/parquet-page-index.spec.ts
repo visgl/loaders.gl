@@ -1,4 +1,4 @@
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet/bundled';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -8,10 +8,7 @@ import {beforeAll, describe, expect, test} from 'vitest';
 import {createDataSourceSync, isBrowser} from '@loaders.gl/core';
 import type {ParquetBatch, ParquetSourceMetadata} from '@loaders.gl/tables/parquet';
 import type {ParquetSourceLoaderOptions} from '@loaders.gl/tables/parquet';
-import {
-  ParquetSource,
-
-} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 import * as arrow from 'apache-arrow';
 
 import {

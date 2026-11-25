@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {encodeSync} from '@loaders.gl/core';
-import {COPCWriter} from '@loaders.gl/tiles-3d/copc';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import {Copc} from 'copc';
 import {expect, test} from 'vitest';
