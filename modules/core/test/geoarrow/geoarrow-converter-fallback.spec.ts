@@ -7,6 +7,16 @@ import {expect, test, vi} from 'vitest';
 import type {GeoArrowEncoding} from '@loaders.gl/core/schema';
 import type {Geometry} from '@loaders.gl/core/schema';
 
+vi.mock('@math.gl/core/arrow', async importOriginal => {
+  const original = await importOriginal<typeof import('@math.gl/core/arrow')>();
+  return {
+    ...original,
+    decodeGeoArrowWKT: vi.fn(() => {
+      throw new Error('WKT test fixture declined by the native decoder');
+    })
+  };
+});
+
 vi.mock('../../src/geoarrow/lib/kernels/decode-wkt-native', async importOriginal => {
   const original =
     await importOriginal<typeof import('../../src/geoarrow/lib/kernels/decode-wkt-native')>();

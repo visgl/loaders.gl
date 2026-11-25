@@ -3,57 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {Field, DataType} from '@loaders.gl/core/schema';
-import {serializeArrowSchema, deserializeArrowSchema} from '../schema/convert-arrow-schema';
+import {mergeArrowSchemas, snapshotArrowSchema} from '@math.gl/core/arrow';
 
-/** Copies a schema, including nested field metadata, without retaining mutable metadata maps. */
-export function snapshotArrowSchema(schema: arrow.Schema): arrow.Schema {
-  return deserializeArrowSchema(serializeArrowSchema(schema));
-}
-
-/** Merges compatible schema snapshots, with later metadata values taking precedence. */
-export function mergeArrowSchemas(
-  previous: arrow.Schema | undefined,
-  next: arrow.Schema
-): arrow.Schema {
-  if (!previous) return snapshotArrowSchema(next);
-  // Arrow validates names, order, nullability and types, but intentionally ignores metadata.
-  new arrow.Table(previous, [new arrow.RecordBatch(next, undefined)]);
-  const earlier = serializeArrowSchema(previous);
-  const later = serializeArrowSchema(next);
-  return deserializeArrowSchema({
-    ...later,
-    fields: later.fields.map((field, index) => mergeFieldMetadata(earlier.fields[index], field)),
-    metadata: {...earlier.metadata, ...later.metadata}
-  });
-}
-
-/** Merges metadata recursively without changing a field's structural definition. */
-function mergeFieldMetadata(previous: Field, next: Field): Field {
-  return {
-    ...next,
-    type: mergeTypeMetadata(previous.type, next.type),
-    metadata: {...previous.metadata, ...next.metadata}
-  };
-}
-
-/** Preserves nested field metadata, including fields inside dictionary values. */
-function mergeTypeMetadata(previous: DataType, next: DataType): DataType {
-  if (typeof previous !== 'object' || typeof next !== 'object') return next;
-  if ('children' in previous && 'children' in next) {
-    const previousChildren = previous.children;
-    return {
-      ...next,
-      children: next.children.map((field, index) =>
-        mergeFieldMetadata(previousChildren[index], field)
-      )
-    };
-  }
-  if (previous.type === 'dictionary' && next.type === 'dictionary') {
-    return {...next, dictionary: mergeTypeMetadata(previous.dictionary, next.dictionary)};
-  }
-  return next;
-}
+export {mergeArrowSchemas, snapshotArrowSchema};
 
 /** Snapshots a batch's schema and metadata while retaining its data buffers and row count. */
 function snapshotArrowBatch(batch: arrow.RecordBatch, schema: arrow.Schema): arrow.RecordBatch {

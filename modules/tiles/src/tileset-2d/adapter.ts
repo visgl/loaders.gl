@@ -46,7 +46,13 @@ export type Tileset2DAdapter<ViewStateT> = {
   resolveTileIndex?: (index: TileIndex) => TileIndex;
   /** Returns a source/grid-scoped cache ID; omitted uses the legacy XYZ ID. */
   getTileId?: (index: TileIndex) => string;
-  /** Returns an established parent, or null when no parent relationship is known. */
+  /**
+   * Returns a single parent, or null when no parent relationship is known.
+   * In a nested TileMatrix grid, each fine tile fits inside one coarse tile, so its parent
+   * covers it. In a non-nested TileMatrix grid, the parent is the coarse tile that contains
+   * the fine tile's center. Placeholder coverage is best effort. Any part of the fine tile
+   * outside its parent has no placeholder from refinement until the fine tile loads.
+   */
   getParentIndex?: (index: TileIndex) => TileIndex | null;
   /** Returns native metadata carried to the tile header and source request. */
   getTileMetadata?: (
@@ -65,4 +71,12 @@ export type Tileset2DAdapter<ViewStateT> = {
     context: Tileset2DTileContext<ViewStateT>,
     index: TileIndex
   ) => TileBoundingBox;
+  /**
+   * Returns a ring of [longitude, latitude] positions, or null when unavailable. deck.gl uses it
+   * for culling and request priority. The loaders.gl `Tileset2D` does not use this hook.
+   */
+  getTileOutline?: (
+    context: Tileset2DTileContext<ViewStateT>,
+    index: TileIndex
+  ) => number[][] | null;
 };

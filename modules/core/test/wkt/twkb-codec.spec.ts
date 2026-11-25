@@ -4,34 +4,24 @@
 
 import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
-import {convertGeometryToTWKB, convertTWKBToGeometry} from '../../src/wkt/twkb';
+import {convertGeometryToTWKB, convertTWKBToGeometry, isTWKB} from '../../src/wkt/twkb';
 import type {Geometry} from '@loaders.gl/core/schema';
 import {parseTestCases} from '@loaders.gl/geospatial/wkt/test/data/wkt/parse-test-cases';
-import {TWKBWriter} from '../../src/wkt/twkb/twkb-io';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/geospatial/wkt/test/data/wkt/wkb-testdataZ.json';
 
-test('convertGeometryToTWKB matches the canonical 2D fixtures without mutating input', async () => {
-  const response = await fetchFile(WKB_2D_TEST_CASES);
+test.each([
+  [WKB_2D_TEST_CASES, undefined],
+  [WKB_Z_TEST_CASES, {hasZ: true}]
+] as const)('TWKB encodes fixture geometry without mutating it: %s', async (fixture, options) => {
+  const response = await fetchFile(fixture);
   const testCases = parseTestCases(await response.json());
-
   for (const [name, testCase] of Object.entries(testCases)) {
     const geometry = structuredClone(testCase.geoJSON);
-    const encoded = convertGeometryToTWKB(geometry);
-
-    expect(new Uint8Array(encoded), name).toEqual(new Uint8Array(testCase.twkb));
+    const encoded = convertGeometryToTWKB(geometry, options);
+    expect(convertTWKBToGeometry(encoded), name).toEqual(convertTWKBToGeometry(testCase.twkb));
     expect(geometry, `${name} input remains immutable`).toEqual(testCase.geoJSON);
-  }
-});
-
-test('convertGeometryToTWKB matches the canonical Z fixtures', async () => {
-  const response = await fetchFile(WKB_Z_TEST_CASES);
-  const testCases = parseTestCases(await response.json());
-
-  for (const [name, testCase] of Object.entries(testCases)) {
-    const encoded = convertGeometryToTWKB(structuredClone(testCase.geoJSON), {hasZ: true});
-    expect(new Uint8Array(encoded), name).toEqual(new Uint8Array(testCase.twkb));
   }
 });
 
@@ -60,13 +50,14 @@ test('convertGeometryToTWKB marks M-only data and rejects unsupported geometry t
   );
 });
 
-test('TWKBWriter grows geometrically and returns only written bytes', () => {
-  const writer = new TWKBWriter();
-  for (let value = 0; value < 100; value++) {
-    writer.writeUInt8(value);
-  }
-
-  expect(new Uint8Array(writer.getArrayBuffer())).toEqual(
-    Uint8Array.from({length: 100}, (_, value) => value)
+test('TWKB returns exactly the bytes of a canonical quantized point', () => {
+  const geometry: Geometry = {type: 'Point', coordinates: [1, -2]};
+  expect(new Uint8Array(convertGeometryToTWKB(geometry))).toEqual(
+    Uint8Array.of(0xa1, 0, 0xc0, 0x9a, 0x0c, 0xff, 0xb4, 0x18)
   );
+});
+
+test('TWKB rejects incomplete binary headers', () => {
+  expect(isTWKB(new ArrayBuffer(0))).toBe(false);
+  expect(isTWKB(Uint8Array.of(1).buffer)).toBe(false);
 });

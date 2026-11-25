@@ -744,13 +744,17 @@ function createGeospatialStatistics(
   // Vertex bounds are not conservative for GEOGRAPHY: non-linear edge algorithms can reach
   // extrema between vertices. Until edge-aware geodesic bounds are available, omit the bbox while
   // retaining the useful geometry-type statistics.
-  const canWriteBoundingBox = logicalType === 'GEOMETRY';
+  let canWriteBoundingBox = true;
   for (const value of values) {
     if (!(value instanceof ArrayBuffer) && !ArrayBuffer.isView(value)) {
       throw new Error(`${logicalType} columns must contain WKB binary values`);
     }
     const statistics = getWKBGeometryStatistics(value);
     geometryTypes.add(statistics.geometryType);
+    if (logicalType === 'GEOGRAPHY' && ![1, 4].includes(statistics.geometryType % 1000)) {
+      canWriteBoundingBox = false;
+      bbox = undefined;
+    }
     if (canWriteBoundingBox) {
       bbox = mergeGeometryBoundingBoxes(bbox, statistics.bbox);
     }

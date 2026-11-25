@@ -195,6 +195,37 @@ describe('service authentication presets', () => {
     ).rejects.toThrow(error);
   });
 
+  test('retries the endpoint exchange after a failed token refresh', async () => {
+    const assetUrl = 'https://assets.ion.cesium.com/123/tileset.json';
+    let exchangeCount = 0;
+    const fetchFunction: FetchLike = async (url, options) => {
+      if (url.endsWith('/endpoint')) {
+        exchangeCount++;
+        if (exchangeCount === 2) return new Response(null, {status: 503});
+        return Response.json({url: assetUrl, accessToken: `token-${exchangeCount}`});
+      }
+      const authorization = new Headers(options?.headers).get('authorization');
+      return new Response(null, {
+        status: authorization === 'Bearer token-1' && url.endsWith('/child1.json') ? 401 : 200
+      });
+    };
+    const credential = createCesiumIonCredential({
+      accessToken: 'account-token',
+      assetId: 123,
+      fetch: fetchFunction,
+      tokenType: 'account'
+    });
+    const authenticatedFetch = createAuthenticatedFetch({
+      fetch: fetchFunction,
+      credentials: [credential]
+    });
+
+    expect((await authenticatedFetch(assetUrl)).ok).toBe(true);
+    await expect(authenticatedFetch(new URL('child1.json', assetUrl).href)).rejects.toThrow(/503/);
+    expect((await authenticatedFetch(new URL('child2.json', assetUrl).href)).ok).toBe(true);
+    expect(exchangeCount).toBe(3);
+  });
+
   test('returns no token when an application provider is empty and falls back for malformed JWTs', async () => {
     const requests: Array<{authorization: string | null; url: string}> = [];
     const fetchFunction: FetchLike = async (url, options) => {

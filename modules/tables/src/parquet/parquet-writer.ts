@@ -40,6 +40,8 @@ export type ParquetWriterEncoding =
 
 /** Encoder-specific options for the TypeScript writer. */
 type ParquetWriterEncoderOptions = {
+  /** Omit the GeoParquet footer when writing native geospatial columns. */
+  nativeGeospatialOnly?: boolean;
   /** Value encoding overrides keyed by top-level column name. */
   columnEncodings?: Record<string, ParquetWriterEncoding>;
   /** Enables dictionary pages globally when forced or size-beneficial. */

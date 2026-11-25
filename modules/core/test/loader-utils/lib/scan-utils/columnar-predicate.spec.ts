@@ -210,27 +210,27 @@ describe('format-neutral columnar predicates', () => {
         {bytes: ['one']},
         1
       )
-    ).toThrow('binary values on both sides');
+    ).toThrow('operands must have comparable types');
     expect(() =>
       filterColumnarRowIndices({op: '=', args: [{property: 'date'}, new Date(0)]}, {date: [0]}, 1)
-    ).toThrow('date values on both sides');
+    ).toThrow('operands must have comparable types');
     expect(() =>
       filterColumnarRowIndices({op: '=', args: [{property: 'value'}, '1']}, {value: [1]}, 1)
-    ).toThrow('cannot compare number with string');
+    ).toThrow('operands must have comparable types');
     expect(() =>
       filterColumnarRowIndices(
         {op: '=', args: [{property: 'value'}, {} as never]},
         {value: [{}]},
         1
       )
-    ).toThrow('does not support object values');
+    ).toThrow('operands must have comparable types');
     expect(() =>
       filterColumnarRowIndices(
         {op: '>', args: [{property: 'date'}, new Date(Number.NaN)]},
         {date: [new Date(0)]},
         1
       )
-    ).toThrow('Non-finite values');
+    ).toThrow('cannot compare non-finite numbers');
   });
 
   test('validates logical arity, property paths, and available columns', () => {

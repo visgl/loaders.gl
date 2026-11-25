@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {log as loaderLog} from '@loaders.gl/core/loader-utils';
-import {path} from '@loaders.gl/core/loader-utils';
+import {createSourceLoadOptionsResolver, path} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {Vector3} from '@math.gl/core/matrix';
 import type {CoreAPI, Loader, LoaderOptions} from '@loaders.gl/core/loader-utils';
@@ -70,6 +70,8 @@ export class I3SSource implements Tileset3DSource {
   credits?: any;
   metadata?: TilesetSourceMetadata;
 
+  /** Retrieves authenticated options for this source's resource requests. */
+  private readonly getRequestLoadOptions: () => Promise<LoaderOptions>;
   private readonly queryParams: Record<string, string> = {};
   private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
@@ -94,6 +96,11 @@ export class I3SSource implements Tileset3DSource {
     this.resolver = request.resolver;
     this.coreApi = request.coreApi;
     this.loadOptions = loadOptions;
+    this.getRequestLoadOptions = createSourceLoadOptionsResolver(
+      this.loader,
+      this.url,
+      loadOptions
+    );
     this.initializeQueryParams(loadOptions);
   }
 
@@ -102,9 +109,10 @@ export class I3SSource implements Tileset3DSource {
    */
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
+      const loadOptions = await this.getRequestLoadOptions();
       this.rootTileset = await this.loadRootData(this.getTileUrl(this.url), {
-        ...this.loadOptions,
-        i3s: {...(this.loadOptions.i3s as Record<string, unknown>), isTileset: true}
+        ...loadOptions,
+        i3s: {...(loadOptions.i3s as Record<string, unknown>), isTileset: true}
       });
     }
     this.tileset = this.rootTileset;
@@ -194,12 +202,13 @@ export class I3SSource implements Tileset3DSource {
    * Loads renderable content for an I3S tile.
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
+    const loadOptions = await this.getRequestLoadOptions();
     const contentUrl = this.getTileUrl(tile.contentUrl);
     const loaderId = this.loader.id;
-    const loaderOptions = (this.loadOptions[loaderId] as Record<string, unknown>) || {};
+    const loaderOptions = (loadOptions[loaderId] as Record<string, unknown>) || {};
     const metadata = this.getMetadata();
     const options = {
-      ...this.loadOptions,
+      ...loadOptions,
       [loaderId]: {
         ...loaderOptions,
         ...tile.tileset.options.i3s,
@@ -260,13 +269,14 @@ export class I3SSource implements Tileset3DSource {
       return await this.transformTileHeader(header);
     }
 
+    const loadOptions = await this.getRequestLoadOptions();
     const nodeUrl = this.getTileUrl(`${this.url}/nodes/${childId}`);
     const i3sLoaderOptions =
-      this.loadOptions.i3s && typeof this.loadOptions.i3s === 'object'
-        ? (this.loadOptions.i3s as Record<string, unknown>)
+      loadOptions.i3s && typeof loadOptions.i3s === 'object'
+        ? (loadOptions.i3s as Record<string, unknown>)
         : {};
     const options = {
-      ...this.loadOptions,
+      ...loadOptions,
       i3s: {
         ...i3sLoaderOptions,
         isTileHeader: true
