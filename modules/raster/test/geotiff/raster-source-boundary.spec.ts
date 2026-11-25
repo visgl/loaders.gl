@@ -847,6 +847,60 @@ test('GeoTIFF resampling preserves invalid neighbors and point sample registrati
   expect(readRasters).toHaveBeenCalledTimes(2);
 });
 
+test('GeoTIFF bilinear resizing writes noData only where the nearest source pixel is noData', async () => {
+  const source = new GeoTIFFRasterSource(new Blob([]), {});
+  installGeoTIFFState(source, {
+    bandCount: 2,
+    dtype: 'float32',
+    noData: -1,
+    bands: [
+      {index: 0, dtype: 'float32', colorInterpretation: 'gray', noData: -1},
+      {index: 1, dtype: 'float32', colorInterpretation: 'alpha'}
+    ]
+  });
+  const state = await (source as any)._initPromise;
+  const alpha = new Float32Array([1, 1, 1, 1]);
+  const readRasters = vi
+    .fn()
+    .mockResolvedValueOnce(
+      Object.assign([new Float32Array([10, 20, 30, -1]), alpha], {width: 2, height: 2})
+    )
+    .mockResolvedValueOnce(
+      Object.assign([new Float32Array([-1, 10, 20, 30]), alpha], {width: 2, height: 2})
+    );
+  state.images = [
+    {
+      fileDirectory: {},
+      getWidth: () => 2,
+      getHeight: () => 2,
+      getOrigin: () => [0, 10],
+      getResolution: () => [5, -5],
+      readRasters
+    }
+  ];
+  const parameters = {
+    bounds: [
+      [0, 0],
+      [10, 10]
+    ] as RasterBoundingBox,
+    crs: 'EPSG:4326',
+    width: 1,
+    height: 1,
+    resampleMethod: 'bilinear' as const
+  };
+
+  // The nearest source pixel is noData: the gray output is noData, marked as a decoded sample.
+  const noDataPixel = await source.getRasterForRegion(parameters);
+  expect((noDataPixel.data as Float32Array[])[0][0]).toBe(-1);
+  expect(noDataPixel.validityMasks?.[0].data[0]).toBe(1);
+
+  // The kernel only touches noData: the gray output stays invalid instead of taking the fill
+  // value, so an alpha band that still blends there does not paint the fill color.
+  const edgePixel = await source.getRasterForRegion(parameters);
+  expect(edgePixel.validityMasks?.[0].data[0]).toBe(0);
+  expect(edgePixel.validityMasks?.[1].data[0]).toBe(1);
+});
+
 test('GeoTIFF internal mask stays aligned and excludes masked overviews', async () => {
   const source = new GeoTIFFRasterSource(new Blob([]), {});
   installGeoTIFFState(source, {bandCount: 1, dtype: 'float32', noData: null});

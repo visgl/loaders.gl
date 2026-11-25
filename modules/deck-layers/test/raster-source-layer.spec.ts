@@ -116,7 +116,8 @@ describe('raster colorization', () => {
       {stretch: 'range'}
     );
 
-    expect(Array.from(image.data)).toEqual([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 255, 255]);
+    // The transparent pixel stays out of the range; opaque colors equal to noData count.
+    expect(Array.from(image.data)).toEqual([0, 0, 0, 0, 0, 0, 0, 128, 0, 255, 255, 255]);
   });
 
   test('shows 8-bit RGB with alpha as stored and keeps transparent fill transparent', () => {
@@ -187,6 +188,42 @@ describe('raster colorization', () => {
 
     expect(Array.from(colorizeRasterData(raster, {stretch: 'range'}).data)).toEqual([
       0, 0, 0, 255, 128, 0, 0, 128, 255, 0, 0, 39
+    ]);
+  });
+
+  test('shows a gray-tagged stack of three or more bands as a positional RGB composite', () => {
+    const data = new Uint16Array([0, 100, 200, 300, 300, 200, 100, 0, 50, 50, 250, 250]);
+    const stack = {width: 2, height: 2, bandCount: 3, dtype: 'uint16', interleaved: false} as const;
+    const tagged = colorizeRasterData(
+      createRaster(data, {
+        ...stack,
+        bands: createBandMetadata('uint16', 'gray', 'undefined', 'undefined')
+      })
+    );
+    const positional = colorizeRasterData(createRaster(data, stack));
+
+    expect(Array.from(tagged.data)).toEqual(Array.from(positional.data));
+  });
+
+  test('stretches alpha rasters over opaque colors that equal noData and skips transparent fill', () => {
+    const bands = createBandMetadata('uint16', 'red', 'green', 'blue', 'alpha').map(band => ({
+      ...band,
+      noData: band.colorInterpretation === 'alpha' ? undefined : 0
+    }));
+    const color = [0, 500, 1000, 60000];
+    const raster = createRaster(
+      Uint16Array.from({length: 16}, (_, index) =>
+        index % 4 === 3 ? (index === 15 ? 0 : 65535) : color[Math.floor(index / 4)]
+      ),
+      {width: 4, height: 1, bandCount: 4, dtype: 'uint16', interleaved: true, bands}
+    );
+
+    const image = colorizeRasterData(raster, {stretch: 'range'});
+    expect(Array.from(image.data.filter((_value, index) => index % 4 === 0))).toEqual([
+      0, 128, 255, 0
+    ]);
+    expect(Array.from(image.data.filter((_value, index) => index % 4 === 3))).toEqual([
+      255, 255, 255, 0
     ]);
   });
 

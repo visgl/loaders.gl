@@ -643,10 +643,12 @@ function getDisplayBands(raster: {bandCount: number; bands?: RasterBandMetadata[
   const alphaBand = findBand('alpha');
   const rgb = [findBand('red'), findBand('green'), findBand('blue')];
   if (rgb.every(index => index >= 0)) return {colorBands: rgb, alphaBand};
-  const gray = findBand('gray');
-  if (gray >= 0) return {colorBands: [gray], alphaBand};
-
   const available = indices.filter(index => raster.bands?.[index]?.colorInterpretation !== 'alpha');
+  // GeoTIFF tags band 0 of any MinIsBlack image as gray, including multispectral stacks.
+  // Use the gray role only when there are too few bands for the positional RGB composite.
+  const gray = findBand('gray');
+  if (gray >= 0 && available.length < 3) return {colorBands: [gray], alphaBand};
+
   return {colorBands: available.slice(0, available.length >= 3 ? 3 : 1), alphaBand};
 }
 
@@ -721,11 +723,12 @@ export function colorizeRasterData(
   const statistics = colorBands.map((band, channel) => {
     if (isByteColor) return null;
     const colorRange = colorRanges?.[channel];
+    // With alpha, opacity decides visibility: colors equal to noData count, transparent fill does not.
     return getRasterStretchRange(
-      raster,
+      hasAlpha ? displayRaster : raster,
       band,
       stretch,
-      hasAlpha && (colorRange || stretch === 'percentile')
+      hasAlpha
         ? (value, pixel) => {
             const alphaSample = sampleRaster(displayRaster, pixel, alphaSampleOptions).values[0];
             const alphaFraction = getAlphaFraction(alphaSample, alphaMaximum);

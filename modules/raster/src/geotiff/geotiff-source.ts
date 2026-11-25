@@ -1649,6 +1649,14 @@ async function resizeRasterWindow(
             !sampleRaster(inputWithoutNoData, pixel, {bands: [band], method}).valid[0]
           )
             continue;
+          // Only a sample whose nearest source pixel is noData becomes noData. A bilinear kernel
+          // that merely touches noData stays invalid, so edge colors do not turn into fill while
+          // an alpha band still blends there.
+          if (
+            method === 'bilinear' &&
+            sampleRaster(input, pixel, {bands: [band], method: 'nearest'}).values[0] !== undefined
+          )
+            continue;
           value = noData;
         }
         if (Array.isArray(output)) output[band][pixelIndex] = value;
