@@ -191,12 +191,12 @@ retain the deck.gl-community-style traversal contract. The optional hooks extend
   These fields are retained on the tile header and passed to `getTileData`.
 - `getParentIndex(index)` returns an established parent or `null`. A returned parent must have a
   lower compatibility level index; a non-decreasing parent throws rather than looping forever.
+- `getTileOutline(context, index)` optionally supplies a geographic ring for deck.gl culling and
+  request priority. It is unused by the loaders.gl `Tileset2D`.
 
 When these hooks are omitted, identity and parents retain their existing XYZ behavior. Custom
 non-quadtree adapters should explicitly return `null` for an unknown parent. Changing the source
 or adapter clears cache entries and consumer selections, aborts pending requests, and prevents
 late metadata from the previous source from replacing the new metadata. Consumers must reselect.
 
-These hooks are loaders.gl extensions under discussion for the shared runtime; current deck.gl and
-deck.gl-community adapters do not yet consume them. See the [TileMatrix adapter](/docs/modules/tiles/api-reference/tile-matrix#tilematrix-traversal-in-tileset2d)
-for a working native-frame integration.
+For an example of these hooks in a native-frame integration, see the [TileMatrix adapter](/docs/modules/tiles/api-reference/tile-matrix#tilematrix-traversal-in-tileset2d).

@@ -292,6 +292,187 @@ test('zoom offset scales sampling resolution while preserving original native le
   expect(() => adapter.getTileIndices({...context, minZoom: Infinity})).toThrow('finite');
 });
 
+test('finest-first storage matrices use coarse-to-fine ranks and retain native IDs in the cache', async () => {
+  const grid: TileMatrixSelectionGrid = {
+    tileMatrixSet: {
+      crs: 'EPSG:32631',
+      matrices: [1, 2, 4].map((resolution, index) => ({
+        id: String(index * 2),
+        resolution,
+        origin: [100, 200],
+        cornerOfOrigin: 'topLeft',
+        tileSize: [2, 2],
+        matrixSize: [4 / resolution, 4 / resolution]
+      }))
+    },
+    limits: [
+      {tileMatrix: '0', minTileColumn: 2, maxTileColumn: 2, minTileRow: 2, maxTileRow: 2},
+      {tileMatrix: '2', minTileColumn: 1, maxTileColumn: 1, minTileRow: 1, maxTileRow: 1},
+      {tileMatrix: '4', minTileColumn: 0, maxTileColumn: 0, minTileRow: 0, maxTileRow: 0}
+    ]
+  };
+  const frame: TileMatrixViewFrame = {...FRAME, extent: [105, 195, 105, 195], resolution: 1};
+  const adapter = createTileMatrixTileset2DAdapter(grid, {cacheNamespace: 'geotiff'});
+  const tileset = new Tileset2D({adapter, getTileData: ({tileMatrix}) => tileMatrix ?? null});
+  try {
+    const tiles = [4, 2, 1].map((resolution, rank) => {
+      const matrixId = String(4 - rank * 2);
+      const [index] = tileset.getTileIndices({viewState: {...frame, resolution}, zRange: null});
+      expect(index).toEqual({x: rank, y: rank, z: rank, tileMatrix: matrixId});
+      expect(adapter.getTileId!({...index, z: 2 - rank})).toBe(
+        JSON.stringify(['geotiff', frame.crs, matrixId, rank, rank])
+      );
+      return tileset.getTile(index, true);
+    });
+    const [coarse, middle, fine] = tiles;
+    const context = {viewState: frame, tileSize: 2};
+    expect(adapter.getTileIndices({...context, maxZoom: 0})).toEqual([coarse.index]);
+    expect(adapter.getTileIndices({...context, minZoom: 1, maxZoom: 1})).toEqual([middle.index]);
+    expect(
+      adapter.getTileIndices({...context, viewState: {...frame, resolution: 4}, minZoom: 2})
+    ).toEqual([fine.index]);
+    expect(adapter.resolveTileIndex!({...fine.index, z: 0})).toEqual(fine.index);
+    expect(grid.tileMatrixSet!.matrices.map(matrix => matrix.id)).toEqual(['0', '2', '4']);
+    tileset.prepareTiles();
+    expect(coarse.parent).toBeNull();
+    expect(middle.parent).toBe(coarse);
+    expect(fine.parent).toBe(middle);
+    expect(await Promise.all(tiles.map(tile => tile.data))).toEqual(['4', '2', '0']);
+  } finally {
+    tileset.finalize();
+  }
+});
+
+test('level ranks break horizontal resolution ties in source order and preserve selection ties', () => {
+  const [coarse, fine] = GRID.tileMatrixSet!.matrices;
+  const adapter = createTileMatrixTileset2DAdapter(
+    {
+      tileMatrixSet: {
+        crs: FRAME.crs,
+        matrices: [{...fine, resolutionY: 4}, coarse, {...fine, id: 'same-resolution'}]
+      }
+    },
+    {cacheNamespace: 'anisotropic'}
+  );
+  const context = {viewState: {...FRAME, resolution: 4}, tileSize: 2};
+  expect(adapter.getTileIndices(context)[0]).toMatchObject({tileMatrix: 'detail', z: 1});
+  expect(adapter.getTileIndices({...context, maxZoom: 0})[0]).toMatchObject({
+    tileMatrix: '1',
+    z: 0
+  });
+  expect(adapter.getTileIndices({...context, minZoom: 2})[0]).toMatchObject({
+    tileMatrix: 'same-resolution',
+    z: 2
+  });
+});
+
+test('parents use the canonical child bounds and require coverage at the next level', () => {
+  const aliasedChild = {x: 1, y: 0, z: 1, tileMatrix: 'detail'};
+  const unrestricted = createTileMatrixTileset2DAdapter(
+    {tileMatrixSet: GRID.tileMatrixSet},
+    {cacheNamespace: 'unrestricted'}
+  );
+  const restricted = createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'restricted'});
+  expect(unrestricted.getParentIndex!(aliasedChild)).toEqual({x: 0, y: 0, z: 0, tileMatrix: '1'});
+  expect(restricted.getParentIndex!(aliasedChild)).toBeNull();
+});
+
+test('parents map by center across offset origins and non-binary scales', () => {
+  const grid: TileMatrixSelectionGrid = {
+    tileMatrixSet: {
+      crs: 'native',
+      matrices: [
+        {
+          id: 'parent',
+          resolution: 3,
+          origin: [-4, 14],
+          cornerOfOrigin: 'topLeft',
+          tileSize: [2, 2],
+          matrixSize: [2, 2]
+        },
+        {
+          id: 'child',
+          resolution: 1,
+          origin: [0, 12],
+          cornerOfOrigin: 'topLeft',
+          tileSize: [2, 2],
+          matrixSize: [6, 6]
+        }
+      ]
+    }
+  };
+  const adapter = createTileMatrixTileset2DAdapter(grid, {cacheNamespace: 'offset'});
+  const child = {x: 1, y: 1, z: 1, tileMatrix: 'child'};
+  const parent = {x: 1, y: 0, z: 0, tileMatrix: 'parent'};
+  expect(adapter.getParentIndex!(parent)).toBeNull();
+  expect(adapter.getParentIndex!(child)).toEqual(parent);
+  expect(adapter.getParentIndex!({...child, x: 5})).toBeNull();
+  const limited = createTileMatrixTileset2DAdapter(
+    {
+      ...grid,
+      limits: [
+        {tileMatrix: 'parent', minTileColumn: 0, maxTileColumn: 0, minTileRow: 0, maxTileRow: 1},
+        {tileMatrix: 'child', minTileColumn: 0, maxTileColumn: 5, minTileRow: 0, maxTileRow: 5}
+      ]
+    },
+    {cacheNamespace: 'offset-limited'}
+  );
+  expect(limited.getParentIndex!(child)).toBeNull();
+});
+
+test('tile outlines sample four segments on each edge when a synchronous conversion is supplied', () => {
+  const grid: TileMatrixSelectionGrid = {
+    tileMatrixSet: {
+      crs: 'CRS:84',
+      matrices: [
+        {
+          id: 'native',
+          resolution: 1,
+          origin: [10, 20],
+          cornerOfOrigin: 'bottomLeft',
+          tileSize: [8, 4],
+          matrixSize: [1, 1]
+        }
+      ]
+    }
+  };
+  const viewState: TileMatrixViewFrame = {crs: 'CRS:84', extent: [10, 20, 18, 24], resolution: 1};
+  const context = {viewState, tileSize: 8};
+  const options = {cacheNamespace: 'geographic'};
+  expect(createTileMatrixTileset2DAdapter(grid, options)).not.toHaveProperty('getTileOutline');
+  const adapter = createTileMatrixTileset2DAdapter(grid, {
+    ...options,
+    toLngLat: ([longitude, latitude]) => [longitude, latitude]
+  });
+  const [index] = adapter.getTileIndices(context);
+  expect(adapter.getTileOutline!(context, index)).toEqual([
+    [10, 20],
+    [12, 20],
+    [14, 20],
+    [16, 20],
+    [18, 20],
+    [18, 21],
+    [18, 22],
+    [18, 23],
+    [18, 24],
+    [16, 24],
+    [14, 24],
+    [12, 24],
+    [10, 24],
+    [10, 23],
+    [10, 22],
+    [10, 21]
+  ]);
+  const invalid = createTileMatrixTileset2DAdapter(grid, {
+    ...options,
+    toLngLat: ([longitude, latitude]) => [longitude === 12 ? NaN : longitude, latitude]
+  });
+  expect(invalid.getTileOutline!(context, index)).toBeNull();
+  expect(() =>
+    createTileMatrixTileset2DAdapter(grid, {...options, toLngLat: null as never})
+  ).toThrow('toLngLat');
+});
+
 test('native-frame traversal rejects unsupported model transforms and elevation clipping', () => {
   const adapter = createTileMatrixTileset2DAdapter(GRID, {cacheNamespace: 'transform'});
   const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];

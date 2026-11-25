@@ -62,11 +62,9 @@ when loading the selected requests; selection itself is synchronous and does not
 
 ## Current scope and example
 
-Our current thinking is that a renderer-independent native frame can provide a useful selection
-boundary while traversal ownership and deck.gl APIs are discussed. An explicit adapter below
-connects it to the loaders.gl `Tileset2D` shared cache without inferring parent relationships.
-A viewport adapter and compatible renderer still need to supply and interpret the frame, bounds
-and per-axis tile dimensions. Projected deck.gl rendering remains separate work.
+The fixed-frame selector accepts a renderer-independent native frame. The adapter below connects
+it to the loaders.gl `Tileset2D` shared cache. A viewport integration and compatible renderer
+supply and interpret the frame, bounds and per-axis tile dimensions.
 
 Regular and variable-width/coalesced rows are supported through math.gl's row-band ranges.
 Columns advance by each band's coalescence factor; the selector emits each canonical tile once.
@@ -91,7 +89,10 @@ service. See also [tile matrix concepts](/docs/developer-guide/tile-matrices).
 shared [`Tileset2D`](/docs/modules/tiles/api-reference/tileset-2d) cache. It accepts complete
 regular or coalesced geometry and an explicit native-CRS frame. It retains opaque matrix IDs,
 source coverage, canonical aliases, native bounds, CRS and per-level logical tile dimensions.
-It returns no parent relationship: arbitrary matrix sets need not form a quadtree.
+`z` is the level from coarse to fine, ordered by descending horizontal resolution (`matrix.resolution`).
+Ties keep source order. `tileMatrix` is the native ID. A tile's parent is the tile at the next
+coarser level that contains its center. If the center falls outside that matrix or the containing
+tile is outside advertised coverage, the adapter returns `null` for the parent.
 
 ```typescript
 import {Tileset2D, createTileMatrixTileset2DAdapter} from '@loaders.gl/tiles/tileset-2d';
@@ -124,20 +125,19 @@ The namespace is caller-owned and is not a globally unique identifier by itself.
 
 The adapter selects from the native frame and `grid.limits`. An explicitly supplied `extent` clips
 the frame in the grid CRS. Source metadata's geographic `boundingBox` is not used as a native
-extent, because it may be in a different CRS. Explicit `minZoom` and `maxZoom` restrict matrix
-**array indices**; they are not interpreted as native service zoom IDs. An integer `zoomOffset`
-scales the target resolution by `2 ** -zoomOffset`, including for irregular level spacing.
+extent, because it may be in a different CRS. Explicit `minZoom` and `maxZoom` restrict the
+coarse-to-fine ranks. An integer `zoomOffset` scales the target resolution by
+`2 ** -zoomOffset`, including for irregular level spacing.
 
 A frame must already account for the relevant viewport and layer transform. Identity model matrices
 are accepted; non-identity matrices and non-null elevation ranges throw instead of silently
 producing an incorrect selection. A viewport integration must produce a conservative native frame
 for transformed or elevated views before calling the adapter. Numeric `z` remains a compatibility
-array index, independent of the native matrix identifier.
+array index for direct calls to `selectTileMatrixTiles` as described above.
 
-The adapter supports source requests and shared cache participation. Applications still provide
-native frames, per-view selection and a compatible renderer. This does not transform a viewport,
-reproject content, establish parent relationships, or automatically enable projected rendering in
-deck.gl. The adapter extends the community-style traversal seam with optional identity, metadata,
-normalization and parent hooks; existing adapters keep their XYZ defaults. Use this adapter with
-loaders.gl `Tileset2D`: current deck.gl and deck.gl-community runtimes do not yet consume these
-additional hooks, so passing it directly to them would lose native identity and parent semantics.
+Supply `toLngLat` to add a `getTileOutline` hook for deck.gl culling and request priority. The
+adapter is synchronous, so the caller provides a synchronous conversion from the grid CRS to
+`[longitude, latitude]`, such as `converter.WGS84.to` from a math.gl CRS descriptor. The hook
+samples four segments per tile edge and returns a 16-position ring without a repeated closing
+point. It returns `null` if a position cannot be converted to finite longitude and latitude.
+The loaders.gl `Tileset2D` uses the tile's native bounding box and does not use the outline.

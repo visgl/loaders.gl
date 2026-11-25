@@ -3,12 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {Viewport} from '@deck.gl/core';
 import {Matrix4} from '@math.gl/core/matrix';
 import {
   STRATEGY_DEFAULT,
   STRATEGY_NEVER,
   STRATEGY_REPLACE,
   Tileset2D,
+  createTileMatrixTileset2DAdapter,
+  type TileMatrixViewFrame,
   type Tileset2DAdapter
 } from '@loaders.gl/tiles/tileset-2d';
 import {SharedTile2DView} from '../src/shared-tile-2d/shared-tile-2d-view';
@@ -75,6 +78,65 @@ test('SharedTile2DView#same-viewport updates reload only stale selected tiles', 
   expect(requestCount, 'same-viewport reload only refreshes the stale tile').toBe(3);
   view.finalize();
   tileset.finalize();
+});
+
+test('best-available refinement uses loaded parents from finest-first tile matrices', async () => {
+  const frame: TileMatrixViewFrame = {crs: 'native', extent: [1, 1, 1, 1], resolution: 2};
+  const adapter = createTileMatrixTileset2DAdapter(
+    {
+      tileMatrixSet: {
+        crs: frame.crs,
+        matrices: [1, 2, 4].map((resolution, index) => ({
+          id: String(index),
+          resolution,
+          origin: [0, 0],
+          cornerOfOrigin: 'bottomLeft',
+          tileSize: [2, 2],
+          matrixSize: [4 / resolution, 4 / resolution]
+        }))
+      }
+    },
+    {cacheNamespace: 'overviews'}
+  );
+  let finishFineTile!: (content: string) => void;
+  const fineData = new Promise<string>(resolve => {
+    finishFineTile = resolve;
+  });
+  const tileset = new Tileset2D<string, Viewport>({
+    adapter: {
+      getTileIndices: ({viewState, ...context}) =>
+        adapter.getTileIndices({
+          ...context,
+          viewState: {...frame, resolution: viewState.resolution}
+        }),
+      getTileBoundingBox: (context, index) =>
+        adapter.getTileBoundingBox({...context, viewState: frame}, index),
+      getTileId: adapter.getTileId,
+      getParentIndex: adapter.getParentIndex
+    },
+    getTileData: ({index}) => (index.tileMatrix === '0' ? fineData : 'overview'),
+    refinementStrategy: STRATEGY_DEFAULT
+  });
+  const view = new SharedTile2DView(tileset);
+  try {
+    view.update(new Viewport({zoom: 1, resolution: 2}));
+    const [parent] = view.selectedTiles!;
+    expect(await parent.data).toBe('overview');
+
+    view.update(new Viewport({zoom: 2, resolution: 1}));
+    const [child] = view.selectedTiles!;
+    expect(child.index).toMatchObject({z: 2, tileMatrix: '0'});
+    expect(child.parent).toBe(parent);
+    expect(child.isLoaded).toBe(false);
+    expect(view.isTileVisible(parent)).toBe(true);
+    expect(view.isTileVisible(child)).toBe(false);
+
+    finishFineTile('detail');
+    expect(await child.data).toBe('detail');
+  } finally {
+    view.finalize();
+    tileset.finalize();
+  }
 });
 
 test.each([

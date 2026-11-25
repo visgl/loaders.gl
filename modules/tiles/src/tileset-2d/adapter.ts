@@ -65,4 +65,12 @@ export type Tileset2DAdapter<ViewStateT> = {
     context: Tileset2DTileContext<ViewStateT>,
     index: TileIndex
   ) => TileBoundingBox;
+  /**
+   * Returns a ring of [longitude, latitude] positions, or null when unavailable. deck.gl uses it
+   * for culling and request priority. The loaders.gl `Tileset2D` does not use this hook.
+   */
+  getTileOutline?: (
+    context: Tileset2DTileContext<ViewStateT>,
+    index: TileIndex
+  ) => number[][] | null;
 };

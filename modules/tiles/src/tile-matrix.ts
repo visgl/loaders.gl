@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getTileBounds, getTileRanges, selectTileMatrix} from '@math.gl/geospatial/tiles';
+import {
+  getTileBounds,
+  getTileIndex,
+  getTileRanges,
+  selectTileMatrix
+} from '@math.gl/geospatial/tiles';
 import type {TileMatrixBounds, TileMatrixLimits, TileMatrixSet} from '@math.gl/geospatial/tiles';
 import type {NonGeoBoundingBox, TileIndex} from './tileset-2d/types';
 import {resolveTileGridTile, validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
@@ -179,13 +184,20 @@ export type TileMatrixTileset2DAdapterOptions = TileMatrixSelectionOptions & {
    * change; identical values intentionally share cache identity within a tileset.
    */
   cacheNamespace: string;
+  /**
+   * Converts a position in the grid CRS to [longitude, latitude] for tile outlines. Supply a
+   * synchronous converter, for example `converter.WGS84.to` from a math.gl CRS descriptor.
+   */
+  toLngLat?: (position: readonly [number, number]) => [number, number] | number[] | null;
 };
 
 /**
  * Adapts complete TileMatrix geometry to the shared Tileset2D cache using native-CRS frames.
- * Selection, bounds, native IDs and logical dimensions come from the existing fixed-frame
- * selector. No parent relationships are inferred. The caller supplies viewport conversion and
- * an explicit namespace covering source identity, grid version and content dimensions.
+ * `z` is the level from coarse to fine, ordered by descending horizontal resolution with ties
+ * in source order. `minZoom` and `maxZoom` use these ranks. `tileMatrix` is the native ID.
+ * A tile's parent is the available tile at the next coarser level that contains its center.
+ * The caller supplies viewport conversion and a namespace covering source identity, grid version
+ * and content dimensions.
  * Treat grid metadata as immutable for the lifetime of this adapter; replace the adapter and
  * namespace when the grid or content changes. This does not configure a deck.gl renderer.
  */
@@ -195,23 +207,29 @@ export function createTileMatrixTileset2DAdapter(
 ): Tileset2DAdapter<TileMatrixViewFrame> {
   if (!grid.tileMatrixSet) throw new Error('TileMatrix traversal requires complete geometry.');
   validateTileGrid(grid);
-  if (typeof options.cacheNamespace !== 'string' || !options.cacheNamespace.trim()) {
+  const {cacheNamespace, maximumTileCount, toLngLat} = options;
+  if (typeof cacheNamespace !== 'string' || !cacheNamespace.trim()) {
     throw new RangeError('TileMatrix traversal requires a nonempty cache namespace.');
   }
+  if (toLngLat !== undefined && typeof toLngLat !== 'function') {
+    throw new TypeError('TileMatrix traversal requires toLngLat to be a function.');
+  }
   const matrixSet = grid.tileMatrixSet;
-  const cacheNamespace = options.cacheNamespace;
-  const maximumTileCount = options.maximumTileCount;
+  const levels = [...matrixSet.matrices].sort(
+    (first, second) => second.resolution - first.resolution
+  );
+  const rankById = new Map(levels.map((matrix, rank) => [matrix.id, rank]));
   /** Resolves coverage and native identity, including canonical coalesced aliases. */
   function resolveMatrixIndex(index: TileIndex) {
     if (!index.tileMatrix)
       throw new RangeError('TileMatrix traversal requires a native matrix ID.');
-    const matrix = matrixSet.matrices.find(candidate => candidate.id === index.tileMatrix);
-    if (!matrix) throw new RangeError(`Unknown tile matrix "${index.tileMatrix}"`);
+    const rank = rankById.get(index.tileMatrix);
+    if (rank === undefined) throw new RangeError(`Unknown tile matrix "${index.tileMatrix}"`);
     const resolved = resolveTileGridTile(grid, {...index, tileMatrix: index.tileMatrix});
     if (!resolved) throw new RangeError('Tile is outside the matrix or advertised coverage.');
-    return {matrix, resolved};
+    return {matrix: levels[rank], rank, resolved};
   }
-  return {
+  const adapter: Tileset2DAdapter<TileMatrixViewFrame> = {
     useSourceExtent: false,
     validateExtent: validateTileMatrixExtent,
     getTileIndices: (context: Tileset2DTraversalContext<TileMatrixViewFrame>) => {
@@ -238,16 +256,18 @@ export function createTileMatrixTileset2DAdapter(
       }
       const minimumLevel = Math.max(0, Math.ceil(context.minZoom ?? 0));
       const maximumLevel = Math.min(
-        matrixSet.matrices.length - 1,
-        Math.floor(context.maxZoom ?? matrixSet.matrices.length - 1)
+        levels.length - 1,
+        Math.floor(context.maxZoom ?? levels.length - 1)
       );
       const frame = context.extent
         ? clipTileMatrixFrame(context.viewState, context.extent)
         : context.viewState;
       if (!frame) return [];
-      const matrices = matrixSet.matrices.filter(
-        (_matrix, index) => index >= minimumLevel && index <= maximumLevel
-      );
+      // Selection breaks ties on effective (larger-axis) resolution in source order.
+      const matrices = matrixSet.matrices.filter(matrix => {
+        const rank = rankById.get(matrix.id)!;
+        return rank >= minimumLevel && rank <= maximumLevel;
+      });
       const identifiers = new Set(matrices.map(matrix => matrix.id));
       const selectedGrid = {
         tileMatrixSet: {...matrixSet, matrices},
@@ -255,20 +275,17 @@ export function createTileMatrixTileset2DAdapter(
           ? {}
           : {limits: grid.limits.filter(limit => identifiers.has(limit.tileMatrix))})
       };
-      const originalIndices = new Map(
-        matrixSet.matrices.map((matrix, index) => [matrix.id, index])
-      );
       return selectTileMatrixTiles(selectedGrid, {...frame, resolution}, {maximumTileCount}).map(
         tile => ({
           ...tile.index,
-          z: originalIndices.get(tile.tileMatrix)!,
+          z: rankById.get(tile.tileMatrix)!,
           tileMatrix: tile.tileMatrix
         })
       );
     },
     resolveTileIndex: index => {
-      const {matrix, resolved} = resolveMatrixIndex(index);
-      return {...index, x: resolved.x, tileMatrix: matrix.id};
+      const {matrix, rank, resolved} = resolveMatrixIndex(index);
+      return {...index, x: resolved.x, z: rank, tileMatrix: matrix.id};
     },
     getTileId: index => {
       const {matrix, resolved} = resolveMatrixIndex(index);
@@ -283,6 +300,43 @@ export function createTileMatrixTileset2DAdapter(
       const {matrix} = resolveMatrixIndex(index);
       return {tileMatrix: matrix.id, crs: matrixSet.crs, tileSize: matrix.tileSize};
     },
-    getParentIndex: () => null
+    getParentIndex: index => {
+      const {matrix, rank, resolved} = resolveMatrixIndex(index);
+      const parentMatrix = levels[rank - 1];
+      if (!parentMatrix) return null;
+      const [left, bottom, right, top] = getTileBounds(matrix, resolved.x, resolved.y);
+      const parent = getTileIndex(parentMatrix, [left / 2 + right / 2, bottom / 2 + top / 2]);
+      if (!parent) return null;
+      const [x, y] = parent;
+      return resolveTileGridTile(grid, {x, y, z: rank - 1, tileMatrix: parentMatrix.id});
+    }
   };
+  if (toLngLat) {
+    adapter.getTileOutline = (_context, index) => {
+      const {matrix, resolved} = resolveMatrixIndex(index);
+      const [left, bottom, right, top] = getTileBounds(matrix, resolved.x, resolved.y);
+      const corners: [number, number][] = [
+        [left, bottom],
+        [right, bottom],
+        [right, top],
+        [left, top]
+      ];
+      const outline: number[][] = [];
+      for (const [edge, start] of corners.entries()) {
+        const end = corners[(edge + 1) % corners.length];
+        for (let segment = 0; segment < 4; segment++) {
+          const fraction = segment / 4;
+          const position = toLngLat([
+            start[0] + (end[0] - start[0]) * fraction,
+            start[1] + (end[1] - start[1]) * fraction
+          ]);
+          if (!position || !Number.isFinite(position[0]) || !Number.isFinite(position[1]))
+            return null;
+          outline.push([position[0], position[1]]);
+        }
+      }
+      return outline;
+    };
+  }
+  return adapter;
 }
