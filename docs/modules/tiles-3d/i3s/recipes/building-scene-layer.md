@@ -105,7 +105,9 @@ import DeckGL from '@deck.gl/react';
 
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 
-import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+import {COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/api';
+
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 
 

@@ -3,7 +3,7 @@
 Turn rows that are already in memory into a native Apache Arrow `Table`, ready for Arrow-aware visualization, column access, or registration with a query engine. There is no need to stringify rows and feed them back through a JSON parser.
 
 ```
-import {convertJSONToArrow} from '@loaders.gl/tables/json';
+import {convertJSONToArrow} from '@loaders.gl/tables/json/api';
 
 
 
@@ -29,13 +29,9 @@ Use this function for application-built arrays or JSON obtained through another 
 ## Import and signature[​](#import-and-signature "Direct link to Import and signature")
 
 ```
-import {
+import {convertJSONToArrow} from '@loaders.gl/tables/json/api';
 
-  convertJSONToArrow,
-
-  type ConvertJSONToArrowOptions
-
-} from '@loaders.gl/tables/json';
+import {type ConvertJSONToArrowOptions} from '@loaders.gl/tables/json';
 
 
 

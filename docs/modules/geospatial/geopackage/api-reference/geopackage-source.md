@@ -63,7 +63,7 @@ Use `GeoPackageLoader` to open a reusable GeoPackage source. It is a GeoPackage-
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage/bundled';
 
 
 

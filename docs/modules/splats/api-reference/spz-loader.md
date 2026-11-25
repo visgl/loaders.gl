@@ -97,7 +97,7 @@ const table = await load(url, SPZLoader, {
 The parser-bearing subpath can also be imported directly:
 
 ```
-import {SPZLoaderWithParser} from '@loaders.gl/splats/spz';
+import {SPZLoaderWithParser} from '@loaders.gl/splats/spz/bundled';
 ```
 
 ## Format support[​](#format-support "Direct link to Format support")

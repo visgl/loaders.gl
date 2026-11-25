@@ -77,7 +77,7 @@ Install `@loaders.gl/documents`. Its root contains metadata; use flat subpaths f
 ```
 import {load} from '@loaders.gl/core';
 
-import {BSONLoader} from '@loaders.gl/documents';
+import {BSONLoader} from '@loaders.gl/documents/bson';
 
 
 

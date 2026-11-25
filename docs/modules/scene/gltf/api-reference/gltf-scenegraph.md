@@ -53,7 +53,9 @@ The `GLTFScenegraph` class provides an API for accessing and modifying glTF data
 ### Accessing[​](#accessing "Direct link to Accessing")
 
 ```
-import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 
 import {load} from '@loaders.gl/core';
 
@@ -117,9 +119,13 @@ const specificScene = gltf.getScene(2);
 ```
 import {load, encode} from '@loaders.gl/core';
 
-import {ImageWriter} from '@loaders.gl/images/image';
+import {ImageWriter} from '@loaders.gl/images/image/bundled';
 
-import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
+
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 
 
 

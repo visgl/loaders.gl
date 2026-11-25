@@ -149,7 +149,7 @@ This support follows the Khronos [Multiple Binary Chunks in GLB draft](https://g
 `GLBWriter` continues to emit GLB v2 by default. Pass `glb: {version: 3}` to opt into the draft v3 container. The input can provide multiple `binChunks` and optional generic `chunks`; each buffer's `chunk` index in the JSON remains the application's responsibility and is preserved unchanged.
 
 ```
-import {GLBWriter} from '@loaders.gl/scene/gltf';
+import {GLBWriter} from '@loaders.gl/scene/gltf/bundled';
 
 
 

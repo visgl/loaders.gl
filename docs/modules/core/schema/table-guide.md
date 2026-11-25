@@ -115,7 +115,7 @@ import {encode, load} from '@loaders.gl/core';
 
 import {CSVLoader} from '@loaders.gl/tables/csv';
 
-import {ArrowWriter} from '@loaders.gl/tables/arrow';
+import {ArrowWriter} from '@loaders.gl/tables/arrow/bundled';
 
 
 

@@ -87,7 +87,7 @@ console.log(trace.links);
 The package-root export is metadata-only. Direct parser access is available from the implementation subpath:
 
 ```
-import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger/bundled';
 ```
 
 ## Options[​](#options "Direct link to Options")

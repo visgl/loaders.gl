@@ -72,7 +72,7 @@ const dataset = await load('multiband.tif', GeoTIFFRasterLoader, {
 The root export is metadata-only. Core's asynchronous `createDataSource()` and `parse()` automatically preload the parser on first use. To bundle the numeric parser explicitly:
 
 ```
-import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';
 ```
 
 TIFF decompression is asynchronous; there is no `parseSync()` implementation. The original core handles uncompressed integer and floating-point samples. Auto mode uses geotiff.js for unsupported encodings or metadata; malformed directories and exhausted budgets fail without fallback. See [TIFF decoder core](https://loaders.gl/docs/modules/raster/geotiff/tiff-decoder-core.md). Neither backend applies scale/offset. Array-valued native file-directory tags are plain arrays; compatibility tags may use typed arrays. Output budgets cover returned sample arrays; geotiff.js decompression scratch allocation is not bounded by these options.

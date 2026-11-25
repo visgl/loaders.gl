@@ -86,7 +86,7 @@ CSW is an OGC protocol for searching catalogs of geospatial datasets, services, 
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {CSWLoader} from '@loaders.gl/ogc/wms';
+import {CSWLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 

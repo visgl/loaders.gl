@@ -106,7 +106,7 @@ The Features path shares the vector-source, Arrow, managed-loading, and local-qu
 Configure `{'ogc-api': {pagination: {pageSize: 1000, maxPages: 100, maxFeatures: 100000}}}` to gather service pages in `getFeatures()` before converting to the requested encoding. Omit `pagination` to retain one-page behavior. The three positive-integer bounds default to those values. Exhausting a bound throws instead of returning a silently truncated aggregate.
 
 ```
-import {OGCAPIFeaturesSource} from '@loaders.gl/ogc/wms';
+import {OGCAPIFeaturesSource} from '@loaders.gl/ogc/wms/bundled';
 
 
 
@@ -134,7 +134,7 @@ Collected GeoJSON removes page-specific links/extents and updates `numberReturne
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OGCAPIFeaturesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIFeaturesLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 
@@ -181,7 +181,7 @@ const features = await source.getFeatures({
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 
@@ -266,7 +266,7 @@ const {tileGrid} = await source.getMetadata();
 ```
 
 ```
-import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/ogc/wms';
+import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/ogc/wms/api';
 
 
 
@@ -300,7 +300,7 @@ const tileBytes = await source.getTile({z: 3, x: 4, y: 5, tileMatrix: 'UTM18N:3'
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OGCAPICoveragesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPICoveragesLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 
@@ -347,7 +347,7 @@ EDR—Environmental Data Retrieval—queries multidimensional observations by sp
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OGCAPIEDRLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIEDRLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 

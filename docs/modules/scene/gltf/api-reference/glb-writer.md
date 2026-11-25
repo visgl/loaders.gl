@@ -71,7 +71,7 @@ Note: applications that want to encode GLB-formatted glTF files should normally 
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {GLBWriter} from '@loaders.gl/scene/gltf';
+import {GLBWriter} from '@loaders.gl/scene/gltf/bundled';
 
 import {encodeSync} from '@loaders.gl/core';
 

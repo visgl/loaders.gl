@@ -17,7 +17,7 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 | [![](/images/format-logos/ogc-mark.svg)OGCWKB](https://loaders.gl/docs/modules/geospatial/wkt/formats/wkb.md)                      | [`/wkb`](https://loaders.gl/docs/modules/geospatial/wkt/formats/wkb.md)   | WKB and Hex WKB |
 | —                                                                                                                                  | [`/twkb`](https://loaders.gl/docs/modules/geospatial/wkt/formats/twkb.md) | Tiny WKB        |
 
-Import metadata from the package root or format subpaths. Parser-bearing loaders use named implementation entrypoints, such as `@loaders.gl/geospatial/wkb`. GeoPackage requires the optional `sql.js` peer dependency. See [Get Started](https://loaders.gl/docs/developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
+Import metadata from format subpaths. Import parser-bearing loaders from bundled subpaths, such as `@loaders.gl/geospatial/wkb/bundled`. GeoPackage requires the optional `sql.js` peer dependency. See [Get Started](https://loaders.gl/docs/developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
 
 ## Format guides[​](#format-guides "Direct link to Format guides")
 
@@ -34,7 +34,7 @@ Import metadata from the package root or format subpaths. Parser-bearing loaders
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->24<!-- -->)
+All exported subpaths (<!-- -->33<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -43,23 +43,32 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                    | `@loaders.gl/geospatial/dbf`                 |
 |                                                                                                                                    | `@loaders.gl/geospatial/dbf/bundled`         |
 | [![](/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)       | `@loaders.gl/geospatial/flatgeobuf`          |
+| [![](/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)       | `@loaders.gl/geospatial/flatgeobuf/api`      |
 | [![](/images/format-logos/flatgeobuf-logo.png)](https://loaders.gl/docs/modules/geospatial/flatgeobuf/formats/flatgeobuf.md)       | `@loaders.gl/geospatial/flatgeobuf/bundled`  |
 | [![](/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/docs/modules/geospatial/geopackage/formats/geopackage.md) | `@loaders.gl/geospatial/geopackage`          |
+| [![](/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/docs/modules/geospatial/geopackage/formats/geopackage.md) | `@loaders.gl/geospatial/geopackage/api`      |
 | [![](/images/format-logos/ogc-mark.svg)OGCGeoPackage](https://loaders.gl/docs/modules/geospatial/geopackage/formats/geopackage.md) | `@loaders.gl/geospatial/geopackage/bundled`  |
 |                                                                                                                                    | `@loaders.gl/geospatial/gpx`                 |
+|                                                                                                                                    | `@loaders.gl/geospatial/gpx/api`             |
 |                                                                                                                                    | `@loaders.gl/geospatial/gpx/bundled`         |
 | [![](/images/format-logos/ogc-mark.svg)OGCKML](https://loaders.gl/docs/modules/geospatial/kml/formats/kml.md)                      | `@loaders.gl/geospatial/kml`                 |
+| [![](/images/format-logos/ogc-mark.svg)OGCKML](https://loaders.gl/docs/modules/geospatial/kml/formats/kml.md)                      | `@loaders.gl/geospatial/kml/api`             |
 | [![](/images/format-logos/ogc-mark.svg)OGCKML](https://loaders.gl/docs/modules/geospatial/kml/formats/kml.md)                      | `@loaders.gl/geospatial/kml/bundled`         |
 |                                                                                                                                    | `@loaders.gl/geospatial/kmz`                 |
+|                                                                                                                                    | `@loaders.gl/geospatial/kmz/api`             |
 |                                                                                                                                    | `@loaders.gl/geospatial/kmz/bundled`         |
 |                                                                                                                                    | `@loaders.gl/geospatial/shapefile`           |
 |                                                                                                                                    | `@loaders.gl/geospatial/shapefile-worker.js` |
+|                                                                                                                                    | `@loaders.gl/geospatial/shapefile/api`       |
 |                                                                                                                                    | `@loaders.gl/geospatial/shapefile/bundled`   |
 |                                                                                                                                    | `@loaders.gl/geospatial/shp`                 |
+|                                                                                                                                    | `@loaders.gl/geospatial/shp/api`             |
 |                                                                                                                                    | `@loaders.gl/geospatial/shp/bundled`         |
 |                                                                                                                                    | `@loaders.gl/geospatial/tcx`                 |
+|                                                                                                                                    | `@loaders.gl/geospatial/tcx/api`             |
 |                                                                                                                                    | `@loaders.gl/geospatial/tcx/bundled`         |
 | [![](/images/format-logos/ogc-mark.svg)OGCWKB](https://loaders.gl/docs/modules/geospatial/wkt/formats/wkb.md)                      | `@loaders.gl/geospatial/wkb`                 |
+| [![](/images/format-logos/ogc-mark.svg)OGCWKB](https://loaders.gl/docs/modules/geospatial/wkt/formats/wkb.md)                      | `@loaders.gl/geospatial/wkb/api`             |
 | [![](/images/format-logos/ogc-mark.svg)OGCWKB](https://loaders.gl/docs/modules/geospatial/wkt/formats/wkb.md)                      | `@loaders.gl/geospatial/wkb/bundled`         |
 | [![](/images/format-logos/ogc-mark.svg)OGCWKT](https://loaders.gl/docs/modules/geospatial/wkt/formats/wkt.md)                      | `@loaders.gl/geospatial/wkt`                 |
 | [![](/images/format-logos/ogc-mark.svg)OGCWKT](https://loaders.gl/docs/modules/geospatial/wkt/formats/wkt.md)                      | `@loaders.gl/geospatial/wkt-worker.js`       |

@@ -58,7 +58,7 @@ Detailed guide
 
 The sections below document batch encoding, usage, input normalization, validation, options, and metadata.
 
-For applications encoding many independent geometries, `encodeDracoBatch` initializes the Draco runtime once and processes inputs sequentially, keeping peak native memory bounded while avoiding per-geometry module startup overhead. It returns one `DracoEncodingResult` per input. An optional `AbortSignal` cancels between geometries, and `onProgress` receives a completion count after each successful encode. Worker pooling is intentionally tracked separately for the shared loaders.gl worker framework.
+For applications encoding many independent geometries, `DracoWriter.encodeGeometryBatch()` initializes the Draco runtime once and processes inputs sequentially, keeping peak native memory bounded while avoiding per-geometry module startup overhead. It returns one `DracoEncodingResult` per input. An optional `AbortSignal` cancels between geometries, and `onProgress` receives a completion count after each successful encode. Worker pooling is intentionally tracked separately for the shared loaders.gl worker framework.
 
 The `DracoWriter` encodes [Mesh](https://loaders.gl/docs/specifications/category-mesh.md) or [Mesh Arrow table](https://loaders.gl/docs/specifications/category-mesh.md#mesh-arrow-tables) data using [Draco](https://loaders.gl/docs/modules/scene/draco/formats/draco.md) compression.
 
@@ -69,7 +69,7 @@ See [Draco](https://loaders.gl/docs/modules/scene/draco/formats/draco.md) docs.
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {DracoWriter} from '@loaders.gl/scene/draco';
+import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
 
 import {encode} from '@loaders.gl/core';
 

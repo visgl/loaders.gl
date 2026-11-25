@@ -3,7 +3,7 @@
 `encodeZip(files, options)` writes a native ZIP32/ZIP64 archive and returns an `ArrayBuffer`. `encodeZipInBatches(files, options)` yields independent `Uint8Array` chunks with backpressure. Both use the shared native record serializer, first-party CRC-32, and raw DEFLATE.
 
 ```
-import {encodeZip, encodeZipInBatches} from '@loaders.gl/archives/zip';
+import {encodeZip, encodeZipInBatches} from '@loaders.gl/archives/api';
 
 
 

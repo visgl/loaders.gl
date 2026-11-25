@@ -168,31 +168,25 @@ There is no single best trace format. Chrome Trace and Perfetto are timeline-ori
 ```
 import {load, encode} from '@loaders.gl/core';
 
-import {
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 
-  ChromeTraceLoader,
+import {ChromeTraceWriter} from '@loaders.gl/traces/chrome-trace/bundled';
 
-  ChromeTraceWriter,
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
 
-  JaegerTraceLoader,
+import {JaegerTraceWriter} from '@loaders.gl/traces/jaeger/bundled';
 
-  JaegerTraceWriter,
+import {OtlpTraceJsonLoader, OtlpTraceLoader} from '@loaders.gl/traces/otlp';
 
-  OtlpTraceJsonLoader,
+import {OtlpTraceWriter} from '@loaders.gl/traces/otlp/bundled';
 
-  OtlpTraceLoader,
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
 
-  OtlpTraceWriter,
+import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
 
-  PerfettoTraceLoader,
+import {ZipkinTraceLoader} from '@loaders.gl/traces/zipkin';
 
-  PerfettoTraceWriter,
-
-  ZipkinTraceLoader,
-
-  ZipkinTraceWriter
-
-} from '@loaders.gl/traces';
+import {ZipkinTraceWriter} from '@loaders.gl/traces/zipkin/bundled';
 
 
 
@@ -235,22 +229,22 @@ const zipkinJson = await encode(zipkinTables, ZipkinTraceWriter);
 
 ## Bundle Splitting[​](#bundle-splitting "Direct link to Bundle Splitting")
 
-The package root exports metadata-only loaders. Async core APIs call each loader's `preload()` method and dynamically import its parser-bearing implementation. This keeps parser code out of the initial bundle until parsing starts.
+The format subpaths export metadata loaders. Async core APIs call each loader's `preload()` method and dynamically import its parser-bearing implementation. This keeps parser code out of the initial bundle until parsing starts.
 
 Applications that need parser-bearing loader objects directly can import the implementation subpaths:
 
 ```
-import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace';
+import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace/bundled';
 
-import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto';
+import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto/bundled';
 
-import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp/bundled';
 
-import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp/bundled';
 
-import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger/bundled';
 
-import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin';
+import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin/bundled';
 ```
 
 Writers and shared public types remain available from `@loaders.gl/traces`.
@@ -271,7 +265,7 @@ Workers transfer owned Arrow column buffers through the existing Arrow column ut
 ```
 import {parseInBatches} from '@loaders.gl/core';
 
-import {OtlpTraceJsonLoader} from '@loaders.gl/traces';
+import {OtlpTraceJsonLoader} from '@loaders.gl/traces/otlp';
 
 
 
@@ -298,7 +292,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->13<!-- -->)
+All exported subpaths (<!-- -->19<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -306,14 +300,20 @@ These are the package's public exports, including format entry points, parsers, 
 | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | [![](/images/examples/traces/chrome.svg)Chrome Trace](https://loaders.gl/docs/modules/traces/formats/chrome-trace.md)   | `@loaders.gl/traces/chrome-trace`           |
 | [![](/images/examples/traces/chrome.svg)Chrome Trace](https://loaders.gl/docs/modules/traces/formats/chrome-trace.md)   | `@loaders.gl/traces/chrome-trace-loader`    |
+| [![](/images/examples/traces/chrome.svg)Chrome Trace](https://loaders.gl/docs/modules/traces/formats/chrome-trace.md)   | `@loaders.gl/traces/chrome-trace/api`       |
+| [![](/images/examples/traces/chrome.svg)Chrome Trace](https://loaders.gl/docs/modules/traces/formats/chrome-trace.md)   | `@loaders.gl/traces/chrome-trace/bundled`   |
 |                                                                                                                         | `@loaders.gl/traces/jaeger`                 |
 | [![](/images/format-logos/jaeger-logo.svg)Jaeger](https://loaders.gl/docs/modules/traces/formats/jaeger-trace.md)       | `@loaders.gl/traces/jaeger-trace-loader`    |
+|                                                                                                                         | `@loaders.gl/traces/jaeger/bundled`         |
 |                                                                                                                         | `@loaders.gl/traces/otlp`                   |
 | [![](/images/format-logos/opentelemetry-logo.svg)OTLP](https://loaders.gl/docs/modules/traces/formats/otlp-trace.md)    | `@loaders.gl/traces/otlp-trace-json-loader` |
 | [![](/images/format-logos/opentelemetry-logo.svg)OTLP](https://loaders.gl/docs/modules/traces/formats/otlp-trace.md)    | `@loaders.gl/traces/otlp-trace-loader`      |
+|                                                                                                                         | `@loaders.gl/traces/otlp/bundled`           |
 |                                                                                                                         | `@loaders.gl/traces/perfetto`               |
 | [![](/images/format-logos/perfetto-logo.png)Perfetto](https://loaders.gl/docs/modules/traces/formats/perfetto-trace.md) | `@loaders.gl/traces/perfetto-trace-loader`  |
+|                                                                                                                         | `@loaders.gl/traces/perfetto/bundled`       |
 |                                                                                                                         | `@loaders.gl/traces/stream`                 |
 |                                                                                                                         | `@loaders.gl/traces/trace-worker.js`        |
 |                                                                                                                         | `@loaders.gl/traces/zipkin`                 |
 | [![](/images/format-logos/zipkin-logo.svg)Zipkin](https://loaders.gl/docs/modules/traces/formats/zipkin-trace.md)       | `@loaders.gl/traces/zipkin-trace-loader`    |
+|                                                                                                                         | `@loaders.gl/traces/zipkin/bundled`         |

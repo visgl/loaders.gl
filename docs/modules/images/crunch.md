@@ -1,6 +1,6 @@
 # @loaders.gl/images/crunch
 
-APIs for CRUNCH data in the images module.
+The Crunch loader initializes its decoder when needed.
 
 ```
 import {CrunchTextureFormat, CrunchLoaderOptions, CrunchLoader} from '@loaders.gl/images/crunch';
@@ -8,13 +8,11 @@ import {CrunchTextureFormat, CrunchLoaderOptions, CrunchLoader} from '@loaders.g
 
 ## API[​](#api "Direct link to API")
 
-| Export                      | Kind    |
-| --------------------------- | ------- |
-| `CrunchLoaderOptions`       | Type    |
-| `CrunchLoader`              | Loader  |
-| `loadCrunchModule`          | Utility |
-| `CRUNCH_EXTERNAL_LIBRARIES` | Utility |
-| `CrunchTextureFormat`       | Utility |
+| Export                | Kind    |
+| --------------------- | ------- |
+| `CrunchLoaderOptions` | Type    |
+| `CrunchLoader`        | Loader  |
+| `CrunchTextureFormat` | Utility |
 
 ## Reference[​](#reference "Direct link to Reference")
 

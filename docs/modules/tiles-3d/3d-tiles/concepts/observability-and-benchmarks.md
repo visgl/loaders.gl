@@ -49,7 +49,7 @@ Use snapshots for regression fixtures and counters for live dashboards. The valu
 getTileset3DTraversalSnapshot(tileset) returns a serializable Tileset3DTraversalSnapshot with sorted IDs and numeric counters:
 
 ```
-import {getTileset3DTraversalSnapshot, Tileset3D} from '@loaders.gl/tiles-3d';
+import {getTileset3DTraversalSnapshot, Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 
 

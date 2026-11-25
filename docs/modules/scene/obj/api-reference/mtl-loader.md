@@ -17,7 +17,7 @@ For synchronous parsing, import `MTLLoaderWithParser` from `@loaders.gl/scene/mt
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {MTLLoaderWithParser} from '@loaders.gl/scene/mtl';
+import {MTLLoaderWithParser} from '@loaders.gl/scene/mtl/bundled';
 
 
 

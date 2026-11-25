@@ -5,7 +5,7 @@ From v5.0. `MLTWriter` encodes an Apache Arrow `Table` into one MapLibre Tile v1
 ```
 import {encode} from '@loaders.gl/core';
 
-import {MLTWriter} from '@loaders.gl/tiles/mlt';
+import {MLTWriter} from '@loaders.gl/tiles/mlt/bundled';
 
 
 

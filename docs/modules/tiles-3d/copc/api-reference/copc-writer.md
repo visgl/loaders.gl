@@ -65,7 +65,7 @@ The sections below document usage, node organization, supported attributes, opti
 ```
 import {encode} from '@loaders.gl/core';
 
-import {COPCWriter} from '@loaders.gl/tiles-3d/copc';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
 
 
 

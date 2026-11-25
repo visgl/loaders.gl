@@ -76,7 +76,7 @@ Streaming loader for JSON files that must resolve to loaders.gl table output.
 Use [`convertJSONToArrow`](https://loaders.gl/docs/modules/tables/json/api-reference/convert-json-to-arrow.md) to convert rows directly, without a stringify/parse round trip. It shares this loader's schema inference and conversion policies.
 
 ```
-import {convertJSONToArrow} from '@loaders.gl/tables/json';
+import {convertJSONToArrow} from '@loaders.gl/tables/json/api';
 
 
 

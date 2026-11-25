@@ -61,7 +61,7 @@ The `Tiles3DSource` class implements [`Tileset3DSource`](https://loaders.gl/docs
 ```
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles'
 
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 

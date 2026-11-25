@@ -7,7 +7,7 @@ Picking identifies rendered objects under screen coordinates. Data queries opera
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WFSLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 
@@ -39,7 +39,7 @@ WFS generic extent coordinates are XY in `requestCrs`, defaulting to the request
 Wrap any GeoJSON-capable `VectorSource`, including WFS and OGC API Features, in `ManagedVectorSource` from `@loaders.gl/ogc/wms`:
 
 ```
-import {ManagedVectorSource} from '@loaders.gl/ogc/wms';
+import {ManagedVectorSource} from '@loaders.gl/ogc/wms/bundled';
 
 import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 

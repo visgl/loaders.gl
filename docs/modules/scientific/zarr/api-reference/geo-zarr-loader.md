@@ -70,7 +70,7 @@ The sections below cover metadata conventions, source construction, viewport req
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {GeoZarrLoader} from '@loaders.gl/scientific/zarr';
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 
 

@@ -113,7 +113,7 @@ npm install @loaders.gl/core @loaders.gl/scientific
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OMEZarrLoader} from '@loaders.gl/scientific/zarr';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 
 
@@ -180,7 +180,7 @@ Query metadata is suitable for populating source-neutral controls before pixel d
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {SpatialDataLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 
 

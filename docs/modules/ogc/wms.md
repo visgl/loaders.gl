@@ -128,7 +128,7 @@ Every service source can be created through the loaders.gl core API:
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WMSLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 
@@ -175,7 +175,7 @@ Visual service sources work through one generic `SourceLayer`:
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {WMTSLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 

@@ -80,7 +80,7 @@ The reference below documents scan support, metadata discovery, slicing, limitat
 | Streaming or chunk pruning  | ❌ Not implemented                    | Current classic-file execution materializes the source |
 
 ```
-import {NetCDFSource} from '@loaders.gl/scientific/netcdf';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf/bundled';
 
 
 

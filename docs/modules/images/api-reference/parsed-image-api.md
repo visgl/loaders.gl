@@ -63,7 +63,9 @@ Background: The image returned by [`ImageLoader`](https://loaders.gl/docs/module
 E.g., the `getImageData` method enables the application to get width, height and pixel data from an image returned by an image category loader in a platform independent way:
 
 ```
-import {ImageLoader, getImageSize, getImageData} from '@loaders.gl/images/image';
+import {ImageLoader} from '@loaders.gl/images/image';
+
+import {getImageSize, getImageData} from '@loaders.gl/images/api';
 
 import {load} from '@loaders.gl/core';
 

@@ -348,7 +348,7 @@ import {createDataSource} from '@loaders.gl/core';
 
 import {ArrowTableTileLoader} from '@loaders.gl/tiles/mvt';
 
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 
 
 

@@ -3,7 +3,7 @@
 `openZipArchive()` opens an owned random-access ZIP32/ZIP64 archive. Inputs can be an `ArrayBuffer`, a typed-array/DataView slice, a `Blob`, or a `ReadableFile` from `@loaders.gl/core/loader-utils`. The input must remain immutable while the archive is open. Always close the archive, including when a read fails; closing also closes a supplied `ReadableFile`.
 
 ```
-import {openZipArchive} from '@loaders.gl/archives/zip';
+import {openZipArchive} from '@loaders.gl/archives/api';
 
 
 

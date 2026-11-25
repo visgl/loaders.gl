@@ -294,7 +294,7 @@ const source = await createDataSource(tileJSONUrl, [MVTLoader], {
 ```
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 
 import {createGoogleMapsCredential} from '@loaders.gl/services/authentication';
 
@@ -316,20 +316,26 @@ Google's API key authorizes the request. The `session` query parameter returned 
 ```
 import {load} from '@loaders.gl/core';
 
-import {resolveCesiumIonTileset, Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {CesiumIonAuthentication} from '@loaders.gl/services/authentication';
+
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 
 
-const endpoint = await resolveCesiumIonTileset(accessToken, 123);
+const tileset = await load(tilesetUrl, Tiles3DLoader, {
 
-const tileset = await load(endpoint.url, Tiles3DLoader, {
+  core: {
 
-  core: {credentials: endpoint.credentials}
+    authentications: [CesiumIonAuthentication],
+
+    credentials: [{type: 'cesium-ion', assetId: 123, accessToken}]
+
+  }
 
 });
 ```
 
-The resolver sends the account token only to `api.cesium.com`. The returned credentials scope the endpoint token to the resolved origin and refresh it when the server rejects it. Pass the credentials to the tileset consumer so child requests can authenticate.
+Supply the tileset URL and asset ID together. Cesium ion authentication exchanges the account token for an asset token when needed and scopes it to the configured asset origins. Pass the same authentication options to the tileset consumer for child requests.
 
 ## I3S and deck.gl layers[​](#i3s-and-deckgl-layers "Direct link to I3S and deck.gl layers")
 

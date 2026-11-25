@@ -114,9 +114,11 @@ An `elevationInfo` unit applies to its offset. Constant or Arcade feature expres
 Surface providers receive WGS84 longitude/latitude pairs in degrees, regardless of the layer or requested target CRS. They return one finite height per location in the same order. Calls are batched per geometry or bound operation and may be synchronous or asynchronous.
 
 ```
-import type {TilesetElevationProvider} from '@loaders.gl/tiles-3d';
+import type {TilesetElevationProvider} from '@loaders.gl/tiles-3d/spatial';
 
-import {I3SSource, Tileset3D} from '@loaders.gl/tiles-3d';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 

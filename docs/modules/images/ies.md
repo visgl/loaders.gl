@@ -108,7 +108,7 @@ Numeric headers, angle ordering, dimensions, and exact sample counts are checked
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {IESLoaderWithParser} from '@loaders.gl/images/ies';
+import {IESLoaderWithParser} from '@loaders.gl/images/ies/bundled';
 
 
 

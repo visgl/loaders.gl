@@ -109,7 +109,7 @@ The source combines service discovery, protocol-aware requests, streaming GML, t
 Enable `wfs.pagination` to make `getFeatures()` gather pages before converting the combined result to GeoJSON, Arrow, or binary. Without this option, `getFeatures()` retains its single-response behavior. To consume pages progressively, call `getFeaturesInPages(parameters, options)`; this always yields GeoJSON tables and does not fetch ahead of the consumer.
 
 ```
-import {ManagedVectorSource, WFSVectorSource} from '@loaders.gl/ogc/wms';
+import {ManagedVectorSource, WFSVectorSource} from '@loaders.gl/ogc/wms/bundled';
 
 
 
@@ -176,7 +176,7 @@ Prefer native WFS filters and paging when the service can reduce a large respons
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {WFSLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 
@@ -278,7 +278,7 @@ The source normalizes common CRS spellings and applies the WFS version's axis-or
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {WFSLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 
 

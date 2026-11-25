@@ -118,7 +118,7 @@ Modern point decoding returns Float64 XYZ using the declared scale and offset. L
 
 * [PotreeLoader](https://loaders.gl/docs/modules/tiles-3d/potree/api-reference/potree-loader.md) parses metadata for both layouts. The package root is metadata-only; direct parser access uses `PotreeLoaderWithParser` from `@loaders.gl/tiles-3d/potree-loader`.
 * [PotreeLoader](https://loaders.gl/docs/modules/tiles-3d/potree/api-reference/potree-source-loader.md) traverses hierarchy and decodes requested point tiles. Pass `cloud.js` for 1.x or `metadata.json` for 2.0; directory inputs retain the legacy `cloud.js` default.
-* [PotreeWriter](https://loaders.gl/docs/modules/tiles-3d/potree/api-reference/potree-writer.md) writes a metadata document through `encode` or `encodeSync`. `encodePotreeDataset` produces the complete collection of relative filenames and typed byte buffers from decoded Mesh/Arrow data.
+* [PotreeWriter](https://loaders.gl/docs/modules/tiles-3d/potree/api-reference/potree-writer.md) writes a metadata document through `encode` or `encodeSync`. `PotreeWriter.encodeDataset` produces the complete collection of relative filenames and typed byte buffers from decoded Mesh/Arrow data.
 
 Modern source tile content uses Mesh Arrow tables. Compatible legacy queries yield ordered Arrow point batches. The dataset writer accepts decoded, unindexed point data with finite XYZ and representable numeric attributes; unsupported attributes require an explicit application mapping.
 

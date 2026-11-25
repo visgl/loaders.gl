@@ -114,7 +114,21 @@ const loaderOptions = {parquet: {batchSize: 10_000, shape: 'object-row-table'}};
 const rows = await load(url, ParquetLoader, loaderOptions);
 ```
 
-Applications normally import metadata loaders from the package root. Code that needs a parser-bearing loader directly can import `ParquetLoaderWithParser` from `@loaders.gl/tables/parquet`.
+Choose the import that fits when you want to load the parser.
+
+```
+// Deferred parser for load() or parse()
+
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
+```
+
+```
+// Eager parser for direct asynchronous parsing
+
+import {ParquetLoader} from '@loaders.gl/tables/parquet/bundled';
+```
+
+The bundled entry point also exports Parquet writers and sources.
 
 Load a Parquet file as Arrow using the primary loader.
 

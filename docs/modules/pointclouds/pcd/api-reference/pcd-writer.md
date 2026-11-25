@@ -67,7 +67,7 @@ import {encode} from '@loaders.gl/core';
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 
-import {PCDWriter} from '@loaders.gl/pointclouds/pcd';
+import {PCDWriter} from '@loaders.gl/pointclouds/pcd/bundled';
 
 
 

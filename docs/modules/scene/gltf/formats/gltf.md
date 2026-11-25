@@ -193,7 +193,7 @@ import {load} from '@loaders.gl/core';
 
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 
-import {CompressedTextureLoader} from '@loaders.gl/images';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
 
 
 
@@ -233,7 +233,7 @@ const gltf = await load('scene.glb', [GLTFLoader, CompressedTextureLoader]);
 `GLTFLoader` preserves the root `KHR_interactivity` extension. Use `getGLTFInteractivity(gltf)` from `@loaders.gl/scene/gltf` with either a loader result or raw glTF JSON to read it; the helper returns `null` when the extension is absent.
 
 ```
-import {getGLTFInteractivity} from '@loaders.gl/scene/gltf';
+import {getGLTFInteractivity} from '@loaders.gl/scene/api';
 
 
 
@@ -444,7 +444,9 @@ The package exports TypeScript types and permissive Zod schemas for the followin
 The additional extension types use their serialized names, for example `GLTF_KHR_materials_variants`, `GLTF_EXT_mesh_gpu_instancing`, and `GLTF_KHR_animation_pointer`. Typed extension maps are also exported as `GLTFRootExtensions`, `GLTFNodeExtensions`, `GLTFSceneExtensions`, `GLTFMeshPrimitiveExtensions`, and `GLTFAnimationTargetExtensions`.
 
 ```
-import {GLTFSchema, getMaterialVariantMappings} from '@loaders.gl/scene/gltf';
+import {GLTFSchema} from '@loaders.gl/scene/gltf/schema';
+
+import {getMaterialVariantMappings} from '@loaders.gl/scene/api';
 
 import {GLTFKHRNodeVisibilitySchema} from '@loaders.gl/scene/gltf/schema';
 

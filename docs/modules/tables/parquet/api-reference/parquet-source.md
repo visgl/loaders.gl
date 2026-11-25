@@ -171,11 +171,11 @@ Applications that need synchronous `createDataSourceSync()` can import the runti
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet/bundled';
 
 
 
-const source = createDataSourceSync(url, [ParquetLoaderWithParser], {});
+const source = createDataSourceSync(url, [ParquetLoader], {});
 ```
 
 ## Multi-file datasets[​](#multi-file-datasets "Direct link to Multi-file datasets")
@@ -185,7 +185,7 @@ The [Overture GeoParquet browser example](https://loaders.gl/examples/geospatial
 `ParquetDatasetSource` composes a lazy file provider with one selective `ParquetSource` per selected file. The provider may be backed by STAC, a database, an application manifest, or a static array; the Parquet module does not depend on any catalog protocol.
 
 ```
-import {ParquetDatasetSource} from '@loaders.gl/tables/parquet';
+import {ParquetDatasetSource} from '@loaders.gl/tables/parquet/bundled';
 
 import {STACSource} from '@loaders.gl/ogc/stac-loader';
 
@@ -297,7 +297,7 @@ Pass `{formatSpecificMetadata: true}` to include the decoded Parquet Thrift foot
 
 Returns native Apache Arrow RecordBatches. `rowGroups` controls which row groups are fetched and their output order. `columns` prevents unselected column chunks from being requested or decoded. Both selections are validated against the cached footer before row data is read.
 
-Read provenance with `getParquetBatchProvenance(batch)` from `@loaders.gl/tables/parquet`. It restores BigInt and byte arrays in catalog metadata:
+Read provenance with `getParquetBatchProvenance(batch)` from `@loaders.gl/tables/parquet/bundled`. It restores BigInt and byte arrays in catalog metadata:
 
 | Property              | Description                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------- |
@@ -437,7 +437,7 @@ Callbacks are not transferred to workers and do not perform exact row filtering;
 `getTelemetry()` returns a cumulative snapshot for the source. `parquet.onTelemetry` additionally receives snapshots after range requests, cache hits, pruning, decoding, Arrow conversion, batches, cancellation, and failures. Exceptions thrown by the callback do not interrupt a read.
 
 ```
-const source = createDataSourceSync(url, [ParquetLoaderWithParser], {
+const source = createDataSourceSync(url, [ParquetLoader], {
 
   parquet: {
 

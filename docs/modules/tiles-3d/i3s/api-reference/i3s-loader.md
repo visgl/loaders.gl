@@ -137,7 +137,9 @@ As an I3S tileset contains multiple file formats, `I3SLoader` is needed to be ex
 ```
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+import {COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/api';
+
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 
 
@@ -167,7 +169,7 @@ Basic API usage is illustrated in the following snippet. Create a `Tileset3D` in
 ```
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
-import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
@@ -303,7 +305,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 Use `loadStatistics` to fetch the resources listed in a scene layer's `statisticsInfo` array. The returned object is keyed by each descriptor's `key`; an unavailable resource is represented by `null` so other fields can still be consumed.
 
 ```
-import {loadStatistics} from '@loaders.gl/tiles-3d/i3s';
+import {loadStatistics} from '@loaders.gl/tiles-3d/api';
 
 
 

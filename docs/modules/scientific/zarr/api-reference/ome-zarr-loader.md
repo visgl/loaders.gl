@@ -69,7 +69,7 @@ The detailed reference covers store discovery, metadata options, dimension selec
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {OMEZarrLoader} from '@loaders.gl/scientific/zarr';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 
 

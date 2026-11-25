@@ -130,7 +130,7 @@ import {Table} from 'apache-arrow';
 const graph = await load('network.graphml', GraphMLLoader);
 ```
 
-For synchronous parsing, import `GraphMLLoaderWithParser` from `@loaders.gl/graphs/graphml` and pass it to `parseSync` from `@loaders.gl/core`. The package root exports metadata only; asynchronous core APIs preload the implementation.
+For synchronous parsing, import `GraphMLLoaderWithParser` from `@loaders.gl/graphs/graphml` and pass it to `parseSync` from `@loaders.gl/core`. Each format subpath exports loader metadata; asynchronous core APIs preload the implementation.
 
 The explicit plain compatibility result is `GraphData` with `shape: 'plain-graph-data'`, `nodes`, and `edges`. Nodes have `id`, optional `label`, and optional `attributes`. Edges additionally have `sourceId`, `targetId`, and `directed`. This shape is compatible with `createGraphFromData` in `@deck.gl-community/graph-layers`.
 
@@ -174,7 +174,7 @@ const graph = await load('network.gexf', GEXFLoader);
 // Optional: {gexf: {shape: 'object-row-table'}} or {gexf: {shape: 'plain-graph-data'}}
 ```
 
-For synchronous parsing, use `GEXFLoaderWithParser` from `@loaders.gl/graphs/gexf` with `parseSync`. The package root exports metadata only; asynchronous core APIs preload the parser. Text and UTF-8 binary inputs are supported. The loader recognizes `.gexf` and `application/gexf+xml`.
+For synchronous parsing, use `GEXFLoaderWithParser` from `@loaders.gl/graphs/gexf/bundled` with `parseSync`. The format subpath exports metadata only; asynchronous core APIs preload the parser. Text and UTF-8 binary inputs are supported. The loader recognizes `.gexf` and `application/gexf+xml`.
 
 The default result contains named Arrow node and edge tables in the standard `tables` collection. Application attributes use declaration titles inside the `attributes` struct; node and edge declarations are scoped separately. Boolean, integer, long, float, double, and string declarations retain their Arrow types, even for empty graphs. Byte and short attributes use Int32. `anyURI`, date, char, bigdecimal, and biginteger values retain their text as Utf8. Long integers remain exact `bigint` values in every output shape, including plain records. Invalid or out-of-range scalar values promote the affected Arrow field to Utf8, preserving the original text.
 
@@ -192,16 +192,19 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->7<!-- -->)
+All exported subpaths (<!-- -->10<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
-| Format | Import subpath                      |
-| ------ | ----------------------------------- |
-|        | `@loaders.gl/graphs/dot`            |
-|        | `@loaders.gl/graphs/dot-loader`     |
-|        | `@loaders.gl/graphs/gexf`           |
-|        | `@loaders.gl/graphs/gexf-loader`    |
-|        | `@loaders.gl/graphs/graph`          |
-|        | `@loaders.gl/graphs/graphml`        |
-|        | `@loaders.gl/graphs/graphml-loader` |
+| Format | Import subpath                       |
+| ------ | ------------------------------------ |
+|        | `@loaders.gl/graphs/dot`             |
+|        | `@loaders.gl/graphs/dot-loader`      |
+|        | `@loaders.gl/graphs/dot/bundled`     |
+|        | `@loaders.gl/graphs/gexf`            |
+|        | `@loaders.gl/graphs/gexf-loader`     |
+|        | `@loaders.gl/graphs/gexf/bundled`    |
+|        | `@loaders.gl/graphs/graph`           |
+|        | `@loaders.gl/graphs/graphml`         |
+|        | `@loaders.gl/graphs/graphml-loader`  |
+|        | `@loaders.gl/graphs/graphml/bundled` |

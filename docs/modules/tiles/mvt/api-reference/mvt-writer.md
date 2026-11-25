@@ -77,7 +77,7 @@ npm install @loaders.gl/core
 ```
 import {encode} from '@loaders.gl/core';
 
-import {MVTWriter} from '@loaders.gl/tiles/mvt';
+import {MVTWriter} from '@loaders.gl/tiles/mvt/bundled';
 
 
 

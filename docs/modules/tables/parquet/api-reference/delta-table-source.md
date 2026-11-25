@@ -57,7 +57,7 @@ Detailed guide
 The sections below document construction, snapshot planning, scan support, and the boundaries of the read-only adapter.
 
 ```
-import {DeltaTableSource} from '@loaders.gl/tables/delta';
+import {DeltaTableSource} from '@loaders.gl/tables/delta/bundled';
 
 
 

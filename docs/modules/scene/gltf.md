@@ -111,7 +111,9 @@ Use the core writer API to encode loaded glTF data:
 ```
 import {encode} from '@loaders.gl/core';
 
-import {GLTFLoader, GLTFWriter} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 
 import {load} from '@loaders.gl/core';
 
@@ -165,7 +167,7 @@ The maintained meshoptimizer decoder is bundled in @loaders.gl/scene/gltf and lo
 `GLTFSource` opens a glTF or GLB document without loading linked resources or decoding extensions. It preserves the original JSON and provides scene traversal and lazy byte access:
 
 ```
-import {GLTFSource} from '@loaders.gl/scene/gltf';
+import {GLTFSource} from '@loaders.gl/scene/gltf/bundled';
 
 
 

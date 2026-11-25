@@ -79,7 +79,7 @@ npm install @loaders.gl/core
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {WKBWriter} from '@loaders.gl/geospatial/wkb';
+import {WKBWriter} from '@loaders.gl/geospatial/wkb/bundled';
 
 import {encodeSync} from '@loaders.gl/core';
 

@@ -20,5 +20,5 @@ These are the package's public exports, including format entry points, parsers, 
 
 | Format | Import subpath                        |
 | ------ | ------------------------------------- |
+|        | `@loaders.gl/services/api`            |
 |        | `@loaders.gl/services/authentication` |
-|        | `@loaders.gl/services/bundled`        |

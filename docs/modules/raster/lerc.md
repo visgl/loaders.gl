@@ -67,7 +67,7 @@ npm install @loaders.gl/core @loaders.gl/raster lerc
 ```
 import {load} from '@loaders.gl/core';
 
-import {LERCLoader} from '@loaders.gl/raster';
+import {LERCLoader} from '@loaders.gl/raster/lerc';
 
 
 

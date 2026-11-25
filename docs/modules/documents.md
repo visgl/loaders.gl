@@ -6,12 +6,12 @@
 npm install @loaders.gl/core @loaders.gl/documents
 ```
 
-The root exports metadata loaders, format descriptors, and shared types. It does not eagerly load parsers, XML dependencies, BSON codecs, or writers. Async core APIs preload implementations:
+Format subpaths export metadata loaders, format descriptors, and shared types. Bundled subpaths export parsers and writers. Async core APIs preload implementations:
 
 ```
 import {load} from '@loaders.gl/core';
 
-import {MarkdownLoader} from '@loaders.gl/documents';
+import {MarkdownLoader} from '@loaders.gl/documents/markdown';
 
 
 
@@ -33,7 +33,7 @@ Each parser subpath exports the corresponding `*LoaderWithParser`. Use it for sy
 ```
 import {parseSync} from '@loaders.gl/core';
 
-import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown';
+import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown/bundled';
 
 
 
@@ -58,7 +58,7 @@ XML is strict by default, with one root element, bounded nesting (default 256), 
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->18<!-- -->)
+All exported subpaths (<!-- -->19<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -66,6 +66,7 @@ These are the package's public exports, including format entry points, parsers, 
 | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | [![](/images/format-logos/bson-logo.png)](https://loaders.gl/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson`             |
 | [![](/images/format-logos/bson-logo.png)](https://loaders.gl/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson-codec`       |
+| [![](/images/format-logos/bson-logo.png)](https://loaders.gl/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson/api`         |
 | [![](/images/format-logos/bson-logo.png)](https://loaders.gl/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson/bundled`     |
 |                                                                                                                 | `@loaders.gl/documents/html`             |
 |                                                                                                                 | `@loaders.gl/documents/html/bundled`     |

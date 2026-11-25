@@ -93,9 +93,9 @@ Or just import via a browser script tag:
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {TableTileLoader} from '@loaders.gl/tiles/mvt';
+import {TableTileLoader} from '@loaders.gl/tiles/mvt/bundled';
 
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 
 
 
@@ -147,7 +147,7 @@ You can fine-tune the results with an options object, although the defaults are 
 ```
 import {createDataSourceSync} from '@loaders.gl/core';
 
-import {TableTileLoader} from '@loaders.gl/tiles/mvt';
+import {TableTileLoader} from '@loaders.gl/tiles/mvt/bundled';
 
 
 

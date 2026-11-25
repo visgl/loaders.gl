@@ -105,12 +105,12 @@ The typed `zip` namespace accepts the limits and `signal` documented for [`openZ
 
 The total-map, decoded-entry and compressed-entry limits are independent. Raising `maxTotalDecodedBytes` does not raise either entry limit. For an entry larger than 64 MiB, set `maxDecodedBytes` and, when its compressed payload is also larger, `maxCompressedBytes`. These limits bound encoded/decoded byte counts, not decoder intermediates or total heap. Use the shared archive API for incremental or range reads instead of retaining a complete map.
 
-The package root exports metadata. For direct parser access:
+`@loaders.gl/archives/zip` exports the loader metadata. Use the bundled subpath for direct parser access.
 
 ```
-import {ZipLoaderWithParser} from '@loaders.gl/archives/zip-loader';
+import {ZipLoader} from '@loaders.gl/archives/zip/bundled';
 
-const files = await ZipLoaderWithParser.parse(arrayBuffer, {
+const files = await ZipLoader.parse(arrayBuffer, {
 
   zip: {
 

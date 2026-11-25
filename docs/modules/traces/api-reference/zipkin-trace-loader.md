@@ -77,7 +77,7 @@ console.log(trace.events);
 The package-root loader is metadata-only. The parser-bearing loader is available from:
 
 ```
-import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin';
+import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin/bundled';
 ```
 
 ## Options[​](#options "Direct link to Options")

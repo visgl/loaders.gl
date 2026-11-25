@@ -138,7 +138,7 @@ const tile = await load(tileUrl, Tiles3DLoader, {
 Load a tileset and dynamically load/unload tiles based on viewport with helper class `Tileset3D` (`@loaders.gl/tiles`)
 
 ```
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 

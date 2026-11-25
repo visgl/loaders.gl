@@ -67,7 +67,7 @@ import {encode} from '@loaders.gl/core';
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 
-import {LASWriter} from '@loaders.gl/pointclouds/las';
+import {LASWriter} from '@loaders.gl/pointclouds/las/bundled';
 
 
 

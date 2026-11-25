@@ -65,7 +65,9 @@ The sections below document usage, JSON formatting, validation, and reconstructi
 ```
 import {encode, load} from '@loaders.gl/core';
 
-import {OtlpTraceJsonLoader, OtlpTraceJsonWriter, OtlpTraceWriter} from '@loaders.gl/traces/otlp';
+import {OtlpTraceJsonLoader} from '@loaders.gl/traces/otlp';
+
+import {OtlpTraceJsonWriter, OtlpTraceWriter} from '@loaders.gl/traces/otlp/bundled';
 
 
 

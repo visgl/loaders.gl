@@ -77,7 +77,7 @@ npm install @loaders.gl/core
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {WKTWriter} from '@loaders.gl/geospatial/wkt';
+import {WKTWriter} from '@loaders.gl/geospatial/wkt/bundled';
 ```
 
 ## Options[​](#options "Direct link to Options")
