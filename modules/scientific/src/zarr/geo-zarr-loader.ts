@@ -375,11 +375,17 @@ export class GeoZarrRasterSource
       for (const [index, level] of grid.levels.entries()) {
         if (!level || !isSameCRS(level.metadata.crs, selected.metadata.crs)) continue;
         const levelPixelSize = getPixelSize(level.metadata.transform);
+        const [scaleX, , , , scaleY] = level.metadata.transform;
         if (
           levelPixelSize > pixelSize &&
           levelPixelSize <= requestedPixelSize &&
           haveMatchingSelections(selected.metadata, level.metadata) &&
-          intersectBoundingBoxes(sourceIntersection, level.metadata.boundingBox)
+          containsBoundingBox(
+            level.metadata.boundingBox,
+            sourceIntersection,
+            Math.abs(scaleX),
+            Math.abs(scaleY)
+          )
         ) {
           overview = index;
           initialization = level;
@@ -1102,6 +1108,23 @@ function transformPosition(
     scaleX * column + rotationX * row + translateX,
     rotationY * column + scaleY * row + translateY
   ];
+}
+
+/** Tests containment, allowing one overview pixel per edge for rounded level dimensions. */
+function containsBoundingBox(
+  outer: RasterBoundingBox | undefined,
+  inner: RasterBoundingBox,
+  toleranceX: number,
+  toleranceY: number
+): boolean {
+  const overlap = intersectBoundingBoxes(inner, outer);
+  return (
+    overlap !== null &&
+    overlap[0][0] - inner[0][0] <= toleranceX &&
+    overlap[0][1] - inner[0][1] <= toleranceY &&
+    inner[1][0] - overlap[1][0] <= toleranceX &&
+    inner[1][1] - overlap[1][1] <= toleranceY
+  );
 }
 
 /** Intersects two source-coordinate bounding boxes. */

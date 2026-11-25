@@ -78,6 +78,62 @@ test.each([
   }
 });
 
+test('GeoZarr reads the finest level when an overview covers only half the request', async () => {
+  const {source, chunkRequests} = createPyramid({
+    levelXBounds: [
+      [0, 8],
+      [4, 8]
+    ]
+  });
+  const raster = await source.getRaster({
+    viewport: {...createViewport(2, 2), crs: PROJECTED_WKT}
+  });
+  expect(raster).toMatchObject({overview: 0, width: 8, height: 8, boundingBox: EXTENT});
+  expect(raster.data).toEqual(new Uint8Array(64).fill(1));
+  expect(chunkRequests).toHaveLength(4);
+  expect(chunkRequests.every(path => path.startsWith('0/backscatter/'))).toBe(true);
+});
+
+test('GeoZarr selects a partial overview when it covers the request', async () => {
+  const {source, chunkRequests} = createPyramid({
+    levelXBounds: [
+      [0, 8],
+      [4, 8]
+    ]
+  });
+  const bounds: RasterBoundingBox = [
+    [4, 0],
+    [8, 8]
+  ];
+  const raster = await source.getRaster({
+    viewport: {...createViewport(2, 2, bounds), crs: PROJECTED_WKT}
+  });
+  expect(raster).toMatchObject({overview: 1, width: 2, height: 4, boundingBox: bounds});
+  expect(raster.data).toEqual(new Uint8Array(8).fill(2));
+  expect(chunkRequests).toEqual(['1/backscatter/0.0.0']);
+});
+
+test('GeoZarr selects an overview shortened by floor rounding', async () => {
+  const {source, chunkRequests} = createPyramid({
+    levelXBounds: [
+      [0, 9],
+      [0, 8]
+    ]
+  });
+  const raster = await source.getRaster({
+    viewport: {
+      ...createViewport(2, 2, [
+        [0, 0],
+        [9, 8]
+      ]),
+      crs: PROJECTED_WKT
+    }
+  });
+  expect(raster).toMatchObject({overview: 1, width: 4, height: 4, boundingBox: EXTENT});
+  expect(raster.data).toEqual(new Uint8Array(16).fill(2));
+  expect(chunkRequests).toEqual(['1/backscatter/0.0.0']);
+});
+
 test('GeoZarr translates the overview affine for a viewport without a CRS', async () => {
   const {source} = createPyramid();
   const raster = await source.getRaster({
@@ -195,6 +251,8 @@ test('limited Zarr store drops an aborted queued read without waiting for a slot
 
 /** Controls the metadata and transport of the in-memory pyramid. */
 type PyramidOptions = {
+  /** X bounds for each advertised level, whose resolution doubles from one unit per pixel. */
+  levelXBounds?: ReadonlyArray<readonly [minimum: number, maximum: number]>;
   /** Scale metadata included on each dataset path. */
   scaleTransforms?: 'absent' | 'unnamed' | 'named';
   /** Shape of the CF grid-mapping declaration. */
@@ -211,8 +269,13 @@ type PyramidOptions = {
   delayChunks?: boolean;
 };
 
-/** Builds a consolidated v2 pyramid with 8×8, 4×4, and 2×2 arrays using 4×4 chunks. */
+/** Builds a consolidated v2 pyramid using 4×4 chunks. Defaults to 8×8, 4×4, and 2×2 arrays. */
 function createPyramid({
+  levelXBounds = [
+    [0, 8],
+    [0, 8],
+    [0, 8]
+  ],
   scaleTransforms = 'absent',
   mapping = 'sibling',
   rootCRS,
@@ -232,7 +295,7 @@ function createPyramid({
         version: '0.4',
         name: 'backscatter',
         ...(scaleTransforms === 'named' ? {axes: ['band', 'y', 'x']} : {}),
-        datasets: [0, 1, 2].map(level => ({
+        datasets: levelXBounds.map((_, level) => ({
           path: String(level),
           ...(scaleTransforms === 'absent'
             ? {}
@@ -263,10 +326,12 @@ function createPyramid({
     documents.set(`${path}/.zattrs`, arrayAttributes);
   }
 
-  for (const [level, size] of [8, 4, 2].entries()) {
-    const resolution = 8 / size;
+  for (const [level, [minimumX, maximumX]] of levelXBounds.entries()) {
+    const resolution = 2 ** level;
+    const width = (maximumX - minimumX) / resolution;
+    const height = 8 / resolution;
     documents.set(`${level}/.zgroup`, {zarr_format: 2});
-    addArray(`${level}/backscatter`, [1, size, size], [1, 4, 4], float ? '<f4' : '|u1', {
+    addArray(`${level}/backscatter`, [1, height, width], [1, 4, 4], float ? '<f4' : '|u1', {
       _ARRAY_DIMENSIONS: ['band', 'y', 'x'],
       ...(mapping === 'named' ? {grid_mapping: 'utm'} : {}),
       ...attributes
@@ -278,17 +343,18 @@ function createPyramid({
       });
     }
     for (const name of ['x', 'y']) {
+      const size = name === 'x' ? width : height;
       addArray(`${level}/${name}`, [size], [size], '<f8', {_ARRAY_DIMENSIONS: [name]});
       chunks.set(
         `${level}/${name}/0`,
         Float64Array.from({length: size}, (_, index) =>
-          name === 'x' ? (index + 0.5) * resolution : 8 - (index + 0.5) * resolution
+          name === 'x' ? minimumX + (index + 0.5) * resolution : 8 - (index + 0.5) * resolution
         ).buffer
       );
     }
     const ChunkArray = float ? Float32Array : Uint8Array;
-    for (const row of [0, 1].slice(0, Math.ceil(size / 4))) {
-      for (const column of [0, 1].slice(0, Math.ceil(size / 4))) {
+    for (let row = 0; row < Math.ceil(height / 4); row++) {
+      for (let column = 0; column < Math.ceil(width / 4); column++) {
         chunks.set(
           `${level}/backscatter/0.${row}.${column}`,
           new ChunkArray(16).fill(level + 1).buffer
