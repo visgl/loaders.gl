@@ -679,7 +679,17 @@ export function colorizeRasterData(
         ) > 0
     : undefined;
   const ranges = options.stretch === 'range' ? computeRasterStatistics(raster, 4096) : [];
+  // Like the common GIS default, show tagged 8-bit RGB as stored unless a stretch is requested.
+  const isByteColor =
+    options.stretch === undefined &&
+    colorBands.length === 3 &&
+    colorBands.every(
+      (band, channel) =>
+        raster.bands?.[band]?.colorInterpretation === ['red', 'green', 'blue'][channel] &&
+        (raster.bands?.[band]?.dtype ?? raster.dtype) === 'uint8'
+    );
   const statistics = colorBands.map((band): [number, number] | null => {
+    if (isByteColor) return null;
     if (options.stretch !== 'range') return getRasterPercentileRange(raster, band, isVisible);
     const range = ranges[band];
     return range.min === undefined || range.max === undefined

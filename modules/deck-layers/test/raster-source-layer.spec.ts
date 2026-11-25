@@ -119,7 +119,23 @@ describe('raster colorization', () => {
     expect(Array.from(image.data)).toEqual([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 255, 255]);
   });
 
-  test('excludes transparent fill from the color bands’ percentile stretch', () => {
+  test('shows 8-bit RGB with alpha as stored and keeps transparent fill transparent', () => {
+    const raster = createRaster(
+      new Uint8Array([0, 0, 0, 0, 10, 20, 30, 255, 20, 40, 60, 255, 30, 60, 90, 255]),
+      {
+        bandCount: 4,
+        dtype: 'uint8',
+        interleaved: true,
+        bands: createBandMetadata('uint8', 'red', 'green', 'blue', 'alpha')
+      }
+    );
+
+    expect(Array.from(colorizeRasterData(raster).data)).toEqual([
+      0, 0, 0, 0, 10, 20, 30, 255, 20, 40, 60, 255, 30, 60, 90, 255
+    ]);
+  });
+
+  test('excludes transparent fill from an explicit percentile stretch of the color bands', () => {
     const image = colorizeRasterData(
       createRaster(
         new Uint8Array([0, 0, 0, 0, 10, 20, 30, 255, 20, 40, 60, 255, 30, 60, 90, 255]),
@@ -129,7 +145,8 @@ describe('raster colorization', () => {
           interleaved: true,
           bands: createBandMetadata('uint8', 'red', 'green', 'blue', 'alpha')
         }
-      )
+      ),
+      {stretch: 'percentile'}
     );
 
     expect(Array.from(image.data)).toEqual([
