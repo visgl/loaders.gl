@@ -17,6 +17,7 @@ import {
 import {GeoJSONLoader as BundledGeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 import {getGeoMetadata} from '@loaders.gl/core/schema';
 import * as jsonModule from '@loaders.gl/tables/json';
+import * as bundledGeoJSON from '@loaders.gl/tables/geojson/bundled';
 import * as arrow from 'apache-arrow';
 const GEOJSON_PATH = '@loaders.gl/tables/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH =
@@ -1022,11 +1023,11 @@ test('NDJSONLoader#parseInBatches(arrow treats GeoJSON features as generic rows)
 test('GeoJSONLoader#exports official names only', () => {
   expect(typeof jsonModule.JSONTableLoader, 'JSONTableLoader is exported').toBe('object');
   expect(typeof jsonModule.GeoJSONLoader, 'GeoJSONLoader is exported').toBe('object');
-  expect(typeof jsonModule.GeoJSONWriter, 'GeoJSONWriter is exported').toBe('object');
+  expect(typeof bundledGeoJSON.GeoJSONWriter, 'GeoJSONWriter is exported').toBe('object');
   expect((jsonModule as any)._GeoJSONLoader, 'underscored GeoJSONLoader is not exported').toBe(
     undefined
   );
-  expect((jsonModule as any)._GeoJSONWriter, 'underscored GeoJSONWriter is not exported').toBe(
+  expect((bundledGeoJSON as any)._GeoJSONWriter, 'underscored GeoJSONWriter is not exported').toBe(
     undefined
   );
 });
