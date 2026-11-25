@@ -10,7 +10,7 @@ import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/coordinates';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/core/loader-utils';
 import {ImageLoader} from '@loaders.gl/images/image';
-import {getImageData} from '@loaders.gl/images/image/api';
+import {getImageData} from '@loaders.gl/images/api';
 import {DracoLoader, DracoMesh} from '@loaders.gl/scene/draco';
 import {BasisLoader} from '@loaders.gl/images/basis';
 import {CompressedTextureLoader} from '@loaders.gl/images/texture';

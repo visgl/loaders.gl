@@ -24,7 +24,7 @@ const features = await parse(kmlData, KMLLoader);
 ```
 
 Import metadata loaders, descriptors, and types from the format subpath. Import eager
-loaders, writers, and sources from its `/bundled` subpath. Import standalone utilities from capability entry points such as `@loaders.gl/images/image/api`. The shared loading
+loaders, writers, and sources from its `/bundled` subpath. Import standalone utilities from capability entry points such as `@loaders.gl/images/api`. The shared loading
 functions live at `@loaders.gl/core/api`. The core root forwards the existing core API for compatibility.
 
 Capability entrypoints follow the same model:

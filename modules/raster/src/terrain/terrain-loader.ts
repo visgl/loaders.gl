@@ -12,7 +12,7 @@ import type {Table} from 'apache-arrow';
 import type {Mesh} from '@loaders.gl/core/schema';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {ImageLoader} from '@loaders.gl/images/image';
-import {getImageData} from '@loaders.gl/images/image/api';
+import {getImageData} from '@loaders.gl/images/api';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
 import {
   TerrainLoader as TerrainLoaderMetadata,

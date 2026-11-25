@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {default as GIFBuilder} from './gif-builder';
 export type {ImageDataType} from './types';
 export type {ImageType} from './types';
 export type {ImageTypeEnum} from './types';

@@ -97,7 +97,7 @@ export {
   getImageData,
   getSupportedImageFormats,
   isImageFormatSupported
-} from '@loaders.gl/images/image/api';
+} from '@loaders.gl/images/api';
 export type {
   ImageDataType,
   ImageType,

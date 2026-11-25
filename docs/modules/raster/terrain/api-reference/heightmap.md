@@ -10,7 +10,7 @@ reconstruction, Arrow conversion, image loading, or worker setup. This entry poi
 has no runtime dependencies.
 
 ```typescript
-import {getImageData} from '@loaders.gl/images/image/api';
+import {getImageData} from '@loaders.gl/images/api';
 import {
   decodeTerrainHeightmap,
   TERRARIUM_ELEVATION_DECODER

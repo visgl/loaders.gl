@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
-import {getImageData} from '@loaders.gl/images/image/api';
+import {getImageData} from '@loaders.gl/images/api';
 import {loadI3STileContent} from './test-utils/load-utils';
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 test('I3SLoader#Load tile content', async () => {
