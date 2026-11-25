@@ -79,6 +79,53 @@ test.each([
   }
 });
 
+test.each([
+  {caseName: 'a network error', error: new TypeError('Overview metadata fetch failed')},
+  {caseName: 'an abort', error: new DOMException('Overview metadata fetch aborted', 'AbortError')}
+])('GeoZarr retries an overview metadata read after $caseName', async ({error}) => {
+  let firstRead = true;
+  const {source, chunkRequests} = createPyramid({
+    overrideMetadataResponse: path => {
+      if (path === '1/backscatter/.zarray' && firstRead) {
+        firstRead = false;
+        throw error;
+      }
+      return undefined;
+    }
+  });
+
+  await expect(source.getMetadata()).rejects.toBe(error);
+  const metadata = await source.getMetadata();
+  expect(metadata.levels?.[1].metadata?.width).toBe(4);
+
+  const raster = await source.getRaster({viewport: createViewport(4, 4)});
+  expect(raster).toMatchObject({overview: 1, width: 4, height: 4, boundingBox: EXTENT});
+  expect(chunkRequests).toEqual(['1/backscatter/0.0.0']);
+});
+
+test.each([
+  {
+    caseName: 'an absent sibling',
+    metadataPath: '2/backscatter/.zarray',
+    createResponse: () => new Response(null, {status: 404})
+  },
+  {
+    caseName: 'a sibling with unsupported dimensions',
+    metadataPath: '2/backscatter/.zattrs',
+    createResponse: () => Response.json({_ARRAY_DIMENSIONS: ['y', 'x']})
+  }
+])('GeoZarr advertises $caseName without geometry', async ({metadataPath, createResponse}) => {
+  const {source, chunkRequests} = createPyramid({
+    overrideMetadataResponse: path => (path === metadataPath ? createResponse() : undefined)
+  });
+  const metadata = await source.getMetadata();
+  expect(metadata.levels?.[2]).toEqual({id: '2', array: '2/backscatter'});
+
+  const raster = await source.getRaster({viewport: createViewport(2, 2)});
+  expect(raster).toMatchObject({overview: 1, width: 4, height: 4, boundingBox: EXTENT});
+  expect(chunkRequests).toEqual(['1/backscatter/0.0.0']);
+});
+
 test('GeoZarr reads the finest level when an overview covers only half the request', async () => {
   const {source, chunkRequests} = createPyramid({
     levelXBounds: [
@@ -268,6 +315,8 @@ type PyramidOptions = {
   options?: GeoZarrLoaderOptions['geozarr'];
   /** Return immediately from fetch while delaying the response body for raster chunks. */
   delayChunks?: boolean;
+  /** Override or fail a metadata fetch. Returning undefined uses the fixture response. */
+  overrideMetadataResponse?: (path: string) => Response | undefined;
 };
 
 /** Builds a consolidated v2 pyramid using 4×4 chunks. Defaults to 8×8, 4×4, and 2×2 arrays. */
@@ -283,7 +332,8 @@ function createPyramid({
   attributes,
   float,
   options,
-  delayChunks
+  delayChunks,
+  overrideMetadataResponse
 }: PyramidOptions = {}) {
   const baseUrl = 'https://example.com/cf-pyramid.zarr/';
   const documents = new Map<string, unknown>();
@@ -377,6 +427,8 @@ function createPyramid({
     const path = url.slice(baseUrl.length);
     const chunk = chunks.get(path);
     if (!chunk) {
+      const response = overrideMetadataResponse?.(path);
+      if (response) return response;
       return documents.has(path)
         ? Response.json(documents.get(path))
         : new Response(null, {status: 404});

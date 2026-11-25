@@ -116,6 +116,9 @@ export type GetGeoZarrParameters = Omit<GetRasterParameters, 'bands' | 'interlea
 /** Zarr attributes before format-specific normalization. */
 type GeoZarrAttributes = Record<string, unknown>;
 
+/** A level's metadata cannot be normalized into supported raster geometry. */
+class UnsupportedGeoZarrLevelError extends Error {}
+
 /** Open data array and geometry used for reading its windows. */
 type GeoZarrInit = {
   /** Validated parent group and shared store used by sibling metadata reads. */
@@ -269,8 +272,9 @@ export class GeoZarrRasterSource
             return undefined;
           }
           return initialization;
-        } catch {
-          // Advertise unsupported siblings without their grid geometry.
+        } catch (error) {
+          // Propagate read failures so the next request can retry grid discovery.
+          rethrowRetryableLevelError(error);
           return undefined;
         }
       })
@@ -590,7 +594,7 @@ export class GeoZarrRasterSource
       ) ||
       (await loadCFCoordinateTransform(group, arrayPath, spatialDimensions, signal));
     if (!coordinateTransform) {
-      throw new Error(
+      throw new UnsupportedGeoZarrLevelError(
         'GeoZarrRasterSource requires spatial:transform metadata, explicit geozarr.transform, a CF grid-mapping GeoTransform, or regular 1D CF coordinate arrays.'
       );
     }
@@ -685,7 +689,7 @@ async function openRasterArray(
         });
       if (array) {
         if (match)
-          throw new Error(
+          throw new UnsupportedGeoZarrLevelError(
             `GeoZarr variable ${requestedArray} belongs to more than one multiscale.`
           );
         match = {array, arrayPath};
@@ -740,7 +744,7 @@ function getDimensionNames(
     dimensions.length !== array.shape.length ||
     new Set(dimensions).size !== dimensions.length
   ) {
-    throw new Error(
+    throw new UnsupportedGeoZarrLevelError(
       'GeoZarrRasterSource requires unique Zarr dimension_names or xarray _ARRAY_DIMENSIONS matching the array shape.'
     );
   }
@@ -768,7 +772,7 @@ function getSpatialDimensions(
     !dimensions.includes(spatialDimensions[1]) ||
     spatialDimensions[0] === spatialDimensions[1]
   ) {
-    throw new Error(
+    throw new UnsupportedGeoZarrLevelError(
       'GeoZarrRasterSource could not resolve two spatial dimensions. Set spatial:dimensions or geozarr.spatialDimensions.'
     );
   }
@@ -867,13 +871,13 @@ async function loadCoordinateValues(
 ): Promise<number[]> {
   const {array: coordinateArray} = await openNearestArray(group, arrayPath, coordinateName, signal);
   if (coordinateArray.shape.length !== 1 || coordinateArray.shape[0] < 2) {
-    throw new Error(
+    throw new UnsupportedGeoZarrLevelError(
       `Coordinate ${coordinateName} must be a one-dimensional array with at least two values.`
     );
   }
   const coordinateChunk = await zarrita.get(coordinateArray, [null], {signal});
   if (!coordinateChunk || typeof coordinateChunk !== 'object' || !('data' in coordinateChunk)) {
-    throw new Error(`Could not read coordinate ${coordinateName}.`);
+    throw new UnsupportedGeoZarrLevelError(`Could not read coordinate ${coordinateName}.`);
   }
   return Array.from(coordinateChunk.data as ArrayLike<number>);
 }
@@ -912,7 +916,7 @@ async function openNearestArray(
 function getRegularCoordinateSpacing(coordinates: number[], coordinateName: string): number {
   const spacing = (coordinates.at(-1)! - coordinates[0]) / (coordinates.length - 1);
   if (!Number.isFinite(spacing) || spacing === 0) {
-    throw new Error(`Coordinate ${coordinateName} does not have finite non-zero spacing.`);
+    throw new UnsupportedGeoZarrLevelError(`Coordinate ${coordinateName} does not have finite non-zero spacing.`);
   }
 
   const tolerance = Math.max(Math.abs(spacing) * 1e-6, Number.EPSILON);
@@ -922,7 +926,7 @@ function getRegularCoordinateSpacing(coordinates: number[], coordinateName: stri
       !Number.isFinite(coordinates[index]) ||
       Math.abs(coordinates[index] - expectedCoordinate) > tolerance
     ) {
-      throw new Error(`Coordinate ${coordinateName} is not regularly spaced.`);
+      throw new UnsupportedGeoZarrLevelError(`Coordinate ${coordinateName} is not regularly spaced.`);
     }
   }
   return spacing;
@@ -964,6 +968,21 @@ async function loadCFGridMapping(
  */
 function rethrowUnlessAbsent(error: unknown): void {
   if (!zarrita.isZarritaError(error, 'NotFoundError')) {
+    throw error;
+  }
+}
+
+/**
+ * Rethrows sibling-level errors that may succeed on a later request. A missing level, metadata
+ * that does not parse (for example an HTML fallback page) and unsupported geometry are permanent,
+ * so the level is advertised without geometry instead.
+ */
+function rethrowRetryableLevelError(error: unknown): void {
+  if (
+    !(error instanceof UnsupportedGeoZarrLevelError) &&
+    !zarrita.isZarritaError(error, 'NotFoundError') &&
+    !zarrita.isZarritaError(error, 'InvalidMetadataError')
+  ) {
     throw error;
   }
 }
@@ -1202,7 +1221,7 @@ function normalizeSelection(
     dimensions.map(dimension => {
       const index = requestedSelection?.[dimension.name] ?? dimension.defaultIndex;
       if (!Number.isInteger(index) || index < 0 || index >= dimension.size) {
-        throw new Error(
+        throw new UnsupportedGeoZarrLevelError(
           `GeoZarr ${dimension.name} index ${index} is out of bounds for dimension size ${dimension.size}.`
         );
       }
@@ -1263,7 +1282,7 @@ function normalizeDtype(dtype: string): RasterChannelDataType {
     case 'float64':
       return dtype;
     default:
-      throw new Error(`GeoZarr dtype ${dtype} is not currently supported.`);
+      throw new UnsupportedGeoZarrLevelError(`GeoZarr dtype ${dtype} is not currently supported.`);
   }
 }
 
