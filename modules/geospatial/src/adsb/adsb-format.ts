@@ -10,8 +10,10 @@ export function testADSBText(text: string): boolean {
   return (
     /^\s*\{/.test(start) &&
     ((/"now"\s*:\s*-?\d/.test(start) && /"aircraft"\s*:\s*\[/.test(start)) ||
-      // The v2 API layout puts `now` after the aircraft list, so test the first record instead.
-      /^\s*\{\s*"ac"\s*:\s*\[\s*(?:\]|\{\s*"hex"\s*:)/.test(start) ||
+      // The v2 API layout often puts `now` after the aircraft list, so an aircraft `hex` field
+      // also identifies it. Key order does not matter.
+      (/"ac"\s*:\s*\[/.test(start) &&
+        (/"hex"\s*:\s*"/.test(start) || /"now"\s*:\s*-?\d/.test(start))) ||
       (/"time"\s*:\s*-?\d/.test(start) && /"states"\s*:\s*(?:\[|null\b)/.test(start)))
   );
 }

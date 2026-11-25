@@ -7,6 +7,7 @@ import {parse, parseSync} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {ADSBLoader} from '@loaders.gl/geospatial/adsb';
 import {ADSBLoader as BundledADSBLoader} from '@loaders.gl/geospatial/adsb/bundled';
+import {testADSBText} from '../../src/adsb/adsb-format';
 
 test('ADS-B named-field snapshots convert aviation units and retain aircraft without positions', async () => {
   const snapshot = {
@@ -191,6 +192,22 @@ test.each([
     adsb: {shape: 'object-row-table'}
   }) as ObjectRowTable;
   expect(table.data).toEqual([]);
+});
+
+test.each([
+  '{"ac":[{"hex":"abc123","lat":41}],"now":1760000000500}',
+  '{"msg":"ok","ac":[{"lat":41,"hex":"abc123"}],"now":1760000000500}',
+  '{"now":1760000000500,"total":1,"ac":[{"flight":"TEST1 ","hex":"abc123"}]}',
+  '{"msg":"No error","ac":[],"now":1760000000500,"total":0}'
+])('ADS-B detects the v2 layout with any key order: %s', text => {
+  expect(testADSBText(text)).toBe(true);
+});
+
+test.each([
+  '{"ac":[{"id":1}]}',
+  '{"items":[{"hex":"abc123"}]}'
+])('ADS-B detection rejects JSON without aircraft snapshot fields: %s', text => {
+  expect(testADSBText(text)).toBe(false);
 });
 
 test('ADS-B rejects JSON with an unrecognized snapshot envelope', () => {
