@@ -58,6 +58,8 @@ const canonicalEntrypoints: Record<string, string[]> = {
     '@loaders.gl/documents/yaml'
   ],
   geospatial: [
+    '@loaders.gl/geospatial/adsb',
+    '@loaders.gl/geospatial/ais',
     '@loaders.gl/geospatial/dbf',
     '@loaders.gl/geospatial/flatgeobuf',
     '@loaders.gl/geospatial/geopackage',
@@ -241,6 +243,8 @@ test('representative capability APIs are available through ESM and CommonJS entr
   for (const [entrypoint, name] of [
     ['@loaders.gl/crypto/sha256', 'SHA256Hash'],
     ['@loaders.gl/sql/adapter', 'SQLDataSource'],
+    ['@loaders.gl/geospatial/adsb/bundled', 'ADSBLoader'],
+    ['@loaders.gl/geospatial/ais/bundled', 'AISLoader'],
     ['@loaders.gl/graphs/graphml', 'GraphMLLoader'],
     ['@loaders.gl/arcgis/image-service/bundled', 'ArcGISImageSource'],
     ['@loaders.gl/traces/chrome-trace', 'ChromeTraceLoader'],

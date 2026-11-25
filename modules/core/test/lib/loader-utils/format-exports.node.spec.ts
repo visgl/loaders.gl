@@ -17,6 +17,8 @@ const FORMAT_EXPORTS = {
   'tables/lance': ['LanceFormat'],
   'tables/orc': ['ORCFormat'],
   'scene/draco': ['DracoFormat'],
+  'geospatial/adsb': ['ADSBFormat'],
+  'geospatial/ais': ['AISFormat'],
   'geospatial/omm': ['OMMFormat'],
   'geospatial/tle': ['TLEFormat'],
   'geospatial/flatgeobuf': ['FlatGeobufFormat'],
