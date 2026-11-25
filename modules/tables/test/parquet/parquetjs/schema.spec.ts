@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import { expect, test } from "vitest";
-import { ParquetSchema, convertParquetSchema } from '@loaders.gl/tables/parquet';
+import {ParquetSchema, convertParquetSchema} from '@loaders.gl/tables/parquet/bundled';
 // tslint:disable:ter-prefer-arrow-callback
 test('ParquetSchema#should assign correct defaults in a simple flat schema', () => {
     const schema = new ParquetSchema({

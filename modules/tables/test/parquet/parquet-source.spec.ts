@@ -9,9 +9,17 @@ import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrows
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {query, queryInBatches} from '@loaders.gl/core/query';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {PARQUET_SOURCE_CAPABILITIES, type ParquetBatch, type ParquetEncodedPageBatch, ParquetWriter, ParquetLoader, type ParquetSourceLoaderOptions, type ParquetSourceMetadata, type ParquetTelemetryEvent} from '@loaders.gl/tables/parquet';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {PARQUET_SOURCE_CAPABILITIES, ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {
+  type ParquetBatch,
+  type ParquetEncodedPageBatch,
+  ParquetLoader,
+  type ParquetSourceLoaderOptions,
+  type ParquetSourceMetadata,
+  type ParquetTelemetryEvent
+} from '@loaders.gl/tables/parquet';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 
 import {getSchemaFromParquetReader} from '../../src/parquet/lib/parsers/get-parquet-schema';
 import {decodeParquetSourceWorkerInput} from '../../src/parquet/lib/parquet-source-worker-decoder';

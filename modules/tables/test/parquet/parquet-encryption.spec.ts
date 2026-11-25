@@ -7,10 +7,10 @@ import {createDataSource, fetchFile, load} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {
   ParquetReader,
-  ParquetLoader,
   createParquetModuleAad,
   verifyParquetFooterSignature
-} from '@loaders.gl/tables/parquet';
+} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import type {ParquetSource} from '@loaders.gl/tables/parquet';
 import {createWorkerKeyRetriever} from '../../src/parquet/lib/parquet-source-worker-decoder';
 import {expect, test} from 'vitest';
