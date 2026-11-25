@@ -54,7 +54,7 @@ or already-parsed JSON into a native Apache Arrow table synchronously. It uses t
 schema inference and conversion policies as `JSONTableLoader`, without serializing your data.
 
 ```typescript
-import {convertJSONToArrow} from '@loaders.gl/tables/json/bundled';
+import {convertJSONToArrow} from '@loaders.gl/tables/json/api';
 
 const table = convertJSONToArrow([{name: 'Oslo', population: 717710}]);
 ```

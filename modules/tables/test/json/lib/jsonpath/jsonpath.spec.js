@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {_JSONPath} from '@loaders.gl/tables/json/bundled';
+import {_JSONPath} from '@loaders.gl/tables/json/api';
 const VALID_JSONPATHS = [
   {jsonpath: '$', expected: [], canonical: '$'},
   {jsonpath: '$.features', expected: ['features'], canonical: '$.features'},

@@ -8,14 +8,14 @@ import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {
   GLTFScenegraph,
-  GLTFWriter,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from '@loaders.gl/scene/gltf/bundled';
+} from '@loaders.gl/scene/gltf/api';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/api';
 import {Matrix4} from '@math.gl/core/matrix';
 import {
   convertTileset,

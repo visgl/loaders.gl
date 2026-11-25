@@ -7,7 +7,7 @@ import {
   encodeI3SMeshLayer,
   encodeI3SMeshLayerWithDraco,
   preloadI3SMeshCompression
-} from '@loaders.gl/tiles-3d/i3s/bundled';
+} from '@loaders.gl/tiles-3d/i3s/api';
 import type {
   EncodedI3SMeshLayer,
   I3SMeshWriterOptions,

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {DracoLoader, type DracoMesh} from '@loaders.gl/scene/draco';
-import {encodeDraco, hasSameDracoMeshTriangles} from '@loaders.gl/scene/draco/bundled';
+import {encodeDraco, hasSameDracoMeshTriangles} from '@loaders.gl/scene/draco/api';
 import type {GLTFAccessor} from '@loaders.gl/scene/gltf';
 import type {MeshGeometry} from '@loaders.gl/core/schema';
 import type {LoadLibraryOptions} from '@loaders.gl/core/worker-utils';

@@ -38,9 +38,9 @@ For table formats, use the following subpaths.
 | `ORCLoader` | `/orc` |
 | `ParquetLoader`, `GeoParquetLoader` | `/parquet` |
 
-For eager Parquet parsers, writers, sources, and low-level helpers, change the import path from
-`@loaders.gl/tables/parquet` to `@loaders.gl/tables/parquet/bundled`. The bundled entry point exports
-the parser-bearing loaders as `ParquetLoader` and `GeoParquetLoader`.
+For eager Parquet parsers, writers, and sources, use `@loaders.gl/tables/parquet/bundled`. The bundled entry point exports
+the parser-bearing loaders as `ParquetLoader` and `GeoParquetLoader`. Low-level Parquet utilities now use
+`@loaders.gl/tables/parquet/api`. Other formats with standalone utilities follow the same `/<format>/api` convention.
 
 ## Upgrading to v5.0
 

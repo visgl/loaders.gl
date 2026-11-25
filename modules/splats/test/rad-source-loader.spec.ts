@@ -8,14 +8,11 @@ import {expect, test} from 'vitest';
 import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compressor-fflate';
 import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
 import {RADLoader} from '@loaders.gl/splats/rad';
-import {resolveRADChunkUrl} from '@loaders.gl/splats/rad/bundled';
+import {resolveRADChunkUrl} from '@loaders.gl/splats/rad/api';
 import type {RADSource} from '@loaders.gl/splats/rad/bundled';
 import type {Table} from 'apache-arrow';
-import {
-  parseRADChunkHeader,
-  parseRADChunkToGaussianSplats,
-  RADLoaderWithParser
-} from '@loaders.gl/splats/rad/bundled';
+import {parseRADChunkHeader, parseRADChunkToGaussianSplats} from '@loaders.gl/splats/rad/api';
+import {RADLoaderWithParser} from '@loaders.gl/splats/rad/bundled';
 preloadBeforeAll(preloadRADCompression);
 
 test('RADLoader parses Spark RAD metadata', async () => {

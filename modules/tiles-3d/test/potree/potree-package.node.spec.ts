@@ -6,7 +6,7 @@ import {createDataSource} from '@loaders.gl/core';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/bundled';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
 import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {createPoints, createDatasetFetch} from './potree-format-fixtures';
 import {expect, test} from 'vitest';
@@ -30,7 +30,7 @@ test('installed Potree metadata, writer and source subpaths work in ESM and Comm
       assert.equal(root.Potree2SourceLoader, undefined);
       assert.equal(root.Potree2Source, undefined);
       assert.equal(typeof PotreeLoader.preload, 'function');
-      const {encodePotreeDataset} = await import('@loaders.gl/tiles-3d/potree/bundled');
+      const {encodePotreeDataset} = await import('@loaders.gl/tiles-3d/potree/api');
       assert.equal(typeof encodePotreeDataset, 'function');
       const url = 'https://example.com/dataset/metadata.json';
       assert.throws(() => createDataSourceSync(url, PotreeLoader), /preload/);

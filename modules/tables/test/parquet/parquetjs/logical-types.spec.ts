@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {describe, expect, test} from 'vitest';
-import {convertParquetSchema, ParquetSchema} from '@loaders.gl/tables/parquet/bundled';
+import {convertParquetSchema, ParquetSchema} from '@loaders.gl/tables/parquet/api';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import {decodeSchema} from '../../../src/parquet/parquetjs/parser/decoders';
 import {toPrimitive} from '../../../src/parquet/parquetjs/schema/types';

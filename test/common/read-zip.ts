@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {openZipArchive} from '@loaders.gl/archives/zip/bundled';
+import {openZipArchive} from '@loaders.gl/archives/zip/api';
 import type {ZipArchiveInput, ZipEntry} from '@loaders.gl/archives/zip';
 
 /** Reads small archive fixtures with complete size/CRC validation and closes their transport. */

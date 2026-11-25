@@ -6,14 +6,8 @@ import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {validateWriter} from 'test/common/conformance';
 import {createDataSourceSync, encodeSync, fetchFile, parse, isBrowser} from '@loaders.gl/core';
-import {
-  COPCLoader,
-  COPCTileSource,
-  COPCWriter,
-  loadCOPCHierarchyPage,
-  loadCOPCNodeData,
-  openCOPC
-} from '@loaders.gl/tiles-3d/copc/bundled';
+import {COPCLoader, COPCTileSource, COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
+import {loadCOPCHierarchyPage, loadCOPCNodeData, openCOPC} from '@loaders.gl/tiles-3d/copc/api';
 import {type COPCRangeReader} from '@loaders.gl/tiles-3d/copc';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/core/loader-utils';

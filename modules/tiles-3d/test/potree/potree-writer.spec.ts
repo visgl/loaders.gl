@@ -4,7 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {convertMeshToArrowTable} from '@loaders.gl/core/schema-utils';
-import {encodePotreeDataset, PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 import {PotreeNodesSource} from '../../src/potree/lib/potree-node-source';
 import {parsePotreeBin} from '../../src/potree/parsers/parse-potree-bin';
 import {

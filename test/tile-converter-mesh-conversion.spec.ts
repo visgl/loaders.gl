@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
 import {
   convertTileset,
   createMeshConversionCodec,

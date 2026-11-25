@@ -99,7 +99,9 @@ export {
   parseTileJSON,
   MapStyleSchema,
   ResolvedMapStyleSchema,
-  resolveMapStyle,
+  resolveMapStyle
+} from '@loaders.gl/tiles/mvt/api';
+export {
   MVTWriter,
   MVTTileSource,
   TableTileLoader,

@@ -6,7 +6,7 @@ import {expect, test} from 'vitest';
 import {
   getStructuralMetadataProperty,
   getStructuralMetadataRow
-} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+} from '@loaders.gl/tiles-3d/3d-tiles/api';
 
 test('getStructuralMetadataRow returns decoded columns with class defaults', () => {
   const propertyTable = {

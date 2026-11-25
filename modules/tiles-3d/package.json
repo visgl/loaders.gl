@@ -55,9 +55,9 @@
       "require": "./dist/potree/metadata-entry.cjs"
     },
     "./potree/bundled": {
-      "types": "./dist/potree/bundled.d.ts",
-      "import": "./dist/potree/bundled.js",
-      "require": "./dist/potree/bundled.cjs"
+      "types": "./dist/potree/bundled-entry.d.ts",
+      "import": "./dist/potree/bundled-entry.js",
+      "require": "./dist/potree/bundled-entry.cjs"
     },
     "./potree-loader": {
       "types": "./dist/potree-loader.d.ts",
@@ -96,9 +96,9 @@
       "require": "./dist/3d-tiles/subtree-zod-schema.cjs"
     },
     "./3d-tiles/bundled": {
-      "types": "./dist/3d-tiles/bundled.d.ts",
-      "import": "./dist/3d-tiles/bundled.js",
-      "require": "./dist/3d-tiles/bundled.cjs"
+      "types": "./dist/3d-tiles/bundled-entry.d.ts",
+      "import": "./dist/3d-tiles/bundled-entry.js",
+      "require": "./dist/3d-tiles/bundled-entry.cjs"
     },
     "./3d-tiles/tileset.schema.json": "./dist/3d-tiles/tileset.schema.json",
     "./3d-tiles/subtree.schema.json": "./dist/3d-tiles/subtree.schema.json",
@@ -118,9 +118,9 @@
       "require": "./dist/i3s/i3s-zod-schema.cjs"
     },
     "./i3s/bundled": {
-      "types": "./dist/i3s/bundled.d.ts",
-      "import": "./dist/i3s/bundled.js",
-      "require": "./dist/i3s/bundled.cjs"
+      "types": "./dist/i3s/bundled-entry.d.ts",
+      "import": "./dist/i3s/bundled-entry.js",
+      "require": "./dist/i3s/bundled-entry.cjs"
     },
     "./i3s-lepcc-loader": {
       "types": "./dist/i3s-lepcc-loader.d.ts",
@@ -167,14 +167,39 @@
       "require": "./dist/point-cloud/metadata-entry.cjs"
     },
     "./copc/bundled": {
-      "types": "./dist/copc/bundled.d.ts",
-      "import": "./dist/copc/bundled.js",
-      "require": "./dist/copc/bundled.cjs"
+      "types": "./dist/copc/bundled-entry.d.ts",
+      "import": "./dist/copc/bundled-entry.js",
+      "require": "./dist/copc/bundled-entry.cjs"
     },
     "./point-cloud/bundled": {
-      "types": "./dist/point-cloud/bundled.d.ts",
-      "import": "./dist/point-cloud/bundled.js",
-      "require": "./dist/point-cloud/bundled.cjs"
+      "types": "./dist/point-cloud/bundled-entry.d.ts",
+      "import": "./dist/point-cloud/bundled-entry.js",
+      "require": "./dist/point-cloud/bundled-entry.cjs"
+    },
+    "./potree/api": {
+      "types": "./dist/potree/api.d.ts",
+      "import": "./dist/potree/api.js",
+      "require": "./dist/potree/api.cjs"
+    },
+    "./3d-tiles/api": {
+      "types": "./dist/3d-tiles/api.d.ts",
+      "import": "./dist/3d-tiles/api.js",
+      "require": "./dist/3d-tiles/api.cjs"
+    },
+    "./i3s/api": {
+      "types": "./dist/i3s/api.d.ts",
+      "import": "./dist/i3s/api.js",
+      "require": "./dist/i3s/api.cjs"
+    },
+    "./copc/api": {
+      "types": "./dist/copc/api.d.ts",
+      "import": "./dist/copc/api.js",
+      "require": "./dist/copc/api.cjs"
+    },
+    "./point-cloud/api": {
+      "types": "./dist/point-cloud/api.d.ts",
+      "import": "./dist/point-cloud/api.js",
+      "require": "./dist/point-cloud/api.cjs"
     }
   },
   "sideEffects": false,

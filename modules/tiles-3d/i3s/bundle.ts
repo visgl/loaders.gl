@@ -93,8 +93,6 @@ export {
   I3SPointSceneLayerSchema,
   I3SPointCloudStoreSchema,
   COORDINATE_SYSTEM,
-  SLPKWriter,
-  SLPKSource,
   loadFeatureAttributes,
   SLPKArchive,
   parseSLPKArchive,
@@ -102,7 +100,6 @@ export {
   customizeColors,
   loadStatistics,
   I3SLEPCCDecoder,
-  I3SPointCloudSource,
   createI3SLayerSource,
   I3SUnsupportedProfileError,
   normalizeI3SServiceMetadata,
@@ -112,7 +109,8 @@ export {
   encodeI3SMeshLayer,
   preloadI3SMeshCompression,
   encodeI3SMeshLayerWithDraco
-} from '@loaders.gl/tiles-3d/i3s/bundled';
+} from '@loaders.gl/tiles-3d/i3s/api';
+export {SLPKWriter, SLPKSource, I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 export {
   ArcGISWebSceneFormat,
   I3SAttributeFormat,

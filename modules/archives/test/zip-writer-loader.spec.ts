@@ -1,6 +1,7 @@
 import {expect, test, vi} from 'vitest';
 import {validateLoader, validateWriter} from 'test/common/conformance';
-import {ZipWriter, encodeZip} from '@loaders.gl/archives/zip/bundled';
+import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
+import {encodeZip} from '@loaders.gl/archives/zip/api';
 import {ZipLoader} from '@loaders.gl/archives/zip';
 import {encode, parse} from '@loaders.gl/core';
 import {readZip} from 'test/common/read-zip';

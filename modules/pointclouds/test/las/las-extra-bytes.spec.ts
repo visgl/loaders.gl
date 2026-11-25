@@ -8,7 +8,7 @@ import {
   createLASTypedExtraBytesAttributes,
   parseLASExtraBytes,
   populateLASTypedExtraBytes
-} from '@loaders.gl/pointclouds/las/bundled';
+} from '@loaders.gl/pointclouds/las/api';
 
 describe('LAS Extra Bytes utilities', () => {
   test('trims trailing NUL padding while preserving embedded NULs', () => {

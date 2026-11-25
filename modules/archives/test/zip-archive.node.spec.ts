@@ -11,10 +11,10 @@ import {expect, test} from 'vitest';
 test('installed ESM/CJS ZIP entrypoints expose portable reading and writing', async () => {
   const require = createRequire(import.meta.url);
   const entrypointUrl = new URL(
-    './bundled.js',
+    './api.js',
     pathToFileURL(require.resolve('@loaders.gl/archives/zip'))
   );
-  const modules = [await import(entrypointUrl.href), require('@loaders.gl/archives/zip/bundled')];
+  const modules = [await import(entrypointUrl.href), require('@loaders.gl/archives/zip/api')];
   const bytes = new Uint8Array(readFileSync(new URL('./fixtures/python.zip', import.meta.url)));
   for (const module of modules) {
     const archive = await module.openZipArchive(bytes);

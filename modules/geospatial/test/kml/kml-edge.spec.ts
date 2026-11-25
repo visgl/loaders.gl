@@ -5,14 +5,12 @@
 import {expect, test} from 'vitest';
 import {encode, parse} from '@loaders.gl/core';
 import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
+import {KMLWriter, KMZVectorSource, KMZWriter} from '@loaders.gl/geospatial/kml/bundled';
 import {
-  KMLWriter,
-  KMZVectorSource,
-  KMZWriter,
   convertKMLDocumentToFeatureCollection,
   _openKMZArchive,
   _parseKMLDocument
-} from '@loaders.gl/geospatial/kml/bundled';
+} from '@loaders.gl/geospatial/kml/api';
 import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz/bundled';
 import {parseGPXTextToFeatureCollection} from '../../src/kml/gpx-loader';
 import {parseTCXTextToFeatureCollection} from '../../src/kml/tcx-loader';

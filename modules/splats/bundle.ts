@@ -88,9 +88,10 @@ export type {
 export {SPLATFormat, SPLATLoader} from '@loaders.gl/splats/splat';
 export {KSPLATFormat, KSPLATLoader} from '@loaders.gl/splats/ksplat';
 export {SPZFormat, SPZLoader} from '@loaders.gl/splats/spz';
-export {parseSPZ, parseSPZToGaussianSplats} from '@loaders.gl/splats/spz/bundled';
+export {parseSPZ, parseSPZToGaussianSplats} from '@loaders.gl/splats/spz/api';
 export {RADFormat, RADLoader} from '@loaders.gl/splats/rad';
-export {RADSource, resolveRADChunkUrl} from '@loaders.gl/splats/rad/bundled';
+export {RADSource} from '@loaders.gl/splats/rad/bundled';
+export {resolveRADChunkUrl} from '@loaders.gl/splats/rad/api';
 export type {
   RADChunkMetadata,
   RADChunkMetadataJSON,

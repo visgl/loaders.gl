@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import type {Mesh} from '@loaders.gl/core/schema';
 import {PointCloudTileLoader} from '@loaders.gl/tiles-3d/point-cloud';
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud/bundled';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud/api';
 import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {PointCloudTileLoaderWithParser} from '../src/point-cloud-tile-loader';
 import {PointCloudTileSource} from '../src/point-cloud-tile-source';

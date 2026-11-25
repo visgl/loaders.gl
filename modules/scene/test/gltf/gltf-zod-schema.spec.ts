@@ -6,7 +6,7 @@ import {
   GLTFSchema,
   GLTFEXTMeshoptCompressionSchema,
   GLTFKHRMeshoptCompressionSchema
-} from '@loaders.gl/scene/gltf/bundled';
+} from '@loaders.gl/scene/gltf/api';
 import {
   GLTF1Schema,
   GLTF2Schema,

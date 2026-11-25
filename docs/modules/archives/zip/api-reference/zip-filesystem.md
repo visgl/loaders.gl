@@ -6,7 +6,7 @@ an `ArrayBuffer`, typed-array view, `Blob`, `ReadableFile`, or a Node file path.
 argument accepts the same [limits and cancellation options as ZipArchive](/docs/modules/archives/zip/api-reference/zip-archive).
 
 ```typescript
-import {ZipFileSystem} from '@loaders.gl/archives/zip/bundled';
+import {ZipFileSystem} from '@loaders.gl/archives/zip/api';
 
 const filesystem = new ZipFileSystem(blob);
 try {

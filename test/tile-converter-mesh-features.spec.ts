@@ -13,7 +13,7 @@ import {
   getGLTFAccessorValue,
   getGLTFAccessor,
   setGLTFAccessorValue
-} from '@loaders.gl/scene/gltf/bundled';
+} from '@loaders.gl/scene/gltf/api';
 import type {Field, MeshGeometry} from '@loaders.gl/core/schema';
 import {
   encodeMeshTile,

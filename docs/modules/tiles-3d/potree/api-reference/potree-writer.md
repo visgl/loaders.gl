@@ -4,7 +4,7 @@
 arrays. `PotreeWriter` encodes a metadata document through the standard loaders.gl writer API.
 
 ```typescript
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/bundled';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
 
 const dataset = await encodePotreeDataset(pointMeshOrArrowTable, {
   potree: {version: '2.0', scale: [0.001, 0.001, 0.001], projection: 'EPSG:4978'}

@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 import type {DataSourceOptions} from '@loaders.gl/core/loader-utils';
 import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/core/schema';
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud/bundled';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud/api';
 type Deferred<T> = {
   promise: Promise<T>;
   resolve: (value: T) => void;

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-import {_ClarinetParser} from '@loaders.gl/tables/json/bundled';
+import {_ClarinetParser} from '@loaders.gl/tables/json/api';
 import StreamingJSONParser from '../../../../src/json/lib/json-parser/streaming-json-parser';
 import FastStreamingJSONParser from '../../../../src/json/lib/json-parser/fast-streaming-json-parser';
 

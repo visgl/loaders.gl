@@ -280,7 +280,7 @@ const {tileGrid} = await source.getMetadata();
 ```
 
 ```ts
-import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/ogc/wms/bundled';
+import {convertOGCTileMatrixSetToTileGrid} from '@loaders.gl/ogc/wms/api';
 
 const response = await fetch('https://example.com/ogcapi/tileMatrixSets/UTM18N');
 const tileGrid = convertOGCTileMatrixSetToTileGrid(await response.json(), {metersPerUnit: 1});

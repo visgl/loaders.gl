@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s/api';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
@@ -11,17 +11,17 @@ import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {
   GLTFScenegraph,
   getGLTFPrimitiveOutline,
-  GLTFWriter,
   getGLTFAccessor,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from '@loaders.gl/scene/gltf/bundled';
+} from '@loaders.gl/scene/gltf/api';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import type {GLTFMeshPrimitive} from '@loaders.gl/scene/gltf';
 import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {Matrix4} from '@math.gl/core/matrix';
 import {GZipFflateDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
-import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s/api';
 import {validateBytes} from 'gltf-validator';
 import {createCompressedMesh} from './utils/tile-converter-draco';
 import {

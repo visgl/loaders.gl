@@ -103,9 +103,9 @@
       "require": "./dist/stream.cjs"
     },
     "./chrome-trace/bundled": {
-      "types": "./dist/chrome-trace-bundled.d.ts",
-      "import": "./dist/chrome-trace-bundled.js",
-      "require": "./dist/chrome-trace-bundled.cjs"
+      "types": "./dist/chrome-trace-bundled-entry.d.ts",
+      "import": "./dist/chrome-trace-bundled-entry.js",
+      "require": "./dist/chrome-trace-bundled-entry.cjs"
     },
     "./otlp/bundled": {
       "types": "./dist/otlp-bundled.d.ts",
@@ -126,6 +126,11 @@
       "types": "./dist/perfetto-bundled.d.ts",
       "import": "./dist/perfetto-bundled.js",
       "require": "./dist/perfetto-bundled.cjs"
+    },
+    "./chrome-trace/api": {
+      "types": "./dist/chrome-trace-api.d.ts",
+      "import": "./dist/chrome-trace-api.js",
+      "require": "./dist/chrome-trace-api.cjs"
     }
   },
   "sideEffects": false,

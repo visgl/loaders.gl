@@ -76,7 +76,7 @@ If you pass:
 
 ```ts
 import {convert, TableConverter} from '@loaders.gl/core/schema-utils';
-import {ArrowConverter} from '@loaders.gl/tables/arrow/bundled';
+import {ArrowConverter} from '@loaders.gl/tables/arrow/api';
 
 const objectRows = convert(arrowTable, 'object-row-table', [ArrowConverter, TableConverter]);
 ```

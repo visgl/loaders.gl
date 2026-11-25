@@ -7,7 +7,7 @@ import {coreApi, load} from '@loaders.gl/core';
 import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {_getMemoryUsageGLTF} from '@loaders.gl/scene/gltf/bundled';
+import {_getMemoryUsageGLTF} from '@loaders.gl/scene/gltf/api';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 const GLB_URL = '@loaders.gl/tiles-3d/3d-tiles/test/data/143.glb';
 test('3D Tiles#getMemoryUsageGLTF', async () => {

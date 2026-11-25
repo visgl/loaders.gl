@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {Tile3DFeatureTable} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {Tile3DFeatureTable} from '@loaders.gl/tiles-3d/3d-tiles/api';
 test('Tile3DFeatureTable#loads from JSON', () => {
   // @ts-expect-error
   const featureTable = new Tile3DFeatureTable({

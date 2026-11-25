@@ -47,7 +47,7 @@ This makes it suitable for implementing glTF extensions that transform the stand
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {GLTFIterator} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFIterator} from '@loaders.gl/scene/gltf/api';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 
 const gltf = await load(url, GLTFLoader);

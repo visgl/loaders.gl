@@ -170,7 +170,16 @@
         "modules/images/src/package-exports.ts",
         "modules/images/src/radiance-hdr/metadata-entry.ts",
         "modules/images/src/texture/metadata-entry.ts",
-        "modules/images/src/video/metadata-entry.ts"
+        "modules/images/src/video/metadata-entry.ts",
+        "modules/images/src/basis-api.ts",
+        "modules/images/src/basis-bundled-entry.ts",
+        "modules/images/src/bundled-entry.ts",
+        "modules/images/src/color-lut-api.ts",
+        "modules/images/src/color-lut-bundled-entry.ts",
+        "modules/images/src/crunch/api.ts",
+        "modules/images/src/crunch/bundled-entry.ts",
+        "modules/images/src/texture-api.ts",
+        "modules/images/src/texture-bundled-entry.ts"
       ],
       "sourcePathReason": "Preserve the original image implementation gate, including its 89% function requirement. Texture and video implementations retain their unchanged independent images/textures and images/video gates; all image-package production files are checked for a coverage owner."
     },
@@ -243,7 +252,11 @@
         "modules/scene/src/gltf-source.ts",
         "modules/scene/src/glb/metadata-entry.ts",
         "modules/scene/src/mtl/metadata-entry.ts",
-        "modules/scene/src/package-exports.ts"
+        "modules/scene/src/package-exports.ts",
+        "modules/scene/src/draco-api.ts",
+        "modules/scene/src/draco-bundled-entry.ts",
+        "modules/scene/src/usd-api.ts",
+        "modules/scene/src/usd-bundled-entry.ts"
       ],
       "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf and scene/draco gates; every scene implementation belongs to one of these gates. New STL implementations are included in this existing gate without changing its thresholds."
     },
@@ -521,7 +534,9 @@
         "modules/documents/src/markdown/metadata-entry.ts",
         "modules/documents/src/toml/metadata-entry.ts",
         "modules/documents/src/xml/metadata-entry.ts",
-        "modules/documents/src/yaml/metadata-entry.ts"
+        "modules/documents/src/yaml/metadata-entry.ts",
+        "modules/documents/src/bson-api.ts",
+        "modules/documents/src/bson-bundled-entry.ts"
       ],
       "sourcePathReason": "Retain the original XML package ratchet. Config, BSON, and new Markdown implementations have independent format gates; the documents source inventory requires an owner for every production file."
     }

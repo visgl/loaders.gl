@@ -9,10 +9,10 @@ import {
   setGLTFAccessorValue,
   GLTFIterator,
   GLTFScenegraph,
-  GLTFWriter,
   createExtStructuralMetadata,
   _getMemoryUsageGLTF
-} from '@loaders.gl/scene/gltf/bundled';
+} from '@loaders.gl/scene/gltf/api';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {parse} from '@loaders.gl/core';
 import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';

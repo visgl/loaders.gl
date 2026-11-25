@@ -52,7 +52,7 @@ import type {ReadonlyCRSDefinition} from '@math.gl/geospatial/crs';
 import {
   createLASTypedExtraBytesAttributes,
   populateLASTypedExtraBytes
-} from '@loaders.gl/pointclouds/las/bundled';
+} from '@loaders.gl/pointclouds/las/api';
 import {
   LASLoader,
   type LASLoaderOptions,

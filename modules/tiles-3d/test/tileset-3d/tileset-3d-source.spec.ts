@@ -22,7 +22,8 @@ import {
   type TilesetSourceResolver
 } from '@loaders.gl/tiles-3d/tileset';
 import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
-import {createImplicitSubtreeReference, Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {createImplicitSubtreeReference} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {type ImplicitTilingDescriptor} from '@loaders.gl/tiles-3d/3d-tiles';
 import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 test('Tiles3DSource lazily loads, installs and caches one implicit subtree', async () => {

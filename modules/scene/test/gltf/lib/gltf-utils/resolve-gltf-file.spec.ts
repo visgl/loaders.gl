@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import type {GLTFWithBuffers} from '@loaders.gl/scene/gltf';
-import {findGLTFFileIndex, resolveGLTFFile} from '@loaders.gl/scene/gltf/bundled';
+import {findGLTFFileIndex, resolveGLTFFile} from '@loaders.gl/scene/gltf/api';
 test('resolveGLTFFile#resolves embedded package files by name', async () => {
   const arrayBuffer = new Uint8Array([0, 1, 2, 3, 4, 5]).buffer;
   const gltf = {

@@ -5,11 +5,8 @@ import {pathToFileURL} from 'node:url';
 import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
 import {createDataSourceSync, fetchFile, resolvePath} from '@loaders.gl/core';
-import {
-  OMEZarrImageSource,
-  OMEZarrLoader,
-  loadZarrConsolidatedMetadata
-} from '@loaders.gl/scientific/zarr/bundled';
+import {OMEZarrImageSource, OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
+import {loadZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr/api';
 const CONTENT_BASE = resolvePath('@loaders.gl/scientific/test/zarr/data');
 const OME_FIXTURE = `${CONTENT_BASE}/ome.zarr`;
 const OME_FIXTURE_URL = pathToFileURL(OME_FIXTURE).href;

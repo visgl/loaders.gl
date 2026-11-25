@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {parseLASExtraBytes} from '@loaders.gl/pointclouds/las/bundled';
+import {parseLASExtraBytes} from '@loaders.gl/pointclouds/las/api';
 import {type LASExtraBytesDescriptor} from '@loaders.gl/pointclouds/las';
 
 /** Function that reads an exact half-open byte range from a COPC file. */

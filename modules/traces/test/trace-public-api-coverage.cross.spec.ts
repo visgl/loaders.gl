@@ -8,8 +8,8 @@ import * as arrow from 'apache-arrow';
 import {describe, expect, it} from 'vitest';
 
 import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
+import {ChromeTraceWriter} from '@loaders.gl/traces/chrome-trace/bundled';
 import {
-  ChromeTraceWriter,
   consumeChromeTraceArrowStream,
   consumeChromeTraceEventStream,
   consumeChromeTraceFileStream,
@@ -17,7 +17,7 @@ import {
   streamChromeTraceArrowChunks,
   streamChromeTraceEventChunks,
   streamChromeTraceFileChunks
-} from '@loaders.gl/traces/chrome-trace/bundled';
+} from '@loaders.gl/traces/chrome-trace/api';
 import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
 import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
 import {createTraceStreamSession} from '@loaders.gl/traces/stream';

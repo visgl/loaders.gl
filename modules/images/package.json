@@ -33,9 +33,9 @@
       "require": "./dist/index.cjs"
     },
     "./bundled": {
-      "types": "./dist/bundled.d.ts",
-      "import": "./dist/bundled.js",
-      "require": "./dist/bundled.cjs"
+      "types": "./dist/bundled-entry.d.ts",
+      "import": "./dist/bundled-entry.js",
+      "require": "./dist/bundled-entry.cjs"
     },
     "./basis-worker.js": {
       "import": "./dist/basis-worker.js"
@@ -122,19 +122,19 @@
       "require": "./dist/exr/metadata-entry.cjs"
     },
     "./color-lut/bundled": {
-      "types": "./dist/color-lut-bundled.d.ts",
-      "import": "./dist/color-lut-bundled.js",
-      "require": "./dist/color-lut-bundled.cjs"
+      "types": "./dist/color-lut-bundled-entry.d.ts",
+      "import": "./dist/color-lut-bundled-entry.js",
+      "require": "./dist/color-lut-bundled-entry.cjs"
     },
     "./texture/bundled": {
-      "types": "./dist/texture-bundled.d.ts",
-      "import": "./dist/texture-bundled.js",
-      "require": "./dist/texture-bundled.cjs"
+      "types": "./dist/texture-bundled-entry.d.ts",
+      "import": "./dist/texture-bundled-entry.js",
+      "require": "./dist/texture-bundled-entry.cjs"
     },
     "./basis/bundled": {
-      "types": "./dist/basis-bundled.d.ts",
-      "import": "./dist/basis-bundled.js",
-      "require": "./dist/basis-bundled.cjs"
+      "types": "./dist/basis-bundled-entry.d.ts",
+      "import": "./dist/basis-bundled-entry.js",
+      "require": "./dist/basis-bundled-entry.cjs"
     },
     "./image/bundled": {
       "types": "./dist/image-bundled.d.ts",
@@ -162,14 +162,34 @@
       "require": "./dist/exr-bundled.cjs"
     },
     "./crunch/bundled": {
-      "types": "./dist/crunch/bundled.d.ts",
-      "import": "./dist/crunch/bundled.js",
-      "require": "./dist/crunch/bundled.cjs"
+      "types": "./dist/crunch/bundled-entry.d.ts",
+      "import": "./dist/crunch/bundled-entry.js",
+      "require": "./dist/crunch/bundled-entry.cjs"
     },
     "./image/api": {
       "types": "./dist/image-api.d.ts",
       "import": "./dist/image-api.js",
       "require": "./dist/image-api.cjs"
+    },
+    "./color-lut/api": {
+      "types": "./dist/color-lut-api.d.ts",
+      "import": "./dist/color-lut-api.js",
+      "require": "./dist/color-lut-api.cjs"
+    },
+    "./texture/api": {
+      "types": "./dist/texture-api.d.ts",
+      "import": "./dist/texture-api.js",
+      "require": "./dist/texture-api.cjs"
+    },
+    "./basis/api": {
+      "types": "./dist/basis-api.d.ts",
+      "import": "./dist/basis-api.js",
+      "require": "./dist/basis-api.cjs"
+    },
+    "./crunch/api": {
+      "types": "./dist/crunch/api.d.ts",
+      "import": "./dist/crunch/api.js",
+      "require": "./dist/crunch/api.cjs"
     }
   },
   "sideEffects": false,

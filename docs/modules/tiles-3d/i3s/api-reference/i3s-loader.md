@@ -118,7 +118,7 @@ renderer. The same pattern works for SceneServer mesh and point layers:
 
 ```typescript
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s/api';
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 const layer = new SourceLayer({
@@ -249,7 +249,7 @@ The returned object is keyed by each descriptor's `key`; an unavailable resource
 `null` so other fields can still be consumed.
 
 ```typescript
-import {loadStatistics} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {loadStatistics} from '@loaders.gl/tiles-3d/i3s/api';
 
 const statistics = await loadStatistics(sceneLayer.statisticsInfo, {
   core: {baseUrl: sceneLayer.url},

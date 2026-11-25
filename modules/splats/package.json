@@ -89,9 +89,9 @@
       "require": "./dist/types.cjs"
     },
     "./rad/bundled": {
-      "types": "./dist/rad/bundled.d.ts",
-      "import": "./dist/rad/bundled.js",
-      "require": "./dist/rad/bundled.cjs"
+      "types": "./dist/rad/bundled-entry.d.ts",
+      "import": "./dist/rad/bundled-entry.js",
+      "require": "./dist/rad/bundled-entry.cjs"
     },
     "./splat/bundled": {
       "types": "./dist/splat/bundled.d.ts",
@@ -104,9 +104,19 @@
       "require": "./dist/ksplat/bundled.cjs"
     },
     "./spz/bundled": {
-      "types": "./dist/spz/bundled.d.ts",
-      "import": "./dist/spz/bundled.js",
-      "require": "./dist/spz/bundled.cjs"
+      "types": "./dist/spz/bundled-entry.d.ts",
+      "import": "./dist/spz/bundled-entry.js",
+      "require": "./dist/spz/bundled-entry.cjs"
+    },
+    "./rad/api": {
+      "types": "./dist/rad/api.d.ts",
+      "import": "./dist/rad/api.js",
+      "require": "./dist/rad/api.cjs"
+    },
+    "./spz/api": {
+      "types": "./dist/spz/api.d.ts",
+      "import": "./dist/spz/api.js",
+      "require": "./dist/spz/api.cjs"
     }
   },
   "sideEffects": false,

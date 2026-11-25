@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {preloadCompressions} from '@loaders.gl/tables/parquet/bundled';
+import {preloadCompressions} from '@loaders.gl/tables/parquet/api';
 
 // Import big dependencies
 
