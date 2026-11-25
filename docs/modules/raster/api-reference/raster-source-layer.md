@@ -45,6 +45,9 @@ viewport logic. MapView and GlobeView support EPSG:4326, EPSG:3857, and projecte
 math.gl can resolve, such as UTM EPSG:32626. For a projected source, the layer requests the
 visible portion of the source extent and places the CPU or GPU bitmap in source coordinates.
 Ungeoreferenced rasters use a pixel-coordinate plane.
+math.gl resolves some EPSG codes without help, for example WGS 84 UTM. For other codes, such as
+NAD83 / UTM zone 19N (EPSG:26919), configure a CRS resolver on the math.gl projection engine, or
+give the source CRS as WKT.
 
 The layer requests one raster per viewport, so distant visible ground near the horizon can make the request coarser.
 
