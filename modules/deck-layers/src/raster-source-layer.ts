@@ -170,6 +170,8 @@ type RasterSourceLayerState = {
   metadata: RasterSourceMetadata | null;
   /** Prepared projected CRS, null when unavailable, or undefined while resolving. */
   projectedCRS: ProjectedRasterCRS | null | undefined;
+  /** True when the projected source does not overlap the current viewport, so no request is due. */
+  projectedSourceOffscreen?: boolean;
   /** Latest accepted raster request. */
   rasterRequest: RasterSetRequest | null;
   /** Cached CPU bitmap. */
@@ -253,7 +255,10 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
 
   /** Returns true when the current raster request has settled. */
   get isLoaded(): boolean {
-    return Boolean(this.state?.rasterSet?.isLoaded) && super.isLoaded;
+    return (
+      Boolean(this.state?.projectedSourceOffscreen || this.state?.rasterSet?.isLoaded) &&
+      super.isLoaded
+    );
   }
 
   /** Resolves sources and issues viewport-driven raster requests. */
@@ -514,7 +519,14 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
         ? createProjectedRasterViewport(viewport, metadata, projectedCRS, maxTextureSize)
         : createRasterViewport(viewport, metadata, maxTextureSize, Boolean(getRasterParameters));
     if (!rasterViewport) {
+      // Nothing visible to request: report the layer as loaded instead of waiting forever.
+      if (!this.state.projectedSourceOffscreen) {
+        this.setState({projectedSourceOffscreen: true});
+      }
       return;
+    }
+    if (this.state.projectedSourceOffscreen) {
+      this.setState({projectedSourceOffscreen: false});
     }
     const defaultBands = metadata.bandCount >= 3 ? [0, 1, 2] : [0];
     const inferredParameters: GetRasterParameters = {

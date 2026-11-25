@@ -146,6 +146,39 @@ test('clips projected requests to the source extent and skips disjoint viewports
   expect(getRaster).toHaveBeenCalledOnce();
 });
 
+test('reports an off-screen projected source as loaded without a request', async ({
+  onTestFinished
+}) => {
+  const offscreenViewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -27,
+    latitude: 39,
+    zoom: 12
+  });
+  const metadata = {...PROJECTED_METADATA, boundingBox: RASTER_BOUNDS};
+  const {layer, getRaster} = createProjectedLayer(offscreenViewport, metadata, {metadata});
+  onTestFinished(() => layer['releaseRasterSet']());
+  await layer['resolveSource'](layer.props);
+  expect(getRaster).not.toHaveBeenCalled();
+  expect(layer.state.projectedSourceOffscreen).toBe(true);
+  // Minimal deck.gl internal state, so the base Layer reports no pending async props.
+  (layer as any).internalState = {isAsyncPropLoading: () => false, subLayers: []};
+  expect(layer.isLoaded).toBe(true);
+  (layer as any).internalState = null;
+
+  const visibleViewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -27,
+    latitude: 38,
+    zoom: 12
+  });
+  layer['requestRaster'](visibleViewport, 0);
+  expect(layer.state.projectedSourceOffscreen).toBe(false);
+  expect(getRaster).toHaveBeenCalledOnce();
+});
+
 test('samples the globe surface and skips non-finite and horizon-clamped sky points', async ({
   onTestFinished
 }) => {
