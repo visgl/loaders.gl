@@ -179,6 +179,28 @@ test('reports an off-screen projected source as loaded without a request', async
   expect(getRaster).toHaveBeenCalledOnce();
 });
 
+test('clears the off-screen loaded state when the source is released', async ({onTestFinished}) => {
+  const offscreenViewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -27,
+    latitude: 39,
+    zoom: 12
+  });
+  const metadata = {...PROJECTED_METADATA, boundingBox: RASTER_BOUNDS};
+  const {layer} = createProjectedLayer(offscreenViewport, metadata, {metadata});
+  onTestFinished(() => layer['releaseRasterSet']());
+  await layer['resolveSource'](layer.props);
+  expect(layer.state.projectedSourceOffscreen).toBe(true);
+
+  // A data change releases the raster set before the next source resolves.
+  layer['releaseRasterSet']();
+  expect(layer.state.projectedSourceOffscreen).toBe(false);
+  (layer as any).internalState = {isAsyncPropLoading: () => false, subLayers: []};
+  expect(layer.isLoaded).toBe(false);
+  (layer as any).internalState = null;
+});
+
 test('samples the globe surface and skips non-finite and horizon-clamped sky points', async ({
   onTestFinished
 }) => {

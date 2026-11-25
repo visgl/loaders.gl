@@ -568,6 +568,7 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       unsubscribeRasterSetEvents: null,
       metadata: null,
       projectedCRS: null,
+      projectedSourceOffscreen: false,
       rasterRequest: null,
       renderResult: null,
       gpuResult: null
