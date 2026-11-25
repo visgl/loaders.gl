@@ -37,6 +37,13 @@ for stable v4 migrations.
   percentile stretching, and texel picking. Set `valueRange` for a fixed stretch.
 - **3D content and tiles.** [Scene](./modules/scene/README.md) groups glTF, Draco, and mesh
   formats. [Tile Converter](./modules/tile-converter/README.md) defaults to the v5 engine.
+  The [TileMatrix adapter](./modules/tiles/api-reference/tile-matrix.md) adds coarse-to-fine
+  levels, center-based parents, and optional geographic outlines for deck.gl.
+- 🧪 **Satellite orbit elements (experimental).** [`OMMLoader`](./modules/geospatial/omm/api-reference/omm-loader.md)
+  reads the SGP4 subset of CCSDS OMM in JSON and KVN. It validates GP metadata and epoch dates.
+  In KVN, it accepts metadata and data delimiters and skips optional blocks such as covariance.
+  [`TLELoader`](./modules/geospatial/tle/api-reference/tle-loader.md)
+  reads two-line element sets. Both return one table schema with the OMM keyword names.
 - **Documents and images.** [Documents](./modules/documents/README.md) groups text and
   structured formats. [Images](./modules/images/README.md) adds OpenEXR, color lookup
   tables, and measured lighting profiles.

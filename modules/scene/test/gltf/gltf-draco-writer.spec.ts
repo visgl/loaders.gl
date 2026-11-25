@@ -1,11 +1,8 @@
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {
-  compressGLTFWithDraco,
-  GLTFLoader,
-  GLTFWriter,
-  type GLTFWithBuffers
-} from '@loaders.gl/scene/gltf';
+import {compressGLTFWithDraco} from '@loaders.gl/scene/api';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFLoader, type GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 
 function createTriangleGLTF(): GLTFWithBuffers {
   const bytes = new Uint8Array(42);

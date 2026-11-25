@@ -6,7 +6,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 import type {VTKDataset, VTKXMLDataset} from './vtk';
 /** Loads the existing VTK readers on demand. */
 async function preload() {
-  const {VTKLoaderWithParser} = await import('@loaders.gl/scientific/vtk');
+  const {VTKLoaderWithParser} = await import('@loaders.gl/scientific/vtk/bundled');
   return VTKLoaderWithParser;
 }
 /** Metadata-only loader for the supported legacy ASCII and XML VTK subsets. */

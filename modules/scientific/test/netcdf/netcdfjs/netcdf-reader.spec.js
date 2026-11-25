@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 import {describe, expect, it} from 'vitest';
-import {NetCDFReader} from '@loaders.gl/scientific/netcdf';
+import {NetCDFReader} from '@loaders.gl/scientific/netcdf/api';
 import {fetchFile} from '@loaders.gl/core';
 
 const DATA_PATH = `@loaders.gl/scientific/test/netcdf/data`;

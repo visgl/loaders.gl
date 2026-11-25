@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {LASWriter} from '@loaders.gl/pointclouds/las';
+import {LASWriter} from '@loaders.gl/pointclouds/las/bundled';
 import {makeMeshArrowTable} from '@loaders.gl/core/schema-utils';
 import {LASFile as LazPerfLASFile} from '../../../../website/src/alternate-loaders/las/lib/laz-perf/laslaz-decoder';
 import {

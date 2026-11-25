@@ -15,11 +15,11 @@ Install `@loaders.gl/tiles-3d` for 3D tileset traversal, 3D Tiles, I3S, COPC and
 npm install @loaders.gl/core @loaders.gl/tiles-3d
 ```
 
-The root exports `Tileset3D`, `Tile3D`, `Tiles3DSource`, `I3SSource`, spatial helpers,
-and point-cloud tileset APIs. Format loaders and writers use separate subpaths:
+Import `Tileset3D` and `Tile3D` from `@loaders.gl/tiles-3d/tileset`. Spatial and point-cloud helpers have dedicated subpaths. Format loaders and writers use separate subpaths:
 
 ```ts
-import {Tileset3D, Tiles3DSource} from '@loaders.gl/tiles-3d';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const source = new Tiles3DSource({url, loader: Tiles3DLoader});

@@ -4,7 +4,8 @@
 
 import {expect, test, vi} from 'vitest';
 import {parse, preload, fetchFile, coreApi} from '@loaders.gl/core';
-import {GLBLoader, GLBWriter, GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLBLoader, GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLBWriter} from '@loaders.gl/scene/gltf/bundled';
 import {DracoLoader} from '@loaders.gl/scene/draco';
 import type {
   Loader,

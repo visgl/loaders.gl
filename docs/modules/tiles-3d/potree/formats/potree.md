@@ -118,7 +118,7 @@ CRS conversion is an explicit application step before writing. See
   and decodes requested point tiles. Pass `cloud.js` for 1.x or `metadata.json` for 2.0;
   directory inputs retain the legacy `cloud.js` default.
 - [PotreeWriter](/docs/modules/tiles-3d/potree/api-reference/potree-writer) writes a metadata document through
-  `encode` or `encodeSync`. `encodePotreeDataset` produces the complete collection of relative
+  `encode` or `encodeSync`. `PotreeWriter.encodeDataset` produces the complete collection of relative
   filenames and typed byte buffers from decoded Mesh/Arrow data.
 
 Modern source tile content uses Mesh Arrow tables. Compatible legacy queries yield ordered Arrow

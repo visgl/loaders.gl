@@ -49,7 +49,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ```typescript
 import {encode, load} from '@loaders.gl/core';
-import {ZipkinTraceLoader, ZipkinTraceWriter} from '@loaders.gl/traces/zipkin';
+import {ZipkinTraceLoader} from '@loaders.gl/traces/zipkin';
+import {ZipkinTraceWriter} from '@loaders.gl/traces/zipkin/bundled';
 
 const trace = await load('trace.zipkin.json', ZipkinTraceLoader);
 const spans = await encode(trace, ZipkinTraceWriter, {

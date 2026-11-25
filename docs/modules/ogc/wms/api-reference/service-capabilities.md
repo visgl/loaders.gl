@@ -46,7 +46,7 @@ model.
 />
 
 ```typescript
-import {normalizeWMTSCapabilities} from '@loaders.gl/ogc/wms';
+import {normalizeWMTSCapabilities} from '@loaders.gl/ogc/wms/api';
 
 const capabilities = normalizeWMTSCapabilities(wmtsCapabilities, serviceUrl);
 console.log(capabilities.layers, capabilities.crs, capabilities.formats);

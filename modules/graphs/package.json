@@ -60,6 +60,21 @@
       "types": "./dist/gexf.d.ts",
       "import": "./dist/gexf.js",
       "require": "./dist/gexf.cjs"
+    },
+    "./graphml/bundled": {
+      "types": "./dist/graphml-bundled.d.ts",
+      "import": "./dist/graphml-bundled.js",
+      "require": "./dist/graphml-bundled.cjs"
+    },
+    "./dot/bundled": {
+      "types": "./dist/dot-bundled.d.ts",
+      "import": "./dist/dot-bundled.js",
+      "require": "./dist/dot-bundled.cjs"
+    },
+    "./gexf/bundled": {
+      "types": "./dist/gexf-bundled.d.ts",
+      "import": "./dist/gexf-bundled.js",
+      "require": "./dist/gexf-bundled.cjs"
     }
   },
   "sideEffects": false,

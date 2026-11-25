@@ -69,7 +69,7 @@ Read the [ArcGIS developer guide](/docs/developer-guide/arcgis),
 [examples gallery](/examples/arcgis). The [complete service inventory](/docs/modules/arcgis/services)
 includes unsupported operations and service families.
 
-The root exports lightweight service loaders. Authentication and discovery have dedicated
+The format subpaths export metadata loaders. Authentication and discovery have dedicated
 `/authentication` and `/discovery` entrypoints. Async `load()`
 imports the selected implementation. For synchronous `createDataSourceSync()` or direct source
 classes, use `@loaders.gl/arcgis/bundled`; see
@@ -123,7 +123,7 @@ For a `SourceLoader`, `load` returns a source object rather than downloading an 
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const source = await load(serviceUrl, ARCGIS_LOADERS);
 const metadata = await source.getMetadata();
@@ -135,7 +135,7 @@ Use `load` when the application already knows the service type:
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 const source = await createDataSource(serviceUrl, [ArcGISFeatureServerLoader]);
 const features = await source.getFeatures({
@@ -151,7 +151,7 @@ or vector-tile renderer. No ArcGIS-specific deck.gl layer is required.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const layer = new SourceLayer({
   id: 'city-service',
@@ -235,7 +235,7 @@ coordinate system. Discovery is optional: direct source construction is simpler 
 is already known.
 
 ```ts
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 import {discoverArcGISCapabilities, selectArcGISService} from '@loaders.gl/arcgis/discovery';
 import {load} from '@loaders.gl/core';
 

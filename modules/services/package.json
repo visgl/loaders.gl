@@ -26,13 +26,13 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./bundled": {
-      "types": "./dist/bundled.d.ts",
-      "import": "./dist/bundled.js"
-    },
     "./authentication": {
       "types": "./dist/authentication.d.ts",
       "import": "./dist/authentication.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
     }
   },
   "sideEffects": false,

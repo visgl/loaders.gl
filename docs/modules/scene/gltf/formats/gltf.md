@@ -197,7 +197,7 @@ The built-in compressed texture parser handles a subset of DDS formats, not ever
 ```typescript
 import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {CompressedTextureLoader} from '@loaders.gl/images';
+import {CompressedTextureLoader} from '@loaders.gl/images/texture';
 
 const gltf = await load('scene.glb', [GLTFLoader, CompressedTextureLoader]);
 ```
@@ -237,7 +237,7 @@ const gltf = await load('scene.glb', [GLTFLoader, CompressedTextureLoader]);
 raw glTF JSON to read it; the helper returns `null` when the extension is absent.
 
 ```typescript
-import {getGLTFInteractivity} from '@loaders.gl/scene/gltf';
+import {getGLTFInteractivity} from '@loaders.gl/scene/api';
 
 const interactivity = getGLTFInteractivity(gltf);
 const graph = interactivity?.graphs[interactivity.graph ?? 0];
@@ -522,7 +522,8 @@ The additional extension types use their serialized names, for example
 `GLTFMeshPrimitiveExtensions`, and `GLTFAnimationTargetExtensions`.
 
 ```typescript
-import {GLTFSchema, getMaterialVariantMappings} from '@loaders.gl/scene/gltf';
+import {GLTFSchema} from '@loaders.gl/scene/gltf/schema';
+import {getMaterialVariantMappings} from '@loaders.gl/scene/api';
 import {GLTFKHRNodeVisibilitySchema} from '@loaders.gl/scene/gltf/schema';
 
 const document = GLTFSchema.parse(json);

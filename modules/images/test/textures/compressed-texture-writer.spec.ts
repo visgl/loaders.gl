@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {encodeURLtoURL, isBrowser} from '@loaders.gl/core';
-import {CompressedTextureWriter} from '@loaders.gl/images/texture';
+import {CompressedTextureWriter} from '@loaders.gl/images/texture/bundled';
 import {
   createTextureEncoder,
   loadTextureCompressorPack

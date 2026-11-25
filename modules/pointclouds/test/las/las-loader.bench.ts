@@ -5,7 +5,8 @@
 import {LAZPerfLoaderWithParser as LAZPerfLoader} from '../../../../website/src/alternate-loaders/las/lazperf-loader';
 import {LAZRsLoaderWithParser as LAZRsLoader} from '../../../../website/src/alternate-loaders/las/laz-rs-loader';
 import {encodeSync, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
-import {LASLoader, LASWriter} from '@loaders.gl/pointclouds/las';
+import {LASLoader} from '@loaders.gl/pointclouds/las';
+import {LASWriter} from '@loaders.gl/pointclouds/las/bundled';
 import type {LASLoaderOptions} from '@loaders.gl/pointclouds/las';
 import {
   createLAZChunkDecoderCursor,

@@ -68,8 +68,7 @@ from the URL, specify the table's loader type through `core.type`.
 
 ## Runtime source classes
 
-Import source classes and synchronous service loaders from `@loaders.gl/arcgis/bundled`.
-The package root exports lightweight loaders for async `createDataSource()` and source instance types.
+Import metadata loaders from the service subpath for async `createDataSource()`. Import the source class or synchronous loader from the service’s `/bundled` subpath. For example, use `@loaders.gl/arcgis/image-service/bundled` for `ArcGISImageSource`.
 
 | Source class | Source loader | Documentation |
 | --- | --- | --- |

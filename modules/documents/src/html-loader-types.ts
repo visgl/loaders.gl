@@ -10,7 +10,7 @@ export type HTMLLoaderOptions = XMLLoaderOptions;
 
 /** Preloads the parser-bearing HTML loader implementation. */
 async function preload() {
-  const {HTMLLoaderWithParser} = await import('@loaders.gl/documents/html');
+  const {HTMLLoaderWithParser} = await import('@loaders.gl/documents/html/bundled');
   return HTMLLoaderWithParser;
 }
 

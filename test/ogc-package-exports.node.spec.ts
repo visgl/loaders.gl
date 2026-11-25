@@ -19,17 +19,15 @@ test('OGC public exports resolve to emitted files', () => {
   }
 });
 
-test('OGC root exposes lightweight metadata and CommonJS format subpaths', () => {
+test('OGC exposes lightweight metadata through CommonJS format subpaths', () => {
   const root = requirePackage('@loaders.gl/ogc');
   const wms = requirePackage('@loaders.gl/ogc/wms');
   const stac = requirePackage('@loaders.gl/ogc/stac');
 
-  expect(root.WMSCapabilitiesLoader.id).toBe(wms.WMSCapabilitiesLoader.id);
-  expect(root.STACLoader.id).toBe(stac.STACLoader.id);
-  expect(root.WMSCapabilitiesLoader).not.toHaveProperty('parse');
-  expect(root.WMSCapabilitiesLoader.preload).toBeTypeOf('function');
-  expect(root.STACLoader.preload).toBeTypeOf('function');
-  expect(root).not.toHaveProperty('WMSLoader');
-  expect(requirePackage('@loaders.gl/ogc/gml').GMLLoaderWithParser).toBeDefined();
+  expect(Object.keys(root)).toEqual([]);
+  expect(wms.WMSCapabilitiesLoader).not.toHaveProperty('parse');
+  expect(wms.WMSCapabilitiesLoader.preload).toBeTypeOf('function');
+  expect(stac.STACLoader.preload).toBeTypeOf('function');
+  expect(requirePackage('@loaders.gl/ogc/gml/bundled').GMLLoaderWithParser).toBeDefined();
   expect(requirePackage('@loaders.gl/ogc/stac-loader').STACLoaderWithParser).toBeDefined();
 });

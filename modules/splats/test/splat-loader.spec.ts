@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import {SPLATLoader} from '@loaders.gl/splats/splat';
-import {SPLATLoaderWithParser} from '@loaders.gl/splats/splat';
+import {SPLATLoaderWithParser} from '@loaders.gl/splats/splat/bundled';
 test('SPLATLoader parses raw Gaussian splats', async () => {
   const data = makeSPLATFixture();
   const table = await parse(data, SPLATLoader);

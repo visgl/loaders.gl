@@ -49,14 +49,17 @@ test('grouped CommonJS format exports expose metadata loaders for every former p
   }
 });
 
-test('published Arrow entrypoints expose only the canonical loader names', () => {
-  for (const entrypoint of ['@loaders.gl/tables', '@loaders.gl/tables/arrow']) {
-    const exports = requirePackage(entrypoint);
-    expect(exports.ArrowLoader.workerInBatches).toBe(true);
-    expect(exports.GeoArrowLoader.workerInBatches).toBe(true);
-    expect(exports).not.toHaveProperty('ArrowWorkerLoader');
-    expect(exports).not.toHaveProperty('GeoArrowWorkerLoader');
-  }
+test('tables root has no loader values', () => {
+  const root = requirePackage('@loaders.gl/tables');
+  expect(Object.keys(root).filter(name => name.endsWith('Loader'))).toEqual([]);
+});
+
+test('published Arrow entrypoint exposes the canonical loader names', () => {
+  const arrow = requirePackage('@loaders.gl/tables/arrow');
+  expect(arrow.ArrowLoader.workerInBatches).toBe(true);
+  expect(arrow.GeoArrowLoader.workerInBatches).toBe(true);
+  expect(arrow).not.toHaveProperty('ArrowWorkerLoader');
+  expect(arrow).not.toHaveProperty('GeoArrowWorkerLoader');
 });
 
 test('geospatial does not transitively install table engines or SQL.js', () => {

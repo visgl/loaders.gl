@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader} from '@loaders.gl/ogc/wms/bundled';
 import type {OGCTileMatrixLimits, OGCTileMatrixSet} from '@loaders.gl/ogc/wms';
 
 const API_URL = 'https://example.com/api';

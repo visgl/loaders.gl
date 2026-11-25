@@ -9,13 +9,15 @@ import {query, queryInBatches} from '@loaders.gl/core/query';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';
-import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv';
-import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json';
-import {ArrowTableSource} from '@loaders.gl/tables/arrow';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {CSVTableSource} from '@loaders.gl/tables/csv/bundled';
+import {CSVLoader} from '@loaders.gl/tables/csv';
+import {NDJSONTableSource} from '@loaders.gl/tables/json/bundled';
+import {NDJSONLoader} from '@loaders.gl/tables/json';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow/bundled';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow/bundled';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 
 const rows = [
   {id: 1, label: 'a', value: null},

@@ -4,8 +4,8 @@
 
 import type {UpdateParameters} from '@deck.gl/core';
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
-import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {
   isTileset3DSource,
   Tileset3D,

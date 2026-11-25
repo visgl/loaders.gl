@@ -5,7 +5,9 @@
 import { expect, test } from "vitest";
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import { BlobFile } from '@loaders.gl/core/loader-utils';
-import { ParquetSchema, ParquetReader, ParquetEncoder } from '@loaders.gl/tables/parquet';
+import {ParquetSchema} from '../../../src/parquet/parquetjs/schema/schema';
+import {ParquetReader} from '../../../src/parquet/parquetjs/parser/parquet-reader';
+import {ParquetEncoder} from '../../../src/parquet/parquetjs/encoder/parquet-encoder';
 const FRUITS_URL = '@loaders.gl/tables/parquet/test/data/fruits.parquet';
 const GENERATED_PARQUET_DIRECTORY = 'tmp/test-artifacts/parquet';
 const GENERATED_PARQUET_FILE = `${GENERATED_PARQUET_DIRECTORY}/fruits.parquet`;

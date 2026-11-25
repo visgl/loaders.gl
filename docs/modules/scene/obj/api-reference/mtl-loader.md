@@ -16,7 +16,7 @@ For synchronous parsing, import `MTLLoaderWithParser` from `@loaders.gl/scene/mt
 
 ```ts
 import {parseSync} from '@loaders.gl/core';
-import {MTLLoaderWithParser} from '@loaders.gl/scene/mtl';
+import {MTLLoaderWithParser} from '@loaders.gl/scene/mtl/bundled';
 
 const materials = parseSync('newmtl Red\nKd 1 0 0', MTLLoaderWithParser);
 ```

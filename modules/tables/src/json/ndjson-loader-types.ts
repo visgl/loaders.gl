@@ -11,7 +11,7 @@ export type {NDJSONShape, NDJSONLoaderOptions} from './ndjson-loader-definition'
 
 /** Preloads the parser-bearing NDJSON loader implementation. */
 async function preload() {
-  const {NDJSONLoaderWithParser} = await import('@loaders.gl/tables/json');
+  const {NDJSONLoaderWithParser} = await import('@loaders.gl/tables/json/bundled');
   return NDJSONLoaderWithParser;
 }
 

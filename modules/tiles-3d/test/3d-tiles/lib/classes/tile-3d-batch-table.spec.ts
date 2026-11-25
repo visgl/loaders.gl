@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {Tile3DBatchTable} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tile3DBatchTable} from '@loaders.gl/tiles-3d/api';
 import {concatTypedArrays} from '@math.gl/geometry/processing';
 // import {loadTileset} from '../utils/load-utils';
 // const WITH_BATCH_TABLE_URL =

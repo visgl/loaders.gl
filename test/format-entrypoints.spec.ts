@@ -6,24 +6,30 @@ import {expect, test} from 'vitest';
 import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
 import {JSONLoader} from '@loaders.gl/documents/json';
-import * as kml from '@loaders.gl/geospatial/kml';
+import * as kml from '@loaders.gl/geospatial/kml/bundled';
+import * as kmlAPI from '@loaders.gl/geospatial/kml/api';
 import * as wkb from '@loaders.gl/geospatial/wkb';
 import * as wkt from '@loaders.gl/geospatial/wkt';
 import {
   WKBLoader as BundledWKBLoader,
   HexWKBLoader as BundledHexWKBLoader,
-  TWKBLoader as BundledTWKBLoader
+  TWKBLoader as BundledTWKBLoader,
+  WKBWriter
 } from '@loaders.gl/geospatial/wkb/bundled';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
-import {NetCDFSource} from '@loaders.gl/scientific/netcdf';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf/bundled';
+import {OMMLoader} from '@loaders.gl/geospatial/omm';
+import {TLELoader} from '@loaders.gl/geospatial/tle';
 
 test.each([
   GeoJSONLoader,
   GeoArrowLoader,
   JSONLoader,
   GPXLoader,
-  TCXLoader
+  TCXLoader,
+  OMMLoader,
+  TLELoader
 ])('$id format entrypoint exposes metadata and preloads its parser', async loader => {
   expect(loader).not.toHaveProperty('parse');
   const parserLoader = await loader.preload();
@@ -41,9 +47,9 @@ test('KML keeps other formats separate and marks low-level helpers experimental'
   expect(kml).not.toHaveProperty('openKMZArchive');
   expect(kml).not.toHaveProperty('parseKMLDocument');
   expect(kml).not.toHaveProperty('resolveKMZResourcePath');
-  expect(kml._openKMZArchive).toBeTypeOf('function');
-  expect(kml._parseKMLDocument).toBeTypeOf('function');
-  expect(kml._resolveKMZResourcePath).toBeTypeOf('function');
+  expect(kmlAPI._openKMZArchive).toBeTypeOf('function');
+  expect(kmlAPI._parseKMLDocument).toBeTypeOf('function');
+  expect(kmlAPI._resolveKMZResourcePath).toBeTypeOf('function');
 });
 
 test('WKB format groups binary dialects and bundled parsers', () => {
@@ -57,5 +63,5 @@ test('WKB format groups binary dialects and bundled parsers', () => {
     expect(loader.id).toBe(wkb[name].id);
     expect(wkt).not.toHaveProperty(name);
   }
-  expect(wkb.WKBWriter).toHaveProperty('encodeSync');
+  expect(WKBWriter).toHaveProperty('encodeSync');
 });

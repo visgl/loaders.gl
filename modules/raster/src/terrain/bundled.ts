@@ -8,3 +8,4 @@ export {TerrainLoaderWithParser as TerrainLoader, parseTerrain} from './terrain-
 export {QuantizedMeshLoaderWithParser as QuantizedMeshLoader} from './quantized-mesh-loader';
 
 export * from '.';
+export {TerrainLoaderWithParser as TerrainWorkerLoader} from './terrain-loader';

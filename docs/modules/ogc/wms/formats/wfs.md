@@ -109,7 +109,7 @@ behavior. To consume pages progressively, call `getFeaturesInPages(parameters, o
 always yields GeoJSON tables and does not fetch ahead of the consumer.
 
 ```ts
-import {ManagedVectorSource, WFSVectorSource} from '@loaders.gl/ogc/wms';
+import {ManagedVectorSource, WFSVectorSource} from '@loaders.gl/ogc/wms/bundled';
 
 const source = new WFSVectorSource(wfsUrl, {
   wfs: {
@@ -178,7 +178,7 @@ most useful for normalizing and refining an already-bounded result.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WFSLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const source = createDataSourceSync(wfsUrl, [WFSLoader], {
   wfs: {wfsParameters: {version: '2.0.0'}}
@@ -250,7 +250,7 @@ the desired output CRS from the server.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {WFSLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const layer = new SourceLayer({
   id: 'wfs-roads',

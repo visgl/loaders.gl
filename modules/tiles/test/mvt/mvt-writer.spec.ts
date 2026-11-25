@@ -4,7 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
-import {MVTLoader, MVTWriter} from '@loaders.gl/tiles/mvt';
+import {MVTLoader} from '@loaders.gl/tiles/mvt';
+import {MVTWriter} from '@loaders.gl/tiles/mvt/bundled';
 const RECTANGLE_URL = '@loaders.gl/tiles/mvt/test/data/mapbox-vt-pbf-fixtures/rectangle.geojson';
 const RECTANGLE_TILE = '@loaders.gl/tiles/mvt/test/data/mapbox-vt-pbf-fixtures/rectangle-1.0.0.pbf';
 test('MVTWriter#import', async () => {

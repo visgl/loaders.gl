@@ -1,3 +1,4 @@
+import {WMTSLoaderMetadata} from './wmts-loader-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -620,20 +621,7 @@ function getRequestParameter(parameters: Record<string, string>, name: string): 
 
 /** Source loader for WMTS image tiles. */
 export const WMTSLoader = {
-  dataType: null as unknown as WMTSImageTileSource,
-  batchType: null as never,
-  name: 'Web Map Tile Service (OGC WMTS)',
-  id: 'wmts',
-  module: 'ogc',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: [],
-  type: 'wmts',
-  fromUrl: true,
-  fromBlob: false,
-  options: {wmts: {}},
-  defaultOptions: {wmts: {}},
-  testURL: (url: string): boolean => /wmts|GetTile/i.test(url),
+  ...WMTSLoaderMetadata,
   createDataSourceSync: (url: string, options: WMTSLoaderOptions = {}, coreApi?: CoreAPI) =>
     new WMTSImageTileSource(url, options, coreApi)
 } as const satisfies SourceLoader<WMTSImageTileSource>;

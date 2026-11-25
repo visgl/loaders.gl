@@ -83,7 +83,7 @@ const style = await parse(styleJsonText, MapStyleLoader, {
 Direct style resolution without the loader:
 
 ```typescript
-import {resolveMapStyle} from '@loaders.gl/tiles/mvt';
+import {resolveMapStyle} from '@loaders.gl/tiles/mvt/api';
 
 const style = await resolveMapStyle('https://example.com/styles/base/style.json');
 ```

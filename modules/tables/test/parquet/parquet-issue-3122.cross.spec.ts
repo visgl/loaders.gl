@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {encode, load} from '@loaders.gl/core';
-import {ParquetWriter, ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 

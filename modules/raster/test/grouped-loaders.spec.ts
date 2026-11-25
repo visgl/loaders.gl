@@ -6,13 +6,16 @@ import {expect, test} from 'vitest';
 import {createDataSource, load} from '@loaders.gl/core';
 import {GeoTIFFLoader, GeoTIFFRasterLoader} from '@loaders.gl/raster/geotiff';
 // These cases exercise the root metadata descriptor, not the source implementation.
-import {OMETiffLoader} from '@loaders.gl/raster';
+import {OMETiffLoader} from '@loaders.gl/raster/geotiff';
 import {LERCLoader} from '@loaders.gl/raster/lerc';
 import {TerrainLoader, QuantizedMeshLoader} from '@loaders.gl/raster/terrain';
-import {GeoTIFFLoaderWithParser, GeoTIFFRasterLoaderWithParser} from '@loaders.gl/raster/geotiff';
-import {LERCLoaderWithParser} from '@loaders.gl/raster/lerc';
-import {TerrainLoaderWithParser} from '@loaders.gl/raster/terrain';
-import {QuantizedMeshLoaderWithParser} from '@loaders.gl/raster/quantized-mesh';
+import {
+  GeoTIFFLoaderWithParser,
+  GeoTIFFRasterLoaderWithParser
+} from '@loaders.gl/raster/geotiff/bundled';
+import {LERCLoaderWithParser} from '@loaders.gl/raster/lerc/bundled';
+import {TerrainLoaderWithParser} from '@loaders.gl/raster/terrain/bundled';
+import {QuantizedMeshLoaderWithParser} from '@loaders.gl/raster/quantized-mesh/bundled';
 
 test.each([
   [GeoTIFFLoader, GeoTIFFLoaderWithParser],

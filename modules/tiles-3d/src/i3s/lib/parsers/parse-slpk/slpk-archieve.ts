@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/core/loader-utils';
-import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/archives/zip';
+import {IndexedArchive} from '@loaders.gl/archives/api';
+import {type ZipArchiveOptions} from '@loaders.gl/archives/zip';
 import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 
 /** Description of real paths for different file types */

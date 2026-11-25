@@ -4,7 +4,8 @@
 
 import {Table as NativeArrowTable} from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
-import {ManagedVectorSource, type ManagedVectorSourceOptions} from '@loaders.gl/ogc/wms';
+import {ManagedVectorSource} from '@loaders.gl/ogc/wms/bundled';
+import {type ManagedVectorSourceOptions} from '@loaders.gl/ogc/wms';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 import type {GetFeaturesParameters, VectorSource} from '@loaders.gl/core/loader-utils';
 

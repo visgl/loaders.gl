@@ -1,3 +1,5 @@
+import {OGCAPITilesLoaderMetadata} from './ogc-api-loaders-metadata';
+import {OGCAPIFeaturesLoaderMetadata} from './ogc-api-loaders-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -266,20 +268,7 @@ export class OGCAPIFeaturesSource
 
 /** Source loader for minimal OGC API Features support. */
 export const OGCAPIFeaturesLoader = {
-  dataType: null as unknown as OGCAPIFeaturesSource,
-  batchType: null as never,
-  name: 'OGC API Features',
-  id: 'ogc-api-features',
-  module: 'ogc',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: ['application/geo+json'],
-  type: 'ogc-api-features',
-  fromUrl: true,
-  fromBlob: false,
-  options: {'ogc-api': {}},
-  defaultOptions: {'ogc-api': {}},
-  testURL: (url: string): boolean => /\/collections(?:\/|$)|ogc[/-]?api[/-]features/i.test(url),
+  ...OGCAPIFeaturesLoaderMetadata,
   createDataSourceSync: (url: string, options: OGCAPILoaderOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPIFeaturesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPIFeaturesSource>;
@@ -578,20 +567,7 @@ export class OGCAPITilesSource
 
 /** Source loader for minimal OGC API Tiles support. */
 export const OGCAPITilesLoader = {
-  dataType: null as unknown as OGCAPITilesSource,
-  batchType: null as never,
-  name: 'OGC API Tiles',
-  id: 'ogc-api-tiles',
-  module: 'ogc',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: [],
-  type: 'ogc-api-tiles',
-  fromUrl: true,
-  fromBlob: false,
-  options: {},
-  defaultOptions: {},
-  testURL: (url: string): boolean => /\/tiles(?:\/|$)|ogc[/-]?api[/-]tiles/i.test(url),
+  ...OGCAPITilesLoaderMetadata,
   createDataSourceSync: (url: string, options: OGCAPILoaderOptions = {}, coreApi?: CoreAPI) =>
     new OGCAPITilesSource(url, options, coreApi)
 } as const satisfies SourceLoader<OGCAPITilesSource>;

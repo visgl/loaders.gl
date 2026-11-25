@@ -12,11 +12,12 @@ import {
   parse,
   resolvePath
 } from '@loaders.gl/core';
-import {MVTTileSource, TableTileLoader, TableVectorTileSource} from '@loaders.gl/tiles/mvt';
+import {MVTTileSource, TableTileLoader, TableVectorTileSource} from '@loaders.gl/tiles/mvt/bundled';
 import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
-import {PMTilesLoader, PMTilesTileSource} from '@loaders.gl/tiles/pmtiles';
-import {WMSLoader, WMSImageSource} from '@loaders.gl/ogc/wms';
-import {OMEZarrLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesTileSource} from '@loaders.gl/tiles/pmtiles/bundled';
+import {WMSLoader, WMSImageSource} from '@loaders.gl/ogc/wms/bundled';
+import {OMEZarrLoader, OMEZarrImageSource} from '@loaders.gl/scientific/zarr/bundled';
 import type {Feature, GeoJSONTable} from '@loaders.gl/core/schema';
 
 const GEOJSON_TABLE: GeoJSONTable = {

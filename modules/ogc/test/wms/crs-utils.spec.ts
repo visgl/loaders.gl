@@ -4,7 +4,7 @@ import {
   getServiceCRSAxisOrder,
   normalizeServiceCRS,
   selectServiceCRS
-} from '@loaders.gl/ogc/wms';
+} from '@loaders.gl/ogc/wms/api';
 
 test('service CRS utilities normalize OGC and ArcGIS identifiers', () => {
   expect(normalizeServiceCRS('urn:ogc:def:crs:EPSG::3857')).toBe('EPSG:3857');

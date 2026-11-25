@@ -3,20 +3,23 @@
 // Copyright (c) vis.gl contributors
 
 import {createDataSource} from '@loaders.gl/core';
-import {COPCLoader} from '@loaders.gl/tiles-3d/copc';
-import type {COPCTileSource, COPCLoaderOptions} from '@loaders.gl/tiles-3d/copc';
-import {PotreeLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {COPCLoader} from '@loaders.gl/tiles-3d/copc/bundled';
+import type {COPCTileSource} from '@loaders.gl/tiles-3d/copc/bundled';
+import type {COPCLoaderOptions} from '@loaders.gl/tiles-3d/copc';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 import type {
   PotreeDataset,
-  PotreeNodesSource,
   PotreeWriterNode,
   PotreeWriterOptions,
   PotreeLoaderOptions
 } from '@loaders.gl/tiles-3d/potree';
+import type {PotreeNodesSource} from '@loaders.gl/tiles-3d/potree/bundled';
 import type {Mesh, MeshArrowTable, MeshGeometry} from '@loaders.gl/core/schema';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
-import {encodeZip, openZipArchive} from '@loaders.gl/archives/zip';
-import type {ZipArchive, ZipEntry} from '@loaders.gl/archives/zip';
+import {encodeZip, openZipArchive} from '@loaders.gl/archives/api';
+import type {ZipArchive} from '@loaders.gl/archives/api';
+import type {ZipEntry} from '@loaders.gl/archives/zip';
 
 /** Explicit local-file input; no format is inferred from an extension. */
 export type OpenPointCloudFileOptions = {
@@ -75,7 +78,7 @@ export async function encodePotreeArchive(
   options: EncodePotreeArchiveOptions
 ): Promise<Blob> {
   validateLimit(options.maxArchiveBytes);
-  const dataset = await encodePotreeDataset(input, {potree: options.potree});
+  const dataset = await PotreeWriter.encodeDataset(input, {potree: options.potree});
   return encodePotreeDatasetArchive(dataset, options.maxArchiveBytes, options.potree?.signal);
 }
 

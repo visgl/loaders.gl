@@ -1,5 +1,6 @@
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/tiles-3d/i3s';
+import {COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/api';
+import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 
 /** Creates the home page's I3S layer with its bundled content worker. */
 export function createHomeDemoLayer(): SourceLayer {

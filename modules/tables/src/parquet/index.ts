@@ -3,11 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 export {ParquetFormat} from './parquet-format';
-
 export type {ParquetLoaderOptions} from './parquet-loader-options';
 export {ParquetLoader} from './parquet-loader-types';
 export {GeoParquetLoader} from './geoparquet-loader-types';
-
 export type {
   ParquetDeferredPageFilter,
   ParquetEncodedColumnChunk,
@@ -64,12 +62,9 @@ export type {
   ParquetTelemetry,
   ParquetTelemetryEvent
 } from './parquet-source-types';
-export {
-  PARQUET_TABLE_QUERY_CAPABILITIES,
-  PARQUET_SOURCE_CAPABILITIES,
-  type ParquetSourceCapabilities
-} from './parquet-source-capabilities';
-
+export type {ParquetSource} from '../parquet-source';
+export type {ParquetDatasetSource} from '../parquet-dataset';
+export type {ParquetSourceCapabilities} from './parquet-source-capabilities';
 export type {
   ParquetWriterEncoding,
   ParquetWriterOptions,
@@ -77,70 +72,16 @@ export type {
   ParquetWriterEncryptionOptions,
   ParquetWriterFooterSignatureOptions
 } from './parquet-writer';
-export {ParquetWriter} from './parquet-writer';
-
-export {
-  decodeParquetColumnIndex,
-  decodeParquetPageStatisticsValue,
-  canUseParquetPageIndexForColumn,
-  type ParquetPageStatistics
-} from './lib/parquet-page-index';
-export {
-  createParquetModuleAad,
-  decryptParquetModule,
-  encryptParquetModule,
-  createParquetFooterSignature,
-  readParquetEncryptedModule,
-  verifyParquetFooterSignature,
-  type ParquetDecryptModuleOptions,
-  type ParquetEncryptionAlgorithm,
-  type ParquetKeyRetriever
+export type {ParquetPageStatistics} from './lib/parquet-page-index';
+export type {
+  ParquetDecryptModuleOptions,
+  ParquetEncryptionAlgorithm,
+  ParquetKeyRetriever
 } from './lib/parquet-encryption';
-
-// EXPERIMENTAL - expose the internal parquetjs API
-
-export {preloadCompressions} from './parquetjs/compression';
-
-export {ParquetSchema} from './parquetjs/schema/schema';
-export {ParquetReader} from './parquetjs/parser/parquet-reader';
-export {ParquetEncoder} from './parquetjs/encoder/parquet-encoder';
-
-export {
-  convertParquetSchema,
-  convertParquetSchema as convertParquetToArrowSchema
-} from './lib/arrow/convert-schema-from-parquet';
-
-export {
-  checkParquetSplitBlockBloomFilter,
-  decodeParquetSplitBlockBloomFilter,
-  encodeParquetBloomFilterValue,
-  encodeParquetSplitBlockBloomFilter,
-  hashParquetBloomFilterValue,
-  insertParquetSplitBlockBloomFilter,
-  type ParquetBloomFilterPhysicalType,
-  type ParquetSplitBlockBloomFilter
+export type {
+  ParquetBloomFilterPhysicalType,
+  ParquetSplitBlockBloomFilter
 } from './lib/parquet-bloom-filter';
-export {
-  getParquetBloomFilterProbes,
-  type ParquetBloomFilterProbe
-} from './lib/parquet-bloom-filter-planner';
-
-export {type ParquetDecodedBatch} from './parquet-source-types';
-
-export {PARQUET_LOADER_DEFAULT_OPTIONS} from './parquet-loader-options';
-
-export {getParquetOptions, ParquetLoaderWithParser} from '../parquet-loader';
-
-export {type GeoParquetLoaderOptions, GeoParquetLoaderWithParser} from '../geoparquet-loader';
-
-export {getParquetBatchProvenance, createParquetSource, ParquetSource} from '../parquet-source';
-
-export * from '../parquet-dataset';
-
-export {PARQUET_LOADER_BASE} from './parquet-loader-base';
-
-export {PARQUET_SOURCE_WORKER_LOAD_WORKER} from './parquet-source-worker-factory';
-
-export {PARQUET_SOURCE_WORKER_URL} from './parquet-source-worker-url';
-
-export {PARQUET_WORKER_URL} from './parquet-worker-url';
+export type {ParquetBloomFilterProbe} from './lib/parquet-bloom-filter-planner';
+export type {ParquetDecodedBatch} from './parquet-source-types';
+export type {GeoParquetLoaderOptions} from '../geoparquet-loader';

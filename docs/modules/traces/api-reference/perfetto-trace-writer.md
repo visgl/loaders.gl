@@ -51,7 +51,8 @@ Perfetto protobuf `Trace` envelope.
 
 ```typescript
 import {load, encode} from '@loaders.gl/core';
-import {PerfettoTraceLoader, PerfettoTraceWriter} from '@loaders.gl/traces/perfetto';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
+import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
 
 const trace = await load('input.perfetto-trace', PerfettoTraceLoader);
 const protobuf = await encode(trace, PerfettoTraceWriter);

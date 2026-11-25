@@ -3,9 +3,8 @@
 // Copyright vis.gl contributors
 
 import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
+import {createImplicitSubtreeReference, materializeImplicitSubtree} from '@loaders.gl/tiles-3d/api';
 import {
-  createImplicitSubtreeReference,
-  materializeImplicitSubtree,
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree
 } from '@loaders.gl/tiles-3d/3d-tiles';

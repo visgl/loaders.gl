@@ -55,7 +55,7 @@ The `ImageWriter` class can encode an image into `ArrayBuffer` both under browse
 ## Usage
 
 ```typescript
-import {ImageWriter} from '@loaders.gl/images/image';
+import {ImageWriter} from '@loaders.gl/images/image/bundled';
 import {encode} from '@loaders.gl/core';
 
 const arrayBuffer = await encode(imageData, ImageWriter, {

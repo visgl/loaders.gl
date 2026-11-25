@@ -82,7 +82,7 @@ npm install @loaders.gl/core @loaders.gl/scientific
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OMEZarrLoader} from '@loaders.gl/scientific/zarr';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const source = createDataSourceSync('https://example.com/spatialdata.zarr', [OMEZarrLoader], {
   zarr: {path: 'images/example-image'}
@@ -152,7 +152,7 @@ original attributes. Image and label descriptors use `ome-zarr`; point descripto
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {SpatialDataLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const source = createDataSourceSync(rootUrl, [SpatialDataLoader]);
 const metadata = await source.getMetadata();

@@ -16,7 +16,7 @@ import {
   createI3SLayerSource,
   normalizeI3SServiceMetadata,
   parseI3SSceneLayerMetadata
-} from '@loaders.gl/tiles-3d/i3s';
+} from '@loaders.gl/tiles-3d/api';
 import type {I3SLayerSource, I3SServiceMetadata, SceneLayer3D} from '@loaders.gl/tiles-3d/i3s';
 import {buildArcGISResourceURL} from './arcgis-url-utils';
 

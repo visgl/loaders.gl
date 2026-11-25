@@ -80,7 +80,7 @@ const table = await load(url, SPZLoader, {
 The parser-bearing subpath can also be imported directly:
 
 ```typescript
-import {SPZLoaderWithParser} from '@loaders.gl/splats/spz';
+import {SPZLoaderWithParser} from '@loaders.gl/splats/spz/bundled';
 ```
 
 ## Format support

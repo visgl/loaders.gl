@@ -166,3 +166,5 @@ export default class GIFBuilder {
     delete options.height;
   }
 }
+
+export {GIFBuilder};

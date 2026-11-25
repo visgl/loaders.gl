@@ -4,7 +4,7 @@
 
 import {validateWriter} from 'test/common/conformance';
 import {describe, expect, test} from 'vitest';
-import {GLBWriter} from '@loaders.gl/scene/gltf';
+import {GLBWriter} from '@loaders.gl/scene/gltf/bundled';
 import {parse, parseSync} from '@loaders.gl/core';
 import {GLBLoader, GLTFLoader} from '@loaders.gl/scene/gltf/bundled';
 test('GLBWriter#loader conformance', () => {

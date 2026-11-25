@@ -52,6 +52,9 @@ import {ClientExample} from '@site/src/components';
 
 `GeoParquetLoader` loads GeoParquet files into native Apache Arrow `Table` objects by default. Set `parquet.shape: 'object-row-table'` when row-oriented output is required.
 
+Import the metadata loader from `@loaders.gl/tables/parquet` to defer the parser. Use
+`@loaders.gl/tables/parquet/bundled` when you need a parser, writer, or source directly.
+
 ## Usage
 
 ```typescript

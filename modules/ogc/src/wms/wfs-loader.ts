@@ -1,3 +1,4 @@
+import {WFSLoaderMetadata} from './wfs-loader-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
@@ -61,27 +62,7 @@ export type WFSVersion = '1.1.0' | '2.0.0';
  * Read-only WFS source supporting extent queries and GeoJSON/GML responses.
  */
 export const WFSLoader = {
-  dataType: null as unknown as WFSVectorSource,
-  batchType: null as never,
-  name: 'WFS',
-  id: 'wfs',
-  module: 'ogc',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: [],
-  type: 'wfs',
-  fromUrl: true,
-  fromBlob: false,
-
-  options: {
-    wfs: {}
-  },
-
-  defaultOptions: {
-    wfs: {}
-  },
-
-  testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
+  ...WFSLoaderMetadata,
   createDataSourceSync: (
     url: string,
     options: WFSLoaderOptions,

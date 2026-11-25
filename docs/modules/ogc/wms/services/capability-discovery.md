@@ -61,7 +61,7 @@ through a universal service abstraction.
 | Source creation | ✅ Explicit | Select an endpoint, then use its concrete source loader |
 
 ```ts
-import {discoverServiceGraph} from '@loaders.gl/ogc/wms';
+import {discoverServiceGraph} from '@loaders.gl/ogc/wms/api';
 
 const graph = await discoverServiceGraph('https://example.com/rest/services');
 const preferred = graph.rank({

@@ -7,7 +7,8 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
-import {encodeZip, openZipArchive, composeHashFile} from '@loaders.gl/archives/zip';
+import {encodeZip, openZipArchive} from '@loaders.gl/archives/api';
+import {composeHashFile} from '../../src/zip/hash-file-utility';
 import {addOneFile, createZip, getFileIterator} from '../../src/zip/lib/zip-composition';
 
 /** Uses tiny isolated files for the actual Node composition wrappers. */

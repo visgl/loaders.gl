@@ -7,12 +7,12 @@ import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
 
 # @loaders.gl/ogc
 
-`@loaders.gl/ogc` groups open geospatial service protocols and STAC catalog sources. The package root exports metadata loaders for asynchronous APIs. Use [WMS and OGC API sources](/docs/modules/ogc/wms) or [STAC sources](/docs/modules/ogc/stac) for format-specific APIs and explicit parser entry points.
+`@loaders.gl/ogc` groups open geospatial service protocols and STAC catalog sources. The format subpaths export metadata loaders for asynchronous APIs. Use [WMS and OGC API sources](/docs/modules/ogc/wms) or [STAC sources](/docs/modules/ogc/stac) for format-specific APIs and explicit parser entry points.
 
 ```ts
 import {WMSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
 import {STACLoader} from '@loaders.gl/ogc/stac';
-import {WMSLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms/bundled';
 ```
 
 WMS, WMTS, WFS, WCS, CSW, GML, and OGC API Features, Tiles, EDR, and Coverages live here. Provider credentials remain in [`@loaders.gl/services`](/docs/modules/services), and ArcGIS has its own [`@loaders.gl/arcgis`](/docs/modules/arcgis) package.
