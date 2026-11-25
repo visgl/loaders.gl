@@ -9,7 +9,7 @@ import {Tiles3DArchiveSource, Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3
 import {SLPKSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {fetchFile, load, parse} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
-import {GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/scene/api';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {createArchiveSource} from '../examples/website/i3s-slpk/src/archive-source';
 

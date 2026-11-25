@@ -9,7 +9,7 @@ import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator, PickingInfo} from '@deck.gl/core';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 
-import {COORDINATE_SYSTEM, loadFeatureAttributes} from '@loaders.gl/tiles-3d/i3s/api';
+import {COORDINATE_SYSTEM, loadFeatureAttributes} from '@loaders.gl/tiles-3d/api';
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {ControlPanel} from './components/control-panel';

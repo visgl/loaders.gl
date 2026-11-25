@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {load} from '@loaders.gl/core';
 // Extracted from Cesium 3D Tiles

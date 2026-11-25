@@ -5,7 +5,7 @@
 import {getFloat16Value} from '@loaders.gl/core/schema';
 import {expect, test} from 'vitest';
 import {normalize3DTileColorAttribute} from '../../../../../src/3d-tiles/lib/parsers/helpers/normalize-3d-tile-colors';
-import {Tile3DBatchTable} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {Tile3DBatchTable} from '@loaders.gl/tiles-3d/api';
 import {type Tiles3DTileContent} from '@loaders.gl/tiles-3d/3d-tiles';
 const TEST_CASES: {
   tile: Tiles3DTileContent;

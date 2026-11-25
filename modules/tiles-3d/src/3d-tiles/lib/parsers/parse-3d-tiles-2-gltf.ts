@@ -11,7 +11,7 @@ import type {
   GLTFShape,
   GLTFWithBuffers
 } from '@loaders.gl/scene/gltf';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {Matrix4} from '@math.gl/core/matrix';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {CachedUriResolver} from '@loaders.gl/core/loader-utils';

@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {decodeExtensions, encodeExtensions} from '../../../../src/gltf/lib/api/gltf-extensions';
-import {GLTFScenegraph, createExtStructuralMetadata} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph, createExtStructuralMetadata} from '@loaders.gl/scene/api';
 import {type PropertyAttribute, GLTF_EXT_structural_metadata_GLTF} from '@loaders.gl/scene/gltf';
 import {getOffsetsForProperty} from '../../../../src/gltf/lib/extensions/utils/3d-tiles-utils';
 test('gltf#EXT_structural_metadata - Should decode', async () => {

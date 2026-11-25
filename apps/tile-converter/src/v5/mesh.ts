@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {getBinaryImageMetadata} from '@loaders.gl/images/api';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/core/schema';

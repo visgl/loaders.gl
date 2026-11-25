@@ -1,7 +1,7 @@
 import {vi} from 'vitest';
 import {act} from 'react';
 import {Matrix4} from '@math.gl/core/matrix';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 
 /** Generates a tiny self-contained triangle or strip, optionally with a second scene placement. */

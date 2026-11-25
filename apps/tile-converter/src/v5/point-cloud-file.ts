@@ -7,7 +7,7 @@ import {COPCLoader} from '@loaders.gl/tiles-3d/copc/bundled';
 import type {COPCTileSource} from '@loaders.gl/tiles-3d/copc/bundled';
 import type {COPCLoaderOptions} from '@loaders.gl/tiles-3d/copc';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 import type {
   PotreeDataset,
   PotreeWriterNode,
@@ -78,7 +78,7 @@ export async function encodePotreeArchive(
   options: EncodePotreeArchiveOptions
 ): Promise<Blob> {
   validateLimit(options.maxArchiveBytes);
-  const dataset = await encodePotreeDataset(input, {potree: options.potree});
+  const dataset = await PotreeWriter.encodeDataset(input, {potree: options.potree});
   return encodePotreeDatasetArchive(dataset, options.maxArchiveBytes, options.potree?.signal);
 }
 

@@ -10,7 +10,7 @@ import {
   type Layer
 } from '@deck.gl/core';
 import {AxisAlignedBoundingBox} from '@math.gl/geometry/culling';
-import type {PointCloudTile} from '@loaders.gl/tiles-3d/point-cloud/api';
+import type {PointCloudTile} from '@loaders.gl/tiles-3d/api';
 import {
   BoundingBoxLayer,
   type BoundingBoxLayerBox,

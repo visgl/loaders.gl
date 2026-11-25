@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Tile3DWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
-import {TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {TILE3D_TYPE} from '@loaders.gl/tiles-3d/api';
 import type {
   Mesh,
   MeshArrowTable,

@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {encodeSync, parse} from '@loaders.gl/core';
 import {Tile3DWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
-import {TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {TILE3D_TYPE} from '@loaders.gl/tiles-3d/api';
 import {Tiles3DLoaderWithParser} from '../../../../src/3d-tiles/tiles-3d-loader-with-parser';
 
 test.each([

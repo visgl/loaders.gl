@@ -5,9 +5,9 @@
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
-import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles/api';
-import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/api';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/api';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {
   inspectConversionInput,

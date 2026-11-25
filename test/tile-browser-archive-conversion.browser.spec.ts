@@ -1,8 +1,8 @@
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {BlobFile, HttpFile} from '@loaders.gl/core/loader-utils';
-import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/api';
 import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
-import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/api';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/api';
 import {
   inspectConversionInput,
   convertSelectedContents,

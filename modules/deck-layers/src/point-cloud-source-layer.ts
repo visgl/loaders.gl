@@ -12,12 +12,12 @@ import type {
 } from '@deck.gl/core';
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
 import type {DataSourceOptions, Loader} from '@loaders.gl/core/loader-utils';
-import type {PointCloudTile, PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud/api';
+import type {PointCloudTile, PointCloudTileset} from '@loaders.gl/tiles-3d/api';
 import type {
   PointCloudTilesetOptions,
   PointCloudTilesetSource
 } from '@loaders.gl/tiles-3d/point-cloud';
-import {PointCloudTileset as PointCloudTilesetManager} from '@loaders.gl/tiles-3d/point-cloud/api';
+import {PointCloudTileset as PointCloudTilesetManager} from '@loaders.gl/tiles-3d/api';
 import {MeshArrowPointCloudLayer} from './mesh-arrow-point-cloud-layer';
 import {
   finalizeOwnedSource,

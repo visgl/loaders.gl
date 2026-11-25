@@ -102,7 +102,6 @@ export {
   Tile3DFeatureTable,
   Tile3DBatchTable,
   TILE3D_TYPE,
-  resolveCesiumIonTileset,
   Tiles3DArchive,
   parse3DTilesArchive,
   getStructuralMetadataProperty,
@@ -110,7 +109,7 @@ export {
   createTile3DStyleInput,
   getTile3DBatchTableProperties,
   getTile3DStyleProperty
-} from '@loaders.gl/tiles-3d/3d-tiles/api';
+} from '@loaders.gl/tiles-3d/api';
 export type {
   Tiles3DArchiveFileLoaderOptions,
   Tiles3DArchiveSourceInput,

@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s/api';
+import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {afterAll, beforeAll, expect, test, vi} from 'vitest';
 import {mkdtemp, writeFile, rm, readFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {execFileSync, spawnSync} from 'node:child_process';
-import {encodeI3SMeshLayer, parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/api';
+import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/api';
 import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 import {BlobFile} from '@loaders.gl/core/loader-utils';

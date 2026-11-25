@@ -87,11 +87,6 @@ export type {
 } from '@loaders.gl/core';
 export {
   I3S_CONFORMANCE_PROFILES,
-  I3SPointCloudNodePageSchema,
-  I3SPointCloudNodeSchema,
-  I3SPointCloudSceneLayerSchema,
-  I3SPointSceneLayerSchema,
-  I3SPointCloudStoreSchema,
   COORDINATE_SYSTEM,
   loadFeatureAttributes,
   SLPKArchive,
@@ -105,11 +100,20 @@ export {
   normalizeI3SServiceMetadata,
   normalizeI3SRendererMetadata,
   getI3SFeatureSupportReport,
-  parseI3SSceneLayerMetadata,
+  parseI3SSceneLayerMetadata
+} from '@loaders.gl/tiles-3d/api';
+export {
+  I3SPointCloudNodePageSchema,
+  I3SPointCloudNodeSchema,
+  I3SPointCloudSceneLayerSchema,
+  I3SPointSceneLayerSchema,
+  I3SPointCloudStoreSchema
+} from '@loaders.gl/tiles-3d/i3s-zod-schema';
+export {
   encodeI3SMeshLayer,
   preloadI3SMeshCompression,
   encodeI3SMeshLayerWithDraco
-} from '@loaders.gl/tiles-3d/i3s/api';
+} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 export {SLPKWriter, SLPKSource, I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 export {
   ArcGISWebSceneFormat,

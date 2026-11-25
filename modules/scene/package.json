@@ -148,20 +148,10 @@
       "import": "./dist/stl-bundled.js",
       "require": "./dist/stl-bundled.cjs"
     },
-    "./gltf/api": {
-      "types": "./dist/gltf/api.d.ts",
-      "import": "./dist/gltf/api.js",
-      "require": "./dist/gltf/api.cjs"
-    },
-    "./usd/api": {
-      "types": "./dist/usd-api.d.ts",
-      "import": "./dist/usd-api.js",
-      "require": "./dist/usd-api.cjs"
-    },
-    "./draco/api": {
-      "types": "./dist/draco-api.d.ts",
-      "import": "./dist/draco-api.js",
-      "require": "./dist/draco-api.cjs"
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
     }
   },
   "sideEffects": false,

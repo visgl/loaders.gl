@@ -1,5 +1,5 @@
 import {vi} from 'vitest';
-import {encodeI3SMeshLayer, preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s/api';
+import {encodeI3SMeshLayer, preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 import {convertFeatureAttributesToArrowBatches} from '@loaders.gl/tile-converter/v5/adapters';

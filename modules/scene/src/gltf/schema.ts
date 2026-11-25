@@ -23,3 +23,85 @@ export * from './lib/types/gltf-additional-extension-schemas';
 export * from './lib/types/gltf-audio-extension-schemas';
 export * from './lib/types/gltf-extension-schemas';
 export {GLTFEXTTextureAvifSchema} from './lib/types/gltf-zod-schema';
+
+export {
+  GLTFSchema,
+  GLTFIdSchema,
+  GLTFObjectSchema,
+  GLTFAccessorSchema,
+  GLTFAccessorSparseSchema,
+  GLTFAccessorSparseIndicesSchema,
+  GLTFAccessorSparseValuesSchema,
+  GLTFAnimationSchema,
+  GLTFAnimationChannelSchema,
+  GLTFAnimationChannelTargetSchema,
+  GLTFAnimationSamplerSchema,
+  GLTFAssetSchema,
+  GLTFBufferSchema,
+  GLTFBufferViewSchema,
+  GLTFCameraSchema,
+  GLTFCameraOrthographicSchema,
+  GLTFCameraPerspectiveSchema,
+  GLTFImageSchema,
+  GLTFExternalAssetSchema,
+  GLTFMaterialSchema,
+  GLTFMaterialNormalTextureInfoSchema,
+  GLTFMaterialOcclusionTextureInfoSchema,
+  GLTFMaterialPbrMetallicRoughnessSchema,
+  GLTFMeshSchema,
+  GLTFMeshPrimitiveSchema,
+  GLTFNodeSchema,
+  GLTFSamplerSchema,
+  GLTFSceneSchema,
+  GLTFSkinSchema,
+  GLTFTextureSchema,
+  GLTFTextureInfoSchema,
+  GLTFTextureInfoMetadataSchema,
+  GLTFKHRBinarySchema,
+  GLTFKHRDracoMeshCompressionSchema,
+  GLTFKHRTextureBasisuSchema,
+  GLTFKHRMeshoptCompressionSchema,
+  GLTFEXTMeshoptCompressionSchema,
+  GLTFEXTTextureWebpSchema,
+  GLTFMSFTTextureDdsSchema,
+  GLTFShapeSchema,
+  GLTFBoundingVolumeSchema
+} from './lib/types/gltf-zod-schema';
+export {
+  GLTFKHRMaterialVariantSchema,
+  GLTFKHRMaterialsVariantsSchema,
+  GLTFKHRMaterialVariantMappingSchema,
+  GLTFKHRMaterialsVariantsPrimitiveSchema,
+  GLTFEXTMeshGPUInstancingSchema,
+  GLTFKHRAnimationPointerSchema,
+  GLTFKHRNodeVisibilitySchema,
+  GLTFKHRNodeSelectabilitySchema,
+  GLTFKHRNodeHoverabilitySchema,
+  GLTFKHRXMPPacketSchema,
+  GLTFKHRXMPJSONLDSchema,
+  GLTFKHRXMPJSONLDReferenceSchema,
+  GLTFKHRMaterialsEmissiveStrengthSchema,
+  GLTFFBGeometryMetadataSchema
+} from './lib/types/gltf-additional-extension-schemas';
+export {
+  GLTFKHRAudioDataSchema,
+  GLTFKHRAudioSourceSchema,
+  GLTFKHRAudioPositionalSchema,
+  GLTFKHRAudioEmitterSchema,
+  GLTFKHRAudioEmitterExtensionSchema,
+  GLTFKHRAudioAttachmentSchema,
+  GLTFSpatialAudioSourceSchema,
+  GLTFSpatialAudioReverbPropertySchema,
+  GLTFSpatialAudioReverbSchema,
+  GLTFSpatialAudioListenerSchema,
+  GLTFMPEGAudioSpatialSchema
+} from './lib/types/gltf-audio-extension-schemas';
+export {
+  GLTFPropertyExtensionsSchema,
+  GLTFMaterialExtensionsSchema,
+  GLTFRootExtensionsSchema,
+  GLTFNodeExtensionsSchema,
+  GLTFSceneExtensionsSchema,
+  GLTFMeshPrimitiveExtensionsSchema,
+  GLTFAnimationTargetExtensionsSchema
+} from './lib/types/gltf-extension-schemas';

@@ -9,7 +9,7 @@ import {
   type FetchLike
 } from '@loaders.gl/core/loader-utils';
 import {coreApi, load} from '@loaders.gl/core';
-import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {resolveCesiumIonTileset} from '../../src/3d-tiles/lib/ion/ion';
 import {Tiles3DLoader, Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 
 import {Tileset3D, type Tile3D} from '@loaders.gl/tiles-3d/tileset';

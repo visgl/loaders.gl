@@ -1386,15 +1386,6 @@
       "@loaders.gl/raster/terrain/api": [
         "modules/raster/src/terrain/api.ts"
       ],
-      "@loaders.gl/scene/gltf/api": [
-        "modules/scene/src/gltf/api.ts"
-      ],
-      "@loaders.gl/scene/usd/api": [
-        "modules/scene/src/usd-api.ts"
-      ],
-      "@loaders.gl/scene/draco/api": [
-        "modules/scene/src/draco-api.ts"
-      ],
       "@loaders.gl/scientific/netcdf/api": [
         "modules/scientific/src/netcdf-api.ts"
       ],
@@ -1431,23 +1422,8 @@
       "@loaders.gl/tiles/pmtiles/api": [
         "modules/tiles/src/pmtiles/api.ts"
       ],
-      "@loaders.gl/tiles-3d/potree/api": [
-        "modules/tiles-3d/src/potree/api.ts"
-      ],
-      "@loaders.gl/tiles-3d/3d-tiles/api": [
-        "modules/tiles-3d/src/3d-tiles/api.ts"
-      ],
       "@loaders.gl/tiles-3d/i3s/bundled": [
         "modules/tiles-3d/src/i3s/bundled-entry.ts"
-      ],
-      "@loaders.gl/tiles-3d/i3s/api": [
-        "modules/tiles-3d/src/i3s/api.ts"
-      ],
-      "@loaders.gl/tiles-3d/copc/api": [
-        "modules/tiles-3d/src/copc/api.ts"
-      ],
-      "@loaders.gl/tiles-3d/point-cloud/api": [
-        "modules/tiles-3d/src/point-cloud/api.ts"
       ],
       "@loaders.gl/traces/chrome-trace/api": [
         "modules/traces/src/chrome-trace-api.ts"
@@ -1460,6 +1436,12 @@
       ],
       "@loaders.gl/archives/api": [
         "modules/archives/src/api.ts"
+      ],
+      "@loaders.gl/scene/api": [
+        "modules/scene/src/api.ts"
+      ],
+      "@loaders.gl/tiles-3d/api": [
+        "modules/tiles-3d/src/api.ts"
       ]
     },
     "plugins": [

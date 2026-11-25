@@ -98,7 +98,7 @@ Potree can also be used through the `DataSource` path with the lightweight point
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud/api';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/api';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
 const dataSource = await createDataSource(POTREE_URL, PotreeLoader, {
@@ -123,7 +123,7 @@ This module provides the following exports:
   datasets use native-coordinate range reads. Query `scan()` is available for compatible
   legacy datasets.
 - `PotreeWriter`: standard metadata writer.
-- `encodePotreeDataset`: complete legacy or modern file collections from decoded Mesh/Arrow rows.
+- `PotreeWriter.encodeDataset`: complete legacy or modern file collections from decoded Mesh/Arrow rows.
 
 Follow-ups include 2.0 query scans, BROTLI output, out-of-core authoring and application download
 examples. Native modern coordinates retain their CRS declaration without automatic projection.

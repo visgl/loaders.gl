@@ -5,7 +5,7 @@
 import {expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader, type GLTF, type GLTFWithBuffers} from '@loaders.gl/scene/gltf';
-import {getSpatialAudio} from '@loaders.gl/scene/gltf/api';
+import {getSpatialAudio} from '@loaders.gl/scene/api';
 import type {LoaderContext} from '@loaders.gl/core/loader-utils';
 import {decode as decodeEmitters} from '../../../../src/gltf/lib/extensions/KHR_audio_emitter';
 import {decode as decodeSpatial} from '../../../../src/gltf/lib/extensions/MPEG_audio_spatial';

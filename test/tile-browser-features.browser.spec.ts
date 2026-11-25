@@ -3,13 +3,13 @@ import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {parse} from '@loaders.gl/core';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {I3SContentLoader} from '@loaders.gl/tiles-3d/i3s';
-import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/api';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/api';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/api';
 import type {MeshSourceFeatureOptions} from '@loaders.gl/tile-converter/v5/adapters';
 import {ConversionPanel} from '../examples/website/i3s-slpk/src/components/conversion-panel';
 import {

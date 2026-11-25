@@ -2,130 +2,53 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {name as MPEG_AUDIO_SPATIAL, getSpatialAudio} from './lib/extensions/MPEG_audio_spatial';
-export {name as KHR_AUDIO_EMITTER} from './lib/extensions/KHR_audio_emitter';
-export {name as EXT_MESH_FEATURES, createExtMeshFeatures} from './lib/extensions/EXT_mesh_features';
-export {name as EXT_MESH_POLYGON} from './lib/extensions/EXT_mesh_polygon';
+export {
+  name as MPEG_AUDIO_SPATIAL,
+  getSpatialAudio
+} from './gltf/lib/extensions/MPEG_audio_spatial';
+export {name as KHR_AUDIO_EMITTER} from './gltf/lib/extensions/KHR_audio_emitter';
+export {
+  name as EXT_MESH_FEATURES,
+  createExtMeshFeatures
+} from './gltf/lib/extensions/EXT_mesh_features';
+export {name as EXT_MESH_POLYGON} from './gltf/lib/extensions/EXT_mesh_polygon';
 export {
   name as KHR_GAUSSIAN_SPLATTING,
   SPZ_COMPRESSION_EXTENSION_NAME,
   getGaussianSplatPrimitives
-} from './lib/extensions/KHR_gaussian_splatting';
+} from './gltf/lib/extensions/KHR_gaussian_splatting';
 export {
   name as EXT_PRIMITIVE_VOXELS,
   getVoxelPrimitives
-} from './lib/extensions/EXT_primitive_voxels';
+} from './gltf/lib/extensions/EXT_primitive_voxels';
 export {
   name as KHR_MESH_PRIMITIVE_RESTART,
   getPrimitiveRestartRanges
-} from './lib/extensions/KHR_mesh_primitive_restart';
+} from './gltf/lib/extensions/KHR_mesh_primitive_restart';
 export {
   name as EXT_STRUCTURAL_METADATA,
   createExtStructuralMetadata
-} from './lib/extensions/EXT_structural_metadata';
-export {name as EXT_FEATURE_METADATA} from './lib/extensions/deprecated/EXT_feature_metadata';
-export {
-  GLTFSchema,
-  GLTFIdSchema,
-  GLTFObjectSchema,
-  GLTFAccessorSchema,
-  GLTFAccessorSparseSchema,
-  GLTFAccessorSparseIndicesSchema,
-  GLTFAccessorSparseValuesSchema,
-  GLTFAnimationSchema,
-  GLTFAnimationChannelSchema,
-  GLTFAnimationChannelTargetSchema,
-  GLTFAnimationSamplerSchema,
-  GLTFAssetSchema,
-  GLTFBufferSchema,
-  GLTFBufferViewSchema,
-  GLTFCameraSchema,
-  GLTFCameraOrthographicSchema,
-  GLTFCameraPerspectiveSchema,
-  GLTFImageSchema,
-  GLTFExternalAssetSchema,
-  GLTFMaterialSchema,
-  GLTFMaterialNormalTextureInfoSchema,
-  GLTFMaterialOcclusionTextureInfoSchema,
-  GLTFMaterialPbrMetallicRoughnessSchema,
-  GLTFMeshSchema,
-  GLTFMeshPrimitiveSchema,
-  GLTFNodeSchema,
-  GLTFSamplerSchema,
-  GLTFSceneSchema,
-  GLTFSkinSchema,
-  GLTFTextureSchema,
-  GLTFTextureInfoSchema,
-  GLTFTextureInfoMetadataSchema,
-  GLTFKHRBinarySchema,
-  GLTFKHRDracoMeshCompressionSchema,
-  GLTFKHRTextureBasisuSchema,
-  GLTFKHRMeshoptCompressionSchema,
-  GLTFEXTMeshoptCompressionSchema,
-  GLTFEXTTextureWebpSchema,
-  GLTFEXTTextureAvifSchema,
-  GLTFMSFTTextureDdsSchema,
-  GLTFShapeSchema,
-  GLTFBoundingVolumeSchema
-} from './lib/types/gltf-zod-schema';
-export {compressGLTFWithDraco} from './lib/encoders/encode-gltf-draco';
-export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
-export {GLTFIterator} from './lib/api/gltf-iterator';
-export {getGLTFCullingShape, getGLTFNodeCullingShape} from './lib/api/gltf-culling';
-export {convertGLTFV1ToGLTF2, normalizeGLTFV1} from './lib/api/normalize-gltf-v1';
-export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
-export {findGLTFFileIndex, resolveGLTFFile} from './lib/gltf-utils/resolve-gltf-file';
-export {getGLTFInteractivity} from './lib/types/gltf-interactivity';
+} from './gltf/lib/extensions/EXT_structural_metadata';
+export {name as EXT_FEATURE_METADATA} from './gltf/lib/extensions/deprecated/EXT_feature_metadata';
+export {compressGLTFWithDraco} from './gltf/lib/encoders/encode-gltf-draco';
+export {GLTFScenegraph} from './gltf/lib/api/gltf-scenegraph';
+export {GLTFIterator} from './gltf/lib/api/gltf-iterator';
+export {getGLTFCullingShape, getGLTFNodeCullingShape} from './gltf/lib/api/gltf-culling';
+export {convertGLTFV1ToGLTF2, normalizeGLTFV1} from './gltf/lib/api/normalize-gltf-v1';
+export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './gltf/lib/gltf-utils/gltf-utils';
+export {findGLTFFileIndex, resolveGLTFFile} from './gltf/lib/gltf-utils/resolve-gltf-file';
+export {getGLTFInteractivity} from './gltf/lib/types/gltf-interactivity';
 export {
   getMaterialVariantMappings,
   getMeshInstances,
   getXMPMetadata
-} from './lib/api/gltf-extension-data';
+} from './gltf/lib/api/gltf-extension-data';
 export {
   getGLTFAccessor,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from './lib/api/gltf-accessors';
-export {parse} from './gltf-loader';
-export {getGLTFPrimitiveOutline} from './lib/api/gltf-primitive-outline';
-export {
-  GLTFKHRMaterialVariantSchema,
-  GLTFKHRMaterialsVariantsSchema,
-  GLTFKHRMaterialVariantMappingSchema,
-  GLTFKHRMaterialsVariantsPrimitiveSchema,
-  GLTFEXTMeshGPUInstancingSchema,
-  GLTFKHRAnimationPointerSchema,
-  GLTFKHRNodeVisibilitySchema,
-  GLTFKHRNodeSelectabilitySchema,
-  GLTFKHRNodeHoverabilitySchema,
-  GLTFKHRXMPPacketSchema,
-  GLTFKHRXMPJSONLDSchema,
-  GLTFKHRXMPJSONLDReferenceSchema,
-  GLTFKHRMaterialsEmissiveStrengthSchema,
-  GLTFFBGeometryMetadataSchema
-} from './lib/types/gltf-additional-extension-schemas';
-export {
-  GLTFKHRAudioDataSchema,
-  GLTFKHRAudioSourceSchema,
-  GLTFKHRAudioPositionalSchema,
-  GLTFKHRAudioEmitterSchema,
-  GLTFKHRAudioEmitterExtensionSchema,
-  GLTFKHRAudioAttachmentSchema,
-  GLTFSpatialAudioSourceSchema,
-  GLTFSpatialAudioReverbPropertySchema,
-  GLTFSpatialAudioReverbSchema,
-  GLTFSpatialAudioListenerSchema,
-  GLTFMPEGAudioSpatialSchema
-} from './lib/types/gltf-audio-extension-schemas';
-export {
-  GLTFPropertyExtensionsSchema,
-  GLTFMaterialExtensionsSchema,
-  GLTFRootExtensionsSchema,
-  GLTFNodeExtensionsSchema,
-  GLTFSceneExtensionsSchema,
-  GLTFMeshPrimitiveExtensionsSchema,
-  GLTFAnimationTargetExtensionsSchema
-} from './lib/types/gltf-extension-schemas';
+} from './gltf/lib/api/gltf-accessors';
+export {getGLTFPrimitiveOutline} from './gltf/lib/api/gltf-primitive-outline';
 export type {
   GLTFLoaderOptions,
   GLBLoaderOptions,
@@ -275,4 +198,7 @@ export type {
   GLTFMeshPrimitiveExtensions,
   GLTFAnimationTargetExtensions,
   GLTFPropertyExtensions
-} from './bundled';
+} from './gltf/bundled';
+export {getDracoLibraryOptions} from './draco/draco-library-options';
+export {hasSameDracoMeshTriangles} from './draco/lib/compare-draco-mesh-triangles';
+export type {DracoLibraryOptions} from './draco-bundled';

@@ -17,11 +17,9 @@ import {
   GLTFKHRNodeHoverabilitySchema,
   GLTFKHRXMPJSONLDSchema,
   GLTFKHRAudioEmitterExtensionSchema,
-  GLTFMPEGAudioSpatialSchema,
-  getMaterialVariantMappings,
-  getMeshInstances,
-  getXMPMetadata
-} from '@loaders.gl/scene/gltf/api';
+  GLTFMPEGAudioSpatialSchema
+} from '@loaders.gl/scene/gltf/schema';
+import {getMaterialVariantMappings, getMeshInstances, getXMPMetadata} from '@loaders.gl/scene/api';
 import {
   type GLTF,
   type GLTF_KHR_materials_variants,

@@ -1,5 +1,5 @@
 import {getLoaderOptions} from '@loaders.gl/core';
-import {getDracoLibraryOptions as getBundledDracoLibraryOptions} from '@loaders.gl/scene/draco/api';
+import {getDracoLibraryOptions as getBundledDracoLibraryOptions} from '@loaders.gl/scene/api';
 import {
   convertTileset,
   createBrowserTilesetConversionSource

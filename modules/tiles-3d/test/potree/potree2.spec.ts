@@ -5,7 +5,7 @@
 import {createDataSource} from '@loaders.gl/core';
 import {expect, test, vi} from 'vitest';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 import {Potree2Source} from '../../src/potree/potree2-source';
 import {PotreeLoaderWithParser} from '@loaders.gl/tiles-3d/potree-loader';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
@@ -163,7 +163,7 @@ test('point decoder rejects lengths and allocation budgets before creating attri
 });
 
 test('modern source incrementally reads one hierarchy and each requested point range in native coordinates', async () => {
-  const dataset = await encodePotreeDataset(
+  const dataset = await PotreeWriter.encodeDataset(
     [
       {id: 'r', mesh: createPoints([0, 0, 0])},
       {id: 'r7', mesh: createPoints([8, 8, 8])}
@@ -213,7 +213,7 @@ test('modern source incrementally reads one hierarchy and each requested point r
 });
 
 test('modern source hydrates proxies once, preserving final metadata URL and query credentials', async () => {
-  const dataset = await encodePotreeDataset([
+  const dataset = await PotreeWriter.encodeDataset([
     {id: 'r', mesh: createPoints([0, 0, 0])},
     {id: 'r7', mesh: createPoints([8, 8, 8])}
   ]);
@@ -258,7 +258,7 @@ test.each([
 });
 
 test('modern source rejects status, metadata, range, hierarchy budgets and missing point data', async () => {
-  const dataset = await encodePotreeDataset(createPoints());
+  const dataset = await PotreeWriter.encodeDataset(createPoints());
   const transport = createDatasetFetch(dataset);
   for (const potree of [{maxMetadataBytes: 2}, {maxHierarchyBytes: 21}]) {
     const source = new Potree2Source('https://example.com/dataset', {
@@ -302,7 +302,7 @@ test('modern source rejects status, metadata, range, hierarchy budgets and missi
 });
 
 test('modern source handles empty tiles and cancellation of a transport that ignores request signals', async () => {
-  const dataset = await encodePotreeDataset(createPoints([]));
+  const dataset = await PotreeWriter.encodeDataset(createPoints([]));
   const transport = createDatasetFetch(dataset);
   const source = new Potree2Source('https://example.com/dataset', {core: {fetch: transport.fetch}});
   expect(await source.loadTileContent(await source.getRootTile())).toBeNull();
@@ -351,7 +351,7 @@ test('Brotli positions use separate high/low 16-bit Morton words, including sign
 });
 
 test('zero-byte converter nodes normalize stale counts and retain child traversal', async () => {
-  const dataset = await encodePotreeDataset([
+  const dataset = await PotreeWriter.encodeDataset([
     {id: 'r', mesh: createPoints([])},
     {id: 'r0', mesh: createPoints([0, 0, 0])},
     {id: 'r7', mesh: createPoints([8, 8, 8])}
@@ -377,7 +377,7 @@ test('unified metadata loader parses both layouts without public version selecti
   expect(PotreeLoader).not.toHaveProperty('parse');
   expect(await PotreeLoader.preload()).toBe(PotreeLoaderWithParser);
   for (const version of ['1.0', '1.8', '2.0']) {
-    const dataset = await encodePotreeDataset(createPoints(), {
+    const dataset = await PotreeWriter.encodeDataset(createPoints(), {
       potree: {version: version as '1.0' | '1.8' | '2.0'}
     });
     expect(PotreeLoaderWithParser.parseTextSync(JSON.stringify(dataset.metadata)).version).toBe(
@@ -390,7 +390,7 @@ test('unified metadata loader parses both layouts without public version selecti
 });
 
 test('unified modern source exposes query limitations and shared range limits', async () => {
-  const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
+  const transport = createDatasetFetch(await PotreeWriter.encodeDataset(createPoints()));
   const source = await createDataSource('https://example.com/dataset/metadata.json', PotreeLoader, {
     core: {fetch: transport.fetch},
     potree: {maxPointBytes: 1}
@@ -407,7 +407,7 @@ test('unified modern source exposes query limitations and shared range limits', 
 });
 
 test('closing a unified modern source before initialization prevents metadata reads', async () => {
-  const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
+  const transport = createDatasetFetch(await PotreeWriter.encodeDataset(createPoints()));
   const source = await createDataSource('https://example.com/dataset/metadata.json', PotreeLoader, {
     core: {fetch: transport.fetch}
   });
@@ -438,7 +438,7 @@ test('legacy hierarchy accepts complete trees deeper than the page step and chec
 });
 
 test('Potree2 accepts CORS-hidden range headers without HEAD requests', async () => {
-  const dataset = await encodePotreeDataset(createPoints());
+  const dataset = await PotreeWriter.encodeDataset(createPoints());
   const transport = createDatasetFetch(dataset);
   const source = new Potree2Source('https://example.com/dataset', {
     core: {
