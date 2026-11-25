@@ -323,3 +323,15 @@ loaders.gl credential for the same field unless explicit request values are inte
 
 See the [request credential API](/docs/modules/core/loader-utils/api-reference/request-credentials) for
 the generic constructors and callback contract.
+
+### Credentials for streaming tile sources
+
+Directly constructed `Tiles3DSource` and `I3SSource` instances resolve declarative credentials
+when the first resource request needs them. Concurrent requests from one source share credential
+discovery and reuse its credential instances. Preloaded 3D Tiles metadata and native root headers
+remain available immediately after construction.
+
+Custom streaming sources can use `createSourceLoadOptionsResolver(loader, url, options)` from
+`@loaders.gl/core/loader-utils`. Create the resolver once per source and await it when building
+request options, before applying resource-specific overrides. A later request can retry failed
+discovery.
