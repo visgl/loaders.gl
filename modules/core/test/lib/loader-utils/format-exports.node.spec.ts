@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {existsSync, readFileSync} from 'node:fs';
+import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 
 const MODULES_DIRECTORY = join(process.cwd(), 'modules');
@@ -13,35 +13,17 @@ const FORMAT_EXPORTS = {
   'tables/arrow': ['ArrowFormat'],
   'tiles-3d/copc': ['COPCFormat'],
   'tables/csv': ['CSVFormat'],
-  tables: [
-    'CSVFormat',
-    'AvroFormat',
-    'ArrowFormat',
-    'JSONFormat',
-    'GeoJSONFormat',
-    'NDJSONFormat',
-    'NDGeoJSONFormat',
-    'LanceFormat',
-    'ORCFormat',
-    'ParquetFormat'
-  ],
-  geospatial: [
-    'KMLFormat',
-    'KMZFormat',
-    'GPXFormat',
-    'TCXFormat',
-    'ShapefileFormat',
-    'SHPFormat',
-    'DBFFormat',
-    'FlatGeobufFormat',
-    'GeoPackageFormat',
-    'OMMFormat',
-    'TLEFormat'
-  ],
-  scene: ['DracoFormat'],
+  'tables/avro': ['AvroFormat'],
+  'tables/lance': ['LanceFormat'],
+  'tables/orc': ['ORCFormat'],
+  'scene/draco': ['DracoFormat'],
+  'geospatial/omm': ['OMMFormat'],
+  'geospatial/tle': ['TLEFormat'],
   'geospatial/flatgeobuf': ['FlatGeobufFormat'],
   'geospatial/geopackage': ['GeoPackageFormat'],
-  raster: ['GeoTIFFFormat', 'OMETiffFormat', 'LERCFormat', 'TerrainFormat', 'QuantizedMeshFormat'],
+  'raster/geotiff': ['GeoTIFFFormat', 'OMETiffFormat'],
+  'raster/lerc': ['LERCFormat'],
+  'raster/terrain': ['TerrainFormat', 'QuantizedMeshFormat'],
   'scene/gltf': ['GLTFFormat', 'GLBFormat'],
   'tiles-3d/i3s': [
     'ArcGISWebSceneFormat',
@@ -52,7 +34,7 @@ const FORMAT_EXPORTS = {
     'I3SNodePageFormat',
     'SLPKFormat'
   ],
-  images: ['ImageFormat', 'ImageBitmapFormat'],
+  'images/image': ['ImageFormat', 'ImageBitmapFormat'],
   'tables/json': ['JSONFormat', 'GeoJSONFormat', 'NDJSONFormat', 'NDGeoJSONFormat'],
   'geospatial/kml': ['KMLFormat', 'KMZFormat'],
   'geospatial/gpx': ['GPXFormat'],
@@ -62,7 +44,8 @@ const FORMAT_EXPORTS = {
   'pointclouds/las': ['LASFormat'],
   'tiles/mlt': ['MLTFormat'],
   'tiles/mvt': ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
-  scientific: ['NetCDFFormat', 'NPYFormat'],
+  'scientific/netcdf': ['NetCDFFormat'],
+  'scientific/npy': ['NPYFormat'],
   'scene/obj': ['OBJFormat', 'MTLFormat'],
   'tables/parquet': ['ParquetFormat'],
   'pointclouds/pcd': ['PCDFormat'],
@@ -94,16 +77,12 @@ const FORMAT_EXPORTS = {
     'WMSFeatureInfoFormat',
     'WMSLayerDescriptionFormat'
   ],
-  documents: [
-    'JSONFormat',
-    'XMLFormat',
-    'HTMLFormat',
-    'YAMLFormat',
-    'TOMLFormat',
-    'BSONFormat',
-    'MarkdownFormat'
-  ],
-  archives: ['ZipFormat', 'TarFormat'],
+  'documents/xml': ['XMLFormat'],
+  'documents/html': ['HTMLFormat'],
+  'documents/yaml': ['YAMLFormat'],
+  'documents/toml': ['TOMLFormat'],
+  'documents/bson': ['BSONFormat'],
+  'documents/markdown': ['MarkdownFormat'],
   'archives/zip': ['ZipFormat'],
   'archives/tar': ['TarFormat']
 } as const;
@@ -112,11 +91,11 @@ describe('Format exports', () => {
   for (const [moduleName, formatNames] of Object.entries(FORMAT_EXPORTS)) {
     test(`${moduleName} exports its Format objects`, () => {
       const [packageName, subpathName] = moduleName.split('/');
-      const indexPath = join(MODULES_DIRECTORY, packageName, 'src', subpathName || '', 'index.ts');
-      const sourcePath = existsSync(indexPath)
-        ? indexPath
-        : join(MODULES_DIRECTORY, packageName, 'src', `${subpathName}.ts`);
-      const indexSource = readFileSync(sourcePath, 'utf8');
+      const directory = join(MODULES_DIRECTORY, packageName);
+      const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
+      const entrypoint = manifest.exports[`./${subpathName}`].import;
+      const sourcePath = entrypoint.replace('./dist/', 'src/').replace(/\.js$/, '.ts');
+      const indexSource = readFileSync(join(directory, sourcePath), 'utf8');
 
       for (const formatName of formatNames) {
         expect(indexSource, formatName).toMatch(new RegExp(`\\b${formatName}\\b`));

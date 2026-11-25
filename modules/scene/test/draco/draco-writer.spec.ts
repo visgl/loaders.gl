@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 import {DracoLoader, DracoWriterOptions} from '@loaders.gl/scene/draco';
-import {DracoWriter, DracoWriterWorker, encodeDracoBatch} from '@loaders.gl/scene/draco';
+import {DracoWriter, DracoWriterWorker} from '@loaders.gl/scene/draco/bundled';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
 import {convertMeshToArrowTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 import draco3d from 'draco3d';
@@ -547,7 +547,7 @@ function skipBrowserDracoWasmTest() {
   return false;
 }
 
-test('encodeDracoBatch reuses the initialized runtime for multiple geometries', async () => {
+test('DracoWriter.encodeGeometryBatch reuses the initialized runtime for multiple geometries', async () => {
   if (skipBrowserDracoWasmTest()) {
     return;
   }
@@ -555,7 +555,7 @@ test('encodeDracoBatch reuses the initialized runtime for multiple geometries', 
     attributes: {POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])},
     indices: new Uint16Array([0, 1, 2])
   };
-  const results = await encodeDracoBatch([geometry, geometry]);
+  const results = await DracoWriter.encodeGeometryBatch([geometry, geometry]);
   expect(results).toHaveLength(2);
   expect(results[0].data.byteLength).toBeGreaterThan(0);
   expect(results[1].report.pointCount).toBe(3);

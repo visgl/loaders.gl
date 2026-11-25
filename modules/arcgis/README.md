@@ -37,7 +37,7 @@ See [authentication](https://loaders.gl/docs/developer-guide/arcgis/authenticati
 
 ## Choose imports and outputs
 
-The root exports lightweight service loaders. Async `load()` and deck.gl `SourceLayer` import the
+The format subpaths export metadata loaders. Async `load()` and deck.gl `SourceLayer` import the
 selected implementation on demand. For synchronous `createDataSourceSync()` or direct source classes,
 use `@loaders.gl/arcgis/bundled`; network requests remain asynchronous. Authentication, discovery,
 item resolution and scene aggregation have dedicated subpaths.

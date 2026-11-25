@@ -17,16 +17,16 @@ test.each([
     import assert from 'node:assert/strict';
     import {createRequire} from 'node:module';
     const require = createRequire(import.meta.url);
-    const scene = ${format === 'esm' ? "await import('@loaders.gl/scene')" : "require('@loaders.gl/scene')"};
+    const scene = ${format === 'esm' ? "await import('@loaders.gl/scene/draco')" : "require('@loaders.gl/scene/draco')"};
     assert.equal(scene.DracoLoader.module, 'scene');
     assert.equal(scene.DracoLoader.parse, undefined);
     assert.equal(scene.DracoLoaderWithParser, undefined);
     assert.equal(scene.DracoWriter, undefined);
     assert.deepEqual(Object.keys(require.cache).filter(filename => filename.includes('/scene/dist/draco/lib/') && ['draco-builder.cjs', 'draco-parser.cjs', 'draco-module-loader.cjs'].some(name => filename.endsWith(name))), []);
     assert.equal(typeof (await scene.DracoLoader.preload('', {draco: {backend: 'wasm'}})).parse, 'function');
-    const parser = ${format === 'esm' ? "await import('@loaders.gl/scene/draco')" : "require('@loaders.gl/scene/draco')"};
+    const parser = ${format === 'esm' ? "await import('@loaders.gl/scene/draco/bundled')" : "require('@loaders.gl/scene/draco/bundled')"};
     assert.equal(typeof parser.DracoLoaderWithParser.parse, 'function');
-    assert.equal(require('@loaders.gl/scene/draco').DracoWriterWorker.module, 'scene');
+    assert.equal(require('@loaders.gl/scene/draco/bundled').DracoWriterWorker.module, 'scene');
     assert.ok(import.meta.resolve('@loaders.gl/scene/draco-worker.js'));
     assert.ok(require.resolve('@loaders.gl/scene/draco-writer-worker-node.cjs'));
     console.log('verified');
@@ -44,8 +44,8 @@ test('scene does not depend on the retired Draco package', () => {
 });
 
 test('Draco Node test worker URLs follow the implementation into scene', async () => {
-  const {DracoLoader} = await import('@loaders.gl/scene');
-  const {DracoWriterWorker} = await import('@loaders.gl/scene/draco');
+  const {DracoLoader} = await import('@loaders.gl/scene/draco');
+  const {DracoWriterWorker} = await import('@loaders.gl/scene/draco/bundled');
   const {getWorkerURL} = await import('@loaders.gl/core/worker-utils');
   for (const worker of [DracoLoader, DracoWriterWorker]) {
     const workerUrl = getWorkerURL(worker, {_workerType: 'test'});

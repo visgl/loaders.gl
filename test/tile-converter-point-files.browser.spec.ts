@@ -5,9 +5,9 @@
 import {expect, test, vi} from 'vitest';
 import type {Mesh, MeshGeometry} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {COPCWriter} from '@loaders.gl/tiles-3d/copc';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
-import {ZipWriter} from '@loaders.gl/archives/zip';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
+import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
 import {
   encodePotreeArchive,
   openPointCloudFile,
@@ -35,7 +35,7 @@ async function createZip(
 
 /** Encoded dataset resources using their original relative names. */
 async function createFiles(): Promise<Record<string, ArrayBuffer>> {
-  const dataset = await encodePotreeDataset(createPoints());
+  const dataset = await PotreeWriter.encodeDataset(createPoints());
   return Object.fromEntries(
     [...dataset.files].map(([path, bytes]) => [path, bytes.slice().buffer])
   );

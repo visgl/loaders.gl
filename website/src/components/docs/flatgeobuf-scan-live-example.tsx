@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import type {FlatGeobufReadOptions} from '@loaders.gl/geospatial/flatgeobuf';
 import type {Table} from 'apache-arrow';
-import {FlatGeobufVectorSource} from '@loaders.gl/geospatial/flatgeobuf';
+import {FlatGeobufVectorSource} from '@loaders.gl/geospatial/flatgeobuf/bundled';
 import type {ScanQueryMetadata} from '@loaders.gl/core/query';
 import {ScanQueryPanel, type ScanQueryPanelState} from './scan-query-panel';
 

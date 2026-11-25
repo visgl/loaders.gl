@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {parseRADChunkHeader, parseRADHeader, tryParseRADHeader} from '@loaders.gl/splats/rad';
+import {parseRADChunkHeader, parseRADHeader, tryParseRADHeader} from '@loaders.gl/splats/rad/api';
 import {RADChunkMetadataJSONSchema, RADMetadataJSONSchema} from '@loaders.gl/splats/rad-zod-schema';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';

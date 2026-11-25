@@ -4,7 +4,7 @@ import {
   OGCAPIEDRLoader,
   WCSCoverageSource,
   WCSCoverageLoader
-} from '@loaders.gl/ogc/wms';
+} from '@loaders.gl/ogc/wms/bundled';
 
 test('WCSCoverageSource builds GetCoverage requests and preserves binary responses', async () => {
   const source = WCSCoverageLoader.createDataSourceSync('https://example.com/geoserver/wcs', {

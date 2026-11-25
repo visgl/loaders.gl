@@ -37,7 +37,7 @@ test('CSVLoader#format exports metadata and an explicit parser variant', () => {
   expect(typeof CSVLoader.preload).toBe('function');
   expect('parse' in CSVLoader).toBe(false);
   expect('parseInBatches' in CSVLoader).toBe(false);
-  expect(csv.CSVLoaderWithParser).toBe(BundledCSVLoader);
+  expect(csv).not.toHaveProperty('CSVLoaderWithParser');
   expect('CSVArrowLoader' in csv).toBe(false);
   expect('CSVArrowWriter' in csv).toBe(false);
 });

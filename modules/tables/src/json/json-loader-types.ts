@@ -9,7 +9,7 @@ export type {MetadataBatch, JSONBatch, JSONLoaderOptions} from './json-loader-de
 
 /** Preloads the parser-bearing JSON loader implementation. */
 async function preload() {
-  const {JSONLoaderWithParser} = await import('@loaders.gl/tables/json');
+  const {JSONLoaderWithParser} = await import('@loaders.gl/tables/json/bundled');
   return JSONLoaderWithParser;
 }
 

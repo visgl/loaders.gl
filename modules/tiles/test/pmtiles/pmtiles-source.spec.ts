@@ -1,7 +1,8 @@
 import {expect, test} from 'vitest';
 import {createDataSource, fetchFile, isBrowser} from '@loaders.gl/core';
 import {PMTILESETS} from './data/tilesets';
-import {PMTilesLoader, PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
+import {PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles/bundled';
 test('PMTilesLoaderWithParser#urls', async () => {
   if (!isBrowser) {
     console.log('PMTilesLoaderWithParser currently only supported in browser');

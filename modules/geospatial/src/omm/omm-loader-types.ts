@@ -25,7 +25,7 @@ export type OMMLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing OMM loader implementation. */
 async function preloadOMMLoader() {
-  const {OMMLoaderWithParser} = await import('@loaders.gl/geospatial/omm');
+  const {OMMLoaderWithParser} = await import('@loaders.gl/geospatial/omm/bundled');
   return OMMLoaderWithParser;
 }
 

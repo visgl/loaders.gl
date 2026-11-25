@@ -10,7 +10,7 @@ export type {PCDLoaderOptions} from './pcd-loader-definition';
  * Preloads the parser-bearing PCD loader implementation.
  */
 async function preload() {
-  const {PCDLoaderWithParser} = await import('@loaders.gl/pointclouds/pcd');
+  const {PCDLoaderWithParser} = await import('@loaders.gl/pointclouds/pcd/bundled');
   return PCDLoaderWithParser;
 }
 

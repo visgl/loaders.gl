@@ -5,11 +5,11 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {
   GeoParquetLoader,
-  ParquetWriter,
   ParquetLoader,
   type ParquetWriterOptions
 } from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 import {encode, fetchFile, load, parse, preload} from '@loaders.gl/core';
 import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';

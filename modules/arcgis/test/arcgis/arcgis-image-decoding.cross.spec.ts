@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {createDataSourceSync, isBrowser} from '@loaders.gl/core';
-import {getImageType} from '@loaders.gl/images/image';
+import {getImageType} from '@loaders.gl/images/api';
 import {ArcGISImageServerLoader} from '@loaders.gl/arcgis/bundled';
 import {IMAGE_DATA_URL} from '../../../images/test/lib/test-cases';
 

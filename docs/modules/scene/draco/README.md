@@ -57,7 +57,7 @@ The injectable `draco3d` npm backend is an `optionalDependency`. The default loa
 vendored runtimes and work with `npm install --omit=optional`. If you omit optional dependencies and
 want to inject `options.modules.draco3d`, install `draco3d` explicitly.
 
-The scene root exports loader metadata and public Draco types. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco` for direct parsing, and import writers and encoding helpers from `@loaders.gl/scene/draco`. Bundled runtime URL helpers use `@loaders.gl/scene/draco` (an ESM entry point).
+Import `DracoLoader` from `@loaders.gl/scene/draco` to defer loading the parser. Use `@loaders.gl/scene/draco/bundled` for direct parsing and writers. Import runtime URL helpers from `@loaders.gl/scene/api`.
 
 ## Loaders and Writers
 
@@ -66,7 +66,7 @@ The scene root exports loader metadata and public Draco types. Import `DracoLoad
 | [`DracoLoader`](/docs/modules/scene/draco/api-reference/draco-loader)       | Loads Draco meshes and point clouds as Mesh objects or [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
 | [`DracoWriter`](/docs/modules/scene/draco/api-reference/draco-writer)       | Encodes Draco meshes and point clouds from Mesh or Mesh Arrow table data. |
 
-`encodeDracoInBatches` accepts an async or synchronous iterator of geometry
+`DracoWriter.encodeGeometryInBatches()` accepts an async or synchronous iterator of geometry
 batches. With `worker: true` it leases one worker for the full iterator and
 keeps one Draco encoder alive, which is useful for large exports and stateful
 batch pipelines. With `worker: false` it uses the same lifecycle locally.
@@ -101,7 +101,7 @@ Using the bundled WebAssembly decoder and encoder assets:
 
 ```typescript
 import {setLoaderOptions} from '@loaders.gl/core';
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/api';
 setLoaderOptions(getDracoLibraryOptions());
 ```
 
@@ -135,7 +135,7 @@ tracked as compatibility and lifecycle improvements rather than a worker-pool ab
 | Conformance | Keep cross-runtime fixtures for full and glTF decoder builds. |
 | Interoperability | Preserve names, normalized flags, transforms, and metadata across Arrow/Draco round trips. |
 | Memory | Reuse initialized runtimes and process batches sequentially; worker pooling is tracked separately. |
-| Compatibility | Retain legacy writer/loader entry points while steering new code to `encodeDraco` and typed reports. |
+| Compatibility | Retain legacy writer/loader entry points while steering new code to `DracoWriter.encodeGeometry()` and typed reports. |
 
 The browser encoder uses the versioned Draco 1.5.7 wrapper and WebAssembly pair. This keeps the
 default writer path independent of the Node-only `draco3d` package entry point; applications that

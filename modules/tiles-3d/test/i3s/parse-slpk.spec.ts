@@ -1,5 +1,5 @@
 import {GZipCompressor} from '@loaders.gl/compression/gzip-compressor';
-import {encodeZip} from '@loaders.gl/archives/zip';
+import {encodeZip} from '@loaders.gl/archives/api';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {encodeIndexedZip} from '@loaders.gl/archives/indexed-zip-writer';
 import {expect, test, vi} from 'vitest';

@@ -7,11 +7,8 @@ import {expect, test} from 'vitest';
 import {createDataSource, encode, load} from '@loaders.gl/core';
 import {encodeWKBGeometryValue} from '@loaders.gl/core/arrow-geometry/geometry-field';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {
-  ParquetWriter,
-  ParquetLoader,
-  type ParquetSourceMetadata
-} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetLoader, type ParquetSourceMetadata} from '@loaders.gl/tables/parquet';
 import type {ParquetSource} from '@loaders.gl/tables/parquet';
 
 import {

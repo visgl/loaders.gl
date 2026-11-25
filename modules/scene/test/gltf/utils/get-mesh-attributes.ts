@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getGLTFAccessor, getGLTFAccessorValue, type GLTFWithBuffers} from '@loaders.gl/scene/gltf';
+import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/api';
+import {type GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 
 /** Read the first primitive's attributes for explicit builder input. */
 export function getMeshAttributes(gltf: GLTFWithBuffers) {

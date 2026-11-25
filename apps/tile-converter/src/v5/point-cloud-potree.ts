@@ -4,7 +4,7 @@
 
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
 import {PointCloudTiler, type PointCloudTilerOptions} from '@loaders.gl/core/schema-utils';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 import type {
   PotreeDataset,
   PotreeWriterNode,
@@ -118,7 +118,7 @@ export async function convertPointCloudToPotree(
   } finally {
     tiler.close();
   }
-  const dataset = await encodePotreeDataset(nodes, {
+  const dataset = await PotreeWriter.encodeDataset(nodes, {
     potree: {
       ...options.potree,
       projection: options.projection,

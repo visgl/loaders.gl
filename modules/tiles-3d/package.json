@@ -45,18 +45,19 @@
       "require": "./dist/index.cjs"
     },
     "./copc": {
-      "types": "./dist/copc/index.d.ts",
-      "import": "./dist/copc/index.js",
-      "require": "./dist/copc/index.cjs"
+      "types": "./dist/copc/metadata-entry.d.ts",
+      "import": "./dist/copc/metadata-entry.js",
+      "require": "./dist/copc/metadata-entry.cjs"
     },
     "./potree": {
-      "types": "./dist/potree/index.d.ts",
-      "import": "./dist/potree/index.js",
-      "require": "./dist/potree/index.cjs"
+      "types": "./dist/potree/metadata-entry.d.ts",
+      "import": "./dist/potree/metadata-entry.js",
+      "require": "./dist/potree/metadata-entry.cjs"
     },
     "./potree/bundled": {
-      "types": "./dist/potree/bundled.d.ts",
-      "import": "./dist/potree/bundled.js"
+      "types": "./dist/potree/bundled-entry.d.ts",
+      "import": "./dist/potree/bundled-entry.js",
+      "require": "./dist/potree/bundled-entry.cjs"
     },
     "./potree-loader": {
       "types": "./dist/potree-loader.d.ts",
@@ -80,9 +81,9 @@
       "require": "./dist/point-cloud-tile-loader.cjs"
     },
     "./3d-tiles": {
-      "types": "./dist/3d-tiles/index.d.ts",
-      "import": "./dist/3d-tiles/index.js",
-      "require": "./dist/3d-tiles/index.cjs"
+      "types": "./dist/3d-tiles/metadata-entry.d.ts",
+      "import": "./dist/3d-tiles/metadata-entry.js",
+      "require": "./dist/3d-tiles/metadata-entry.cjs"
     },
     "./3d-tiles/tileset-zod-schema": {
       "types": "./dist/3d-tiles/tileset-zod-schema.d.ts",
@@ -95,8 +96,9 @@
       "require": "./dist/3d-tiles/subtree-zod-schema.cjs"
     },
     "./3d-tiles/bundled": {
-      "types": "./dist/3d-tiles/bundled.d.ts",
-      "import": "./dist/3d-tiles/bundled.js"
+      "types": "./dist/3d-tiles/bundled-entry.d.ts",
+      "import": "./dist/3d-tiles/bundled-entry.js",
+      "require": "./dist/3d-tiles/bundled-entry.cjs"
     },
     "./3d-tiles/tileset.schema.json": "./dist/3d-tiles/tileset.schema.json",
     "./3d-tiles/subtree.schema.json": "./dist/3d-tiles/subtree.schema.json",
@@ -106,9 +108,9 @@
       "require": "./dist/3d-tiles-archive-writer.cjs"
     },
     "./i3s": {
-      "types": "./dist/i3s/index.d.ts",
-      "import": "./dist/i3s/index.js",
-      "require": "./dist/i3s/index.cjs"
+      "types": "./dist/i3s/metadata-entry.d.ts",
+      "import": "./dist/i3s/metadata-entry.js",
+      "require": "./dist/i3s/metadata-entry.cjs"
     },
     "./i3s-zod-schema": {
       "types": "./dist/i3s/i3s-zod-schema.d.ts",
@@ -116,8 +118,9 @@
       "require": "./dist/i3s/i3s-zod-schema.cjs"
     },
     "./i3s/bundled": {
-      "types": "./dist/i3s/bundled.d.ts",
-      "import": "./dist/i3s/bundled.js"
+      "types": "./dist/i3s/bundled-entry.d.ts",
+      "import": "./dist/i3s/bundled-entry.js",
+      "require": "./dist/i3s/bundled-entry.cjs"
     },
     "./i3s-lepcc-loader": {
       "types": "./dist/i3s-lepcc-loader.d.ts",
@@ -159,9 +162,24 @@
       "require": "./dist/spatial-api.cjs"
     },
     "./point-cloud": {
-      "types": "./dist/point-cloud-api.d.ts",
-      "import": "./dist/point-cloud-api.js",
-      "require": "./dist/point-cloud-api.cjs"
+      "types": "./dist/point-cloud/metadata-entry.d.ts",
+      "import": "./dist/point-cloud/metadata-entry.js",
+      "require": "./dist/point-cloud/metadata-entry.cjs"
+    },
+    "./copc/bundled": {
+      "types": "./dist/copc/bundled-entry.d.ts",
+      "import": "./dist/copc/bundled-entry.js",
+      "require": "./dist/copc/bundled-entry.cjs"
+    },
+    "./point-cloud/bundled": {
+      "types": "./dist/point-cloud/bundled-entry.d.ts",
+      "import": "./dist/point-cloud/bundled-entry.js",
+      "require": "./dist/point-cloud/bundled-entry.cjs"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
     }
   },
   "sideEffects": false,
@@ -191,8 +209,8 @@
     "potree-generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/potree/potree-metadata-schema.js --export PotreeMetadataSchema --output ./dist/potree/potree-metadata.schema.json --id https://unpkg.com/@loaders.gl/tiles-3d/potree/potree-metadata.schema.json --title 'Potree 1.x cloud.js metadata'",
     "potree-build-bundle": "node ../../scripts/build-codec-bundle.mjs ./potree/bundle.ts --output=dist/potree/dist.min.js",
     "potree-build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./potree/bundle.ts --env=dev --output=dist/potree/dist.dev.js",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker-i3s-content": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-content-worker.ts --outfile=dist/i3s-content-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-i3s-content-node": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-i3s-lepcc": "node ../../scripts/build-codec-worker.mjs src/i3s/workers/i3s-lepcc-worker.ts --outfile=dist/i3s-lepcc-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -213,7 +231,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@deck.gl/core": "10.0.0-alpha.1",
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch",
     "@math.gl/dggs": "^5.0.3",
     "copc": "0.0.8"
   },

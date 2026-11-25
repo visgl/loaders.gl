@@ -4,9 +4,26 @@
 
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
-import * as documents from '@loaders.gl/documents';
-import {BSONLoaderWithParser} from '@loaders.gl/documents/bson';
-import {BSONWriter} from '@loaders.gl/documents/bson';
+import {XMLLoader} from '@loaders.gl/documents/xml';
+import {HTMLLoader} from '@loaders.gl/documents/html';
+import {JSONLoader} from '@loaders.gl/documents/json';
+import {YAMLLoader} from '@loaders.gl/documents/yaml';
+import {TOMLLoader} from '@loaders.gl/documents/toml';
+import {MarkdownLoader} from '@loaders.gl/documents/markdown';
+import {BSONLoader} from '@loaders.gl/documents/bson';
+import {BSONFormat} from '@loaders.gl/documents/bson';
+const documents = {
+  XMLLoader,
+  HTMLLoader,
+  JSONLoader,
+  YAMLLoader,
+  TOMLLoader,
+  MarkdownLoader,
+  BSONLoader,
+  BSONFormat
+};
+import {BSONLoaderWithParser} from '@loaders.gl/documents/bson/bundled';
+import {BSONWriter} from '@loaders.gl/documents/bson/bundled';
 import {BSONObjectId, createBSONValue} from '@loaders.gl/documents/bson-codec';
 
 test.each([

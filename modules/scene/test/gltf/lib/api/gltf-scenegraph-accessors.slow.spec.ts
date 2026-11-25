@@ -5,7 +5,8 @@
 /* eslint-disable max-len */
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
-import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 
 const DAMAGED_HELMET_URL = '@loaders.gl/scene/gltf/test/data/glb/DamagedHelmet.glb';
 

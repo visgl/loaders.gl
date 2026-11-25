@@ -6,14 +6,9 @@ import {setLoaderOptions} from '@loaders.gl/core';
 import {encodeSync, parse, parseInBatches, parseSync} from '@loaders.gl/core';
 import {describe, expect, it} from 'vitest';
 
-import {
-  ZipkinTraceLoader,
-  ZipkinTraceWriter,
-  OtlpTraceJsonLoader,
-  type OtlpTrace,
-  type OtlpTraceBatch,
-  type ZipkinSpan
-} from '../src';
+import {ZipkinTraceLoader, type ZipkinSpan} from '@loaders.gl/traces/zipkin';
+import {ZipkinTraceWriter} from '@loaders.gl/traces/zipkin/bundled';
+import {OtlpTraceJsonLoader, type OtlpTrace, type OtlpTraceBatch} from '@loaders.gl/traces/otlp';
 import {ZipkinTraceLoaderWithParser} from '../src/zipkin-trace-loader';
 import zipkinTraceFixture from './data/zipkin/trace.json' with {type: 'json'};
 

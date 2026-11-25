@@ -16,6 +16,42 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
   links={[{label: 'What’s new', to: '/docs/whats-new'}]}
 />
 
+## Updating from 5.0.0
+
+Format packages now expose their loaders through subpaths. Replace a package-root loader
+import with `@loaders.gl/<package>/<format>`. For eager parsing, writers, and direct source
+construction, use `@loaders.gl/<package>/<format>/bundled`. Both paths export loaders
+under their ordinary names. The core framework is available at `@loaders.gl/core/api`,
+and tileset traversal at `@loaders.gl/tiles-3d/tileset`. Existing core root imports remain supported.
+Image utilities such as `getBinaryImageMetadata` now use `@loaders.gl/images/api`.
+
+Update existing `@loaders.gl/tiles-3d` root imports as follows.
+
+| Symbol | Import |
+| --- | --- |
+| `Tileset3D`, `Tile3D`, `TILE_TYPE` | `@loaders.gl/tiles-3d/tileset` |
+| `Tiles3DSource` | `@loaders.gl/tiles-3d/3d-tiles/bundled` |
+| `I3SSource` | `@loaders.gl/tiles-3d/i3s/bundled` |
+
+Update downstream packages that import these symbols before adopting this release. An existing
+`^5.0.0` dependency range can select a release with these import changes.
+
+
+For table formats, use the following subpaths.
+
+| Loaders | Subpath under `@loaders.gl/tables` |
+| --- | --- |
+| `CSVLoader` | `/csv` |
+| `AvroLoader`, `AvroSchemaLoader` | `/avro` |
+| `ArrowLoader`, `GeoArrowLoader` | `/arrow` |
+| `JSONLoader`, `JSONTableLoader`, `NDJSONLoader`, `GeoJSONLoader`, `NDGeoJSONLoader` | `/json` |
+| `LanceLoader` | `/lance` |
+| `ORCLoader` | `/orc` |
+| `ParquetLoader`, `GeoParquetLoader` | `/parquet` |
+
+For eager Parquet parsers, writers, and sources, use `@loaders.gl/tables/parquet/bundled`. The bundled entry point exports
+the parser-bearing loaders as `ParquetLoader` and `GeoParquetLoader`. Use these loaders, their sources, and the bundled writer for Parquet I/O. Arrow conversion utilities live in `@loaders.gl/core/schema-utils`.
+
 ## Upgrading to v5.0
 
 This section covers upgrades from stable loaders.gl 4.x to 5.0. Update all loaders.gl

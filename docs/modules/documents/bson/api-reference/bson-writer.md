@@ -64,7 +64,7 @@ Install `@loaders.gl/documents`. Its root contains metadata; use flat subpaths f
 
 ```typescript
 import {encode} from '@loaders.gl/core';
-import {BSONWriter} from '@loaders.gl/documents/bson';
+import {BSONWriter} from '@loaders.gl/documents/bson/bundled';
 
 const arrayBuffer = await encode(data, BSONWriter);
 ```

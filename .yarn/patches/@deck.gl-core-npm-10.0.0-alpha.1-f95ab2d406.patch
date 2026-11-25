@@ -1,0 +1,65 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 2f8a7de2072dca407a1ba2c5f0d2b7646a80d575..84e832b367655639b286c65ba2d621bec5eda3fa 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -312,7 +312,7 @@ module.exports = __toCommonJS(index_exports);
+ 
+ // dist/lib/init.js
+ var import_core = require("@loaders.gl/core");
+-var import_images = require("@loaders.gl/images");
++var import_images = require("@loaders.gl/images/image");
+ 
+ // dist/utils/log.js
+ var import_log = require("@probe.gl/log");
+diff --git a/dist/lib/init.js b/dist/lib/init.js
+index d51862921bd22f50e1d4a5b431d4587c24a114f4..fcc966e9be44764b3c0501c840fe53963ee127df 100644
+--- a/dist/lib/init.js
++++ b/dist/lib/init.js
+@@ -2,7 +2,7 @@
+ // SPDX-License-Identifier: MIT
+ // Copyright (c) vis.gl contributors
+ import { registerLoaders } from '@loaders.gl/core';
+-import { ImageLoader } from '@loaders.gl/images';
++import { ImageLoader } from '@loaders.gl/images/image';
+ import log from "../utils/log.js";
+ import { register } from "../debug/index.js";
+ import jsonLoader from "../utils/json-loader.js";
+diff --git a/dist.webgl-only/index.cjs b/dist.webgl-only/index.cjs
+index a7292956a7429e5a926d99198b185e4be97895ed..5ef50519635db46fa6604f899e1181d0c5485866 100644
+--- a/dist.webgl-only/index.cjs
++++ b/dist.webgl-only/index.cjs
+@@ -312,7 +312,7 @@ module.exports = __toCommonJS(index_exports);
+ 
+ // dist/lib/init.js
+ var import_core = require("@loaders.gl/core");
+-var import_images = require("@loaders.gl/images");
++var import_images = require("@loaders.gl/images/image");
+ 
+ // dist/utils/log.js
+ var import_log = require("@probe.gl/log");
+diff --git a/dist.webgl-only/lib/init.js b/dist.webgl-only/lib/init.js
+index d51862921bd22f50e1d4a5b431d4587c24a114f4..fcc966e9be44764b3c0501c840fe53963ee127df 100644
+--- a/dist.webgl-only/lib/init.js
++++ b/dist.webgl-only/lib/init.js
+@@ -2,7 +2,7 @@
+ // SPDX-License-Identifier: MIT
+ // Copyright (c) vis.gl contributors
+ import { registerLoaders } from '@loaders.gl/core';
+-import { ImageLoader } from '@loaders.gl/images';
++import { ImageLoader } from '@loaders.gl/images/image';
+ import log from "../utils/log.js";
+ import { register } from "../debug/index.js";
+ import jsonLoader from "../utils/json-loader.js";
+diff --git a/src/lib/init.ts b/src/lib/init.ts
+index 625cf30cffad7204f2db552cd5a312355c02faa8..ff8e8b76956da8be3d1a7b76afdfac904b79c96d 100644
+--- a/src/lib/init.ts
++++ b/src/lib/init.ts
+@@ -3,7 +3,7 @@
+ // Copyright (c) vis.gl contributors
+ 
+ import {registerLoaders} from '@loaders.gl/core';
+-import {ImageLoader} from '@loaders.gl/images';
++import {ImageLoader} from '@loaders.gl/images/image';
+ 
+ import log from '../utils/log';
+ import {register} from '../debug/index';

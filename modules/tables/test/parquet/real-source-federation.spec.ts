@@ -5,14 +5,14 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
-import {ArrowTableSource} from '@loaders.gl/tables/arrow';
-import {CSVTableSource} from '@loaders.gl/tables/csv';
-import {NDJSONTableSource} from '@loaders.gl/tables/json';
+import {ArrowTableSource} from '@loaders.gl/tables/arrow/bundled';
+import {CSVTableSource} from '@loaders.gl/tables/csv/bundled';
+import {NDJSONTableSource} from '@loaders.gl/tables/json/bundled';
 import {DataSourceManager, type TableQueryExecutionSummary} from '@loaders.gl/core/loader-utils';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
-import {DeltaTableSource} from '@loaders.gl/tables/delta';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {DeltaTableSource} from '@loaders.gl/tables/delta/bundled';
 import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/core/query';
 

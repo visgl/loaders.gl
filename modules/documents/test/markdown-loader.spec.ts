@@ -5,7 +5,7 @@
 import {describe, expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import {MarkdownLoader} from '@loaders.gl/documents/markdown';
-import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown';
+import {MarkdownLoaderWithParser} from '@loaders.gl/documents/markdown/bundled';
 import {parseMarkdownSync} from '../src/lib/parsers/parse-markdown';
 
 describe('MarkdownLoader', () => {

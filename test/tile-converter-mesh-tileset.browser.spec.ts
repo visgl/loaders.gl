@@ -4,7 +4,8 @@
 
 import {beforeAll, expect, test} from 'vitest';
 import {coreApi, parse} from '@loaders.gl/core';
-import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {Tiles3DTilesetSchema} from '@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema';
 import {Matrix4} from '@math.gl/core/matrix';
 import {validateBytes} from 'gltf-validator';
@@ -401,7 +402,9 @@ test('single mesh package becomes a bounded indexed 3TZ Blob through both v5 ent
   const archive = await createSingleMeshTilesetArchive(files, {maxArchiveBytes: archiveBytes});
   expect(archive.size).toBe(archiveBytes);
   expect(archive.type).toBe('application/vnd.maxar.archive.3tz+zip');
-  const {Tiles3DArchiveSource, Tiles3DLoader} = await import('@loaders.gl/tiles-3d/3d-tiles');
+  const {Tiles3DArchiveSource, Tiles3DLoader} = await import(
+    '@loaders.gl/tiles-3d/3d-tiles/bundled'
+  );
   const source = new Tiles3DArchiveSource({url: archive, loader: Tiles3DLoader, coreApi});
   await source.initialize();
   const tileset = await source.getRootTileset();

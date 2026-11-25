@@ -1,9 +1,10 @@
 import {getMeshAttributes} from '../modules/scene/test/gltf/utils/get-mesh-attributes';
 import {afterAll, beforeAll, expect, test} from 'vitest';
 import {fetchFile, getLoaderOptions, parse, setLoaderOptions} from '@loaders.gl/core';
-import {GLBLoader, GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
-import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
-import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s';
+import {GLBLoader, GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/api';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/api';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {
   CONVERSION_LIMITS,

@@ -2,5 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './image';
-export {ImageLoaderWithParser as ImageLoader} from './image';
+export {
+  ImageLoaderWithParser,
+  ImageLoaderWithParser as ImageLoader,
+  type ImageLoaderOptions
+} from './image-loader';
+export {ImageWriter, type ImageWriterOptions} from './image-writer';
+export {IMAGE_EXTENSIONS, IMAGE_MIME_TYPES, ImageFormat, ImageBitmapFormat} from './image-format';

@@ -7,15 +7,10 @@ import * as arrow from 'apache-arrow';
 import {validateLoader} from 'test/common/conformance';
 import {fetchFile, parse} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {OMM_COLUMNS, type OMMRow} from '@loaders.gl/geospatial/omm';
-import {
-  TLEFormat,
-  TLELoader,
-  TLELoaderWithParser,
-  computeTLEChecksum,
-  convertTLEToOMMRow,
-  parseTLEText
-} from '@loaders.gl/geospatial/tle';
+import {OMM_COLUMNS, type OMMRow} from '../../src/omm/omm-schema';
+import {TLEFormat, TLELoader} from '@loaders.gl/geospatial/tle';
+import {TLELoaderWithParser} from '@loaders.gl/geospatial/tle/bundled';
+import {computeTLEChecksum, convertTLEToOMMRow, parseTLEText} from '../../src/tle/tle-parser';
 
 const TLE_URL = '@loaders.gl/geospatial/tle/test/data/stations.tle';
 const OMM_JSON_URL = '@loaders.gl/geospatial/omm/test/data/stations.omm.json';

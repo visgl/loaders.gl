@@ -1,10 +1,7 @@
 import {expect, test} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {
-  OMEZarrImageSource,
-  OMEZarrLoader,
-  type ZarrLoaderOptions
-} from '@loaders.gl/scientific/zarr';
+import {OMEZarrImageSource, OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
+import {type ZarrLoaderOptions} from '@loaders.gl/scientific/zarr';
 const SPATIALDATA_V3_FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 test('OMEZarrLoader supports browser-relative store URLs', async () => {
   const source = createDataSourceSync(SPATIALDATA_V3_FIXTURE_URL, [OMEZarrLoader], {

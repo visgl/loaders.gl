@@ -6,15 +6,12 @@ import {afterEach, expect, test, vi} from 'vitest';
 import {Table, RecordBatch, tableFromArrays} from 'apache-arrow';
 import {encode, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
-import {
-  ChromeTraceLoader,
-  PerfettoTraceLoader,
-  OtlpTraceLoader,
-  OtlpTraceJsonLoader,
-  OtlpTraceWriter,
-  JaegerTraceLoader,
-  ZipkinTraceLoader
-} from '../src';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
+import {OtlpTraceLoader, OtlpTraceJsonLoader} from '@loaders.gl/traces/otlp';
+import {OtlpTraceWriter} from '@loaders.gl/traces/otlp/bundled';
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
+import {ZipkinTraceLoader} from '@loaders.gl/traces/zipkin';
 import {
   deserializeTraceWorkerResult,
   deserializeTraceWorkerBatch,

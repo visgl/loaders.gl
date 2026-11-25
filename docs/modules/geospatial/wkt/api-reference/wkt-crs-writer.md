@@ -55,7 +55,8 @@ npm install @loaders.gl/core @loaders.gl/geospatial @math.gl/geospatial
 
 ```ts
 import {encodeText, parse} from '@loaders.gl/core';
-import {WKTCRSLoader, WKTCRSWriter} from '@loaders.gl/geospatial/wkt';
+import {WKTCRSLoader} from '@loaders.gl/geospatial/wkt';
+import {WKTCRSWriter} from '@loaders.gl/geospatial/wkt/bundled';
 
 const ast = await parse('GEOGCRS["WGS 84",ID["EPSG",4326]]', WKTCRSLoader);
 const compactWKT = await encodeText(ast, WKTCRSWriter);

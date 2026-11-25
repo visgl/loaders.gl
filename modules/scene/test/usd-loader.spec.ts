@@ -3,7 +3,7 @@
 import {expect, test} from 'vitest';
 import {load, parse} from '@loaders.gl/core';
 import {USDLoader} from '@loaders.gl/scene/usd';
-import {USDLoaderWithParser} from '@loaders.gl/scene/usd';
+import {USDLoaderWithParser} from '@loaders.gl/scene/usd/bundled';
 import {parseUSDA} from '../src/usd/lib/parse-usda';
 test('USDLoader exposes metadata at the package root', () => {
   expect(USDLoader.id, 'uses the usd identifier').toBe('usd');

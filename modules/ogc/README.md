@@ -7,7 +7,7 @@ Supported formats: WMS, WFS, WMTS, WCS, CSW, GML, OGC API, STAC, STAC API, XML, 
 ```ts
 import {WMSCapabilitiesLoader} from '@loaders.gl/ogc/wms';
 import {STACLoader} from '@loaders.gl/ogc/stac';
-import {WMSLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms/bundled';
 import {STACLoaderWithParser} from '@loaders.gl/ogc/stac-loader';
 ```
 

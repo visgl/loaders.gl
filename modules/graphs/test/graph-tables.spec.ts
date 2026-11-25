@@ -16,11 +16,12 @@ import {
   tableFromIPC,
   tableToIPC
 } from 'apache-arrow';
-import {DOTLoader, GraphMLLoader} from '../src';
+import {DOTLoader} from '@loaders.gl/graphs/dot';
+import {GraphMLLoader} from '@loaders.gl/graphs/graphml';
 import {DOTLoaderWithParser} from '../src/dot-loader';
 import {GraphMLLoaderWithParser} from '../src/graphml-loader';
 import {buildGraphTables} from '../src/lib/build-graph-tables';
-import type {GraphTables} from '../src';
+import type {GraphTables} from '@loaders.gl/graphs/graph';
 
 const DOCUMENT = `<graphml>
   <key id="count" for="node" attr.type="int"><default>5</default></key>

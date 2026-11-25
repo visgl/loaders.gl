@@ -11,12 +11,22 @@ import {expect, test} from 'vitest';
 test('installed ESM/CJS ZIP entrypoints expose portable reading and writing', async () => {
   const require = createRequire(import.meta.url);
   const entrypointUrl = new URL(
-    './index.js',
-    pathToFileURL(require.resolve('@loaders.gl/archives/zip'))
+    './api.js',
+    pathToFileURL(require.resolve('@loaders.gl/archives/api'))
   );
-  const modules = [await import(entrypointUrl.href), require('@loaders.gl/archives/zip')];
+  const modules = [await import(entrypointUrl.href), require('@loaders.gl/archives/api')];
   const bytes = new Uint8Array(readFileSync(new URL('./fixtures/python.zip', import.meta.url)));
   for (const module of modules) {
+    expect(Object.keys(module).sort()).toEqual([
+      'IndexedArchive',
+      'ZipArchive',
+      'ZipFileSystem',
+      'encodeTar',
+      'encodeZip',
+      'encodeZipInBatches',
+      'openZipArchive',
+      'readTarArchive'
+    ]);
     const archive = await module.openZipArchive(bytes);
     try {
       for (const path of ['folder/abc.txt', 'café.txt']) {
@@ -38,13 +48,12 @@ test('installed ESM/CJS ZIP entrypoints expose portable reading and writing', as
   }
   expect(typeof require('@loaders.gl/archives/zip-encode').encodeZipInBatches).toBe('function');
   const parser = require('@loaders.gl/archives/zip-loader').ZipLoaderWithParser;
-  expect(modules[0].ZipLoader.parse).toBeUndefined();
-  expect(modules[1].ZipLoader.parse).toBeUndefined();
-  expect(typeof (await modules[0].ZipLoader.preload()).parse).toBe('function');
+  const {ZipLoader} = require('@loaders.gl/archives/zip');
+  expect(ZipLoader.parse).toBeUndefined();
+  expect(typeof (await ZipLoader.preload()).parse).toBe('function');
   const files = await parser.parse(bytes);
   expect(new TextDecoder().decode(files['folder/abc.txt'])).toBe('abc');
-  for (const subpath of ['bundled', 'unbundled'])
-    expect(() => require.resolve('@loaders.gl/archives/zip/' + subpath)).toThrow();
+  expect(() => require.resolve('@loaders.gl/archives/zip/unbundled')).toThrow();
 });
 
 /** Dependency ownership is part of the ZIP package contract. */

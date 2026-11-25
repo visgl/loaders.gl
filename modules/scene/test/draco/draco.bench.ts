@@ -4,7 +4,7 @@
 
 import {fetchFile, parse, encode} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/scene/draco';
-import {DracoWriter, encodeDracoBatch} from '@loaders.gl/scene/draco';
+import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
 import type {DracoWriterOptions} from '@loaders.gl/scene/draco';
 
 const POSITIONS_URL = '@loaders.gl/scene/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
@@ -95,7 +95,7 @@ export default async function dracoBench(bench) {
       `DracoWriter#pointcloud#${options.name} - batch-runtime-reuse`,
       {multiplier: pointCount * 2, unit: 'points', minIterations: 1},
       async () =>
-        await encodeDracoBatch([mesh, mesh], {
+        await DracoWriter.encodeGeometryBatch([mesh, mesh], {
           draco: {pointcloud: true, ...options.draco},
           worker: false
         })
@@ -104,7 +104,11 @@ export default async function dracoBench(bench) {
     bench.addAsync(
       `DracoWriter#pointcloud#default - batch-runtime-reuse`,
       {multiplier: pointCount, unit: 'points', minIterations: 1},
-      async () => await encodeDracoBatch([mesh, mesh], {draco: {pointcloud: true}, worker: false})
+      async () =>
+        await DracoWriter.encodeGeometryBatch([mesh, mesh], {
+          draco: {pointcloud: true},
+          worker: false
+        })
     );
   }
 

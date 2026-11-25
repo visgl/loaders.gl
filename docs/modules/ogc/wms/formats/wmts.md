@@ -110,7 +110,7 @@ metadata constraints explicit; **Not implemented** marks features that need addi
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WMTSLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const source = createDataSourceSync(wmtsUrl, [WMTSLoader], {
   wmts: {
@@ -168,7 +168,7 @@ legacy rule is kept for compatibility.
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {WMTSLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const layer = new SourceLayer({
   id: 'satellite-imagery',
@@ -236,7 +236,7 @@ A malformed level value, such as a zero tile width, stays in `tileGrid.matrices`
 and `getTileGridValidation()` reports it as invalid; every tile request for that set then rejects.
 
 ```ts
-import {WMTSImageTileSource} from '@loaders.gl/ogc/wms';
+import {WMTSImageTileSource} from '@loaders.gl/ogc/wms/bundled';
 
 const source = new WMTSImageTileSource(wmtsUrl, {
   wmts: {

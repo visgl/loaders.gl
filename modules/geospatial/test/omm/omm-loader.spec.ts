@@ -7,17 +7,11 @@ import * as arrow from 'apache-arrow';
 import {validateLoader} from 'test/common/conformance';
 import {fetchFile, parse} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {
-  OMMFormat,
-  OMMLoader,
-  OMMLoaderWithParser,
-  OMM_COLUMNS,
-  OMM_SCHEMA,
-  parseAlpha5CatalogNumber,
-  parseOMMEpoch,
-  parseOMMText,
-  type OMMRow
-} from '@loaders.gl/geospatial/omm';
+import {OMMFormat, OMMLoader, type OMMRow} from '@loaders.gl/geospatial/omm';
+import {OMMLoaderWithParser} from '@loaders.gl/geospatial/omm/bundled';
+import {OMM_COLUMNS, OMM_SCHEMA} from '../../src/omm/omm-schema';
+import {parseAlpha5CatalogNumber, parseOMMEpoch} from '../../src/omm/orbit-record-utils';
+import {parseOMMText} from '../../src/omm/omm-parser';
 
 const OMM_JSON_URL = '@loaders.gl/geospatial/omm/test/data/stations.omm.json';
 const OMM_KVN_URL = '@loaders.gl/geospatial/omm/test/data/stations.omm';

@@ -4,13 +4,8 @@
 
 import {expect, test, vi} from 'vitest';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {
-  IndexedArchive,
-  ZipFileSystem,
-  encodeZip,
-  parseHashTable,
-  composeHashFile
-} from '@loaders.gl/archives/zip';
+import {IndexedArchive, ZipFileSystem, encodeZip} from '@loaders.gl/archives/api';
+import {parseHashTable, composeHashFile} from '../../src/zip/hash-file-utility';
 import {encodeIndexedZip} from '@loaders.gl/archives/indexed-zip-writer';
 
 /** Exposes only the common transport for owning-module conformance. */

@@ -14,7 +14,7 @@ export type {ImageTextureCubeArrayManifest as TextureCubeArrayManifest};
 
 /** Preloads the parser-bearing texture cube array manifest loader implementation. */
 async function preload() {
-  const {TextureCubeArrayLoaderWithParser} = await import('@loaders.gl/images/texture');
+  const {TextureCubeArrayLoaderWithParser} = await import('@loaders.gl/images/texture/bundled');
   return TextureCubeArrayLoaderWithParser;
 }
 

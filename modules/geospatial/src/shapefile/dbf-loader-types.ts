@@ -21,7 +21,7 @@ export type DBFLoaderOptions = StrictLoaderOptions & {
 
 /** Preloads the parser-bearing DBF loader implementation. */
 async function preloadDBFLoader() {
-  const {DBFLoaderWithParser} = await import('@loaders.gl/geospatial/dbf');
+  const {DBFLoaderWithParser} = await import('@loaders.gl/geospatial/dbf/bundled');
   return DBFLoaderWithParser;
 }
 

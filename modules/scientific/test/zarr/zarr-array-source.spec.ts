@@ -3,11 +3,8 @@
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {
-  ZarrArraySource,
-  ZarrArrayLoader,
-  type ZarrArrayLoaderOptions
-} from '@loaders.gl/scientific/zarr';
+import {ZarrArraySource, ZarrArrayLoader} from '@loaders.gl/scientific/zarr/bundled';
+import {type ZarrArrayLoaderOptions} from '@loaders.gl/scientific/zarr';
 const FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 test('ZarrArraySource reads array metadata and integer selections', async () => {
   const options: ZarrArrayLoaderOptions = {

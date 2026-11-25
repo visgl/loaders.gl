@@ -1,3 +1,4 @@
+import {WMSLoaderMetadata} from './wms-loader-metadata';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
@@ -48,31 +49,7 @@ export type WMSLoaderOptions = DataSourceOptions &
   };
 
 export const WMSLoader = {
-  dataType: null as unknown as WMSImageSource,
-  batchType: null as never,
-  name: 'Web Map Service (OGC WMS)',
-  id: 'wms',
-  module: 'ogc',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: [],
-  type: 'wms',
-  fromUrl: true,
-  fromBlob: false,
-
-  options: {
-    wms: {
-      // TODO - add options here
-    }
-  },
-
-  defaultOptions: {
-    wms: {
-      // TODO - add options here
-    }
-  },
-
-  testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
+  ...WMSLoaderMetadata,
   createDataSourceSync: (url, options: WMSLoaderOptions, coreApi?: CoreAPI) =>
     new WMSImageSource(url as string, options, coreApi)
 } as const satisfies SourceLoader<WMSImageSource>;

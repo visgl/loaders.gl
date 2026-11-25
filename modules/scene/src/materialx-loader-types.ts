@@ -4,7 +4,7 @@ import type {MaterialXDocument} from './materialx/parse-materialx';
 
 /** Loads the parser-bearing MaterialX implementation. */
 async function preload() {
-  const {MaterialXLoaderWithParser} = await import('@loaders.gl/scene/materialx');
+  const {MaterialXLoaderWithParser} = await import('@loaders.gl/scene/materialx/bundled');
   return MaterialXLoaderWithParser;
 }
 

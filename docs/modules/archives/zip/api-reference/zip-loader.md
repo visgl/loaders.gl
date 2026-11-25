@@ -92,11 +92,11 @@ set `maxDecodedBytes` and, when its compressed payload is also larger, `maxCompr
 These limits bound encoded/decoded byte counts, not decoder intermediates or total heap.
 Use the shared archive API for incremental or range reads instead of retaining a complete map.
 
-The package root exports metadata. For direct parser access:
+`@loaders.gl/archives/zip` exports the loader metadata. Use the bundled subpath for direct parser access.
 
 ```ts
-import {ZipLoaderWithParser} from '@loaders.gl/archives/zip-loader';
-const files = await ZipLoaderWithParser.parse(arrayBuffer, {
+import {ZipLoader} from '@loaders.gl/archives/zip/bundled';
+const files = await ZipLoader.parse(arrayBuffer, {
   zip: {
     maxTotalDecodedBytes: 256n * 1024n * 1024n,
     maxDecodedBytes: 128n * 1024n * 1024n,

@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WMSLoader, WMSImageSource, type ImageSource} from '@loaders.gl/ogc/wms';
+import {WMSLoader, WMSImageSource, type ImageSource} from '@loaders.gl/ogc/wms/bundled';
 
 test('creates a WMS image source synchronously from a service URL', () => {
   const source: ImageSource = createDataSourceSync(

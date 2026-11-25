@@ -22,7 +22,7 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 | — | [`/omm`](./omm/README.md) | 🧪 CCSDS OMM satellite orbit mean elements (JSON, KVN) |
 | — | [`/tle`](./tle/README.md) | 🧪 Two-line element sets (TLE) |
 
-Import metadata from the package root or format subpaths. Parser-bearing loaders use named implementation entrypoints, such as `@loaders.gl/geospatial/wkb`. GeoPackage requires the optional `sql.js` peer dependency. See [Get Started](../../developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
+Import metadata from format subpaths. Import parser-bearing loaders from bundled subpaths, such as `@loaders.gl/geospatial/wkb/bundled`. GeoPackage requires the optional `sql.js` peer dependency. See [Get Started](../../developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
 
 
 ## Format guides

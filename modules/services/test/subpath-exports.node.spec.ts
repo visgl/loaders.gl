@@ -11,7 +11,7 @@ const COMMONJS_EXPORTS = [
   ['@loaders.gl/ogc/wms', 'WMSLoader'],
   ['@loaders.gl/ogc/wms', 'WMSCapabilitiesLoader'],
   ['@loaders.gl/ogc/wms/bundled', 'WMSCapabilitiesLoader'],
-  ['@loaders.gl/ogc/gml', 'GMLLoaderWithParser'],
+  ['@loaders.gl/ogc/gml/bundled', 'GMLLoaderWithParser'],
   ['@loaders.gl/ogc/wmts-capabilities-loader-with-parser', 'WMTSCapabilitiesLoaderWithParser'],
   ['@loaders.gl/ogc/stac', 'STACLoader'],
   ['@loaders.gl/ogc/stac-loader', 'STACLoaderWithParser']
