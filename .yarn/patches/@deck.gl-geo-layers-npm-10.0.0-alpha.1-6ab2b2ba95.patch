@@ -16,7 +16,7 @@ index 14896c4bcb8685641d3a1a0205da873f0e6c4ff5..8fdc93fb83cb30c437f5fff976c73eb2
  // dist/tile-3d-layer/tile-3d-layer.js
  var import_core16 = require("@loaders.gl/core");
 -var import_tiles_3d = require("@loaders.gl/tiles-3d");
-+var import_tiles_3d = require("@loaders.gl/tiles-3d/api");
++var import_tiles_3d = require("@loaders.gl/tiles-3d/tileset");
 +var import_tiles_source = require("@loaders.gl/tiles-3d/3d-tiles/bundled");
 +var import_i3s_source = require("@loaders.gl/tiles-3d/i3s/bundled");
  var import_d_tiles = require("@loaders.gl/tiles-3d/3d-tiles");
@@ -38,7 +38,7 @@ index 2ace60db278b872f27b1657c06a2417523d7c1d3..a8e163d51567c9ef45453bbd2d5357d7
 @@ -1,5 +1,5 @@
  import { Accessor, Color, CompositeLayer, CompositeLayerProps, CoordinateSystem, FilterContext, GetPickingInfoParams, Layer, LayersList, PickingInfo, UpdateParameters, Viewport, DefaultProps, LayerContext } from '@deck.gl/core';
 -import { Tileset3D, Tile3D } from '@loaders.gl/tiles-3d';
-+import {Tileset3D, Tile3D} from '@loaders.gl/tiles-3d/api';
++import {Tileset3D, Tile3D} from '@loaders.gl/tiles-3d/tileset';
  import { Tiles3DLoader } from '@loaders.gl/tiles-3d/3d-tiles';
  /** @internal Exported for testing. */
  export declare function normalizeCoordinateSystem(coordinateSystem: CoordinateSystem | number): CoordinateSystem | number;
@@ -51,7 +51,7 @@ index 26b763e918d22301edccbe26d37c3415a0a177b0..0d03afcf7a70262f0b49d71b3876c269
  import { default as MeshLayer } from "../mesh-layer/mesh-layer.js";
  import { coreApi } from '@loaders.gl/core';
 -import { Tileset3D, Tiles3DSource, I3SSource, TILE_TYPE } from '@loaders.gl/tiles-3d';
-+import {Tileset3D, TILE_TYPE} from '@loaders.gl/tiles-3d/api';
++import {Tileset3D, TILE_TYPE} from '@loaders.gl/tiles-3d/tileset';
 +import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 +import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
  import { Tiles3DLoader } from '@loaders.gl/tiles-3d/3d-tiles';
@@ -100,7 +100,7 @@ index 976b401683064d77147196278b1c4eafc2c08d7e..7325eba400e028927eff38e737d7ec60
  // dist/tile-3d-layer/tile-3d-layer.js
  var import_core16 = require("@loaders.gl/core");
 -var import_tiles_3d = require("@loaders.gl/tiles-3d");
-+var import_tiles_3d = require("@loaders.gl/tiles-3d/api");
++var import_tiles_3d = require("@loaders.gl/tiles-3d/tileset");
 +var import_tiles_source = require("@loaders.gl/tiles-3d/3d-tiles/bundled");
 +var import_i3s_source = require("@loaders.gl/tiles-3d/i3s/bundled");
  var import_d_tiles = require("@loaders.gl/tiles-3d/3d-tiles");
@@ -124,7 +124,7 @@ index 26b763e918d22301edccbe26d37c3415a0a177b0..0d03afcf7a70262f0b49d71b3876c269
  import { default as MeshLayer } from "../mesh-layer/mesh-layer.js";
  import { coreApi } from '@loaders.gl/core';
 -import { Tileset3D, Tiles3DSource, I3SSource, TILE_TYPE } from '@loaders.gl/tiles-3d';
-+import {Tileset3D, TILE_TYPE} from '@loaders.gl/tiles-3d/api';
++import {Tileset3D, TILE_TYPE} from '@loaders.gl/tiles-3d/tileset';
 +import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 +import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
  import { Tiles3DLoader } from '@loaders.gl/tiles-3d/3d-tiles';
@@ -152,7 +152,7 @@ index a0006fd8e8ffeff4221c5f594f22d0f39e1af40a..aeaabf6344c0ebe0a4ae22e493661e5f
  import {coreApi} from '@loaders.gl/core';
  import {MeshAttributes} from '@loaders.gl/core/schema';
 -import {Tileset3D, Tiles3DSource, I3SSource, Tile3D, TILE_TYPE} from '@loaders.gl/tiles-3d';
-+import {Tileset3D, Tile3D, TILE_TYPE} from '@loaders.gl/tiles-3d/api';
++import {Tileset3D, Tile3D, TILE_TYPE} from '@loaders.gl/tiles-3d/tileset';
 +import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 +import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
  import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';

@@ -135,7 +135,9 @@ test.each([
 ])('CommonJS %s %s uses the installed package version', (owner, loaderName) => {
   const require = createRequire(import.meta.url);
   const manifest = JSON.parse(fs.readFileSync(`modules/${owner}/package.json`, 'utf8'));
-  const entry = require(`@loaders.gl/${owner}/${loaderName.replace(/Loader$/, '').toLowerCase()}`);
+  const entry = require(
+    `@loaders.gl/${owner}/${loaderName === 'TWKBLoader' ? 'wkb' : loaderName.replace(/Loader$/, '').toLowerCase()}`
+  );
   expect(entry[loaderName].version).toBe(manifest.version);
 });
 

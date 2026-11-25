@@ -30,7 +30,7 @@ functions live at `@loaders.gl/core/api`. The core root forwards the existing co
 Capability entrypoints follow the same model:
 
 ```ts
-import {Tileset3D} from '@loaders.gl/tiles-3d/api';
+import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 import {DuckDBSQLSource} from '@loaders.gl/sql/duckdb';
 import {SHA256Hash} from '@loaders.gl/crypto/sha256';
 ```

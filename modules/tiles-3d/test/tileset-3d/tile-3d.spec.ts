@@ -9,7 +9,7 @@ import {expect, test, vi} from 'vitest';
 import {Matrix4} from '@math.gl/core/matrix';
 import {TILE_CONTENT_STATE, Tile3D} from '@loaders.gl/tiles-3d/tileset';
 // @ts-ignore
-import {LOD_METRIC_TYPE} from '@loaders.gl/tiles-3d/api';
+import {LOD_METRIC_TYPE} from '@loaders.gl/tiles-3d/tileset';
 // @ts-ignore
 const clone = (object, flag) => JSON.parse(JSON.stringify(object));
 const TILE_HEADER_WITH_BOUNDING_SPHERE = {

@@ -118,7 +118,7 @@
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./netcdf-bundle.ts --output=dist/netcdf.min.js && node ../../scripts/build-codec-bundle.mjs ./zarr-bundle.ts --output=dist/zarr.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./netcdf-bundle.ts --env=dev --output=dist/netcdf.dev.js && node ../../scripts/build-codec-bundle.mjs ./zarr-bundle.ts --env=dev --output=dist/zarr.dev.js",
     "build-cjs-netcdf": "esbuild src/netcdf/*.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist/netcdf --out-extension:.js=.cjs --external:@loaders.gl/* --external:@math.gl/*",
-    "build-cjs-zarr": "esbuild src/zarr/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr/index.cjs --external:@loaders.gl/* --external:@math.gl/*",
+    "build-cjs-zarr": "esbuild src/zarr-bundled.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/zarr-bundled.cjs --external:@loaders.gl/* --external:@math.gl/*",
     "build-cjs-grib2": "esbuild src/grib2/index.ts src/scientific-array.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist --out-extension:.js=.cjs --external:@loaders.gl/*",
     "build-cjs-hdf5": "esbuild src/hdf5/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/hdf5/index.cjs --external:@loaders.gl/*",
     "build-cjs-vtk": "esbuild src/vtk/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vtk/index.cjs --external:@loaders.gl/*",
