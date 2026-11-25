@@ -122,6 +122,8 @@ export class Tiles3DSource implements Tileset3DSource {
   metadata?: TilesetSourceMetadata;
 
   private sourceLoadOptions: LoaderOptions;
+  /** Shared credential resolution for root, content and subtree requests. */
+  private authenticationReady?: Promise<void>;
   private readonly queryParams: Record<string, string> = {};
   /** Final request URLs cached by unmodified tile content URL. */
   private readonly tileUrlCache: Map<string, string> = new Map();
@@ -195,12 +197,17 @@ export class Tiles3DSource implements Tileset3DSource {
    * Fetches and validates top-level metadata, then normalizes common fields used by {@link Tileset3D}.
    */
   async initialize(): Promise<void> {
-    this.sourceLoadOptions = await resolveLoaderAuthenticationOptions(
-      this.loader,
-      this.url,
-      this.sourceLoadOptions
-    );
+    if (this.sourceLoadOptions.core?.credentials?.length) {
+      this.authenticationReady ||= resolveLoaderAuthenticationOptions(
+        this.loader,
+        this.url,
+        this.sourceLoadOptions
+      ).then(options => {
+        this.sourceLoadOptions = options;
+      });
+    }
     if (!this.rootTileset) {
+      await this.authenticationReady;
       const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
       this.rootTileset = await this.loadRootData(this.url, {
         ...this.loadOptions,
@@ -255,6 +262,7 @@ export class Tiles3DSource implements Tileset3DSource {
       refine: this.rootTileset.root?.refine,
       spatialReference: get3DTilesSpatialReference(this.rootTileset)
     };
+    return this.authenticationReady;
   }
 
   /**
@@ -347,6 +355,7 @@ export class Tiles3DSource implements Tileset3DSource {
    * Loads binary content or nested tileset JSON for a runtime tile.
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
+    await this.authenticationReady;
     const contentUrls = (tile.contentUrls || [tile.contentUrl]).filter(Boolean);
     const cachedContentHeaders = this.tileContentHeaders.get(tile);
     const contentHeaders: Record<string, any>[] =
@@ -930,6 +939,7 @@ export class Tiles3DSource implements Tileset3DSource {
     subtreeUrl: string,
     packageResource?: PackageResource
   ): Promise<ParsedImplicitSubtree> {
+    await this.authenticationReady;
     const cachedSubtree = this.implicitSubtreeCache.get(subtreeUrl);
     if (cachedSubtree) {
       this.implicitTilingStats.cacheHits++;
