@@ -56,7 +56,7 @@ It is intended for source-backed octree formats such as Potree and COPC and expo
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/api';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 
 const dataSource = await createDataSource(POTREE_URL, PotreeLoader, {

@@ -76,11 +76,11 @@ collections.
 
 ## Parse a document
 
-The package root exports metadata-only loaders; async core APIs preload the parser automatically:
+The GML format entry point exports metadata. The async core API loads the parser when needed.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {GMLLoader} from '@loaders.gl/ogc/wms';
+import {GMLLoader} from '@loaders.gl/ogc/gml';
 
 const table = await load('features.gml', GMLLoader);
 console.log(table.numRows);
@@ -90,7 +90,7 @@ console.log(table.numRows);
 
 ```ts
 import {loadInBatches} from '@loaders.gl/core';
-import {GMLLoader} from '@loaders.gl/ogc/wms';
+import {GMLLoader} from '@loaders.gl/ogc/gml';
 
 for await (const batch of await loadInBatches(wfsResponse, GMLLoader)) {
   consume(batch.data);
@@ -107,7 +107,7 @@ GML application schemas often carry scalar types that cannot be inferred safely 
 known types from `DescribeFeatureType` or application metadata:
 
 ```ts
-import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml';
+import {GMLLoaderWithParser} from '@loaders.gl/ogc/gml/bundled';
 
 const table = GMLLoaderWithParser.parseTextSync(xml, {
   gml: {

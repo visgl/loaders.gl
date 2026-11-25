@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/gltf';
+import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/api';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
 
 describe('glTF 1 normalization', () => {

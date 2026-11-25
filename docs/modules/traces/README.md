@@ -137,19 +137,16 @@ requests across services.
 
 ```typescript
 import {load, encode} from '@loaders.gl/core';
-import {
-  ChromeTraceLoader,
-  ChromeTraceWriter,
-  JaegerTraceLoader,
-  JaegerTraceWriter,
-  OtlpTraceJsonLoader,
-  OtlpTraceLoader,
-  OtlpTraceWriter,
-  PerfettoTraceLoader,
-  PerfettoTraceWriter,
-  ZipkinTraceLoader,
-  ZipkinTraceWriter
-} from '@loaders.gl/traces';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
+import {ChromeTraceWriter} from '@loaders.gl/traces/chrome-trace/bundled';
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceWriter} from '@loaders.gl/traces/jaeger/bundled';
+import {OtlpTraceJsonLoader, OtlpTraceLoader} from '@loaders.gl/traces/otlp';
+import {OtlpTraceWriter} from '@loaders.gl/traces/otlp/bundled';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
+import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
+import {ZipkinTraceLoader} from '@loaders.gl/traces/zipkin';
+import {ZipkinTraceWriter} from '@loaders.gl/traces/zipkin/bundled';
 
 const chromeEvents = await load('trace.json', ChromeTraceLoader, {
   chromeTrace: {shape: 'arrow'}
@@ -173,7 +170,7 @@ const zipkinJson = await encode(zipkinTables, ZipkinTraceWriter);
 
 ## Bundle Splitting
 
-The package root exports metadata-only loaders. Async core APIs call each loader's `preload()`
+The format subpaths export metadata loaders. Async core APIs call each loader's `preload()`
 method and dynamically import its parser-bearing implementation. This keeps parser code out of the
 initial bundle until parsing starts.
 
@@ -181,12 +178,12 @@ Applications that need parser-bearing loader objects directly can import the imp
 subpaths:
 
 ```typescript
-import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace';
-import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto';
-import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp';
-import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp';
-import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger';
-import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin';
+import {ChromeTraceLoaderWithParser} from '@loaders.gl/traces/chrome-trace/bundled';
+import {PerfettoTraceLoaderWithParser} from '@loaders.gl/traces/perfetto/bundled';
+import {OtlpTraceLoaderWithParser} from '@loaders.gl/traces/otlp/bundled';
+import {OtlpTraceJsonLoaderWithParser} from '@loaders.gl/traces/otlp/bundled';
+import {JaegerTraceLoaderWithParser} from '@loaders.gl/traces/jaeger/bundled';
+import {ZipkinTraceLoaderWithParser} from '@loaders.gl/traces/zipkin/bundled';
 ```
 
 Writers and shared public types remain available from `@loaders.gl/traces`.
@@ -217,7 +214,7 @@ before emitting batches.
 
 ```typescript
 import {parseInBatches} from '@loaders.gl/core';
-import {OtlpTraceJsonLoader} from '@loaders.gl/traces';
+import {OtlpTraceJsonLoader} from '@loaders.gl/traces/otlp';
 
 const batches = await parseInBatches(response, OtlpTraceJsonLoader, {
   core: {worker: true},

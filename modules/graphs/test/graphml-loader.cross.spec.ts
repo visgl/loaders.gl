@@ -4,7 +4,8 @@
 
 import {describe, expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
-import {GraphMLLoader, type GraphData, type GraphOutput} from '../src';
+import {GraphMLLoader} from '@loaders.gl/graphs/graphml';
+import {type GraphData, type GraphOutput} from '@loaders.gl/graphs/graph';
 import {parseGraphML} from '../src/lib/parse-graphml';
 import {GraphMLLoaderWithParser} from '../src/graphml-loader';
 

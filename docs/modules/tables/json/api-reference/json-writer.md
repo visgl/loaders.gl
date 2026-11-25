@@ -51,7 +51,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ```typescript
 import {encode} from '@loaders.gl/core';
 import type {Table} from 'apache-arrow';
-import {JSONWriter} from '@loaders.gl/tables/json';
+import {JSONWriter} from '@loaders.gl/tables/json/bundled';
 
 declare const table: Table;
 

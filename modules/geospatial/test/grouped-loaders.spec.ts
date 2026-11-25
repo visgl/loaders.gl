@@ -7,23 +7,27 @@ import {parse} from '@loaders.gl/core';
 import {KMLLoader, KMZLoader} from '@loaders.gl/geospatial/kml';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
+import {OMMLoader} from '@loaders.gl/geospatial/omm';
+import {TLELoader} from '@loaders.gl/geospatial/tle';
 import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
 import {SHPLoader} from '@loaders.gl/geospatial/shp';
 import {DBFLoader} from '@loaders.gl/geospatial/dbf';
 import {FlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
 import {GeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
-import {KMLLoaderWithParser} from '@loaders.gl/geospatial/kml';
-import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz';
-import {GPXLoaderWithParser} from '@loaders.gl/geospatial/gpx';
-import {TCXLoaderWithParser} from '@loaders.gl/geospatial/tcx';
-import {ShapefileLoaderWithParser} from '@loaders.gl/geospatial/shapefile';
-import {SHPLoaderWithParser} from '@loaders.gl/geospatial/shp';
-import {DBFLoaderWithParser} from '@loaders.gl/geospatial/dbf';
+import {KMLLoaderWithParser} from '@loaders.gl/geospatial/kml/bundled';
+import {KMZLoaderWithParser} from '@loaders.gl/geospatial/kmz/bundled';
+import {GPXLoaderWithParser} from '@loaders.gl/geospatial/gpx/bundled';
+import {TCXLoaderWithParser} from '@loaders.gl/geospatial/tcx/bundled';
+import {ShapefileLoaderWithParser} from '@loaders.gl/geospatial/shapefile/bundled';
+import {SHPLoaderWithParser} from '@loaders.gl/geospatial/shp/bundled';
+import {DBFLoaderWithParser} from '@loaders.gl/geospatial/dbf/bundled';
+import {OMMLoaderWithParser} from '@loaders.gl/geospatial/omm/bundled';
+import {TLELoaderWithParser} from '@loaders.gl/geospatial/tle/bundled';
 import {KMLLoader as FormatKMLLoader} from '@loaders.gl/geospatial/kml';
 import {ShapefileLoader as FormatShapefileLoader} from '@loaders.gl/geospatial/shapefile';
-import {FlatGeobufLoaderWithParser} from '@loaders.gl/geospatial/flatgeobuf';
+import {FlatGeobufLoaderWithParser} from '@loaders.gl/geospatial/flatgeobuf/bundled';
 import {FlatGeobufLoader as FormatFlatGeobufLoader} from '@loaders.gl/geospatial/flatgeobuf';
-import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage';
+import {GeoPackageLoaderWithParser} from '@loaders.gl/geospatial/geopackage/bundled';
 import {GeoPackageLoader as FormatGeoPackageLoader} from '@loaders.gl/geospatial/geopackage';
 
 test.each([
@@ -33,6 +37,8 @@ test.each([
   [KMZLoader, KMZLoaderWithParser],
   [GPXLoader, GPXLoaderWithParser],
   [TCXLoader, TCXLoaderWithParser],
+  [OMMLoader, OMMLoaderWithParser],
+  [TLELoader, TLELoaderWithParser],
   [ShapefileLoader, ShapefileLoaderWithParser],
   [SHPLoader, SHPLoaderWithParser],
   [DBFLoader, DBFLoaderWithParser]

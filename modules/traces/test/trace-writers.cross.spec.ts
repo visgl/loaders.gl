@@ -7,14 +7,13 @@ import {encodeSync, parse, parseInBatches} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {beforeAll, describe, expect, it} from 'vitest';
 
-import {
-  ChromeTraceLoader,
-  ChromeTraceWriter,
-  PerfettoTraceLoader,
-  PerfettoTraceWriter
-} from '../src';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
+import {ChromeTraceWriter} from '@loaders.gl/traces/chrome-trace/bundled';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
+import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
 
-import type {ChromeTraceEventArrowTable, PerfettoTrace, PerfettoTraceBatch} from '../src';
+import type {ChromeTraceEventArrowTable} from '@loaders.gl/traces/chrome-trace';
+import type {PerfettoTrace, PerfettoTraceBatch} from '@loaders.gl/traces/perfetto';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
 setLoaderOptions({core: {worker: false}});

@@ -1,15 +1,17 @@
 import {afterEach, describe, expect, test, vi} from 'vitest';
 import {
   CapabilityGraph,
+  ServiceRequestError,
+  ServiceRuntime,
+  discoverServiceGraph
+} from '@loaders.gl/ogc/wms/api';
+import {
   DEFAULT_SERVICE_LOADERS,
   OGCAPICoveragesSource,
   OGCAPIEDRSource,
   OGCAPIFeaturesSource,
-  OGCAPITilesSource,
-  ServiceRequestError,
-  ServiceRuntime,
-  discoverServiceGraph
-} from '@loaders.gl/ogc/wms';
+  OGCAPITilesSource
+} from '@loaders.gl/ogc/wms/bundled';
 import {createQueryParameterCredential} from '@loaders.gl/core/loader-utils';
 
 afterEach(() => vi.unstubAllGlobals());

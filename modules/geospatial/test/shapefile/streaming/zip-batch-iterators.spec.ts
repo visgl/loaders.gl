@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import type {ObjectRowTableBatch, ArrayRowTableBatch} from '@loaders.gl/core/schema';
-import {_zipBatchIterators as zipBatchIterators} from '@loaders.gl/geospatial/shapefile';
+import {_zipBatchIterators as zipBatchIterators} from '@loaders.gl/geospatial/shapefile/api';
 type RowTableBatch = ObjectRowTableBatch | ArrayRowTableBatch;
 type TestCase = {
   title: string;

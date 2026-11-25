@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/gltf';
+import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/api';
 import {getTypedArrayForAccessor} from '../../../../src/gltf/lib/gltf-utils/get-typed-array';
 import {createAccessorAsset} from '../../test-utils/create-gltf-v1-accessor';
 import {createSkinAsset, BAKED_MATRICES} from '../../test-utils/create-gltf-v1-skin';

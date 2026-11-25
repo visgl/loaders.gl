@@ -4,7 +4,7 @@
 
 import {I3SLoader, I3STilesetHeader, SceneLayer3D} from '@loaders.gl/tiles-3d/i3s';
 import {coreApi} from '@loaders.gl/core';
-import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {Tile3D, Tileset3D, TILESET_TYPE} from '@loaders.gl/tiles-3d/tileset';
 import I3SNodePagesTiles from '../../../src/i3s/lib/helpers/i3s-nodepages-tiles';
 import {LOADERS_GL_RAW_FIXTURE_URL} from '@loaders.gl/core/constants';

@@ -6,8 +6,8 @@ import {describe, expect, test} from 'vitest';
 import type {GetTileParameters, TileGrid} from '@loaders.gl/core/loader-utils';
 import {getTileGridValidation} from '@loaders.gl/core/loader-utils/tile-grid';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {OGCAPITilesLoader, WMTSLoader} from '@loaders.gl/ogc/wms';
-import type {WMTSImageTileSource} from '@loaders.gl/ogc/wms';
+import {OGCAPITilesLoader, WMTSLoader} from '@loaders.gl/ogc/wms/bundled';
+import type {WMTSImageTileSource} from '@loaders.gl/ogc/wms/bundled';
 
 /**
  * Wire values of levels 0 and 1 of the OGC WorldCRS84Quad (OGC 17-083r4, Annex D). The matrix

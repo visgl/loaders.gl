@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import {fetchFile} from '@loaders.gl/core';
-import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
+import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {describe, expect, test} from 'vitest';
 
 const XYZ_FIXTURE = '@loaders.gl/tiles-3d/i3s/test/data/point-cloud/SMALL_AUTZEN_LAS_All.pccxyz';

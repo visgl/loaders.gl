@@ -10,6 +10,6 @@ const requirePackage = createRequire(import.meta.url);
 test('table-format sources resolve from independent CommonJS subpaths', () => {
   expect(requirePackage('@loaders.gl/tables/iceberg').IcebergTableSource).toBeDefined();
   expect(requirePackage('@loaders.gl/tables/iceberg').IcebergRestCatalog).toBeDefined();
-  expect(requirePackage('@loaders.gl/tables/delta').DeltaTableSource).toBeDefined();
+  expect(requirePackage('@loaders.gl/tables/delta/bundled').DeltaTableSource).toBeDefined();
   expect(requirePackage('@loaders.gl/tables/hudi').HudiTableSource).toBeDefined();
 });

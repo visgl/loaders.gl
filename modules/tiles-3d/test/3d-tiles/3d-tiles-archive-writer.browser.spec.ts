@@ -6,7 +6,7 @@ import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {validateWriter} from 'test/common/conformance';
 import {readZip} from 'test/common/read-zip';
-import {Tiles3DArchiveWriter as RootWriter} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DArchiveWriter as RootWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {
   Tiles3DArchiveWriter,
   encodeTiles3DArchiveInBatches

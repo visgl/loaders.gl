@@ -26,7 +26,7 @@ let credentials: BundleSummary;
 
 beforeAll(async () => {
   [lazyRegistry, bundledRegistry, bundledFeature, credentials] = await Promise.all([
-    bundleImport('@loaders.gl/arcgis', 'ARCGIS_LOADERS'),
+    bundleImport('@loaders.gl/arcgis/discovery', 'ARCGIS_LOADERS'),
     bundleImport('@loaders.gl/arcgis/bundled', 'ARCGIS_LOADERS'),
     bundleImport('@loaders.gl/arcgis/bundled', 'ArcGISFeatureServerLoader'),
     bundleImport('@loaders.gl/arcgis/authentication', 'ArcGISAuthentication')
@@ -83,26 +83,26 @@ test('built package exports resolve in Node without source aliases', () => {
     import {createRequire} from 'node:module';
     import {createDataSource, createDataSourceSync} from '@loaders.gl/core';
     import * as root from '@loaders.gl/arcgis';
-    import * as bundled from '@loaders.gl/arcgis/bundled';
+    import * as api from '@loaders.gl/arcgis/api';
     import {resolveArcGISItem} from '@loaders.gl/arcgis/items';
     import {ArcGISAuthentication} from '@loaders.gl/arcgis/authentication';
     assert.equal(typeof resolveArcGISItem, 'function');
-    assert.equal(resolveArcGISItem, bundled.resolveArcGISItem);
+    assert.equal(resolveArcGISItem, api.resolveArcGISItem);
     assert.equal(root.resolveArcGISItem, undefined);
-    assert.equal(ArcGISAuthentication, bundled.ArcGISAuthentication);
+    assert.equal(ArcGISAuthentication, api.ArcGISAuthentication);
     assert.equal(root.ArcGISAuthentication, undefined);
     assert.equal(typeof new ArcGISAuthentication({origins: ['https://example.com'], token: 'token'}).createFetch(), 'function');
     const serviceUrl = 'https://example.com/arcgis/rest/services/Test/SceneServer/layers/0';
-    for (const loader of root.ARCGIS_LOADERS) {
+    for (const loader of (await import('@loaders.gl/arcgis/discovery')).ARCGIS_LOADERS) {
       const runtime = await loader.preload();
-      assert.equal(runtime, bundled.getArcGISLoader(loader.id));
+      assert.equal(runtime, api.getArcGISLoader(loader.id));
       const asynchronousSource = await createDataSource(serviceUrl, loader);
       const synchronousSource = createDataSourceSync(serviceUrl, [runtime], {});
       assert.equal(asynchronousSource.constructor, synchronousSource.constructor);
     }
-    const commonJs = createRequire(import.meta.url)('@loaders.gl/arcgis');
-    assert.equal(commonJs.ARCGIS_LOADERS.length, 6);
-    assert.equal(typeof commonJs.ArcGISFeatureServerLoader.preload, 'function');
+    const commonJs = createRequire(import.meta.url);
+    assert.equal(commonJs('@loaders.gl/arcgis/discovery').ARCGIS_LOADERS.length, 6);
+    assert.equal(typeof commonJs('@loaders.gl/arcgis/feature-service').ArcGISFeatureServerLoader.preload, 'function');
     console.log('published entrypoints passed');
   `
     ],

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf';
+import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/api';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
 import type {GLTFMaterial} from '../../../../src/gltf/lib/types/gltf-json-schema';
 

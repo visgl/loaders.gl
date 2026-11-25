@@ -5,7 +5,7 @@
 import {beforeAll, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {ParquetSource} from '../../src/parquet/parquet-source';
 import type {ParquetSourceExplain} from '../../src/parquet/parquet-source-types';

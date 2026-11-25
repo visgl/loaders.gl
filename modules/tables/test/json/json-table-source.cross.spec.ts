@@ -5,8 +5,10 @@
 import {expect, test, vi} from 'vitest';
 import {createDataSource, createDataSourceSync, load, preload} from '@loaders.gl/core';
 import {query} from '@loaders.gl/core/query';
-import {CSVLoader, CSVTableSource} from '@loaders.gl/tables/csv';
-import {JSONLoader, JSONTableLoader, JSONTableSource} from '@loaders.gl/tables/json';
+import {CSVLoader} from '@loaders.gl/tables/csv';
+import {CSVTableSource} from '@loaders.gl/tables/csv/bundled';
+import {JSONLoader, JSONTableLoader} from '@loaders.gl/tables/json';
+import {JSONTableSource} from '@loaders.gl/tables/json/bundled';
 
 test('JSON table source queries inferred array columns from a URL', async () => {
   expect(JSONTableLoader.options.json.shape).toBe('arrow');

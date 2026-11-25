@@ -5,12 +5,9 @@
 import {expect, test, vi} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {registerLoaders, load, parse, parseSync, fetchFile, encodeSync} from '@loaders.gl/core';
-import {
-  GLTFLoader,
-  GLTFWriter,
-  getGLTFAccessorValue,
-  type GLTFLoaderOptions
-} from '@loaders.gl/scene/gltf';
+import {GLTFLoader, type GLTFLoaderOptions} from '@loaders.gl/scene/gltf';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
+import {getGLTFAccessorValue} from '@loaders.gl/scene/api';
 import {encodeArrayBufferToBase64} from '@loaders.gl/core/loader-utils';
 import {DracoLoader} from '@loaders.gl/scene/draco';
 import {ImageLoader} from '@loaders.gl/images/image';

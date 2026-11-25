@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/core/loader-utils';
+import {
+  path,
+  RequestCache,
+  createSourceLoadOptionsResolver,
+  sliceArrayBuffer
+} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
 import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/core/loader-utils';
@@ -114,6 +119,8 @@ export class Tiles3DSource implements Tileset3DSource {
   /** Normalized source metadata after initialization. */
   metadata?: TilesetSourceMetadata;
 
+  /** Retrieves authenticated options for this source's resource requests. */
+  private readonly getRequestLoadOptions: () => Promise<LoaderOptions>;
   private readonly queryParams: Record<string, string> = {};
   /** Final request URLs cached by unmodified tile content URL. */
   private readonly tileUrlCache: Map<string, string> = new Map();
@@ -162,6 +169,11 @@ export class Tiles3DSource implements Tileset3DSource {
     this.resolver = request.resolver;
     this.coreApi = request.coreApi;
     this.loadOptions = loadOptions;
+    this.getRequestLoadOptions = createSourceLoadOptionsResolver(
+      this.loader,
+      this.url,
+      loadOptions
+    );
     const maximumCachedSubtrees = Number(
       (loadOptions['3d-tiles'] as Record<string, unknown> | undefined)?.maximumCachedSubtrees
     );
@@ -188,9 +200,10 @@ export class Tiles3DSource implements Tileset3DSource {
    */
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
-      const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
+      const loadOptions = await this.getRequestLoadOptions();
+      const loaderOptions = (loadOptions[this.loader.id] as Record<string, unknown>) || {};
       this.rootTileset = await this.loadRootData(this.url, {
-        ...this.loadOptions,
+        ...loadOptions,
         [this.loader.id]: {
           ...loaderOptions,
           isTileset: true
@@ -334,6 +347,7 @@ export class Tiles3DSource implements Tileset3DSource {
    * Loads binary content or nested tileset JSON for a runtime tile.
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
+    const loadOptions = await this.getRequestLoadOptions();
     const contentUrls = (tile.contentUrls || [tile.contentUrl]).filter(Boolean);
     const cachedContentHeaders = this.tileContentHeaders.get(tile);
     const contentHeaders: Record<string, any>[] =
@@ -346,10 +360,9 @@ export class Tiles3DSource implements Tileset3DSource {
     if (!cachedContentHeaders) {
       this.tileContentHeaders.set(tile, contentHeaders);
     }
-    const tilesetLoaderOptions =
-      (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
+    const tilesetLoaderOptions = (loadOptions[this.loader.id] as Record<string, unknown>) || {};
     const options = {
-      ...this.loadOptions,
+      ...loadOptions,
       [this.loader.id]: {
         ...tilesetLoaderOptions,
         // Content bytes, rather than URL suffixes, distinguish external tilesets from renderable
@@ -924,10 +937,11 @@ export class Tiles3DSource implements Tileset3DSource {
     }
 
     this.implicitTilingStats.requestedSubtrees++;
-    const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
     return await this.implicitSubtreeCache.getOrLoad(subtreeUrl, async () => {
+      const loadOptions = await this.getRequestLoadOptions();
+      const loaderOptions = (loadOptions[this.loader.id] as Record<string, unknown>) || {};
       const options = {
-        ...this.loadOptions,
+        ...loadOptions,
         [this.loader.id]: {
           ...loaderOptions,
           isTileset: false,

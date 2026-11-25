@@ -9,7 +9,7 @@ picking for hover/click feedback, a vector source for remote extent requests, an
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WFSLoader} from '@loaders.gl/ogc/wms';
+import {WFSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const source = createDataSourceSync(wfsUrl, [WFSLoader], {
   wfs: {wfsParameters: {version: '2.0.0', crs: 'EPSG:3857'}}
@@ -35,7 +35,7 @@ Wrap any GeoJSON-capable `VectorSource`, including WFS and OGC API Features, in
 `ManagedVectorSource` from `@loaders.gl/ogc/wms`:
 
 ```ts
-import {ManagedVectorSource} from '@loaders.gl/ogc/wms';
+import {ManagedVectorSource} from '@loaders.gl/ogc/wms/bundled';
 import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 const managed = new ManagedVectorSource(source, {maxCachedExtents: 32});

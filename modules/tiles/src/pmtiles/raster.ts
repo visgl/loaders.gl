@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ImageWriter} from '@loaders.gl/images/image';
+import {ImageWriter} from '@loaders.gl/images/image/bundled';
 import {
   rasterCoordinateToPixel,
   sampleRaster,

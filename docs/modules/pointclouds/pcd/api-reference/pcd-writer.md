@@ -51,7 +51,7 @@ The `PCDWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow
 ```typescript
 import {encode} from '@loaders.gl/core';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/core/schema';
-import {PCDWriter} from '@loaders.gl/pointclouds/pcd';
+import {PCDWriter} from '@loaders.gl/pointclouds/pcd/bundled';
 
 declare const pointCloud: Mesh | MeshArrowTable;
 

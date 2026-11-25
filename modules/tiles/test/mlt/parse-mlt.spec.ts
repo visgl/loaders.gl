@@ -4,9 +4,9 @@
 
 import {beforeEach, describe, expect, test, vi} from 'vitest';
 
-vi.mock('@maplibre/mlt', () => ({decodeTile: vi.fn()}));
+vi.mock('../../src/mlt/libs/mlt-decoder.mjs', () => ({decodeTile: vi.fn()}));
 
-import {decodeTile} from '@maplibre/mlt';
+import {decodeTile} from '../../src/mlt/libs/mlt-decoder.mjs';
 import {parseMLT} from '../../src/mlt/lib/parse-mlt';
 
 const decodeTileMock = vi.mocked(decodeTile);

@@ -85,12 +85,8 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
-export {
-  PMTilesLoader,
-  PMTilesFormat,
-  PMTilesTileSource,
-  _PMTilesLoader
-} from '@loaders.gl/tiles/pmtiles';
+export {PMTilesLoader, PMTilesFormat, _PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
+export {PMTilesTileSource} from '@loaders.gl/tiles/pmtiles/bundled';
 export type {
   PMTilesMetadata,
   PMTilesRangeRequestOptions,

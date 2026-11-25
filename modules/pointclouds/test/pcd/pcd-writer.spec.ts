@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
-import {PCDLoader, PCDWriter} from '@loaders.gl/pointclouds/pcd';
+import {PCDLoader} from '@loaders.gl/pointclouds/pcd';
+import {PCDWriter} from '@loaders.gl/pointclouds/pcd/bundled';
 import {encode, parse} from '@loaders.gl/core';
 import {convertMeshToArrowTable, deduceMeshSchema} from '@loaders.gl/core/schema-utils';
 const attributes = {

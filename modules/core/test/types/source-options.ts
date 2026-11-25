@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {createDataSource, createDataSourceSync} from '@loaders.gl/core';
-import {MVTTileSource} from '@loaders.gl/tiles/mvt';
+import {MVTTileSource} from '@loaders.gl/tiles/mvt/bundled';
 import {MVTLoaderWithParser} from '@loaders.gl/tiles/mvt-loader';
-import {PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles';
-import {WMSLoader} from '@loaders.gl/ogc/wms';
+import {PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles/bundled';
+import {WMSLoader} from '@loaders.gl/ogc/wms/bundled';
 import type {DataSourceOptions, SourcePropsType} from '@loaders.gl/core/loader-utils';
 
 // Compile only: node node_modules/typescript/bin/tsc --project modules/core/test/types/tsconfig.json

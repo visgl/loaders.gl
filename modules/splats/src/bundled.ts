@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {SPLATLoader, KSPLATLoader, SPZLoader, RADLoader} from '.';
+export {SPLATLoader, KSPLATLoader, SPZLoader, RADLoader} from './package-exports';

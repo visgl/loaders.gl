@@ -62,7 +62,7 @@ Build a GIF from images
 ```typescript
 import {load} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images/image';
-import {GIFBuilder} from '@loaders.gl/images/image';
+import {GIFBuilder} from '@loaders.gl/images/gif-builder';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
 gifBuilder.add(await load('http://i.imgur.com/2OO33vX.jpg', ImageLoader));
@@ -74,7 +74,7 @@ gifBuilder.build();
 Build a GIF from image URLs (Experimental)
 
 ```typescript
-import {GIFBuilder} from '@loaders.gl/images/image';
+import {GIFBuilder} from '@loaders.gl/images/gif-builder';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
 gifBuilder.add('http://i.imgur.com/2OO33vX.jpg');
@@ -86,7 +86,7 @@ gifBuilder.build();
 Build a GIF from image URLs, with frame-specific Text (Experimental)
 
 ```typescript
-import {GIFBuilder} from '@loaders.gl/images/image';
+import {GIFBuilder} from '@loaders.gl/images/gif-builder';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
 gifBuilder.add({src: 'http://i.imgur.com/2OO33vX.jpg', text: 'First image text'});
@@ -98,7 +98,7 @@ gifBuilder.build();
 Build a GIF from the webcam (Experimental)
 
 ```typescript
-import {GIFBuilder} from '@loaders.gl/images/image';
+import {GIFBuilder} from '@loaders.gl/images/gif-builder';
 const gifBuilder = new GIFBuilder({source: webcam, width: 400, height: 400});
 gifBuilder.build();
 ```

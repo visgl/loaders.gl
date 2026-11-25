@@ -50,7 +50,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ```typescript
 import {encode} from '@loaders.gl/core';
 import type {Table} from 'apache-arrow';
-import {CSVWriter} from '@loaders.gl/tables/csv';
+import {CSVWriter} from '@loaders.gl/tables/csv/bundled';
 
 declare const table: Table;
 

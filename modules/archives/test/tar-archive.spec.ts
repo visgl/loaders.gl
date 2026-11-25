@@ -1,5 +1,8 @@
 import {expect, test} from 'vitest';
-import {TarBuilder, TarLoader, TarWriter, readTarArchive} from '@loaders.gl/archives/tar';
+import {TarBuilder} from '../src/tar/tar-builder';
+import {readTarArchive} from '@loaders.gl/archives/api';
+import {TarWriter} from '@loaders.gl/archives/tar/bundled';
+import {TarLoader} from '@loaders.gl/archives/tar';
 import {TarLoaderWithParser} from '@loaders.gl/archives/tar-loader';
 
 test('TAR round trip through loader and writer', async () => {

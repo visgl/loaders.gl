@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
-import {DOTLoader} from '../src';
+import {DOTLoader} from '@loaders.gl/graphs/dot';
 import {DOTLoaderWithParser} from '../src/dot-loader';
 
 const PLAIN_OPTIONS = {dot: {shape: 'plain-graph-data' as const}};

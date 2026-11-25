@@ -6,14 +6,9 @@ import {setLoaderOptions} from '@loaders.gl/core';
 import {encodeSync, parse, parseInBatches, parseSync} from '@loaders.gl/core';
 import {describe, expect, it} from 'vitest';
 
-import {
-  JaegerTraceLoader,
-  JaegerTraceWriter,
-  OtlpTraceJsonLoader,
-  type JaegerQueryResponse,
-  type OtlpTrace,
-  type OtlpTraceBatch
-} from '../src';
+import {JaegerTraceLoader, type JaegerQueryResponse} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceWriter} from '@loaders.gl/traces/jaeger/bundled';
+import {OtlpTraceJsonLoader, type OtlpTrace, type OtlpTraceBatch} from '@loaders.gl/traces/otlp';
 import {JaegerTraceLoaderWithParser} from '../src/jaeger-trace-loader';
 import officialJaegerTrace from './data/jaeger/trace.json' with {type: 'json'};
 

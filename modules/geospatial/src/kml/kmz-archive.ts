@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {HttpFile} from '@loaders.gl/core/loader-utils';
-import {ZipFileSystem} from '@loaders.gl/archives/zip';
+import {ZipFileSystem} from '@loaders.gl/archives/api';
 import type {KMLDocument} from './kml-parser';
 import {parseKMLDocument} from './kml-parser';
 

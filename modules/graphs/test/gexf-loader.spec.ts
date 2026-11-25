@@ -18,7 +18,8 @@ import {
 } from 'apache-arrow';
 import {GEXFLoaderWithParser} from '../src/gexf-loader';
 import {parseGEXF} from '../src/lib/parse-gexf';
-import type {GEXFOutput, GraphData, GraphTables} from '../src';
+import type {GEXFOutput} from '@loaders.gl/graphs/gexf';
+import type {GraphData, GraphTables} from '@loaders.gl/graphs/graph';
 
 const DOCUMENT = `<g:gexf xmlns:g="http://gexf.net/1.3" xmlns:v="http://gexf.net/1.3/viz" version="1.3">
 <g:meta lastmodifieddate="2026-10-06"><g:creator>Example</g:creator><g:description> Graph </g:description><g:keywords>test</g:keywords></g:meta>

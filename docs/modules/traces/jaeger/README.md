@@ -3,7 +3,8 @@
 Read and write Jaeger traces and their span metadata.
 
 ```typescript
-import {JaegerTraceLoader, JaegerTraceWriter} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
+import {JaegerTraceWriter} from '@loaders.gl/traces/jaeger/bundled';
 ```
 
 ## API

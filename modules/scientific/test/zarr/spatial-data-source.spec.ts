@@ -4,7 +4,7 @@
 
 import {describe, expect, test} from 'vitest';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {SpatialDataSource, SpatialDataLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataSource, SpatialDataLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const FIXTURE_URL = '/modules/scientific/test/zarr/data/spatialdata-v3.zarr';
 

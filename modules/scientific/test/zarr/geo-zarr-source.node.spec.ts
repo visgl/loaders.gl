@@ -5,11 +5,8 @@ import {pathToFileURL} from 'node:url';
 import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
 import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
-import {
-  GeoZarrRasterSource,
-  GeoZarrLoader,
-  type GeoZarrLoaderOptions
-} from '@loaders.gl/scientific/zarr';
+import {GeoZarrRasterSource, GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
+import {type GeoZarrLoaderOptions} from '@loaders.gl/scientific/zarr';
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 const CONTENT_BASE = resolvePath('@loaders.gl/scientific/test/zarr/data');
 const SPATIALDATA_V3_FIXTURE = `${CONTENT_BASE}/spatialdata-v3.zarr`;

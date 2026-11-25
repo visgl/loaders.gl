@@ -4,7 +4,7 @@ import {VERSION} from './lib/utils/version';
 import type {EXRImage} from './exr/parse-exr';
 /** Loads the OpenEXR parser on demand. */
 async function preload() {
-  const {EXRLoaderWithParser} = await import('@loaders.gl/images/exr');
+  const {EXRLoaderWithParser} = await import('@loaders.gl/images/exr/bundled');
   return EXRLoaderWithParser;
 }
 /** Metadata-only single-part scanline OpenEXR loader. */

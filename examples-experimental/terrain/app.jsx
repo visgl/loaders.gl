@@ -8,7 +8,7 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 
 import {TerrainLayer} from '@deck.gl/geo-layers';
-import {TerrainLoaderWithParser as TerrainLoader} from '@loaders.gl/raster/terrain';
+import {TerrainLoaderWithParser as TerrainLoader} from '@loaders.gl/raster/terrain/bundled';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;

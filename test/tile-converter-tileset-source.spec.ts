@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {Tileset3D, type TilesetContentTraversalItem} from '@loaders.gl/tiles-3d/tileset';
 import {createTilesetConversionSource} from '@loaders.gl/tile-converter/v5/core';
 import {convertTileset} from '@loaders.gl/tile-converter/v5/core';

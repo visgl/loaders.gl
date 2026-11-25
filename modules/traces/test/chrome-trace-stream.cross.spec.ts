@@ -6,17 +6,18 @@ import {setLoaderOptions} from '@loaders.gl/core';
 import {parse, parseInBatches} from '@loaders.gl/core';
 import {describe, expect, it} from 'vitest';
 
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 import {
-  ChromeTraceLoader,
   consumeChromeTraceArrowStream,
   consumeChromeTraceEventStream,
   consumeChromeTraceFileStream,
-  createTraceStreamSession,
   streamChromeTraceArrowChunks,
   streamChromeTraceFileChunks
-} from '../src';
+} from '@loaders.gl/traces/chrome-trace/api';
+import {createTraceStreamSession} from '@loaders.gl/traces/stream';
 
-import type {ChromeTraceEventSchema, ChromeTraceFileSchema, TraceStreamChunk} from '../src';
+import type {ChromeTraceEventSchema, ChromeTraceFileSchema} from '@loaders.gl/traces/chrome-trace';
+import type {TraceStreamChunk} from '@loaders.gl/traces/stream';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
 setLoaderOptions({core: {worker: false}});

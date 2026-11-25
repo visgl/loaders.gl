@@ -10,20 +10,22 @@ import {expect, test} from 'vitest';
 const require = createRequire(import.meta.url);
 
 test('PMTiles writer is available through built ESM and CommonJS package entrypoints', async () => {
-  const esm = await import('../../dist/pmtiles/index.js');
-  const commonjs = require('../../dist/pmtiles/index.cjs');
+  const esm = await import('@loaders.gl/tiles/pmtiles/api');
+  const commonjs = require('@loaders.gl/tiles/pmtiles/api');
+  const {PMTilesWriter} = require('@loaders.gl/tiles/pmtiles/bundled');
   const options = {tileType: 'png' as const};
   const tiles = [{z: 0, x: 0, y: 0, data: new Uint8Array([1, 2])}];
   const expected = await esm.encodePMTiles(tiles, options);
   expect(await commonjs.encodePMTiles(tiles, options)).toEqual(expected);
-  expect(await commonjs.PMTilesWriter.encode(tiles, {pmtiles: options})).toEqual(expected);
+  expect(await PMTilesWriter.encode(tiles, {pmtiles: options})).toEqual(expected);
 });
 
 /** Checks the documented consumer calls against the declarations emitted by the package build. */
 test('exported PMTiles option types work with direct and standard writer APIs', () => {
   const filename = path.join(process.cwd(), 'modules/tiles/test/pmtiles/pmtiles-consumer.mts');
   const source = `import {encode} from '@loaders.gl/core';
-    import {encodePMTiles, PMTilesWriter} from '@loaders.gl/tiles/pmtiles';
+    import {encodePMTiles} from '@loaders.gl/tiles/pmtiles/api';
+import {PMTilesWriter} from '@loaders.gl/tiles/pmtiles/bundled';
     import type {PMTilesEncodeOptions, PMTilesWriterOptions, PMTilesTile} from '@loaders.gl/tiles/pmtiles';
     import {encodeGeoArrowPMTiles} from '@loaders.gl/tiles/pmtiles/geoarrow';
     import {encodeRasterPMTiles} from '@loaders.gl/tiles/pmtiles/raster';

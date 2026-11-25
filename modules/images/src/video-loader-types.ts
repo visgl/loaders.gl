@@ -15,7 +15,7 @@ export type VideoLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing video loader implementation. */
 async function preload() {
-  const {VideoLoaderWithParser} = await import('@loaders.gl/images/video');
+  const {VideoLoaderWithParser} = await import('@loaders.gl/images/video/bundled');
   return VideoLoaderWithParser;
 }
 

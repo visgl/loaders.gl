@@ -16,7 +16,7 @@ npm install @loaders.gl/core @loaders.gl/scene
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {USDLoader} from '@loaders.gl/scene';
+import {USDLoader} from '@loaders.gl/scene/usd';
 
 const stage = await load('scene.usda', USDLoader);
 ```
@@ -31,7 +31,7 @@ and applicable notices, and the project-wide [Attributions and Credits](https://
 
 ## Draco geometry
 
-`DracoLoader` metadata is available from the scene root. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco-loader` for direct parsing, `DracoWriter` and encoding helpers from `@loaders.gl/scene/draco-writer`, and `getDracoLibraryOptions` from `@loaders.gl/scene/draco-library-options` for bundled runtime URLs. Draco supports both meshes and point clouds.
+`DracoLoader` metadata is available from `@loaders.gl/scene/draco`. Import `DracoLoaderWithParser` from `@loaders.gl/scene/draco-loader` for direct parsing, `DracoWriter` and encoding helpers from `@loaders.gl/scene/draco-writer`, and `getDracoLibraryOptions` from `@loaders.gl/scene/draco-library-options` for bundled runtime URLs. Draco supports both meshes and point clouds.
 
 
 - [USD and USDC format guide](https://loaders.gl/docs/modules/scene/usd/formats/usd): format, usage, feature support and output contract.

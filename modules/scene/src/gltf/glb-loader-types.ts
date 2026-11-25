@@ -21,7 +21,7 @@ export type GLBLoaderOptions = StrictLoaderOptions & {
 
 /** Preloads the parser-bearing GLB loader implementation. */
 async function preload() {
-  const {GLBLoaderWithParser} = await import('@loaders.gl/scene/glb');
+  const {GLBLoaderWithParser} = await import('@loaders.gl/scene/glb/bundled');
   return GLBLoaderWithParser;
 }
 
