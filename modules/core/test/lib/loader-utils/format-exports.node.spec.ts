@@ -19,6 +19,8 @@ const FORMAT_EXPORTS = {
   'scene/draco': ['DracoFormat'],
   'geospatial/adsb': ['ADSBFormat'],
   'geospatial/ais': ['AISFormat'],
+  'geospatial/gtfs': ['GTFSFormat'],
+  'geospatial/gtfs-realtime': ['GTFSRealtimeFormat'],
   'geospatial/omm': ['OMMFormat'],
   'geospatial/tle': ['TLEFormat'],
   'geospatial/flatgeobuf': ['FlatGeobufFormat'],

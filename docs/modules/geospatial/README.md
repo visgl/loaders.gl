@@ -21,6 +21,8 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 | — | [`/twkb`](./wkt/formats/twkb.md) | Tiny WKB |
 | — | [`/adsb`](./adsb/README.md) | 🧪 ADS-B aircraft state snapshots (JSON) |
 | — | [`/ais`](./ais/README.md) | 🧪 AIS maritime reports (NMEA text) |
+| — | [`/gtfs`](./gtfs/README.md) | 🧪 GTFS Schedule tables, stops, and shapes (ZIP) |
+| — | [`/gtfs-realtime`](./gtfs-realtime/README.md) | 🧪 GTFS Realtime vehicle positions, trip updates, and alerts (protobuf) |
 | — | [`/omm`](./omm/README.md) | 🧪 CCSDS OMM satellite orbit mean elements (JSON, KVN) |
 | — | [`/tle`](./tle/README.md) | 🧪 Two-line element sets (TLE) |
 
@@ -31,6 +33,8 @@ Import metadata from format subpaths. Import parser-bearing loaders from bundled
 
 - [ADS-B aircraft state JSON](./adsb/formats/adsb.md)
 - [AIS - Automatic Identification System](./ais/formats/ais.md)
+- [GTFS Schedule ZIP](./gtfs/formats/gtfs.md)
+- [GTFS Realtime protobuf](./gtfs-realtime/formats/gtfs-realtime.md)
 - [FlatGeobuf](./flatgeobuf/formats/flatgeobuf.md)
 - [GeoPackage](./geopackage/formats/geopackage.md)
 - [GPX](./kml/formats/gpx.md)

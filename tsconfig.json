@@ -501,6 +501,12 @@
       "@loaders.gl/geospatial/ais": [
         "modules/geospatial/src/ais/index.ts"
       ],
+      "@loaders.gl/geospatial/gtfs": [
+        "modules/geospatial/src/gtfs/index.ts"
+      ],
+      "@loaders.gl/geospatial/gtfs-realtime": [
+        "modules/geospatial/src/gtfs-realtime/index.ts"
+      ],
       "@loaders.gl/geospatial/omm": [
         "modules/geospatial/src/omm/index.ts"
       ],
@@ -509,6 +515,12 @@
       ],
       "@loaders.gl/geospatial/ais/test": [
         "modules/geospatial/test/ais"
+      ],
+      "@loaders.gl/geospatial/gtfs/test": [
+        "modules/geospatial/test/gtfs"
+      ],
+      "@loaders.gl/geospatial/gtfs-realtime/test": [
+        "modules/geospatial/test/gtfs-realtime"
       ],
       "@loaders.gl/geospatial/omm/test": [
         "modules/geospatial/test/omm"
@@ -773,6 +785,12 @@
       ],
       "@loaders.gl/geospatial/ais/bundled": [
         "modules/geospatial/src/ais/bundled.ts"
+      ],
+      "@loaders.gl/geospatial/gtfs/bundled": [
+        "modules/geospatial/src/gtfs/bundled.ts"
+      ],
+      "@loaders.gl/geospatial/gtfs-realtime/bundled": [
+        "modules/geospatial/src/gtfs-realtime/bundled.ts"
       ],
       "@loaders.gl/geospatial/omm/bundled": [
         "modules/geospatial/src/omm/bundled.ts"

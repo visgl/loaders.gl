@@ -115,6 +115,26 @@
       "import": "./dist/ais/bundled.js",
       "require": "./dist/ais/bundled.cjs"
     },
+    "./gtfs": {
+      "types": "./dist/gtfs/index.d.ts",
+      "import": "./dist/gtfs/index.js",
+      "require": "./dist/gtfs/index.cjs"
+    },
+    "./gtfs/bundled": {
+      "types": "./dist/gtfs/bundled.d.ts",
+      "import": "./dist/gtfs/bundled.js",
+      "require": "./dist/gtfs/bundled.cjs"
+    },
+    "./gtfs-realtime": {
+      "types": "./dist/gtfs-realtime/index.d.ts",
+      "import": "./dist/gtfs-realtime/index.js",
+      "require": "./dist/gtfs-realtime/index.cjs"
+    },
+    "./gtfs-realtime/bundled": {
+      "types": "./dist/gtfs-realtime/bundled.d.ts",
+      "import": "./dist/gtfs-realtime/bundled.js",
+      "require": "./dist/gtfs-realtime/bundled.cjs"
+    },
     "./omm": {
       "types": "./dist/omm/index.d.ts",
       "import": "./dist/omm/index.js",
@@ -286,6 +306,8 @@
     "gpkg",
     "ADSB",
     "AIS",
+    "GTFS",
+    "GTFS Realtime",
     "OMM",
     "CCSDS",
     "TLE",
