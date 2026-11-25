@@ -111,19 +111,19 @@ A GeoParquet file additionally follows these conventions:
 
 ## Supported features checklist[​](#supported-features-checklist "Direct link to Supported features checklist")
 
-| Feature                                                                           | Read                                                    | TypeScript write                                  |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------- |
-| GeoParquet `geo` metadata                                                         | ✅                                                      | ✅                                                |
-| WKB geometry columns                                                              | ✅                                                      | ✅                                                |
-| Parquet `GEOMETRY` and `GEOGRAPHY` logical types                                  | ✅                                                      | ✅ GeoParquet 2.x metadata selects the annotation |
-| `SPHERICAL`, `VINCENTY`, `THOMAS`, `ANDOYER`, and `KARNEY` edges                  | ✅                                                      | ✅                                                |
-| XY, XYZ, XYM, and XYZM geometry type codes                                        | ✅                                                      | ✅                                                |
-| Native row-group bbox and geometry-type statistics                                | ✅                                                      | ✅                                                |
-| GeoParquet 1.1 single-geometry encodings                                          | ✅ metadata/layout pass-through                         | ✅ metadata/layout pass-through                   |
-| GeoParquet 1.1 `covering.bbox`                                                    | ✅ row-group, page, and exact-row filtering             | ✅ preserved when supplied                        |
-| CRS metadata (`PROJJSON`, omitted default, explicit `null`, and coordinate epoch) | ✅ preserved                                            | ✅ preserved when supplied                        |
-| CRS coordinate transformation                                                     | ❌ metadata preservation does not transform coordinates | ✕                                                 |
-| Ring rewinding from `orientation`                                                 | ✕                                                       | ✕                                                 |
+| Feature                                                                           | Read                                                    | TypeScript write                                   |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------- |
+| GeoParquet `geo` metadata                                                         | ✅                                                      | ✅                                                 |
+| WKB geometry columns                                                              | ✅                                                      | ✅                                                 |
+| Parquet `GEOMETRY` and `GEOGRAPHY` logical types                                  | ✅                                                      | ✅ GeoParquet 2.x metadata selects the annotation  |
+| `SPHERICAL`, `VINCENTY`, `THOMAS`, `ANDOYER`, and `KARNEY` edges                  | ✅                                                      | ✅                                                 |
+| XY, XYZ, XYM, and XYZM geometry type codes                                        | ✅                                                      | ✅                                                 |
+| Native row-group bbox and geometry-type statistics                                | ✅                                                      | ✅ bbox for planar and point-only geography groups |
+| GeoParquet 1.1 single-geometry encodings                                          | ✅ metadata/layout pass-through                         | ✅ metadata/layout pass-through                    |
+| GeoParquet 1.1 `covering.bbox`                                                    | ✅ row-group, page, and exact-row filtering             | ✅ preserved when supplied                         |
+| CRS metadata (`PROJJSON`, omitted default, explicit `null`, and coordinate epoch) | ✅ preserved                                            | ✅ preserved when supplied                         |
+| CRS coordinate transformation                                                     | ❌ metadata preservation does not transform coordinates | ✕                                                  |
+| Ring rewinding from `orientation`                                                 | ✕                                                       | ✕                                                  |
 
 ## Metadata behavior in Arrow output[​](#metadata-behavior-in-arrow-output "Direct link to Metadata behavior in Arrow output")
 
