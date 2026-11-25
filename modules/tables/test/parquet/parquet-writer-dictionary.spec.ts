@@ -6,7 +6,7 @@ import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/
 import {encode, load} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
-import {ParquetReader} from '@loaders.gl/tables/parquet/api';
+import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {parquetReadObjects} from 'hyparquet';

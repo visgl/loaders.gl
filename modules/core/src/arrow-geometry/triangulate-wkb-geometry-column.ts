@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {parseWKB} from '@math.gl/core/arrow';
-import {triangulateWKB} from '@loaders.gl/core/arrow-geometry';
+import {triangulateWKB} from './triangulate-wkb';
 import type {Geometry, MultiPolygon, Polygon, Position} from '@loaders.gl/core/schema';
 
 /** Tessellated columns derived from a GeoArrow WKB geometry column. */

@@ -21,7 +21,7 @@ vi.mock('@loaders.gl/core/arrow-geometry/binary-features', async importOriginal 
   };
 });
 
-vi.mock('../../src/arrow/triangulate-wkb-geometry-column', () => ({
+vi.mock('@loaders.gl/core/arrow-geometry', () => ({
   triangulateWKBGeometryColumn: workerMocks.triangulateWKBColumn
 }));
 

@@ -825,9 +825,6 @@
       "@loaders.gl/tables/arrow/triangulate-on-worker": [
         "modules/tables/src/arrow/triangulate-on-worker.ts"
       ],
-      "@loaders.gl/tables/arrow/triangulate-wkb-geometry-column": [
-        "modules/tables/src/arrow/triangulate-wkb-geometry-column.ts"
-      ],
       "@loaders.gl/tables/arrow/types": [
         "modules/tables/src/arrow/types.ts"
       ],
@@ -1419,20 +1416,11 @@
       "@loaders.gl/tables/csv/api": [
         "modules/tables/src/csv/api.ts"
       ],
-      "@loaders.gl/tables/arrow/api": [
-        "modules/tables/src/arrow/api.ts"
-      ],
       "@loaders.gl/tables/json/api": [
         "modules/tables/src/json/api.ts"
       ],
       "@loaders.gl/tables/orc/api": [
         "modules/tables/src/orc/api.ts"
-      ],
-      "@loaders.gl/tables/parquet/api": [
-        "modules/tables/src/parquet/api.ts"
-      ],
-      "@loaders.gl/tables/avro/api": [
-        "modules/tables/src/avro-api.ts"
       ],
       "@loaders.gl/tables/lance/api": [
         "modules/tables/src/lance-api.ts"

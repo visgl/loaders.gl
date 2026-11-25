@@ -60,10 +60,6 @@
       "types": "./dist/arrow/triangulate-on-worker.d.ts",
       "import": "./dist/arrow/triangulate-on-worker.js"
     },
-    "./arrow/triangulate-wkb-geometry-column": {
-      "types": "./dist/arrow/triangulate-wkb-geometry-column.d.ts",
-      "import": "./dist/arrow/triangulate-wkb-geometry-column.js"
-    },
     "./arrow/types": {
       "types": "./dist/arrow/types.d.ts",
       "import": "./dist/arrow/types.js",
@@ -200,11 +196,6 @@
       "import": "./dist/csv/api.js",
       "require": "./dist/csv/api.cjs"
     },
-    "./arrow/api": {
-      "types": "./dist/arrow/api.d.ts",
-      "import": "./dist/arrow/api.js",
-      "require": "./dist/arrow/api.cjs"
-    },
     "./json/api": {
       "types": "./dist/json/api.d.ts",
       "import": "./dist/json/api.js",
@@ -214,16 +205,6 @@
       "types": "./dist/orc/api.d.ts",
       "import": "./dist/orc/api.js",
       "require": "./dist/orc/api.cjs"
-    },
-    "./parquet/api": {
-      "types": "./dist/parquet/api.d.ts",
-      "import": "./dist/parquet/api.js",
-      "require": "./dist/parquet/api.cjs"
-    },
-    "./avro/api": {
-      "types": "./dist/avro-api.d.ts",
-      "import": "./dist/avro-api.js",
-      "require": "./dist/avro-api.cjs"
     },
     "./lance/api": {
       "types": "./dist/lance-api.d.ts",

@@ -18,7 +18,7 @@ import type {
   ParseGeoArrowInput,
   ParseGeoArrowResult
 } from '../triangulate-on-worker';
-import {triangulateWKBGeometryColumn} from '../triangulate-wkb-geometry-column';
+import {triangulateWKBGeometryColumn} from '@loaders.gl/core/arrow-geometry';
 
 createWorker(processTriangulationWorkerMessage);
 

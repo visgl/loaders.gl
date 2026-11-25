@@ -11,9 +11,9 @@ import {
   triangulateOnWorker,
   triangulateWKBColumnOnWorker,
   parseGeoArrowOnWorker,
-  TriangulationWorker,
-  triangulateWKBGeometryColumn
-} from '@loaders.gl/tables/arrow/api';
+  TriangulationWorker
+} from '@loaders.gl/tables/arrow/triangulate-on-worker';
+import {triangulateWKBGeometryColumn} from '@loaders.gl/core/arrow-geometry';
 import {ParseGeoArrowInput, TriangulateWKBColumnInput} from '@loaders.gl/tables/arrow';
 import {splitArrowBuffers} from '@math.gl/core/arrow';
 import {fetchFile} from '@loaders.gl/core';
