@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
-import {GeoZarrRasterSource, type GeoZarrLoaderOptions} from '@loaders.gl/scientific/zarr';
+import type {GeoZarrLoaderOptions} from '@loaders.gl/scientific/zarr';
+import {GeoZarrRasterSource} from '@loaders.gl/scientific/zarr/bundled';
 import {limitZarrStore} from '../../src/zarr/lib/limited-zarr-store';
 import {expect, test} from 'vitest';
 
