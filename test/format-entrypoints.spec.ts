@@ -3,16 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
 import {JSONLoader} from '@loaders.gl/documents/json';
-import * as kml from '@loaders.gl/geospatial/kml';
+import * as kml from '@loaders.gl/geospatial/kml/bundled';
 import * as wkb from '@loaders.gl/geospatial/wkb';
 import * as wkt from '@loaders.gl/geospatial/wkt';
 import {
   WKBLoader as BundledWKBLoader,
   HexWKBLoader as BundledHexWKBLoader,
-  TWKBLoader as BundledTWKBLoader
+  TWKBLoader as BundledTWKBLoader,
+  WKBWriter
 } from '@loaders.gl/geospatial/wkb/bundled';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
@@ -57,5 +58,5 @@ test('WKB format groups binary dialects and bundled parsers', () => {
     expect(loader.id).toBe(wkb[name].id);
     expect(wkt).not.toHaveProperty(name);
   }
-  expect(wkb.WKBWriter).toHaveProperty('encodeSync');
+  expect(WKBWriter).toHaveProperty('encodeSync');
 });
