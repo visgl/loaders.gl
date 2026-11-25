@@ -21,10 +21,19 @@ export {ClusterLayer} from './cluster-layer';
 export type {ClusterLayerProps} from './cluster-layer';
 export {VectorSourceLayer} from './vector-source-layer';
 export type {
+  RasterBitmapData,
+  RasterBitmapLayerPickingInfo,
+  RasterBitmapLayerProps,
+  RasterColormap,
+  RasterValueScale
+} from './raster-bitmap-layer';
+export {RasterBitmapLayer} from './raster-bitmap-layer';
+export type {
   RasterBitmapImage,
   RasterColorizerContext,
   RasterRenderResult,
-  RasterSourceLayerProps
+  RasterSourceLayerProps,
+  RasterSourceSubLayerProps
 } from './raster-source-layer';
 export {colorizeRasterData, RasterSourceLayer} from './raster-source-layer';
 export type {PointCloudSourceLayerProps} from './point-cloud-source-layer';
