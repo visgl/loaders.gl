@@ -133,7 +133,7 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run mlt-pre-build && npm run prepare-cjs-assets && npm run mvt-pre-build && npm run pmtiles-pre-build && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run mlt-pre-build && npm run mvt-pre-build && npm run pmtiles-pre-build && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "copy-mlt-decoder": "mkdir -p dist/mlt/libs && cp src/mlt/libs/mlt-decoder.mjs dist/mlt/libs/",
@@ -148,7 +148,8 @@
     "pmtiles-build-bundle": "node ../../scripts/build-codec-bundle.mjs ./pmtiles/bundle.ts --output=dist/pmtiles/dist.min.js",
     "pmtiles-build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./pmtiles/bundle.ts --env=dev --output=dist/pmtiles/dist.dev.js",
     "build-worker-mvt": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "prepare-cjs-assets": "esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=esm --outfile=src/mlt/libs/mlt-decoder.mjs && npm run copy-mlt-decoder"
+    "prepare-cjs-assets": "npm run copy-mlt-decoder",
+    "generate-mlt-esm-decoder": "esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=esm --banner:js='// SPDX-License-Identifier: MIT' --outfile=src/mlt/libs/mlt-decoder.mjs"
   },
   "dependencies": {
     "@loaders.gl/compression": "5.0.0",
