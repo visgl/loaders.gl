@@ -26,6 +26,7 @@ import ZarritaPixelSource from './lib/zarrita-pixel-source';
 import {limitZarrStore} from './lib/limited-zarr-store';
 import {
   loadConsolidatedMetadata,
+  loadConsolidatedMetadataFromStore,
   type LoadConsolidatedMetadataOptions,
   type ZarrConsolidatedMetadata,
   type ZarrMetadataPath
@@ -45,6 +46,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type ZarrLoaderOptions = DataSourceOptions & {
   /** Zarr store discovery and dimension options. */
   zarr?: {
+    /**
+     * Caller-supplied store for metadata and chunks.
+     * The input string is a label, and fetch options do not apply.
+     */
+    store?: zarrita.AsyncReadable;
     /** Consolidated metadata file to load, or `auto` to probe known names. */
     metadataPath?: ZarrMetadataPath;
     /** Group path within the store root. */
@@ -191,7 +197,9 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
     cancellation: true
   });
   /** Zarrita store used for metadata and chunk reads. */
-  protected readonly store: Readable;
+  protected readonly store: zarrita.AsyncReadable;
+  /** Whether consolidated metadata comes from a caller-supplied store. */
+  private readonly hasCustomStore: boolean;
   /** Selected group path within the store root. */
   protected readonly path: string | null;
   /** Shared consolidated metadata request. */
@@ -204,9 +212,11 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
     coreApi?: CoreAPI,
     maxConcurrentRequests?: number
   ) {
+    // Pass the store around the recursive options merge to preserve its identity and state.
+    const {store: customStore, ...zarrOptions} = options.zarr ?? {};
     super(
       data,
-      options,
+      {...options, zarr: zarrOptions},
       {
         zarr: {
           metadataPath: 'auto',
@@ -222,17 +232,23 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
       coreApi
     );
 
+    this.hasCustomStore = Boolean(customStore);
+    if (customStore) {
+      this.options.zarr = {...this.options.zarr, store: customStore};
+    }
     this.path = this.options.zarr?.path || null;
-    const store = new zarrita.FetchStore(getZarritaStoreUrl(this.url), {
-      fetch: async (request: Request) => {
-        const headers = Object.fromEntries(request.headers.entries());
-        return await this.fetchZarrFile(request.url, {
-          method: request.method,
-          headers,
-          signal: request.signal
-        });
-      }
-    });
+    const store =
+      customStore ??
+      new zarrita.FetchStore(getZarritaStoreUrl(this.url), {
+        fetch: async (request: Request) => {
+          const headers = Object.fromEntries(request.headers.entries());
+          return await this.fetchZarrFile(request.url, {
+            method: request.method,
+            headers,
+            signal: request.signal
+          });
+        }
+      });
     this.store =
       maxConcurrentRequests === undefined ? store : limitZarrStore(store, maxConcurrentRequests);
   }
@@ -260,14 +276,14 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
   /** Loads normalized consolidated metadata for the backing Zarr store. */
   async getConsolidatedMetadata(signal?: AbortSignal): Promise<ZarrConsolidatedMetadata> {
     if (!this.consolidatedMetadataPromise) {
-      this.consolidatedMetadataPromise = loadConsolidatedMetadata(
-        this.url,
-        (url, requestOptions) => this.fetchZarrFile(url, requestOptions),
-        {
-          metadataPath: this.options.zarr?.metadataPath,
-          signal
-        }
-      );
+      const options = {metadataPath: this.options.zarr?.metadataPath, signal};
+      this.consolidatedMetadataPromise = this.hasCustomStore
+        ? loadConsolidatedMetadataFromStore(this.data, this.store, options)
+        : loadConsolidatedMetadata(
+            this.url,
+            (url, requestOptions) => this.fetchZarrFile(url, requestOptions),
+            options
+          );
     }
 
     const consolidatedMetadataPromise = this.consolidatedMetadataPromise;
@@ -287,7 +303,8 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
       await this.getConsolidatedMetadata(signal);
     }
 
-    const location = this.path ? zarrita.root(this.store).resolve(this.path) : this.store;
+    const root = zarrita.root(this.store);
+    const location = this.path ? root.resolve(this.path) : root;
     return await zarrita.open(location, {kind: 'group', signal});
   }
 }

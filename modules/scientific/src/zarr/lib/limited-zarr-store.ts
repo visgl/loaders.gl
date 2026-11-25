@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {AsyncReadable, FetchStore} from 'zarrita';
+import type {AsyncReadable} from 'zarrita';
 
 /** Limits overlapping Zarrita reads, including range reads and response body consumption. */
-export function limitZarrStore(store: FetchStore, limit: number): AsyncReadable {
+export function limitZarrStore(store: AsyncReadable, limit: number): AsyncReadable {
   if (!Number.isSafeInteger(limit) || limit < 1) {
     throw new Error('GeoZarr maxConcurrentRequests must be a positive integer.');
   }
@@ -56,9 +56,13 @@ export function limitZarrStore(store: FetchStore, limit: number): AsyncReadable 
     }
   }
 
-  return {
-    get: (key, options) => read(() => store.get(key, options), options?.signal),
-    getRange: (key, range, options) =>
-      read(() => store.getRange(key, range, options), options?.signal)
+  const limitedStore: AsyncReadable = {
+    get: (key, options) => read(() => store.get(key, options), options?.signal)
   };
+  const getRange = store.getRange?.bind(store);
+  if (getRange) {
+    limitedStore.getRange = (key, range, options) =>
+      read(() => getRange(key, range, options), options?.signal);
+  }
+  return limitedStore;
 }

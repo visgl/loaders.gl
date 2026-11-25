@@ -33,6 +33,7 @@ for stable v4 migrations.
   and terrain meshes. [Scientific](./modules/scientific/README.md) groups multidimensional
   arrays and VTK, NRRD, and PDB formats.
 - **GeoZarr pyramids.** [GeoZarrRasterSource](./modules/scientific/zarr/api-reference/geo-zarr-loader.md) opens xarray level groups, preserves CF CRS definitions, reads CF nodata with optional Zarr fill values, and selects native overviews by viewport.
+  Pass `zarr.store` to read GeoZarr metadata and chunks through a custom Zarrita store.
 - **3D content and tiles.** [Scene](./modules/scene/README.md) groups glTF, Draco, and mesh
   formats. [Tile Converter](./modules/tile-converter/README.md) defaults to the v5 engine.
   The [TileMatrix adapter](./modules/tiles/api-reference/tile-matrix.md) adds coarse-to-fine

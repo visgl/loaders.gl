@@ -116,6 +116,11 @@ export class SpatialDataSource extends ZarrSource {
 
   /** Creates a SpatialData container source. */
   constructor(data: string, options: SpatialDataLoaderOptions = {}, coreApi?: CoreAPI) {
+    if (options.zarr?.store) {
+      throw new Error(
+        'SpatialDataSource does not support zarr.store because its elements require URLs.'
+      );
+    }
     super(data, options, coreApi);
   }
 
