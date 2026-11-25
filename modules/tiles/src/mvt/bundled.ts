@@ -42,7 +42,8 @@ export {
   type MVTSourceLoaderOptions,
   TableVectorTileSource,
   type TableTileLoaderOptions,
-  ArrowTableVectorTileSource,
   type ArrowTableTileLoaderOptions,
   type ArrowTableTileSourceInput
 } from './index';
+
+export {ArrowTableVectorTileSource} from './arrow-table-tile-loader';
