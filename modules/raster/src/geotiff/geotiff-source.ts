@@ -211,7 +211,10 @@ export class GeoTIFFRasterSource
       },
       spatial: metadata.boundingBox
         ? {
-            bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]},
+            bounds: {
+              minimum: metadata.boundingBox[0],
+              maximum: metadata.boundingBox[1]
+            },
             coordinateReferenceSystems:
               typeof metadata.crs === 'string' ? [metadata.crs] : undefined
           }
@@ -346,13 +349,24 @@ export class GeoTIFFRasterSource
           provenance: {sourceType: 'geotiff'},
           ownership: 'owned',
           validityMasks: [
-            {data: new Uint8Array(pixels), width: parameters.width, height: parameters.height}
+            {
+              data: new Uint8Array(pixels),
+              width: parameters.width,
+              height: parameters.height
+            }
           ]
         };
       }
-      const empty = createEmptyRaster(parameters, {...metadata, dtype: outputDtype});
+      const empty = createEmptyRaster(parameters, {
+        ...metadata,
+        dtype: outputDtype
+      });
       empty.validityMasks = [
-        {data: new Uint8Array(pixels), width: parameters.width, height: parameters.height}
+        {
+          data: new Uint8Array(pixels),
+          width: parameters.width,
+          height: parameters.height
+        }
       ];
       return empty;
     }
@@ -682,7 +696,11 @@ export class GeoTIFFRasterSource
   private _getInitPromise(signal?: AbortSignal): Promise<GeoTIFFInit> {
     signal?.throwIfAborted();
     if (!this._initPromise) {
-      const initialization = {controller: new AbortController(), subscribers: 0, settled: false};
+      const initialization = {
+        controller: new AbortController(),
+        subscribers: 0,
+        settled: false
+      };
       this._initialization = initialization;
       const promise = this._initialize(initialization.controller.signal);
       this._initPromise = promise;
@@ -1339,7 +1357,10 @@ function createRangeRequestHeaders(headers: Headers, offset: number, length: num
 }
 
 /** Parses one single-range `Range` header into offset and byte length. */
-function parseSingleRangeHeader(rangeHeader: string | null): {offset: number; length: number} {
+function parseSingleRangeHeader(rangeHeader: string | null): {
+  offset: number;
+  length: number;
+} {
   const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
   if (!match) {
     throw new Error(`GeoTIFF range request requires a single byte range. Received: ${rangeHeader}`);
@@ -1516,7 +1537,10 @@ async function resizeRasterWindow(
   method: 'nearest' | 'bilinear',
   signal?: AbortSignal,
   nativeValidityMasks?: RasterData['validityMasks']
-): Promise<{raster: GeoTIFFReadRasterResult; validityMasks?: RasterData['validityMasks']}> {
+): Promise<{
+  raster: GeoTIFFReadRasterResult;
+  validityMasks?: RasterData['validityMasks'];
+}> {
   signal?.throwIfAborted();
   if (nativeRaster.width === targetSize.width && nativeRaster.height === targetSize.height) {
     const raster = interleaved
@@ -1538,7 +1562,7 @@ async function resizeRasterWindow(
   } as NumericRasterData;
   const pixelCount = targetSize.width * targetSize.height;
   const output = interleaved
-    ? createFilledTypedArray(bands[0].dtype, pixelCount * bands.length, 0)
+    ? createInterleavedNoDataArray(bands, pixelCount)
     : bands.map(band => createFilledTypedArray(band.dtype, pixelCount, band.noData ?? 0));
   const validityMasks = bands.map((_band, band) => ({
     data: new Uint8Array(pixelCount),
@@ -1579,6 +1603,22 @@ async function resizeRasterWindow(
     height: targetSize.height
   }) as GeoTIFFReadRasterResult;
   return {raster, validityMasks};
+}
+
+/**
+ * Creates interleaved output with each band's slots filled with its `noData` value, or 0, as the
+ * planar output is filled. Pixels that resampling cannot fill keep this value.
+ */
+function createInterleavedNoDataArray(bands: RasterBandMetadata[], pixelCount: number): TypedArray {
+  const output = createFilledTypedArray(bands[0].dtype, pixelCount * bands.length, 0);
+  for (let band = 0; band < bands.length; band++) {
+    const noData = bands[band].noData;
+    if (noData === undefined || noData === null || noData === 0) continue;
+    for (let index = band; index < output.length; index += bands.length) {
+      output[index] = noData;
+    }
+  }
+  return output;
 }
 
 /** Packs native planar bands without widening, scaling, or replacing invalid raw values. */
