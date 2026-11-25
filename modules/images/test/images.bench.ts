@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ImageLoader} from '@loaders.gl/images/image';
-import {isImageTypeSupported} from '@loaders.gl/images/image/bundled';
+import {isImageTypeSupported} from '@loaders.gl/images/image/api';
 import {fetchFile, parse} from '@loaders.gl/core';
 
 const TEST_URL = '@loaders.gl/images/test/data/tiles/colortile-256x256.png';

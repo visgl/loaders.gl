@@ -18,7 +18,7 @@ import type {
   GLTFBufferView
 } from '../types/gltf-json-schema';
 
-import {getBinaryImageMetadata} from '@loaders.gl/images/image/bundled';
+import {getBinaryImageMetadata} from '@loaders.gl/images/image/api';
 import {padToNBytes, copyToArray} from '@loaders.gl/core/loader-utils';
 import {assert} from '../utils/assert';
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';

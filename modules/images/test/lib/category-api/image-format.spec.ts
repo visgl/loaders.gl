@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core/loader-utils';
-import {isImageFormatSupported, getSupportedImageFormats} from '@loaders.gl/images/image/bundled';
+import {isImageFormatSupported, getSupportedImageFormats} from '@loaders.gl/images/image/api';
 export const TEST_CASES = [
   {
     mimeType: 'image/png',

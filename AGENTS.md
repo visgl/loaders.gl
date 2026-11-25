@@ -107,7 +107,7 @@
 - `preload()` should use a static package-subpath import such as `await import('@loaders.gl/tables/csv/bundled')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers. Parquet and GeoParquet preload their specific implementation files directly to avoid loading unrelated bundled helpers.
 - Each parser-bearing loader should live in its own `*-loader.ts` file and export only the `*WithParser` loader. Keep parser logic out of the metadata file.
 - Move shared constants, option defaults, and types needed by both metadata and parser files into neutral shared files to avoid cycles.
-- Publish parser-bearing loaders under their ordinary names from `/<format>/bundled`, along with that format's writers, sources, and helpers.
+- Publish parser-bearing loaders under their ordinary names from `/<format>/bundled`, along with that format's writers and sources. Publish standalone utilities through focused capability entry points such as .
 - Core async APIs may accept metadata loaders and upgrade them through `preload()`. Sync parsing paths should continue to require a parser-bearing loader.
 
 ## Core utility subpaths

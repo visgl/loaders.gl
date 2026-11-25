@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
-import {getBinaryImageMetadata} from '@loaders.gl/images/image/bundled';
+import {getBinaryImageMetadata} from '@loaders.gl/images/image/api';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/core/schema';
 import {
   prepareMeshFeatureGeometry,

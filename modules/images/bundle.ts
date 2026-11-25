@@ -86,8 +86,8 @@ export type {
   SourceLoader
 } from '@loaders.gl/core';
 export {ImageFormat, ImageBitmapFormat, ImageLoader} from '@loaders.gl/images/image';
+export {ImageWriter} from '@loaders.gl/images/image/bundled';
 export {
-  ImageWriter,
   getBinaryImageMetadata,
   isImageTypeSupported,
   getDefaultImageType,
@@ -97,7 +97,7 @@ export {
   getImageData,
   getSupportedImageFormats,
   isImageFormatSupported
-} from '@loaders.gl/images/image/bundled';
+} from '@loaders.gl/images/image/api';
 export type {
   ImageDataType,
   ImageType,

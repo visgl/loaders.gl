@@ -421,7 +421,7 @@ test('default tile dimensions and valid band metadata preserve an identity byte 
     0,
     0
   );
-  const {getBinaryImageMetadata} = await import('@loaders.gl/images/image/bundled');
+  const {getBinaryImageMetadata} = await import('@loaders.gl/images/image/api');
   expect(getBinaryImageMetadata(tile!.data)).toMatchObject({
     width: 256,
     height: 256,
