@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {
-  _GlobeViewport,
   CompositeLayer,
   type CompositeLayerProps,
   type CoordinateSystem,
@@ -791,7 +790,15 @@ function createProjectedRasterViewport(
   };
 }
 
-/** Samples a 9×9 screen grid, including edges, and clips it to the source extent. */
+/** A screen position and its source coordinates when it maps to visible ground. */
+type ProjectedViewportSample = {
+  /** Position in viewport pixels. */
+  screenPosition: [number, number];
+  /** Position in the source CRS, or null for a rejected sample. */
+  sourcePosition: [number, number] | null;
+};
+
+/** Samples a 9×9 screen grid, refines validity boundaries, and clips to the source extent. */
 function getProjectedViewportBounds(
   viewport: Viewport,
   converter: CRSConverter,
@@ -802,39 +809,99 @@ function getProjectedViewportBounds(
   let maximumX = -Infinity;
   let maximumY = -Infinity;
   const steps = 8;
-  const isGlobe = viewport instanceof _GlobeViewport;
-  for (let column = 0; column <= steps; column++) {
-    for (let row = 0; row <= steps; row++) {
-      const screenX = (viewport.width * column) / steps;
-      const screenY = (viewport.height * row) / steps;
-      const [longitude, latitude] = viewport.unproject([screenX, screenY]);
-      if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
-        continue;
-      }
-      if (isGlobe) {
-        // GlobeViewport clamps sky rays to the horizon, away from the original screen position.
-        const [projectedX, projectedY] = viewport.project([longitude, latitude]);
-        const screenError = Math.hypot(projectedX - screenX, projectedY - screenY);
-        if (!Number.isFinite(screenError) || screenError > 0.5) {
-          continue;
-        }
-      }
-      let point: number[];
-      try {
-        point = converter.from([longitude, latitude]);
-      } catch {
-        // Some projection kernels throw for points outside their domain.
-        continue;
-      }
-      const [sourceX, sourceY] = point;
-      if (!Number.isFinite(sourceX) || !Number.isFinite(sourceY)) {
-        continue;
-      }
-      minimumX = Math.min(minimumX, sourceX);
-      minimumY = Math.min(minimumY, sourceY);
-      maximumX = Math.max(maximumX, sourceX);
-      maximumY = Math.max(maximumY, sourceY);
+  const screenTolerance = 0.5;
+
+  /** Maps a screen sample to the source CRS when it round-trips in front of the camera. */
+  function sampleScreenPosition(screenPosition: [number, number]): [number, number] | null {
+    const [longitude, latitude] = viewport.unproject(screenPosition);
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
+      return null;
     }
+    const groundPosition = [longitude, latitude];
+    const [commonX, commonY, commonZ] = viewport.projectPosition(groundPosition);
+    const matrix = viewport.viewProjectionMatrix;
+    // Perspective division can map a behind-camera point back to the same pixel.
+    const clipSpaceW =
+      matrix[3] * commonX + matrix[7] * commonY + matrix[11] * commonZ + matrix[15];
+    if (!Number.isFinite(clipSpaceW) || clipSpaceW <= 0) {
+      return null;
+    }
+    const [projectedX, projectedY] = viewport.project(groundPosition);
+    const screenError = Math.hypot(projectedX - screenPosition[0], projectedY - screenPosition[1]);
+    if (!Number.isFinite(screenError) || screenError > screenTolerance) {
+      return null;
+    }
+    try {
+      const [sourceX, sourceY] = converter.from(groundPosition);
+      return Number.isFinite(sourceX) && Number.isFinite(sourceY) ? [sourceX, sourceY] : null;
+    } catch {
+      // Some projection kernels throw for points outside their domain.
+      return null;
+    }
+  }
+
+  /** Expands the bounds to include a source position. */
+  function includeSourcePosition([sourceX, sourceY]: [number, number]): void {
+    minimumX = Math.min(minimumX, sourceX);
+    minimumY = Math.min(minimumY, sourceY);
+    maximumX = Math.max(maximumX, sourceX);
+    maximumY = Math.max(maximumY, sourceY);
+  }
+
+  /** Bisects a mixed-validity interval and includes the valid endpoint nearest the boundary. */
+  function refineBoundary(first: ProjectedViewportSample, second: ProjectedViewportSample): void {
+    const validSample = first.sourcePosition ? first : second;
+    const rejectedSample = validSample === first ? second : first;
+    let sourcePosition = validSample.sourcePosition;
+    if (!sourcePosition || rejectedSample.sourcePosition) {
+      return;
+    }
+
+    let validPosition = validSample.screenPosition;
+    let rejectedPosition = rejectedSample.screenPosition;
+    for (let iteration = 0; iteration < 12; iteration++) {
+      const deltaX = rejectedPosition[0] - validPosition[0];
+      const deltaY = rejectedPosition[1] - validPosition[1];
+      if (Math.hypot(deltaX, deltaY) < screenTolerance) {
+        break;
+      }
+      const midpoint: [number, number] = [
+        validPosition[0] + deltaX / 2,
+        validPosition[1] + deltaY / 2
+      ];
+      const midpointSourcePosition = sampleScreenPosition(midpoint);
+      if (midpointSourcePosition) {
+        validPosition = midpoint;
+        sourcePosition = midpointSourcePosition;
+      } else {
+        rejectedPosition = midpoint;
+      }
+    }
+    includeSourcePosition(sourcePosition);
+  }
+
+  let previousRow: ProjectedViewportSample[] = [];
+  for (let row = 0; row <= steps; row++) {
+    const currentRow: ProjectedViewportSample[] = [];
+    for (let column = 0; column <= steps; column++) {
+      const screenPosition: [number, number] = [
+        (viewport.width * column) / steps,
+        (viewport.height * row) / steps
+      ];
+      const sourcePosition = sampleScreenPosition(screenPosition);
+      const sample = {screenPosition, sourcePosition};
+      if (sourcePosition) {
+        includeSourcePosition(sourcePosition);
+      }
+      if (column > 0) {
+        refineBoundary(currentRow[column - 1], sample);
+      }
+      if (row > 0) {
+        refineBoundary(previousRow[column], sample);
+      }
+      currentRow.push(sample);
+    }
+    previousRow = currentRow;
   }
   if (sourceBounds) {
     minimumX = Math.max(minimumX, sourceBounds[0][0]);

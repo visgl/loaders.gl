@@ -46,6 +46,8 @@ math.gl can resolve, such as UTM EPSG:32626. For a projected source, the layer r
 visible portion of the source extent and places the CPU or GPU bitmap in source coordinates.
 Ungeoreferenced rasters use a pixel-coordinate plane.
 
+The layer requests one raster per viewport, so distant visible ground near the horizon can make the request coarser.
+
 A large bitmap in a projected CRS draws as one quad by default. Set deck.gl's
 `bitmapLayerProps._projectionTolerance` for adaptive refinement, or set the view's `resolution`
 to subdivide the bitmap on a grid.

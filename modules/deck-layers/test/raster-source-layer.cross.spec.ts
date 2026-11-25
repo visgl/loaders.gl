@@ -160,9 +160,15 @@ test('samples the globe surface and skips non-finite and horizon-clamped sky poi
   const sky = viewport.unproject([400, 0]);
   expect(sky.every(Number.isFinite)).toBe(true);
   expect(viewport.project(sky)[1]).toBeGreaterThan(1);
+  // Give one sky sample a distinct northing so its rejection is observable in the bounds.
+  const offscreenGround = [-27, -80];
   const unproject = viewport.unproject.bind(viewport);
   const unprojectSpy = vi.spyOn(viewport, 'unproject').mockImplementation(position => {
-    return position[0] === 0 ? [Number.NaN, Number.POSITIVE_INFINITY] : unproject(position);
+    const [screenX, screenY] = position;
+    if (screenX === 0) {
+      return [Number.NaN, Number.POSITIVE_INFINITY];
+    }
+    return screenX === 400 && screenY === 0 ? offscreenGround : unproject(position);
   });
   onTestFinished(() => unprojectSpy.mockRestore());
   const {layer, getRaster} = createProjectedLayer(viewport, {
@@ -178,11 +184,107 @@ test('samples the globe surface and skips non-finite and horizon-clamped sky poi
   expect(centerX).toBeLessThan(maximumX);
   expect(centerY).toBeGreaterThan(minimumY);
   expect(centerY).toBeLessThan(maximumY);
-  expect(maximumY).toBeLessThan(from(sky)[1]);
+  expect(minimumY).toBeGreaterThan(from(offscreenGround)[1]);
 
   unprojectSpy.mockReturnValue([Number.NaN, Number.NaN]);
   layer['requestRaster'](viewport, 0);
   expect(getRaster).toHaveBeenCalledOnce();
+});
+
+test('requests a projected source confined to the strip near the globe limb', async ({
+  onTestFinished
+}) => {
+  const viewport = new _GlobeViewport({
+    width: 800,
+    height: 400,
+    longitude: -27,
+    latitude: 38,
+    zoom: 1
+  });
+  const {from} = (await projectionEngine.getCRS('EPSG:32626')).converter.WGS84;
+  const surface = viewport.unproject([400, 355]);
+  expect(viewport.project(surface)[1]).toBeCloseTo(355);
+  expect(viewport.project(viewport.unproject([400, 400]))[1]).toBeLessThan(399.5);
+  const [sourceX, sourceY] = from(surface);
+  // The southernmost valid grid sample is at (400, 350). The next row is sky,
+  // so the unrefined bounds end north of this entire source.
+  const boundingBox: RasterBoundingBox = [
+    [sourceX - 1_000, sourceY - 1_000],
+    [sourceX + 1_000, sourceY + 1_000]
+  ];
+  const {layer, getRaster} = createProjectedLayer(viewport, {...PROJECTED_METADATA, boundingBox});
+  onTestFinished(() => layer['releaseRasterSet']());
+  await layer['resolveSource'](layer.props);
+  expect(getRaster).toHaveBeenCalledOnce();
+  expect(getRaster.mock.calls[0][0].viewport.bounds).toEqual(boundingBox);
+});
+
+test('pitched Web Mercator can unproject sky to a finite point that misses the original pixel', () => {
+  const viewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -27,
+    latitude: 38,
+    zoom: 4,
+    pitch: 60,
+    altitude: 0.75
+  });
+  const position = viewport.unproject([240, 15]);
+  expect(position.every(Number.isFinite)).toBe(true);
+  const [screenX, screenY] = viewport.project(position);
+  expect(Math.hypot(screenX - 240, screenY - 15)).toBeGreaterThan(0.5);
+});
+
+test.for([
+  {pitch: 60, lastSkyRow: 0, nearHorizonY: 25},
+  {pitch: 85, lastSkyRow: 90, nearHorizonY: 105}
+])('excludes behind-camera samples at $pitch degrees and keeps distant ground', async ({
+  pitch,
+  lastSkyRow,
+  nearHorizonY
+}, {onTestFinished}) => {
+  const viewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -27,
+    latitude: 38,
+    zoom: 12,
+    pitch,
+    altitude: 0.75
+  });
+  const sky = viewport.unproject([240, lastSkyRow]);
+  expect(sky.every(Number.isFinite)).toBe(true);
+  const [screenX, screenY, skyDepth] = viewport.project([...sky, 0]);
+  // Perspective division can return the original pixel even for a point behind the camera.
+  expect(Math.hypot(screenX - 240, screenY - lastSkyRow)).toBeLessThan(0.5);
+  const horizonDepth = viewport.projectionMatrix[10] / viewport.projectionMatrix[11];
+  expect(skyDepth).toBeGreaterThan(horizonDepth);
+
+  const {from} = (await projectionEngine.getCRS('EPSG:32626')).converter.WGS84;
+  const groundNorthings: number[] = [];
+  for (let row = lastSkyRow + 30; row <= 240; row += 30) {
+    for (let column = 0; column <= 480; column += 60) {
+      groundNorthings.push(from(viewport.unproject([column, row]))[1]);
+    }
+  }
+  const distantGround = viewport.unproject([240, nearHorizonY]);
+  const [, , distantDepth] = viewport.project([...distantGround, 0]);
+  expect(distantDepth).toBeGreaterThan(1);
+  expect(distantDepth).toBeLessThan(horizonDepth);
+  const distantNorthing = from(distantGround)[1];
+  expect(distantNorthing).toBeGreaterThan(Math.max(...groundNorthings));
+
+  const {layer, getRaster} = createProjectedLayer(viewport, {
+    ...PROJECTED_METADATA,
+    boundingBox: undefined
+  });
+  onTestFinished(() => layer['releaseRasterSet']());
+  await layer['resolveSource'](layer.props);
+  expect(getRaster).toHaveBeenCalledOnce();
+  const [, minimumY, , maximumY] = getRaster.mock.calls[0][0].viewport.getBounds!();
+  expect(minimumY).toBeCloseTo(Math.min(...groundNorthings), 6);
+  expect(from(sky)[1]).toBeLessThan(minimumY);
+  expect(maximumY).toBeGreaterThanOrEqual(distantNorthing);
 });
 
 test('reports unresolvable CRS definitions and keeps custom request and placement overrides', async ({
