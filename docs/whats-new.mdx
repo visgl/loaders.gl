@@ -34,6 +34,11 @@ for stable v4 migrations.
   arrays and VTK, NRRD, and PDB formats.
 - **GeoZarr pyramids.** [GeoZarrRasterSource](./modules/scientific/zarr/api-reference/geo-zarr-loader.md) opens xarray level groups, preserves CF CRS definitions, reads CF nodata with optional Zarr fill values, and selects native overviews by viewport.
   Pass `zarr.store` to read GeoZarr metadata and chunks through a custom Zarrita store.
+- **GPU raster styling.** [RasterSourceLayer](./modules/raster/api-reference/raster-source-layer.md)
+  can render single-band rasters on WebGL2 and WebGPU with CPU-matched default colors, per-raster
+  percentile stretching, and texel picking. Set `valueRange` for a fixed stretch.
+- **Projected raster sources.** RasterSourceLayer renders supported projected CRSs, including UTM,
+  in MapView and GlobeView with either CPU or GPU styling.
 - **3D content and tiles.** [Scene](./modules/scene/README.md) groups glTF, Draco, and mesh
   formats. [Tile Converter](./modules/tile-converter/README.md) defaults to the v5 engine.
   The [TileMatrix adapter](./modules/tiles/api-reference/tile-matrix.md) adds coarse-to-fine
