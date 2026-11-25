@@ -40,6 +40,9 @@ import {
   createScanQueryMetadata
 } from '@loaders.gl/core/loader-utils';
 
+/** Allows for target-size rounding and floating-point error when comparing resolutions. */
+const OVERVIEW_RESOLUTION_TOLERANCE = 0.01;
+
 /**
  * Options for creating a GeoTIFF raster source.
  */
@@ -424,8 +427,7 @@ export class GeoTIFFRasterSource
         const resolution = getImageResolution(image, images[0]);
         if (
           resolution &&
-          Math.abs(resolution[0]) <= requestedResolution[0] &&
-          Math.abs(resolution[1]) <= requestedResolution[1] &&
+          matchesRequestedResolution(resolution, requestedResolution) &&
           image.getWidth() < images[overview].getWidth()
         )
           overview = index;
@@ -612,6 +614,9 @@ export class GeoTIFFRasterSource
     )
       throw new Error('Invalid or oversized decoded raster');
 
+    const nativeResolution = metadata.overviews?.find(
+      level => level.index === overview
+    )?.resolution;
     const result = {
       data,
       width: raster.width,
@@ -636,12 +641,9 @@ export class GeoTIFFRasterSource
       resolution: transform
         ? [Math.hypot(transform[0], transform[3]), Math.hypot(transform[1], transform[4])]
         : requestedResolution,
-      nativeResolution: metadata.overviews
-        ?.find(level => level.index === overview)
-        ?.resolution?.map(Math.abs) as [number, number] | undefined,
-      overzoom: metadata.overviews
-        ?.find(level => level.index === overview)
-        ?.resolution?.some((resolution, axis) => Math.abs(resolution) > requestedResolution[axis]),
+      nativeResolution: nativeResolution?.map(Math.abs) as [number, number] | undefined,
+      overzoom:
+        nativeResolution && !matchesRequestedResolution(nativeResolution, requestedResolution),
       provenance: {sourceType: 'geotiff'},
       ownership: 'owned'
     };
@@ -1029,6 +1031,18 @@ function getImageBoundingBox(image: TiffSourceImage): RasterBoundingBox | undefi
   } catch {
     return undefined;
   }
+}
+
+/** Checks whether the native resolution is fine enough on both axes within the tolerance. */
+function matchesRequestedResolution(
+  resolution: [number, number],
+  requestedResolution: [number, number]
+): boolean {
+  const toleranceFactor = 1 + OVERVIEW_RESOLUTION_TOLERANCE;
+  return (
+    Math.abs(resolution[0]) <= requestedResolution[0] * toleranceFactor &&
+    Math.abs(resolution[1]) <= requestedResolution[1] * toleranceFactor
+  );
 }
 
 /** Estimates overview resolution relative to the full-resolution reference image. */
