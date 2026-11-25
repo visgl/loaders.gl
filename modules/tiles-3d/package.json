@@ -56,7 +56,8 @@
     },
     "./potree/bundled": {
       "types": "./dist/potree/bundled.d.ts",
-      "import": "./dist/potree/bundled.js"
+      "import": "./dist/potree/bundled.js",
+      "require": "./dist/potree/bundled.cjs"
     },
     "./potree-loader": {
       "types": "./dist/potree-loader.d.ts",
@@ -118,7 +119,8 @@
     },
     "./i3s/bundled": {
       "types": "./dist/i3s/bundled.d.ts",
-      "import": "./dist/i3s/bundled.js"
+      "import": "./dist/i3s/bundled.js",
+      "require": "./dist/i3s/bundled.cjs"
     },
     "./i3s-lepcc-loader": {
       "types": "./dist/i3s-lepcc-loader.d.ts",
