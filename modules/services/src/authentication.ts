@@ -130,7 +130,17 @@ export function createCesiumIonCredential(options: CesiumIonCredentialOptions): 
       if (context.reason === 'refresh') {
         endpointTokenPromise = null;
       }
-      endpointTokenPromise ||= resolveCesiumIonAssetToken(options, assetId, origins, context);
+      if (!endpointTokenPromise) {
+        const exchange = resolveCesiumIonAssetToken(options, assetId, origins, context).catch(
+          error => {
+            if (endpointTokenPromise === exchange) {
+              endpointTokenPromise = null;
+            }
+            throw error;
+          }
+        );
+        endpointTokenPromise = exchange;
+      }
       return endpointTokenPromise;
     }
   });
