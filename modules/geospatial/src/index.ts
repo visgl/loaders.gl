@@ -58,3 +58,11 @@ export {TWKBLoader} from './wkt/twkb-loader-types';
 export {TWKBWriter} from './wkt/twkb-writer';
 
 export type {WKTLoaderOptions} from './wkt/wkt-loader-types';
+
+export {OMMFormat} from './omm/omm-format';
+export {OMMLoader} from './omm/omm-loader-types';
+export type {OMMLoaderOptions} from './omm/omm-loader-types';
+export type {OMMRow, OMMTableShape} from './omm/omm-schema';
+export {TLEFormat} from './tle/tle-format';
+export {TLELoader} from './tle/tle-loader-types';
+export type {TLELoaderOptions} from './tle/tle-loader-types';

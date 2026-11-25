@@ -34,7 +34,9 @@ const FORMAT_EXPORTS = {
     'SHPFormat',
     'DBFFormat',
     'FlatGeobufFormat',
-    'GeoPackageFormat'
+    'GeoPackageFormat',
+    'OMMFormat',
+    'TLEFormat'
   ],
   scene: ['DracoFormat'],
   'geospatial/flatgeobuf': ['FlatGeobufFormat'],
@@ -55,6 +57,8 @@ const FORMAT_EXPORTS = {
   'geospatial/kml': ['KMLFormat', 'KMZFormat'],
   'geospatial/gpx': ['GPXFormat'],
   'geospatial/tcx': ['TCXFormat'],
+  'geospatial/omm': ['OMMFormat'],
+  'geospatial/tle': ['TLEFormat'],
   'pointclouds/las': ['LASFormat'],
   'tiles/mlt': ['MLTFormat'],
   'tiles/mvt': ['TileJSONFormat', 'MapStyleFormat', 'MVTFormat'],
