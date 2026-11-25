@@ -23,10 +23,10 @@ module.exports = function resolveImports(program, configuration, extras) {
           program.getCompilerOptions(),
           ts.sys
         ).resolvedModule;
-        if (resolution && /[/\\]index\.(?:ts|tsx)$/.test(resolution.resolvedFileName)) {
+        if (resolution && /[/\\]index\.(?:d\.)?(?:ts|tsx)$/.test(resolution.resolvedFileName)) {
           const relativePath = path.relative(path.dirname(sourceFile.fileName), resolution.resolvedFileName)
             .replaceAll(path.sep, '/')
-            .replace(/\.(?:ts|tsx)$/, '');
+            .replace(/(?:\.d)?\.(?:ts|tsx)$/, '');
           return context.factory.createStringLiteral(relativePath.startsWith('.') ? relativePath : `./${relativePath}`);
         }
         return specifier;
@@ -34,6 +34,22 @@ module.exports = function resolveImports(program, configuration, extras) {
       /** Rewrite only module specifiers, leaving ordinary strings untouched. */
       function visit(node) {
         const factory = context.factory;
+        if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
+          const specifier = resolveSpecifier(node.argument.literal);
+          if (
+            ts.isStringLiteral(specifier) &&
+            /^\.\.?(?:\/|$)/.test(specifier.text) &&
+            !path.extname(specifier.text)
+          ) {
+            const argument = factory.updateLiteralTypeNode(
+              node.argument,
+              factory.createStringLiteral(`${specifier.text}.js`)
+            );
+            node = factory.updateImportTypeNode(
+              node, argument, node.attributes, node.qualifier, node.typeArguments, node.isTypeOf
+            );
+          }
+        }
         if (ts.isImportDeclaration(node)) {
           return factory.updateImportDeclaration(node, node.modifiers, node.importClause,
             resolveSpecifier(node.moduleSpecifier), node.attributes);
