@@ -380,3 +380,9 @@ const source = createDataSourceSync(url, loaders, {
 The server must permit the browser origin and credentials through CORS. For signed URLs, complex request signing, service workers, or application gateways, provide `core.fetch`; the common credential wrapper composes with that function. Avoid configuring both a custom signer and a loaders.gl credential for the same field unless explicit request values are intended to win.
 
 See the [request credential API](https://loaders.gl/next/docs/modules/core/loader-utils/api-reference/request-credentials.md) for the generic constructors and callback contract.
+
+### Credentials for streaming tile sources[​](#credentials-for-streaming-tile-sources "Direct link to Credentials for streaming tile sources")
+
+Directly constructed `Tiles3DSource` and `I3SSource` instances resolve declarative credentials when the first resource request needs them. Concurrent requests from one source share credential discovery and reuse its credential instances. Preloaded 3D Tiles metadata and native root headers remain available immediately after construction.
+
+Custom streaming sources can use `createSourceLoadOptionsResolver(loader, url, options)` from `@loaders.gl/core/loader-utils`. Create the resolver once per source and await it when building request options, before applying resource-specific overrides. A later request can retry failed discovery.
