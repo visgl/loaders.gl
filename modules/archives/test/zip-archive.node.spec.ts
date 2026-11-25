@@ -43,8 +43,7 @@ test('installed ESM/CJS ZIP entrypoints expose portable reading and writing', as
   expect(typeof (await ZipLoader.preload()).parse).toBe('function');
   const files = await parser.parse(bytes);
   expect(new TextDecoder().decode(files['folder/abc.txt'])).toBe('abc');
-  for (const subpath of ['bundled', 'unbundled'])
-    expect(() => require.resolve('@loaders.gl/archives/zip/' + subpath)).toThrow();
+  expect(() => require.resolve('@loaders.gl/archives/zip/unbundled')).toThrow();
 });
 
 /** Dependency ownership is part of the ZIP package contract. */

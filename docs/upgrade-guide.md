@@ -22,7 +22,7 @@ Format packages now expose their loaders through subpaths. Replace a package-roo
 import with `@loaders.gl/<package>/<format>`. For eager parsing, writers, and direct source
 construction, use `@loaders.gl/<package>/<format>/bundled`. Both paths export loaders
 under their ordinary names. The core framework is available at `@loaders.gl/core/api`,
-and tileset traversal at `@loaders.gl/tiles-3d/api`. Existing core root imports remain supported.
+and tileset traversal at `@loaders.gl/tiles-3d/tileset`. Existing core root imports remain supported.
 
 For table formats, use the following subpaths.
 

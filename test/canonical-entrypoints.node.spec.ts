@@ -252,7 +252,7 @@ test('representative capability APIs are available through ESM and CommonJS entr
   }
 });
 
-test('framework API subpaths share the existing core registry and tileset classes', async () => {
+test('core API subpath shares the existing registry and the tileset subpath exports its classes', async () => {
   const require = createRequire(import.meta.url);
   for (const loadPackage of [require, (specifier: string) => import(specifier)]) {
     const core = await loadPackage('@loaders.gl/core');
@@ -261,7 +261,7 @@ test('framework API subpaths share the existing core registry and tileset classe
     expect(api.load).toBe(core.load);
     expect(api).not.toHaveProperty('NullLoader');
     const tileset = await loadPackage('@loaders.gl/tiles-3d/tileset');
-    const tilesApi = await loadPackage('@loaders.gl/tiles-3d/api');
-    expect(tilesApi.Tileset3D).toBe(tileset.Tileset3D);
+    expect(tileset.Tileset3D).toBeTypeOf('function');
+    expect(tileset.Tile3D).toBeTypeOf('function');
   }
 });

@@ -179,16 +179,11 @@ test.each([
 );
 
 test.each([
-  ['tables', 'parquet/parquet-loader-types.js', 'ParquetLoader', 'parquet/parquet-loader-types.js'],
-  ['tables', 'arrow/arrow-loader-types.js', 'ArrowLoader', 'arrow/arrow-loader-types.js'],
-  [
-    'tables',
-    'json/json-table-loader-types.js',
-    'JSONTableLoader',
-    'json/json-table-loader-types.js'
-  ],
-  ['pointclouds', 'pcd/pcd-loader-types.js', 'PCDLoader', 'pcd/pcd-loader-types.js'],
-  ['scientific', 'npy-loader-types.js', 'NPYLoader', 'npy-loader-types.js']
+  ['tables', 'parquet/parquet-loader-types.js', 'ParquetLoader', 'parquet'],
+  ['tables', 'arrow/arrow-loader-types.js', 'ArrowLoader', 'arrow'],
+  ['tables', 'json/json-table-loader-types.js', 'JSONTableLoader', 'json'],
+  ['pointclouds', 'pcd/pcd-loader-types.js', 'PCDLoader', 'pcd'],
+  ['scientific', 'npy-loader-types.js', 'NPYLoader', 'npy']
 ])(
   'native browser ESM starts a standalone worker from %s/%s',
   async (packageName, entry, loaderName, workerName) => {

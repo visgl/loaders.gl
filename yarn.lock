@@ -3092,7 +3092,7 @@ __metadata:
 
 "@deck.gl/geo-layers@patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch":
   version: 10.0.0-alpha.1
-  resolution: "@deck.gl/geo-layers@patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch::version=10.0.0-alpha.1&hash=d36091"
+  resolution: "@deck.gl/geo-layers@patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch::version=10.0.0-alpha.1&hash=170199"
   dependencies:
     "@loaders.gl/core": "npm:5.0.0-beta.8"
     "@loaders.gl/ogc": "npm:5.0.0-beta.8"
@@ -3118,7 +3118,7 @@ __metadata:
     "@loaders.gl/core": 5.0.0-beta.8
     "@luma.gl/core": 10.0.0-alpha.14
     "@luma.gl/engine": 10.0.0-alpha.14
-  checksum: 10c0/7492c4ab4c9cc7a2ab99904f9885359e3129b7c15ae16081814f7e5d248293d77d274bcf75b84a878c59a35d445b7e7a590ca479fe9ea7c29feacc5c8ecce3e7
+  checksum: 10c0/aa35dd2b2927af811f412d8dd5409da92089dd398f1d53ad367acc7e3678762f46d6f39f28aabf855ea09c86a029bab447d726c090dbe99dafa4d796f5178911
   languageName: node
   linkType: hard
 

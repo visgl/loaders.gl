@@ -102,7 +102,7 @@
 
 ## Loader module structure
 
-- Format package roots export no values or types. Use the bare format subpath for metadata loaders, format descriptors, and public types. The core root forwards its shared framework API for compatibility. Use `@loaders.gl/core/api` and `@loaders.gl/tiles-3d/api` for shared runtime APIs.
+- Format package roots export no values or types. Use the bare format subpath for metadata loaders, format descriptors, and public types. The core root forwards its shared framework API for compatibility. Use `@loaders.gl/core/api` and `@loaders.gl/tiles-3d/tileset` for shared runtime APIs.
 - Each public metadata loader should live in its own `*-loader-types.ts` file. That file should contain the loader metadata, options, default values, and an optional `preload()` function, but no `parse`, `parseSync`, `parseText`, or `parseInBatches` methods.
 - `preload()` should use a static package-subpath import such as `await import('@loaders.gl/tables/csv/bundled')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers. Parquet and GeoParquet preload their specific implementation files directly to avoid loading unrelated bundled helpers.
 - Each parser-bearing loader should live in its own `*-loader.ts` file and export only the `*WithParser` loader. Keep parser logic out of the metadata file.
