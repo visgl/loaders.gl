@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {path, RequestCache, sliceArrayBuffer} from '@loaders.gl/core/loader-utils';
+import {
+  path,
+  RequestCache,
+  resolveLoaderAuthenticationOptions,
+  sliceArrayBuffer
+} from '@loaders.gl/core/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {Matrix4, Vector3} from '@math.gl/core/matrix';
 import type {CoreAPI, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/core/loader-utils';
@@ -97,7 +102,9 @@ export class Tiles3DSource implements Tileset3DSource {
   /** Parsed root tileset payload. */
   tileset: TilesetJSON | null = null;
   /** Loader options forwarded to content requests. */
-  readonly loadOptions: LoaderOptions;
+  get loadOptions(): LoaderOptions {
+    return this.sourceLoadOptions;
+  }
   /** Core API used for root and tile-content loads when injected by the caller. */
   coreApi?: CoreAPI;
   /** Aggregate content-format flags discovered during streaming. */
@@ -114,6 +121,7 @@ export class Tiles3DSource implements Tileset3DSource {
   /** Normalized source metadata after initialization. */
   metadata?: TilesetSourceMetadata;
 
+  private sourceLoadOptions: LoaderOptions;
   private readonly queryParams: Record<string, string> = {};
   /** Final request URLs cached by unmodified tile content URL. */
   private readonly tileUrlCache: Map<string, string> = new Map();
@@ -161,7 +169,7 @@ export class Tiles3DSource implements Tileset3DSource {
     this.basePath = request.basePath || path.dirname(request.url);
     this.resolver = request.resolver;
     this.coreApi = request.coreApi;
-    this.loadOptions = loadOptions;
+    this.sourceLoadOptions = loadOptions;
     const maximumCachedSubtrees = Number(
       (loadOptions['3d-tiles'] as Record<string, unknown> | undefined)?.maximumCachedSubtrees
     );
@@ -187,6 +195,11 @@ export class Tiles3DSource implements Tileset3DSource {
    * Fetches and validates top-level metadata, then normalizes common fields used by {@link Tileset3D}.
    */
   async initialize(): Promise<void> {
+    this.sourceLoadOptions = await resolveLoaderAuthenticationOptions(
+      this.loader,
+      this.url,
+      this.sourceLoadOptions
+    );
     if (!this.rootTileset) {
       const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
       this.rootTileset = await this.loadRootData(this.url, {
