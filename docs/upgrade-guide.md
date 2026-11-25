@@ -25,6 +25,17 @@ under their ordinary names. The core framework is available at `@loaders.gl/core
 and tileset traversal at `@loaders.gl/tiles-3d/tileset`. Existing core root imports remain supported.
 Image utilities such as `getBinaryImageMetadata` now use `@loaders.gl/images/api`.
 
+Update existing `@loaders.gl/tiles-3d` root imports as follows.
+
+| Symbol | Import |
+| --- | --- |
+| `Tileset3D`, `Tile3D`, `TILE_TYPE` | `@loaders.gl/tiles-3d/tileset` |
+| `Tiles3DSource` | `@loaders.gl/tiles-3d/3d-tiles/bundled` |
+| `I3SSource` | `@loaders.gl/tiles-3d/i3s/bundled` |
+
+Update downstream packages that import these symbols before adopting this release. An existing
+`^5.0.0` dependency range can select a release with these import changes.
+
 
 For table formats, use the following subpaths.
 
