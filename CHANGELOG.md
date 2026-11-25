@@ -6,6 +6,7 @@
 
 - Upgrade to math.gl 5.0.3 and share Arrow projection, predicate evaluation, row selection, and schema metadata.
 - Delegate WKT parsing, WKB ring traversal, and TWKB encoding and decoding to math.gl.
+- Apply a 1% resolution tolerance to GeoTIFF overview selection and overzoom reporting.
 
 - Remove the legacy v4 tile-converter implementation (#4606).
 - Delegate Arrow SQL filtering and relational execution to math.gl, including timestamp sorting and grouping.
