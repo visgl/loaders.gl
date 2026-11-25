@@ -3,11 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 export {selectSupportedBasisFormat, getSupportedBasisFormats} from './lib/utils/basis-format-utils';
-export {
-  loadBasisTranscoderModule,
-  loadBasisEncoderModule,
-  BASIS_EXTERNAL_LIBRARIES
-} from './lib/parsers/basis-module-loader';
 export type {
   BasisLoaderOptions,
   KTX2BasisWriterOptions,

@@ -36,8 +36,11 @@ test.each([
     assert.equal(api.GIFBuilder, undefined);
     const gif = await readPackage('@loaders.gl/images/gif-builder');
     assert.equal(typeof gif.GIFBuilder, 'function');
-    assert.equal(typeof api.loadBasisEncoderModule, 'function');
-    assert.equal(typeof api.loadCrunchModule, 'function');
+    assert.equal(typeof api.getSupportedBasisFormats, 'function');
+    assert.equal(typeof api.selectSupportedBasisFormat, 'function');
+    for (const name of ['loadBasisEncoderModule', 'loadBasisTranscoderModule', 'loadCrunchModule', 'BASIS_EXTERNAL_LIBRARIES', 'CRUNCH_EXTERNAL_LIBRARIES']) {
+      assert.equal(Object.hasOwn(api, name), false, name);
+    }
     assert.ok(api.ImageTextureManifestSchema);
     assert.equal(typeof api.getBinaryImageMetadata, 'function');
     assert.equal(api.ImageLoader, undefined);
@@ -110,7 +113,9 @@ test('the images API excludes the GIF implementation and eager format loaders', 
   });
   expect(
     Object.keys(result.metafile!.inputs).filter(filename =>
-      /\/gifshot\/|\/(?:image|texture|basis|crunch)-loader\.ts$|\.wasm$/.test(filename)
+      /\/gifshot\/|\/(?:image|texture|basis|crunch)-loader\.ts$|\/(?:basis|crunch)-module-loader\.ts$|\.wasm$/.test(
+        filename
+      )
     )
   ).toEqual([]);
 });
