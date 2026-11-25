@@ -94,6 +94,10 @@ PROJJSON definitions. Rasters without geospatial bounds use a full pixel-coordin
 Use `rasterParameters` for source-specific dimensions, `getRasterParameters` for custom request or
 projection logic, and `colorizeRaster` for application color maps.
 
+Set `rendering: 'gpu'` to draw single-band rasters with `RasterBitmapLayer`. Use `valueRange`,
+`colormap`, and `valueScale` to style the current raster. With `pickable: true`, GPU picks include
+the original texel value. `RasterBitmapLayer` also accepts single-band arrays directly.
+
 ## PointCloudSourceLayer
 
 `PointCloudSourceLayer` renders normalized `PointCloudTilesetSource` runtimes such as COPC and
