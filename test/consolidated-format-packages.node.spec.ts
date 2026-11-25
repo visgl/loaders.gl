@@ -38,11 +38,16 @@ test.each([
   'pointclouds',
   'scene'
 ])('%s metadata imports do not bundle format parsers', async owner => {
-  const exports =
-    owner === 'scene' ? 'GLTFLoader, OBJLoader, USDLoader' : 'LASLoader, PCDLoader, PLYLoader';
+  const formats = owner === 'scene' ? ['gltf', 'obj', 'usd'] : ['las', 'pcd', 'ply'];
+  const manifest = JSON.parse(fs.readFileSync(`modules/${owner}/package.json`, 'utf8'));
   const result = await build({
     stdin: {
-      contents: `export {${exports}} from './modules/${owner}/src/index.ts'`,
+      contents: formats
+        .map(
+          format =>
+            `export * from './modules/${owner}/${manifest.exports['./' + format].import.replace('dist/', 'src/').replace(/\.js$/, '.ts')}'`
+        )
+        .join('\n'),
       resolveDir: process.cwd()
     },
     bundle: true,
@@ -130,7 +135,7 @@ test.each([
 ])('CommonJS %s %s uses the installed package version', (owner, loaderName) => {
   const require = createRequire(import.meta.url);
   const manifest = JSON.parse(fs.readFileSync(`modules/${owner}/package.json`, 'utf8'));
-  const entry = require(`@loaders.gl/${owner}`);
+  const entry = require(`@loaders.gl/${owner}/${loaderName.replace(/Loader$/, '').toLowerCase()}`);
   expect(entry[loaderName].version).toBe(manifest.version);
 });
 
