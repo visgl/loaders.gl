@@ -108,6 +108,9 @@ export function parseOMMJSON(json: unknown, options: OrbitRecordErrorOptions = {
  * Parses the KVN form of OMM. Each `CCSDS_OMM_VERS` line starts a new element set.
  * The parser validates GP metadata and ignores `COMMENT` lines, `USER_DEFINED_*` keywords,
  * other metadata keywords and units in square brackets.
+ * It skips the `META_START`, `META_STOP`, `DATA_START` and `DATA_STOP` delimiters while reading
+ * their keywords. Other `*_START` blocks are skipped through their matching `*_STOP`, and a
+ * missing stop delimiter invalidates the element set.
  *
  * @param text - OMM KVN text.
  * @param options - Options that select throw or skip for invalid element sets.
@@ -117,12 +120,25 @@ export function parseOMMKVNText(text: string, options: OrbitRecordErrorOptions =
   const lines = text.replace(/^﻿/, '').split(/\r\n|\r|\n/);
   const rows: OMMRow[] = [];
   let record: KVNRecord | null = null;
+  let ignoredBlock: {
+    /** Line number of the opening delimiter. */
+    startLine: number;
+    /** Delimiter that closes the block. */
+    stopDelimiter: string;
+  } | null = null;
 
-  const finishRecord = () => {
-    if (record) {
+  /** Reports an unterminated block or converts the completed record, then clears parser state. */
+  const finishRecord = (): void => {
+    if (ignoredBlock) {
+      handleInvalidRecord(
+        `OMMLoader: line ${ignoredBlock.startLine}: unterminated block, expected ${ignoredBlock.stopDelimiter}`,
+        options
+      );
+    } else if (record) {
       convertKVNRecord(record, rows, options);
-      record = null;
     }
+    ignoredBlock = null;
+    record = null;
   };
 
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
@@ -132,13 +148,32 @@ export function parseOMMKVNText(text: string, options: OrbitRecordErrorOptions =
       continue;
     }
     const keywordValue = splitKVNLine(line);
+    if (keywordValue?.[0] === 'CCSDS_OMM_VERS') {
+      finishRecord();
+    }
+    if (ignoredBlock) {
+      if (line === ignoredBlock.stopDelimiter) {
+        ignoredBlock = null;
+      }
+      continue;
+    }
     if (!keywordValue) {
+      if (
+        line === 'META_START' ||
+        line === 'META_STOP' ||
+        line === 'DATA_START' ||
+        line === 'DATA_STOP'
+      ) {
+        continue;
+      }
+      const blockStart = /^([A-Z][A-Z0-9_]*)_START$/.exec(line);
+      if (blockStart) {
+        ignoredBlock = {startLine: lineNumber, stopDelimiter: `${blockStart[1]}_STOP`};
+        continue;
+      }
       throw new Error(`OMMLoader: line ${lineNumber}: expected "KEYWORD = value", found "${line}"`);
     }
     const [keyword, value] = keywordValue;
-    if (keyword === 'CCSDS_OMM_VERS') {
-      finishRecord();
-    }
     record ||= {startLine: lineNumber, values: {}, lineNumbers: {}};
     if (keyword in record.values) {
       handleInvalidRecord(

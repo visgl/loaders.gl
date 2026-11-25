@@ -97,6 +97,64 @@ describe('OMMLoader', () => {
     expect(OMMFormat.tests[0](new TextEncoder().encode(kvnText).buffer)).toBe(true);
   });
 
+  test('reads KVN keywords between metadata and data delimiters', () => {
+    const {OBJECT_NAME: objectName, ...elements} = sourceObjects[0];
+    const kvnText = makeKVNText({OBJECT_NAME: objectName, ...elements});
+    const [versionLine, objectNameLine, ...dataLines] = kvnText.split('\n');
+    const delimitedText = [
+      versionLine,
+      '  META_START  ',
+      objectNameLine,
+      'META_STOP',
+      'DATA_START',
+      ...dataLines,
+      'DATA_STOP'
+    ].join('\n');
+    expect(parseRows(delimitedText)).toEqual(parseRows(kvnText));
+  });
+
+  test.each(['COVARIANCE', 'USER_DEFINED'])('ignores KVN keywords in a %s block', blockName => {
+    const kvnText = makeKVNText(sourceObjects[0]);
+    const block = [
+      `${blockName}_START`,
+      'OTHER_STOP',
+      'EPOCH = 2026-01-01T00:00:00',
+      'CX_X = 0.01',
+      `  ${blockName}_STOP  `
+    ].join('\n');
+    const withBlock = kvnText.replace(/^MEAN_ANOMALY = .*$/m, line => `${block}\n${line}`);
+    expect(parseRows(withBlock)).toEqual(parseRows(kvnText));
+  });
+
+  test.each([
+    {boundary: 'end of input', hasNextRecord: false},
+    {boundary: 'next OMM header', hasNextRecord: true}
+  ])('reports and skips a KVN record with a block open at the $boundary', ({hasNextRecord}) => {
+    const firstRecord = makeKVNText(sourceObjects[0]);
+    const nextRecord = sourceObjects[13];
+    const blockStartLine = firstRecord.split('\n').length + 1;
+    const lines = [firstRecord, 'COVARIANCE_START', 'CX_X = 0.01'];
+    if (hasNextRecord) {
+      lines.push(makeKVNText(nextRecord));
+    }
+    const text = lines.join('\n');
+    const message = `OMMLoader: line ${blockStartLine}: unterminated block, expected COVARIANCE_STOP`;
+    expect(() => parseRows(text)).toThrow(message);
+
+    const log = {warn: vi.fn(() => () => {})};
+    expect(parseOMMText(text, {skipInvalidRecords: true, log: log as never})).toEqual(
+      hasNextRecord ? [nextRecord] : []
+    );
+    expect(log.warn).toHaveBeenCalledExactlyOnceWith(`${message} (record skipped)`);
+  });
+
+  test('rejects a stray KVN stop delimiter as a malformed line', () => {
+    const text = `COVARIANCE_STOP\n${makeKVNText(sourceObjects[0])}`;
+    expect(() => parseRows(text, {skipInvalidRecords: true})).toThrow(
+      'OMMLoader: line 1: expected "KEYWORD = value", found "COVARIANCE_STOP"'
+    );
+  });
+
   test.each([
     ['explicit values', GP_METADATA],
     [

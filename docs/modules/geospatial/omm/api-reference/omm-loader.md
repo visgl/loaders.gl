@@ -8,6 +8,10 @@
 [CCSDS Orbit Mean-Elements Message (OMM)](../formats/omm.md) for SGP4. It reads the JSON form that
 CelesTrak (`FORMAT=json`) and Space-Track serve, and the KVN (keyword = value) form.
 
+In KVN, the loader reads keywords between `META_START` and `META_STOP` or between `DATA_START`
+and `DATA_STOP`. It skips other blocks, such as covariance, through their matching `*_STOP`
+delimiter and treats an unterminated block as an invalid element set.
+
 This subset uses Earth as the center (`CENTER_NAME`), TEME as the frame (`REF_FRAME`), UTC as
 the time system (`TIME_SYSTEM`), and SGP4 as the theory (`MEAN_ELEMENT_THEORY`). The loader assumes
 these values for omitted or blank fields. It accepts `SGP/SGP4` as an alias and rejects other
