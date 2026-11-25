@@ -14,6 +14,7 @@ const REPOSITORY_ROOT = process.cwd();
 
 test.each([
   ['tables', 'ParquetLoader', 'parquet', 'ParquetLoaderWithParser'],
+  ['tables', 'GeoParquetLoader', 'parquet', 'GeoParquetLoaderWithParser'],
   ['tables', 'ORCLoader', 'orc', 'ORCLoaderWithParser'],
   ['tables', 'LanceLoader', 'lance', 'LanceLoaderWithParser'],
   ['tables', 'JSONLoader', 'json', 'JSONLoaderWithParser'],
@@ -116,6 +117,45 @@ test.each([
     ).toBe(true);
   },
   30_000
+);
+
+test.each(['ParquetLoader', 'GeoParquetLoader'])(
+  'the Parquet format entry does not pull unrelated format helpers into %s preload',
+  async loader => {
+    const {metafile} = await build({
+      stdin: {
+        contents: `export {${loader}} from '@loaders.gl/tables/parquet';`,
+        resolveDir: REPOSITORY_ROOT,
+        sourcefile: 'parquet-metadata-entry.js'
+      },
+      tsconfigRaw: {},
+      bundle: true,
+      minify: true,
+      splitting: true,
+      format: 'esm',
+      platform: 'browser',
+      outdir: 'grouped-package-test-output',
+      write: false,
+      metafile: true
+    });
+    const outputs = metafile.outputs;
+    const entry = Object.keys(outputs).find(
+      filename => outputs[filename].entryPoint === 'parquet-metadata-entry.js'
+    );
+    expect(entry).toBeDefined();
+    const eager = new Set([entry!]);
+    for (const filename of eager) {
+      for (const dependency of outputs[filename].imports) {
+        if (dependency.kind !== 'dynamic-import' && !dependency.external) {
+          eager.add(dependency.path);
+        }
+      }
+    }
+    const eagerBytes = [...eager].reduce((sum, filename) => sum + outputs[filename].bytes, 0);
+    // The compatibility barrel still exposes synchronous parser and source APIs. It is
+    // not the zero-parser entry, but metadata preload should not also load the catalog stack.
+    expect(eagerBytes).toBeLessThan(768 * 1024);
+  }
 );
 
 test.each([
