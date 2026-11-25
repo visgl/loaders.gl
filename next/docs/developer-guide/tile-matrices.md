@@ -151,7 +151,7 @@ The default `@loaders.gl/deck-layers` tile adapter uses deck.gl's Web Mercator X
 
 ## Explicit frame selection[​](#explicit-frame-selection "Direct link to Explicit frame selection")
 
-For complete regular or coalesced grids, [`selectTileMatrixTiles`](https://loaders.gl/next/docs/modules/tiles/api-reference/tile-matrix.md) accepts an extent and resolution already expressed in the grid CRS, applies advertised limits, and returns native source requests. Our current thinking is that this may be a useful renderer-independent boundary. An explicit native-frame adapter connects this selector to the shared `Tileset2D` cache without inferring parents. Viewport conversion and projected rendering remain separate; the fixed-frame OGC walkthrough provides a small, tested request example.
+For complete regular or coalesced grids, the fixed-frame selector accepts an extent and resolution already expressed in the grid CRS, applies advertised limits, and returns native source requests. The native-frame adapter connects this selector to the shared `Tileset2D` cache, assigns coarse-to-fine ranks, and finds the parent tile that contains each child tile's center. The fixed-frame OGC walkthrough provides a request example. See [TileMatrix selection and traversal](https://loaders.gl/next/docs/modules/tiles/api-reference/tile-matrix.md).
 
 ## Shared validation and coalesced requests[​](#shared-validation-and-coalesced-requests "Direct link to Shared validation and coalesced requests")
 
