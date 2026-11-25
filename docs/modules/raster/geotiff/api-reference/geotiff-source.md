@@ -142,6 +142,8 @@ The returned `RasterData` contains:
 ## Notes
 
 - GeoTIFF overview selection compares both source pixel resolutions with the requested region; `geotiff.js` decodes the selected image window.
+  An overview may be up to 1% coarser than requested on each axis to account for target-size
+  rounding and floating-point error.
 - For remote COGs, `GeoTIFFLoader` can share a `RangeRequestScheduler` with other sources to
   coalesce overlapping byte-range requests.
 
