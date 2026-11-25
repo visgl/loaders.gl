@@ -56,9 +56,9 @@ The source recognizes two interoperable metadata patterns:
   reading an existing CF variable are surfaced to the caller.
 
 Without an explicit override or a GeoZarr `proj:` CRS, the source checks the mapping's
-`crs_wkt` and `spatial_ref` attributes, then the group-level `crs` attribute. WKT with an
-outer EPSG authority becomes an `EPSG:<code>` identifier. WKT without an outer EPSG authority
-is preserved in `metadata.crs`.
+`crs_wkt` and `spatial_ref` attributes, then the group-level `crs` attribute. The source
+preserves the definition as written in `metadata.crs`, per-level metadata, and the returned
+raster's `crs`.
 
 <ReferenceBoundary
   title="GeoZarr source usage"
@@ -116,9 +116,9 @@ const raster = await source.getRaster({
 - `coordinateReferenceSystem?: string` supplies an authority identifier or WKT when the store does
   not provide one.
 - `defaultSelection?: Record<string, number>` supplies default indices for non-spatial dimensions.
-- `fillValueAsNoData?: boolean` controls the fallback to a finite Zarr `fill_value`. It defaults
-  to `true` for integer arrays and `false` for floating-point arrays. A storage fill value may
-  represent valid data. CF `_FillValue` and then `missing_value` take precedence over this option.
+- `fillValueAsNoData?: boolean` defaults to `false` for all dtypes because a storage fill value
+  may also be a valid sample. Set it to `true` to use a finite Zarr `fill_value` when CF
+  `_FillValue` and `missing_value` supply no nodata value.
 - `maxConcurrentRequests?: number` caps simultaneous Zarrita store reads per source, including
   chunk response bodies and byte-range reads. Defaults to `16`.
 
@@ -145,6 +145,10 @@ Reads a native-resolution array window intersecting `parameters.viewport`. The s
 the requested bounds' width and height by the respective viewport dimensions and uses the smaller
 value as the target pixel size. It selects the coarsest compatible level with pixels no larger
 than that target on either axis. The configured array is the fallback and the finest candidate.
+
+Supply viewport bounds in source coordinates. If you set `viewport.crs`, pass the source's
+`metadata.crs` string verbatim because the source compares the strings directly. You can also
+omit `viewport.crs`.
 
 - `selection?: RasterSelection` selects named non-spatial indices through the common
   `GetRasterParameters` contract.

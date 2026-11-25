@@ -55,17 +55,19 @@ transform, and CRS. Each level uses its own spatial attributes, GDAL `GeoTransfo
 regular CF coordinates. Dataset scale transforms are optional.
 
 When `proj:` metadata is absent, CRS discovery uses the CF `grid_mapping` variable, a
-sibling `spatial_ref` variable, or the enclosing group's `crs` attribute. A WKT definition
-with an outer EPSG authority becomes `EPSG:<code>`. Other WKT definitions remain strings.
-Nodata comes from CF `_FillValue`, then `missing_value`, then the finite Zarr fill value.
-The fill-value fallback defaults to integer arrays only. Set `geozarr.fillValueAsNoData`
-to override it when the Zarr storage fill value represents valid data or a float sentinel.
+sibling `spatial_ref` variable, or the enclosing group's `crs` attribute. The source preserves
+the CRS definition as written in `metadata.crs`, per-level metadata, and the returned raster.
+Nodata comes from CF `_FillValue`, then `missing_value`. Set `geozarr.fillValueAsNoData: true`
+to use a finite Zarr `fill_value` as a fallback. This option defaults to `false` for all dtypes
+because storage fill values such as zero can also be valid samples.
 
 `getRaster()` reads native pixels from the coarsest eligible level whose pixel size fits
 both viewport axes, falling back to the selected array. It returns that window's bounds and
 affine transform. GeoZarr uses axis-aligned affine grids in the source CRS and returns native
-samples. `geozarr.maxConcurrentRequests` defaults to 16 and limits concurrent reads at
-Zarrita's store, including response bodies and range reads.
+samples. If you supply `viewport.crs`, pass the `metadata.crs` string verbatim. You can also omit
+`viewport.crs` when the viewport bounds are already in source coordinates.
+`geozarr.maxConcurrentRequests` defaults to 16 and limits concurrent reads at Zarrita's store,
+including response bodies and range reads.
 
 The [GeoZarr deck.gl example](https://loaders.gl/examples/geospatial/geo-zarr) reads NASA POWER
 climatology data directly from a public Zarr store and renders it on an interactive map.

@@ -18,7 +18,7 @@ import type {
   ScanQueryMetadataOptions,
   ScanQueryMetadataProvider
 } from '@loaders.gl/core/loader-utils';
-import {parseWKTCRS, type CRSDefinition} from '@math.gl/geospatial/crs';
+import type {CRSDefinition} from '@math.gl/geospatial/crs';
 import {
   createTileGrid,
   createScanQueryMetadata,
@@ -103,7 +103,7 @@ export type GeoZarrLoaderOptions = ZarrLoaderOptions & {
     coordinateReferenceSystem?: CRSDefinition;
     /** Default indices for non-spatial dimensions such as `time` or `level`. */
     defaultSelection?: Record<string, number>;
-    /** Uses a finite Zarr fill value as no-data in the absence of a CF declaration. Defaults to true for integers only. */
+    /** Uses a finite Zarr fill value as no-data in the absence of a CF declaration. Defaults to false for all dtypes. */
     fillValueAsNoData?: boolean;
     /** Maximum concurrent store reads. Defaults to 16. */
     maxConcurrentRequests?: number;
@@ -181,7 +181,7 @@ export const GeoZarrLoaderWithParser = {
       transform: undefined!,
       coordinateReferenceSystem: undefined!,
       defaultSelection: undefined!,
-      fillValueAsNoData: undefined!,
+      fillValueAsNoData: false,
       maxConcurrentRequests: GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS
     }
   } as GeoZarrLoaderOptions,
@@ -199,7 +199,7 @@ export const GeoZarrLoaderWithParser = {
       transform: undefined!,
       coordinateReferenceSystem: undefined!,
       defaultSelection: undefined!,
-      fillValueAsNoData: undefined!,
+      fillValueAsNoData: false,
       maxConcurrentRequests: GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS
     }
   },
@@ -324,7 +324,10 @@ export class GeoZarrRasterSource
     });
   }
 
-  /** Loads a clipped native-resolution 2D window for the requested viewport and named selection. */
+  /**
+   * Loads a clipped native-resolution 2D window for the requested viewport and named selection.
+   * When supplying `viewport.crs`, pass the string from the source's `metadata.crs`.
+   */
   async getRaster(parameters: GetGeoZarrParameters): Promise<RasterData> {
     parameters.signal?.throwIfAborted();
     const selected = await this.getInitializationPromise(parameters.signal);
@@ -599,12 +602,9 @@ export class GeoZarrRasterSource
     const coordinateReferenceSystem =
       options?.coordinateReferenceSystem ||
       normalizeDeclaredCoordinateReferenceSystem(attributes) ||
-      normalizeWKTAuthority(
-        getGridMappingCoordinateReferenceSystem((await getGridMapping())?.attributes)
-      ) ||
-      normalizeWKTAuthority(
-        normalizeString(levelGroupAttributes.crs) || normalizeString(groupAttributes.crs)
-      ) ||
+      getGridMappingCoordinateReferenceSystem((await getGridMapping())?.attributes) ||
+      normalizeString(levelGroupAttributes.crs) ||
+      normalizeString(groupAttributes.crs) ||
       inferGeographicCoordinateReferenceSystem(spatialDimensions);
     const defaultSelection = options?.defaultSelection || {};
     const selectionDimensions = dimensions
@@ -616,11 +616,10 @@ export class GeoZarrRasterSource
       .filter(dimension => !spatialDimensions.includes(dimension.name));
     normalizeSelection(undefined, selectionDimensions);
     const dtype = normalizeDtype(array.dtype);
-    const fillValueAsNoData = options?.fillValueAsNoData ?? !dtype.startsWith('float');
     const noData =
       normalizeNumber(attributes._FillValue) ??
       normalizeNumber(attributes.missing_value) ??
-      (fillValueAsNoData ? normalizeNumber(array.fillValue) : undefined);
+      (options?.fillValueAsNoData ? normalizeNumber(array.fillValue) : undefined);
     const metadata: GeoZarrSourceMetadata = {
       name: normalizeString(attributes.long_name) || normalizeString(attributes.title) || arrayPath,
       title: normalizeString(attributes.title) || normalizeString(groupAttributes.title),
@@ -973,26 +972,6 @@ function getGridMappingCoordinateReferenceSystem(
     normalizeString(attributes?.['proj:wkt2']) ||
     normalizeString(attributes?.['proj:code'])
   );
-}
-
-/** Resolves an outer WKT EPSG authority without considering nested datum, unit, or CRS entries. */
-function normalizeWKTAuthority(definition: string | undefined): string | undefined {
-  if (!definition || !/^\s*\w+\s*(?:\[|\()/.test(definition)) return definition;
-  try {
-    const {root} = parseWKTCRS(definition);
-    for (const value of [...root.values].reverse()) {
-      if (value.type !== 'node' || !['AUTHORITY', 'ID'].includes(value.keyword.toUpperCase()))
-        continue;
-      const [authority, code] = value.values;
-      if (authority?.type !== 'string' || authority.value.toUpperCase() !== 'EPSG') continue;
-      const identifier =
-        code?.type === 'string' ? code.value : code?.type === 'number' ? code.raw : '';
-      if (/^[1-9]\d*$/.test(identifier)) return `EPSG:${identifier}`;
-    }
-  } catch {
-    // Preserve vendor WKT even when the parser does not recognize its syntax.
-  }
-  return definition;
 }
 
 /** Infers WGS84 from longitude and latitude dimension names. */

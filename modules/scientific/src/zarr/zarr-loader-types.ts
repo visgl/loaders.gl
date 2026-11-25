@@ -71,7 +71,7 @@ export const GeoZarrLoader = {
       transform: undefined!,
       coordinateReferenceSystem: undefined!,
       defaultSelection: undefined!,
-      fillValueAsNoData: undefined!,
+      fillValueAsNoData: false,
       maxConcurrentRequests: GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS
     }
   } as GeoZarrLoaderOptions,
@@ -83,7 +83,7 @@ export const GeoZarrLoader = {
       transform: undefined!,
       coordinateReferenceSystem: undefined!,
       defaultSelection: undefined!,
-      fillValueAsNoData: undefined!,
+      fillValueAsNoData: false,
       maxConcurrentRequests: GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS
     }
   },

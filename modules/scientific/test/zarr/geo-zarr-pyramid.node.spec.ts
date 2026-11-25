@@ -27,9 +27,9 @@ test.each([
   const {source, chunkRequests} = createPyramid({scaleTransforms});
   const metadata = await source.getMetadata();
   expect(metadata.array).toBe('0/backscatter');
-  expect(metadata.crs).toBe('EPSG:26919');
-  expect(metadata.noData).toBe(0);
-  expect(metadata.bands).toEqual([{index: 0, dtype: 'uint8', noData: 0}]);
+  expect(metadata.crs).toBe(PROJECTED_WKT);
+  expect(metadata.noData).toBeUndefined();
+  expect(metadata.bands).toEqual([{index: 0, dtype: 'uint8', noData: undefined}]);
   expect(
     metadata.levels?.map(level => ({
       id: level.id,
@@ -46,7 +46,7 @@ test.each([
       width: size,
       height: size,
       transform: [8 / size, 0, 0, 0, -8 / size, 8],
-      crs: 'EPSG:26919'
+      crs: PROJECTED_WKT
     }))
   );
   expect(chunkRequests).toEqual([]);
@@ -57,16 +57,19 @@ test.each([
     [2, 2, 2, 2]
   ]) {
     chunkRequests.length = 0;
-    const raster = await source.getRaster({viewport: createViewport(width, height)});
+    const raster = await source.getRaster({
+      viewport: {...createViewport(width, height), crs: PROJECTED_WKT}
+    });
     expect(raster).toMatchObject({
       width: size,
       height: size,
       overview,
+      crs: PROJECTED_WKT,
       boundingBox: EXTENT,
       transform: [8 / size, 0, 0, 0, -8 / size, 8],
       metadata: {array: `${overview}/backscatter`},
-      noData: 0,
-      bands: [{index: 0, dtype: 'uint8', noData: 0}]
+      noData: undefined,
+      bands: [{index: 0, dtype: 'uint8', noData: undefined}]
     });
     expect(raster.data).toEqual(new Uint8Array(size * size).fill(overview + 1));
     expect(chunkRequests).toHaveLength(overview === 0 ? 4 : 1);
@@ -74,7 +77,7 @@ test.each([
   }
 });
 
-test('GeoZarr translates the chosen overview affine to the returned pixel window', async () => {
+test('GeoZarr translates the overview affine for a viewport without a CRS', async () => {
   const {source} = createPyramid();
   const raster = await source.getRaster({
     viewport: createViewport(2, 2, [
@@ -84,6 +87,7 @@ test('GeoZarr translates the chosen overview affine to the returned pixel window
   });
   expect(raster).toMatchObject({
     overview: 1,
+    crs: PROJECTED_WKT,
     width: 2,
     height: 2,
     boundingBox: [
@@ -102,8 +106,8 @@ test('GeoZarr discovers group-per-level CF geometry without a CRS declaration', 
 });
 
 test.each([
-  {caseName: 'root CRS', mapping: 'none', rootCRS: PROJECTED_WKT, expected: 'EPSG:26919'},
-  {caseName: 'named grid mapping', mapping: 'named', rootCRS: CUSTOM_WKT, expected: 'EPSG:26919'},
+  {caseName: 'root CRS', mapping: 'none', rootCRS: PROJECTED_WKT, expected: PROJECTED_WKT},
+  {caseName: 'named grid mapping', mapping: 'named', rootCRS: CUSTOM_WKT, expected: PROJECTED_WKT},
   {caseName: 'nested authority only', mapping: 'none', rootCRS: CUSTOM_WKT, expected: CUSTOM_WKT}
 ] as const)('GeoZarr resolves CF CRS from $caseName', async ({mapping, rootCRS, expected}) => {
   const {source} = createPyramid({mapping, rootCRS, options: {array: '0/backscatter'}});
@@ -119,7 +123,8 @@ test.each([
 test.each([
   {caseName: 'CF _FillValue', attributes: {_FillValue: 255, missing_value: 254}, expected: 255},
   {caseName: 'CF missing_value', attributes: {missing_value: 254}, expected: 254},
-  {caseName: 'explicit opt-out', fillValueAsNoData: false, expected: undefined},
+  {caseName: 'integer default', expected: undefined},
+  {caseName: 'integer opt-in', fillValueAsNoData: true, expected: 0},
   {caseName: 'float default', float: true, expected: undefined},
   {caseName: 'float opt-in', float: true, fillValueAsNoData: true, expected: 0}
 ])('GeoZarr reports nodata from $caseName', async ({
@@ -305,7 +310,6 @@ function createViewport(width: number, height: number, bounds = EXTENT): RasterV
     bounds,
     zoom: 0,
     center: [4, 4],
-    crs: 'EPSG:26919',
     project: coordinates => coordinates,
     unprojectPosition: position => [position[0], position[1], position[2] || 0]
   };
