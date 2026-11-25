@@ -4,8 +4,8 @@
 
 import {afterEach, beforeAll, expect, test, vi} from 'vitest';
 import {BlobFile, type ReadableFile} from '@loaders.gl/core/loader-utils';
-import {openZipArchive} from '@loaders.gl/archives/zip/api';
-import {type ZipArchive} from '@loaders.gl/archives/zip/api';
+import {openZipArchive} from '@loaders.gl/archives/api';
+import {type ZipArchive} from '@loaders.gl/archives/api';
 import {type ZipArchiveOptions} from '@loaders.gl/archives/zip';
 import {createZipFixture, concatenateZipBytes, type FixtureEntry} from './zip-reader-fixture';
 import {
@@ -859,7 +859,7 @@ function createWritableZipFile(initial: ArrayBuffer) {
 }
 
 test('ZIP portable append preserves existing encoded entries and archive comments', async () => {
-  const {encodeZip, ZipArchive} = await import('@loaders.gl/archives/zip/api');
+  const {encodeZip, ZipArchive} = await import('@loaders.gl/archives/api');
   const file = createWritableZipFile(
     await encodeZip(
       {a: new TextEncoder().encode('abc')},
@@ -875,7 +875,7 @@ test('ZIP portable append preserves existing encoded entries and archive comment
 });
 
 test('ZIP append validates before mutation and releases failed writes', async () => {
-  const {encodeZip, ZipArchive} = await import('@loaders.gl/archives/zip/api');
+  const {encodeZip, ZipArchive} = await import('@loaders.gl/archives/api');
   const bytes = await encodeZip({a: new Uint8Array([1])});
   for (const path of ['a', '../escape', 'folder/', '\ud800']) {
     const file = createWritableZipFile(bytes);
@@ -892,7 +892,7 @@ test('ZIP append validates before mutation and releases failed writes', async ()
 });
 
 test('ZIP append applies independent metadata and output limits before mutation', async () => {
-  const {encodeZip, ZipArchive} = await import('@loaders.gl/archives/zip/api');
+  const {encodeZip, ZipArchive} = await import('@loaders.gl/archives/api');
   const bytes = await encodeZip({a: new Uint8Array([1])});
   for (const options of [
     {maxEntries: 1},
@@ -910,7 +910,7 @@ test('ZIP append applies independent metadata and output limits before mutation'
 
 /** Append transports truncate at a numeric offset, unlike bigint-capable reader transports. */
 test('ZIP append rejects unsafe transport offsets before mutation', async () => {
-  const {ZipArchive} = await import('@loaders.gl/archives/zip/api');
+  const {ZipArchive} = await import('@loaders.gl/archives/api');
   const {file} = sparseZip64File();
   const writable = Object.assign(file, {
     truncate: vi.fn().mockResolvedValue(undefined),
@@ -924,7 +924,7 @@ test('ZIP append rejects unsafe transport offsets before mutation', async () => 
 });
 
 test('ZIP append cancellation during mutation stops subsequent writes and closes the file', async () => {
-  const {encodeZip, ZipArchive} = await import('@loaders.gl/archives/zip/api');
+  const {encodeZip, ZipArchive} = await import('@loaders.gl/archives/api');
   const file = createWritableZipFile(await encodeZip({a: new ArrayBuffer(0)}));
   const controller = new AbortController();
   file.truncate.mockImplementation(async () => controller.abort(new Error('cancelled')));

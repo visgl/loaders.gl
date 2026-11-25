@@ -1341,12 +1341,6 @@
       "@loaders.gl/arcgis/scene-service/api": [
         "modules/arcgis/src/scene-service/api.ts"
       ],
-      "@loaders.gl/archives/zip/api": [
-        "modules/archives/src/zip/api.ts"
-      ],
-      "@loaders.gl/archives/tar/api": [
-        "modules/archives/src/tar/api.ts"
-      ],
       "@loaders.gl/documents/bson/api": [
         "modules/documents/src/bson-api.ts"
       ],
@@ -1475,6 +1469,9 @@
       ],
       "@loaders.gl/images/gif-builder": [
         "modules/images/src/gif-builder.ts"
+      ],
+      "@loaders.gl/archives/api": [
+        "modules/archives/src/api.ts"
       ]
     },
     "plugins": [

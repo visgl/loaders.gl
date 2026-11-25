@@ -78,15 +78,10 @@
       "import": "./dist/tar/bundled-entry.js",
       "require": "./dist/tar/bundled-entry.cjs"
     },
-    "./zip/api": {
-      "types": "./dist/zip/api.d.ts",
-      "import": "./dist/zip/api.js",
-      "require": "./dist/zip/api.cjs"
-    },
-    "./tar/api": {
-      "types": "./dist/tar/api.d.ts",
-      "import": "./dist/tar/api.js",
-      "require": "./dist/tar/api.cjs"
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
     }
   },
   "sideEffects": false,

@@ -17,8 +17,8 @@ import type {
 import type {PotreeNodesSource} from '@loaders.gl/tiles-3d/potree/bundled';
 import type {Mesh, MeshArrowTable, MeshGeometry} from '@loaders.gl/core/schema';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
-import {encodeZip, openZipArchive} from '@loaders.gl/archives/zip/api';
-import type {ZipArchive} from '@loaders.gl/archives/zip/api';
+import {encodeZip, openZipArchive} from '@loaders.gl/archives/api';
+import type {ZipArchive} from '@loaders.gl/archives/api';
 import type {ZipEntry} from '@loaders.gl/archives/zip';
 
 /** Explicit local-file input; no format is inferred from an extension. */

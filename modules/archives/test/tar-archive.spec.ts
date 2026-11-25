@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
-import {TarBuilder, readTarArchive} from '@loaders.gl/archives/tar/api';
+import {TarBuilder} from '../src/tar/tar-builder';
+import {readTarArchive} from '@loaders.gl/archives/api';
 import {TarWriter} from '@loaders.gl/archives/tar/bundled';
 import {TarLoader} from '@loaders.gl/archives/tar';
 import {TarLoaderWithParser} from '@loaders.gl/archives/tar-loader';

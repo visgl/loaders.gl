@@ -88,18 +88,13 @@ export type {
 export {ZipFormat, ZipLoader} from '@loaders.gl/archives/zip';
 export {ZipWriter} from '@loaders.gl/archives/zip/bundled';
 export {
-  encodeIndexedZip,
-  addOneFile,
-  createZip,
   IndexedArchive,
-  parseHashTable,
-  composeHashFile,
   ZipFileSystem,
   ZipArchive,
   openZipArchive,
   encodeZip,
   encodeZipInBatches
-} from '@loaders.gl/archives/zip/api';
+} from '@loaders.gl/archives/api';
 export type {
   ZipFileMap,
   ZipLoaderOptions,
@@ -107,7 +102,6 @@ export type {
   ZipWriterOptions,
   IndexedZipFiles,
   IndexedZipOptions,
-  ZipCompositionOptions,
   ZipFileStat,
   ZipArchiveInput,
   ZipArchiveOptions,
@@ -121,6 +115,7 @@ export type {
   ZipEncodeOptions
 } from '@loaders.gl/archives/zip';
 
-export {TarBuilder} from '@loaders.gl/archives/tar/api';
+export {encodeIndexedZip} from '@loaders.gl/archives/indexed-zip-writer';
+export {encodeTar, readTarArchive} from '@loaders.gl/archives/api';
 export {TarWriter} from '@loaders.gl/archives/tar/bundled';
 export {TarLoader} from '@loaders.gl/archives/tar';
