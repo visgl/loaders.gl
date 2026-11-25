@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {I3SLEPCCDecoder} from '@loaders.gl/tiles-3d/i3s/api';
+import {I3SLEPCCDecoder} from '@loaders.gl/tiles-3d/api';
 import {I3SLEPCCLoader} from '@loaders.gl/tiles-3d/i3s';
 import {expect, test} from 'vitest';
 

@@ -20,7 +20,7 @@ import type {
 } from '@loaders.gl/tiles-3d/tileset';
 import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {GLTFLoader} from '@loaders.gl/scene/gltf/bundled';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {Matrix4} from '@math.gl/core/matrix';
 import {ArrowTableBuilder} from '@loaders.gl/core/schema-utils';
 import {

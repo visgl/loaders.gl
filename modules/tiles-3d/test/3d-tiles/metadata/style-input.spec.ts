@@ -7,7 +7,7 @@ import {
   createTile3DStyleInput,
   getTile3DBatchTableProperties,
   getTile3DStyleProperty
-} from '@loaders.gl/tiles-3d/3d-tiles/api';
+} from '@loaders.gl/tiles-3d/api';
 
 const content = {
   index: 0,

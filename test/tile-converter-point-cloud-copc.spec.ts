@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {openCOPC, loadCOPCHierarchyPage, loadCOPCNodeData} from '@loaders.gl/tiles-3d/copc/api';
+import {
+  openCOPC,
+  loadCOPCHierarchyPage,
+  loadCOPCNodeData
+} from '../modules/tiles-3d/src/copc/lib/copc-reader';
 import {decodeLAZChunk} from '@loaders.gl/core/loader-utils';
 import {convertMeshToArrowTable} from '@loaders.gl/core/schema-utils';
 import type {Mesh} from '@loaders.gl/core/schema';

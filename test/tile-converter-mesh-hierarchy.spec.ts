@@ -8,7 +8,7 @@ import {Matrix4} from '@math.gl/core/matrix';
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {
   createBrowserTilesetConversionSource,
   createTiles3DConversionSpatialContext

@@ -7,7 +7,7 @@ import {validateWriter} from 'test/common/conformance';
 import {parse, encodeSync, encode, load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
-import {GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/scene/api';
 import {ImageWriter} from '@loaders.gl/images/image/bundled';
 import {getMeshAttributes} from './utils/get-mesh-attributes';
 const GLTF_BINARY_URL = '@loaders.gl/scene/gltf/test/data/3d-tiles/143.glb';

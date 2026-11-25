@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {encodeDracoBatch, encodeDracoInBatches} from '@loaders.gl/scene/draco/api';
+import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
 import draco3d from 'draco3d';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 
@@ -8,9 +8,9 @@ const GEOMETRY = {
   indices: new Uint16Array([0, 1, 2])
 };
 
-test('encodeDracoBatch reports progress for each geometry', async () => {
+test('DracoWriter.encodeGeometryBatch reports progress for each geometry', async () => {
   const progress: Array<{completed: number; total: number}> = [];
-  const results = await encodeDracoBatch([GEOMETRY, GEOMETRY], {
+  const results = await DracoWriter.encodeGeometryBatch([GEOMETRY, GEOMETRY], {
     modules: {draco3d},
     onProgress: update => progress.push(update)
   });
@@ -22,16 +22,19 @@ test('encodeDracoBatch reports progress for each geometry', async () => {
   ]);
 });
 
-test('encodeDracoBatch preserves AbortError semantics', async () => {
+test('DracoWriter.encodeGeometryBatch preserves AbortError semantics', async () => {
   const controller = new AbortController();
   controller.abort();
 
   await expect(
-    encodeDracoBatch([GEOMETRY], {useLocalLibraries: true, signal: controller.signal})
+    DracoWriter.encodeGeometryBatch([GEOMETRY], {
+      useLocalLibraries: true,
+      signal: controller.signal
+    })
   ).rejects.toMatchObject({name: 'AbortError'});
 });
 
-test('encodeDracoInBatches retains one worker session across input batches', async () => {
+test('DracoWriter.encodeGeometryInBatches retains one worker session across input batches', async () => {
   const createGeometry = () => ({
     attributes: {POSITION: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])},
     indices: new Uint16Array([0, 1, 2])
@@ -42,7 +45,7 @@ test('encodeDracoInBatches retains one worker session across input batches', asy
   })();
   const results: Array<{data: ArrayBuffer}> = [];
   try {
-    for await (const result of encodeDracoInBatches(inputBatches, {
+    for await (const result of DracoWriter.encodeGeometryInBatches(inputBatches, {
       worker: true,
       _nodeWorkers: true,
       'draco-writer': {workerUrl: 'modules/scene/dist/draco-writer-worker-node.cjs'},

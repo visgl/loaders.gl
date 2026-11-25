@@ -22,7 +22,7 @@ import {
   type TilesetSourceResolver
 } from '@loaders.gl/tiles-3d/tileset';
 import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
-import {createImplicitSubtreeReference} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {createImplicitSubtreeReference} from '@loaders.gl/tiles-3d/api';
 import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {type ImplicitTilingDescriptor} from '@loaders.gl/tiles-3d/3d-tiles';
 import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';

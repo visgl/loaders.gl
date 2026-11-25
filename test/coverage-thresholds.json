@@ -253,10 +253,9 @@
         "modules/scene/src/glb/metadata-entry.ts",
         "modules/scene/src/mtl/metadata-entry.ts",
         "modules/scene/src/package-exports.ts",
-        "modules/scene/src/draco-api.ts",
         "modules/scene/src/draco-bundled-entry.ts",
-        "modules/scene/src/usd-api.ts",
-        "modules/scene/src/usd-bundled-entry.ts"
+        "modules/scene/src/usd-bundled-entry.ts",
+        "modules/scene/src/api.ts"
       ],
       "sourcePathReason": "Preserve the existing OpenUSD coverage gate, including its 100% function requirement. Moved OBJ and glTF implementations retain their unchanged independent scene/obj and scene/gltf and scene/draco gates; every scene implementation belongs to one of these gates. New STL implementations are included in this existing gate without changing its thresholds."
     },

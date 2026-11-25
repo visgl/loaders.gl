@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {parse} from '@loaders.gl/core';
-import {compressGLTFWithDraco} from '@loaders.gl/scene/gltf/api';
+import {compressGLTFWithDraco} from '@loaders.gl/scene/api';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {GLTFLoader, type GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 

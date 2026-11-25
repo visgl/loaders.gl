@@ -44,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   tone="blue"
 />
 
-For applications encoding many independent geometries, `encodeDracoBatch` initializes the
+For applications encoding many independent geometries, `DracoWriter.encodeGeometryBatch()` initializes the
 Draco runtime once and processes inputs sequentially, keeping peak native memory bounded while
 avoiding per-geometry module startup overhead. It returns one `DracoEncodingResult` per input.
 An optional `AbortSignal` cancels between geometries, and `onProgress` receives a completion

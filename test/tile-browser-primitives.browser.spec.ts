@@ -1,10 +1,10 @@
 import {beforeAll, expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
+import {GLTFScenegraph} from '@loaders.gl/scene/api';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
-import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles/api';
-import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/api';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/api';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/api';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {
   inspectConversionInput,

@@ -10,7 +10,7 @@ import {
   getGLTFAccessor,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from '@loaders.gl/scene/gltf/api';
+} from '@loaders.gl/scene/api';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import type {GLTF, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {Tiles3DSpatialTransformer} from '../../../spatial/tiles-3d-spatial-transformer';

@@ -1,8 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {
-  createImplicitSubtreeReference,
-  materializeImplicitSubtree
-} from '@loaders.gl/tiles-3d/3d-tiles/api';
+import {createImplicitSubtreeReference, materializeImplicitSubtree} from '@loaders.gl/tiles-3d/api';
 import {
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree

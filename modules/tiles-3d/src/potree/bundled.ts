@@ -22,7 +22,6 @@ export {
   type Potree2AttributeType,
   type Potree2HierarchyNode,
   PotreeWriter,
-  encodePotreeDataset,
   type PotreeWriterOptions,
   type PotreeWriterNode,
   type PotreeDataset

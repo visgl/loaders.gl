@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf/api';
+import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/api';
 import {createAccessorAsset} from '../../test-utils/create-gltf-v1-accessor';
 
 /** Small FLOAT attribute with explicit point topology, permitting arbitrary attribute counts. */

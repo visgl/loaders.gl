@@ -8,7 +8,7 @@ import {
   createImplicitSubtreeReference,
   materializeImplicitSubtree,
   replaceImplicitUrlTemplate
-} from '@loaders.gl/tiles-3d/3d-tiles/api';
+} from '@loaders.gl/tiles-3d/api';
 import {
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree

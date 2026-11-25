@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/i3s/api';
+import {COORDINATE_SYSTEM} from '@loaders.gl/tiles-3d/api';
 import {I3SLoader} from '@loaders.gl/tiles-3d/i3s';
 import {VERSION} from '../website/src/shims/loadersgl-worker-version';
 import corePackage from '../modules/core/package.json';

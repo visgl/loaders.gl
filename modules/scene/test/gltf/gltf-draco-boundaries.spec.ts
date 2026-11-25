@@ -2,13 +2,13 @@
 
 import {beforeEach, expect, test, vi} from 'vitest';
 import {type DracoEncodingResult} from '@loaders.gl/scene/draco';
-import {encodeDraco} from '@loaders.gl/scene/draco/api';
+import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
 import type {GLTFWithBuffers} from '../../src/gltf/lib/types/gltf-types';
 import {compressGLTFWithDraco} from '../../src/gltf/lib/encoders/encode-gltf-draco';
 
-vi.mock('@loaders.gl/scene/draco/api', () => ({encodeDraco: vi.fn()}));
+vi.mock('@loaders.gl/scene/draco/bundled', () => ({DracoWriter: {encodeGeometry: vi.fn()}}));
 
-const encodeDracoMock = vi.mocked(encodeDraco);
+const encodeDracoMock = vi.mocked(DracoWriter.encodeGeometry);
 const ENABLED_OPTIONS = {gltf: {draco: {enabled: true}}};
 
 /** Creates one unindexed triangle backed by an explicitly bounded buffer slice. */

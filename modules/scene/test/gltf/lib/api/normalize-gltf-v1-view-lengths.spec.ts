@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/gltf/api';
+import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/api';
 import {createAccessorAsset} from '../../test-utils/create-gltf-v1-accessor';
 
 /** Two dense strided consumers, including an unused accessor that extends the known envelope. */

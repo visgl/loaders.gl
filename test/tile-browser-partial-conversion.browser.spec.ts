@@ -1,4 +1,4 @@
-import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s/api';
+import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 import {GZipDecompressor} from '@loaders.gl/compression/gzip';
 import {afterEach, expect, test, vi} from 'vitest';
 import React, {act} from 'react';

@@ -13,7 +13,7 @@ import {
   type GLTFInteractivityDeclaration
 } from '@loaders.gl/scene/gltf';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
-import {getGLTFInteractivity} from '@loaders.gl/scene/gltf/api';
+import {getGLTFInteractivity} from '@loaders.gl/scene/api';
 
 let parsed: GLTFWithBuffers;
 beforeAll(async () => {

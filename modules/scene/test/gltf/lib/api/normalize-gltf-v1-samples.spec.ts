@@ -7,7 +7,7 @@ import {validateBytes, validateString} from 'gltf-validator';
 import {load, encodeSync} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
-import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf/api';
+import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/api';
 
 test.each([
   'Box',

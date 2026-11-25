@@ -66,8 +66,8 @@ export async function compressGLTFWithDraco(
         throw new Error('GLTF Draco writer refuses to replace an existing Draco extension');
       }
       const meshData = getPrimitiveMesh(gltf, primitive);
-      const {encodeDraco} = await import('@loaders.gl/scene/draco/api');
-      const result = await encodeDraco(meshData, {
+      const {DracoWriter} = await import('@loaders.gl/scene/draco/bundled');
+      const result = await DracoWriter.encodeGeometry(meshData, {
         core: options.core,
         modules: options.modules,
         draco: dracoOptions

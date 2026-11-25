@@ -6,7 +6,7 @@ import {createDataSource} from '@loaders.gl/core';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {createPoints, createDatasetFetch} from './potree-format-fixtures';
 import {expect, test} from 'vitest';
@@ -30,12 +30,12 @@ test('installed Potree metadata, writer and source subpaths work in ESM and Comm
       assert.equal(root.Potree2SourceLoader, undefined);
       assert.equal(root.Potree2Source, undefined);
       assert.equal(typeof PotreeLoader.preload, 'function');
-      const {encodePotreeDataset} = await import('@loaders.gl/tiles-3d/potree/api');
-      assert.equal(typeof encodePotreeDataset, 'function');
+      const {PotreeWriter} = await import('@loaders.gl/tiles-3d/potree/bundled');
+      assert.equal(typeof PotreeWriter.encodeDataset, 'function');
       const url = 'https://example.com/dataset/metadata.json';
       assert.throws(() => createDataSourceSync(url, PotreeLoader), /preload/);
       await preload(PotreeLoader);
-      const dataset = await encodePotreeDataset({topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}}, attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}});
+      const dataset = await PotreeWriter.encodeDataset({topology: 'point-list', mode: 0, schema: {fields: [], metadata: {}}, attributes: {POSITION: {value: new Float64Array([1, 2, 3]), size: 3}}});
       const json = JSON.stringify(dataset.metadata);
       assert.equal(dataset.metadata.version, '2.0');
       assert.equal(parseSync(json, PotreeLoader).points, 1);
@@ -64,7 +64,7 @@ test.each([
   'C:\\dataset\\metadata.json?token=folder\\value',
   '\\\\server\\dataset\\metadata.json'
 ])('opens Node dataset path %s through the unified source', async input => {
-  const transport = createDatasetFetch(await encodePotreeDataset(createPoints()));
+  const transport = createDatasetFetch(await PotreeWriter.encodeDataset(createPoints()));
   const prefix = getPathPrefix();
   setPathPrefix('');
   const paths: string[] = [];
