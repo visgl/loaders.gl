@@ -373,7 +373,7 @@ export class GeoZarrRasterSource
       const grid = await awaitWithAbort(this.getGridPromise(), parameters.signal);
       let pixelSize = selectedPixelSize;
       for (const [index, level] of grid.levels.entries()) {
-        if (!level || level.metadata.crs !== selected.metadata.crs) continue;
+        if (!level || !isSameCRS(level.metadata.crs, selected.metadata.crs)) continue;
         const levelPixelSize = getPixelSize(level.metadata.transform);
         if (
           levelPixelSize > pixelSize &&
@@ -1339,4 +1339,18 @@ function normalizeDeclaredCoordinateReferenceSystem(
   return projection && typeof projection === 'object' && !Array.isArray(projection)
     ? (projection as CRSDefinition)
     : undefined;
+}
+
+/** Compares CRS definitions by value, so equal PROJJSON objects from separate levels match. */
+function isSameCRS(first: unknown, second: unknown): boolean {
+  if (first === second) {
+    return true;
+  }
+  return (
+    typeof first === 'object' &&
+    typeof second === 'object' &&
+    first !== null &&
+    second !== null &&
+    JSON.stringify(first) === JSON.stringify(second)
+  );
 }

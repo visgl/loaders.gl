@@ -4,6 +4,7 @@
 
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
 import {GeoZarrRasterSource, type GeoZarrLoaderOptions} from '@loaders.gl/scientific/zarr';
+import {limitZarrStore} from '../../src/zarr/lib/limited-zarr-store';
 import {expect, test} from 'vitest';
 
 /** A projected WKT with multiple nested authorities and an outer EPSG code. */
@@ -148,6 +149,48 @@ test('GeoZarr caps concurrent chunk fetches through response body reads', async 
   expect(raster.data).toEqual(new Uint8Array(64).fill(1));
   expect(chunkRequests).toHaveLength(4);
   expect(getPeakRequests()).toBe(2);
+});
+
+test('GeoZarr selects overviews whose PROJJSON CRS is equal by value', async () => {
+  const projjson = {type: 'ProjectedCRS', name: 'Local grid', id: {authority: 'EPSG', code: 26919}};
+  const {source, chunkRequests} = createPyramid({
+    mapping: 'none',
+    attributes: {'proj:projjson': projjson}
+  });
+  const metadata = await source.getMetadata();
+  const [first, second] = metadata.levels ?? [];
+  expect(first?.metadata?.crs).toEqual(projjson);
+  expect(first?.metadata?.crs).not.toBe(second?.metadata?.crs);
+  const raster = await source.getRaster({viewport: createViewport(2, 2)});
+  expect(raster.data).toEqual(new Uint8Array(4).fill(3));
+  expect(chunkRequests.every(path => path.startsWith('2/backscatter/'))).toBe(true);
+});
+
+test('limited Zarr store drops an aborted queued read without waiting for a slot', async () => {
+  const releases: Array<() => void> = [];
+  const started: string[] = [];
+  const store = {
+    get: (key: string) =>
+      new Promise<Uint8Array | undefined>(resolve => {
+        started.push(key);
+        releases.push(() => resolve(new Uint8Array([1])));
+      }),
+    getRange: () => Promise.resolve(undefined)
+  };
+  const limited = limitZarrStore(store as any, 1);
+  const first = limited.get('/a' as any);
+  const controller = new AbortController();
+  const aborted = limited.get('/b' as any, {signal: controller.signal});
+  const live = limited.get('/c' as any);
+  controller.abort(new Error('stale view'));
+  await expect(aborted).rejects.toThrow('stale view');
+  releases[0]();
+  await first;
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(started).toEqual(['/a', '/c']);
+  releases[1]();
+  await expect(live).resolves.toEqual(new Uint8Array([1]));
 });
 
 /** Controls the metadata and transport of the in-memory pyramid. */

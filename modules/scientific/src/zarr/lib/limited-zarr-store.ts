@@ -13,6 +13,25 @@ export function limitZarrStore(store: FetchStore, limit: number): AsyncReadable 
   let active = 0;
   const waiting: Array<() => void> = [];
 
+  /** Waits in FIFO order and leaves the queue as soon as the caller aborts. */
+  function waitForSlot(signal?: AbortSignal): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const onSlot = () => {
+        signal?.removeEventListener('abort', onAbort);
+        resolve();
+      };
+      const onAbort = () => {
+        const index = waiting.indexOf(onSlot);
+        if (index >= 0) {
+          waiting.splice(index, 1);
+        }
+        reject(signal?.reason);
+      };
+      waiting.push(onSlot);
+      signal?.addEventListener('abort', onAbort, {once: true});
+    });
+  }
+
   /** Holds one slot until the underlying store has finished reading bytes. */
   async function read(
     request: () => Promise<Uint8Array | undefined>,
@@ -22,7 +41,7 @@ export function limitZarrStore(store: FetchStore, limit: number): AsyncReadable 
     if (active < limit) {
       active++;
     } else {
-      await new Promise<void>(resolve => waiting.push(resolve));
+      await waitForSlot(signal);
     }
     try {
       signal?.throwIfAborted();
