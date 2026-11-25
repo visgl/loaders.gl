@@ -265,5 +265,10 @@ test('core API subpath shares the existing registry and the tileset subpath expo
     const tileset = await loadPackage('@loaders.gl/tiles-3d/tileset');
     expect(tileset.Tileset3D).toBeTypeOf('function');
     expect(tileset.Tile3D).toBeTypeOf('function');
+    expect(tileset.TILE_TYPE).toHaveProperty('SCENEGRAPH');
+    const tiles3d = await loadPackage('@loaders.gl/tiles-3d/3d-tiles/bundled');
+    expect(tiles3d.Tiles3DSource).toBeTypeOf('function');
+    const i3s = await loadPackage('@loaders.gl/tiles-3d/i3s/bundled');
+    expect(i3s.I3SSource).toBeTypeOf('function');
   }
 });
