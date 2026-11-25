@@ -49,9 +49,9 @@ test('declaration emit uses NodeNext paths for explicit and inferred import type
       noEmit: true
     });
     expect(
-      ts.getPreEmitDiagnostics(consumer).map(diagnostic =>
-        ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
-      )
+      ts
+        .getPreEmitDiagnostics(consumer)
+        .map(diagnostic => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
     ).toEqual([]);
   } finally {
     rmSync(root, {recursive: true, force: true});
@@ -74,9 +74,9 @@ test('emitted Parquet package exports typecheck for a strict NodeNext consumer',
       noEmit: true
     });
     expect(
-      ts.getPreEmitDiagnostics(consumer).map(diagnostic =>
-        ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
-      )
+      ts
+        .getPreEmitDiagnostics(consumer)
+        .map(diagnostic => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
     ).toEqual([]);
   } finally {
     rmSync(root, {recursive: true, force: true});
