@@ -8,8 +8,8 @@ import {expect, test} from 'vitest';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import {CSVTableSource} from '@loaders.gl/tables/csv';
 import {NDJSONTableSource} from '@loaders.gl/tables/json';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 
 import {describeTableScanSourceConformance} from './common/table-scan-source-conformance';
 

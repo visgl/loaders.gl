@@ -13,9 +13,9 @@ import {CSVTableSource, CSVLoader} from '@loaders.gl/tables/csv';
 import {NDJSONTableSource, NDJSONLoader} from '@loaders.gl/tables/json';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 
 const rows = [
   {id: 1, label: 'a', value: null},

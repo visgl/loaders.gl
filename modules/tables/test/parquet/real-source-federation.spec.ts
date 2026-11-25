@@ -9,10 +9,10 @@ import {ArrowTableSource} from '@loaders.gl/tables/arrow';
 import {CSVTableSource} from '@loaders.gl/tables/csv';
 import {NDJSONTableSource} from '@loaders.gl/tables/json';
 import {DataSourceManager, type TableQueryExecutionSummary} from '@loaders.gl/core/loader-utils';
-import {ParquetWriter} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {DeltaTableSource} from '@loaders.gl/tables/delta';
 import {IcebergTableSource} from '@loaders.gl/tables/iceberg';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 import type {Schema} from '@loaders.gl/core/schema';
 import {parseSQLPredicate} from '@loaders.gl/core/query';
 
