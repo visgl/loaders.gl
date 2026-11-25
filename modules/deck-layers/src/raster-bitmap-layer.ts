@@ -37,7 +37,7 @@ type RasterBitmapExtraProps = {
   raster: RasterBitmapData | null;
   /** Inclusive endpoints of the color scale. Samples are clamped to this range. */
   valueRange: [number, number];
-  /** Sentinel for invalid texels. NaN is always invalid. */
+  /** Sentinel matched at source precision. Non-finite samples are always invalid. */
   noData?: number | null;
   /** Preset name or custom lookup table. Defaults to `'default'`. */
   colormap?: RasterColormap;
@@ -129,20 +129,22 @@ export class RasterBitmapLayer extends BitmapLayer<RasterBitmapExtraProps> {
     };
   }
 
-  /** Replaces owned textures when the raster or lookup table changes. */
+  /** Replaces owned textures when the raster, its upload-time sentinel, or lookup table changes. */
   override updateState(parameters: UpdateParameters<this>): void {
     super.updateState(parameters);
     const {props, oldProps} = parameters;
-    const {raster, colormap = 'default'} = props;
-    if (raster !== oldProps.raster) {
+    const {raster, noData, colormap = 'default'} = props;
+    if (
+      raster !== oldProps.raster ||
+      (raster && !(raster.data instanceof Float32Array) && !Object.is(noData, oldProps.noData))
+    ) {
       const rasterTexture = raster
         ? this.context.device.createTexture({
             id: `${this.id}-values`,
             format: 'r32float',
             width: raster.width,
             height: raster.height,
-            data:
-              raster.data instanceof Float32Array ? raster.data : Float32Array.from(raster.data),
+            data: getRasterUploadData(raster, noData).data,
             mipLevels: 1,
             sampler: {minFilter: 'nearest', magFilter: 'nearest'}
           })
@@ -180,13 +182,14 @@ export class RasterBitmapLayer extends BitmapLayer<RasterBitmapExtraProps> {
       desaturate,
       transparentColor,
       tintColor,
+      raster,
       valueRange,
       noData,
       valueScale,
       interpolation,
       colormap = 'default'
     } = this.props;
-    const useNoData = noData != null && Number.isFinite(noData);
+    const sentinel = getFloat32NoData(raster, noData);
     model.shaderInputs.setProps({
       bitmap: {
         bounds,
@@ -199,8 +202,8 @@ export class RasterBitmapLayer extends BitmapLayer<RasterBitmapExtraProps> {
         rasterTexture,
         rasterColormap: colormapTexture,
         valueRange,
-        noData: useNoData ? noData : 0,
-        useNoData: Number(useNoData),
+        noData: sentinel ?? 0,
+        useNoData: Number(sentinel !== null),
         valueScale: VALUE_SCALES[valueScale ?? 'linear'],
         linearInterpolation: Number(interpolation !== 'nearest'),
         interpolateColormap: Number(colormap === 'default')
@@ -236,7 +239,7 @@ export class RasterBitmapLayer extends BitmapLayer<RasterBitmapExtraProps> {
     const [column, row] = info.bitmap.pixel;
     const value =
       column >= 0 && column < width && row >= 0 && row < height ? data[row * width + column] : NaN;
-    const sentinel = noData != null && data instanceof Float32Array ? Math.fround(noData) : noData;
+    const sentinel = getFloat32NoData(raster, noData) ?? noData;
     info.value = Number.isFinite(value) && value !== sentinel ? value : null;
     return info;
   }
@@ -247,6 +250,34 @@ export class RasterBitmapLayer extends BitmapLayer<RasterBitmapExtraProps> {
     this.state.colormapTexture?.destroy();
     super.finalizeState(context);
   }
+}
+
+/**
+ * Prepares float texture samples, masking converted samples before they lose source precision.
+ * @returns The upload data and whether the shader should compare a noData sentinel.
+ */
+export function getRasterUploadData(
+  raster: RasterBitmapData,
+  noData?: number | null
+): {data: Float32Array; useNoData: boolean} {
+  const source = raster.data;
+  if (source instanceof Float32Array) {
+    return {data: source, useNoData: getFloat32NoData(raster, noData) !== null};
+  }
+  const hasSentinel = Number.isFinite(noData);
+  const data = new Float32Array(source.length);
+  for (let index = 0; index < source.length; index++) {
+    const value = source[index];
+    data[index] = hasSentinel && value === noData ? NaN : value;
+  }
+  return {data, useNoData: false};
+}
+
+/** Returns the shader and picking sentinel for a raster uploaded directly as float32. */
+function getFloat32NoData(raster: RasterBitmapData | null, noData?: number | null): number | null {
+  return raster?.data instanceof Float32Array && noData != null && Number.isFinite(noData)
+    ? Math.fround(noData)
+    : null;
 }
 
 /** Replaces the sample expression and keeps picking UVs in BitmapLayer's 12-bit range. */
