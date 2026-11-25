@@ -172,3 +172,17 @@ export {
 export {refineArrowTableBatches} from './lib/arrow/arrow-metadata';
 
 export {isArrowRecordBatch, isArrowTable} from '../lib/loader-utils/native-arrow';
+
+export {
+  ARROW_CONVERTERS,
+  ArrowConverter,
+  convertArrow,
+  type ArrowConvertFromOptions,
+  type ArrowConvertToOptions
+} from './lib/arrow/arrow-converter';
+export {tightenArrowTableSchemaNullability} from './lib/arrow/tighten-arrow-table-schema-nullability';
+export {
+  convertArrowTableVariableWidthTypes,
+  convertArrowVariableWidthVector,
+  type ConvertArrowVariableWidthOptions
+} from './lib/arrow/convert-arrow-variable-width';

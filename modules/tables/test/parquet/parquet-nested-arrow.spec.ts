@@ -8,7 +8,7 @@ import {expect, test} from 'vitest';
 import {fetchFile, load} from '@loaders.gl/core';
 import {parseBSONSync} from '@loaders.gl/documents/bson-codec';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {ParquetReader} from '@loaders.gl/tables/parquet/api';
+import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 
 test('ParquetJSLoader projects nested and repeated columns directly to Arrow', async () => {
   const table = await load(

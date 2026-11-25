@@ -10,11 +10,8 @@ import type {
   ColumnarTable,
   GeoJSONTable
 } from '@loaders.gl/core/schema';
-import {
-  convertArrowToTable,
-  convertTableToArrow,
-  isArrowTable
-} from '@loaders.gl/core/schema-utils';
+import {convertArrowToTable, convertTableToArrow} from '../../deprecated';
+import {isArrowTable} from '../../../lib/loader-utils/native-arrow';
 import type {ArrowConvertFromOptions, ArrowConvertToOptions} from './arrow-converter';
 
 /**

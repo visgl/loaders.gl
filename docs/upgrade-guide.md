@@ -39,8 +39,7 @@ For table formats, use the following subpaths.
 | `ParquetLoader`, `GeoParquetLoader` | `/parquet` |
 
 For eager Parquet parsers, writers, and sources, use `@loaders.gl/tables/parquet/bundled`. The bundled entry point exports
-the parser-bearing loaders as `ParquetLoader` and `GeoParquetLoader`. Low-level Parquet utilities now use
-`@loaders.gl/tables/parquet/api`. Other formats with standalone utilities follow the same `/<format>/api` convention.
+the parser-bearing loaders as `ParquetLoader` and `GeoParquetLoader`. Use these loaders, their sources, and the bundled writer for Parquet I/O. Arrow conversion utilities live in `@loaders.gl/core/schema-utils`.
 
 ## Upgrading to v5.0
 

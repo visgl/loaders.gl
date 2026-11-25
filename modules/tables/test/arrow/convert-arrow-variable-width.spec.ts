@@ -7,7 +7,7 @@ import * as arrow from 'apache-arrow';
 import {
   convertArrowTableVariableWidthTypes,
   convertArrowVariableWidthVector
-} from '@loaders.gl/tables/arrow/api';
+} from '@loaders.gl/core/schema-utils';
 import {getArrowViewTypeSupport, serializeArrowType} from '@loaders.gl/core/schema-utils';
 test('ArrowVariableWidth#convertArrowVariableWidthVector converts Utf8 in both directions', () => {
   const firstChunk = arrow.vectorFromArray(['short', null], new arrow.Utf8());

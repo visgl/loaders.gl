@@ -18,10 +18,10 @@ export {ArrowWriter, type ArrowWriterOptions} from './arrow-writer';
 export type {
   ArrowConvertFromOptions,
   ArrowConvertToOptions
-} from './arrow-converter/arrow-converter';
-export {ARROW_CONVERTERS, ArrowConverter} from './arrow-converter/arrow-converter';
+} from '@loaders.gl/core/schema-utils';
+export {ARROW_CONVERTERS, ArrowConverter} from '@loaders.gl/core/schema-utils';
 
-export {tightenArrowTableSchemaNullability} from './lib/tighten-arrow-table-schema-nullability';
+export {tightenArrowTableSchemaNullability} from '@loaders.gl/core/schema-utils';
 
 // Geoarrow loader
 
@@ -35,7 +35,7 @@ export {
   convertArrowTableVariableWidthTypes,
   convertArrowVariableWidthVector,
   type ConvertArrowVariableWidthOptions
-} from './lib/utils/convert-arrow-variable-width';
+} from '@loaders.gl/core/schema-utils';
 
 export type {
   ParseGeoArrowInput,
@@ -52,7 +52,7 @@ export {
 export {
   triangulateWKBGeometryColumn,
   type TriangulatedWKBGeometryColumns
-} from './triangulate-wkb-geometry-column';
+} from '@loaders.gl/core/arrow-geometry';
 
 export {ArrowLoaderWithParser} from '../arrow-loader';
 

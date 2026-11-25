@@ -19,3 +19,5 @@ export type {
   TriangulateWKBColumnResult,
   TriangulatedWKBGeometryColumns
 } from './bundled';
+
+export {createArrowSource} from './arrow-source';
