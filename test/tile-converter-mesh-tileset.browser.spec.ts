@@ -402,7 +402,9 @@ test('single mesh package becomes a bounded indexed 3TZ Blob through both v5 ent
   const archive = await createSingleMeshTilesetArchive(files, {maxArchiveBytes: archiveBytes});
   expect(archive.size).toBe(archiveBytes);
   expect(archive.type).toBe('application/vnd.maxar.archive.3tz+zip');
-  const {Tiles3DArchiveSource, Tiles3DLoader} = await import('@loaders.gl/tiles-3d/3d-tiles');
+  const {Tiles3DArchiveSource, Tiles3DLoader} = await import(
+    '@loaders.gl/tiles-3d/3d-tiles/bundled'
+  );
   const source = new Tiles3DArchiveSource({url: archive, loader: Tiles3DLoader, coreApi});
   await source.initialize();
   const tileset = await source.getRootTileset();
