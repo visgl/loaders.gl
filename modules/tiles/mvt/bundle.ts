@@ -88,21 +88,25 @@ export type {
 export {
   TileJSONFormat,
   TileJSONLoader,
-  parseTileJSON,
   MapStyleFormat,
   MapStyleLoader,
-  MapStyleSchema,
-  ResolvedMapStyleSchema,
-  resolveMapStyle,
   MVTFormat,
   MVTLoader,
   MVTGeoJSONLoader,
+  ArrowTableTileLoader
+} from '@loaders.gl/tiles/mvt';
+export {
+  parseTileJSON,
+  MapStyleSchema,
+  ResolvedMapStyleSchema,
+  resolveMapStyle
+} from '@loaders.gl/tiles/mvt/api';
+export {
   MVTWriter,
   MVTTileSource,
   TableTileLoader,
-  TableVectorTileSource,
-  ArrowTableTileLoader
-} from '@loaders.gl/tiles/mvt';
+  TableVectorTileSource
+} from '@loaders.gl/tiles/mvt/bundled';
 export type {
   TileJSONLoaderOptions,
   TileJSON,
@@ -124,7 +128,7 @@ export type {
   MVTWriterOptions,
   MVTSourceLoaderOptions,
   TableTileLoaderOptions,
-  ArrowTableVectorTileSource,
   ArrowTableTileLoaderOptions,
   ArrowTableTileSourceInput
 } from '@loaders.gl/tiles/mvt';
+export type {ArrowTableVectorTileSource} from '@loaders.gl/tiles/mvt/bundled';

@@ -5,8 +5,9 @@
 import {expect, test} from 'vitest';
 import {createDataSourceSync, resolvePath} from '@loaders.gl/core';
 import {fetchFile} from '@loaders.gl/core';
-import {GeoTIFFRasterSource, OMETiffImageSource, OMETiffLoader} from '@loaders.gl/raster/geotiff';
-import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFRasterSource, OMETiffImageSource} from '@loaders.gl/raster/geotiff/bundled';
+import {OMETiffLoader} from '@loaders.gl/raster/geotiff/bundled';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';
 import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/core/loader-utils';
 import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
 

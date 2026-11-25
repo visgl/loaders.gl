@@ -161,6 +161,7 @@ export {
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 export {
+  createSourceLoadOptionsResolver,
   resolveCredentials,
   resolveAuthenticationOptions,
   resolveLoaderAuthenticationOptions

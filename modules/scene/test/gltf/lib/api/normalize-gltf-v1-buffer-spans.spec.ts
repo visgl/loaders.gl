@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/gltf';
+import {convertGLTFV1ToGLTF2, normalizeGLTFV1} from '@loaders.gl/scene/api';
 import {createAccessorAsset} from '../../test-utils/create-gltf-v1-accessor';
 
 test('missing URI buffer lengths use the logical borrowed payload and log their inference', () => {

@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest';
 import {createDataSourceSync, load, preload} from '@loaders.gl/core';
-import {CSVLoader, CSVTableSource} from '@loaders.gl/tables/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv';
+import {CSVTableSource} from '@loaders.gl/tables/csv/bundled';
 
 test('CSVTableSource discovers schema and applies projection and limit', async () => {
   const source = new CSVTableSource(new Blob(['name,value\na,1\nb,2\n']));

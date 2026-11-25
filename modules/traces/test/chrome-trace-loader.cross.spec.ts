@@ -7,9 +7,9 @@ import {parse, parseInBatches} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {describe, expect, it} from 'vitest';
 
-import {ChromeTraceLoader} from '../src';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 
-import type {ChromeTraceFileSchema} from '../src';
+import type {ChromeTraceFileSchema} from '@loaders.gl/traces/chrome-trace';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
 setLoaderOptions({core: {worker: false}});

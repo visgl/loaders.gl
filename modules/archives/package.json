@@ -67,6 +67,21 @@
       "types": "./dist/tar-writer.d.ts",
       "import": "./dist/tar-writer.js",
       "require": "./dist/tar-writer.cjs"
+    },
+    "./zip/bundled": {
+      "types": "./dist/zip/bundled-entry.d.ts",
+      "import": "./dist/zip/bundled-entry.js",
+      "require": "./dist/zip/bundled-entry.cjs"
+    },
+    "./tar/bundled": {
+      "types": "./dist/tar/bundled-entry.d.ts",
+      "import": "./dist/tar/bundled-entry.js",
+      "require": "./dist/tar/bundled-entry.cjs"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
     }
   },
   "sideEffects": false,

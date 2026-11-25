@@ -54,7 +54,7 @@ The `GLTFWriter` is a writer for glTF scenegraphs.
 ## Usage
 
 ```typescript
-import {GLTFWriter} from '@loaders.gl/scene/gltf';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
 import {encodeSync} from '@loaders.gl/core';
 
 const arrayBuffer = encodeSync(gltf, GLTFWriter, options);

@@ -11,7 +11,7 @@ export type ImageLUTLoaderOptions = LoaderOptions & {
 };
 /** Loads the image LUT implementation on demand. */
 async function preload() {
-  const {ImageLUTLoaderWithParser} = await import('@loaders.gl/images/color-lut');
+  const {ImageLUTLoaderWithParser} = await import('@loaders.gl/images/color-lut/bundled');
   return ImageLUTLoaderWithParser;
 }
 /** Metadata-only loader for explicitly selected PNG color lookup tables. */

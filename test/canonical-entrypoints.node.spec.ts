@@ -63,9 +63,11 @@ const canonicalEntrypoints: Record<string, string[]> = {
     '@loaders.gl/geospatial/geopackage',
     '@loaders.gl/geospatial/gpx',
     '@loaders.gl/geospatial/kml',
+    '@loaders.gl/geospatial/omm',
     '@loaders.gl/geospatial/shapefile',
     '@loaders.gl/geospatial/shp',
     '@loaders.gl/geospatial/tcx',
+    '@loaders.gl/geospatial/tle',
     '@loaders.gl/geospatial/wkb',
     '@loaders.gl/geospatial/wkt'
   ],
@@ -240,7 +242,7 @@ test('representative capability APIs are available through ESM and CommonJS entr
     ['@loaders.gl/crypto/sha256', 'SHA256Hash'],
     ['@loaders.gl/sql/adapter', 'SQLDataSource'],
     ['@loaders.gl/graphs/graphml', 'GraphMLLoader'],
-    ['@loaders.gl/arcgis/image-service', 'ArcGISImageSource'],
+    ['@loaders.gl/arcgis/image-service/bundled', 'ArcGISImageSource'],
     ['@loaders.gl/traces/chrome-trace', 'ChromeTraceLoader'],
     ['@loaders.gl/tiles/tileset-2d', 'Tileset2D']
   ]) {
@@ -249,5 +251,24 @@ test('representative capability APIs are available through ESM and CommonJS entr
     expect(typeof esm[name], entrypoint).toBe(typeof commonjs[name]);
     expect(esm[name], entrypoint).toBeDefined();
     expect(commonjs[name], entrypoint).toBeDefined();
+  }
+});
+
+test('core API subpath shares the existing registry and the tileset subpath exports its classes', async () => {
+  const require = createRequire(import.meta.url);
+  for (const loadPackage of [require, (specifier: string) => import(specifier)]) {
+    const core = await loadPackage('@loaders.gl/core');
+    const api = await loadPackage('@loaders.gl/core/api');
+    expect(api.registerLoaders).toBe(core.registerLoaders);
+    expect(api.load).toBe(core.load);
+    expect(api).not.toHaveProperty('NullLoader');
+    const tileset = await loadPackage('@loaders.gl/tiles-3d/tileset');
+    expect(tileset.Tileset3D).toBeTypeOf('function');
+    expect(tileset.Tile3D).toBeTypeOf('function');
+    expect(tileset.TILE_TYPE).toHaveProperty('SCENEGRAPH');
+    const tiles3d = await loadPackage('@loaders.gl/tiles-3d/3d-tiles/bundled');
+    expect(tiles3d.Tiles3DSource).toBeTypeOf('function');
+    const i3s = await loadPackage('@loaders.gl/tiles-3d/i3s/bundled');
+    expect(i3s.I3SSource).toBeTypeOf('function');
   }
 });

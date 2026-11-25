@@ -66,8 +66,9 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 ```typescript
 import '@loaders.gl/core/polyfills'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
-import {ImageLoader, getImageData} from '@loaders.gl/images/image';
-import {KTX2BasisWriter} from '@loaders.gl/images/basis';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {getImageData} from '@loaders.gl/images/api';
+import {KTX2BasisWriter} from '@loaders.gl/images/basis/bundled';
 
 const shannonPNG = 'shannon.png';
 

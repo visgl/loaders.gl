@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 import '@loaders.gl/core/polyfills';
 import {expect, test} from 'vitest';
-import {composeHashFile, openZipArchive} from '@loaders.gl/archives/zip';
+import {openZipArchive} from '@loaders.gl/archives/api';
+import {composeHashFile} from '../../src/zip/hash-file-utility';
 import {NodeFile} from '@loaders.gl/core/loader-utils';
 
 /** Retains qualification against the existing independent SLPK path/index profile. */

@@ -5,4 +5,4 @@
 export type {ImageLoaderOptions} from './image-loader';
 export {ImageLoaderWithParser as ImageLoader} from './image-loader';
 
-export * from '.';
+export * from './package-exports';

@@ -1,4 +1,4 @@
-import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
+import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/api';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors

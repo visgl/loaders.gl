@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {mkdtemp, writeFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {ZipFileSystem, encodeZip} from '@loaders.gl/archives/zip';
+import {ZipFileSystem, encodeZip} from '@loaders.gl/archives/api';
 
 test('ZIP filesystem owns Node paths and resolves archive-qualified resources', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'loaders-zip-filesystem-'));

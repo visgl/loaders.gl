@@ -17,7 +17,7 @@ points, shapes, and tables without reading element payloads.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {SpatialDataLoader} from '@loaders.gl/scientific/zarr';
+import {SpatialDataLoader} from '@loaders.gl/scientific/zarr/bundled';
 
 const source = createDataSourceSync('https://example.com/dataset.zarr', [SpatialDataLoader]);
 const metadata = await source.getMetadata();

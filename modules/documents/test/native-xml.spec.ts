@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {parseXMLSync, validateXML} from '@loaders.gl/documents/xml-parser';
-import {HTMLLoaderWithParser} from '@loaders.gl/documents/html';
+import {HTMLLoaderWithParser} from '@loaders.gl/documents/html/bundled';
 
 test('native XML preserves text chunks, CDATA, namespace and scalar policies', () => {
   expect(

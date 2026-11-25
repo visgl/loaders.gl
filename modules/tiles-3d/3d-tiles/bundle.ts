@@ -91,14 +91,17 @@ export {
   ThreeTZFormat,
   Tiles3DLoader,
   Tile3DSubtreeLoader,
-  Tiles3DArchiveFileLoader,
+  Tiles3DArchiveFileLoader
+} from '@loaders.gl/tiles-3d/3d-tiles';
+export {
   Tiles3DArchiveSource,
   Tile3DWriter,
-  Tiles3DArchiveWriter,
+  Tiles3DArchiveWriter
+} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+export {
   Tile3DFeatureTable,
   Tile3DBatchTable,
   TILE3D_TYPE,
-  resolveCesiumIonTileset,
   Tiles3DArchive,
   parse3DTilesArchive,
   getStructuralMetadataProperty,
@@ -106,7 +109,7 @@ export {
   createTile3DStyleInput,
   getTile3DBatchTableProperties,
   getTile3DStyleProperty
-} from '@loaders.gl/tiles-3d/3d-tiles';
+} from '@loaders.gl/tiles-3d/api';
 export type {
   Tiles3DArchiveFileLoaderOptions,
   Tiles3DArchiveSourceInput,

@@ -40,6 +40,9 @@ import {
   createScanQueryMetadata
 } from '@loaders.gl/core/loader-utils';
 
+/** Allows for target-size rounding and floating-point error when comparing resolutions. */
+const OVERVIEW_RESOLUTION_TOLERANCE = 0.01;
+
 /**
  * Options for creating a GeoTIFF raster source.
  */
@@ -211,7 +214,10 @@ export class GeoTIFFRasterSource
       },
       spatial: metadata.boundingBox
         ? {
-            bounds: {minimum: metadata.boundingBox[0], maximum: metadata.boundingBox[1]},
+            bounds: {
+              minimum: metadata.boundingBox[0],
+              maximum: metadata.boundingBox[1]
+            },
             coordinateReferenceSystems:
               typeof metadata.crs === 'string' ? [metadata.crs] : undefined
           }
@@ -346,13 +352,24 @@ export class GeoTIFFRasterSource
           provenance: {sourceType: 'geotiff'},
           ownership: 'owned',
           validityMasks: [
-            {data: new Uint8Array(pixels), width: parameters.width, height: parameters.height}
+            {
+              data: new Uint8Array(pixels),
+              width: parameters.width,
+              height: parameters.height
+            }
           ]
         };
       }
-      const empty = createEmptyRaster(parameters, {...metadata, dtype: outputDtype});
+      const empty = createEmptyRaster(parameters, {
+        ...metadata,
+        dtype: outputDtype
+      });
       empty.validityMasks = [
-        {data: new Uint8Array(pixels), width: parameters.width, height: parameters.height}
+        {
+          data: new Uint8Array(pixels),
+          width: parameters.width,
+          height: parameters.height
+        }
       ];
       return empty;
     }
@@ -424,8 +441,7 @@ export class GeoTIFFRasterSource
         const resolution = getImageResolution(image, images[0]);
         if (
           resolution &&
-          Math.abs(resolution[0]) <= requestedResolution[0] &&
-          Math.abs(resolution[1]) <= requestedResolution[1] &&
+          matchesRequestedResolution(resolution, requestedResolution) &&
           image.getWidth() < images[overview].getWidth()
         )
           overview = index;
@@ -612,6 +628,9 @@ export class GeoTIFFRasterSource
     )
       throw new Error('Invalid or oversized decoded raster');
 
+    const nativeResolution = metadata.overviews?.find(
+      level => level.index === overview
+    )?.resolution;
     const result = {
       data,
       width: raster.width,
@@ -636,12 +655,9 @@ export class GeoTIFFRasterSource
       resolution: transform
         ? [Math.hypot(transform[0], transform[3]), Math.hypot(transform[1], transform[4])]
         : requestedResolution,
-      nativeResolution: metadata.overviews
-        ?.find(level => level.index === overview)
-        ?.resolution?.map(Math.abs) as [number, number] | undefined,
-      overzoom: metadata.overviews
-        ?.find(level => level.index === overview)
-        ?.resolution?.some((resolution, axis) => Math.abs(resolution) > requestedResolution[axis]),
+      nativeResolution: nativeResolution?.map(Math.abs) as [number, number] | undefined,
+      overzoom:
+        nativeResolution && !matchesRequestedResolution(nativeResolution, requestedResolution),
       provenance: {sourceType: 'geotiff'},
       ownership: 'owned'
     };
@@ -682,7 +698,11 @@ export class GeoTIFFRasterSource
   private _getInitPromise(signal?: AbortSignal): Promise<GeoTIFFInit> {
     signal?.throwIfAborted();
     if (!this._initPromise) {
-      const initialization = {controller: new AbortController(), subscribers: 0, settled: false};
+      const initialization = {
+        controller: new AbortController(),
+        subscribers: 0,
+        settled: false
+      };
       this._initialization = initialization;
       const promise = this._initialize(initialization.controller.signal);
       this._initPromise = promise;
@@ -1031,6 +1051,18 @@ function getImageBoundingBox(image: TiffSourceImage): RasterBoundingBox | undefi
   }
 }
 
+/** Checks whether the native resolution is fine enough on both axes within the tolerance. */
+function matchesRequestedResolution(
+  resolution: [number, number],
+  requestedResolution: [number, number]
+): boolean {
+  const toleranceFactor = 1 + OVERVIEW_RESOLUTION_TOLERANCE;
+  return (
+    Math.abs(resolution[0]) <= requestedResolution[0] * toleranceFactor &&
+    Math.abs(resolution[1]) <= requestedResolution[1] * toleranceFactor
+  );
+}
+
 /** Estimates overview resolution relative to the full-resolution reference image. */
 function getImageResolution(
   image: TiffSourceImage,
@@ -1339,7 +1371,10 @@ function createRangeRequestHeaders(headers: Headers, offset: number, length: num
 }
 
 /** Parses one single-range `Range` header into offset and byte length. */
-function parseSingleRangeHeader(rangeHeader: string | null): {offset: number; length: number} {
+function parseSingleRangeHeader(rangeHeader: string | null): {
+  offset: number;
+  length: number;
+} {
   const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
   if (!match) {
     throw new Error(`GeoTIFF range request requires a single byte range. Received: ${rangeHeader}`);
@@ -1538,7 +1573,10 @@ async function resizeRasterWindow(
   method: 'nearest' | 'bilinear',
   signal?: AbortSignal,
   nativeValidityMasks?: RasterData['validityMasks']
-): Promise<{raster: GeoTIFFReadRasterResult; validityMasks?: RasterData['validityMasks']}> {
+): Promise<{
+  raster: GeoTIFFReadRasterResult;
+  validityMasks?: RasterData['validityMasks'];
+}> {
   signal?.throwIfAborted();
   if (nativeRaster.width === targetSize.width && nativeRaster.height === targetSize.height) {
     const raster = interleaved
@@ -1578,7 +1616,7 @@ async function resizeRasterWindow(
   };
   const pixelCount = targetSize.width * targetSize.height;
   const output = interleaved
-    ? createFilledTypedArray(bands[0].dtype, pixelCount * bands.length, 0)
+    ? createInterleavedNoDataArray(bands, pixelCount)
     : bands.map(band => createFilledTypedArray(band.dtype, pixelCount, band.noData ?? 0));
   const validityMasks = bands.map((_band, band) => ({
     data: new Uint8Array(pixelCount),
@@ -1625,6 +1663,22 @@ async function resizeRasterWindow(
     height: targetSize.height
   }) as GeoTIFFReadRasterResult;
   return {raster, validityMasks};
+}
+
+/**
+ * Creates interleaved output with each band's slots filled with its `noData` value, or 0, as the
+ * planar output is filled. Pixels that resampling cannot fill keep this value.
+ */
+function createInterleavedNoDataArray(bands: RasterBandMetadata[], pixelCount: number): TypedArray {
+  const output = createFilledTypedArray(bands[0].dtype, pixelCount * bands.length, 0);
+  for (let band = 0; band < bands.length; band++) {
+    const noData = bands[band].noData;
+    if (noData === undefined || noData === null || noData === 0) continue;
+    for (let index = band; index < output.length; index += bands.length) {
+      output[index] = noData;
+    }
+  }
+  return output;
 }
 
 /** Packs native planar bands without widening, scaling, or replacing invalid raw values. */

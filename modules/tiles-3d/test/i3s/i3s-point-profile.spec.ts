@@ -3,7 +3,8 @@
 // Copyright vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
-import {I3SContentLoader, loadFeatureAttributes} from '@loaders.gl/tiles-3d/i3s';
+import {I3SContentLoader} from '@loaders.gl/tiles-3d/i3s';
+import {loadFeatureAttributes} from '@loaders.gl/tiles-3d/api';
 import {describe, expect, test, vi} from 'vitest';
 import {I3SLoaderWithParser} from '../../src/i3s/i3s-loader-with-parser';
 

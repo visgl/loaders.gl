@@ -4,7 +4,8 @@
 
 import {Table as NativeArrowTable} from 'apache-arrow';
 import {describe, expect, test, vi} from 'vitest';
-import {ArcGISVectorSource, ArcGISFeatureQueryError} from '@loaders.gl/arcgis/bundled';
+import {ArcGISVectorSource} from '@loaders.gl/arcgis/bundled';
+import {ArcGISFeatureQueryError} from '@loaders.gl/arcgis/api';
 import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 import {createDataSource, load} from '@loaders.gl/core';

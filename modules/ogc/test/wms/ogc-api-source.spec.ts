@@ -1,6 +1,6 @@
 import {expect, test} from 'vitest';
 import {Table as NativeArrowTable} from 'apache-arrow';
-import {OGCAPIFeaturesLoader, OGCAPITilesLoader} from '@loaders.gl/ogc/wms';
+import {OGCAPIFeaturesLoader, OGCAPITilesLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const OGC_API_URL = 'https://example.com/ogcapi';
 

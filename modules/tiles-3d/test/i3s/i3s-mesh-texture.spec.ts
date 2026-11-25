@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s';
+import {preloadI3SMeshCompression} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 import {beforeAll as preloadBeforeAll} from 'vitest';
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
@@ -11,9 +11,9 @@ import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {GZipFflateDecompressor as GZipDecompressor} from '@loaders.gl/compression/gzip-decompressor-fflate';
 import {
   encodeI3SMeshLayer,
-  encodeI3SMeshLayerWithDraco,
-  type I3SMeshTexture
-} from '@loaders.gl/tiles-3d/i3s';
+  encodeI3SMeshLayerWithDraco
+} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
+import {type I3SMeshTexture} from '@loaders.gl/tiles-3d/i3s';
 import {prepareI3SMeshTexture} from '../../src/i3s/i3s-mesh-texture';
 import {I3SSceneLayerSchema} from '@loaders.gl/tiles-3d/i3s-zod-schema';
 import type {MeshGeometry} from '@loaders.gl/core/schema';

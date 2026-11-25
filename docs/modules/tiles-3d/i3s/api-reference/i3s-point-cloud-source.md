@@ -46,8 +46,8 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 It accepts a SceneServer layer URL, an SLPK URL, or an SLPK `Blob`.
 
 ```ts
-import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud';
+import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/api';
 
 const source = new I3SPointCloudSource(layerUrl, {
   i3s: {token: arcgisToken},

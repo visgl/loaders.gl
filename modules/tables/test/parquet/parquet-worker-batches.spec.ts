@@ -8,8 +8,9 @@ import {encode, load, loadInBatches, parse, parseFile, parseInBatches} from '@lo
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/core/schema';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
-import {ParquetLoader, ParquetWriter} from '@loaders.gl/tables/parquet';
-import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet';
+import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetLoaderWithParser} from '@loaders.gl/tables/parquet/bundled';
 
 const rows = [
   {id: 1n, label: 'repeat', bytes: new Uint8Array([1]), unused: 10, tags: ['first']},

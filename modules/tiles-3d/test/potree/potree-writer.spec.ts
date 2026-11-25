@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {convertMeshToArrowTable} from '@loaders.gl/core/schema-utils';
-import {encodePotreeDataset, PotreeWriter} from '@loaders.gl/tiles-3d/potree';
+import {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
 import {PotreeNodesSource} from '../../src/potree/lib/potree-node-source';
 import {parsePotreeBin} from '../../src/potree/parsers/parse-potree-bin';
 import {
@@ -20,7 +20,7 @@ test.each(
   Array.from({length: 9}, (_, minor) => `1.${minor}`)
 )('writes and reads Potree %s with the declared binary layout', async version => {
   const input = createPoints([-4, -3, -2, 4, 5, 6]);
-  const dataset = await encodePotreeDataset(input, {potree: {version}});
+  const dataset = await PotreeWriter.encodeDataset(input, {potree: {version}});
   const metadata = dataset.metadata as PotreeMetadata;
   const minor = Number(version.split('.')[1]);
   const path = minor >= 5 ? 'data/r/r.bin' : `data/r${minor >= 4 ? '.bin' : ''}`;
@@ -57,7 +57,7 @@ test.each(
 test('early Potree defaults to RGBA and accepts metadata without later optional fields', async () => {
   const input = createPoints([1, 2, 3]);
   delete input.attributes.COLOR_0;
-  const dataset = await encodePotreeDataset(input, {potree: {version: '1.0'}});
+  const dataset = await PotreeWriter.encodeDataset(input, {potree: {version: '1.0'}});
   expect(Array.from(dataset.files.get('data/r')!.slice(12))).toEqual([255, 255, 255, 255]);
   const metadata = {...dataset.metadata};
   delete metadata.tightBoundingBox;
@@ -75,7 +75,7 @@ test('early Potree defaults to RGBA and accepts metadata without later optional 
 });
 
 test('legacy hierarchy pages hydrate a boundary once and keep global node names and directories', async () => {
-  const dataset = await encodePotreeDataset(
+  const dataset = await PotreeWriter.encodeDataset(
     [
       {id: 'r', mesh: createPoints([8, 8, 8])},
       {id: 'r0', mesh: createPoints([2, 2, 2])},
@@ -114,7 +114,7 @@ test('modern writer preserves every scalar width, normalized colors and exact 64
   };
   for (const [name, value] of Object.entries(scalars))
     input.attributes[name] = {value, size: 1} as never;
-  const dataset = await encodePotreeDataset(input, {potree: {projection: 'EPSG:4978'}});
+  const dataset = await PotreeWriter.encodeDataset(input, {potree: {projection: 'EPSG:4978'}});
   const metadata = parsePotree2Metadata(
     new TextDecoder().decode(dataset.files.get('metadata.json'))
   );
@@ -142,7 +142,7 @@ test('writer accepts Arrow, strided positions, empty roots and RGBA without muta
     byteStride: 40
   };
   input.header = {vertexCount: 1};
-  const dataset = await encodePotreeDataset(input);
+  const dataset = await PotreeWriter.encodeDataset(input);
   const mesh = await parsePotree2Points(
     dataset.files.get('octree.bin')!.buffer,
     dataset.metadata as Potree2Metadata,
@@ -152,14 +152,14 @@ test('writer accepts Arrow, strided positions, empty roots and RGBA without muta
   expect(Array.from(mesh.attributes.COLOR_0.value)).toEqual([257, 514, 771, 1028]);
   expect(Array.from(input.attributes.POSITION.value)).toEqual([99, 1, 2, 3, 88]);
   await expect(
-    encodePotreeDataset(convertMeshToArrowTable(createPoints()))
+    PotreeWriter.encodeDataset(convertMeshToArrowTable(createPoints()))
   ).resolves.toHaveProperty('metadataPath', 'metadata.json');
-  const empty = await encodePotreeDataset(createPoints([]));
+  const empty = await PotreeWriter.encodeDataset(createPoints([]));
   expect(empty.files.get('octree.bin')!.length).toBe(0);
   expect((empty.metadata as Potree2Metadata).attributes[0].min).toEqual([0, 0, 0]);
   const root = createPoints([]),
     child = createPoints([4, 4, 4]);
-  const tree = await encodePotreeDataset([
+  const tree = await PotreeWriter.encodeDataset([
     {id: 'r', mesh: root},
     {id: 'r7', mesh: child}
   ]);
@@ -179,7 +179,9 @@ test.each([
   {maxNodes: 0},
   {spacing: 0}
 ])('rejects unsupported writer options %j', async potree => {
-  await expect(encodePotreeDataset(createPoints(), {potree: potree as never})).rejects.toThrow();
+  await expect(
+    PotreeWriter.encodeDataset(createPoints(), {potree: potree as never})
+  ).rejects.toThrow();
 });
 
 test('writer rejects unsupported layouts, disconnected trees, bounds, precision and cancellation', async () => {
@@ -194,7 +196,8 @@ test('writer rejects unsupported layouts, disconnected trees, bounds, precision 
     },
     {...createPoints(), attributes: {POSITION: {value: new Float64Array([NaN, 0, 0]), size: 3}}}
   ];
-  for (const input of cases) await expect(encodePotreeDataset(input as never)).rejects.toThrow();
+  for (const input of cases)
+    await expect(PotreeWriter.encodeDataset(input as never)).rejects.toThrow();
   for (const nodes of [
     [],
     [{id: 'r1', mesh: createPoints()}],
@@ -207,35 +210,35 @@ test('writer rejects unsupported layouts, disconnected trees, bounds, precision 
       {id: 'r8', mesh: createPoints()}
     ]
   ])
-    await expect(encodePotreeDataset(nodes)).rejects.toThrow();
+    await expect(PotreeWriter.encodeDataset(nodes)).rejects.toThrow();
   await expect(
-    encodePotreeDataset([
+    PotreeWriter.encodeDataset([
       {id: 'r', mesh: createPoints()},
       {id: 'r0', mesh: createPoints([8, 8, 8])}
     ])
   ).rejects.toThrow('octant');
-  await expect(encodePotreeDataset(createPoints([0, 0, 0, 1e12, 0, 0]))).rejects.toThrow(
+  await expect(PotreeWriter.encodeDataset(createPoints([0, 0, 0, 1e12, 0, 0]))).rejects.toThrow(
     'quantization'
   );
   await expect(
-    encodePotreeDataset(createPoints([0, 0, 0, 0.4, 0, 0]), {
+    PotreeWriter.encodeDataset(createPoints([0, 0, 0, 0.4, 0, 0]), {
       potree: {scale: [1, 1, 1], maxPositionError: 0}
     })
   ).rejects.toThrow('precision');
-  await expect(encodePotreeDataset(createPoints([-1e308, 0, 0, 1e308, 0, 0]))).rejects.toThrow(
-    'overflow'
-  );
+  await expect(
+    PotreeWriter.encodeDataset(createPoints([-1e308, 0, 0, 1e308, 0, 0]))
+  ).rejects.toThrow('overflow');
   const controller = new AbortController();
   controller.abort(new Error('stop writing'));
   await expect(
-    encodePotreeDataset(createPoints(), {potree: {signal: controller.signal}})
+    PotreeWriter.encodeDataset(createPoints(), {potree: {signal: controller.signal}})
   ).rejects.toThrow('stop writing');
   const custom = createPoints();
   custom.attributes.feature = {value: new Uint8Array([1, 2]), size: 1};
-  await expect(encodePotreeDataset(custom, {potree: {version: '1.8'}})).rejects.toThrow(
+  await expect(PotreeWriter.encodeDataset(custom, {potree: {version: '1.8'}})).rejects.toThrow(
     'map it explicitly'
   );
-  await expect(encodePotreeDataset(custom, {potree: {version: '1.0'}})).rejects.toThrow(
+  await expect(PotreeWriter.encodeDataset(custom, {potree: {version: '1.0'}})).rejects.toThrow(
     'RGBA only'
   );
 });

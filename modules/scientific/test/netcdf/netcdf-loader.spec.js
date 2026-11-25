@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import {describe, expect, it} from 'vitest';
-import {NetCDFLoaderWithParser as NetCDFLoader} from '@loaders.gl/scientific/netcdf';
+import {NetCDFLoaderWithParser as NetCDFLoader} from '@loaders.gl/scientific/netcdf/bundled';
 import {load} from '@loaders.gl/core';
 const DATA_PATH = `@loaders.gl/scientific/test/netcdf/data`;
 describe('NetCDFLoader', () => {

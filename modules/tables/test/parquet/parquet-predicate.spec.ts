@@ -6,13 +6,13 @@ import {expect, test} from 'vitest';
 
 import {createDataSource, encode, load, isBrowser} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {
-  ParquetWriter,
   type ParquetPredicate,
   ParquetLoader,
   type ParquetRowGroupMetadata
 } from '@loaders.gl/tables/parquet';
-import {ParquetSource} from '@loaders.gl/tables/parquet';
+import {ParquetSource} from '@loaders.gl/tables/parquet/bundled';
 
 import {
   canParquetRowGroupMatch,

@@ -10,7 +10,7 @@ export type {OBJLoaderOptions, OBJMeshBatch, OBJParsedBatch} from './obj-loader-
  * Preloads the parser-bearing OBJ loader implementation.
  */
 async function preload() {
-  const {OBJLoaderWithParser} = await import('@loaders.gl/scene/obj');
+  const {OBJLoaderWithParser} = await import('@loaders.gl/scene/obj/bundled');
   return OBJLoaderWithParser;
 }
 

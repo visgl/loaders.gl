@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {encodeTableAsText, fetchFile, parse, preload} from '@loaders.gl/core';
-import {CSVLoader, CSVWriter} from '@loaders.gl/tables/csv';
+import {CSVLoader} from '@loaders.gl/tables/csv';
+import {CSVWriter} from '@loaders.gl/tables/csv/bundled';
 import type {Loader} from '@loaders.gl/core/loader-utils';
 import type * as arrow from 'apache-arrow';
 import type {Table} from '@loaders.gl/core/schema';

@@ -102,14 +102,12 @@
 
 ## Loader module structure
 
-- Use `modules/tables/src/csv` as the reference shape for loader modules that want a lightweight root import and an implementation subpath.
-- The package root `src/index.ts` should export metadata-only loaders, deprecated `*WorkerLoader` aliases if needed for compatibility, shared public types/options, and writers only when they preserve lightweight metadata imports. Tables writers belong exclusively to their format subpaths. It should not export `*WithParser` loaders.
+- Format package roots export no values or types. Use the bare format subpath for metadata loaders, format descriptors, and public types. The core root forwards its shared framework API for compatibility. Use `@loaders.gl/core/api` and `@loaders.gl/tiles-3d/tileset` for shared runtime APIs.
 - Each public metadata loader should live in its own `*-loader-types.ts` file. That file should contain the loader metadata, options, default values, and an optional `preload()` function, but no `parse`, `parseSync`, `parseText`, or `parseInBatches` methods.
-- `preload()` should use a static package-subpath import such as `await import('@loaders.gl/tables/csv')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers.
+- `preload()` should use a static package-subpath import such as `await import('@loaders.gl/tables/csv/bundled')`, and return the parser-bearing loader export. Prefer static package imports over relative paths or computed import specifiers. Parquet and GeoParquet preload their specific implementation files directly to avoid loading unrelated bundled helpers.
 - Each parser-bearing loader should live in its own `*-loader.ts` file and export only the `*WithParser` loader. Keep parser logic out of the metadata file.
 - Move shared constants, option defaults, and types needed by both metadata and parser files into neutral shared files to avoid cycles.
-- Export format loaders, parser-bearing `*WithParser` loaders, writers, sources, options, and public helpers through the same format entry point.
-- In consolidated format packages, expose one subpath per format, such as `./csv`, plus `./csv/bundled` for parser-bearing loaders under their ordinary names. Do not add individual `*-loader`, `*-writer`, or `*-source` exports. Package roots stay metadata-only.
+- Publish parser-bearing loaders under their ordinary names from `/<format>/bundled`, along with that format's writers and sources. Publish standalone utilities through focused capability entry points such as .
 - Core async APIs may accept metadata loaders and upgrade them through `preload()`. Sync parsing paths should continue to require a parser-bearing loader.
 
 ## Core utility subpaths

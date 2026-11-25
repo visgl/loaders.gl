@@ -566,7 +566,7 @@ heights); the helper does not infer or transform a CRS. Per-tile RTC centers ret
 ECEF magnitudes, and `geometricError` must cover measured position reconstruction error.
 
 ```ts
-import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';
 
 const result = await convertPointCloudToTileset(decodedPoints, {
@@ -610,7 +610,7 @@ compatible decoded points, but their native CRS and additional attributes still 
 
 COPC is already a self-contained, range-readable `.copc.laz` file. Potree datasets
 contain multiple files. `encodePotreeArchive` packages the complete output of
-`encodePotreeDataset` into a deterministic STORE ZIP32 with metadata at the root.
+`PotreeWriter.encodeDataset` into a deterministic STORE ZIP32 with metadata at the root.
 This **loaders.gl Potree ZIP convention is not a native Potree archive standard**.
 The original relative paths are preserved; extracted files remain an ordinary
 Potree dataset. The writer supports its existing 1.0–1.8 and 2.0 DEFAULT profiles.
@@ -621,7 +621,7 @@ import {
   openPointCloudFile,
   extractMeshVertices
 } from '@loaders.gl/tile-converter/v5/browser';
-import {COPCWriter} from '@loaders.gl/tiles-3d/copc';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
 
 // Opt in to one point per stored vertex of already placed triangle geometry.
 const points = extractMeshVertices(meshResource.mesh, {

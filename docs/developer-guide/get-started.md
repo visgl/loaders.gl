@@ -57,7 +57,7 @@ yarn add @loaders.gl/core @loaders.gl/tables
 Use `load` to fetch and parse a URL. Use `parse` when you already have the data, such as text, an `ArrayBuffer`, or a `Response`:
 
 ```typescript
-import {load} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core/api';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 
 const data = await load('data.csv', CSVLoader);
@@ -69,7 +69,7 @@ const data = await load('data.csv', CSVLoader);
 to `load` or `parse`. Existing applications can still register loaders once:
 
 ```typescript
-import {registerLoaders} from '@loaders.gl/core';
+import {registerLoaders} from '@loaders.gl/core/api';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 registerLoaders([CSVLoader]);
 ```
@@ -77,7 +77,7 @@ registerLoaders([CSVLoader]);
 Then, in the same file (or some other file in the same app) that needs to load CSV, you can omit the loader argument to `load`. Core selects a registered loader using the URL, MIME type, and available data:
 
 ```typescript
-import {load} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core/api';
 
 // The pre-registered CSVLoader gets auto selected based on file extension...
 const data = await load('data.csv');
@@ -108,10 +108,10 @@ npm install @loaders.gl/core @loaders.gl/pointclouds @loaders.gl/scene
 ```
 
 ```typescript
-import {parse, parseSync} from '@loaders.gl/core';
+import {parse, parseSync} from '@loaders.gl/core/api';
 import {PLYLoader} from '@loaders.gl/pointclouds/ply';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply';
+import {PLYLoaderWithParser} from '@loaders.gl/pointclouds/ply/bundled';
 
 const points = await parse(plyBytes, PLYLoader);
 const scene = await parse(gltfBytes, GLTFLoader);

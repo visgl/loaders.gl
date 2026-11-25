@@ -8,7 +8,8 @@
 import {expect, test} from 'vitest';
 import type {DracoLoaderOptions} from '@loaders.gl/scene/draco';
 import {load, parse, parseSync, encodeSync, LoaderContext, coreApi} from '@loaders.gl/core';
-import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tile3DWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {TILE3D_TYPE} from '@loaders.gl/tiles-3d/api';
 import {Tiles3DLoaderWithParser as Tiles3DLoader} from '../../../../src/3d-tiles/tiles-3d-loader-with-parser';
 import {loadDraco} from '../../../../src/3d-tiles/lib/parsers/parse-3d-tile-point-cloud';
 // import {loadRootTileFromTileset} from '../utils/load-utils';

@@ -3,12 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {Viewport} from '@deck.gl/core';
 import {Matrix4} from '@math.gl/core/matrix';
 import {
   STRATEGY_DEFAULT,
   STRATEGY_NEVER,
   STRATEGY_REPLACE,
   Tileset2D,
+  createTileMatrixTileset2DAdapter,
+  type TileMatrixViewFrame,
   type Tileset2DAdapter
 } from '@loaders.gl/tiles/tileset-2d';
 import {SharedTile2DView} from '../src/shared-tile-2d/shared-tile-2d-view';
@@ -78,6 +81,83 @@ test('SharedTile2DView#same-viewport updates reload only stale selected tiles', 
 });
 
 test.each([
+  STRATEGY_DEFAULT,
+  STRATEGY_REPLACE
+] as const)('%s refinement provides best-effort coverage for a straddling fine tile', async refinementStrategy => {
+  const frame: TileMatrixViewFrame = {crs: 'native', extent: [1, 1, 2.5, 2], resolution: 2};
+  const adapter = createTileMatrixTileset2DAdapter(
+    {
+      tileMatrixSet: {
+        crs: frame.crs,
+        matrices: [1, 2, 4].map((resolution, index) => ({
+          id: String(index),
+          resolution,
+          origin: [resolution === 1 ? 0 : -4, 0],
+          cornerOfOrigin: 'bottomLeft',
+          tileSize: [3, 3],
+          matrixSize: [2, 1]
+        }))
+      }
+    },
+    {cacheNamespace: 'overviews'}
+  );
+  let finishFineTile!: (content: string) => void;
+  const fineData = new Promise<string>(resolve => {
+    finishFineTile = resolve;
+  });
+  const tileset = new Tileset2D<string, Viewport>({
+    adapter: {
+      getTileIndices: ({viewState, ...context}) =>
+        adapter.getTileIndices({
+          ...context,
+          viewState: {...frame, resolution: viewState.resolution}
+        }),
+      getTileBoundingBox: (context, index) =>
+        adapter.getTileBoundingBox({...context, viewState: frame}, index),
+      getTileId: adapter.getTileId,
+      getParentIndex: adapter.getParentIndex
+    },
+    getTileData: ({index}) => (index.tileMatrix === '0' ? fineData : 'overview'),
+    refinementStrategy
+  });
+  const view = new SharedTile2DView(tileset);
+  try {
+    view.update(new Viewport({zoom: 1, resolution: 2}));
+    expect(view.selectedTiles).toHaveLength(2);
+    const [leftCoarseTile, rightCoarseTile] = view.selectedTiles!;
+    expect(await Promise.all([leftCoarseTile.data, rightCoarseTile.data])).toEqual([
+      'overview',
+      'overview'
+    ]);
+    expect(leftCoarseTile.isLoaded).toBe(true);
+    expect(rightCoarseTile.isLoaded).toBe(true);
+    expect(leftCoarseTile.bbox).toMatchObject({left: -4, right: 2});
+    expect(rightCoarseTile.bbox).toMatchObject({left: 2, right: 8});
+
+    const fineViewport = new Viewport({zoom: 2, resolution: 1});
+    view.update(fineViewport);
+    expect(view.selectedTiles).toHaveLength(1);
+    const [fineTile] = view.selectedTiles!;
+    expect(fineTile.index).toMatchObject({z: 2, tileMatrix: '0'});
+    expect(fineTile.bbox).toMatchObject({left: 0, right: 3});
+    expect(fineTile.parent).toBe(leftCoarseTile);
+    expect(fineTile.isLoaded).toBe(false);
+    expect(view.isTileVisible(fineTile)).toBe(false);
+    expect(view.isTileVisible(leftCoarseTile)).toBe(true);
+    expect(tileset.getTile(rightCoarseTile.index)).toBe(rightCoarseTile);
+    // The cached right tile overlaps (2, 3] and is invisible during refinement.
+    expect(view.isTileVisible(rightCoarseTile)).toBe(false);
+
+    finishFineTile('detail');
+    expect(await fineTile.data).toBe('detail');
+    expect(fineTile.isLoaded).toBe(true);
+  } finally {
+    view.finalize();
+    tileset.finalize();
+  }
+});
+
+test.each([
   [STRATEGY_DEFAULT, true],
   [STRATEGY_REPLACE, true],
   [STRATEGY_NEVER, false]
@@ -95,7 +175,7 @@ test.each([
 
   expect(view._updateTileStates()).toBe(true);
   expect(view.isTileVisible(root)).toBe(ancestorVisible);
-  expect(view.isTileVisible(grandchild)).toBe(!ancestorVisible || strategy === STRATEGY_NEVER);
+  expect(view.isTileVisible(grandchild)).toBe(!ancestorVisible);
   expect(view._getVisibleTiles()).toEqual(tiles.filter(tile => view._state.get(tile)?.isVisible));
   expect(view._updateTileStates()).toBe(false);
   view.finalize();

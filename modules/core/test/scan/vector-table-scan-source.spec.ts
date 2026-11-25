@@ -11,7 +11,7 @@ import type {
   VectorTileSource
 } from '@loaders.gl/core/loader-utils';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {OGCAPIFeaturesSource, WFSVectorSource} from '@loaders.gl/ogc/wms';
+import {OGCAPIFeaturesSource, WFSVectorSource} from '@loaders.gl/ogc/wms/bundled';
 import {
   VectorFeatureTableScanSource,
   VectorTileTableScanSource

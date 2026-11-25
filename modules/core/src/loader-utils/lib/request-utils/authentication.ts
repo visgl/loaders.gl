@@ -120,6 +120,23 @@ export async function resolveLoaderAuthenticationOptions<OptionsT extends Loader
   });
 }
 
+/** Creates a per-source accessor that shares credential discovery across concurrent resource loads. */
+export function createSourceLoadOptionsResolver<OptionsT extends LoaderOptions>(
+  loader: Loader,
+  url: string,
+  options: OptionsT
+): () => Promise<OptionsT> {
+  let resolvedOptions: Promise<OptionsT> | undefined;
+  return () => {
+    resolvedOptions ||= resolveLoaderAuthenticationOptions(loader, url, options).catch(error => {
+      // A later request can retry a failed discovery.
+      resolvedOptions = undefined;
+      throw error;
+    });
+    return resolvedOptions;
+  };
+}
+
 /** Tests the public runtime credential shape without relying on class identity. */
 function isAuthentication(credential: Credential): credential is Authentication {
   if (!credential || typeof credential !== 'object') return false;

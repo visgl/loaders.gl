@@ -16,7 +16,7 @@ import {ArrowLoader, type ArrowLoaderOptions} from '@loaders.gl/tables/arrow';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 import {JSONTableLoader} from '@loaders.gl/tables/json';
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
-import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow';
+import {ArrowLoaderWithParser} from '@loaders.gl/tables/arrow/bundled';
 
 const bytes = new ArrayBuffer(0);
 declare const file: ReadableFile;

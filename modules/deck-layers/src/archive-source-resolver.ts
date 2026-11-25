@@ -12,7 +12,8 @@ import type {
   ReadableFile
 } from '@loaders.gl/core/loader-utils';
 import type {TilesetSourceResolver} from '@loaders.gl/tiles-3d/tileset';
-import {IndexedArchive, type ZipArchiveOptions} from '@loaders.gl/archives/zip';
+import {IndexedArchive} from '@loaders.gl/archives/api';
+import {type ZipArchiveOptions} from '@loaders.gl/archives/zip';
 
 type ArchiveSourceData = string | Blob;
 type ArchiveFileMode = 'http' | 'raw';

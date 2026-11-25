@@ -31,3 +31,8 @@ export {
   type WKBCoordinateTransform
 } from './wkb-builder';
 export {triangulateWKB} from './triangulate-wkb';
+
+export {
+  triangulateWKBGeometryColumn,
+  type TriangulatedWKBGeometryColumns
+} from './triangulate-wkb-geometry-column';

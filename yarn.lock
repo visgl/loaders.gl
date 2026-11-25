@@ -9,9 +9,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "3d-tiles-loaders-example@workspace:examples/website/3d-tiles"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/extensions": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
@@ -3014,6 +3014,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@deck.gl/core@patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch":
+  version: 10.0.0-alpha.1
+  resolution: "@deck.gl/core@patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch::version=10.0.0-alpha.1&hash=ae632b"
+  dependencies:
+    "@loaders.gl/core": "npm:5.0.0-beta.8"
+    "@loaders.gl/images": "npm:5.0.0-beta.8"
+    "@luma.gl/core": "npm:10.0.0-alpha.14"
+    "@luma.gl/engine": "npm:10.0.0-alpha.14"
+    "@luma.gl/graph": "npm:10.0.0-alpha.14"
+    "@luma.gl/shaders": "npm:10.0.0-alpha.14"
+    "@math.gl/core": "npm:5.0.0-beta.8"
+    "@math.gl/earth": "npm:5.0.0-beta.8"
+    "@math.gl/geospatial": "npm:5.0.0-beta.8"
+    "@math.gl/web-mercator": "npm:5.0.0-beta.8"
+    "@probe.gl/env": "npm:^4.1.1"
+    "@probe.gl/log": "npm:^4.1.1"
+    "@probe.gl/stats": "npm:^4.1.1"
+    "@types/offscreencanvas": "npm:^2019.6.4"
+    gl-matrix: "npm:^3.0.0"
+    mjolnir.js: "npm:^3.1.1"
+  peerDependencies:
+    apache-arrow: ">=17.0.0"
+  peerDependenciesMeta:
+    apache-arrow:
+      optional: true
+  checksum: 10c0/9127a30205c10eca4b35bcca79938d68d6125a54a7aa37e42aa49a7cc3de44e891a82661e0aa327c7c2142bf15f6158b005ed042e60e2ce7678181083080226f
+  languageName: node
+  linkType: hard
+
 "@deck.gl/extensions@npm:10.0.0-alpha.1":
   version: 10.0.0-alpha.1
   resolution: "@deck.gl/extensions@npm:10.0.0-alpha.1"
@@ -3063,7 +3092,7 @@ __metadata:
 
 "@deck.gl/geo-layers@patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch":
   version: 10.0.0-alpha.1
-  resolution: "@deck.gl/geo-layers@patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch::version=10.0.0-alpha.1&hash=af47dc"
+  resolution: "@deck.gl/geo-layers@patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch::version=10.0.0-alpha.1&hash=170199"
   dependencies:
     "@loaders.gl/core": "npm:5.0.0-beta.8"
     "@loaders.gl/ogc": "npm:5.0.0-beta.8"
@@ -3089,7 +3118,7 @@ __metadata:
     "@loaders.gl/core": 5.0.0-beta.8
     "@luma.gl/core": 10.0.0-alpha.14
     "@luma.gl/engine": 10.0.0-alpha.14
-  checksum: 10c0/ec9895bdd2465b54ae5d533147abb95793befb7b4117e7b90f29aa0decc929548fcfaa43852a11968e881743a1c83a02c2771ec42943f3c0d248ad9b13515545
+  checksum: 10c0/aa35dd2b2927af811f412d8dd5409da92089dd398f1d53ad367acc7e3678762f46d6f39f28aabf855ea09c86a029bab447d726c090dbe99dafa4d796f5178911
   languageName: node
   linkType: hard
 
@@ -5588,8 +5617,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/deck-layers@workspace:modules/deck-layers"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@loaders.gl/archives": "npm:5.0.0"
     "@loaders.gl/compression": "npm:5.0.0"
@@ -5851,7 +5880,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tiles-3d@workspace:modules/tiles-3d"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@loaders.gl/archives": "npm:5.0.0"
     "@loaders.gl/compression": "npm:5.0.0"
     "@loaders.gl/images": "npm:5.0.0"
@@ -5875,7 +5904,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tiles@workspace:modules/tiles"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@loaders.gl/compression": "npm:5.0.0"
     "@loaders.gl/images": "npm:5.0.0"
     "@loaders.gl/tables": "npm:5.0.0"
@@ -12337,7 +12366,7 @@ __metadata:
   resolution: "atmospheric-explorer@workspace:examples/atmospheric-explorer"
   dependencies:
     "@deck.gl-community/panels": "npm:10.0.0-alpha.1"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/scientific": "workspace:*"
@@ -12884,9 +12913,9 @@ __metadata:
   resolution: "bundle-with-nextjs@workspace:examples/get-started/bundle-with-nextjs"
   dependencies:
     "@arcgis/core": "npm:^4.34.8"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/extensions": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
@@ -13424,7 +13453,7 @@ __metadata:
   dependencies:
     "@deck.gl-community/panels": "npm:10.0.0-alpha.1"
     "@deck.gl-community/widgets": "npm:10.0.0-alpha.1"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mapbox": "npm:10.0.0-alpha.1"
     "@loaders.gl/core": "workspace:*"
@@ -15601,7 +15630,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "duckdb-sql-loaders-example@workspace:examples/website/duckdb-sql"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
@@ -17201,7 +17230,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "fsq-places-loaders-example@workspace:examples/website/fsq-places"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
     "@loaders.gl/deck-layers": "workspace:*"
@@ -17313,7 +17342,7 @@ __metadata:
   dependencies:
     "@deck.gl-community/panels": "npm:10.0.0-alpha.1"
     "@deck.gl-community/widgets": "npm:10.0.0-alpha.1"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
@@ -17340,7 +17369,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "geotiff-source-example@workspace:examples/website/geotiff"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
@@ -17381,7 +17410,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "geozarr-deck-example@workspace:examples/website/geozarr"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/scientific": "workspace:*"
@@ -17674,7 +17703,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "gltf-loaders-example@workspace:examples/website/gltf"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@loaders.gl/core": "workspace:*"
@@ -18460,9 +18489,9 @@ __metadata:
   dependencies:
     "@arcgis/core": "npm:^4.25.0"
     "@deck.gl/arcgis": "npm:10.0.0-alpha.1"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/extensions": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@esri/react-arcgis": "npm:^5.2.0"
@@ -18509,7 +18538,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "i3s-colorization-by-attributes-loaders-example@workspace:examples/website/i3s-colorization-by-attributes"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/tiles-3d": "workspace:*"
@@ -18531,9 +18560,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "i3s-picking-loaders-example@workspace:examples/website/i3s-picking"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/extensions": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
@@ -18573,7 +18602,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "i3s-slpk-loaders-example@workspace:examples/website/i3s-slpk"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
@@ -19946,7 +19975,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "lance-browser-example@workspace:examples/lance/browser"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@loaders.gl/tables": "workspace:*"
     typescript: "npm:^5.6.0"
@@ -20310,7 +20339,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "loaders.gl-example-gaussian-splats@workspace:examples/website/gaussian-splats"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
     "@loaders.gl/core": "workspace:*"
@@ -20330,7 +20359,7 @@ __metadata:
   dependencies:
     "@deck.gl-community/panels": "npm:10.0.0-alpha.1"
     "@deck.gl-community/widgets": "npm:10.0.0-alpha.1"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
@@ -22617,7 +22646,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ome-tiff-source-example@workspace:examples/website/ometiff"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
@@ -22783,7 +22812,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "overture-parquet-loaders-example@workspace:examples/website/overture-parquet"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
     "@deck.gl/widgets": "npm:10.0.0-alpha.1"
     "@loaders.gl/deck-layers": "workspace:*"
@@ -23471,9 +23500,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "point-tile-source-website-example@workspace:examples/website/point-tile-source"
   dependencies:
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/extensions": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
@@ -24844,9 +24873,9 @@ __metadata:
     "@deck.gl-community/react": "npm:10.0.0-alpha.1"
     "@deck.gl-community/widgets": "npm:10.0.0-alpha.1"
     "@deck.gl/arcgis": "npm:10.0.0-alpha.1"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/extensions": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
@@ -27823,9 +27852,9 @@ __metadata:
   dependencies:
     "@deck.gl-community/panels": "npm:10.0.0-alpha.1"
     "@deck.gl-community/widgets": "npm:10.0.0-alpha.1"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/extensions": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
@@ -29461,9 +29490,9 @@ __metadata:
   dependencies:
     "@arcgis/core": "npm:^4.34.8"
     "@deck.gl/arcgis": "npm:10.0.0-alpha.1"
-    "@deck.gl/core": "npm:10.0.0-alpha.1"
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch"
     "@deck.gl/extensions": "npm:10.0.0-alpha.1"
-    "@deck.gl/geo-layers": "npm:10.0.0-alpha.1"
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch"
     "@deck.gl/layers": "npm:10.0.0-alpha.1"
     "@deck.gl/mesh-layers": "npm:10.0.0-alpha.1"
     "@deck.gl/react": "npm:10.0.0-alpha.1"
