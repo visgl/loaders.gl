@@ -88,7 +88,7 @@ The standard loader validates legacy connectivity and point/cell attribute count
 ```typescript
 import {parseSync} from '@loaders.gl/core';
 import {VTKLoaderWithParser} from '@loaders.gl/scientific/vtk/bundled';
-import {parseVTKLegacy, parseVTKXML} from '@loaders.gl/scientific/vtk/bundled';
+import {parseVTKLegacy, parseVTKXML} from '@loaders.gl/scientific/vtk/api';
 
 const dataset = parseSync(text, VTKLoaderWithParser);
 // Or choose a file family explicitly:

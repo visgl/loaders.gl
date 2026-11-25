@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud/bundled';
+import {PointCloudTileset} from '@loaders.gl/tiles-3d/point-cloud/api';
 import {expect, test} from 'vitest';
 
 test('PointCloudTileset splits dateline-crossing bounds for projection', () => {

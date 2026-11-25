@@ -9,7 +9,7 @@ import type {
   GLTF_EXT_mesh_features,
   GLTF_EXT_structural_metadata_GLTF
 } from '@loaders.gl/scene/gltf';
-import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/gltf/bundled';
+import {getGLTFAccessor, getGLTFAccessorValue} from '@loaders.gl/scene/gltf/api';
 import type {I3SMeshFeatures} from '@loaders.gl/tiles-3d/i3s';
 import {convertFeatureAttributesToArrowBatches} from './feature-arrow.js';
 import type {FeatureArrowBatchOptions} from './feature-arrow.js';

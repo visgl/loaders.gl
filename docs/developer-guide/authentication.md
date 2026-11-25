@@ -260,7 +260,7 @@ without replacing an explicit child parameter.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles/api';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
 const endpoint = await resolveCesiumIonTileset(accessToken, 123);

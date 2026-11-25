@@ -8,6 +8,7 @@ import { encode, load } from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import * as parquet from '@loaders.gl/tables/parquet';
 import * as bundledParquet from '@loaders.gl/tables/parquet/bundled';
+import * as bundledParquetAPI from '@loaders.gl/tables/parquet/api';
 import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import * as arrow from 'apache-arrow';
@@ -17,7 +18,7 @@ test('ParquetWriter#writer objects', () => {
 });
 test('ParquetSource#public exports', () => {
     expect(bundledParquet.ParquetSource, 'bundled entry point exports ParquetSource').toBeTruthy();
-    expect(bundledParquet.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities').toBeTruthy();
+    expect(bundledParquetAPI.PARQUET_SOURCE_CAPABILITIES, 'bundled exports source capabilities').toBeTruthy();
 });
 test('ParquetWriter#removed Arrow variant exports are absent', () => {
     expect('ParquetArrowLoader' in parquet, 'root does not export ParquetArrowLoader').toBeFalsy();

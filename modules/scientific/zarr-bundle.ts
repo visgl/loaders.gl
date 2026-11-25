@@ -87,12 +87,11 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
+export {loadZarr, loadZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr/api';
 export {
-  loadZarr,
   ZarrPixelSource,
   OMEZarrLoader,
   OMEZarrImageSource,
-  loadZarrConsolidatedMetadata,
   GeoZarrLoader,
   GeoZarrRasterSource,
   ZarrArrayLoader,

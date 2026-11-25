@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
 import {
   decodeMeshoptCompression,
   validateMeshoptCompressionExclusivity

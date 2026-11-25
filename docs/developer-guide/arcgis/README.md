@@ -133,14 +133,13 @@ const source = createDataSourceSync(serviceUrl, [ArcGISFeatureServerLoader], {})
 
 Source construction is synchronous in this example; network methods remain asynchronous.
 Authentication, discovery and scene aggregation have dedicated entrypoints so applications can
-import these helpers without retaining service implementations. `/bundled` also exports them for
-applications already using runtime source classes.
+import these helpers without retaining service implementations. The `@loaders.gl/arcgis/api` entry point also groups the standalone service APIs.
 
 
 | Import | Use |
 | --- | --- |
 | `@loaders.gl/arcgis` | Async `load()`, deck.gl `SourceLayer`, lightweight registry and shared types |
-| `@loaders.gl/arcgis/bundled` | Synchronous `createDataSourceSync()`, runtime registry, direct source classes and helpers |
+| `@loaders.gl/arcgis/bundled` | Synchronous `createDataSourceSync()`, runtime registry, and direct source classes |
 | `@loaders.gl/arcgis/authentication` | `ArcGISAuthentication` and `createArcGISCredential` |
 | `@loaders.gl/arcgis/discovery` | `getArcGISServices`, `discoverArcGISCapabilities` and `selectArcGISService` |
 | `@loaders.gl/arcgis/scene-aggregation` | `aggregateArcGISSceneFeatures` |

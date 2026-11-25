@@ -227,7 +227,7 @@ async function convertNodeTilesetWithStorage(
             lodThreshold: options.slpkLodThreshold
           };
     await import('@loaders.gl/core/polyfills');
-    const {getDracoLibraryOptions} = await import('@loaders.gl/scene/draco/bundled');
+    const {getDracoLibraryOptions} = await import('@loaders.gl/scene/draco/api');
     const dracoLibraryOptions = getDracoLibraryOptions({
       decoderProfile: 'full',
       useLocalLibraries: true

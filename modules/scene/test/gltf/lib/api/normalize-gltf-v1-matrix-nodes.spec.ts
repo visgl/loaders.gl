@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import {Matrix4} from '@math.gl/core/matrix';
-import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf/bundled';
+import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf/api';
 import {createGLTFV1ConformanceAsset} from '../../test-utils/create-gltf-v1-conformance';
 
 test.each([

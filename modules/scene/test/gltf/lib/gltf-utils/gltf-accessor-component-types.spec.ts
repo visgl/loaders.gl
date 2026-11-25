@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFScenegraph, getGLTFAccessorValue} from '@loaders.gl/scene/gltf/api';
 import type {BigTypedArray} from '@loaders.gl/core/schema';
 const TEST_CASES: {
   name: string;

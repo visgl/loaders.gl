@@ -21,7 +21,7 @@ import {
   getMaterialVariantMappings,
   getMeshInstances,
   getXMPMetadata
-} from '@loaders.gl/scene/gltf/bundled';
+} from '@loaders.gl/scene/gltf/api';
 import {
   type GLTF,
   type GLTF_KHR_materials_variants,

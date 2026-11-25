@@ -4,7 +4,7 @@
 
 import {afterEach, expect, test, vi} from 'vitest';
 import {readZip} from 'test/common/read-zip';
-import {encodeZip, encodeZipInBatches, openZipArchive} from '@loaders.gl/archives/zip/bundled';
+import {encodeZip, encodeZipInBatches, openZipArchive} from '@loaders.gl/archives/zip/api';
 import {type ZipByteSource, type ZipEncodeOptions} from '@loaders.gl/archives/zip';
 import {
   encodeZipLocalHeader,

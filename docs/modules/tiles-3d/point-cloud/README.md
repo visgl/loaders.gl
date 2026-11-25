@@ -3,7 +3,7 @@
 Traverse and load tiled point clouds through a shared runtime.
 
 ```typescript
-import {PointCloudTileset, PointCloudTile} from '@loaders.gl/tiles-3d/point-cloud/bundled';
+import {PointCloudTileset, PointCloudTile} from '@loaders.gl/tiles-3d/point-cloud/api';
 import {PointCloudTileLoader} from '@loaders.gl/tiles-3d/point-cloud';
 ```
 

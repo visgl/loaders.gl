@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { ArrayBufferFile, BlobFile } from '@loaders.gl/core/loader-utils';
-import {ParquetReader} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetReader} from '@loaders.gl/tables/parquet/api';
 import { fetchFile } from '@loaders.gl/core';
 const FRUITS_URL = '@loaders.gl/tables/parquet/test/data/fruits.parquet';
 const DICTIONARY_URL = '@loaders.gl/tables/parquet/test/data/apache/good/alltypes_dictionary.parquet';

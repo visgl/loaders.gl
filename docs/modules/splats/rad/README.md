@@ -4,7 +4,8 @@ Load RAD Gaussian splat datasets and request their independently addressable chu
 
 ```typescript
 import {RADFormat, RADLoader} from '@loaders.gl/splats/rad';
-import {RADSource, resolveRADChunkUrl} from '@loaders.gl/splats/rad/bundled';
+import {RADSource} from '@loaders.gl/splats/rad/bundled';
+import {resolveRADChunkUrl} from '@loaders.gl/splats/rad/api';
 ```
 
 ## API

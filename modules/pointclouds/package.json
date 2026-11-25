@@ -38,9 +38,9 @@
       "require": "./dist/las/metadata-entry.cjs"
     },
     "./las/bundled": {
-      "types": "./dist/las/bundled.d.ts",
-      "import": "./dist/las/bundled.js",
-      "require": "./dist/las/bundled.cjs"
+      "types": "./dist/las/bundled-entry.d.ts",
+      "import": "./dist/las/bundled-entry.js",
+      "require": "./dist/las/bundled-entry.cjs"
     },
     "./pcd": {
       "types": "./dist/pcd/metadata-entry.d.ts",
@@ -70,6 +70,11 @@
     },
     "./ply-worker.js": {
       "import": "./dist/ply-worker.js"
+    },
+    "./las/api": {
+      "types": "./dist/las/api.d.ts",
+      "import": "./dist/las/api.js",
+      "require": "./dist/las/api.cjs"
     }
   },
   "sideEffects": false,

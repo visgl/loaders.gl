@@ -3,7 +3,7 @@ import {parse} from '@loaders.gl/core';
 import {ZstdCompressor} from '@loaders.gl/compression/zstd-compressor';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
 import {SPZLoader} from '@loaders.gl/splats/spz';
-import {parseSPZToGaussianSplats} from '@loaders.gl/splats/spz/bundled';
+import {parseSPZToGaussianSplats} from '@loaders.gl/splats/spz/api';
 import {SPZLoaderWithParser} from '@loaders.gl/splats/spz/bundled';
 import {ZstdCodec} from 'zstd-codec';
 const modules = {'zstd-codec': ZstdCodec};

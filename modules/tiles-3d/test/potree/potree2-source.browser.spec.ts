@@ -4,7 +4,7 @@
 
 import {createDataSource} from '@loaders.gl/core';
 import {expect, test, vi} from 'vitest';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/bundled';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
 import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {Potree2Source} from '../../src/potree/potree2-source';

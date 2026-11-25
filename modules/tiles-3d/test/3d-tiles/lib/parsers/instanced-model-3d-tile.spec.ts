@@ -11,7 +11,8 @@ import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/coordinates';
 import {parse, encodeSync} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
-import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {Tile3DWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles/api';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 const GLTF_EXTERNAL_URL =
   '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Instanced/InstancedGltfExternal/tileset.json';

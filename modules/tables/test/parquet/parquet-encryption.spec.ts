@@ -5,11 +5,7 @@
 import {ParquetJSLoaderWithParser as ParquetJSLoader} from '../../../../website/src/alternate-loaders/parquet/parquet-js-loader';
 import {createDataSource, fetchFile, load} from '@loaders.gl/core';
 import {ArrayBufferFile} from '@loaders.gl/core/loader-utils';
-import {
-  ParquetReader,
-  createParquetModuleAad,
-  verifyParquetFooterSignature
-} from '@loaders.gl/tables/parquet/bundled';
+import {ParquetReader, createParquetModuleAad, verifyParquetFooterSignature} from '@loaders.gl/tables/parquet/api';
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
 import type {ParquetSource} from '@loaders.gl/tables/parquet';
 import {createWorkerKeyRetriever} from '../../src/parquet/lib/parquet-source-worker-decoder';

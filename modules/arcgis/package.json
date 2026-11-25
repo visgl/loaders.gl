@@ -36,8 +36,8 @@
       "require": "./dist/index.cjs"
     },
     "./bundled": {
-      "types": "./dist/bundled.d.ts",
-      "import": "./dist/bundled.js"
+      "types": "./dist/bundled-entry.d.ts",
+      "import": "./dist/bundled-entry.js"
     },
     "./arcgis-feature-server-loader": {
       "types": "./dist/arcgis-feature-server-loader.d.ts",
@@ -106,9 +106,9 @@
       "require": "./dist/vector-tile-service/metadata-entry.cjs"
     },
     "./feature-service/bundled": {
-      "types": "./dist/feature-service/bundled.d.ts",
-      "import": "./dist/feature-service/bundled.js",
-      "require": "./dist/feature-service/bundled.cjs"
+      "types": "./dist/feature-service/bundled-entry.d.ts",
+      "import": "./dist/feature-service/bundled-entry.js",
+      "require": "./dist/feature-service/bundled-entry.cjs"
     },
     "./image-service/bundled": {
       "types": "./dist/image-service/bundled.d.ts",
@@ -121,14 +121,28 @@
       "require": "./dist/map-service/bundled.cjs"
     },
     "./scene-service/bundled": {
-      "types": "./dist/scene-service/bundled.d.ts",
-      "import": "./dist/scene-service/bundled.js",
-      "require": "./dist/scene-service/bundled.cjs"
+      "types": "./dist/scene-service/bundled-entry.d.ts",
+      "import": "./dist/scene-service/bundled-entry.js",
+      "require": "./dist/scene-service/bundled-entry.cjs"
     },
     "./vector-tile-service/bundled": {
       "types": "./dist/vector-tile-service/bundled.d.ts",
       "import": "./dist/vector-tile-service/bundled.js",
       "require": "./dist/vector-tile-service/bundled.cjs"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./feature-service/api": {
+      "types": "./dist/feature-service/api.d.ts",
+      "import": "./dist/feature-service/api.js",
+      "require": "./dist/feature-service/api.cjs"
+    },
+    "./scene-service/api": {
+      "types": "./dist/scene-service/api.d.ts",
+      "import": "./dist/scene-service/api.js",
+      "require": "./dist/scene-service/api.cjs"
     }
   },
   "sideEffects": false,

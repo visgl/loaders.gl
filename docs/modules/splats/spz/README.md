@@ -4,7 +4,7 @@ Read SPZ Gaussian splat data and convert it to the shared Gaussian splat represe
 
 ```typescript
 import {SPZFormat, SPZLoader} from '@loaders.gl/splats/spz';
-import {parseSPZ, parseSPZToGaussianSplats} from '@loaders.gl/splats/spz/bundled';
+import {parseSPZ, parseSPZToGaussianSplats} from '@loaders.gl/splats/spz/api';
 ```
 
 ## API

@@ -36,9 +36,9 @@
       "require": "./dist/hudi/index.cjs"
     },
     "./csv/bundled": {
-      "types": "./dist/csv/bundled.d.ts",
-      "import": "./dist/csv/bundled.js",
-      "require": "./dist/csv/bundled.cjs"
+      "types": "./dist/csv/bundled-entry.d.ts",
+      "import": "./dist/csv/bundled-entry.js",
+      "require": "./dist/csv/bundled-entry.cjs"
     },
     "./csv": {
       "types": "./dist/csv/metadata-entry.d.ts",
@@ -70,9 +70,9 @@
       "require": "./dist/arrow/types.cjs"
     },
     "./arrow/bundled": {
-      "types": "./dist/arrow/bundled.d.ts",
-      "import": "./dist/arrow/bundled.js",
-      "require": "./dist/arrow/bundled.cjs"
+      "types": "./dist/arrow/bundled-entry.d.ts",
+      "import": "./dist/arrow/bundled-entry.js",
+      "require": "./dist/arrow/bundled-entry.cjs"
     },
     "./arrow": {
       "types": "./dist/arrow/metadata-entry.d.ts",
@@ -92,9 +92,9 @@
       "require": "./dist/arrow/geometry/index.cjs"
     },
     "./json/bundled": {
-      "types": "./dist/json/bundled.d.ts",
-      "import": "./dist/json/bundled.js",
-      "require": "./dist/json/bundled.cjs"
+      "types": "./dist/json/bundled-entry.d.ts",
+      "import": "./dist/json/bundled-entry.js",
+      "require": "./dist/json/bundled-entry.cjs"
     },
     "./json": {
       "types": "./dist/json/metadata-entry.d.ts",
@@ -110,9 +110,9 @@
       "require": "./dist/lance/metadata-entry.cjs"
     },
     "./orc/bundled": {
-      "types": "./dist/orc/bundled.d.ts",
-      "import": "./dist/orc/bundled.js",
-      "require": "./dist/orc/bundled.cjs"
+      "types": "./dist/orc/bundled-entry.d.ts",
+      "import": "./dist/orc/bundled-entry.js",
+      "require": "./dist/orc/bundled-entry.cjs"
     },
     "./orc": {
       "types": "./dist/orc/metadata-entry.d.ts",
@@ -120,9 +120,9 @@
       "require": "./dist/orc/metadata-entry.cjs"
     },
     "./parquet/bundled": {
-      "types": "./dist/parquet/bundled.d.ts",
-      "import": "./dist/parquet/bundled.js",
-      "require": "./dist/parquet/bundled.cjs"
+      "types": "./dist/parquet/bundled-entry.d.ts",
+      "import": "./dist/parquet/bundled-entry.js",
+      "require": "./dist/parquet/bundled-entry.cjs"
     },
     "./parquet": {
       "types": "./dist/parquet/index.d.ts",
@@ -176,14 +176,14 @@
       "require": "./dist/delta-bundled.cjs"
     },
     "./avro/bundled": {
-      "types": "./dist/avro-bundled.d.ts",
-      "import": "./dist/avro-bundled.js",
-      "require": "./dist/avro-bundled.cjs"
+      "types": "./dist/avro-bundled-entry.d.ts",
+      "import": "./dist/avro-bundled-entry.js",
+      "require": "./dist/avro-bundled-entry.cjs"
     },
     "./lance/bundled": {
-      "types": "./dist/lance-bundled.d.ts",
-      "import": "./dist/lance-bundled.js",
-      "require": "./dist/lance-bundled.cjs"
+      "types": "./dist/lance-bundled-entry.d.ts",
+      "import": "./dist/lance-bundled-entry.js",
+      "require": "./dist/lance-bundled-entry.cjs"
     },
     "./geojson/bundled": {
       "types": "./dist/geojson-bundled.d.ts",
@@ -194,6 +194,41 @@
       "types": "./dist/geoarrow-bundled.d.ts",
       "import": "./dist/geoarrow-bundled.js",
       "require": "./dist/geoarrow-bundled.cjs"
+    },
+    "./csv/api": {
+      "types": "./dist/csv/api.d.ts",
+      "import": "./dist/csv/api.js",
+      "require": "./dist/csv/api.cjs"
+    },
+    "./arrow/api": {
+      "types": "./dist/arrow/api.d.ts",
+      "import": "./dist/arrow/api.js",
+      "require": "./dist/arrow/api.cjs"
+    },
+    "./json/api": {
+      "types": "./dist/json/api.d.ts",
+      "import": "./dist/json/api.js",
+      "require": "./dist/json/api.cjs"
+    },
+    "./orc/api": {
+      "types": "./dist/orc/api.d.ts",
+      "import": "./dist/orc/api.js",
+      "require": "./dist/orc/api.cjs"
+    },
+    "./parquet/api": {
+      "types": "./dist/parquet/api.d.ts",
+      "import": "./dist/parquet/api.js",
+      "require": "./dist/parquet/api.cjs"
+    },
+    "./avro/api": {
+      "types": "./dist/avro-api.d.ts",
+      "import": "./dist/avro-api.js",
+      "require": "./dist/avro-api.cjs"
+    },
+    "./lance/api": {
+      "types": "./dist/lance-api.d.ts",
+      "import": "./dist/lance-api.js",
+      "require": "./dist/lance-api.cjs"
     }
   },
   "sideEffects": false,

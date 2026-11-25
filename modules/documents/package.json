@@ -110,14 +110,19 @@
       "require": "./dist/toml-bundled.cjs"
     },
     "./bson/bundled": {
-      "types": "./dist/bson-bundled.d.ts",
-      "import": "./dist/bson-bundled.js",
-      "require": "./dist/bson-bundled.cjs"
+      "types": "./dist/bson-bundled-entry.d.ts",
+      "import": "./dist/bson-bundled-entry.js",
+      "require": "./dist/bson-bundled-entry.cjs"
     },
     "./markdown/bundled": {
       "types": "./dist/markdown-bundled.d.ts",
       "import": "./dist/markdown-bundled.js",
       "require": "./dist/markdown-bundled.cjs"
+    },
+    "./bson/api": {
+      "types": "./dist/bson-api.d.ts",
+      "import": "./dist/bson-api.js",
+      "require": "./dist/bson-api.cjs"
     }
   },
   "sideEffects": false,

@@ -10,7 +10,7 @@ import {
   normalizeI3SRendererMetadata,
   normalizeI3SServiceMetadata,
   parseI3SSceneLayerMetadata
-} from '@loaders.gl/tiles-3d/i3s/bundled';
+} from '@loaders.gl/tiles-3d/i3s/api';
 import {I3SNodePageLoader} from '@loaders.gl/tiles-3d/i3s';
 import {
   I3SPointCloudSceneLayerSchema,

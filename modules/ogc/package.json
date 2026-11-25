@@ -43,9 +43,9 @@
       "require": "./dist/wms/metadata-entry.cjs"
     },
     "./wms/bundled": {
-      "types": "./dist/wms/bundled.d.ts",
-      "import": "./dist/wms/bundled.js",
-      "require": "./dist/wms/bundled.cjs"
+      "types": "./dist/wms/bundled-entry.d.ts",
+      "import": "./dist/wms/bundled-entry.js",
+      "require": "./dist/wms/bundled-entry.cjs"
     },
     "./gml-loader": {
       "types": "./dist/gml-loader.d.ts",
@@ -111,6 +111,11 @@
       "types": "./dist/gml/bundled.d.ts",
       "import": "./dist/gml/bundled.js",
       "require": "./dist/gml/bundled.cjs"
+    },
+    "./wms/api": {
+      "types": "./dist/wms/api.d.ts",
+      "import": "./dist/wms/api.js",
+      "require": "./dist/wms/api.cjs"
     }
   },
   "sideEffects": false,

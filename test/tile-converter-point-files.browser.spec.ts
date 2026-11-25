@@ -6,7 +6,7 @@ import {expect, test, vi} from 'vitest';
 import type {Mesh, MeshGeometry} from '@loaders.gl/core/schema';
 import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import {COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/bundled';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
 import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
 import {
   encodePotreeArchive,

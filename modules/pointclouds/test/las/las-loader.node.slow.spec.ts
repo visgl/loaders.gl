@@ -37,7 +37,7 @@ import {
   decodeLAZChunkInBatches,
   encodeLAZChunk,
   NeedsMoreData
-} from '@loaders.gl/pointclouds/las/bundled';
+} from '@loaders.gl/pointclouds/las/api';
 import {
   createLAZChunkDecoderCursor,
   decodeLAZChunkTable,

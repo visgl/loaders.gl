@@ -6,11 +6,8 @@ import {describe, expect, test} from 'vitest';
 import {encode} from '@loaders.gl/core';
 import {GZipCompressor} from '@loaders.gl/compression/gzip';
 import {PMTiles, type Source} from 'pmtiles';
-import {
-  encodePMTiles,
-  PMTilesWriter,
-  PMTilesLoaderWithParser
-} from '@loaders.gl/tiles/pmtiles/bundled';
+import {encodePMTiles} from '@loaders.gl/tiles/pmtiles/api';
+import {PMTilesWriter, PMTilesLoaderWithParser} from '@loaders.gl/tiles/pmtiles/bundled';
 import type {PMTilesEncodeOptions, PMTilesTile} from '@loaders.gl/tiles/pmtiles';
 
 const OPTIONS: PMTilesEncodeOptions = {

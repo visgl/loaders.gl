@@ -5,7 +5,7 @@ import {
   normalizeWFSCapabilities,
   normalizeWMSCapabilities,
   normalizeWMTSCapabilities
-} from '@loaders.gl/ogc/wms/bundled';
+} from '@loaders.gl/ogc/wms/api';
 
 test('normalizes WMS capabilities into shared service metadata', () => {
   const normalized = normalizeWMSCapabilities(

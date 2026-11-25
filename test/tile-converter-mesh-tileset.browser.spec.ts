@@ -5,7 +5,7 @@
 import {beforeAll, expect, test} from 'vitest';
 import {coreApi, parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/api';
 import {Tiles3DTilesetSchema} from '@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema';
 import {Matrix4} from '@math.gl/core/matrix';
 import {validateBytes} from 'gltf-validator';

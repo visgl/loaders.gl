@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {fromFile} from 'geotiff';
 import {resolvePath, isBrowser} from '@loaders.gl/core';
-import {loadGeoTiff} from '@loaders.gl/raster/geotiff/bundled';
+import {loadGeoTiff} from '@loaders.gl/raster/geotiff/api';
 const TIFF_URL = resolvePath('@loaders.gl/raster/test/geotiff/data/multi-channel.ome.tif');
 test('Creates correct TiffPixelSource for OME-TIFF.', async () => {
   if (isBrowser) {

@@ -13,7 +13,7 @@ import {
   consumeChromeTraceFileStream,
   streamChromeTraceArrowChunks,
   streamChromeTraceFileChunks
-} from '@loaders.gl/traces/chrome-trace/bundled';
+} from '@loaders.gl/traces/chrome-trace/api';
 import {createTraceStreamSession} from '@loaders.gl/traces/stream';
 
 import type {ChromeTraceEventSchema, ChromeTraceFileSchema} from '@loaders.gl/traces/chrome-trace';

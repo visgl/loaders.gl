@@ -7,7 +7,7 @@ import {COPCLoader} from '@loaders.gl/tiles-3d/copc/bundled';
 import type {COPCTileSource} from '@loaders.gl/tiles-3d/copc/bundled';
 import type {COPCLoaderOptions} from '@loaders.gl/tiles-3d/copc';
 import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
-import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/bundled';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/api';
 import type {
   PotreeDataset,
   PotreeWriterNode,
@@ -17,8 +17,8 @@ import type {
 import type {PotreeNodesSource} from '@loaders.gl/tiles-3d/potree/bundled';
 import type {Mesh, MeshArrowTable, MeshGeometry} from '@loaders.gl/core/schema';
 import {deduceMeshSchema} from '@loaders.gl/core/schema-utils';
-import {encodeZip, openZipArchive} from '@loaders.gl/archives/zip/bundled';
-import type {ZipArchive} from '@loaders.gl/archives/zip/bundled';
+import {encodeZip, openZipArchive} from '@loaders.gl/archives/zip/api';
+import type {ZipArchive} from '@loaders.gl/archives/zip/api';
 import type {ZipEntry} from '@loaders.gl/archives/zip';
 
 /** Explicit local-file input; no format is inferred from an extension. */

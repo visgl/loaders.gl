@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
-import {loadZarr} from '@loaders.gl/scientific/zarr/bundled';
+import {loadZarr} from '@loaders.gl/scientific/zarr/api';
 import {HTTPStore} from 'zarr';
 const CONTENT_BASE = new URL('/modules/scientific/test/zarr/data', window.location.href).href;
 const OME_FIXTURE = `${CONTENT_BASE}/ome.zarr`;

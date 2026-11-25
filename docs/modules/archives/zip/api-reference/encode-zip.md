@@ -5,7 +5,7 @@
 Both use the shared native record serializer, first-party CRC-32, and raw DEFLATE.
 
 ```typescript
-import {encodeZip, encodeZipInBatches} from '@loaders.gl/archives/zip/bundled';
+import {encodeZip, encodeZipInBatches} from '@loaders.gl/archives/zip/api';
 
 const bytes = await encodeZip({
   'tileset.json': new TextEncoder().encode(JSON.stringify(tileset)),

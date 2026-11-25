@@ -6,7 +6,8 @@ import {expect, test, vi} from 'vitest';
 import {validateBytes, validateString} from 'gltf-validator';
 import {load, encodeSync} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/scene/gltf';
-import {GLTFWriter, convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFWriter} from '@loaders.gl/scene/gltf/bundled';
+import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf/api';
 
 test.each([
   'Box',

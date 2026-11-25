@@ -32,6 +32,9 @@ test.each(formatPackages)('%s publishes deferred and bundled format loaders', ow
     .filter(key => /^\.\/[^/]+\/bundled$/.test(key))
     .map(key => manifest.name + key.slice(1, -'/bundled'.length));
   expect(formats.length).toBeGreaterThan(0);
+  const splitFormats = Object.keys(manifest.exports)
+    .filter(key => key.endsWith('/bundled') && manifest.exports[key.replace(/bundled$/, 'api')])
+    .map(key => manifest.name + key.slice(1, -'/bundled'.length));
   // Run native Node resolution against emitted modules, bypassing Vitest source aliases.
   const consumer = `
     import assert from 'node:assert/strict';
@@ -41,6 +44,12 @@ test.each(formatPackages)('%s publishes deferred and bundled format loaders', ow
     if (owner !== '@loaders.gl/core') {
       assert.deepEqual(Object.keys(await import(owner)), []);
       assert.deepEqual(Object.keys(require(owner)), []);
+    }
+    for (const format of ${JSON.stringify(splitFormats)}) {
+      const api = await import(format + '/api');
+      const bundled = await import(format + '/bundled');
+      assert.ok(Object.keys(api).length, format + '/api');
+      assert.deepEqual(Object.keys(api).filter(name => name in bundled), [], format);
     }
     for (const format of ${JSON.stringify(formats)}) {
       const metadata = await import(format);

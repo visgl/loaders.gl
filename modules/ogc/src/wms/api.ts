@@ -1,0 +1,86 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+export {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
+export {
+  normalizeServiceCRS,
+  areServiceCRSEquivalent,
+  selectServiceCRS,
+  getServiceCRSAxisOrder
+} from './crs-utils';
+export {
+  normalizeWMSCapabilities,
+  normalizeWMTSCapabilities,
+  normalizeWFSCapabilities,
+  normalizeTileServiceCapabilities,
+  normalizeVectorServiceCapabilities
+} from './service-capabilities';
+export {ServiceRequestError, ServiceRuntime} from './service-runtime';
+export {CapabilityGraph, discoverServiceGraph} from './capability-graph';
+export type {
+  CSWCapabilitiesLoaderOptions,
+  CSWCapabilities,
+  CSWDomain,
+  CSWRecords,
+  WMTSCapabilitiesLoaderOptions,
+  WMTSCapabilities,
+  WMSCapabilitiesLoaderOptions,
+  _WFSLoaderOptions,
+  _WFSCapabilities,
+  GMLLoaderOptions,
+  _GMLLoaderOptions,
+  WMSCapabilities,
+  WMSLayer,
+  WMSBoundingBox,
+  WMSDimension,
+  _WMSFeatureInfo,
+  _WMSLayerDescription,
+  WMTSLayer,
+  WMTSDimension,
+  WMTSTileMatrixSetLink,
+  WMTSTileMatrixLimits,
+  WMTSTileMatrixSet,
+  WMTSTileMatrix,
+  _GeoJSON,
+  CSWCatalogQuery,
+  CSWRecord,
+  CSWLoaderOptions,
+  WMSLoaderOptions,
+  WMTSLoaderOptions,
+  WMTSGetFeatureInfoParameters,
+  OGCTileMatrixSet,
+  OGCTileMatrix,
+  OGCTileMatrixSetCRS,
+  OGCTileMatrixSetOptions,
+  OGCTileMatrixLimits,
+  ServiceCRS,
+  FeaturePaginationOptions,
+  WFSVersion,
+  WFSGetFeatureParameters,
+  WFSLoaderOptions,
+  WFSFeatureType,
+  OGCAPICollection,
+  OGCAPILandingPage,
+  OGCAPILink,
+  OGCAPILoaderOptions,
+  OGCAPITileMatrixSetSummary,
+  OGCAPITileset,
+  OGCAPIEDRQueryParameters,
+  OGCAPIEDRLoaderOptions,
+  OGCAPICoveragesQueryParameters,
+  OGCAPICoveragesLoaderOptions,
+  WCSCoverage,
+  WCSCoverageMetadata,
+  WCSGetCoverageParameters,
+  WCSCoverageLoaderOptions,
+  GeoServiceType,
+  ServiceCapabilities,
+  ServiceRuntimeOptions,
+  ServiceTelemetryEvent,
+  ServiceSourceLoader,
+  ServiceEndpoint,
+  ServiceEndpointPreferences,
+  ImageType,
+  ManagedVectorSourceOptions
+} from './bundled';

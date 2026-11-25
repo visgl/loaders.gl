@@ -9,7 +9,8 @@ import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrows
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {query, queryInBatches} from '@loaders.gl/core/query';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {PARQUET_SOURCE_CAPABILITIES, ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {PARQUET_SOURCE_CAPABILITIES} from '@loaders.gl/tables/parquet/api';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {
   type ParquetBatch,
   type ParquetEncodedPageBatch,

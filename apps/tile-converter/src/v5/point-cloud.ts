@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {Tile3DWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles/api';
 import type {
   Mesh,
   MeshArrowTable,

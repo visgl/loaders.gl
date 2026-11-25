@@ -5,7 +5,7 @@
 import {
   CompositeImageManifestSchema,
   ImageTextureManifestSchema
-} from '@loaders.gl/images/texture/bundled';
+} from '@loaders.gl/images/texture/api';
 import {describe, expect, it} from 'vitest';
 import {z} from 'zod';
 

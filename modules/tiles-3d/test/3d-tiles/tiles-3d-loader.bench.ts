@@ -6,7 +6,7 @@ import {CachedUriResolver} from '@loaders.gl/core/loader-utils';
 import {
   createImplicitSubtreeReference,
   materializeImplicitSubtree
-} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+} from '@loaders.gl/tiles-3d/3d-tiles/api';
 import {
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree

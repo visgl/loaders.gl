@@ -10,7 +10,8 @@ import type {RasterData, RasterViewport} from '@loaders.gl/core/loader-utils';
 import {RasterSet} from '@loaders.gl/tiles/raster-set';
 import type {GetOMEZarrParameters, OMEZarrSourceLoaderMetadata, ZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr';
 import type {OMEZarrImageSource} from '@loaders.gl/scientific/zarr/bundled';
-import {OMEZarrLoader, loadZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr/bundled';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
+import {loadZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr/api';
 
 type AppProps = {
   hideChrome?: boolean;

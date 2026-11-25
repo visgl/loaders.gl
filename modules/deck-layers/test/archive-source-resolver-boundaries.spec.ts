@@ -4,7 +4,7 @@
 
 import {beforeEach, expect, test, vi} from 'vitest';
 import {deflateRaw, inflateRaw, gzip} from 'pako';
-import {encodeZip} from '@loaders.gl/archives/zip/bundled';
+import {encodeZip} from '@loaders.gl/archives/zip/api';
 import {type ZipEncodeEntry} from '@loaders.gl/archives/zip';
 import {encodeIndexedZip} from '@loaders.gl/archives/indexed-zip-writer';
 import {BlobFile} from '@loaders.gl/core/loader-utils';

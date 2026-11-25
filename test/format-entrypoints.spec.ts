@@ -7,6 +7,7 @@ import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
 import {JSONLoader} from '@loaders.gl/documents/json';
 import * as kml from '@loaders.gl/geospatial/kml/bundled';
+import * as kmlAPI from '@loaders.gl/geospatial/kml/api';
 import * as wkb from '@loaders.gl/geospatial/wkb';
 import * as wkt from '@loaders.gl/geospatial/wkt';
 import {
@@ -42,9 +43,9 @@ test('KML keeps other formats separate and marks low-level helpers experimental'
   expect(kml).not.toHaveProperty('openKMZArchive');
   expect(kml).not.toHaveProperty('parseKMLDocument');
   expect(kml).not.toHaveProperty('resolveKMZResourcePath');
-  expect(kml._openKMZArchive).toBeTypeOf('function');
-  expect(kml._parseKMLDocument).toBeTypeOf('function');
-  expect(kml._resolveKMZResourcePath).toBeTypeOf('function');
+  expect(kmlAPI._openKMZArchive).toBeTypeOf('function');
+  expect(kmlAPI._parseKMLDocument).toBeTypeOf('function');
+  expect(kmlAPI._resolveKMZResourcePath).toBeTypeOf('function');
 });
 
 test('WKB format groups binary dialects and bundled parsers', () => {

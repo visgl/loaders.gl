@@ -50,9 +50,9 @@
       "require": "./dist/gltf/metadata-entry.cjs"
     },
     "./gltf/bundled": {
-      "types": "./dist/gltf/bundled.d.ts",
-      "import": "./dist/gltf/bundled.js",
-      "require": "./dist/gltf/bundled.cjs"
+      "types": "./dist/gltf/bundled-entry.d.ts",
+      "import": "./dist/gltf/bundled-entry.js",
+      "require": "./dist/gltf/bundled-entry.cjs"
     },
     "./gltf/mesh-arrow": {
       "types": "./dist/gltf/mesh-arrow.d.ts",
@@ -119,9 +119,9 @@
       "require": "./dist/stl/metadata-entry.cjs"
     },
     "./usd/bundled": {
-      "types": "./dist/usd-bundled.d.ts",
-      "import": "./dist/usd-bundled.js",
-      "require": "./dist/usd-bundled.cjs"
+      "types": "./dist/usd-bundled-entry.d.ts",
+      "import": "./dist/usd-bundled-entry.js",
+      "require": "./dist/usd-bundled-entry.cjs"
     },
     "./mtl/bundled": {
       "types": "./dist/mtl-bundled.d.ts",
@@ -134,9 +134,9 @@
       "require": "./dist/glb-bundled.cjs"
     },
     "./draco/bundled": {
-      "types": "./dist/draco-bundled.d.ts",
-      "import": "./dist/draco-bundled.js",
-      "require": "./dist/draco-bundled.cjs"
+      "types": "./dist/draco-bundled-entry.d.ts",
+      "import": "./dist/draco-bundled-entry.js",
+      "require": "./dist/draco-bundled-entry.cjs"
     },
     "./materialx/bundled": {
       "types": "./dist/materialx-bundled.d.ts",
@@ -147,6 +147,21 @@
       "types": "./dist/stl-bundled.d.ts",
       "import": "./dist/stl-bundled.js",
       "require": "./dist/stl-bundled.cjs"
+    },
+    "./gltf/api": {
+      "types": "./dist/gltf/api.d.ts",
+      "import": "./dist/gltf/api.js",
+      "require": "./dist/gltf/api.cjs"
+    },
+    "./usd/api": {
+      "types": "./dist/usd-api.d.ts",
+      "import": "./dist/usd-api.js",
+      "require": "./dist/usd-api.cjs"
+    },
+    "./draco/api": {
+      "types": "./dist/draco-api.d.ts",
+      "import": "./dist/draco-api.js",
+      "require": "./dist/draco-api.cjs"
     }
   },
   "sideEffects": false,

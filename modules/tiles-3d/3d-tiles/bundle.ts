@@ -96,7 +96,9 @@ export {
 export {
   Tiles3DArchiveSource,
   Tile3DWriter,
-  Tiles3DArchiveWriter,
+  Tiles3DArchiveWriter
+} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+export {
   Tile3DFeatureTable,
   Tile3DBatchTable,
   TILE3D_TYPE,
@@ -108,7 +110,7 @@ export {
   createTile3DStyleInput,
   getTile3DBatchTableProperties,
   getTile3DStyleProperty
-} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+} from '@loaders.gl/tiles-3d/3d-tiles/api';
 export type {
   Tiles3DArchiveFileLoaderOptions,
   Tiles3DArchiveSourceInput,

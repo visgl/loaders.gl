@@ -10,7 +10,7 @@ import {
   encodeZip,
   parseHashTable,
   composeHashFile
-} from '@loaders.gl/archives/zip/bundled';
+} from '@loaders.gl/archives/zip/api';
 import {encodeIndexedZip} from '@loaders.gl/archives/indexed-zip-writer';
 
 /** Exposes only the common transport for owning-module conformance. */

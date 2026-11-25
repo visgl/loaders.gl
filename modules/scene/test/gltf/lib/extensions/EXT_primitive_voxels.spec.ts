@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {getVoxelPrimitives} from '@loaders.gl/scene/gltf/bundled';
+import {getVoxelPrimitives} from '@loaders.gl/scene/gltf/api';
 import {decode} from '../../../../src/gltf/lib/extensions/EXT_primitive_voxels';
 
 test('EXT_primitive_voxels exposes a lazy descriptor', async () => {

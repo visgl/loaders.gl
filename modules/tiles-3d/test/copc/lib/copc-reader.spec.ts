@@ -14,7 +14,7 @@ import {
   parseCOPCHierarchy,
   parseCOPCInfo,
   parseCOPCKey
-} from '@loaders.gl/tiles-3d/copc/bundled';
+} from '@loaders.gl/tiles-3d/copc/api';
 import {describe, expect, test} from 'vitest';
 
 const COPC_URL = new URL('../data/ellipsoid.copc.laz', import.meta.url).href;

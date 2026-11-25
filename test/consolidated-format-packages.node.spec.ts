@@ -147,7 +147,7 @@ test('emitted bundled and default ESM entrypoints keep valid index references', 
     [
       '--input-type=module',
       '--eval',
-      `await Promise.all(['@loaders.gl/services/bundled', '@loaders.gl/services', '@loaders.gl/splats/bundled', '@loaders.gl/splats'].map(specifier => import(specifier))); process.stdout.write('loaded');`
+      `await Promise.all(['@loaders.gl/services/api', '@loaders.gl/services', '@loaders.gl/splats/bundled', '@loaders.gl/splats'].map(specifier => import(specifier))); process.stdout.write('loaded');`
     ],
     {encoding: 'utf8'}
   );

@@ -17,7 +17,8 @@ import {NetCDFSourceLoader} from '@loaders.gl/scientific';
 import {OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
 import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy/bundled';
 import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf/bundled';
-import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr/bundled';
+import {OMEZarrImageSource} from '@loaders.gl/scientific/zarr/bundled';
+import {loadZarr} from '@loaders.gl/scientific/zarr/api';
 ```
 
 The package groups independently documented formats and adapters:
