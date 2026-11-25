@@ -45,9 +45,9 @@
       "require": "./dist/index.cjs"
     },
     "./api": {
-      "types": "./dist/tileset.d.ts",
-      "import": "./dist/tileset.js",
-      "require": "./dist/tileset.cjs"
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
     },
     "./copc": {
       "types": "./dist/copc/metadata-entry.d.ts",

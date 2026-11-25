@@ -146,7 +146,8 @@
     "pmtiles-pre-build": "npm run pmtiles-build-bundle && npm run pmtiles-build-bundle-dev",
     "pmtiles-build-bundle": "node ../../scripts/build-codec-bundle.mjs ./pmtiles/bundle.ts --output=dist/pmtiles/dist.min.js",
     "pmtiles-build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./pmtiles/bundle.ts --env=dev --output=dist/pmtiles/dist.dev.js",
-    "build-worker-mvt": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-mvt": "node ../../scripts/build-codec-worker.mjs src/mvt/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "prepare-cjs-assets": "npm run copy-mlt-decoder"
   },
   "dependencies": {
     "@loaders.gl/compression": "5.0.0",

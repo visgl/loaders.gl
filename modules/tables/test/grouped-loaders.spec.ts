@@ -34,7 +34,7 @@ import {JSONTableLoaderWithParser} from '@loaders.gl/tables/json/bundled';
 import {NDJSONLoader} from '@loaders.gl/tables/json';
 import {NDJSONLoaderWithParser} from '@loaders.gl/tables/json/bundled';
 
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
 import {GeoJSONLoaderWithParser} from '@loaders.gl/tables/geojson/bundled';
 
 import {NDGeoJSONLoader} from '@loaders.gl/tables/json';
@@ -83,11 +83,10 @@ test('grouped JSON metadata supports synchronous and asynchronous entrypoints', 
   expect(parseSync(input, JSONLoaderWithParser)).toEqual({value: 7});
 });
 
-test('GeoJSON metadata exposes the worker transport hooks', () => {
-  expect(GeoJSONLoader.serializeWorkerResult).toBe(GeoJSONLoaderWithParser.serializeWorkerResult);
-  expect(GeoJSONLoader.deserializeWorkerResult).toBe(
-    GeoJSONLoaderWithParser.deserializeWorkerResult
-  );
+test('Preloaded GeoJSON parser exposes the worker transport hooks', async () => {
+  const parser = await GeoJSONLoader.preload();
+  expect(parser.serializeWorkerResult).toBe(GeoJSONLoaderWithParser.serializeWorkerResult);
+  expect(parser.deserializeWorkerResult).toBe(GeoJSONLoaderWithParser.deserializeWorkerResult);
 });
 
 test('core asynchronously constructs grouped Lance and ORC sources from metadata', async () => {
