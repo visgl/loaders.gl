@@ -70,7 +70,8 @@ If application code needs raw pixels, convert the loaded image explicitly:
 ```typescript
 import '@loaders.gl/core/polyfills'; // Only required if loading images under Node.js
 import {load} from '@loaders.gl/core';
-import {ImageLoader, getImageData} from '@loaders.gl/images/image';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {getImageData} from '@loaders.gl/images/image/bundled';
 
 const image = await load('image.jpeg', ImageLoader);
 const imageData = getImageData(image);

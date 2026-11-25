@@ -32,7 +32,7 @@ export type SHPLoaderOptions = StrictLoaderOptions & {
 
 /** Preloads the parser-bearing SHP loader implementation. */
 async function preloadSHPLoader() {
-  const {SHPLoaderWithParser} = await import('@loaders.gl/geospatial/shp');
+  const {SHPLoaderWithParser} = await import('@loaders.gl/geospatial/shp/bundled');
   return SHPLoaderWithParser;
 }
 

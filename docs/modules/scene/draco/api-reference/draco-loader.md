@@ -123,7 +123,7 @@ the metadata-only root import.
 ```typescript
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/scene/draco';
-import {getDracoLibraryOptions} from '@loaders.gl/scene/draco';
+import {getDracoLibraryOptions} from '@loaders.gl/scene/draco/bundled';
 
 const libraries = getDracoLibraryOptions({decoderProfile: 'gltf'});
 const mesh = await parse(bytes, DracoLoader, {

@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 import {DracoLoader} from '@loaders.gl/scene/draco';
-import * as draco from '@loaders.gl/scene';
+import * as draco from '@loaders.gl/scene/draco';
 import * as dracoParser from '@loaders.gl/scene/draco';
 import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
 import {validateArrowTableSchema} from '@math.gl/core/arrow';

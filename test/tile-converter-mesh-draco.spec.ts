@@ -5,7 +5,8 @@
 import {expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {validateBytes} from 'gltf-validator';
-import {GLBLoader, GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLBLoader, GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
 import {
   convertTileset,
   createMeshConversionCodec,
@@ -15,7 +16,7 @@ import {
   type MeshConversionInput,
   type EncodedMeshConversionResource
 } from '@loaders.gl/tile-converter/v5/browser';
-import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 
 /** Creates two adjacent triangles with exact but irregular coordinates and unique appearance. */

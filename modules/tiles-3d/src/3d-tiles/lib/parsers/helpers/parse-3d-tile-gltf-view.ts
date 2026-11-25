@@ -12,7 +12,8 @@
 // - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
 
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
-import {GLTFLoader, _getMemoryUsageGLTF} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {_getMemoryUsageGLTF} from '@loaders.gl/scene/gltf/bundled';
 import {LoaderContext, sliceArrayBuffer, parseFromContext} from '@loaders.gl/core/loader-utils';
 import {Tiles3DTileContent} from '../../../types';
 import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';

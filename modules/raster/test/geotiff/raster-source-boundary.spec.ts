@@ -10,7 +10,7 @@ import type {
 import {expect, test, vi} from 'vitest';
 import {sampleRaster} from '@loaders.gl/core/loader-utils';
 import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source';
-import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';
+import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';
 import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-loader';
 
 /** Creates the minimal viewport shape accepted by raster sources. */

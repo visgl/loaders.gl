@@ -12,9 +12,9 @@ import {
   COPCWriter,
   loadCOPCHierarchyPage,
   loadCOPCNodeData,
-  openCOPC,
-  type COPCRangeReader
-} from '@loaders.gl/tiles-3d/copc';
+  openCOPC
+} from '@loaders.gl/tiles-3d/copc/bundled';
+import {type COPCRangeReader} from '@loaders.gl/tiles-3d/copc';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 import {decodeLAZChunk, decodeLAZChunkTable} from '@loaders.gl/core/loader-utils';
 import {

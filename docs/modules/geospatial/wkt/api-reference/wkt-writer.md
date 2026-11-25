@@ -62,7 +62,7 @@ npm install @loaders.gl/core
 ## Usage
 
 ```typescript
-import {WKTWriter} from '@loaders.gl/geospatial/wkt';
+import {WKTWriter} from '@loaders.gl/geospatial/wkt/bundled';
 ```
 
 ## Options

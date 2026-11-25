@@ -4,7 +4,8 @@
 
 import {beforeAll, expect, test} from 'vitest';
 import {fetchFile, parse} from '@loaders.gl/core';
-import {GLBLoader, GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLBLoader, GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
 import {GLTF2Schema} from '@loaders.gl/scene/gltf/schema';
 import type {MeshAttribute, MeshGeometry} from '@loaders.gl/core/schema';
 import {

@@ -3,15 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {CrunchLoader} from '../crunch-loader';
-import {parseCrunch} from '../lib/parsers/parse-crunch';
+import {CrunchLoader} from '../crunch/bundled';
 
-/**
- * Loader for the Crunch compressed texture container format
- */
-export const CrunchLoaderWithParser = {
-  ...CrunchLoader,
-  parse: parseCrunch
-};
-
-createLoaderWorker(CrunchLoaderWithParser);
+createLoaderWorker(CrunchLoader);

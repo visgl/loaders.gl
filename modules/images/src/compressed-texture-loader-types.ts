@@ -20,7 +20,7 @@ export type CompressedTextureLoaderOptions = StrictLoaderOptions &
 
 /** Preloads the parser-bearing compressed texture loader implementation. */
 async function preload() {
-  const {CompressedTextureLoaderWithParser} = await import('@loaders.gl/images/texture');
+  const {CompressedTextureLoaderWithParser} = await import('@loaders.gl/images/texture/bundled');
   return CompressedTextureLoaderWithParser;
 }
 

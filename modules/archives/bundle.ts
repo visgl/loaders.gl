@@ -85,9 +85,8 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
+export {ZipFormat, ZipLoader} from '@loaders.gl/archives/zip';
 export {
-  ZipFormat,
-  ZipLoader,
   ZipWriter,
   encodeIndexedZip,
   addOneFile,
@@ -100,7 +99,7 @@ export {
   openZipArchive,
   encodeZip,
   encodeZipInBatches
-} from '@loaders.gl/archives/zip';
+} from '@loaders.gl/archives/zip/bundled';
 export type {
   ZipFileMap,
   ZipLoaderOptions,
@@ -122,4 +121,5 @@ export type {
   ZipEncodeOptions
 } from '@loaders.gl/archives/zip';
 
-export {TarBuilder, TarLoader, TarWriter} from '@loaders.gl/archives/tar';
+export {TarBuilder, TarWriter} from '@loaders.gl/archives/tar/bundled';
+export {TarLoader} from '@loaders.gl/archives/tar';

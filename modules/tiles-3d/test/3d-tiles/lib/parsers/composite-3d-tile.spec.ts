@@ -7,7 +7,8 @@
 
 import {expect, test} from 'vitest';
 import {encodeSync, load, parse, parseSync} from '@loaders.gl/core';
-import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 const COMPOSITE_URL =
   '@loaders.gl/tiles-3d/3d-tiles/test/data/CesiumJS/Composite/Composite/tileset.json';

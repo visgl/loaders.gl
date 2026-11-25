@@ -63,7 +63,7 @@ the source's protocol-specific methods.
 ## Usage
 
 ```ts
-import {ServiceRuntime} from '@loaders.gl/ogc/wms';
+import {ServiceRuntime} from '@loaders.gl/ogc/wms/bundled';
 
 const runtime = new ServiceRuntime({
   headers: {Authorization: `Bearer ${token}`},

@@ -7,20 +7,20 @@ import {encode, encodeSync, parse, parseInBatches} from '@loaders.gl/core';
 import * as arrow from 'apache-arrow';
 import {describe, expect, it} from 'vitest';
 
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 import {
-  ChromeTraceLoader,
   ChromeTraceWriter,
-  PerfettoTraceLoader,
-  PerfettoTraceWriter,
   consumeChromeTraceArrowStream,
   consumeChromeTraceEventStream,
   consumeChromeTraceFileStream,
-  createTraceStreamSession,
   parseChromeTrace,
   streamChromeTraceArrowChunks,
   streamChromeTraceEventChunks,
   streamChromeTraceFileChunks
-} from '../src';
+} from '@loaders.gl/traces/chrome-trace/bundled';
+import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
+import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
+import {createTraceStreamSession} from '@loaders.gl/traces/stream';
 import {ChromeTraceLoaderWithParser} from '../src/chrome-trace-loader';
 import {PerfettoTraceLoaderWithParser} from '../src/perfetto-trace-loader';
 import {PerfettoTraceParser} from '../src/perfetto-trace-parser';
@@ -29,10 +29,10 @@ import {streamProtobufMessages} from '../src/perfetto-protobuf';
 import type {
   ChromeTraceEventArrowTable,
   ChromeTraceEventSchema,
-  ChromeTraceFileSchema,
-  PerfettoTrace,
-  TraceStreamChunk
-} from '../src';
+  ChromeTraceFileSchema
+} from '@loaders.gl/traces/chrome-trace';
+import type {PerfettoTrace} from '@loaders.gl/traces/perfetto';
+import type {TraceStreamChunk} from '@loaders.gl/traces/stream';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
 setLoaderOptions({core: {worker: false}});

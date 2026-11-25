@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GeoJSONLoader} from '@loaders.gl/tables/geojson';
+import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 import {GeoArrowLoader} from '@loaders.gl/tables/geoarrow';
 import {JSONLoader} from '@loaders.gl/documents/json';
 import * as kml from '@loaders.gl/geospatial/kml';
@@ -16,7 +16,7 @@ import {
 } from '@loaders.gl/geospatial/wkb/bundled';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
-import {NetCDFSource} from '@loaders.gl/scientific/netcdf';
+import {NetCDFSource} from '@loaders.gl/scientific/netcdf/bundled';
 
 test.each([
   GeoJSONLoader,

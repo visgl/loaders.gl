@@ -1,6 +1,6 @@
 import {fetchFile} from '@loaders.gl/core';
-import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s';
-import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {
   ArcGISSceneServerSource,
   ArcGISSceneServerLoader,

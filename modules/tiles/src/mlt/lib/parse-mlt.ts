@@ -29,7 +29,7 @@ import {
   getDataTypeFromArray
 } from '@loaders.gl/core/schema-utils';
 import type {Feature as MLTFeature} from '@maplibre/mlt';
-import * as maplibreMLT from '@maplibre/mlt';
+import maplibreMLT from '../libs/mlt-decoder.cjs';
 
 import type {MLTLoaderOptions} from '../mlt-loader';
 import {MLT_DEFAULT_OPTIONS} from '../mlt-loader';

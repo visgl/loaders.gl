@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {hasSameDracoMeshTriangles} from '@loaders.gl/scene/draco';
+import {hasSameDracoMeshTriangles} from '@loaders.gl/scene/draco/bundled';
 
 test('Draco triangle verification preserves winding, multiplicity and vertex attributes', () => {
   const attributes = {

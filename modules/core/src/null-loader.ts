@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {NullLoaderMetadata} from './null-loader-metadata';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {LoaderContext} from '@loaders.gl/core/loader-utils';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type NullLoaderOptions = LoaderOptions & {
   null?: {};
@@ -17,15 +14,7 @@ export type NullLoaderOptions = LoaderOptions & {
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
 export const NullLoader = {
-  dataType: null,
-  batchType: null,
-
-  name: 'Null loader',
-  id: 'null',
-  module: 'core',
-  version: VERSION,
-  mimeTypes: ['application/x.empty'],
-  extensions: ['null'],
+  ...NullLoaderMetadata,
   parse: async (
     arrayBuffer: ArrayBufferLike | ArrayBufferView,
     options?: NullLoaderOptions,
@@ -36,10 +25,6 @@ export const NullLoader = {
     for await (const batch of asyncIterator) {
       yield parseSync(batch, options, context);
     }
-  },
-  tests: [() => false],
-  options: {
-    null: {}
   }
 } as const satisfies LoaderWithParser<null, null, NullLoaderOptions>;
 

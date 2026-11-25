@@ -3,7 +3,8 @@
 Read and write OpenTelemetry traces in JSON and Protobuf form.
 
 ```typescript
-import {OtlpTraceJsonLoader, OtlpTraceLoader, OtlpTraceJsonWriter, OtlpTraceWriter} from '@loaders.gl/traces/otlp';
+import {OtlpTraceJsonLoader, OtlpTraceLoader} from '@loaders.gl/traces/otlp';
+import {OtlpTraceJsonWriter, OtlpTraceWriter} from '@loaders.gl/traces/otlp/bundled';
 ```
 
 ## API

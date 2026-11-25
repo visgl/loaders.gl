@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FastJSONLoader} from '@loaders.gl/tables/json';
+import {FastJSONLoader} from '@loaders.gl/tables/json/bundled';
 import {JSONLoader} from '@loaders.gl/tables/json';
 import {load, loadInBatches, parse} from '@loaders.gl/core';
 

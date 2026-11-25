@@ -4,7 +4,7 @@
 
 import {expect, test} from 'vitest';
 import * as jsonModule from '@loaders.gl/tables/json';
-import {FastJSONLoader} from '@loaders.gl/tables/json';
+import {FastJSONLoader} from '@loaders.gl/tables/json/bundled';
 
 test('JSON format exposes the primary metadata loaders', () => {
   expect(jsonModule.JSONLoader.id).toBe('json');

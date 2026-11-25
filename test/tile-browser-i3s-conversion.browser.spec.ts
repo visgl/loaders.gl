@@ -3,8 +3,9 @@ import {userEvent} from 'vitest/browser';
 import {parse} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/scene/gltf';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles';
-import {parseSLPKArchive, I3SAttributeLoader} from '@loaders.gl/tiles-3d/i3s';
+import {Tiles3DArchive} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {parseSLPKArchive} from '@loaders.gl/tiles-3d/i3s/bundled';
+import {I3SAttributeLoader} from '@loaders.gl/tiles-3d/i3s';
 import {
   inspectI3SConversionInput,
   convertSelectedI3SContents

@@ -90,7 +90,7 @@ Every service source can be created through the loaders.gl core API:
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {WMSLoader} from '@loaders.gl/ogc/wms';
+import {WMSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const source = createDataSourceSync(wmsUrl, [WMSLoader], {
   wms: {wmsParameters: {layers: ['workspace:roads']}}
@@ -123,7 +123,7 @@ Visual service sources work through one generic `SourceLayer`:
 
 ```ts
 import {SourceLayer} from '@loaders.gl/deck-layers';
-import {WMTSLoader} from '@loaders.gl/ogc/wms';
+import {WMTSLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const layer = new SourceLayer({
   id: 'satellite',

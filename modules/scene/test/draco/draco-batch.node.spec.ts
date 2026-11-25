@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {encodeDracoBatch, encodeDracoInBatches} from '@loaders.gl/scene/draco';
+import {encodeDracoBatch, encodeDracoInBatches} from '@loaders.gl/scene/draco/bundled';
 import draco3d from 'draco3d';
 import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 

@@ -11,7 +11,8 @@ import type {MapViewState} from '@deck.gl/core';
 
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import type {RasterBoundingBox, RasterData} from '@loaders.gl/core/loader-utils';
-import {GeoZarrLoader, type GeoZarrSourceMetadata} from '@loaders.gl/scientific/zarr';
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
+import {type GeoZarrSourceMetadata} from '@loaders.gl/scientific/zarr';
 
 import {Map} from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';

@@ -91,7 +91,9 @@ export {
   ThreeTZFormat,
   Tiles3DLoader,
   Tile3DSubtreeLoader,
-  Tiles3DArchiveFileLoader,
+  Tiles3DArchiveFileLoader
+} from '@loaders.gl/tiles-3d/3d-tiles';
+export {
   Tiles3DArchiveSource,
   Tile3DWriter,
   Tiles3DArchiveWriter,
@@ -106,7 +108,7 @@ export {
   createTile3DStyleInput,
   getTile3DBatchTableProperties,
   getTile3DStyleProperty
-} from '@loaders.gl/tiles-3d/3d-tiles';
+} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 export type {
   Tiles3DArchiveFileLoaderOptions,
   Tiles3DArchiveSourceInput,

@@ -36,8 +36,8 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/deck-layers\""
   },
   "dependencies": {
-    "@deck.gl/core": "10.0.0-alpha.1",
-    "@deck.gl/geo-layers": "10.0.0-alpha.1",
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch",
+    "@deck.gl/geo-layers": "patch:@deck.gl/geo-layers@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-geo-layers-npm-10.0.0-alpha.1-6ab2b2ba95.patch",
     "@deck.gl/layers": "10.0.0-alpha.1",
     "@loaders.gl/archives": "5.0.0",
     "@loaders.gl/compression": "5.0.0",

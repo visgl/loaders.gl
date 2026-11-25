@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getBinaryImageMetadata} from '@loaders.gl/images/image';
+import {getBinaryImageMetadata} from '@loaders.gl/images/image/bundled';
 import type {MeshAttribute} from '@loaders.gl/core/schema';
 
 /** Encoded base-color image and the supported glTF UV/sampling controls. */

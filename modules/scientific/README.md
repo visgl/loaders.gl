@@ -8,13 +8,16 @@ Supported formats: NPY, NetCDF, NetCDF-4, Zarr, GeoZarr, OME-Zarr, SpatialData, 
 npm install @loaders.gl/core @loaders.gl/scientific
 ```
 
-The package root exports lightweight loader metadata. Async loaders can preload their parser when needed. Import format implementations explicitly when you need a parser or source class directly:
+The format subpaths export metadata loaders. Async loaders can preload their parser when needed. Import format implementations explicitly when you need a parser or source class directly:
 
 ```ts
-import {NPYLoader, NetCDFLoader, NetCDFSourceLoader, OMEZarrLoader} from '@loaders.gl/scientific';
-import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy';
-import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf';
-import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr';
+import {NPYLoader} from '@loaders.gl/scientific/npy';
+import {NetCDFLoader} from '@loaders.gl/scientific/netcdf';
+import {NetCDFSourceLoader} from '@loaders.gl/scientific';
+import {OMEZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
+import {NPYLoaderWithParser} from '@loaders.gl/scientific/npy/bundled';
+import {NetCDFLoaderWithParser} from '@loaders.gl/scientific/netcdf/bundled';
+import {OMEZarrImageSource, loadZarr} from '@loaders.gl/scientific/zarr/bundled';
 ```
 
 The package groups independently documented formats and adapters:

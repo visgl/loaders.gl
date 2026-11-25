@@ -8,13 +8,9 @@ import {createRoot} from 'react-dom/client';
 import {createDataSourceSync} from '@loaders.gl/core';
 import type {RasterData, RasterViewport} from '@loaders.gl/core/loader-utils';
 import {RasterSet} from '@loaders.gl/tiles/raster-set';
-import type {
-  GetOMEZarrParameters,
-  OMEZarrImageSource,
-  OMEZarrSourceLoaderMetadata,
-  ZarrConsolidatedMetadata
-} from '@loaders.gl/scientific/zarr';
-import {OMEZarrLoader, loadZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr';
+import type {GetOMEZarrParameters, OMEZarrSourceLoaderMetadata, ZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr';
+import type {OMEZarrImageSource} from '@loaders.gl/scientific/zarr/bundled';
+import {OMEZarrLoader, loadZarrConsolidatedMetadata} from '@loaders.gl/scientific/zarr/bundled';
 
 type AppProps = {
   hideChrome?: boolean;

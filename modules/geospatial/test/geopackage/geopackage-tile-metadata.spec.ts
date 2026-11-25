@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import {expect, test} from 'vitest';
-import {GeoPackageDataSource} from '@loaders.gl/geospatial/geopackage';
-import {GeoPackageDataSource as CanonicalGeoPackageDataSource} from '@loaders.gl/geospatial/geopackage';
+import {GeoPackageDataSource} from '@loaders.gl/geospatial/geopackage/bundled';
+import {GeoPackageDataSource as CanonicalGeoPackageDataSource} from '@loaders.gl/geospatial/geopackage/bundled';
 
 test('GeoPackage compatibility entrypoint exposes the canonical tile reader', () => {
   expect(GeoPackageDataSource).toBe(CanonicalGeoPackageDataSource);

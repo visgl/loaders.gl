@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
 
 test.each([

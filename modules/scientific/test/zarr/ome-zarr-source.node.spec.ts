@@ -9,7 +9,7 @@ import {
   OMEZarrImageSource,
   OMEZarrLoader,
   loadZarrConsolidatedMetadata
-} from '@loaders.gl/scientific/zarr';
+} from '@loaders.gl/scientific/zarr/bundled';
 const CONTENT_BASE = resolvePath('@loaders.gl/scientific/test/zarr/data');
 const OME_FIXTURE = `${CONTENT_BASE}/ome.zarr`;
 const OME_FIXTURE_URL = pathToFileURL(OME_FIXTURE).href;

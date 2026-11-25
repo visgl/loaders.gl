@@ -4,7 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {decodeExtensions, encodeExtensions} from '../../../../src/gltf/lib/api/gltf-extensions';
-import {GLTFScenegraph, createExtMeshFeatures, type GLTF} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph, createExtMeshFeatures} from '@loaders.gl/scene/gltf/bundled';
+import {type GLTF} from '@loaders.gl/scene/gltf';
 const binaryBufferData = [
   0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 33, 223, 70, 43, 39,
   58, 199, 113, 55, 81, 71, 94, 21, 60, 71, 154, 68, 219, 198, 113, 55, 81, 199, 183, 210, 225, 198,

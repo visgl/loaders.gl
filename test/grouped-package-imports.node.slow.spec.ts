@@ -15,24 +15,24 @@ const REPOSITORY_ROOT = process.cwd();
 test.each([
   ['tables', 'ParquetLoader', 'parquet', 'ParquetLoader'],
   ['tables', 'GeoParquetLoader', 'parquet', 'GeoParquetLoader'],
-  ['tables', 'ORCLoader', 'orc', 'ORCLoaderWithParser'],
-  ['tables', 'LanceLoader', 'lance', 'LanceLoaderWithParser'],
-  ['tables', 'JSONLoader', 'json', 'JSONLoaderWithParser'],
-  ['tables', 'ArrowLoader', 'arrow', 'ArrowLoaderWithParser'],
-  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoaderWithParser'],
-  ['geospatial', 'GeoPackageLoader', 'geopackage', 'GeoPackageLoaderWithParser'],
-  ['tables', 'CSVLoader', 'csv', 'CSVLoaderWithParser'],
-  ['pointclouds', 'PCDLoader', 'pcd', 'PCDLoaderWithParser'],
-  ['pointclouds', 'PLYLoader', 'ply', 'PLYLoaderWithParser'],
-  ['scene', 'OBJLoader', 'obj', 'OBJLoaderWithParser'],
-  ['scientific', 'NPYLoader', 'npy', 'NPYLoaderWithParser'],
-  ['geospatial', 'KMLLoader', 'kml', 'KMLLoaderWithParser']
+  ['tables', 'ORCLoader', 'orc', 'ORCLoader'],
+  ['tables', 'LanceLoader', 'lance', 'LanceLoader'],
+  ['tables', 'JSONLoader', 'json', 'JSONLoader'],
+  ['tables', 'ArrowLoader', 'arrow', 'ArrowLoader'],
+  ['geospatial', 'FlatGeobufLoader', 'flatgeobuf', 'FlatGeobufLoader'],
+  ['geospatial', 'GeoPackageLoader', 'geopackage', 'GeoPackageLoader'],
+  ['tables', 'CSVLoader', 'csv', 'CSVLoader'],
+  ['pointclouds', 'PCDLoader', 'pcd', 'PCDLoader'],
+  ['pointclouds', 'PLYLoader', 'ply', 'PLYLoader'],
+  ['scene', 'OBJLoader', 'obj', 'OBJLoader'],
+  ['scientific', 'NPYLoader', 'npy', 'NPYLoader'],
+  ['geospatial', 'KMLLoader', 'kml', 'KMLLoader']
 ])(
   'published %s %s metadata preloads through its format export',
   (group, metadata, parserEntry, parser) => {
     // A separate Node process bypasses Vitest source aliases and checks the published layout.
-    const metadataPath = group === 'tables' ? `${group}/${parserEntry}` : group;
-    const parserPath = parserEntry === 'parquet' ? 'parquet/bundled' : parserEntry;
+    const metadataPath = `${group}/${parserEntry}`;
+    const parserPath = `${parserEntry}/bundled`;
     const source = `import {${metadata}} from '@loaders.gl/${metadataPath}';
     import {${parser} as bundledParser} from '@loaders.gl/${group}/${parserPath}';
     if (await ${metadata}.preload() !== bundledParser) process.exit(1);
@@ -49,8 +49,8 @@ test.each([
 );
 
 test.each([
-  ['geospatial', 'GeoPackageLoader'],
-  ['geospatial', 'KMLLoader']
+  ['geospatial/geopackage', 'GeoPackageLoader'],
+  ['geospatial/kml', 'KMLLoader']
 ])(
   'grouped %s %s metadata keeps parser loaders out of the initial browser chunk',
   async (group, loader) => {
@@ -153,16 +153,16 @@ test.each([
 });
 
 test.each([
-  ['tables', 'arrow', 'ArrowTableSource'],
+  ['tables', 'arrow/bundled', 'ArrowTableSource'],
   ['tables', 'arrow/geometry', 'WKBBuilder'],
-  ['tables', 'json', 'NDJSONTableSource'],
-  ['tables', 'lance', 'LanceSource'],
-  ['tables', 'orc', 'ORCLoaderWithParser'],
+  ['tables', 'json/bundled', 'NDJSONTableSource'],
+  ['tables', 'lance/bundled', 'LanceSource'],
+  ['tables', 'orc/bundled', 'ORCLoaderWithParser'],
   ['tables', 'parquet/bundled', 'ParquetLoaderWithParser'],
   ['tables', 'parquet/bundled', 'ParquetDatasetSource'],
   ['tables', 'iceberg', 'IcebergTableSource'],
   ['tables', 'iceberg', 'IcebergRestCatalog'],
-  ['tables', 'delta', 'DeltaLoaderWithParser']
+  ['tables', 'delta/bundled', 'DeltaLoaderWithParser']
 ])(
   'published %s/%s exposes %s after forwarding removal',
   (group, subpath, exportName) => {
@@ -179,11 +179,16 @@ test.each([
 );
 
 test.each([
-  ['tables', 'parquet/parquet-loader-types.js', 'ParquetLoader', 'parquet'],
-  ['tables', 'arrow/arrow-loader-types.js', 'ArrowLoader', 'arrow'],
-  ['tables', 'json/json-table-loader-types.js', 'JSONTableLoader', 'json'],
-  ['pointclouds', 'pcd/pcd-loader-types.js', 'PCDLoader', 'pcd'],
-  ['scientific', 'npy-loader-types.js', 'NPYLoader', 'npy']
+  ['tables', 'parquet/parquet-loader-types.js', 'ParquetLoader', 'parquet/parquet-loader-types.js'],
+  ['tables', 'arrow/arrow-loader-types.js', 'ArrowLoader', 'arrow/arrow-loader-types.js'],
+  [
+    'tables',
+    'json/json-table-loader-types.js',
+    'JSONTableLoader',
+    'json/json-table-loader-types.js'
+  ],
+  ['pointclouds', 'pcd/pcd-loader-types.js', 'PCDLoader', 'pcd/pcd-loader-types.js'],
+  ['scientific', 'npy-loader-types.js', 'NPYLoader', 'npy-loader-types.js']
 ])(
   'native browser ESM starts a standalone worker from %s/%s',
   async (packageName, entry, loaderName, workerName) => {

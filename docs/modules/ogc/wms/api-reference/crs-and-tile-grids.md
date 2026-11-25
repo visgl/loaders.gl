@@ -44,7 +44,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 The WMS package exposes utilities for services that use different CRS spellings:
 
 ```js
-import {normalizeServiceCRS, selectServiceCRS} from '@loaders.gl/ogc/wms';
+import {normalizeServiceCRS, selectServiceCRS} from '@loaders.gl/ogc/wms/bundled';
 
 normalizeServiceCRS('urn:ogc:def:crs:EPSG::3857'); // 'EPSG:3857'
 selectServiceCRS('EPSG:3857', ['EPSG:4326', 'EPSG:3857']); // 'EPSG:3857'

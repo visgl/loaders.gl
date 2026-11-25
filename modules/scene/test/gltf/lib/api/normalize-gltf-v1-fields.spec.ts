@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf';
+import {convertGLTFV1ToGLTF2} from '@loaders.gl/scene/gltf/bundled';
 import {createAccessorAsset} from '../../test-utils/create-gltf-v1-accessor';
 
 test('glTF 1 obsolete asset and default texture fields move to provenance without losing application data', () => {

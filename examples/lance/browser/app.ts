@@ -1,10 +1,10 @@
 import {Deck, OrthographicView} from '@deck.gl/core';
 import {PathLayer, ScatterplotLayer} from '@deck.gl/layers';
-import {LanceLoaderWithParser} from '@loaders.gl/tables/lance';
+import {LanceLoaderWithParser} from '@loaders.gl/tables/lance/bundled';
 import {
   readLanceRemoteCoordinatesToArrow,
   readLanceRemoteFileToArrow
-} from '@loaders.gl/tables/lance';
+} from '@loaders.gl/tables/lance/bundled';
 
 type LanceColumn = {index: number; name: string; type: 'double' | 'int64'};
 type LanceCoordinateColumn = {index: number; xName: string; yName: string};

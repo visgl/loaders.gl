@@ -3,7 +3,8 @@
 Read and write Chrome Trace events, build Arrow tables, and consume event streams.
 
 ```typescript
-import {ChromeTraceLoader, ChromeTraceWriter, parseChromeTrace, consumeChromeTraceArrowStream} from '@loaders.gl/traces/chrome-trace';
+import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
+import {ChromeTraceWriter, parseChromeTrace, consumeChromeTraceArrowStream} from '@loaders.gl/traces/chrome-trace/bundled';
 ```
 
 ## API

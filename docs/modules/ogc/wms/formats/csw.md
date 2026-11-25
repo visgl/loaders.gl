@@ -73,7 +73,7 @@ contract.
 
 ```ts
 import {createDataSourceSync} from '@loaders.gl/core';
-import {CSWLoader} from '@loaders.gl/ogc/wms';
+import {CSWLoader} from '@loaders.gl/ogc/wms/bundled';
 
 const catalog = createDataSourceSync(cswUrl, [CSWLoader]);
 const metadata = await catalog.getMetadata();

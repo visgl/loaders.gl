@@ -167,7 +167,7 @@ High-bit-depth, nonopaque, metadata-bearing, or differently arranged images need
 ### Convert already decoded pixels
 
 ```typescript
-import {parseImageLUT} from '@loaders.gl/images/color-lut';
+import {parseImageLUT} from '@loaders.gl/images/color-lut/bundled';
 
 const table = parseImageLUT(opaqueRgbOrRgbaBytes, width, height, {
   size: 16,

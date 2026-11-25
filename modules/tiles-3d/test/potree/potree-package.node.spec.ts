@@ -5,7 +5,8 @@
 import {createDataSource} from '@loaders.gl/core';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {PotreeLoader, encodePotreeDataset} from '@loaders.gl/tiles-3d/potree';
+import {PotreeLoader} from '@loaders.gl/tiles-3d/potree';
+import {encodePotreeDataset} from '@loaders.gl/tiles-3d/potree/bundled';
 import {getPathPrefix, setPathPrefix} from '@loaders.gl/core/loader-utils';
 import {createPoints, createDatasetFetch} from './potree-format-fixtures';
 import {expect, test} from 'vitest';

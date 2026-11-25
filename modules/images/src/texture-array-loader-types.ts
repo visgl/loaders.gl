@@ -14,7 +14,7 @@ export type {ImageTextureArrayManifest as TextureArrayManifest};
 
 /** Preloads the parser-bearing texture array manifest loader implementation. */
 async function preload() {
-  const {TextureArrayLoaderWithParser} = await import('@loaders.gl/images/texture');
+  const {TextureArrayLoaderWithParser} = await import('@loaders.gl/images/texture/bundled');
   return TextureArrayLoaderWithParser;
 }
 

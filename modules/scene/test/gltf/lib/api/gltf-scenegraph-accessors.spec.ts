@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {GLTFScenegraph, GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import {load} from '@loaders.gl/core';
 // Extracted from Cesium 3D Tiles
 const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/scene/gltf/test/data/3d-tiles/143.glb';

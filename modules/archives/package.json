@@ -67,6 +67,16 @@
       "types": "./dist/tar-writer.d.ts",
       "import": "./dist/tar-writer.js",
       "require": "./dist/tar-writer.cjs"
+    },
+    "./zip/bundled": {
+      "types": "./dist/zip/bundled.d.ts",
+      "import": "./dist/zip/bundled.js",
+      "require": "./dist/zip/bundled.cjs"
+    },
+    "./tar/bundled": {
+      "types": "./dist/tar/bundled.d.ts",
+      "import": "./dist/tar/bundled.js",
+      "require": "./dist/tar/bundled.cjs"
     }
   },
   "sideEffects": false,

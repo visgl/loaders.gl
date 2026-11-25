@@ -15,7 +15,7 @@ npm install @loaders.gl/core @loaders.gl/tables @loaders.gl/geospatial
 ```
 
 ```ts
-import {parse} from '@loaders.gl/core';
+import {parse} from '@loaders.gl/core/api';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 import {KMLLoader} from '@loaders.gl/geospatial/kml';
 
@@ -23,14 +23,14 @@ const table = await parse(csvData, CSVLoader);
 const features = await parse(kmlData, KMLLoader);
 ```
 
-Use format and capability subpaths for domain APIs. Each entrypoint groups the loaders,
-writers, sources, types, and helpers for that format or capability. Core retains its general
-loading API at `@loaders.gl/core`. Use bare subpaths such as `/csv`, rather than appending `/index`.
+Import metadata loaders, descriptors, and types from the format subpath. Import eager
+loaders, writers, sources, and helpers from its `/bundled` subpath. The shared loading
+functions live at `@loaders.gl/core/api`. The core root forwards the existing core API for compatibility.
 
 Capability entrypoints follow the same model:
 
 ```ts
-import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
+import {Tileset3D} from '@loaders.gl/tiles-3d/api';
 import {DuckDBSQLSource} from '@loaders.gl/sql/duckdb';
 import {SHA256Hash} from '@loaders.gl/crypto/sha256';
 ```
@@ -44,18 +44,14 @@ A metadata loader describes the format, options, default values, and output type
 parsing methods; its `preload()` function imports the parser implementation. Core asynchronous
 APIs such as `load`, `parse`, and `parseInBatches` can preload it automatically.
 
-Table loaders are exported from their format subpaths. The geospatial, pointclouds, and scene roots and bare format entrypoints expose metadata
-loaders. Other packages have entrypoint-specific contracts: raster's root exposes metadata,
-while `/geotiff` and `/lerc` expose parser-bearing loaders. Follow each package reference rather
-than assuming every entrypoint exports the same loader names.
-
-For synchronous parsing, import the parser-bearing loader explicitly:
+The loader has the same public name in both entrypoints. For a format that supports
+synchronous parsing, import its bundled loader.
 
 ```ts
-import {parseSync} from '@loaders.gl/core';
-import {CSVLoaderWithParser} from '@loaders.gl/tables/csv';
+import {parseSync} from '@loaders.gl/core/api';
+import {CSVLoader} from '@loaders.gl/tables/csv/bundled';
 
-const table = parseSync(csvData, CSVLoaderWithParser);
+const table = parseSync(csvData, CSVLoader);
 ```
 
 See [Metadata loaders and parser loading](./using-metadata-loaders.md) for preloading, caching,
@@ -66,8 +62,8 @@ the default for these grouped entrypoints; an `/unbundled` suffix is unnecessary
 
 A loader parses an input into a result. A source opens a dataset or service and supports requests
 such as scans, raster windows, or tile reads. Source constructors and advanced APIs have explicit
-subpaths, for example `@loaders.gl/raster/geotiff` and
-`@loaders.gl/tables/parquet`.
+subpaths, for example `@loaders.gl/raster/geotiff/bundled` and
+`@loaders.gl/tables/parquet/bundled`.
 
 Writers are documented by their format. Some writers import encoding dependencies eagerly, so
 an entrypoint that exports both metadata and a writer is not necessarily dependency-free.

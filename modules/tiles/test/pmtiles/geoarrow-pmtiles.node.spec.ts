@@ -65,7 +65,7 @@ test('installed native Node ESM authoring imports do not eagerly load the MLT de
       '--input-type=module',
       '--eval',
       `
-    import {MLTWriter} from '@loaders.gl/tiles/mlt';
+    import {MLTWriter} from '@loaders.gl/tiles/mlt/bundled';
     import {encodeGeoArrowPMTiles} from '@loaders.gl/tiles/pmtiles/geoarrow';
     import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
     const table = convertFeaturesToGeoArrowTable([{type: 'Feature', geometry: {type: 'Point', coordinates: [0, 0]}, properties: {name: 'sample'}}]);

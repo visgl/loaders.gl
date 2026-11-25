@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {describe, expect, test} from 'vitest';
-import {GLTFIterator} from '@loaders.gl/scene/gltf';
+import {GLTFIterator} from '@loaders.gl/scene/gltf/bundled';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
 
 describe('GLTFIterator', () => {

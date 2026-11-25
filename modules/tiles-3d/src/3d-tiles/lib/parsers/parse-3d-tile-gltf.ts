@@ -5,13 +5,13 @@
 import {parseFromContext, LoaderContext} from '@loaders.gl/core/loader-utils';
 import {
   _getMemoryUsageGLTF,
-  GLTFLoader,
   getGaussianSplatPrimitives,
   getVoxelPrimitives,
   getGLTFAccessor,
   getGLTFAccessorValue,
   setGLTFAccessorValue
-} from '@loaders.gl/scene/gltf';
+} from '@loaders.gl/scene/gltf/bundled';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
 import type {GLTF, GLTFWithBuffers} from '@loaders.gl/scene/gltf';
 import {Tiles3DSpatialTransformer} from '../../../spatial/tiles-3d-spatial-transformer';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '../../../spatial/spatial-types';

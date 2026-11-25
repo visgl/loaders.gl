@@ -5,7 +5,8 @@
 import {expect, test} from 'vitest';
 
 import {encodeTextSync} from '@loaders.gl/core';
-import {WKTLoader as MetadataWKTLoader, WKTWriter} from '@loaders.gl/geospatial/wkt';
+import {WKTLoader as MetadataWKTLoader} from '@loaders.gl/geospatial/wkt';
+import {WKTWriter} from '@loaders.gl/geospatial/wkt/bundled';
 
 test('WKTWriter', () => {
   expect(() => encodeTextSync({type: 'FeatureCollection'}, WKTWriter)).toThrow();

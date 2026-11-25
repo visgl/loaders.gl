@@ -52,7 +52,7 @@ In your application's TypeScript entry point:
 import {Deck} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {createDataSource} from '@loaders.gl/core';
-import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis';
+import {ArcGISFeatureServerLoader} from '@loaders.gl/arcgis/feature-service';
 
 const serviceUrl =
   'https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0';
@@ -115,7 +115,7 @@ a source. With ESM code splitting, unused service implementations stay out of th
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {ARCGIS_LOADERS} from '@loaders.gl/arcgis';
+import {ARCGIS_LOADERS} from '@loaders.gl/arcgis/discovery';
 
 const source = await load(serviceUrl, ARCGIS_LOADERS, {
   core: {type: 'arcgis-feature-server'}

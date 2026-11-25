@@ -6,7 +6,7 @@ Supported formats: Arrow, Feather, GeoArrow, Avro, AVSC, BSON, CSV, TSV, DSV, JS
 
 Proof of concept for [RFC #4248](https://github.com/visgl/loaders.gl/issues/4248).
 
-The package root exports format descriptors and shared types. Import metadata loaders from
+Import metadata loaders from
 the format subpath, such as `@loaders.gl/tables/parquet`. Import the same loader name from
 `@loaders.gl/tables/parquet/bundled` to include its parser eagerly. The bundled Parquet entry
 also exports writers, sources, and format helpers.

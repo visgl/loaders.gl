@@ -3,7 +3,7 @@ import {WebMercatorViewport} from '@deck.gl/core';
 import {coreApi} from '@loaders.gl/core';
 import {getI3sTileHeader} from '@loaders.gl/tiles-3d/i3s/test/test-utils/load-utils';
 import {getFrameState, Tile3D, Tileset3D, getLodStatus} from '@loaders.gl/tiles-3d/tileset';
-import {I3SSource} from '@loaders.gl/tiles-3d/i3s';
+import {I3SSource} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {
   getBigLodMetricTileHeader,
   getNextAfterRootTileHeader,

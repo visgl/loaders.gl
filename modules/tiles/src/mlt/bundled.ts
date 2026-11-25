@@ -7,3 +7,4 @@ export {
   MLTLoaderWithParser as MLTLoader,
   MLTWorkerLoaderWithParser as MLTWorkerLoader
 } from './mlt-loader-with-parser';
+export {MLTFormat, type MLTSourceLoaderOptions, MLTWriter, type MLTWriterOptions} from './index';

@@ -18,9 +18,10 @@ test.each([
     import assert from 'node:assert/strict';
     import {createRequire} from 'node:module';
     const require = createRequire(import.meta.url);
-    const metadata = ${format === 'esm' ? "await import('@loaders.gl/images')" : "require('@loaders.gl/images')"};
+    const readPackage = ${format === 'esm' ? 'specifier => import(specifier)' : 'require'};
+    const metadata = Object.assign({}, ...await Promise.all(['image', 'basis', 'texture', 'video'].map(format => readPackage('@loaders.gl/images/' + format))));
     const packageVersion = require('./modules/images/package.json').version;
-    const parser = ${format === 'esm' ? "await import('@loaders.gl/images/image')" : "require('@loaders.gl/images/image')"};
+    const parser = ${format === 'esm' ? "await import('@loaders.gl/images/image/bundled')" : "require('@loaders.gl/images/image/bundled')"};
     for (const name of ['ImageLoader', 'BasisLoader', 'TextureLoader', 'VideoLoader']) {
       assert.equal(metadata[name].module, 'images');
       assert.equal(metadata[name].version, packageVersion);
@@ -30,7 +31,7 @@ test.each([
     assert.equal(metadata.ImageBitmapLoader, undefined);
     assert.equal(metadata.ImageLoaderWithParser, undefined);
     assert.equal(typeof parser.ImageLoaderWithParser.parse, 'function');
-    assert.equal(parser.ImageLoader.parse, undefined);
+    assert.equal(typeof parser.ImageLoader.parse, 'function');
     assert.equal(typeof parser.GIFBuilder, 'function');
 
     const implementation = await metadata.ImageLoader.preload();

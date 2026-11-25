@@ -9,7 +9,7 @@ import {
   ServiceRequestError,
   ServiceRuntime,
   discoverServiceGraph
-} from '@loaders.gl/ogc/wms';
+} from '@loaders.gl/ogc/wms/bundled';
 import {createQueryParameterCredential} from '@loaders.gl/core/loader-utils';
 
 afterEach(() => vi.unstubAllGlobals());

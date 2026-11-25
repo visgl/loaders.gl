@@ -46,18 +46,18 @@
       "import": "./dist/mvt-loader.js"
     },
     "./mlt": {
-      "types": "./dist/mlt/index.d.ts",
-      "import": "./dist/mlt/index.js",
-      "require": "./dist/mlt/index.cjs"
+      "types": "./dist/mlt/metadata-entry.d.ts",
+      "import": "./dist/mlt/metadata-entry.js",
+      "require": "./dist/mlt/metadata-entry.cjs"
     },
     "./mlt/bundled": {
       "types": "./dist/mlt/bundled.d.ts",
       "import": "./dist/mlt/bundled.js"
     },
     "./mvt": {
-      "types": "./dist/mvt/index.d.ts",
-      "import": "./dist/mvt/index.js",
-      "require": "./dist/mvt/index.cjs"
+      "types": "./dist/mvt/metadata-entry.d.ts",
+      "import": "./dist/mvt/metadata-entry.js",
+      "require": "./dist/mvt/metadata-entry.cjs"
     },
     "./arrow-table-tile-loader": {
       "types": "./dist/arrow-table-tile-loader.d.ts",
@@ -83,9 +83,9 @@
     },
     "./mvt/tilejson.schema.json": "./dist/mvt/tilejson.schema.json",
     "./pmtiles": {
-      "types": "./dist/pmtiles/index.d.ts",
-      "import": "./dist/pmtiles/index.js",
-      "require": "./dist/pmtiles/index.cjs"
+      "types": "./dist/pmtiles/metadata-entry.d.ts",
+      "import": "./dist/pmtiles/metadata-entry.js",
+      "require": "./dist/pmtiles/metadata-entry.cjs"
     },
     "./pmtiles/bundled": {
       "types": "./dist/pmtiles/bundled.d.ts",
@@ -132,9 +132,10 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run mlt-pre-build && npm run mvt-pre-build && npm run pmtiles-pre-build && npm run build-bundle && npm run build-bundle-dev",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "pre-build": "npm run mlt-pre-build && npm run copy-mlt-decoder && npm run mvt-pre-build && npm run pmtiles-pre-build && npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "copy-mlt-decoder": "mkdir -p dist/mlt/libs && cp src/mlt/libs/mlt-decoder.cjs dist/mlt/libs/",
     "mlt-pre-build": "npx esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=cjs --outfile=src/mlt/libs/mlt-decoder.cjs && node -e \"const fs=require('fs'); const file='src/mlt/libs/mlt-decoder.cjs'; const header='// SPDX-License-Identifier: MIT\\n// Generated from @maplibre/mlt (MIT) for loaders.gl browser bundling.\\n// Source: https://github.com/maplibre/mlt\\n\\n'; const body=fs.readFileSync(file,'utf8'); if (!body.startsWith('// SPDX-License-Identifier: MIT')) { fs.writeFileSync(file, header + body); }\"",
     "mvt-pre-build": "npm run mvt-generate-json-schema && npm run mvt-build-worker && npm run mvt-build-worker-node && npm run mvt-build-worker --env.dev && npm run mvt-build-bundle && npm run mvt-build-bundle-dev",
     "mvt-generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/mvt/tilejson-zod-schema.js --export TileJSONMetadataSchema --output ./dist/mvt/tilejson.schema.json --id https://unpkg.com/@loaders.gl/tiles/mvt/tilejson.schema.json --title 'loaders.gl TileJSON and Tilestats metadata'",
@@ -163,7 +164,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@deck.gl/core": "10.0.0-alpha.1",
+    "@deck.gl/core": "patch:@deck.gl/core@npm%3A10.0.0-alpha.1#~/.yarn/patches/@deck.gl-core-npm-10.0.0-alpha.1-f95ab2d406.patch",
     "@types/pbf": "^3.0.2"
   },
   "peerDependencies": {

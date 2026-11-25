@@ -4,7 +4,7 @@
 
 import {fetchFile, parse, encode} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/scene/draco';
-import {DracoWriter, encodeDracoBatch} from '@loaders.gl/scene/draco';
+import {DracoWriter, encodeDracoBatch} from '@loaders.gl/scene/draco/bundled';
 import type {DracoWriterOptions} from '@loaders.gl/scene/draco';
 
 const POSITIONS_URL = '@loaders.gl/scene/draco/test/data/raw-attribute-buffers/lidar-positions.bin';

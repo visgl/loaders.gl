@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import {WKTLoader, WKTWriter} from '@loaders.gl/geospatial/wkt';
+import {WKTLoader} from '@loaders.gl/geospatial/wkt';
+import {WKTWriter} from '@loaders.gl/geospatial/wkt/bundled';
 import {WKBLoader, HexWKBLoader, TWKBLoader} from '@loaders.gl/geospatial/wkb';
 import {isHexWKB} from '../../src/wkt/hex-wkb-loader-types';
 

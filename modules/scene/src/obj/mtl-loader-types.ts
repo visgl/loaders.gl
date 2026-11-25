@@ -18,7 +18,7 @@ export type MTLLoaderOptions = LoaderOptions & {
  * Preloads the parser-bearing MTL loader implementation.
  */
 async function preload() {
-  const {MTLLoaderWithParser} = await import('@loaders.gl/scene/mtl');
+  const {MTLLoaderWithParser} = await import('@loaders.gl/scene/mtl/bundled');
   return MTLLoaderWithParser;
 }
 

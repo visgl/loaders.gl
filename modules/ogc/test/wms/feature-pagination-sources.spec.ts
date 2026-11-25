@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test, vi} from 'vitest';
-import {ManagedVectorSource, OGCAPIFeaturesSource, WFSVectorSource} from '@loaders.gl/ogc/wms';
+import {
+  ManagedVectorSource,
+  OGCAPIFeaturesSource,
+  WFSVectorSource
+} from '@loaders.gl/ogc/wms/bundled';
 import type {GetFeaturesParameters} from '@loaders.gl/core/loader-utils';
 
 const PARAMETERS: GetFeaturesParameters = {

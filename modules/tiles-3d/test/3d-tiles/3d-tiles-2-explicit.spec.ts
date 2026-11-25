@@ -1,4 +1,4 @@
-import {getGLTFAccessorValue} from '@loaders.gl/scene/gltf';
+import {getGLTFAccessorValue} from '@loaders.gl/scene/gltf/bundled';
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
@@ -7,7 +7,7 @@ import {describe, expect, test} from 'vitest';
 import {coreApi, load, parse} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 import {Tile3D, Tileset3D} from '@loaders.gl/tiles-3d/tileset';
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 import {parse3DTileVectorContent} from '../../src/3d-tiles/lib/parsers/parse-3d-tile-vector-content';
 import {parse3DTiles2Tileset} from '../../src/3d-tiles/lib/parsers/parse-3d-tiles-2-gltf';
 

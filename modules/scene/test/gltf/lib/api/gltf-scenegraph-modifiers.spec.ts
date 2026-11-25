@@ -4,7 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
-import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
 import {getMeshAttributes} from '../../utils/get-mesh-attributes';
 const GLTF_BINARY_URL = '@loaders.gl/scene/gltf/test/data/3d-tiles/143.glb';
 // biome-ignore format: preserve intentional fixture layout

@@ -51,7 +51,7 @@ transaction-log actions, resolves the active Parquet files, and delegates physic
 />
 
 ```ts
-import {DeltaTableSource} from '@loaders.gl/tables/delta';
+import {DeltaTableSource} from '@loaders.gl/tables/delta/bundled';
 
 const source = new DeltaTableSource(
   'https://data.example.com/events/_delta_log/00000000000000000042.json'

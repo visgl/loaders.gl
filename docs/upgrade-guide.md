@@ -18,7 +18,13 @@ import {DocPageHeader} from '@site/src/components/docs/doc-page-header';
 
 ## Updating from 5.0.0
 
-Move metadata loader imports from `@loaders.gl/tables` to the format subpath.
+Format packages now expose their loaders through subpaths. Replace a package-root loader
+import with `@loaders.gl/<package>/<format>`. For eager parsing, writers, and direct source
+construction, use `@loaders.gl/<package>/<format>/bundled`. Both paths export loaders
+under their ordinary names. The core framework is available at `@loaders.gl/core/api`,
+and tileset traversal at `@loaders.gl/tiles-3d/api`. Existing core root imports remain supported.
+
+For table formats, use the following subpaths.
 
 | Loaders | Subpath under `@loaders.gl/tables` |
 | --- | --- |

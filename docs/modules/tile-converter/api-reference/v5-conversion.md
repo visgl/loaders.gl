@@ -959,7 +959,7 @@ import {
   openPointCloudFile,
   extractMeshVertices
 } from '@loaders.gl/tile-converter/v5/browser';
-import {COPCWriter} from '@loaders.gl/tiles-3d/copc';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
 
 // Opt in to one point per stored vertex of already placed triangle geometry.
 const points = extractMeshVertices(meshResource.mesh, {

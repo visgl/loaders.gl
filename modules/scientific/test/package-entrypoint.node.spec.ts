@@ -7,11 +7,11 @@ import {expect, test} from 'vitest';
 test.each([
   'commonjs',
   'module'
-])('published scientific root stays metadata-only in Node %s', moduleType => {
+])('published scientific Zarr entry stays metadata-only in Node %s', moduleType => {
   const load =
     moduleType === 'commonjs'
-      ? "const packageExports = require('@loaders.gl/scientific');"
-      : "import * as packageExports from '@loaders.gl/scientific';";
+      ? "const packageExports = require('@loaders.gl/scientific/zarr');"
+      : "import * as packageExports from '@loaders.gl/scientific/zarr';";
   const output = execFileSync(
     process.execPath,
     [
@@ -22,14 +22,14 @@ test.each([
     {encoding: 'utf8'}
   );
   const packageInfo = JSON.parse(output);
-  expect(packageInfo.keys).toContain('NetCDFLoader');
   expect(packageInfo.keys).toContain('OMEZarrLoader');
   expect(packageInfo.hasParser).toBe(false);
   expect(packageInfo.hasPreload).toBe('function');
 });
 
 test('scientific metadata loaders preload their parser subpaths', async () => {
-  const {NetCDFLoader, OMEZarrLoader} = await import('../src');
+  const {NetCDFLoader} = await import('@loaders.gl/scientific/netcdf');
+  const {OMEZarrLoader} = await import('@loaders.gl/scientific/zarr');
   const netcdfParser = await NetCDFLoader.preload();
   const zarrParser = await OMEZarrLoader.preload();
   expect(netcdfParser.parse).toBeTypeOf('function');
@@ -41,7 +41,7 @@ test('NetCDF parser subpaths expose their CommonJS implementations', () => {
     process.execPath,
     [
       '-e',
-      "const {NetCDFLoaderWithParser} = require('@loaders.gl/scientific/netcdf'); console.log(JSON.stringify({parser: typeof NetCDFLoaderWithParser.parse, implementation: typeof NetCDFLoaderWithParser.createDataSourceSync}));"
+      "const {NetCDFLoaderWithParser} = require('@loaders.gl/scientific/netcdf/bundled'); console.log(JSON.stringify({parser: typeof NetCDFLoaderWithParser.parse, implementation: typeof NetCDFLoaderWithParser.createDataSourceSync}));"
     ],
     {encoding: 'utf8'}
   );

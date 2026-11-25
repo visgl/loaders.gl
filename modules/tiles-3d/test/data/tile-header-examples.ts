@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {I3STileHeader} from '@loaders.gl/tiles-3d/i3s';
-import {TILE_TYPE} from '../../src';
+import {TILE_TYPE} from '@loaders.gl/tiles-3d/api';
 
 /* eslint-disable @typescript-eslint/no-loss-of-precision */
 export const ROOT_TILE_HEADER: I3STileHeader = {

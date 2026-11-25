@@ -48,7 +48,8 @@ The `GLTFScenegraph` class provides an API for accessing and modifying glTF data
 ### Accessing
 
 ```typescript
-import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
 import {load} from '@loaders.gl/core';
 
 // Load and parse a file
@@ -83,8 +84,9 @@ const specificScene = gltf.getScene(2);
 
 ```typescript
 import {load, encode} from '@loaders.gl/core';
-import {ImageWriter} from '@loaders.gl/images/image';
-import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/scene/gltf';
+import {ImageWriter} from '@loaders.gl/images/image/bundled';
+import {GLTFLoader} from '@loaders.gl/scene/gltf';
+import {GLTFWriter, GLTFScenegraph} from '@loaders.gl/scene/gltf/bundled';
 
 // Load and parse a file
 const gltfData = await load(GLTF_URL, GLTFLoader);

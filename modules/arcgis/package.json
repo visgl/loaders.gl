@@ -81,29 +81,54 @@
       "import": "./dist/arcgis-items.js"
     },
     "./feature-service": {
-      "types": "./dist/feature-service.d.ts",
-      "import": "./dist/feature-service.js",
-      "require": "./dist/feature-service.cjs"
+      "types": "./dist/feature-service/metadata-entry.d.ts",
+      "import": "./dist/feature-service/metadata-entry.js",
+      "require": "./dist/feature-service/metadata-entry.cjs"
     },
     "./image-service": {
-      "types": "./dist/image-service.d.ts",
-      "import": "./dist/image-service.js",
-      "require": "./dist/image-service.cjs"
+      "types": "./dist/image-service/metadata-entry.d.ts",
+      "import": "./dist/image-service/metadata-entry.js",
+      "require": "./dist/image-service/metadata-entry.cjs"
     },
     "./map-service": {
-      "types": "./dist/map-service.d.ts",
-      "import": "./dist/map-service.js",
-      "require": "./dist/map-service.cjs"
+      "types": "./dist/map-service/metadata-entry.d.ts",
+      "import": "./dist/map-service/metadata-entry.js",
+      "require": "./dist/map-service/metadata-entry.cjs"
     },
     "./scene-service": {
-      "types": "./dist/scene-service.d.ts",
-      "import": "./dist/scene-service.js",
-      "require": "./dist/scene-service.cjs"
+      "types": "./dist/scene-service/metadata-entry.d.ts",
+      "import": "./dist/scene-service/metadata-entry.js",
+      "require": "./dist/scene-service/metadata-entry.cjs"
     },
     "./vector-tile-service": {
-      "types": "./dist/vector-tile-service.d.ts",
-      "import": "./dist/vector-tile-service.js",
-      "require": "./dist/vector-tile-service.cjs"
+      "types": "./dist/vector-tile-service/metadata-entry.d.ts",
+      "import": "./dist/vector-tile-service/metadata-entry.js",
+      "require": "./dist/vector-tile-service/metadata-entry.cjs"
+    },
+    "./feature-service/bundled": {
+      "types": "./dist/feature-service/bundled.d.ts",
+      "import": "./dist/feature-service/bundled.js",
+      "require": "./dist/feature-service/bundled.cjs"
+    },
+    "./image-service/bundled": {
+      "types": "./dist/image-service/bundled.d.ts",
+      "import": "./dist/image-service/bundled.js",
+      "require": "./dist/image-service/bundled.cjs"
+    },
+    "./map-service/bundled": {
+      "types": "./dist/map-service/bundled.d.ts",
+      "import": "./dist/map-service/bundled.js",
+      "require": "./dist/map-service/bundled.cjs"
+    },
+    "./scene-service/bundled": {
+      "types": "./dist/scene-service/bundled.d.ts",
+      "import": "./dist/scene-service/bundled.js",
+      "require": "./dist/scene-service/bundled.cjs"
+    },
+    "./vector-tile-service/bundled": {
+      "types": "./dist/vector-tile-service/bundled.d.ts",
+      "import": "./dist/vector-tile-service/bundled.js",
+      "require": "./dist/vector-tile-service/bundled.cjs"
     }
   },
   "sideEffects": false,

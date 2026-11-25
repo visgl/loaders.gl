@@ -7,7 +7,9 @@ import {getS2DescendantIndex, getS2IndexFromToken, getS2TokenFromIndex} from '@m
 import {
   createImplicitSubtreeReference,
   materializeImplicitSubtree,
-  replaceImplicitUrlTemplate,
+  replaceImplicitUrlTemplate
+} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {
   type ImplicitTilingDescriptor,
   type ParsedImplicitSubtree
 } from '@loaders.gl/tiles-3d/3d-tiles';

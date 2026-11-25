@@ -64,29 +64,49 @@
     "./rad-metadata.schema.json": "./dist/rad-metadata.schema.json",
     "./radc-metadata.schema.json": "./dist/radc-metadata.schema.json",
     "./rad": {
-      "types": "./dist/rad.d.ts",
-      "import": "./dist/rad.js",
-      "require": "./dist/rad.cjs"
+      "types": "./dist/rad/metadata-entry.d.ts",
+      "import": "./dist/rad/metadata-entry.js",
+      "require": "./dist/rad/metadata-entry.cjs"
     },
     "./splat": {
-      "types": "./dist/splat.d.ts",
-      "import": "./dist/splat.js",
-      "require": "./dist/splat.cjs"
+      "types": "./dist/splat/metadata-entry.d.ts",
+      "import": "./dist/splat/metadata-entry.js",
+      "require": "./dist/splat/metadata-entry.cjs"
     },
     "./ksplat": {
-      "types": "./dist/ksplat.d.ts",
-      "import": "./dist/ksplat.js",
-      "require": "./dist/ksplat.cjs"
+      "types": "./dist/ksplat/metadata-entry.d.ts",
+      "import": "./dist/ksplat/metadata-entry.js",
+      "require": "./dist/ksplat/metadata-entry.cjs"
     },
     "./spz": {
-      "types": "./dist/spz.d.ts",
-      "import": "./dist/spz.js",
-      "require": "./dist/spz.cjs"
+      "types": "./dist/spz/metadata-entry.d.ts",
+      "import": "./dist/spz/metadata-entry.js",
+      "require": "./dist/spz/metadata-entry.cjs"
     },
     "./types": {
       "types": "./dist/types.d.ts",
       "import": "./dist/types.js",
       "require": "./dist/types.cjs"
+    },
+    "./rad/bundled": {
+      "types": "./dist/rad/bundled.d.ts",
+      "import": "./dist/rad/bundled.js",
+      "require": "./dist/rad/bundled.cjs"
+    },
+    "./splat/bundled": {
+      "types": "./dist/splat/bundled.d.ts",
+      "import": "./dist/splat/bundled.js",
+      "require": "./dist/splat/bundled.cjs"
+    },
+    "./ksplat/bundled": {
+      "types": "./dist/ksplat/bundled.d.ts",
+      "import": "./dist/ksplat/bundled.js",
+      "require": "./dist/ksplat/bundled.cjs"
+    },
+    "./spz/bundled": {
+      "types": "./dist/spz/bundled.d.ts",
+      "import": "./dist/spz/bundled.js",
+      "require": "./dist/spz/bundled.cjs"
     }
   },
   "sideEffects": false,

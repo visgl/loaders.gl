@@ -70,7 +70,7 @@ and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {VideoLoader} from '@loaders.gl/images';
+import {VideoLoader} from '@loaders.gl/images/video';
 import GIFBuilder from '@loaders.gl/images/image';
 ```
 

@@ -99,7 +99,7 @@ export {
   ZarrArraySource,
   SpatialDataLoader,
   SpatialDataSource
-} from '@loaders.gl/scientific/zarr';
+} from '@loaders.gl/scientific/zarr/bundled';
 export type {
   GetZarrArrayParameters,
   ZarrArrayData,

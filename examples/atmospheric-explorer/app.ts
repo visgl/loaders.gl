@@ -1,7 +1,7 @@
 import {Deck, _GlobeView as GlobeView} from '@deck.gl/core';
 import {ScatterplotLayer} from '@deck.gl/layers';
 import {createDataSourceSync} from '@loaders.gl/core';
-import {ZarrArrayLoader} from '@loaders.gl/scientific/zarr';
+import {ZarrArrayLoader} from '@loaders.gl/scientific/zarr/bundled';
 import {readIcechunkField} from './icechunk';
 import {mountAtmosphericInfo} from './info';
 import {expandReducedGaussianGrid, finiteRange, colorForValue, type GaussianGrid} from './grid';

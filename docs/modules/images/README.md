@@ -104,14 +104,17 @@ and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 ## Texture and video loaders
 
-The images package also owns texture and video loaders. Its root exports metadata;
+The images package also owns texture and video loaders. Its format subpaths export metadata;
 async core APIs preload implementations when needed:
 
 Browse [texture formats and APIs](/docs/modules/images/texture) or [video loading and GIF writing](/docs/modules/images/video).
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ImageLoader, BasisLoader, TextureLoader, VideoLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
+import {BasisLoader} from '@loaders.gl/images/basis';
+import {TextureLoader} from '@loaders.gl/images/texture';
+import {VideoLoader} from '@loaders.gl/images/video';
 
 const imageBitmap = await load('image.png', ImageLoader);
 ```
@@ -137,7 +140,7 @@ npm install @loaders.gl/images @loaders.gl/core sharp
 
 ```typescript
 import '@loaders.gl/core/polyfills';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images/image';
 ```
 
 The Node backend detects formats from encoded bytes and returns RGBA pixels through

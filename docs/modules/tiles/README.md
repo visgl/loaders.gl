@@ -9,7 +9,7 @@ import {ModuleSubpaths} from '@site/src/components/docs/module-subpaths';
 
 # 2D tiles
 
-The `@loaders.gl/tiles` root exports `Tileset2D`, `ImageSet`, and `RasterSet`.
+Import `Tileset2D`, `ImageSet`, and `RasterSet` from the tileset, image-set, and raster-set subpaths.
 These APIs select, request, and cache 2D tiles independently of a renderer.
 
 ```ts

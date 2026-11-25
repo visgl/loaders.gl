@@ -566,7 +566,7 @@ heights); the helper does not infer or transform a CRS. Per-tile RTC centers ret
 ECEF magnitudes, and `geometricError` must cover measured position reconstruction error.
 
 ```ts
-import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d';
+import {createTilesetSpatialReference} from '@loaders.gl/tiles-3d/spatial';
 import {convertPointCloudToTileset} from '@loaders.gl/tile-converter/v5/browser';
 
 const result = await convertPointCloudToTileset(decodedPoints, {
@@ -621,7 +621,7 @@ import {
   openPointCloudFile,
   extractMeshVertices
 } from '@loaders.gl/tile-converter/v5/browser';
-import {COPCWriter} from '@loaders.gl/tiles-3d/copc';
+import {COPCWriter} from '@loaders.gl/tiles-3d/copc/bundled';
 
 // Opt in to one point per stored vertex of already placed triangle geometry.
 const points = extractMeshVertices(meshResource.mesh, {
