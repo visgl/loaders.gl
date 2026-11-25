@@ -22,7 +22,7 @@ import {
   waitForPromiseWithSignal
 } from '@loaders.gl/core/loader-utils';
 import {ImageLoader, type ImageLoaderOptions} from '@loaders.gl/images/image';
-import {getBinaryImageMetadata} from '@loaders.gl/images/image/bundled';
+import {getBinaryImageMetadata} from '@loaders.gl/images/image/api';
 import {MVTLoader, type MVTLoaderOptions} from './mvt-loader';
 import {TileJSONLoader, type TileJSONLoaderOptions} from './tilejson-loader';
 import type {TileJSON} from './lib/parse-tilejson';

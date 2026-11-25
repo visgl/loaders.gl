@@ -13,7 +13,7 @@ import {
   getImageType,
   getImageSize,
   getImageData
-} from '@loaders.gl/images/image/bundled';
+} from '@loaders.gl/images/image/api';
 type ImageT = 'auto' | 'image' | 'imagebitmap' | 'data';
 const IMAGE_TYPES: ImageT[] = ['auto', 'image', 'imagebitmap', 'data'];
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';

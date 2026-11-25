@@ -145,6 +145,7 @@
         "modules/images/src/exr-loader.ts",
         "modules/images/src/exr/",
         "modules/images/src/image.ts",
+        "modules/images/src/image-api.ts",
         "modules/images/src/crunch.ts",
         "modules/images/src/image-bundled.ts",
         "modules/images/src/video.ts",

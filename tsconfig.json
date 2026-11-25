@@ -1158,6 +1158,9 @@
       "@loaders.gl/images/basis/bundled": [
         "modules/images/src/basis-bundled.ts"
       ],
+      "@loaders.gl/images/image/api": [
+        "modules/images/src/image-api.ts"
+      ],
       "@loaders.gl/images/image/bundled": [
         "modules/images/src/image-bundled.ts"
       ],

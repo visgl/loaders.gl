@@ -32,7 +32,13 @@ test.each([
     assert.equal(metadata.ImageLoaderWithParser, undefined);
     assert.equal(typeof parser.ImageLoaderWithParser.parse, 'function');
     assert.equal(typeof parser.ImageLoader.parse, 'function');
-    assert.equal(typeof parser.GIFBuilder, 'function');
+    const api = await readPackage('@loaders.gl/images/image/api');
+    assert.equal(typeof api.GIFBuilder, 'function');
+    assert.equal(typeof api.getBinaryImageMetadata, 'function');
+    assert.equal(api.ImageLoader, undefined);
+    assert.equal(api.ImageWriter, undefined);
+    assert.equal(parser.getBinaryImageMetadata, undefined);
+    assert.equal(parser.GIFBuilder, undefined);
 
     const implementation = await metadata.ImageLoader.preload();
     assert.equal(typeof implementation.parse, 'function');

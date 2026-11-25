@@ -5,14 +5,14 @@
 /* eslint-disable camelcase */
 import {afterEach, describe, expect, test, vi} from 'vitest';
 
-vi.mock('@loaders.gl/images/image/bundled', async importOriginal => ({
+vi.mock('@loaders.gl/images/image/api', async importOriginal => ({
   ...(await importOriginal()),
   getSupportedImageFormats: vi.fn(),
   isImageFormatSupported: vi.fn()
 }));
 
 import {CompressedTextureLoader} from '@loaders.gl/images/texture';
-import {getSupportedImageFormats, isImageFormatSupported} from '@loaders.gl/images/image/bundled';
+import {getSupportedImageFormats, isImageFormatSupported} from '@loaders.gl/images/image/api';
 import {preprocessExtensions} from '../../../../src/gltf/lib/api/gltf-extensions';
 import {preprocess} from '../../../../src/gltf/lib/extensions/EXT_texture_avif';
 import type {GLTFWithBuffers} from '../../../../src/gltf/lib/types/gltf-types';
