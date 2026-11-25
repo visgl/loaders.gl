@@ -3,10 +3,16 @@
 // Copyright vis.gl contributors
 
 import {afterEach, describe, expect, test, vi} from 'vitest';
-import {createAuthenticatedFetch, type FetchLike} from '@loaders.gl/core/loader-utils';
-import {load} from '@loaders.gl/core';
+import {
+  BearerTokenAuthentication,
+  createAuthenticatedFetch,
+  type FetchLike
+} from '@loaders.gl/core/loader-utils';
+import {coreApi, load} from '@loaders.gl/core';
 import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles/api';
-import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
+import {Tiles3DLoader, Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+
+import {Tileset3D, type Tile3D} from '@loaders.gl/tiles-3d/tileset';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -95,6 +101,98 @@ describe('Cesium ion authentication', () => {
       'https://api.cesium.com/v1/assets/123/endpoint',
       'https://assets.cesium.com/123/tileset.json'
     ]);
+  });
+
+  test('shares declarative authentication between root and child requests', async () => {
+    const origin = 'https://assets.ion.cesium.com';
+    const rootUrl = `${origin}/123/tileset.json`;
+    const childUrl = `${origin}/123/child.json`;
+    const constructCredential = vi.fn();
+    class TestAuthentication extends BearerTokenAuthentication {
+      constructor(options: ConstructorParameters<typeof BearerTokenAuthentication>[0]) {
+        super(options);
+        constructCredential();
+      }
+    }
+    const fetchFunction = vi.fn(async (_url: string, options?: RequestInit) => {
+      expect(new Headers(options?.headers).get('authorization')).toBe('Bearer endpoint-token');
+      return Response.json({
+        asset: {version: '1.1'},
+        geometricError: 1,
+        root: {boundingVolume: {sphere: [0, 0, 0, 1]}, geometricError: 0, refine: 'ADD'}
+      });
+    });
+    const source = new Tiles3DSource(
+      {url: rootUrl, loader: Tiles3DLoader, coreApi},
+      {
+        core: {
+          fetch: fetchFunction,
+          authentications: [TestAuthentication],
+          credentials: [
+            {type: 'bearer-token', id: 'test-asset', origins: [origin], token: 'endpoint-token'}
+          ]
+        }
+      }
+    );
+
+    await source.initialize();
+    const tile = await source.loadTileContent({contentUrls: [childUrl]} as Tile3D);
+
+    expect(tile.nestedTileset).toBeDefined();
+    expect(fetchFunction.mock.calls.map(([url]) => url)).toEqual([rootUrl, childUrl]);
+    expect(constructCredential).toHaveBeenCalledTimes(1);
+  });
+
+  test('exposes a preloaded root while concurrent child requests share credential discovery', async () => {
+    const origin = 'https://example.com';
+    const rootUrl = `${origin}/tileset.json`;
+    const json = {
+      asset: {version: '1.1'},
+      geometricError: 1,
+      root: {boundingVolume: {sphere: [0, 0, 0, 1]}, geometricError: 0, refine: 'ADD'}
+    };
+    const parsed = await load(rootUrl, Tiles3DLoader, {
+      core: {fetch: async () => Response.json(json)}
+    });
+    let finishDiscovery!: () => void;
+    const discovery = new Promise<void>(resolve => {
+      finishDiscovery = resolve;
+    });
+    const getAuthentications = vi.fn(async () => {
+      await discovery;
+      return [BearerTokenAuthentication];
+    });
+    const fetch = vi.fn(async (_url: string, options?: RequestInit) => {
+      expect(new Headers(options?.headers).get('authorization')).toBe('Bearer shared');
+      return Response.json(json);
+    });
+    const source = new Tiles3DSource(
+      {...parsed, loader: {...Tiles3DLoader, getAuthentications}, coreApi},
+      {
+        core: {
+          fetch,
+          credentials: [{type: 'bearer-token', id: 'test', origins: [origin], token: 'shared'}]
+        }
+      }
+    );
+    const tileset = new Tileset3D(source);
+    try {
+      expect(tileset.root).toBeTruthy();
+      expect(getAuthentications).not.toHaveBeenCalled();
+      const children = ['first.json', 'second.json'].map(name =>
+        source.loadTileContent({contentUrls: [`${origin}/${name}`]} as Tile3D)
+      );
+      expect(getAuthentications).toHaveBeenCalledTimes(1);
+      expect(fetch).not.toHaveBeenCalled();
+      finishDiscovery();
+      await Promise.all(children);
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(getAuthentications).toHaveBeenCalledTimes(1);
+    } finally {
+      finishDiscovery();
+      await tileset.tilesetInitializationPromise;
+      tileset.destroy();
+    }
   });
 
   test('refreshes the endpoint credential for child requests without exposing it to other origins', async () => {
