@@ -52,13 +52,23 @@ export async function encodeTableToParquetJs(
     metadata: {...table.schema?.metadata}
   });
   const geoMetadata = getGeoMetadata(metadataSchema.metadata);
-  const hasNativeGeometry = Object.values(schemaDefinition).some(
-    field => field.type === 'GEOMETRY' || field.type === 'GEOGRAPHY'
+  const nativeColumns = Object.entries(schemaDefinition).filter(
+    ([, field]) => field.type === 'GEOMETRY' || field.type === 'GEOGRAPHY'
   );
-  if (geoMetadata && hasNativeGeometry && !geoMetadata.version?.startsWith('2.')) {
-    setGeoMetadata(metadataSchema.metadata!, {...geoMetadata, version: '2.0.0'});
+  if (nativeColumns.length && !options.parquet?.nativeGeospatialOnly) {
+    for (const [name] of nativeColumns) {
+      const column = geoMetadata?.columns[name];
+      if (!column) {
+        throw new Error(
+          `ParquetWriter: Supply inline PROJJSON for column "${name}" or enable parquet.nativeGeospatialOnly`
+        );
+      }
+      column.encoding = 'WKB';
+    }
+    setGeoMetadata(metadataSchema.metadata!, {...geoMetadata!, version: '2.0.0'});
   }
   for (const [key, value] of Object.entries(metadataSchema.metadata || {})) {
+    if (key === 'geo' && nativeColumns.length && options.parquet?.nativeGeospatialOnly) continue;
     encoder.setMetadata(key, value);
   }
 

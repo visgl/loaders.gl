@@ -358,12 +358,12 @@ test('native geometry merges XYZM extrema and roundtrips the original WKB bytes'
   }
 });
 
-test('native GeoParquet geography retains unknown CRS and spherical edges without writing unsafe vertex bounds', async () => {
+test('native GeoParquet geography retains unknown CRS and spherical edges with point-only XYZM bounds', async () => {
   const source = new ParquetSource(new Blob([geographyFixture]), {core: {worker: false}});
   try {
     const metadata = await source.getMetadata({formatSpecificMetadata: true});
     expect(metadata.rowGroups[0].columns[0].geospatialStatistics).toEqual({
-      bbox: undefined,
+      bbox: {xmin: -1, xmax: 1, ymin: -2, ymax: 2, zmin: -3, zmax: 3, mmin: -4, mmax: 4},
       geometryTypes: [3001]
     });
     expect(
