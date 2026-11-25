@@ -145,7 +145,7 @@ test('ParquetWriter emits GeoParquet 2.0 logical types and row-group statistics'
       geometryTypes: [3002]
     },
     {
-      bbox: undefined,
+      bbox: {xmin: 100, xmax: 100, ymin: -20, ymax: -20},
       geometryTypes: [1]
     }
   ]);
@@ -158,8 +158,8 @@ test('ParquetWriter emits GeoParquet 2.0 logical types and row-group statistics'
   });
 
   const batches = await collectBatches(source.read({bbox: [-11, 1, 21, 31]}));
-  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex)).toEqual([0, 1]);
-  expect(source.getTelemetry().rowGroupsPrunedByStatistics).toBe(0);
+  expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex)).toEqual([0]);
+  expect(source.getTelemetry().rowGroupsPrunedByStatistics).toBe(1);
 });
 
 test('ParquetWriter emits native Parquet geo types directly from GeoArrow WKB metadata', async () => {
@@ -190,11 +190,11 @@ test('ParquetWriter emits native Parquet geo types directly from GeoArrow WKB me
     schemaElement => schemaElement.name === 'geometry'
   );
 
-  expect(JSON.parse(metadata.keyValueMetadata.geo).version).toBe('2.0.0');
+  expect(JSON.parse(metadata.keyValueMetadata.geo)).toMatchObject({version: '2.0.0', columns: {geometry: {encoding: 'WKB'}}});
   expect(geometrySchemaElement?.logicalType?.GEOGRAPHY?.algorithm).toBe(1);
   expect(geometrySchemaElement?.logicalType?.GEOGRAPHY?.crs).toBe('srid:0');
   expect(metadata.rowGroups[0].columns[0].geospatialStatistics).toEqual({
-    bbox: undefined,
+    bbox: {xmin: 1, xmax: 1, ymin: 2, ymax: 2},
     geometryTypes: [1]
   });
 });
@@ -219,6 +219,17 @@ test('ParquetWriter ignores nulls and omits bounds for empty native geometries',
     bbox: undefined,
     geometryTypes: [2]
   });
+});
+
+test('ParquetWriter distinguishes native authority identifiers from GeoParquet output', async () => {
+  const table = createGeoArrowWKBTable(JSON.stringify({crs: 'EPSG:3857'}), [encodeWKBGeometryValue({type: 'Point', coordinates: [1, 2]})!]);
+  await expect(encode(table, ParquetWriter, {worker: false})).rejects.toThrow(/inline PROJJSON/);
+  const buffer = await encode(table, ParquetWriter, {worker: false, parquet: {nativeGeospatialOnly: true}});
+  const source = await createDataSource(new Blob([buffer]), ParquetLoader, {core: {worker: false}}) as ParquetSource;
+  const metadata = await source.getMetadata({formatSpecificMetadata: true});
+  expect(metadata.keyValueMetadata.geo).toBeUndefined();
+  expect(metadata.formatSpecificMetadata?.schema.find(field => field.name === 'geometry')?.logicalType?.GEOMETRY?.crs).toBe('EPSG:3857');
+  await source.close();
 });
 
 test('ParquetWriter rejects malformed GeoArrow WKB semantics', async () => {
