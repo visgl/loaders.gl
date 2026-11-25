@@ -12,6 +12,101 @@ import {sampleRaster} from '@loaders.gl/core/loader-utils';
 import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source';
 import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff';
 import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-loader';
+import {createTiffFixture} from './lib/tiff/tiff-fixture';
+
+/** Serves a 2×1 uncompressed strip from the test TIFF encoder through in-memory range responses. */
+function createColorTiffSource(photometric: number, bandCount: number, extraSamples: number[]) {
+  const {data} = createTiffFixture({
+    width: 2,
+    height: 1,
+    bits: new Array<number>(bandCount).fill(8),
+    values: [
+      [128, 20],
+      [40, 50],
+      [60, 70],
+      [0, 128],
+      [0, 128]
+    ].slice(0, bandCount),
+    tags: [
+      {tag: 262, type: 3, values: [photometric]},
+      ...(extraSamples.length ? [{tag: 338, type: 3, values: extraSamples}] : []),
+      ...(photometric === 3 ? [{tag: 320, type: 3, values: new Array<number>(768).fill(0)}] : []),
+      {tag: 33550, type: 12, values: [1, 1, 0]},
+      {tag: 33922, type: 12, values: [0, 0, 0, 0, 1, 0]},
+      {tag: 34735, type: 3, values: [1, 1, 0, 2, 1024, 0, 1, 2, 2048, 0, 1, 4326]},
+      {tag: 42113, type: 2, values: '128'}
+    ]
+  });
+  return new GeoTIFFRasterSource('color-fixture.tif', {
+    core: {
+      fetch: async (_url, options) => {
+        const range = new Headers(options?.headers).get('Range')!.match(/^bytes=(\d+)-(\d+)$/)!;
+        const start = Number(range[1]);
+        const end = Math.min(Number(range[2]), data.byteLength - 1);
+        return new Response(data.slice(start, end + 1), {
+          status: 206,
+          headers: {'Content-Range': `bytes ${start}-${end}/${data.byteLength}`}
+        });
+      }
+    }
+  });
+}
+
+test.each([
+  {name: 'RGBA', photometric: 2, extras: [2], roles: ['red', 'green', 'blue', 'alpha']},
+  {name: 'RGB', photometric: 2, extras: [], roles: ['red', 'green', 'blue']},
+  {name: 'black-is-zero gray', photometric: 1, extras: [], roles: ['gray']},
+  {name: 'white-is-zero gray', photometric: 0, extras: [], roles: ['gray']},
+  {name: 'palette', photometric: 3, extras: [], roles: ['palette']},
+  {
+    name: 'RGB with an unspecified sample and associated alpha',
+    photometric: 2,
+    extras: [0, 1],
+    roles: ['red', 'green', 'blue', 'undefined', 'alpha']
+  }
+])('reads $name TIFF band roles from a tiny strip', async ({photometric, extras, roles}) => {
+  const source = createColorTiffSource(photometric, roles.length, extras);
+  try {
+    const metadata = await source.getMetadata();
+    expect(metadata.bands?.map(band => band.colorInterpretation)).toEqual(roles);
+  } finally {
+    await source.finalize();
+  }
+});
+
+test('carries alpha and nodata separately from masks through a resized TIFF viewport', async () => {
+  const source = createColorTiffSource(2, 4, [2]);
+  try {
+    const raster = await source.getRaster({
+      viewport: createViewport(
+        [
+          [0, 0],
+          [2, 1]
+        ],
+        'EPSG:4326',
+        4,
+        1
+      ),
+      bands: [3, 0, 1, 2],
+      interleaved: true
+    });
+    expect(raster.bands?.map(band => band.colorInterpretation)).toEqual([
+      'alpha',
+      'red',
+      'green',
+      'blue'
+    ]);
+    expect(Array.from(raster.data as Uint8Array)).toEqual([
+      0, 128, 40, 60, 0, 128, 40, 60, 128, 20, 50, 70, 128, 20, 50, 70
+    ]);
+    expect(raster.validityMasks?.map(mask => Array.from(mask.data))).toEqual(
+      Array.from({length: 4}, () => [1, 1, 1, 1])
+    );
+    expect(sampleRaster(raster, [0, 0]).valid).toEqual([true, false, true, true]);
+  } finally {
+    await source.finalize();
+  }
+});
 
 /** Creates the minimal viewport shape accepted by raster sources. */
 function createViewport(bounds: RasterBoundingBox, crs = 'EPSG:4326', width = 10, height = 8) {

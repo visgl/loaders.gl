@@ -235,8 +235,11 @@ ambiguous masks are rejected. GDAL per-band metadata, including declared statist
 is preserved separately at `metadata.bandMetadata`. Finite, ordered extrema also appear in
 `bands[index].declaredStatistics` with source scope and an explicit `unknown` domain;
 missing valid counts are not inferred from rounded GDAL percentages. Computed statistics do not
-replace these declarations or guess their value domain. Alpha interpretation and
-external `.msk` files are not implemented by the numeric source.
+replace these declarations or guess their value domain. `bands[index].colorInterpretation`
+reports RGB, grayscale, or palette roles from TIFF `PhotometricInterpretation` and alpha
+or explicitly unspecified roles from `ExtraSamples`. Both associated and unassociated
+alpha are labeled `alpha`, with color samples kept in their stored representation.
+External `.msk` files are unsupported.
 
 Coverage reuse is opt-in through `canReuseRasterCoverage` and RasterSet's existing
 `shouldRefetch` hook. Pass opaque revision, authorization, interpretation and service

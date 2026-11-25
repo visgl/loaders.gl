@@ -23,6 +23,7 @@ import type {
   DataSourceOptions,
   GetRasterParameters,
   Loader,
+  RasterBandMetadata,
   RasterBoundingBox,
   RasterData,
   NumericRasterData,
@@ -187,6 +188,14 @@ const defaultProps: DefaultProps<RasterSourceLayerProps> = {
   onRasterLoadError: {type: 'function', value: () => {}},
   onLoadingStateChange: {type: 'function', value: () => {}},
   onSourceError: {type: 'function', value: () => {}}
+};
+
+/** Full opacity on the native scale for unsigned and floating-point alpha samples. */
+const ALPHA_MAXIMUM: Partial<Record<NumericRasterData['dtype'], number>> = {
+  uint16: 65535,
+  uint32: 4294967295,
+  float32: 1,
+  float64: 1
 };
 
 /**
@@ -461,10 +470,15 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       this.props.maxTextureSize,
       Boolean(this.props.getRasterParameters)
     );
-    const defaultBands = metadata.bandCount >= 3 ? [0, 1, 2] : [0];
+    const {colorBands, alphaBand} = getDisplayBands(metadata);
     const inferredParameters: GetRasterParameters = {
       viewport: rasterViewport,
-      bands: defaultBands
+      bands:
+        this.props.rendering === 'gpu' && metadata.bandCount === 1
+          ? [0]
+          : alphaBand < 0
+            ? colorBands
+            : [...colorBands, alphaBand]
     };
     const customParameters = this.props.getRasterParameters?.(rasterViewport, metadata);
     rasterSet.requestRaster(
@@ -508,19 +522,20 @@ function createRasterBitmapData(raster: RasterData): RasterBitmapData {
   };
 }
 
-/** Computes the CPU default stretch from up to 4,096 evenly spaced raster samples. */
+/** Computes the default stretch from up to 4,096 evenly spaced visible raster samples. */
 function getRasterPercentileRange(
   raster: NumericRasterData,
-  band: number
+  band: number,
+  isVisible?: (pixel: [number, number]) => boolean
 ): [number, number] | null {
   const samples: number[] = [];
   const pixelCount = raster.width * raster.height;
   const count = Math.min(pixelCount, 4096);
   for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
     const index = Math.floor((sampleIndex * pixelCount) / count);
-    const value = sampleRaster(raster, [index % raster.width, Math.floor(index / raster.width)], {
-      bands: [band]
-    }).values[0];
+    const pixel: [number, number] = [index % raster.width, Math.floor(index / raster.width)];
+    if (isVisible && !isVisible(pixel)) continue;
+    const value = sampleRaster(raster, pixel, {bands: [band]}).values[0];
     if (value !== undefined) samples.push(value);
   }
   if (!samples.length) return null;
@@ -528,6 +543,33 @@ function getRasterPercentileRange(
   const lowerBound = samples[Math.floor((samples.length - 1) * 0.02)];
   const upperBound = samples[Math.floor((samples.length - 1) * 0.98)];
   return [lowerBound, upperBound === lowerBound ? upperBound + 1 : upperBound];
+}
+
+/** Selects display bands by role, with positional defaults for rasters without color roles. */
+function getDisplayBands(raster: {bandCount: number; bands?: RasterBandMetadata[]}): {
+  /** Payload band indices in display order. */
+  colorBands: number[];
+  /** Payload index of the alpha band, or -1 when absent. */
+  alphaBand: number;
+} {
+  if (!raster.bands) return {colorBands: raster.bandCount >= 3 ? [0, 1, 2] : [0], alphaBand: -1};
+  const indices = Array.from({length: raster.bandCount}, (_, index) => index);
+  /** Finds the first payload band with the requested role. */
+  const findBand = (role: RasterBandMetadata['colorInterpretation']) =>
+    indices.find(index => raster.bands?.[index]?.colorInterpretation === role) ?? -1;
+  const alphaBand = findBand('alpha');
+  const rgb = [findBand('red'), findBand('green'), findBand('blue')];
+  if (rgb.every(index => index >= 0)) return {colorBands: rgb, alphaBand};
+  const gray = findBand('gray');
+  if (gray >= 0) return {colorBands: [gray], alphaBand};
+
+  const available = indices.filter(index => raster.bands?.[index]?.colorInterpretation !== 'alpha');
+  return {colorBands: available.slice(0, available.length >= 3 ? 3 : 1), alphaBand};
+}
+
+/** Converts a native alpha sample to an opacity byte. */
+function scaleAlphaToByte(value: number | undefined, maximum: number): number {
+  return Math.round(clamp((value ?? 0) / maximum) * 255);
 }
 
 /** Converts a typed raster into a deck.gl-compatible RGBA bitmap image. */
@@ -539,33 +581,71 @@ export function colorizeRasterData(
       | 'percentile';
   } = {}
 ): RasterBitmapImage {
-  const target = new Uint8ClampedArray(raster.width * raster.height * 4);
-  const bands = raster.bandCount >= 3 ? [0, 1, 2] : [0];
+  const pixelCount = raster.width * raster.height;
+  const target = new Uint8ClampedArray(pixelCount * 4);
+  const {colorBands, alphaBand} = getDisplayBands(raster);
+  const hasAlpha = alphaBand >= 0;
+  const sampleBands = hasAlpha ? [...colorBands, alphaBand] : colorBands;
+  const useAllColorNoData =
+    !hasAlpha &&
+    colorBands.length === 3 &&
+    ['red', 'green', 'blue'].every(
+      (role, channel) => raster.bands?.[colorBands[channel]]?.colorInterpretation === role
+    );
+  const hasNoData =
+    Number.isFinite(raster.noData) ||
+    sampleBands.some(band => Number.isFinite(raster.bands?.[band]?.noData));
+  // Keep masks and non-finite checks in the display sample, independently of nodata inference.
+  const displayRaster =
+    raster.bands && hasNoData && (hasAlpha || useAllColorNoData)
+      ? {...raster, noData: null, bands: raster.bands.map(band => ({...band, noData: null}))}
+      : raster;
+  const alphaDtype = raster.bands?.[alphaBand]?.dtype ?? raster.dtype;
+  const alphaMaximum = ALPHA_MAXIMUM[alphaDtype] ?? 255;
+  const alphaSampleOptions = {bands: [alphaBand]};
+  const isVisible = hasAlpha
+    ? (pixel: [number, number]) =>
+        scaleAlphaToByte(
+          sampleRaster(displayRaster, pixel, alphaSampleOptions).values[0],
+          alphaMaximum
+        ) > 0
+    : undefined;
   const ranges = options.stretch === 'range' ? computeRasterStatistics(raster, 4096) : [];
-  const statistics = bands.map((band): [number, number] | null => {
-    if (options.stretch !== 'range') return getRasterPercentileRange(raster, band);
+  const statistics = colorBands.map((band): [number, number] | null => {
+    if (options.stretch !== 'range') return getRasterPercentileRange(raster, band, isVisible);
     const range = ranges[band];
     return range.min === undefined || range.max === undefined
       ? null
       : [range.min, range.max === range.min ? range.max + 1 : range.max];
   });
-  for (let index = 0; index < raster.width * raster.height; index++) {
-    const sample = sampleRaster(raster, [index % raster.width, Math.floor(index / raster.width)], {
-      bands
-    });
+  for (let index = 0; index < pixelCount; index++) {
+    const pixel: [number, number] = [index % raster.width, Math.floor(index / raster.width)];
+    const sample = sampleRaster(displayRaster, pixel, {bands: sampleBands});
     if (!sample.valid.every(Boolean)) continue;
+    if (
+      useAllColorNoData &&
+      displayRaster !== raster &&
+      !colorBands.some(band => isRasterSampleValid(raster, pixel[0], pixel[1], band))
+    )
+      continue;
+
     const outputIndex = index * 4;
-    if (bands.length === 3) {
+    const alpha = hasAlpha ? scaleAlphaToByte(sample.values[colorBands.length], alphaMaximum) : 255;
+    if (alpha === 0) continue;
+    if (colorBands.length === 3) {
       for (let channel = 0; channel < 3; channel++)
         target[outputIndex + channel] = scaleToByte(sample.values[channel]!, statistics[channel]);
     } else {
       const range = statistics[0];
-      if (!range) continue;
-      const normalized = clamp((sample.values[0]! - range[0]) / (range[1] - range[0]));
-      const color = sampleColorRamp(Math.sqrt(normalized));
-      target.set(color, outputIndex);
+      if (range) {
+        const normalized = clamp((sample.values[0]! - range[0]) / (range[1] - range[0]));
+        const color = sampleColorRamp(Math.sqrt(normalized));
+        target.set(color, outputIndex);
+      } else if (!hasAlpha) {
+        continue;
+      }
     }
-    target[outputIndex + 3] = 255;
+    target[outputIndex + 3] = alpha;
   }
   return {data: target, width: raster.width, height: raster.height};
 }
@@ -576,9 +656,20 @@ export function createDefaultRasterRenderResult(
   parameters: GetRasterParameters,
   metadata: RasterSourceMetadata
 ): RasterRenderResult {
+  const rasterWithMetadataNoData = applyMetadataNoData(raster, metadata);
+  const rasterWithBandMetadata =
+    !raster.bands && metadata.bands?.some(band => band.colorInterpretation !== undefined)
+      ? {
+          ...rasterWithMetadataNoData,
+          bands: Array.from({length: raster.bandCount}, (_, index) => {
+            const sourceBand = parameters.bands?.[index] ?? index;
+            return metadata.bands?.[sourceBand] ?? {index: sourceBand, dtype: raster.dtype};
+          })
+        }
+      : rasterWithMetadataNoData;
   return {
     ...getRasterBitmapPlacement(raster, parameters, metadata),
-    image: colorizeRasterData(applyMetadataNoData(raster, metadata))
+    image: colorizeRasterData(rasterWithBandMetadata)
   };
 }
 

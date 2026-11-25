@@ -4,7 +4,11 @@
 
 import {describe, expect, test, vi} from 'vitest';
 import {BitmapLayer} from '@deck.gl/layers';
-import type {RasterData, RasterSourceMetadata} from '@loaders.gl/core/loader-utils';
+import type {
+  RasterBandMetadata,
+  RasterData,
+  RasterSourceMetadata
+} from '@loaders.gl/core/loader-utils';
 import {RasterSet} from '@loaders.gl/tiles/raster-set';
 import {RasterBitmapLayer} from '../src/raster-bitmap-layer';
 import {
@@ -50,6 +54,14 @@ function createRaster(data: RasterData['data'], overrides: Partial<RasterData> =
   };
 }
 
+/** Builds band metadata in the same order as the sample arrays. */
+function createBandMetadata(
+  dtype: RasterBandMetadata['dtype'],
+  ...roles: RasterBandMetadata['colorInterpretation'][]
+): RasterBandMetadata[] {
+  return roles.map((colorInterpretation, index) => ({index, dtype, colorInterpretation}));
+}
+
 describe('raster colorization', () => {
   test('applies percentile scaling and transparent no-data pixels to a single band', () => {
     const image = colorizeRasterData(createRaster(new Float32Array([0, 10, 20, 30]), {noData: 10}));
@@ -88,6 +100,89 @@ describe('raster colorization', () => {
     );
 
     expect(Array.from(image.data.slice(0, 8))).toEqual([0, 0, 255, 255, 255, 255, 0, 255]);
+  });
+
+  test('uses tagged RGB order and alpha in its original scale even when it equals nodata', () => {
+    const image = colorizeRasterData(
+      createRaster(new Uint8Array([0, 20, 30, 40, 128, 0, 0, 0, 255, 40, 0, 20]), {
+        width: 3,
+        height: 1,
+        bandCount: 4,
+        dtype: 'uint8',
+        interleaved: true,
+        bands: createBandMetadata('uint8', 'alpha', 'blue', 'red', 'green'),
+        noData: 0
+      }),
+      {stretch: 'range'}
+    );
+
+    expect(Array.from(image.data)).toEqual([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 255, 255]);
+  });
+
+  test('excludes transparent fill from the color bands’ percentile stretch', () => {
+    const image = colorizeRasterData(
+      createRaster(
+        new Uint8Array([0, 0, 0, 0, 10, 20, 30, 255, 20, 40, 60, 255, 30, 60, 90, 255]),
+        {
+          bandCount: 4,
+          dtype: 'uint8',
+          interleaved: true,
+          bands: createBandMetadata('uint8', 'red', 'green', 'blue', 'alpha')
+        }
+      )
+    );
+
+    expect(Array.from(image.data)).toEqual([
+      0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255
+    ]);
+  });
+
+  test.each([
+    {
+      dtype: 'uint16',
+      alpha: new Uint16Array([65535, 32768, 0, 16384]),
+      expected: [255, 128, 0, 64]
+    },
+    {dtype: 'int16', alpha: new Int16Array([-32, 128, 255, 256]), expected: [0, 128, 255, 255]},
+    {dtype: 'float32', alpha: new Float32Array([-1, 0.5, 2, NaN]), expected: [0, 128, 255, 0]}
+  ] as const)('renders gray with $dtype alpha', ({dtype, alpha, expected}) => {
+    const bands = createBandMetadata(dtype, 'gray', 'alpha');
+    bands[1].noData = alpha[1];
+    const image = colorizeRasterData({
+      data: [new Uint8Array([10, 10, 20, 20]), alpha],
+      width: 2,
+      height: 2,
+      bandCount: 2,
+      dtype: 'mixed',
+      interleaved: false,
+      bands: [{...bands[0], dtype: 'uint8'}, bands[1]]
+    });
+
+    expect(Array.from(image.data.filter((_value, index) => index % 4 === 3))).toEqual(expected);
+    expect(Array.from(image.data.slice(4, 7))).toEqual([8, 29, 88]);
+  });
+
+  test('requires all tagged RGB channels to match nodata and still rejects masked and non-finite samples', () => {
+    const raster = createRaster(
+      new Float32Array([0, 10, 20, 0, 0, 0, 1, 10, 20, NaN, 10, 20, 1, 10, 20]),
+      {
+        width: 5,
+        height: 1,
+        bandCount: 3,
+        interleaved: true,
+        noData: 0,
+        validityMasks: [{band: 1, width: 5, height: 1, data: new Uint8Array([1, 1, 0, 1, 1])}]
+      }
+    );
+    const image = colorizeRasterData({
+      ...raster,
+      bands: createBandMetadata('float32', 'red', 'green', 'blue')
+    });
+
+    expect(Array.from(image.data)).toEqual([
+      0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255
+    ]);
+    expect(Array.from(colorizeRasterData(raster).data)).toEqual([...new Array(19).fill(0), 255]);
   });
 });
 
@@ -236,6 +331,7 @@ describe('RasterSourceLayer lifecycle', () => {
 
     await layer.resolveSource(layer.props);
     await vi.waitFor(() => expect(onRasterLoad).toHaveBeenCalledTimes(1));
+    expect(getRaster).toHaveBeenCalledWith(expect.objectContaining({bands: [0]}));
     const firstBitmap = layer.renderLayers();
     expect(renderSubLayer).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -432,6 +528,38 @@ describe('RasterSourceLayer lifecycle', () => {
     layer.state.metadata = null;
     layer.requestRaster(createViewport([-10, -5, 20, 15]));
     expect(requestRaster).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([
+    'cpu',
+    'gpu'
+  ])('uses CPU colorization for tagged gray and alpha with %s rendering', rendering => {
+    const layer = createRasterLayer({rendering});
+    const requestRaster = vi.fn();
+    const metadata = {
+      ...GEOGRAPHIC_METADATA,
+      bandCount: 3,
+      bands: createBandMetadata('uint8', 'alpha', 'gray', 'undefined')
+    };
+    layer.state = {rasterSet: {requestRaster}, metadata};
+    layer.requestRaster(createViewport([-10, -5, 20, 15]));
+
+    expect(requestRaster).toHaveBeenCalledWith(
+      expect.objectContaining({bands: [1, 0]}),
+      expect.any(Number)
+    );
+    const parameters = requestRaster.mock.calls[0][0];
+    const raster = createRaster(
+      [new Uint8Array([10, 20, 30, 40]), new Uint8Array([64, 128, 192, 255])],
+      {
+        bandCount: 2,
+        dtype: 'uint8'
+      }
+    );
+    layer.handleRasterLoad({requestId: 0, raster, parameters});
+    const bitmap = layer.renderLayers();
+    expect(bitmap).toBeInstanceOf(BitmapLayer);
+    expect(bitmap.props.image.data[3]).toBe(64);
   });
 
   test('handles metadata and raster events and releases request managers', () => {
