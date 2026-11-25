@@ -159,7 +159,7 @@ test('ParquetWriter emits GeoParquet 2.0 logical types and row-group statistics'
 
   const batches = await collectBatches(source.read({bbox: [-11, 1, 21, 31]}));
   expect(batches.map(batch => JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex)).toEqual([0]);
-  expect(source.getTelemetry().rowGroupsPrunedByStatistics).toBe(1);
+  expect(source.getTelemetry().rowGroupsPruned).toBe(1);
 });
 
 test('ParquetWriter emits native Parquet geo types directly from GeoArrow WKB metadata', async () => {
