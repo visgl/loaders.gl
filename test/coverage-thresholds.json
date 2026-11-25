@@ -177,7 +177,6 @@
         "modules/images/src/bundled-entry.ts",
         "modules/images/src/color-lut-api.ts",
         "modules/images/src/color-lut-bundled-entry.ts",
-        "modules/images/src/crunch/api.ts",
         "modules/images/src/crunch/bundled-entry.ts",
         "modules/images/src/texture-api.ts",
         "modules/images/src/texture-bundled-entry.ts"

@@ -5,6 +5,6 @@
 export * from './image-api';
 export * from './texture-api';
 export * from './basis-api';
-export * from './crunch/api';
+export type {CrunchLoaderOptions} from './crunch-loader';
 export * from './color-lut-api';
 export type {CompositeImageManifest} from './lib/composite-image/composite-image-manifest-schema';
