@@ -4,4 +4,4 @@
 
 export {SPLATLoader} from '../splat-loader-types';
 export {SPLATFormat} from '../splats-format';
-export type * from '../splat';
+export type {SPLATLoaderWithParser} from '../splat-loader';

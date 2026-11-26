@@ -4,4 +4,4 @@
 
 export {KSPLATLoader} from '../ksplat-loader-types';
 export {KSPLATFormat} from '../splats-format';
-export type * from '../ksplat';
+export type {KSPLATLoaderWithParser} from '../ksplat-loader';
