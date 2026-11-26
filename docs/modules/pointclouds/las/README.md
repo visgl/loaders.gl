@@ -90,7 +90,7 @@ and the project-wide [Attributions and Credits](/docs/references-and-credits).
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {query} from '@loaders.gl/core/query';
+import {query} from '@loaders.gl/core/query/sql';
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 
 const source = await createDataSource('points.laz', LASLoader);

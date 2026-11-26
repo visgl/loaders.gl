@@ -4,7 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
-import {queryProgressive, queryInBatches, queryGroupedSQL} from '@loaders.gl/core/query';
+import {queryProgressive, queryInBatches} from '@loaders.gl/core/query/sql';
+import {queryGroupedSQL} from '@loaders.gl/core/query';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {createScanQueryMetadata} from '@loaders.gl/core/loader-utils';
 import type {TableScanSource} from '@loaders.gl/core/loader-utils';
