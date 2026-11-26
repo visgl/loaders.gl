@@ -5,17 +5,13 @@
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Texture} from '@loaders.gl/core/schema';
 import type {TextureLoaderOptions as TextureApiLoaderOptions} from './lib/texture-api/texture-api-types';
-import {
-  parseCompositeImageManifest,
-  type ImageTextureArrayManifest
-} from './lib/composite-image/parse-composite-image';
+import {parseCompositeImageManifest} from './lib/composite-image/parse-composite-image';
 import {TextureArrayLoader as TextureArrayLoaderMetadata} from './texture-array-loader-types';
 
 const {preload: _TextureArrayLoaderPreload, ...TextureArrayLoaderMetadataWithoutPreload} =
   TextureArrayLoaderMetadata;
 
 export type TextureArrayLoaderOptions = TextureApiLoaderOptions;
-export type {ImageTextureArrayManifest as TextureArrayManifest};
 
 export const TextureArrayLoaderWithParser = {
   ...TextureArrayLoaderMetadataWithoutPreload,

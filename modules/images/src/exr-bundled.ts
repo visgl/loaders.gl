@@ -2,5 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './exr';
-export {EXRLoaderWithParser as EXRLoader} from './exr';
+export {EXRLoaderWithParser} from './exr-loader';
+export type {EXRImage, EXRChannel} from './exr/parse-exr';
+export {EXRLoaderWithParser as EXRLoader} from './exr-loader';

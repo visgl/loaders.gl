@@ -1167,9 +1167,6 @@
       "@loaders.gl/images/bundled": [
         "modules/images/src/bundled-entry.ts"
       ],
-      "@loaders.gl/images/gl-extensions": [
-        "modules/images/src/gl-extensions.ts"
-      ],
       "@loaders.gl/images/types": [
         "modules/images/src/types.ts"
       ],

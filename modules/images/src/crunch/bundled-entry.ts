@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {CrunchLoader} from './bundled';
+import {CrunchLoader as metadata} from '../crunch-loader';
+import {parseCrunch} from '../lib/parsers/parse-crunch';
+
+export type {CrunchLoaderOptions} from '../crunch-loader';
 export {CrunchTextureFormat} from '../texture-format';
-export type {CrunchLoaderOptions} from './bundled';
+
+const {preload: _preload, ...descriptor} = metadata;
+
+/** Eager Crunch decoder, also used by the standalone worker. */
+export const CrunchLoader = {...descriptor, parse: parseCrunch};

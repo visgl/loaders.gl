@@ -7,10 +7,8 @@ import type {Texture} from '@loaders.gl/core/schema';
 import type {TextureLoaderOptions as TextureApiLoaderOptions} from './lib/texture-api/texture-api-types';
 import {VERSION} from './lib/utils/version';
 import {testCompositeImageManifestShape} from './lib/composite-image/test-composite-image-manifest';
-import type {ImageTextureCubeManifest} from './lib/composite-image/parse-composite-image';
 
 export type TextureCubeLoaderOptions = TextureApiLoaderOptions;
-export type {ImageTextureCubeManifest as TextureCubeManifest};
 
 /** Preloads the parser-bearing texture cube manifest loader implementation. */
 async function preload() {
