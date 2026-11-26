@@ -1,1 +1,1 @@
-export * from './usd/usd-loader.js';
+export {USDLoaderWithParser} from './usd/usd-loader';

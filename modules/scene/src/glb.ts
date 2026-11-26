@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {type GLBLoaderOptions, GLBLoader} from './glb-loader-types';
+export {type GLBLoaderOptions, GLBLoader} from './gltf/glb-loader-types';
 
-export {GLBLoaderWithParser} from './glb-loader';
+export {GLBLoaderWithParser} from './gltf/glb-loader';
 
-export {type GLBChunk, type GLBWriterOptions, GLBWriter} from './glb-writer';
+export type {GLBChunk} from './gltf/lib/types/glb-types';
+export {type GLBWriterOptions, GLBWriter} from './gltf/glb-writer';
 export {GLBFormat} from './gltf/gltf-format';
-export type {GLB} from './gltf/index';
+export type {GLB} from './gltf/lib/types/glb-types';

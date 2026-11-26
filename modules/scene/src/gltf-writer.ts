@@ -1,1 +1,1 @@
-export * from './gltf/gltf-writer.js';
+export {type GLTFWriterOptions, GLTFWriter} from './gltf/gltf-writer';

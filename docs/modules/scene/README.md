@@ -27,6 +27,8 @@ These exports are metadata-only loaders. Async core APIs preload implementations
 
 OBJ's transport helpers come directly from core and do not require the tables package. Draco, images and textures remain independent shared dependencies. See [Modules](../README.md) for the complete package map.
 
+Focused parser subpaths load individual implementations. For example, import the implementation from `@loaders.gl/scene/obj/parser`. The format metadata loaders use these subpaths in `preload()`.
+
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md)
