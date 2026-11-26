@@ -4,7 +4,7 @@ import {ZstdCompressor} from '@loaders.gl/compression/zstd-compressor';
 import {GZipFflateCompressor} from '@loaders.gl/compression/gzip-compressor-fflate';
 import {SPZLoader} from '@loaders.gl/splats/spz';
 import {parseSPZToGaussianSplats} from '@loaders.gl/splats/spz/api';
-import {SPZLoaderWithParser} from '@loaders.gl/splats/spz/bundled';
+import {SPZLoaderWithParser} from '../src/spz-loader';
 import {ZstdCodec} from 'zstd-codec';
 const modules = {'zstd-codec': ZstdCodec};
 let validationFixture: ArrayBuffer;

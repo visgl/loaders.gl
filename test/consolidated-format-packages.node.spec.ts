@@ -141,15 +141,39 @@ test.each([
   expect(entry[loaderName].version).toBe(manifest.version);
 });
 
-test('emitted bundled and default ESM entrypoints keep valid index references', () => {
+test('emitted services and splats ESM entrypoints keep valid index references', () => {
   const result = execFileSync(
     process.execPath,
     [
       '--input-type=module',
       '--eval',
-      `await Promise.all(['@loaders.gl/services/api', '@loaders.gl/services', '@loaders.gl/splats/bundled', '@loaders.gl/splats'].map(specifier => import(specifier))); process.stdout.write('loaded');`
+      `await Promise.all(['@loaders.gl/services/api', '@loaders.gl/services', '@loaders.gl/splats'].map(specifier => import(specifier))); process.stdout.write('loaded');`
     ],
     {encoding: 'utf8'}
   );
   expect(result).toBe('loaded');
+});
+
+test('the aggregate splats bundle exposes the four metadata loaders', async () => {
+  const {metafile} = await build({
+    entryPoints: ['modules/splats/src/bundled.ts'],
+    bundle: true,
+    format: 'esm',
+    metafile: true,
+    packages: 'external',
+    write: false
+  });
+  expect(Object.values(metafile.outputs)[0].exports.sort()).toEqual([
+    'KSPLATLoader',
+    'RADLoader',
+    'SPLATLoader',
+    'SPZLoader'
+  ]);
+  const entry = metafile.inputs['modules/splats/src/bundled.ts'];
+  expect(entry.imports.map(dependency => path.basename(dependency.path)).sort()).toEqual([
+    'ksplat-loader-types.ts',
+    'rad-loader-types.ts',
+    'splat-loader-types.ts',
+    'spz-loader-types.ts'
+  ]);
 });

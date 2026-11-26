@@ -8,9 +8,9 @@ import * as arrow from 'apache-arrow';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
-import {ChromeTraceWriter} from '@loaders.gl/traces/chrome-trace/bundled';
+import {ChromeTraceWriter} from '../src/chrome-trace-writer';
 import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
-import {PerfettoTraceWriter} from '@loaders.gl/traces/perfetto/bundled';
+import {PerfettoTraceWriter} from '../src/perfetto-trace-writer';
 
 import type {ChromeTraceEventArrowTable} from '@loaders.gl/traces/chrome-trace';
 import type {PerfettoTrace, PerfettoTraceBatch} from '@loaders.gl/traces/perfetto';
