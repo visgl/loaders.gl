@@ -60,3 +60,14 @@ For parser access use the flat `@loaders.gl/scientific/npy` subpath.
 ## Package exports
 
 <ModuleSubpaths module="scientific" />
+
+## Experimental formats
+
+- [`/adsb`](./adsb/README.md)
+- [`/ais`](./ais/README.md)
+- [`/gtfs`](./gtfs/README.md)
+- [`/gtfs-realtime`](./gtfs-realtime/README.md)
+- [ADS-B aircraft state JSON](./adsb/formats/adsb.md)
+- [AIS - Automatic Identification System](./ais/formats/ais.md)
+- [GTFS Schedule ZIP](./gtfs/formats/gtfs.md)
+- [GTFS Realtime protobuf](./gtfs-realtime/formats/gtfs-realtime.md)

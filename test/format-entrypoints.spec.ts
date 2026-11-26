@@ -19,10 +19,10 @@ import {
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 import {NetCDFSource} from '@loaders.gl/scientific/netcdf/bundled';
-import {ADSBLoader} from '@loaders.gl/geospatial/adsb';
-import {AISLoader} from '@loaders.gl/geospatial/ais';
-import {GTFSLoader} from '@loaders.gl/geospatial/gtfs';
-import {GTFSRealtimeLoader} from '@loaders.gl/geospatial/gtfs-realtime';
+import {ADSBLoader} from '@loaders.gl/scientific/adsb';
+import {AISLoader} from '@loaders.gl/scientific/ais';
+import {GTFSLoader} from '@loaders.gl/scientific/gtfs';
+import {GTFSRealtimeLoader} from '@loaders.gl/scientific/gtfs-realtime';
 import {OMMLoader} from '@loaders.gl/geospatial/omm';
 import {TLELoader} from '@loaders.gl/geospatial/tle';
 

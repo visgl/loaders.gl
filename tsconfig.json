@@ -495,32 +495,32 @@
       "@loaders.gl/traces/test": [
         "modules/traces/test"
       ],
-      "@loaders.gl/geospatial/adsb": [
-        "modules/geospatial/src/adsb/index.ts"
+      "@loaders.gl/scientific/adsb": [
+        "modules/scientific/src/adsb/index.ts"
       ],
-      "@loaders.gl/geospatial/ais": [
-        "modules/geospatial/src/ais/index.ts"
+      "@loaders.gl/scientific/ais": [
+        "modules/scientific/src/ais/index.ts"
       ],
-      "@loaders.gl/geospatial/gtfs": [
-        "modules/geospatial/src/gtfs/index.ts"
+      "@loaders.gl/scientific/gtfs": [
+        "modules/scientific/src/gtfs/index.ts"
       ],
-      "@loaders.gl/geospatial/gtfs-realtime": [
-        "modules/geospatial/src/gtfs-realtime/index.ts"
+      "@loaders.gl/scientific/gtfs-realtime": [
+        "modules/scientific/src/gtfs-realtime/index.ts"
       ],
       "@loaders.gl/geospatial/omm": [
         "modules/geospatial/src/omm/index.ts"
       ],
-      "@loaders.gl/geospatial/adsb/test": [
-        "modules/geospatial/test/adsb"
+      "@loaders.gl/scientific/adsb/test": [
+        "modules/scientific/test/adsb"
       ],
-      "@loaders.gl/geospatial/ais/test": [
-        "modules/geospatial/test/ais"
+      "@loaders.gl/scientific/ais/test": [
+        "modules/scientific/test/ais"
       ],
-      "@loaders.gl/geospatial/gtfs/test": [
-        "modules/geospatial/test/gtfs"
+      "@loaders.gl/scientific/gtfs/test": [
+        "modules/scientific/test/gtfs"
       ],
-      "@loaders.gl/geospatial/gtfs-realtime/test": [
-        "modules/geospatial/test/gtfs-realtime"
+      "@loaders.gl/scientific/gtfs-realtime/test": [
+        "modules/scientific/test/gtfs-realtime"
       ],
       "@loaders.gl/geospatial/omm/test": [
         "modules/geospatial/test/omm"
@@ -780,17 +780,17 @@
       "@loaders.gl/geospatial/geopackage/bundled": [
         "modules/geospatial/src/geopackage/bundled-entry.ts"
       ],
-      "@loaders.gl/geospatial/adsb/bundled": [
-        "modules/geospatial/src/adsb/bundled.ts"
+      "@loaders.gl/scientific/adsb/bundled": [
+        "modules/scientific/src/adsb/bundled.ts"
       ],
-      "@loaders.gl/geospatial/ais/bundled": [
-        "modules/geospatial/src/ais/bundled.ts"
+      "@loaders.gl/scientific/ais/bundled": [
+        "modules/scientific/src/ais/bundled.ts"
       ],
-      "@loaders.gl/geospatial/gtfs/bundled": [
-        "modules/geospatial/src/gtfs/bundled.ts"
+      "@loaders.gl/scientific/gtfs/bundled": [
+        "modules/scientific/src/gtfs/bundled.ts"
       ],
-      "@loaders.gl/geospatial/gtfs-realtime/bundled": [
-        "modules/geospatial/src/gtfs-realtime/bundled.ts"
+      "@loaders.gl/scientific/gtfs-realtime/bundled": [
+        "modules/scientific/src/gtfs-realtime/bundled.ts"
       ],
       "@loaders.gl/geospatial/omm/bundled": [
         "modules/geospatial/src/omm/bundled.ts"

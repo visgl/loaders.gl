@@ -117,6 +117,46 @@
       "types": "./dist/vtk-api.d.ts",
       "import": "./dist/vtk-api.js",
       "require": "./dist/vtk-api.cjs"
+    },
+    "./adsb": {
+      "types": "./dist/adsb/index.d.ts",
+      "import": "./dist/adsb/index.js",
+      "require": "./dist/adsb/index.cjs"
+    },
+    "./adsb/bundled": {
+      "types": "./dist/adsb/bundled.d.ts",
+      "import": "./dist/adsb/bundled.js",
+      "require": "./dist/adsb/bundled.cjs"
+    },
+    "./ais": {
+      "types": "./dist/ais/index.d.ts",
+      "import": "./dist/ais/index.js",
+      "require": "./dist/ais/index.cjs"
+    },
+    "./ais/bundled": {
+      "types": "./dist/ais/bundled.d.ts",
+      "import": "./dist/ais/bundled.js",
+      "require": "./dist/ais/bundled.cjs"
+    },
+    "./gtfs": {
+      "types": "./dist/gtfs/index.d.ts",
+      "import": "./dist/gtfs/index.js",
+      "require": "./dist/gtfs/index.cjs"
+    },
+    "./gtfs/bundled": {
+      "types": "./dist/gtfs/bundled.d.ts",
+      "import": "./dist/gtfs/bundled.js",
+      "require": "./dist/gtfs/bundled.cjs"
+    },
+    "./gtfs-realtime": {
+      "types": "./dist/gtfs-realtime/index.d.ts",
+      "import": "./dist/gtfs-realtime/index.js",
+      "require": "./dist/gtfs-realtime/index.cjs"
+    },
+    "./gtfs-realtime/bundled": {
+      "types": "./dist/gtfs-realtime/bundled.d.ts",
+      "import": "./dist/gtfs-realtime/bundled.js",
+      "require": "./dist/gtfs-realtime/bundled.cjs"
     }
   },
   "sideEffects": false,
@@ -145,6 +185,7 @@
     "build-cjs-pdb": "esbuild src/pdb-loader.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/pdb-loader.cjs --external:@loaders.gl/*"
   },
   "dependencies": {
+    "@loaders.gl/archives": "5.0.0",
     "@loaders.gl/documents": "5.0.0",
     "@math.gl/core": "^5.0.3",
     "@math.gl/geospatial": "^5.0.3",
@@ -153,7 +194,8 @@
     "zarrita": "~0.7.1"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "apache-arrow": ">= 17.0.0"
   },
   "keywords": [
     "loaders.gl",

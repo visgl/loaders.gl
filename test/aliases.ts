@@ -68,11 +68,11 @@ function makeAliases() {
     '@loaders.gl/tiles/test': resolveTestPath('./modules/tiles/test'),
     '@loaders.gl/traces/test': resolveTestPath('./modules/traces/test'),
     '@loaders.gl/geospatial/wkt/test': resolveTestPath('./modules/geospatial/test/wkt'),
-    '@loaders.gl/geospatial/adsb/test': resolveTestPath('./modules/geospatial/test/adsb'),
-    '@loaders.gl/geospatial/ais/test': resolveTestPath('./modules/geospatial/test/ais'),
-    '@loaders.gl/geospatial/gtfs/test': resolveTestPath('./modules/geospatial/test/gtfs'),
-    '@loaders.gl/geospatial/gtfs-realtime/test': resolveTestPath(
-      './modules/geospatial/test/gtfs-realtime'
+    '@loaders.gl/scientific/adsb/test': resolveTestPath('./modules/scientific/test/adsb'),
+    '@loaders.gl/scientific/ais/test': resolveTestPath('./modules/scientific/test/ais'),
+    '@loaders.gl/scientific/gtfs/test': resolveTestPath('./modules/scientific/test/gtfs'),
+    '@loaders.gl/scientific/gtfs-realtime/test': resolveTestPath(
+      './modules/scientific/test/gtfs-realtime'
     ),
     '@loaders.gl/geospatial/omm/test': resolveTestPath('./modules/geospatial/test/omm'),
     '@loaders.gl/geospatial/tle/test': resolveTestPath('./modules/geospatial/test/tle'),

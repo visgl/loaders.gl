@@ -6,13 +6,13 @@ import type {Color, Position} from '@deck.gl/core';
 import {PathLayer, ScatterplotLayer} from '@deck.gl/layers';
 import {DeckGL} from '@deck.gl/react';
 import {load} from '@loaders.gl/core';
-import {GTFSLoader, type GTFSData, type GTFSRow} from '@loaders.gl/geospatial/gtfs';
+import {GTFSLoader, type GTFSData, type GTFSRow} from '@loaders.gl/scientific/gtfs';
 import {
   GTFSRealtimeLoader,
   type GTFSRealtimeFeed,
   type GTFSRealtimePosition,
   type GTFSRealtimeVehiclePosition
-} from '@loaders.gl/geospatial/gtfs-realtime';
+} from '@loaders.gl/scientific/gtfs-realtime';
 import {setWorkerUrl} from 'maplibre-gl';
 import React, {type DragEvent, useEffect, useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';

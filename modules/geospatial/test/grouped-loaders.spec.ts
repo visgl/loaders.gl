@@ -7,10 +7,10 @@ import {parse} from '@loaders.gl/core';
 import {KMLLoader, KMZLoader} from '@loaders.gl/geospatial/kml';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
-import {ADSBLoader} from '@loaders.gl/geospatial/adsb';
-import {AISLoader} from '@loaders.gl/geospatial/ais';
-import {GTFSLoader} from '@loaders.gl/geospatial/gtfs';
-import {GTFSRealtimeLoader} from '@loaders.gl/geospatial/gtfs-realtime';
+import {ADSBLoader} from '@loaders.gl/scientific/adsb';
+import {AISLoader} from '@loaders.gl/scientific/ais';
+import {GTFSLoader} from '@loaders.gl/scientific/gtfs';
+import {GTFSRealtimeLoader} from '@loaders.gl/scientific/gtfs-realtime';
 import {OMMLoader} from '@loaders.gl/geospatial/omm';
 import {TLELoader} from '@loaders.gl/geospatial/tle';
 import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
@@ -25,10 +25,10 @@ import {TCXLoaderWithParser} from '@loaders.gl/geospatial/tcx/bundled';
 import {ShapefileLoaderWithParser} from '@loaders.gl/geospatial/shapefile/bundled';
 import {SHPLoaderWithParser} from '@loaders.gl/geospatial/shp/bundled';
 import {DBFLoaderWithParser} from '@loaders.gl/geospatial/dbf/bundled';
-import {ADSBLoaderWithParser} from '@loaders.gl/geospatial/adsb/bundled';
-import {AISLoaderWithParser} from '@loaders.gl/geospatial/ais/bundled';
-import {GTFSLoaderWithParser} from '@loaders.gl/geospatial/gtfs/bundled';
-import {GTFSRealtimeLoaderWithParser} from '@loaders.gl/geospatial/gtfs-realtime/bundled';
+import {ADSBLoaderWithParser} from '@loaders.gl/scientific/adsb/bundled';
+import {AISLoaderWithParser} from '@loaders.gl/scientific/ais/bundled';
+import {GTFSLoaderWithParser} from '@loaders.gl/scientific/gtfs/bundled';
+import {GTFSRealtimeLoaderWithParser} from '@loaders.gl/scientific/gtfs-realtime/bundled';
 import {OMMLoaderWithParser} from '@loaders.gl/geospatial/omm/bundled';
 import {TLELoaderWithParser} from '@loaders.gl/geospatial/tle/bundled';
 import {KMLLoader as FormatKMLLoader} from '@loaders.gl/geospatial/kml';
@@ -59,7 +59,7 @@ test.each([
   expect(metadata).not.toHaveProperty('parseSync');
   expect(await metadata.preload!()).toBe(implementation);
   expect(implementation).not.toHaveProperty('preload');
-  expect(implementation.module).toBe('geospatial');
+  expect(implementation.module).toBe(metadata.module);
 });
 
 test('format geospatial roots share their implementation owner', () => {

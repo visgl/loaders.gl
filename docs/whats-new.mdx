@@ -41,9 +41,9 @@ for stable v4 migrations.
   In KVN, it accepts metadata and data delimiters and skips optional blocks such as covariance.
   [`TLELoader`](./modules/geospatial/tle/api-reference/tle-loader.md)
   reads two-line element sets. Both return one table schema with the OMM keyword names.
-- 🧪 **Vessel and aircraft positions.** [`AISLoader`](./modules/geospatial/ais/api-reference/ais-loader.md) reads NMEA maritime reports, and [`ADSBLoader`](./modules/geospatial/adsb/api-reference/adsb-loader.md) reads aircraft state snapshots. Both return Arrow or object-row tables.
-- 🧪 **Transit schedules.** [`GTFSLoader`](./modules/geospatial/gtfs/api-reference/gtfs-loader.md) reads GTFS Schedule ZIP feeds as typed tables, stop points, and route shapes.
-- 🧪 **Realtime transit.** [`GTFSRealtimeLoader`](./modules/geospatial/gtfs-realtime/api-reference/gtfs-realtime-loader.md) reads GTFS Realtime snapshots as vehicle tables or decoded feeds with duplicate trip IDs, platform assignments, alerts, and realtime shapes, stops, and trip modifications.
+- 🧪 **Vessel and aircraft positions.** [`AISLoader`](./modules/scientific/ais/api-reference/ais-loader.md) reads NMEA maritime reports, and [`ADSBLoader`](./modules/scientific/adsb/api-reference/adsb-loader.md) reads aircraft state snapshots. Both return Arrow or object-row tables.
+- 🧪 **Transit schedules.** [`GTFSLoader`](./modules/scientific/gtfs/api-reference/gtfs-loader.md) reads GTFS Schedule ZIP feeds as typed tables, stop points, and route shapes.
+- 🧪 **Realtime transit.** [`GTFSRealtimeLoader`](./modules/scientific/gtfs-realtime/api-reference/gtfs-realtime-loader.md) reads GTFS Realtime snapshots as vehicle tables or decoded feeds with duplicate trip IDs, platform assignments, alerts, and realtime shapes, stops, and trip modifications.
 - **Documents and images.** [Documents](./modules/documents/README.md) groups text and
   structured formats. [Images](./modules/images/README.md) adds OpenEXR, color lookup
   tables, and measured lighting profiles.
