@@ -2,11 +2,20 @@
 
 ## v5.0
 
+### v5.0.1
+
+- Reorganize public package subpaths and load format writers on demand. See the upgrade guide for changed imports (#4627, #4636, #4638–#4647).
+- Upgrade to math.gl 5.0.4 and reuse its Arrow readers. Preload Arrow query execution during source preparation and preserve safe integers in CSV Arrow fast paths (#4633, #4635, #4637).
+- Harden GeoParquet 2.0 output and prune point geography row groups (#4617).
+- Share Cesium ion authentication across 3D Tiles requests and extend TileMatrix navigation (#4619, #4623).
+- Improve GeoTIFF overview selection, noData fill, and alpha handling. Add GPU raster rendering and projected CRS support (#4616, #4621, #4624, #4625, #4630).
+- Read xarray GeoZarr pyramids and accept caller-supplied Zarr stores (#4628, #4631).
+- Add experimental AIS, ADS-B, GTFS, OMM, and TLE loaders under Scientific (#4615, #4629, #4632, #4634).
+
 ### v5.0.0
 
-- Upgrade to math.gl 5.0.4 and share streaming Arrow schema inference, CSV UTF-8 reads, Arrow projection, predicate evaluation, row selection, and schema metadata.
+- Upgrade to math.gl 5.0.3 and share Arrow projection, predicate evaluation, row selection, and schema metadata.
 - Delegate WKT parsing, WKB ring traversal, and TWKB encoding and decoding to math.gl.
-- Apply a 1% resolution tolerance to GeoTIFF overview selection and overzoom reporting.
 
 - Remove the legacy v4 tile-converter implementation (#4606).
 - Delegate Arrow SQL filtering and relational execution to math.gl, including timestamp sorting and grouping.

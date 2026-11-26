@@ -10,8 +10,8 @@ import type {
 import {expect, test, vi} from 'vitest';
 import {sampleRaster} from '@loaders.gl/core/loader-utils';
 import {GeoTIFFRasterSource} from '../../src/geotiff/geotiff-source';
-import type {TiffSourceImage} from '../../src/geotiff/lib/tiff/tiff-source-decoder';
 import {GeoTIFFLoaderWithParser} from '@loaders.gl/raster/geotiff/bundled';
+import type {TiffSourceImage} from '../../src/geotiff/lib/tiff/tiff-source-decoder';
 import {OMETiffImageSource, OMETiffLoader} from '../../src/geotiff/ometiff-loader';
 import {createTiffFixture} from './lib/tiff/tiff-fixture';
 
