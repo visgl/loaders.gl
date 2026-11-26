@@ -58,12 +58,16 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->20<!-- -->)
+All exported subpaths (<!-- -->24<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
 | Format                                                                                                                                | Import subpath                            |
 | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+|                                                                                                                                       | `@loaders.gl/scientific/adsb`             |
+|                                                                                                                                       | `@loaders.gl/scientific/adsb/bundled`     |
+|                                                                                                                                       | `@loaders.gl/scientific/ais`              |
+|                                                                                                                                       | `@loaders.gl/scientific/ais/bundled`      |
 |                                                                                                                                       | `@loaders.gl/scientific/grib2`            |
 |                                                                                                                                       | `@loaders.gl/scientific/hdf5`             |
 | [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf`           |
@@ -84,3 +88,10 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr`             |
 | [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/api`         |
 | [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/bundled`     |
+
+## Experimental formats[​](#experimental-formats "Direct link to Experimental formats")
+
+* [`/adsb`](https://loaders.gl/next/docs/modules/scientific/adsb.md)
+* [`/ais`](https://loaders.gl/next/docs/modules/scientific/ais.md)
+* [ADS-B aircraft state JSON](https://loaders.gl/next/docs/modules/scientific/adsb/formats/adsb.md)
+* [AIS - Automatic Identification System](https://loaders.gl/next/docs/modules/scientific/ais/formats/ais.md)

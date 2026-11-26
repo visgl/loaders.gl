@@ -670,6 +670,12 @@ Load scene graphs and meshes from glTF/GLB, OBJ/MTL, OpenUSD and Draco. Install 
 Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
 
 - [@loaders.gl/scientific](https://loaders.gl/next/docs/modules/scientific.md): Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
+- [🧪 @loaders.gl/scientific/adsb](https://loaders.gl/next/docs/modules/scientific/adsb.md): Read ADS-B aircraft state snapshots in two JSON layouts. The format subpath exports
+- [🧪 ADSBLoader](https://loaders.gl/next/docs/modules/scientific/adsb/api-reference/adsb-loader.md): ADSBLoader auto-detects the two supported aircraft state JSON layouts
+- [🧪 ADS-B aircraft state JSON](https://loaders.gl/next/docs/modules/scientific/adsb/formats/adsb.md): | Type | API |
+- [🧪 @loaders.gl/scientific/ais](https://loaders.gl/next/docs/modules/scientific/ais.md): Read maritime Automatic Identification System (AIS) reports from NMEA text logs. The format
+- [🧪 AISLoader](https://loaders.gl/next/docs/modules/scientific/ais/api-reference/ais-loader.md): AISLoader reads AIS reports from !AIVDM and !AIVDO sentences and
+- [🧪 AIS (Automatic Identification System)](https://loaders.gl/next/docs/modules/scientific/ais/formats/ais.md): | Type | API |
 - [Bring a NumPy array into a typed JavaScript pipeline.](https://loaders.gl/next/docs/modules/scientific/api-reference/npy-loader.md): Read NumPy NPY arrays into typed JavaScript data while preserving dtype, order, and shape metadata.
 - [NumPy NPY](https://loaders.gl/next/docs/modules/scientific/formats/npy.md): Typed multidimensional NumPy arrays loaded as scientific data.
 - [GRIB2](https://loaders.gl/next/docs/modules/scientific/grib2.md): The @loaders.gl/scientific/grib2 subpath exports a parser and scientific-array source for a
