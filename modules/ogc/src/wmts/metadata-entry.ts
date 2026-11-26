@@ -3,4 +3,5 @@
 // Copyright (c) vis.gl contributors
 
 export {WMTSCapabilitiesLoader} from '../wms/wmts-capabilities-loader';
-export type * from '../wmts';
+export type {WMTSCapabilitiesLoaderOptions} from '../wms/wmts-capabilities-loader';
+export type {WMTSCapabilities} from '../wms/lib/parsers/wmts/parse-wmts-capabilities';

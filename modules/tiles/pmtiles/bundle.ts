@@ -86,7 +86,7 @@ export type {
   SourceLoader
 } from '@loaders.gl/core';
 export {PMTilesLoader, PMTilesFormat, _PMTilesLoader} from '@loaders.gl/tiles/pmtiles';
-export {PMTilesTileSource} from '@loaders.gl/tiles/pmtiles/bundled';
+export {PMTilesTileSource} from '../src/pmtiles/pmtiles-source';
 export type {
   PMTilesMetadata,
   PMTilesRangeRequestOptions,

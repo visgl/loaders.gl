@@ -26,20 +26,22 @@ export {
   populateLASTypedExtraBytes
 } from './lib/las-extra-bytes';
 export {toPublicLASResult, getLASRecordBatches, parseLASMetadata} from './las-loader';
+export type {LASLoaderOptions, LASColumnName} from './las-loader-shared';
 export type {
-  LASLoaderOptions,
   LASWaveformPacket,
   LASWaveformPacketReference,
   LASWaveformReadOptions,
-  LASWaveformStorage,
+  LASWaveformStorage
+} from './lib/las-waveform';
+export type {
   FeedableLAZChunkDecoder,
   FeedableLAZChunkEncoder,
   LAZChunkDecoderOptions,
-  LAZChunkMetadata,
-  LASColumnName,
-  LASSourceOptions,
-  LASExtraBytesWriter,
-  LASWriterOptions,
+  LAZChunkMetadata
+} from '@loaders.gl/core/loader-utils';
+export type {LASSourceOptions} from './las-source';
+export type {LASExtraBytesWriter, LASWriterOptions} from './las-writer';
+export type {
   LASExtendedVariableLengthRecord,
   LASExtraBytesDescriptor,
   LASGeoTIFFKey,
@@ -48,8 +50,7 @@ export type {
   LASMetadata,
   LASMesh,
   LASVariableLengthRecord,
-  LASWaveformPacketDescriptor,
-  LASTypedExtraBytesAttribute,
-  LASTypedExtraBytesValue,
-  LASCompatibilityLayout
-} from './bundled';
+  LASWaveformPacketDescriptor
+} from './lib/las-types';
+export type {LASTypedExtraBytesAttribute, LASTypedExtraBytesValue} from './lib/las-extra-bytes';
+export type {LASCompatibilityLayout} from './lib/las-compatibility';

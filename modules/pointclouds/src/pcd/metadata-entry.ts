@@ -4,4 +4,6 @@
 
 export {PCDLoader} from './pcd-loader-types';
 export {PCDFormat} from './pcd-format';
-export type * from './index';
+export type {PCDLoaderOptions} from './pcd-loader-definition';
+export type {PCDWriterOptions, PCDWriter} from './pcd-writer';
+export type {PCDLoaderWithParser} from '../pcd-loader';

@@ -4,4 +4,6 @@
 
 export {MLTLoader} from './mlt-loader';
 export {MLTFormat} from './mlt-format';
-export type * from './index';
+export type {MLTLoaderOptions} from './mlt-loader';
+export type {MLTSourceLoaderOptions} from './mlt-source';
+export type {MLTWriter, MLTWriterOptions} from './mlt-writer';
