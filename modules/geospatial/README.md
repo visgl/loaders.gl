@@ -1,8 +1,8 @@
 # @loaders.gl/geospatial
 
-Geospatial loaders and writers for vector files, geometry encodings, and satellite orbit elements.
+Geospatial loaders and writers for vector files, geometry encodings, satellite orbit elements, and vessel and aircraft position reports.
 
-Supported formats: KML, KMZ, GPX, TCX, Shapefile, SHP, SHX, DBF, CPG, PRJ, FlatGeobuf, GeoPackage, WKT, WKT CRS, WKB, TWKB, CCSDS OMM (JSON, KVN), TLE.
+Supported formats: KML, KMZ, GPX, TCX, Shapefile, SHP, SHX, DBF, CPG, PRJ, FlatGeobuf, GeoPackage, WKT, WKT CRS, WKB, TWKB, CCSDS OMM (JSON, KVN), TLE, AIS, and ADS-B aircraft state JSON.
 
 `OMMLoader` reads the general perturbations (GP) subset of OMM for SGP4. The loader assumes an
 Earth center, a TEME frame, UTC, and SGP4 theory when metadata is omitted or blank. It accepts

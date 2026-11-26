@@ -68,6 +68,8 @@ function makeAliases() {
     '@loaders.gl/tiles/test': resolveTestPath('./modules/tiles/test'),
     '@loaders.gl/traces/test': resolveTestPath('./modules/traces/test'),
     '@loaders.gl/geospatial/wkt/test': resolveTestPath('./modules/geospatial/test/wkt'),
+    '@loaders.gl/scientific/adsb/test': resolveTestPath('./modules/scientific/test/adsb'),
+    '@loaders.gl/scientific/ais/test': resolveTestPath('./modules/scientific/test/ais'),
     '@loaders.gl/geospatial/omm/test': resolveTestPath('./modules/geospatial/test/omm'),
     '@loaders.gl/geospatial/tle/test': resolveTestPath('./modules/geospatial/test/tle'),
     '@loaders.gl/ogc/wms/test': resolveTestPath('./modules/ogc/test/wms'),

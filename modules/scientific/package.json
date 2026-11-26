@@ -117,6 +117,26 @@
       "types": "./dist/vtk-api.d.ts",
       "import": "./dist/vtk-api.js",
       "require": "./dist/vtk-api.cjs"
+    },
+    "./adsb": {
+      "types": "./dist/adsb/index.d.ts",
+      "import": "./dist/adsb/index.js",
+      "require": "./dist/adsb/index.cjs"
+    },
+    "./adsb/bundled": {
+      "types": "./dist/adsb/bundled.d.ts",
+      "import": "./dist/adsb/bundled.js",
+      "require": "./dist/adsb/bundled.cjs"
+    },
+    "./ais": {
+      "types": "./dist/ais/index.d.ts",
+      "import": "./dist/ais/index.js",
+      "require": "./dist/ais/index.cjs"
+    },
+    "./ais/bundled": {
+      "types": "./dist/ais/bundled.d.ts",
+      "import": "./dist/ais/bundled.js",
+      "require": "./dist/ais/bundled.cjs"
     }
   },
   "sideEffects": false,
@@ -129,7 +149,8 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field && npm run build-npy-worker && npm run build-metadata && npm run build-cjs-vtk-loader && npm run build-cjs-nrrd && npm run build-cjs-pdb",
+    "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
+    "pre-build": "npm run build-format-subpaths && npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field && npm run build-npy-worker && npm run build-metadata && npm run build-cjs-vtk-loader && npm run build-cjs-nrrd && npm run build-cjs-pdb",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./netcdf-bundle.ts --output=dist/netcdf.min.js && node ../../scripts/build-codec-bundle.mjs ./zarr-bundle.ts --output=dist/zarr.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./netcdf-bundle.ts --env=dev --output=dist/netcdf.dev.js && node ../../scripts/build-codec-bundle.mjs ./zarr-bundle.ts --env=dev --output=dist/zarr.dev.js",
     "build-cjs-netcdf": "esbuild src/netcdf/*.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist/netcdf --out-extension:.js=.cjs --external:@loaders.gl/* --external:@math.gl/*",
@@ -153,7 +174,8 @@
     "zarrita": "~0.7.1"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "apache-arrow": ">= 17.0.0"
   },
   "keywords": [
     "loaders.gl",
