@@ -1437,6 +1437,9 @@
       "@loaders.gl/ogc/wms/api": [
         "modules/ogc/src/wms/api.ts"
       ],
+      "@loaders.gl/pointclouds/las/writer": [
+        "modules/pointclouds/src/las/las-writer.ts"
+      ],
       "@loaders.gl/pointclouds/las/api": [
         "modules/pointclouds/src/las/api.ts"
       ],

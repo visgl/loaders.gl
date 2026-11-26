@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {LASWriter} from './las-writer';
 export {decodeLAZFileInBatches} from './lib/typescript/parse-las';
 export {
   decodeLASWaveformSamples,
