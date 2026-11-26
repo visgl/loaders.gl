@@ -58,7 +58,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->28<!-- -->)
+All exported subpaths (<!-- -->32<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -82,9 +82,13 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                       | `@loaders.gl/scientific/npy/bundled`           |
 |                                                                                                                                       | `@loaders.gl/scientific/nrrd`                  |
 |                                                                                                                                       | `@loaders.gl/scientific/nrrd/bundled`          |
+|                                                                                                                                       | `@loaders.gl/scientific/omm`                   |
+|                                                                                                                                       | `@loaders.gl/scientific/omm/bundled`           |
 |                                                                                                                                       | `@loaders.gl/scientific/pdb`                   |
 |                                                                                                                                       | `@loaders.gl/scientific/pdb/bundled`           |
 |                                                                                                                                       | `@loaders.gl/scientific/scientific-array`      |
+|                                                                                                                                       | `@loaders.gl/scientific/tle`                   |
+|                                                                                                                                       | `@loaders.gl/scientific/tle/bundled`           |
 |                                                                                                                                       | `@loaders.gl/scientific/vector-field`          |
 | [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk`                   |
 | [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/api`               |
@@ -96,10 +100,25 @@ These are the package's public exports, including format entry points, parsers, 
 ## Experimental formats[​](#experimental-formats "Direct link to Experimental formats")
 
 * [`/adsb`](https://loaders.gl/next/docs/modules/scientific/adsb.md)
+
 * [`/ais`](https://loaders.gl/next/docs/modules/scientific/ais.md)
+
 * [`/gtfs`](https://loaders.gl/next/docs/modules/scientific/gtfs.md)
+
 * [`/gtfs-realtime`](https://loaders.gl/next/docs/modules/scientific/gtfs-realtime.md)
+
 * [ADS-B aircraft state JSON](https://loaders.gl/next/docs/modules/scientific/adsb/formats/adsb.md)
+
 * [AIS - Automatic Identification System](https://loaders.gl/next/docs/modules/scientific/ais/formats/ais.md)
+
 * [GTFS Schedule ZIP](https://loaders.gl/next/docs/modules/scientific/gtfs/formats/gtfs.md)
+
 * [GTFS Realtime protobuf](https://loaders.gl/next/docs/modules/scientific/gtfs-realtime/formats/gtfs-realtime.md)
+
+* [`/omm`](https://loaders.gl/next/docs/modules/scientific/omm.md)
+
+* [`/tle`](https://loaders.gl/next/docs/modules/scientific/tle.md)
+
+* [OMM - Orbit Mean-Elements Message](https://loaders.gl/next/docs/modules/scientific/omm/formats/omm.md)
+
+* [TLE - Two-Line Element Set](https://loaders.gl/next/docs/modules/scientific/tle/formats/tle.md)
