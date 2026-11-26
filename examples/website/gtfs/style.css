@@ -1,0 +1,91 @@
+.gtfs-map {
+  position: relative;
+  height: 100%;
+}
+
+.gtfs-panel {
+  position: absolute;
+  z-index: 1;
+  top: 16px;
+  right: 16px;
+  width: min(340px, calc(100% - 32px));
+  max-height: calc(100% - 48px);
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid #d8e0e9;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 14px #18263826;
+  color: #182638;
+  font: 13px/1.45 system-ui, sans-serif;
+  color-scheme: light;
+}
+
+.gtfs-panel h2 {
+  margin: 0 0 12px;
+  color: inherit;
+  font: 650 18px/1.25 system-ui, sans-serif;
+}
+
+.gtfs-panel form + form {
+  margin-top: 10px;
+}
+
+.gtfs-panel label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.gtfs-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.gtfs-panel input,
+.gtfs-panel button {
+  padding: 5px 8px;
+  border: 1px solid #b8c6d6;
+  border-radius: 5px;
+  font: inherit;
+}
+
+.gtfs-panel input {
+  min-width: 0;
+  flex: 1;
+  color: inherit;
+  background: white;
+}
+
+.gtfs-panel button {
+  cursor: pointer;
+  color: white;
+  background: #243d59;
+}
+
+.gtfs-panel p {
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.gtfs-feed-status {
+  margin-top: 12px;
+  padding-top: 2px;
+  border-top: 1px solid #e1e7ef;
+}
+
+.gtfs-panel a {
+  color: #214d7c;
+}
+
+.gtfs-panel .gtfs-error {
+  color: #9f261d;
+}
+
+.gtfs-map .deck-tooltip {
+  max-width: min(320px, 90vw);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  font: 13px/1.45 system-ui, sans-serif;
+}
