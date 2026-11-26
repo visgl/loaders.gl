@@ -48,8 +48,26 @@ const raster = await source.getRaster({
 });
 ```
 
-The first version supports axis-aligned affine grids and native-resolution window reads. It does
-not reproject, resample, or handle curvilinear two-dimensional coordinate arrays.
+For an xarray pyramid whose root `multiscales[].datasets[]` paths name groups, set
+`geozarr.array` to the shared variable name, such as `'backscatter'`. The source opens
+the first advertised dataset as the finest level and publishes each level's dimensions,
+transform, and CRS. Each level uses its own spatial attributes, GDAL `GeoTransform`, or
+regular CF coordinates. Dataset scale transforms are optional.
+
+When `proj:` metadata is absent, CRS discovery uses the CF `grid_mapping` variable, a
+sibling `spatial_ref` variable, or the enclosing group's `crs` attribute. The source preserves
+the CRS definition as written in `metadata.crs`, per-level metadata, and the returned raster.
+Nodata comes from CF `_FillValue`, then `missing_value`. Set `geozarr.fillValueAsNoData: true`
+to use a finite Zarr `fill_value` as a fallback. This option defaults to `false` for all dtypes
+because storage fill values such as zero can also be valid samples.
+
+`getRaster()` reads native pixels from the coarsest eligible level whose pixel size fits
+both viewport axes, falling back to the selected array. It returns that window's bounds and
+affine transform. GeoZarr uses axis-aligned affine grids in the source CRS and returns native
+samples. If you supply `viewport.crs`, pass the `metadata.crs` string verbatim. You can also omit
+`viewport.crs` when the viewport bounds are already in source coordinates.
+`geozarr.maxConcurrentRequests` defaults to 16 and limits concurrent reads at Zarrita's store,
+including response bodies and range reads.
 
 The [GeoZarr deck.gl example](https://loaders.gl/examples/geospatial/geo-zarr) reads NASA POWER
 climatology data directly from a public Zarr store and renders it on an interactive map.

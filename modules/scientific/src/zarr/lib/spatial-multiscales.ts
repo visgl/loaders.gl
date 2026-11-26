@@ -21,16 +21,19 @@ export type SpatialMultiscaleLevel = {
 
 /**
  * Resolves direct-array or common-variable group layouts without following external paths.
- * OME-NGFF `datasets[]` are read as spatial levels only with `spatialOME`, which callers set when
- * the selected array declares a CRS; native OME metadata is otherwise not recast as spatial.
+ * Group-per-level CF layouts can omit axes. Full OME-NGFF layouts are read as spatial levels
+ * only with `spatialOME`, which callers set when the selected array declares a CRS.
  */
 export function getSpatialMultiscaleLevels(
   attributes: Record<string, unknown>,
   array: string,
   {spatialOME = false}: {spatialOME?: boolean} = {}
 ): SpatialMultiscaleLevel[] {
-  const omeMultiscales = spatialOME ? getOMEMultiscales(attributes) : null;
-  if (omeMultiscales) return getOMEMultiscaleLevels(omeMultiscales, array);
+  const omeMultiscales = getOMEMultiscales(attributes);
+  if (omeMultiscales) {
+    const levels = getOMEMultiscaleLevels(omeMultiscales, array, spatialOME);
+    if (levels.length || spatialOME) return levels;
+  }
   const multiscales = attributes?.multiscales as {layout?: unknown} | undefined;
   const layout = multiscales?.layout;
   if (!Array.isArray(layout) || !layout.length) return [];
@@ -39,7 +42,8 @@ export function getSpatialMultiscaleLevels(
     throw new Error('Spatial multiscales assets must be relative child paths.');
   }
   const assets = entries.map(entry => entry.asset as string);
-  if (new Set(assets).size !== assets.length) throw new Error('Duplicate spatial multiscales asset.');
+  if (new Set(assets).size !== assets.length)
+    throw new Error('Duplicate spatial multiscales asset.');
   return resolveLevels(assets, array, entries);
 }
 
@@ -50,16 +54,42 @@ function getOMEMultiscales(attributes: Record<string, unknown>): unknown[] | nul
   return Array.isArray(ome?.multiscales) ? ome.multiscales : null;
 }
 
+/** Lists the finest advertised dataset path for each group-per-level pyramid and variable name. */
+export function getMultiscaleVariablePaths(
+  attributes: Record<string, unknown>,
+  variable: string
+): string[] {
+  if (!isChildPath(variable) || variable.includes('/')) return [];
+  const paths = new Set<string>();
+  for (const multiscale of getOMEMultiscales(attributes) ?? []) {
+    const datasets = (multiscale as {datasets?: unknown})?.datasets;
+    const path = Array.isArray(datasets) ? datasets[0]?.path : undefined;
+    if (isChildPath(path)) paths.add(`${path}/${variable}`);
+  }
+  return [...paths];
+}
+
 /**
  * Resolves OME-NGFF `datasets[]` as levels. Only the multiscale whose dataset paths contain the
  * selected array is used. Scales are composed for validation; translations are allowed and
  * ignored, and any other transform is rejected.
  */
-function getOMEMultiscaleLevels(multiscales: unknown[], array: string): SpatialMultiscaleLevel[] {
+function getOMEMultiscaleLevels(
+  multiscales: unknown[],
+  array: string,
+  spatialOME: boolean
+): SpatialMultiscaleLevel[] {
   const candidates = multiscales.filter(multiscale => {
-    const datasets = (multiscale as {datasets?: unknown})?.datasets;
-    return Array.isArray(datasets) && datasets.some(dataset =>
-      isChildPath(dataset?.path) && (array === dataset.path || array.startsWith(`${dataset.path}/`)));
+    const {datasets, axes} = (multiscale ?? {}) as {datasets?: unknown; axes?: unknown};
+    return (
+      (spatialOME || axes === undefined) &&
+      Array.isArray(datasets) &&
+      datasets.some(
+        dataset =>
+          isChildPath(dataset?.path) &&
+          ((spatialOME && array === dataset.path) || array.startsWith(`${dataset.path}/`))
+      )
+    );
   }) as Array<Record<string, unknown>>;
   if (!candidates.length) return [];
   if (candidates.length > 1) throw new Error('Array belongs to more than one OME-NGFF multiscale.');
@@ -70,8 +100,22 @@ function getOMEMultiscaleLevels(multiscales: unknown[], array: string): SpatialM
   }
   const paths = datasets.map(dataset => dataset.path as string);
   if (new Set(paths).size !== paths.length) throw new Error('Duplicate OME-NGFF dataset path.');
+  const levels = resolveLevels(
+    paths,
+    array,
+    datasets.map(() => ({}))
+  );
+  // CF/xarray group-per-level pyramids can omit OME axes and transformations. Their own
+  // georeferencing determines cell sizes, even when unnamed scale transforms are present.
+  if (multiscale.axes === undefined && levels[0]?.group) return levels;
   const axes = getOMEAxisNames(multiscale.axes);
-  return resolveLevels(paths, array, datasets.map(() => ({}))).map((level, index) => ({
+  if (
+    multiscale.coordinateTransformations === undefined &&
+    datasets.every(dataset => dataset.coordinateTransformations === undefined)
+  ) {
+    return levels;
+  }
+  return levels.map((level, index) => ({
     ...level,
     scale: getOMEScale(axes, [
       datasets[index].coordinateTransformations,
@@ -120,11 +164,14 @@ function getOMEScale(axes: string[], transformLists: unknown[]): Record<string, 
     for (const transform of transforms as Array<Record<string, unknown>>) {
       if (transform?.type === 'identity' || transform?.type === 'translation') continue;
       if (transform?.type !== 'scale') {
-        throw new Error(`Unsupported OME-NGFF coordinate transformation ${String(transform?.type)}.`);
+        throw new Error(
+          `Unsupported OME-NGFF coordinate transformation ${String(transform?.type)}.`
+        );
       }
       const values = transform.scale;
       if (
-        !Array.isArray(values) || values.length !== axes.length ||
+        !Array.isArray(values) ||
+        values.length !== axes.length ||
         values.some(value => typeof value !== 'number' || !Number.isFinite(value) || value === 0)
       ) {
         throw new Error('OME-NGFF scale must give one finite non-zero value per axis.');
@@ -137,7 +184,10 @@ function getOMEScale(axes: string[], transformLists: unknown[]): Record<string, 
 
 /** Accepts literal relative child paths, rejecting URL, encoded, and traversal syntax. */
 function isChildPath(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 &&
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
     !/[\\%:?#\u0000- ]/.test(value) &&
-    value.split('/').every(segment => segment !== '' && segment !== '.' && segment !== '..');
+    value.split('/').every(segment => segment !== '' && segment !== '.' && segment !== '..')
+  );
 }

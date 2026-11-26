@@ -32,6 +32,7 @@ for stable v4 migrations.
 - **Raster and scientific data.** [Raster](./modules/raster/README.md) supports range reads
   and terrain meshes. [Scientific](./modules/scientific/README.md) groups multidimensional
   arrays and VTK, NRRD, and PDB formats.
+- **GeoZarr pyramids.** [GeoZarrRasterSource](./modules/scientific/zarr/api-reference/geo-zarr-loader.md) opens xarray level groups, preserves CF CRS definitions, reads CF nodata with optional Zarr fill values, and selects native overviews by viewport.
 - **GPU raster styling.** [RasterSourceLayer](./modules/raster/api-reference/raster-source-layer.md)
   can render single-band rasters on WebGL2 and WebGPU with CPU-matched default colors, per-raster
   percentile stretching, and texel picking. Set `valueRange` for a fixed stretch.
