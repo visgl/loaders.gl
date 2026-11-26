@@ -29,7 +29,7 @@ explicit values. It trims whitespace and matches values without regard to case.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {OMMLoader} from '@loaders.gl/geospatial/omm';
+import {OMMLoader} from '@loaders.gl/scientific/omm';
 
 const url = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json';
 const table = await load(url, OMMLoader);

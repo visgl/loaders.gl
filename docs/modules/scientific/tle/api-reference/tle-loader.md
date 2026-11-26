@@ -19,7 +19,7 @@ with the CCSDS OMM keyword names and units. Thus TLE and OMM data give the same 
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TLELoader} from '@loaders.gl/geospatial/tle';
+import {TLELoader} from '@loaders.gl/scientific/tle';
 
 const url = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle';
 const table = await load(url, TLELoader);

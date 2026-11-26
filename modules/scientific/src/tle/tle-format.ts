@@ -20,7 +20,7 @@ function testTLE(arrayBuffer: ArrayBuffer): boolean {
 export const TLEFormat = {
   name: 'TLE (Two-Line Element Set)',
   id: 'tle',
-  module: 'geospatial',
+  module: 'scientific',
   category: 'table',
   encoding: 'text',
   format: 'tle',

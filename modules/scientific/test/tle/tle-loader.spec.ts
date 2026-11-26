@@ -8,12 +8,12 @@ import {validateLoader} from 'test/common/conformance';
 import {fetchFile, parse} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {OMM_COLUMNS, type OMMRow} from '../../src/omm/omm-schema';
-import {TLEFormat, TLELoader} from '@loaders.gl/geospatial/tle';
-import {TLELoaderWithParser} from '@loaders.gl/geospatial/tle/bundled';
+import {TLEFormat, TLELoader} from '@loaders.gl/scientific/tle';
+import {TLELoaderWithParser} from '@loaders.gl/scientific/tle/bundled';
 import {computeTLEChecksum, convertTLEToOMMRow, parseTLEText} from '../../src/tle/tle-parser';
 
-const TLE_URL = '@loaders.gl/geospatial/tle/test/data/stations.tle';
-const OMM_JSON_URL = '@loaders.gl/geospatial/omm/test/data/stations.omm.json';
+const TLE_URL = '@loaders.gl/scientific/tle/test/data/stations.tle';
+const OMM_JSON_URL = '@loaders.gl/scientific/omm/test/data/stations.omm.json';
 const ISS = 25544;
 
 let tleText: string;
