@@ -324,12 +324,15 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       valueScale = 'sqrt',
       renderSubLayer
     } = this.props;
+    const rasterCRS = getCoordinateReferenceSystemIdentifier(
+      this.state.rasterRequest?.raster.crs || this.state.metadata?.crs
+    );
     if (gpuResult) {
       const {percentileRange, raster, ...placement} = gpuResult;
       const props: RasterBitmapLayerProps = {
         ...this.getSubLayerProps({id: 'raster-bitmap'}),
         ...placement,
-        _imageCoordinateSystem: getImageCoordinateSystem(placement.coordinateSystem),
+        _imageCoordinateSystem: getImageCoordinateSystem(placement.coordinateSystem, rasterCRS),
         ...bitmapLayerProps,
         raster: !valueRange && percentileRange === null ? null : raster,
         valueRange: valueRange ?? percentileRange ?? [0, 1],
@@ -347,7 +350,7 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       coordinateSystem: renderResult.coordinateSystem,
       image: renderResult.image as any,
       bounds: renderResult.bounds,
-      _imageCoordinateSystem: getImageCoordinateSystem(renderResult.coordinateSystem),
+      _imageCoordinateSystem: getImageCoordinateSystem(renderResult.coordinateSystem, rasterCRS),
       ...bitmapLayerProps
     };
     return renderSubLayer ? renderSubLayer(props) : new BitmapLayer(props);
@@ -891,12 +894,14 @@ export function createRasterRenderResult(
 /**
  * Samples longitude/latitude rasters per fragment. Without this, deck.gl stretches the image
  * linearly between its corners in Web Mercator, so rows land at the wrong latitude and move
- * when the requested window changes.
+ * when the requested window changes. EPSG:3857 rasters also get `lnglat` bounds, but their rows
+ * are linear in Web Mercator, so they keep the default.
  */
 function getImageCoordinateSystem(
-  coordinateSystem: CoordinateSystem | undefined
+  coordinateSystem: CoordinateSystem | undefined,
+  rasterCRS: string | undefined
 ): BitmapLayerProps['_imageCoordinateSystem'] {
-  return coordinateSystem === 'lnglat' ? 'lnglat' : 'default';
+  return coordinateSystem === 'lnglat' && rasterCRS !== 'EPSG:3857' ? 'lnglat' : 'default';
 }
 
 /** Converts a deck.gl viewport into the normalized viewport accepted by RasterSource. */

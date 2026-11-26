@@ -634,6 +634,24 @@ describe('RasterSourceLayer lifecycle', () => {
     expect(bitmapLayer.props.coordinateSystem).toBe('lnglat');
   });
 
+  test('samples geographic rasters per pixel and keeps Web Mercator rasters linear', () => {
+    const layer = createRasterLayer();
+    layer.initializeState();
+    layer.getSubLayerProps = (props: any) => props;
+    layer.state.renderResult = {
+      image: {data: new Uint8ClampedArray(4), width: 1, height: 1},
+      bounds: [-10, -5, 20, 15],
+      coordinateSystem: 'lnglat'
+    };
+
+    layer.state.metadata = GEOGRAPHIC_METADATA;
+    expect(layer.renderLayers().props._imageCoordinateSystem).toBe('lnglat');
+
+    // EPSG:3857 bounds are unprojected to longitude and latitude, but the rows stay linear.
+    layer.state.metadata = {...GEOGRAPHIC_METADATA, crs: 'EPSG:3857'};
+    expect(layer.renderLayers().props._imageCoordinateSystem).toBe('default');
+  });
+
   test('requests default and custom raster bands from viewport metadata', () => {
     const getRasterParameters = vi.fn(viewport => ({viewport, bands: [2], custom: true}));
     const layer = createRasterLayer({
