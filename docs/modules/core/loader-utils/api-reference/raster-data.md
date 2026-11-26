@@ -9,6 +9,12 @@ scale, offset and categorical values. `RasterMixedData` adds a distinct `dtype:
 'mixed'` planar variant with required per-band types; `NumericRasterData` accepts
 both. Mixed bands are never silently widened or interleaved.
 
+`RasterBandMetadata.colorInterpretation` is an optional GDAL-style display role.
+It accepts `gray`, `red`, `green`, `blue`, `alpha`, `palette`, and `undefined`.
+The string `undefined` records an explicitly unspecified role. Omit the field
+when the source does not declare a role.
+On an alpha band, `alphaMode` describes whether color samples are `premultiplied` or `straight`. Omission means `straight`.
+
 `transform` stores `[columnScale, rowShear, originX, columnShear, rowScale, originY]`.
 It maps raster grid coordinates into the explicitly declared source CRS. Area sample
 centers are `(column + 0.5, row + 0.5)`; point centers are `(column, row)`. Missing
