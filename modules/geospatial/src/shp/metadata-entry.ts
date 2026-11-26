@@ -5,4 +5,5 @@
 export {SHPLoader} from '../shapefile/shp-loader-types';
 export {SHPFormat} from '../shapefile/shp-format';
 export {ShapefileFormat} from '../shapefile/shp-format';
-export type * from '../shp';
+export type {SHPLoaderWithParser, SHPWorkerLoaderWithParser} from '../shapefile/shp-loader';
+export type {SHP_MAGIC_NUMBER, SHPLoaderOptions} from '../shapefile/shp-loader-types';

@@ -10,4 +10,6 @@ export {
   parseShapefileToArrowInBatches,
   SHAPEFILE_HEADER_KEY
 } from './shapefile-arrow-loader';
-export type {ShapefileLoaderOptions, DBFLoaderOptions, SHPLoaderOptions} from './bundled';
+export type {ShapefileLoaderOptions} from './shapefile-loader';
+export type {DBFLoaderOptions} from './dbf-loader';
+export type {SHPLoaderOptions} from './shp-loader';

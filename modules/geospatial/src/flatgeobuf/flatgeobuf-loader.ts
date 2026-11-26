@@ -16,7 +16,7 @@ import {
   serializeFlatGeobufWorkerResult
 } from './lib/flatgeobuf-worker-transport';
 
-export type {FlatGeobufLoaderOptions} from './flatgeobuf-loader-types';
+export type {FlatGeobufLoaderOptions} from './flatgeobuf-loader-definition';
 
 /** Load flatgeobuf on a worker */
 export const FlatGeobufWorkerLoaderWithParser = {

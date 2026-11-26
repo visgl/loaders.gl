@@ -4,4 +4,5 @@
 
 export {parseKMZArrayBuffer} from './kml/kmz-loader';
 export {createKMZSource} from './kml/kmz-source';
-export type {KMZLoaderOptions, KMZSourceOptions} from './kmz-bundled';
+export type {KMZLoaderOptions} from './kml/kmz-loader-types';
+export type {KMZSourceOptions} from './kml/kmz-source';

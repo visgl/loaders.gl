@@ -3,4 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 export {SHP_MAGIC_NUMBER} from './shapefile/shp-loader-types';
-export type {SHPLoaderOptions} from './shp-bundled';
+export type {SHPLoaderOptions} from './shapefile/shp-loader-types';

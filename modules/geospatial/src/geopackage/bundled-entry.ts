@@ -8,11 +8,11 @@ export {
 } from './geopackage-loader';
 export {GeoPackageFormat} from './geopackage-format';
 export {GeoPackageDataSource} from './geopackage-source';
+export type {GeoPackageLoaderOptions} from './geopackage-loader-types';
 export type {
-  GeoPackageLoaderOptions,
   GeoPackageTileReadOptions,
   GeoPackageSourceOptions,
   GeoPackageSourceMetadata,
-  GeoPackageSourceTableMetadata,
-  GeoPackageTileTableMetadata
-} from './bundled';
+  GeoPackageSourceTableMetadata
+} from './geopackage-source';
+export type {GeoPackageTileTableMetadata} from './lib/geopackage-tile-metadata';

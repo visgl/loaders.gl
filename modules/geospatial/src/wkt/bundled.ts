@@ -9,4 +9,9 @@ export {
   WKTWorkerLoaderWithParser as WKTWorkerLoader
 } from './wkt-loader';
 
-export * from '.';
+export {WKTFormat, WKTCRSFormat} from './wkt-format';
+export {WKTCRSWriter, type WKTCRSWriterOptions} from './wkt-crs-writer';
+export {WKTWriter, type WKTWriterOptions} from './wkt-writer';
+export type {WKTLoaderOptions} from './wkt-loader-types';
+export {WKTCRSLoaderWithParser} from './wkt-crs-loader';
+export {WKTWorkerLoaderWithParser, WKTLoaderWithParser} from './wkt-loader';
