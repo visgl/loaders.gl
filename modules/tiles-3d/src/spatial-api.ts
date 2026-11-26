@@ -25,7 +25,7 @@ export {markTilesetSpatialReferenceTransformed} from './spatial/spatial-types';
 export {get3DTilesSpatialReference} from './spatial/format-spatial-reference';
 export {getI3SSpatialReference} from './spatial/format-spatial-reference';
 export {SpatialCoordinateTransformer} from './spatial/spatial-coordinate-transformer';
-export {getSpatialCoordinateFrame} from './spatial/spatial-coordinate-transformer';
+export {getSpatialCoordinateFrame} from './spatial/get-spatial-coordinate-frame';
 export {Tiles3DSpatialTransformer} from './spatial/tiles-3d-spatial-transformer';
 export type {Tiles3DSpatialBoundingVolume} from './spatial/tiles-3d-spatial-transformer';
 export type {I3SSpatialBounds} from './spatial/i3s-spatial-transformer';

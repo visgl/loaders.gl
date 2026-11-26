@@ -1,3 +1,4 @@
+import {getWorkspaceEntrypointAliases} from '../../../scripts/workspace-package-aliases.js';
 import {defineConfig} from 'vite';
 import fs from 'fs';
 import path from 'path';
@@ -63,6 +64,7 @@ export default defineConfig(async () => {
     },
     resolve: {
       alias: [
+        ...getWorkspaceEntrypointAliases('@loaders.gl', path.resolve(__dirname, '../../..')),
         {
           find: /^@loaders\.gl\/([^/]+)\/(.+)$/,
           replacement: path.resolve(__dirname, '../../../modules/$1/src/$2')

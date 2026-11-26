@@ -2,5 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from '../vector-tile-service';
+export {
+  ArcGISVectorTileServerSource,
+  ArcGISVectorTileServerLoaderWithParser
+} from '../arcgis/arcgis-vector-tile-server-loader';
+export type {
+  ArcGISVectorTileServiceMetadata,
+  ArcGISVectorTileServerLoaderOptions
+} from '../arcgis-source-types';
 export {ArcGISVectorTileServerLoaderWithParser as ArcGISVectorTileServerLoader} from '../arcgis/arcgis-vector-tile-server-loader';

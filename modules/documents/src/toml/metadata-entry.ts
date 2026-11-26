@@ -4,4 +4,5 @@
 
 export {TOMLLoader} from '../toml-loader-types';
 export {TOMLFormat} from '../toml-format';
-export type * from '../toml';
+export type {TOMLLoaderWithParser} from '../toml-loader';
+export type {TOMLLoaderOptions, TOMLParseOptions} from '../toml-loader-options';
