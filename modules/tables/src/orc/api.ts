@@ -3,14 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 export {createORCSource, createORCSchema, getORCDataType} from './orc-source';
+export type {ORCLoaderOptions} from './orc-loader-types';
 export type {
-  ORCLoaderOptions,
-  ORCSourceLoaderOptions,
-  ORCWriterOptions,
-  ORCFile,
-  ORCFooter,
-  ORCPostScript,
-  ORCCompression,
+  ORCSourceOptions as ORCSourceLoaderOptions,
   ORCSourceOptions,
   ORCQueryOptions
-} from './bundled';
+} from './orc-source';
+export type {ORCWriterOptions} from './lib/encoders/encode-orc';
+export type {ORCFile, ORCFooter, ORCPostScript, ORCCompression} from './lib/parsers/parse-orc';

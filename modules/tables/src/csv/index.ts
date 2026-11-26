@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {CSVLoaderOptions} from './csv-loader-types';
+export type {CSVLoaderOptions} from './csv-loader-options';
 export {CSVFormat} from './csv-format';
 export {CSVLoader} from './csv-loader-types';
 

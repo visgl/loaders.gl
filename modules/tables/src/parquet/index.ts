@@ -62,16 +62,15 @@ export type {
   ParquetTelemetry,
   ParquetTelemetryEvent
 } from './parquet-source-types';
-export type {ParquetSource} from '../parquet-source';
-export type {ParquetDatasetSource} from '../parquet-dataset';
+export type {ParquetSource} from './parquet-source';
+export type {ParquetDatasetSource} from './parquet-dataset-source';
 export type {ParquetSourceCapabilities} from './parquet-source-capabilities';
+export type {ParquetWriterEncoding, ParquetWriterOptions} from './parquet-writer';
+export type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
 export type {
-  ParquetWriterEncoding,
-  ParquetWriterOptions,
-  ParquetSortingColumnOption,
   ParquetWriterEncryptionOptions,
   ParquetWriterFooterSignatureOptions
-} from './parquet-writer';
+} from './lib/parquet-encryption';
 export type {ParquetPageStatistics} from './lib/parquet-page-index';
 export type {
   ParquetDecryptModuleOptions,
@@ -84,4 +83,4 @@ export type {
 } from './lib/parquet-bloom-filter';
 export type {ParquetBloomFilterProbe} from './lib/parquet-bloom-filter-planner';
 export type {ParquetDecodedBatch} from './parquet-source-types';
-export type {GeoParquetLoaderOptions} from '../geoparquet-loader';
+export type {GeoParquetLoaderOptions} from './geoparquet-loader-types';

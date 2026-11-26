@@ -8,7 +8,7 @@ export type {ArrowLoaderOptions} from './arrow-loader-definition';
 
 /** ArrowJS table loader */
 async function preload() {
-  const {ArrowLoaderWithParser} = await import('@loaders.gl/tables/arrow/bundled');
+  const {ArrowLoaderWithParser} = await import('@loaders.gl/tables/arrow/parser');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
   await preloadArrowCompressionDecoders();
   return ArrowLoaderWithParser;
