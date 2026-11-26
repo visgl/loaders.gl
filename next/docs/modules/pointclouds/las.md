@@ -120,7 +120,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 ```
 import {createDataSource} from '@loaders.gl/core';
 
-import {query} from '@loaders.gl/core/query';
+import {query} from '@loaders.gl/core/query/sql';
 
 import {LASLoader} from '@loaders.gl/pointclouds/las';
 
