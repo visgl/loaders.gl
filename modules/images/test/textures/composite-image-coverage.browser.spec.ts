@@ -9,9 +9,10 @@ import {
   loadCompositeImageMember,
   normalizeCompositeImageOptions,
   parseCompositeImageManifest,
-  resolveCompositeImageUrl,
-  testCompositeImageManifestShape
+  resolveCompositeImageUrl
 } from '../../src/lib/composite-image/parse-composite-image';
+
+import {testCompositeImageManifestShape} from '../../src/lib/composite-image/test-composite-image-manifest';
 
 test('composite image shape detection tolerates malformed JSON', () => {
   expect(testCompositeImageManifestShape('{"shape":"image-texture"}', 'image-texture')).toBe(true);

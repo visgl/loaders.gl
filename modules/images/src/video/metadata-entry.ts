@@ -4,4 +4,5 @@
 
 export {VideoLoader} from '../video-loader-types';
 export {VideoFormat} from '../video-format';
-export type * from '../video';
+export type {VideoLoaderOptions} from '../video-loader-types';
+export type {VideoLoaderWithParser} from '../video-loader';

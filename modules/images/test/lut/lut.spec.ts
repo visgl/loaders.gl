@@ -3,7 +3,7 @@
 import {test, expect} from 'vitest';
 import {CubeLUTLoaderWithParser} from '../../src/cube-lut-loader';
 import {ThreeDLLUTLoaderWithParser} from '../../src/3dl-lut-loader';
-import {parseImageLUT} from '../../src/lut';
+import {parseImageLUT} from '../../src/lut/parse-image-lut';
 
 test('cube preserves domains, title, HDR samples and red-fastest order', () => {
   const result = CubeLUTLoaderWithParser.parseTextSync(

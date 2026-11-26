@@ -24,6 +24,9 @@ construction, use `@loaders.gl/<package>/<format>/bundled`. Both paths export lo
 under their ordinary names. The core framework is available at `@loaders.gl/core/api`,
 and tileset traversal at `@loaders.gl/tiles-3d/tileset`. Existing core root imports remain supported.
 Image utilities such as `getBinaryImageMetadata` now use `@loaders.gl/images/api`.
+The `@loaders.gl/images/gl-extensions` subpath was removed. Texture levels still carry
+the numeric WebGL `format` when available. Use the level’s `textureFormat` for renderer
+capability checks, or use WebGL context and extension constants for numeric comparisons.
 
 Update existing `@loaders.gl/tiles-3d` root imports as follows.
 
