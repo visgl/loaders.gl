@@ -36,6 +36,8 @@ const synchronousResult = parseSync(bytes, NetCDFLoaderWithParser);
 The package currently installs `h5wasm`, `zarr`, `zarrita`, and XML parsing support as dependencies.
 Subpath imports control which code is loaded, but do not create separate installation units.
 
+Focused parser subpaths load individual implementations. For example, import the implementation from `@loaders.gl/scientific/netcdf/parser`. The format metadata loaders use these subpaths in `preload()`.
+
 ## Sources and credits
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scientific/THIRD-PARTY-NOTICES.md)

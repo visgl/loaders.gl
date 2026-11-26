@@ -8,7 +8,7 @@ export type {NPYLoaderOptions} from './npy-loader-definition';
 
 /** Preloads the parser-bearing NPY loader implementation. */
 async function preload() {
-  const {NPYLoaderWithParser} = await import('@loaders.gl/scientific/npy/bundled');
+  const {NPYLoaderWithParser} = await import('@loaders.gl/scientific/npy/parser');
   return NPYLoaderWithParser;
 }
 

@@ -29,28 +29,36 @@ export type {
   ZarrArraySelection,
   ZarrArraySlice,
   ZarrArrayLoaderOptions,
-  ZarrArraySourceMetadata,
+  ZarrArraySourceMetadata
+} from './zarr/zarr-array-loader';
+export type {
   SpatialDataElementFormat,
   SpatialDataElementKind,
   SpatialDataElementMetadata,
   SpatialDataLoaderOptions,
   SpatialDataSourceMetadata,
-  SpatialDataZarrElementSource,
+  SpatialDataZarrElementSource
+} from './zarr/spatial-data-loader';
+export type {
   GetOMEZarrParameters,
-  LoadConsolidatedMetadataOptions,
   LoadZarrConsolidatedMetadataOptions,
   OMEZarrChannelMetadata,
   OMEZarrLevelMetadata,
   OMEZarrSourceLoaderMetadata,
+  ZarrLoader,
+  ZarrLoaderOptions
+} from './zarr/ome-zarr-loader';
+export type {
+  LoadConsolidatedMetadataOptions,
   ZarrConsolidatedFormat,
   ZarrConsolidatedMetadata,
-  ZarrMetadataPath,
-  ZarrLoader,
-  ZarrLoaderOptions,
+  ZarrMetadataPath
+} from './zarr/lib/consolidated-zarr';
+export type {
   GeoZarrLevelMetadata,
   GeoZarrAffineTransform,
   GeoZarrSelectionDimension,
   GeoZarrLoaderOptions,
   GeoZarrSourceMetadata,
   GetGeoZarrParameters
-} from './zarr-bundled';
+} from './zarr/geo-zarr-loader';

@@ -7,7 +7,7 @@ import {parseNPY, type NPYTile} from './lib/parsers/parse-npy';
 import type {NPYLoaderOptions} from './npy-loader-types';
 import {NPYLoaderDefinition} from './npy-loader-definition';
 
-export type {NPYLoaderOptions} from './npy-loader-types';
+export type {NPYLoaderOptions} from './npy-loader-definition';
 
 /**
  * Loader for numpy "tiles"
