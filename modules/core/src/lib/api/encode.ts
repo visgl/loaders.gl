@@ -139,9 +139,18 @@ export function encodeInBatches<WriterT extends Writer>(
     const preload = writer.preload.bind(writer);
     return (async function* () {
       const implementation = await preload();
-      yield* encodeInBatches<Writer>(data, implementation, options);
+      yield* encodeWriterInBatches(data, implementation, options);
     })();
   }
+  return encodeWriterInBatches(data, writer, options);
+}
+
+/** Encodes binary batches using the resolved writer's batch method. */
+function encodeWriterInBatches(
+  data: unknown,
+  writer: Writer & Partial<WriterWithEncoder>,
+  options?: WriterOptions
+): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     let dataIterator: unknown;
     if (data && typeof data === 'object') {
@@ -172,9 +181,18 @@ export function encodeTextInBatches(
     const preload = writer.preload.bind(writer);
     return (async function* () {
       const implementation = await preload();
-      yield* encodeTextInBatches(data, implementation, options);
+      yield* encodeWriterTextInBatches(data, implementation, options);
     })();
   }
+  return encodeWriterTextInBatches(data, writer, options);
+}
+
+/** Encodes text batches using the resolved writer's batch method. */
+function encodeWriterTextInBatches(
+  data: unknown,
+  writer: Writer & Partial<WriterWithEncoder>,
+  options?: WriterOptions
+): AsyncIterable<ArrayBuffer> {
   if (writer.encodeTextInBatches) {
     const dataIterator = getIterator(data);
     // @ts-expect-error

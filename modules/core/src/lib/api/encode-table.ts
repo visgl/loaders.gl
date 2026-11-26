@@ -8,6 +8,7 @@ import {
   concatenateArrayBuffers,
   ensureArrayBuffer,
   Writer,
+  WriterOptions,
   WriterOptionsType,
   WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
@@ -75,9 +76,18 @@ export function encodeTableInBatches<WriterT extends Writer = Writer>(
     const preload = writer.preload.bind(writer);
     return (async function* () {
       const implementation = await preload();
-      yield* encodeTableInBatches(data, implementation, options);
+      yield* encodeWriterTableInBatches(data, implementation, options);
     })();
   }
+  return encodeWriterTableInBatches(data, writer, options);
+}
+
+/** Encodes table batches using the resolved writer's batch method. */
+function encodeWriterTableInBatches(
+  data: Table,
+  writer: Writer & Partial<WriterWithEncoder>,
+  options?: WriterOptions
+): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);
     // @ts-expect-error

@@ -11,7 +11,8 @@ import {
   encodeTableInBatches,
   encodeText,
   encodeTextSync,
-  encodeURLtoURL
+  encodeURLtoURL,
+  type Writer
 } from '@loaders.gl/core';
 import {encodeTextInBatches} from '../../../src/lib/api/encode';
 
@@ -211,4 +212,29 @@ test('metadata without an encoder reports unsupported encoding', async () => {
   expect(() => encodeTableInBatches({shape: 'object-row-table', data: []}, metadata)).toThrow(
     'could not encode data in batches'
   );
+});
+
+test.each([
+  ['binary', (writer: Writer) => encodeInBatches([], writer), 'could not encode in batches'],
+  ['text', (writer: Writer) => encodeTextInBatches([], writer), 'could not encode text in batches'],
+  [
+    'table',
+    (writer: Writer) => encodeTableInBatches({shape: 'object-row-table', data: []}, writer),
+    'could not encode data in batches'
+  ]
+] as const)('lazy %s batching resolves once when the encoder also has a preload hook', async (_, encodeBatches, errorMessage) => {
+  let preloads = 0;
+  const implementation = makeWriter({
+    async preload() {
+      if (++preloads > 1) {
+        throw new Error('encoder was preloaded again');
+      }
+      return implementation;
+    }
+  });
+  const {encode: _encode, ...writer} = implementation;
+  const batches = encodeBatches(writer);
+  expect(preloads).toBe(0);
+  await expect(batches[Symbol.asyncIterator]().next()).rejects.toThrow(errorMessage);
+  expect(preloads).toBe(1);
 });
