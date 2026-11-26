@@ -79,6 +79,23 @@ test('native raster bridge distinguishes coverage misses, unknown matrices and s
   await expect(readRasterTile(source, TILE_ADDRESS)).resolves.toBeNull();
 });
 
+test('native raster bridge rejects a storage matrix omitted from native-read discovery', async () => {
+  const {source} = createSource();
+  source.getMetadata.mockResolvedValue({
+    ...(await source.getMetadata()),
+    nativeTileMatrixIds: []
+  });
+
+  await expect(readRasterTile(source, TILE_ADDRESS)).rejects.toThrow(
+    'Tile matrix "7" does not support native tile reads. Readable matrix IDs: []'
+  );
+  await expect(readRasterTile(source, {...TILE_ADDRESS, tileMatrix: 'missing'})).rejects.toThrow(
+    'Unknown tile matrix "missing"'
+  );
+  expect(source.getRasterTile).not.toHaveBeenCalled();
+  expect(source.getRaster).not.toHaveBeenCalled();
+});
+
 test('native raster bridge requires complete geometry and a source tile reader', async () => {
   const {source} = createSource();
   const {getMetadata, getRaster} = source;

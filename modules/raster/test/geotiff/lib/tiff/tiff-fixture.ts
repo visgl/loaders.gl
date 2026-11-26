@@ -5,7 +5,10 @@
 /** An authored directory entry for the small synthetic TIFF encoder. */
 export type FixtureTag = {tag: number; type: number; values: number[] | bigint[] | string};
 
-/** Builds tiny TIFFs from independently specified values, with padded tiles or final short strips. */
+/**
+ * Builds tiny TIFFs from independently specified values, with padded tiles or final short strips.
+ * Pass the byte offset of a fragment when appending its directory and blocks to another TIFF.
+ */
 export function createTiffFixture(
   options: {
     bigTiff?: boolean;
@@ -19,7 +22,8 @@ export function createTiffFixture(
     rowsPerStrip?: number;
     values?: number[][];
     tags?: FixtureTag[];
-  } = {}
+  } = {},
+  fileOffset = 0
 ) {
   const bigTiff = options.bigTiff ?? false;
   const littleEndian = options.littleEndian ?? true;
@@ -84,7 +88,7 @@ export function createTiffFixture(
     {
       tag: options.tileSize ? 324 : 273,
       type: offsetType,
-      values: blocks.map(block => block.offset)
+      values: blocks.map(block => fileOffset + block.offset)
     },
     {
       tag: options.tileSize ? 325 : 279,
@@ -158,8 +162,8 @@ export function createTiffFixture(
     if (length > inlineBytes) {
       payloadOffset = Math.ceil(payloadOffset / 8) * 8;
       offset = payloadOffset;
-      if (bigTiff) view.setBigUint64(valuePosition, BigInt(offset), littleEndian);
-      else view.setUint32(valuePosition, offset, littleEndian);
+      if (bigTiff) view.setBigUint64(valuePosition, BigInt(fileOffset + offset), littleEndian);
+      else view.setUint32(valuePosition, fileOffset + offset, littleEndian);
       payloadOffset += length;
     }
     if (payloadOffset >= 4096) throw new Error('Synthetic TIFF metadata overlaps sample blocks');

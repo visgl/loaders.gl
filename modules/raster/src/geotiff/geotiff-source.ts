@@ -861,7 +861,7 @@ export class GeoTIFFRasterSource
     const gdalMetadata = referenceImage.getGDALMetadata?.() || undefined;
     const noData = referenceImage.getGDALNoData?.() ?? null;
 
-    return {
+    const metadata: RasterSourceMetadata = {
       name: getGeoTIFFName(this.data),
       keywords: [],
       attributions: this.options.core?.attributions || [],
@@ -905,6 +905,15 @@ export class GeoTIFFRasterSource
         )
       }
     };
+    if (metadata.tileGrid?.matrixIds) {
+      const defaultSelectedBands = getSelectedBands(metadata);
+      metadata.nativeTileMatrixIds = metadata.tileGrid.matrixIds.filter(
+        id =>
+          id === '0' ||
+          isCompatibleOverview(images[Number(id)], images, metadata, defaultSelectedBands)
+      );
+    }
+    return metadata;
   }
 }
 

@@ -13,17 +13,24 @@ export async function readRasterTile(
 ): Promise<NumericRasterData | null> {
   const {tileMatrix, signal} = parameters;
   signal?.throwIfAborted();
-  const {tileGrid} = await waitForPromiseWithSignal(source.getMetadata({signal}), signal);
+  const {tileGrid, nativeTileMatrixIds} = await waitForPromiseWithSignal(
+    source.getMetadata({signal}),
+    signal
+  );
   signal?.throwIfAborted();
   const matrixSet = tileGrid?.tileMatrixSet;
   if (!matrixSet?.crs || !matrixSet.matrices.length)
     throw new Error('readRasterTile requires a complete native tile matrix set');
 
   const resolved = resolveTileGridTile(tileGrid, {...parameters, z: 0});
+  const matrix = matrixSet.matrices.find(candidate => candidate.id === tileMatrix)!;
+  if (nativeTileMatrixIds && !nativeTileMatrixIds.includes(tileMatrix))
+    throw new Error(
+      `Tile matrix "${tileMatrix}" does not support native tile reads. Readable matrix IDs: ${JSON.stringify(nativeTileMatrixIds)}`
+    );
   if (!resolved) return null;
   if (!source.getRasterTile) throw new Error('Raster source does not support native tile reads');
 
-  const matrix = matrixSet.matrices.find(candidate => candidate.id === tileMatrix)!;
   const raster = await waitForPromiseWithSignal(
     source.getRasterTile({...parameters, x: resolved.x}),
     signal

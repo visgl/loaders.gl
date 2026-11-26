@@ -200,9 +200,10 @@ it with deck.gl's `BitmapLayer`.
 ### Native tiles (experimental)
 
 Use `readRasterTile` from `@loaders.gl/core/loader-utils` with a `tileMatrix` ID from
-`getMetadata().tileGrid.tileMatrixSet` and the chunk column `x` and row `y` for that
-matrix. A complete grid requires rightward, axis-aligned geometry in a common string
-CRS. The read returns the exact samples of one spatial chunk at the named level,
+`getMetadata().nativeTileMatrixIds` and the chunk column `x` and row `y` for that
+matrix. GeoZarr lists the same IDs as its storage grid. Reads require a complete
+matrix set with rightward, axis-aligned geometry in a common string CRS. The read
+returns the exact samples of one spatial chunk at the named level,
 with `overview` set to its zero-based level index. For sharded arrays, the grid uses
 the inner chunk dimensions exposed by Zarrita.
 

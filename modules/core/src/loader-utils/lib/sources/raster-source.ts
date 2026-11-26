@@ -188,6 +188,12 @@ export type RasterSourceMetadata = {
   tileSize?: {width: number; height: number};
   /** Native tiled overview geometry with source-assigned matrix IDs. Edge tiles may extend beyond raster bounds. */
   tileGrid?: TileGrid;
+  /**
+   * Experimental. IDs in `tileGrid` that `getRasterTile` reads with the default bands.
+   * Sources that implement `getRasterTile` should set this field. A band selection can still
+   * cause the read to reject a matrix with a different band layout.
+   */
+  nativeTileMatrixIds?: string[];
   /** Available overview levels. */
   overviews?: RasterOverview[];
   /** Source no-data value when defined. */

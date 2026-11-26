@@ -29,6 +29,8 @@ test.each([
 ] as const)('GeoZarr opens a CF level-group pyramid with %s scale transforms and selects an overview', async scaleTransforms => {
   const {source, chunkRequests} = createPyramid({scaleTransforms});
   const metadata = await source.getMetadata();
+  expect(metadata.tileGrid?.matrixIds).toEqual(['0', '1', '2']);
+  expect(metadata.nativeTileMatrixIds).toEqual(metadata.tileGrid?.matrixIds);
   expect(metadata.array).toBe('0/backscatter');
   expect(metadata.crs).toBe(PROJECTED_WKT);
   expect(metadata.noData).toBeUndefined();

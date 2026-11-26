@@ -71,7 +71,7 @@ export type GeoZarrLevelMetadata = {
   /** Data-array path relative to the selected group. */
   array: string;
   /** Resolved array metadata; absent when this level cannot be normalized. */
-  metadata?: Omit<GeoZarrSourceMetadata, 'levels' | 'tileGrid'>;
+  metadata?: Omit<GeoZarrSourceMetadata, 'levels' | 'tileGrid' | 'nativeTileMatrixIds'>;
 };
 
 /** Normalized metadata exposed by {@link GeoZarrRasterSource}. */
@@ -303,11 +303,14 @@ export class GeoZarrRasterSource
       normalizedLevels.every(level => level.metadata?.crs === metadata.crs)
         ? metadata.crs
         : undefined;
+    const tileGrid = createTileGrid(commonCoordinateReferenceSystem, matrices);
     return {
       metadata: {
         ...metadata,
         ...(advertisedLevels.length ? {levels: advertisedLevels} : {}),
-        tileGrid: createTileGrid(commonCoordinateReferenceSystem, matrices)
+        tileGrid,
+        // Native reads need a complete matrix set, so an incomplete grid has no readable IDs.
+        nativeTileMatrixIds: tileGrid.tileMatrixSet?.crs ? tileGrid.matrixIds?.slice() ?? [] : []
       },
       levels: advertisedLevels.length ? levels : [selected]
     };
@@ -1449,7 +1452,7 @@ function clamp(value: number, minimum: number, maximum: number): number {
 /** Describes spatial storage chunks only when the affine is axis aligned and rightward. */
 function getSpatialChunkMatrix(
   id: string,
-  metadata?: Omit<GeoZarrSourceMetadata, 'levels' | 'tileGrid'>
+  metadata?: GeoZarrLevelMetadata['metadata']
 ): TileGridMatrix {
   if (!metadata) return {id};
   const {transform, tileSize, width, height} = metadata;
