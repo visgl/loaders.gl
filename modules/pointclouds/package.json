@@ -86,11 +86,6 @@
     "./ply-worker.js": {
       "import": "./dist/ply-worker.js"
     },
-    "./las/writer": {
-      "types": "./dist/las/las-writer.d.ts",
-      "import": "./dist/las/las-writer.js",
-      "require": "./dist/las/las-writer.cjs"
-    },
     "./las/api": {
       "types": "./dist/las/api.d.ts",
       "import": "./dist/las/api.js",

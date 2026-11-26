@@ -12,3 +12,4 @@ export type {PerfettoTraceBatch} from './perfetto-trace-arrow-schema';
 export type {PerfettoTraceTableName} from './perfetto-trace-arrow-schema';
 export type {PerfettoTrackArrowTable} from './perfetto-trace-arrow-schema';
 export type {PerfettoTraceWriterOptions} from './perfetto-trace-writer';
+export {PerfettoTraceWriter} from './perfetto-trace-writer-types';

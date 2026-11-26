@@ -10,6 +10,7 @@ import {
   type ChromeTraceArrowSourceItem
 } from './chrome-trace-arrow-adapter';
 import type {ChromeTraceFileSchema} from './chrome-trace-schema';
+import {CHROME_TRACE_WRITER_METADATA} from './chrome-trace-writer-types';
 
 /** Chrome trace writer options. */
 export type ChromeTraceWriterOptions = WriterOptions & {
@@ -23,14 +24,7 @@ export type ChromeTraceWriterOptions = WriterOptions & {
 
 /** Serializes Chrome trace event Arrow data as Chrome Trace Event JSON. */
 export const ChromeTraceWriter = {
-  name: 'Chrome Trace Writer',
-  id: 'chromeTrace',
-  module: 'traces',
-  version: 'latest',
-  extensions: ['json'],
-  mimeTypes: ['application/json', 'application/x-chrome-trace+json'],
-  text: true,
-  options: {},
+  ...CHROME_TRACE_WRITER_METADATA,
   encode: async (source: ChromeTraceArrowSourceItem, options?: ChromeTraceWriterOptions) =>
     encodeChromeTrace(source, options),
   encodeSync: encodeChromeTrace,

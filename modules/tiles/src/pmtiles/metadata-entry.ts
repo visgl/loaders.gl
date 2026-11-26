@@ -13,7 +13,7 @@ export type {
   PMTilesTileSource
 } from './pmtiles-source';
 export type {PMTilesLoaderOptions} from './pmtiles-loader';
-export type {PMTilesWriter, PMTilesWriterOptions} from './pmtiles-writer';
+export type {PMTilesWriterOptions} from './pmtiles-writer';
 export type {encodePMTiles} from './lib/encode-pmtiles';
 export type {
   PMTilesTile,
@@ -23,3 +23,4 @@ export type {
 } from './pmtiles-writer-types';
 export type {GeoArrowPMTilesOptions, GeoArrowPMTilesTileIndex} from './geoarrow';
 export type {RasterPMTilesOptions, RasterPMTilesSource} from './raster';
+export {PMTilesWriter} from './pmtiles-writer-definition';

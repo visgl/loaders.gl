@@ -4,9 +4,8 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {Geometry} from '@loaders.gl/core/schema';
-import {VERSION} from './lib/version';
-import {WKTFormat} from './wkt-format';
 import {convertGeometryToWKT} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
+import {WKT_WRITER_METADATA} from './wkt-writer-types';
 
 export type WKTWriterOptions = WriterOptions & {
   wkt?: {};
@@ -16,20 +15,10 @@ export type WKTWriterOptions = WriterOptions & {
  * WKT exporter
  */
 export const WKTWriter = {
-  ...WKTFormat,
-  name: 'WKT (Well Known Text)',
-  id: 'wkt',
-  module: 'geospatial',
-  version: VERSION,
-  extensions: ['wkt'],
-  mimeTypes: ['application/wkt', 'text/plain'],
-  text: true,
+  ...WKT_WRITER_METADATA,
   encode: async (geometry: Geometry) => convertGeometryToWKTSync(geometry),
   encodeSync: convertGeometryToWKTSync,
-  encodeTextSync: (geometry: Geometry) => convertGeometryToWKT(geometry),
-  options: {
-    wkt: {}
-  }
+  encodeTextSync: (geometry: Geometry) => convertGeometryToWKT(geometry)
 } as const satisfies WriterWithEncoder<Geometry, never, WKTWriterOptions>;
 
 function convertGeometryToWKTSync(geometry: Geometry): ArrayBuffer {

@@ -6,11 +6,7 @@ import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {PLYFormat} from './ply-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {PLY_WRITER_METADATA} from './ply-writer-types';
 
 /** Options for `PLYWriter`. */
 export type PLYWriterOptions = WriterOptions & {
@@ -22,14 +18,7 @@ export type PLYWriterOptions = WriterOptions & {
  * Writer for the PLY geometry format.
  */
 export const PLYWriter = {
-  ...PLYFormat,
-  dataType: null as unknown as Mesh | Table,
-  batchType: null as never,
-  version: VERSION,
-  options: {
-    ply: {}
-  },
-  text: true,
+  ...PLY_WRITER_METADATA,
   encode: async (data, options) => encodePLYSync(data, options),
   encodeSync: encodePLYSync,
   encodeTextSync: encodePLY

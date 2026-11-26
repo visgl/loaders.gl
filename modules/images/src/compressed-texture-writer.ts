@@ -3,9 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
-import {DDSTextureFormat} from './texture-format';
-import {VERSION} from './lib/utils/version';
 import {encodeImageURLToCompressedTextureURL} from './lib/encoders/encode-texture';
+import {COMPRESSED_TEXTURE_WRITER_METADATA} from './compressed-texture-writer-types';
 
 /** Compressed Texture writer options */
 export type CompressedTextureWriterOptions = WriterOptions & {
@@ -26,26 +25,7 @@ export type CompressedTextureWriterOptions = WriterOptions & {
  * DDS Texture Container Exporter
  */
 export const CompressedTextureWriter = {
-  ...DDSTextureFormat,
-  name: 'DDS Texture Container',
-  id: 'dds',
-  module: 'images',
-  version: VERSION,
-
-  extensions: ['dds'],
-  mimeTypes: ['image/vnd-ms.dds', 'image/x-dds', 'application/octet-stream'],
-
-  options: {
-    texture: {
-      format: 'auto',
-      compression: 'auto',
-      quality: 'auto',
-      mipmap: false,
-      flipY: false,
-      toolFlags: ''
-    }
-  },
-
+  ...COMPRESSED_TEXTURE_WRITER_METADATA,
   encodeURLtoURL: encodeImageURLToCompressedTextureURL,
   encode() {
     throw new Error('Not implemented');

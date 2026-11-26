@@ -8,8 +8,7 @@ import {
   ensureArrayBuffer
 } from '@loaders.gl/core/loader-utils';
 import {encodeWKTCRS, type EncodeWKTCRSOptions, type WKTCRSAst} from '@math.gl/geospatial/crs';
-import {VERSION} from './lib/version';
-import {WKTCRSFormat} from './wkt-format';
+import {WKTCRS_WRITER_METADATA} from './wkt-crs-writer-types';
 
 export type WKTCRSWriterOptions = WriterOptions & {
   'wkt-crs'?: EncodeWKTCRSOptions;
@@ -21,19 +20,7 @@ export type WKTCRSWriterOptions = WriterOptions & {
  * @see Wikipedia Page: https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems
  */
 export const WKTCRSWriter = {
-  ...WKTCRSFormat,
-  name: 'WKT CRS (Well-Known Text Coordinate Reference System)',
-  id: 'wkt-crs',
-  module: 'wkt-crs',
-  version: VERSION,
-  worker: true,
-  extensions: [],
-  mimeTypes: ['text/plain'],
-  // category: 'json',
-  text: true,
-  options: {
-    'wkt-crs': {}
-  },
+  ...WKTCRS_WRITER_METADATA,
   encode: async (wktcrs, options) =>
     ensureArrayBuffer(new TextEncoder().encode(encodeWKTCRS(wktcrs, options?.['wkt-crs']))),
   encodeSync: (wktcrs, options) =>

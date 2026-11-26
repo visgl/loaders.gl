@@ -8,6 +8,7 @@ import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-uti
 import {ExportTraceServiceRequestSchema} from './otlp-proto/generated/opentelemetry/proto/collector/trace/v1/trace_service_pb';
 import type {OtlpTrace} from './otlp-trace-arrow-schema';
 import {buildOtlpTracesData} from './otlp-trace-message';
+import {OTLP_TRACE_WRITER_METADATA} from './otlp-trace-writer-types';
 
 /** OTLP protobuf writer options. */
 export type OtlpTraceWriterOptions = WriterOptions & {
@@ -16,14 +17,7 @@ export type OtlpTraceWriterOptions = WriterOptions & {
 
 /** Serializes normalized Arrow tables as a canonical OTLP trace export request. */
 export const OtlpTraceWriter = {
-  name: 'OTLP Trace Writer',
-  id: 'otlpTrace',
-  module: 'traces',
-  version: 'latest',
-  extensions: ['otlp', 'otlp-trace'],
-  mimeTypes: ['application/x-protobuf', 'application/vnd.google.protobuf'],
-  binary: true,
-  options: {},
+  ...OTLP_TRACE_WRITER_METADATA,
   encode: async (trace: OtlpTrace) => encodeOtlpTrace(trace),
   encodeSync: encodeOtlpTrace
 } as const satisfies WriterWithEncoder<OtlpTrace, never, OtlpTraceWriterOptions>;

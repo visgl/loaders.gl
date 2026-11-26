@@ -10,16 +10,12 @@ import {
   type WriterOptions,
   type WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
-import {LASWriter} from '@loaders.gl/pointclouds/las/writer';
+import {LASWriter} from '@loaders.gl/pointclouds/las/bundled';
 import {type LASExtraBytesWriter} from '@loaders.gl/pointclouds/las';
 import type {Mesh} from '@loaders.gl/core/schema';
 import type {Table} from 'apache-arrow';
 import type {WKTCRSDefinition} from '@math.gl/geospatial/crs';
-import {COPCFormat} from './copc-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {COPC_WRITER_METADATA} from './copc-writer-types';
 const LAS_1_4_HEADER_LENGTH = 375;
 const COPC_INFO_PAYLOAD_LENGTH = 160;
 const VLR_HEADER_LENGTH = 54;
@@ -58,14 +54,7 @@ export type COPCWriterOptions = WriterOptions & {
 
 /** Writer metadata for COPC point cloud output. */
 export const COPCWriter = {
-  ...COPCFormat,
-  dataType: null as unknown as Mesh | Table,
-  batchType: null as never,
-  version: VERSION,
-  extensions: ['copc.laz', 'laz'],
-  options: {
-    copc: {}
-  },
+  ...COPC_WRITER_METADATA,
   encode: async (data, options) => encodeCOPCSync(data, options),
   encodeSync: encodeCOPCSync
 } as const satisfies WriterWithEncoder<Mesh | Table, never, COPCWriterOptions>;

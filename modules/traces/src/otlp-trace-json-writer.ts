@@ -9,6 +9,7 @@ import {ExportTraceServiceRequestSchema} from './otlp-proto/generated/openteleme
 import type {OtlpTrace} from './otlp-trace-arrow-schema';
 import {buildOtlpTracesData} from './otlp-trace-message';
 import {convertProtobufJsonIdsToOtlp} from './otlp-json';
+import {OTLP_TRACE_JSON_WRITER_METADATA} from './otlp-trace-json-writer-types';
 
 /** OTLP protobuf-JSON writer options. */
 export type OtlpTraceJsonWriterOptions = WriterOptions & {
@@ -20,14 +21,7 @@ export type OtlpTraceJsonWriterOptions = WriterOptions & {
 
 /** Serializes normalized Arrow tables as canonical OTLP protobuf-JSON. */
 export const OtlpTraceJsonWriter = {
-  name: 'OTLP Trace JSON Writer',
-  id: 'otlpTraceJson',
-  module: 'traces',
-  version: 'latest',
-  extensions: ['otlp.json'],
-  mimeTypes: ['application/json'],
-  text: true,
-  options: {},
+  ...OTLP_TRACE_JSON_WRITER_METADATA,
   encode: async (trace: OtlpTrace, options?: OtlpTraceJsonWriterOptions) =>
     encodeOtlpTraceJson(trace, options),
   encodeSync: (trace: OtlpTrace, options?: OtlpTraceJsonWriterOptions) =>

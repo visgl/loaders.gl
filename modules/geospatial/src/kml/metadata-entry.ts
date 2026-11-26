@@ -14,14 +14,7 @@ export type {
   resolveKMZResourcePath as _resolveKMZResourcePath
 } from './kmz-archive';
 export type {KMZSourceOptions, KMZVectorSource} from './kmz-source';
-export type {
-  KMLWriterData,
-  KMLWriterOptions,
-  KMZWriterOptions,
-  KMLWriter,
-  KMZWriter,
-  encodeKMLText
-} from './kml-writer';
+export type {KMLWriterData, KMLWriterOptions, KMZWriterOptions, encodeKMLText} from './kml-writer';
 export type {
   KMLDocument,
   KMLFeatureConversionOptions,
@@ -34,3 +27,5 @@ export type {
   parseKMLDocument as _parseKMLDocument
 } from './kml-parser';
 export type {KMLLoaderWithParser, parseKMLTextToFeatureCollection} from './kml-loader';
+export {KMLWriter} from './kml-writer-types';
+export {KMZWriter} from './kml-writer-types';
