@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './index';
-export {TarBuilder} from './tar-builder';
 export {TarWriter} from './tar-writer';
-export {encodeTar} from './tar-writer';
-export {readTarArchive} from './tar-archive';
 export {TarLoaderWithParser as TarLoader} from './tar-loader';
+export {TarFormat} from './tar-format';
+export type {TarFileMap, TarLoaderOptions} from './tar-loader-types';
+export type {TarWriterFiles} from './tar-writer';

@@ -101,12 +101,9 @@ export {
   ResolvedMapStyleSchema,
   resolveMapStyle
 } from '@loaders.gl/tiles/mvt/api';
-export {
-  MVTWriter,
-  MVTTileSource,
-  TableTileLoader,
-  TableVectorTileSource
-} from '@loaders.gl/tiles/mvt/bundled';
+export {MVTWriter} from '../src/mvt/mvt-writer';
+export {MVTTileSource} from '../src/mvt/mvt-source';
+export {TableTileLoader, TableVectorTileSource} from '../src/mvt/table-tile-loader';
 export type {
   TileJSONLoaderOptions,
   TileJSON,
@@ -131,4 +128,4 @@ export type {
   ArrowTableTileLoaderOptions,
   ArrowTableTileSourceInput
 } from '@loaders.gl/tiles/mvt';
-export type {ArrowTableVectorTileSource} from '@loaders.gl/tiles/mvt/bundled';
+export type {ArrowTableVectorTileSource} from '../src/mvt/arrow-table-tile-loader';

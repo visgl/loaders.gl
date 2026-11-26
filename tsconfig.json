@@ -25,10 +25,10 @@
         "node_modules/zarr/types/zarr.d.ts"
       ],
       "@loaders.gl/archives/zip/bundled": [
-        "modules/archives/src/zip/bundled-entry.ts"
+        "modules/archives/src/zip/bundled.ts"
       ],
       "@loaders.gl/archives/tar/bundled": [
-        "modules/archives/src/tar/bundled-entry.ts"
+        "modules/archives/src/tar/bundled.ts"
       ],
       "@loaders.gl/graphs/graphml/bundled": [
         "modules/graphs/src/graphml-bundled.ts"
@@ -376,10 +376,10 @@
         "modules/tiles/src/mvt/metadata-entry.ts"
       ],
       "@loaders.gl/tiles/arrow-table-tile-loader": [
-        "modules/tiles/src/arrow-table-tile-loader.ts"
+        "modules/tiles/src/mvt/arrow-table-tile-loader.ts"
       ],
       "@loaders.gl/tiles/mvt-geojson-loader": [
-        "modules/tiles/src/mvt-geojson-loader.ts"
+        "modules/tiles/src/mvt/mvt-geojson-loader.ts"
       ],
       "@loaders.gl/tiles/mvt/test": [
         "modules/tiles/test/mvt"
@@ -550,13 +550,13 @@
         "modules/documents/test/xml"
       ],
       "@loaders.gl/archives/indexed-zip-writer": [
-        "modules/archives/src/indexed-zip-writer.ts"
+        "modules/archives/src/zip/indexed-zip-writer.ts"
       ],
       "@loaders.gl/archives/zip-loader": [
-        "modules/archives/src/zip-loader.ts"
+        "modules/archives/src/zip/zip-loader.ts"
       ],
       "@loaders.gl/archives/zip-writer": [
-        "modules/archives/src/zip-writer.ts"
+        "modules/archives/src/zip/zip-writer.ts"
       ],
       "@loaders.gl/tiles-3d/3d-tiles-archive-writer": [
         "modules/tiles-3d/src/3d-tiles-archive-writer.ts"
@@ -568,10 +568,10 @@
         "modules/archives/src/tar/index.ts"
       ],
       "@loaders.gl/archives/tar-loader": [
-        "modules/archives/src/tar-loader.ts"
+        "modules/archives/src/tar/tar-loader.ts"
       ],
       "@loaders.gl/archives/tar-writer": [
-        "modules/archives/src/tar-writer.ts"
+        "modules/archives/src/tar/tar-writer.ts"
       ],
       "@loaders.gl/archives/zip": [
         "modules/archives/src/zip/index.ts"
@@ -744,11 +744,20 @@
       "@loaders.gl/pointclouds": [
         "modules/pointclouds/src/index.ts"
       ],
+      "@loaders.gl/pointclouds/las/parser": [
+        "modules/pointclouds/src/las/las-loader.ts"
+      ],
       "@loaders.gl/pointclouds/las/bundled": [
-        "modules/pointclouds/src/las/bundled-entry.ts"
+        "modules/pointclouds/src/las/bundled.ts"
+      ],
+      "@loaders.gl/pointclouds/pcd/parser": [
+        "modules/pointclouds/src/pcd-loader.ts"
       ],
       "@loaders.gl/pointclouds/pcd/bundled": [
         "modules/pointclouds/src/pcd/bundled.ts"
+      ],
+      "@loaders.gl/pointclouds/ply/parser": [
+        "modules/pointclouds/src/ply-loader.ts"
       ],
       "@loaders.gl/pointclouds/ply/bundled": [
         "modules/pointclouds/src/ply/bundled.ts"
@@ -832,7 +841,7 @@
         "modules/documents/test/*"
       ],
       "@loaders.gl/ogc/wmts-capabilities-loader-with-parser": [
-        "modules/ogc/src/wmts-capabilities-loader-with-parser.ts"
+        "modules/ogc/src/wms/wmts-capabilities-loader-with-parser.ts"
       ],
       "@loaders.gl/scene": [
         "modules/scene/src"
@@ -1206,6 +1215,9 @@
       "@loaders.gl/images/basis/bundled": [
         "modules/images/src/basis-bundled-entry.ts"
       ],
+      "@loaders.gl/images/image/writer": [
+        "modules/images/src/image-writer.ts"
+      ],
       "@loaders.gl/images/image/bundled": [
         "modules/images/src/image-bundled.ts"
       ],
@@ -1273,10 +1285,10 @@
         "modules/graphs/src/gexf.ts"
       ],
       "@loaders.gl/ogc/gml-loader": [
-        "modules/ogc/src/gml-loader.ts"
+        "modules/ogc/src/wms/gml-loader.ts"
       ],
       "@loaders.gl/ogc/stac-loader": [
-        "modules/ogc/src/stac-loader.ts"
+        "modules/ogc/src/stac/stac-loader.ts"
       ],
       "@loaders.gl/ogc/csw": [
         "modules/ogc/src/csw/metadata-entry.ts"
@@ -1327,10 +1339,10 @@
         "modules/tiles/src/mvt/tilejson-zod-schema.ts"
       ],
       "@loaders.gl/tiles/mvt/bundled": [
-        "modules/tiles/src/mvt/bundled-entry.ts"
+        "modules/tiles/src/mvt/bundled.ts"
       ],
       "@loaders.gl/tiles/pmtiles/bundled": [
-        "modules/tiles/src/pmtiles/bundled-entry.ts"
+        "modules/tiles/src/pmtiles/bundled.ts"
       ],
       "@loaders.gl/tiles/pmtiles/geoarrow": [
         "modules/tiles/src/pmtiles/geoarrow.ts"
@@ -1420,10 +1432,13 @@
         "modules/geospatial/src/wkb-api.ts"
       ],
       "@loaders.gl/ogc/wms/bundled": [
-        "modules/ogc/src/wms/bundled-entry.ts"
+        "modules/ogc/src/wms/bundled.ts"
       ],
       "@loaders.gl/ogc/wms/api": [
         "modules/ogc/src/wms/api.ts"
+      ],
+      "@loaders.gl/pointclouds/las/writer": [
+        "modules/pointclouds/src/las/las-writer.ts"
       ],
       "@loaders.gl/pointclouds/las/api": [
         "modules/pointclouds/src/las/api.ts"

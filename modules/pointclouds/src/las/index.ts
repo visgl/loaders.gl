@@ -6,7 +6,8 @@
 
 export {LASFormat} from './las-format';
 
-export type {LASColumnName, LASLoaderOptions, LASSourceOptions} from './las-loader-types';
+export type {LASColumnName, LASLoaderOptions} from './las-loader-shared';
+export type {LASSourceOptions} from './las-source';
 
 export type {LASExtraBytesWriter, LASWriterOptions} from './las-writer';
 export {LASWriter} from './las-writer';
@@ -71,4 +72,4 @@ export {
   toPublicLASResult,
   getLASRecordBatches,
   parseLASMetadata
-} from '../las-loader';
+} from './las-loader';

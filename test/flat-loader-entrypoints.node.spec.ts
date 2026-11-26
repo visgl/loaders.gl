@@ -44,10 +44,14 @@ test.each(
     }
 
     if (typeof conditions !== 'string') {
-      expect(conditions.types, moduleName + exportPath).toBe(`./dist/${entrypointName}.d.ts`);
-      expect(conditions.import, moduleName + exportPath).toBe(`./dist/${entrypointName}.js`);
+      const declarationPath = conditions.types;
+      expect(path.basename(declarationPath), moduleName + exportPath).toBe(
+        `${entrypointName}.d.ts`
+      );
+      const implementationPath = declarationPath.slice(0, -'.d.ts'.length);
+      expect(conditions.import, moduleName + exportPath).toBe(`${implementationPath}.js`);
       if (conditions.require) {
-        expect(conditions.require, moduleName + exportPath).toBe(`./dist/${entrypointName}.cjs`);
+        expect(conditions.require, moduleName + exportPath).toBe(`${implementationPath}.cjs`);
       }
     }
   }

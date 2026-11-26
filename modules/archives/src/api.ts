@@ -22,4 +22,5 @@ export type {
 } from './zip/zip-encode-types';
 export {encodeTar} from './tar/tar-writer';
 export {readTarArchive} from './tar/tar-archive';
-export type {TarFileMap, TarWriterFiles} from './tar/bundled';
+export type {TarFileMap} from './tar/tar-loader-types';
+export type {TarWriterFiles} from './tar/tar-writer';

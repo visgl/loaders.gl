@@ -5,7 +5,7 @@
 // PLYLoader
 export {PLYFormat} from './ply-format';
 
-export type {PLYLoaderOptions} from './ply-loader-types';
+export type {PLYLoaderOptions} from './ply-loader-definition';
 export {PLYLoader} from './ply-loader-types';
 export type {PLYWriterOptions} from './ply-writer';
 export {PLYWriter} from './ply-writer';
