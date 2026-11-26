@@ -149,7 +149,8 @@
     "third-party-licenses"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field && npm run build-npy-worker && npm run build-metadata && npm run build-cjs-vtk-loader && npm run build-cjs-nrrd && npm run build-cjs-pdb",
+    "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
+    "pre-build": "npm run build-format-subpaths && npm run build-bundle && npm run build-bundle-dev && npm run build-cjs-netcdf && npm run build-cjs-zarr && npm run build-cjs-grib2 && npm run build-cjs-hdf5 && npm run build-cjs-vtk && npm run build-cjs-vector-field && npm run build-npy-worker && npm run build-metadata && npm run build-cjs-vtk-loader && npm run build-cjs-nrrd && npm run build-cjs-pdb",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./netcdf-bundle.ts --output=dist/netcdf.min.js && node ../../scripts/build-codec-bundle.mjs ./zarr-bundle.ts --output=dist/zarr.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./netcdf-bundle.ts --env=dev --output=dist/netcdf.dev.js && node ../../scripts/build-codec-bundle.mjs ./zarr-bundle.ts --env=dev --output=dist/zarr.dev.js",
     "build-cjs-netcdf": "esbuild src/netcdf/*.ts --bundle --format=cjs --platform=node --target=node22 --outdir=dist/netcdf --out-extension:.js=.cjs --external:@loaders.gl/* --external:@math.gl/*",
