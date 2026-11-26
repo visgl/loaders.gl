@@ -57,7 +57,7 @@ export function cloneZarrSelection<T extends CachedData>(selection: T): T {
 }
 
 /** Applies cancellation to one cache waiter without aborting the shared read. */
-function awaitWithAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+export function awaitWithAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
   if (!signal) return promise;
   if (signal.aborted)
     return Promise.reject(signal.reason || new Error('The operation was aborted.'));
