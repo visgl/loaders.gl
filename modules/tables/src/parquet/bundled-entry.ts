@@ -7,7 +7,7 @@ export {
   GeoParquetLoaderWithParser as GeoParquetLoader,
   GeoParquetLoaderWithParser
 } from './geoparquet-loader';
-export {ParquetWriter} from './parquet-writer';
+export {ParquetWriterWithEncoder as ParquetWriter} from './parquet-writer';
 export {ParquetSource} from './parquet-source';
 export {ParquetDatasetSource} from './parquet-dataset-source';
 export {ParquetFormat} from './parquet-format';
@@ -70,7 +70,7 @@ export type {
   ParquetDecodedBatch
 } from './parquet-source-types';
 export type {ParquetSourceCapabilities} from './parquet-source-capabilities';
-export type {ParquetWriterEncoding, ParquetWriterOptions} from './parquet-writer';
+export type {ParquetWriterEncoding, ParquetWriterOptions} from './parquet-writer-types';
 export type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
 export type {
   ParquetWriterEncryptionOptions,

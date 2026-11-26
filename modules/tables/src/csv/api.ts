@@ -11,6 +11,6 @@ export {
   calculateInitialTypedColumnCapacity
 } from './csv-arrow-table-parser';
 export type {CSVLoaderOptions} from './csv-loader-options';
-export type {CSVWriterOptions} from './csv-writer';
+export type {CSVWriterOptions} from './csv-writer-types';
 export type {CSVSourceOptions} from './csv-source';
 export type {ArrowTableCSVOptions, ArrowTableCSVParseOptions} from './csv-arrow-table-parser';

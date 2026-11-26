@@ -10,6 +10,7 @@ export type {
   CoreAPI,
   LoaderOptions,
   Writer,
+  WriterWithEncoder,
   WriterOptions,
   DataType,
   SyncDataType,

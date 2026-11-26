@@ -7,9 +7,12 @@ import {
   encode,
   encodeInBatches,
   encodeSync,
+  encodeTable,
+  encodeTableInBatches,
   encodeText,
   encodeTextSync,
-  encodeURLtoURL
+  encodeURLtoURL,
+  type Writer
 } from '@loaders.gl/core';
 import {encodeTextInBatches} from '../../../src/lib/api/encode';
 
@@ -106,4 +109,132 @@ test('URL encoders reject command-line writers in Chromium', async () => {
   await expect(encode(new ArrayBuffer(0), writer)).rejects.toThrow(
     'Writer TestWriter not supported in browser'
   );
+});
+
+test('async encoding resolves metadata and preserves preload failures', async () => {
+  const implementation = makeWriter({text: true});
+  const {encode: _encode, ...metadata} = implementation;
+  const writer = {...metadata, preload: async () => implementation};
+
+  expect(TEXT_DECODER.decode(await encode('binary', writer))).toBe('binary');
+  expect(await encodeText('text', writer)).toBe('text');
+  expect(() => encodeSync('sync', writer)).toThrow('could not synchronously encode');
+  const failure = new Error('writer import failed');
+  const broken = {
+    ...metadata,
+    preload: async () => {
+      throw failure;
+    }
+  };
+  await expect(encode('broken', broken)).rejects.toBe(failure);
+});
+
+test.each([
+  ['binary', encodeInBatches, 'encodeInBatches'],
+  ['text', encodeTextInBatches, 'encodeTextInBatches']
+] as const)('lazy %s batch encoding starts loading on iteration', async (_, encodeBatches, method) => {
+  let preloads = 0;
+  const implementation = makeWriter({
+    [method]: async function* () {
+      yield TEXT_ENCODER.encode('batch').buffer;
+    }
+  });
+  const {encode: _encode, [method]: _batchEncoder, ...metadata} = implementation;
+  const writer = {
+    ...metadata,
+    async preload() {
+      preloads++;
+      return implementation;
+    }
+  };
+  const output = encodeBatches([], writer);
+  expect(preloads).toBe(0);
+  const chunks: string[] = [];
+  for await (const chunk of output) {
+    chunks.push(TEXT_DECODER.decode(chunk));
+  }
+  expect(preloads).toBe(1);
+  expect(chunks).toEqual(['batch']);
+});
+
+test('encode keeps worker dispatch for an on-demand encoder', async () => {
+  const implementation = makeWriter({
+    worker: new URL('/modules/core/test/worker-utils/fixtures/task-worker.ts', location.href).href,
+    encode: async () => {
+      throw new Error('expected worker execution');
+    }
+  });
+  const {encode: _encode, ...metadata} = implementation;
+  const writer = {...metadata, preload: async () => implementation};
+
+  const data = TEXT_ENCODER.encode('worker').buffer;
+  const result = await encode(data, writer, {core: {worker: true}, echoBinary: {}});
+  expect(TEXT_DECODER.decode(result)).toBe('worker');
+});
+
+test('lazy table batch encoding resolves once on iteration and forwards the table and options', async () => {
+  const input = {shape: 'object-row-table' as const, data: [{id: 1}]};
+  const options = {batch: {marker: 'table'}};
+  let preloads = 0;
+  const implementation = makeWriter({
+    async *encodeInBatches(batches: Iterable<typeof input>, writerOptions: typeof options) {
+      expect(writerOptions).toBe(options);
+      for (const batch of batches) {
+        yield TEXT_ENCODER.encode(`${writerOptions.batch.marker}:${batch.data[0].id}`).buffer;
+      }
+    }
+  });
+  const {encode: _encode, encodeInBatches, ...metadata} = implementation;
+  const writer = {
+    ...metadata,
+    async preload() {
+      preloads++;
+      return implementation;
+    }
+  };
+
+  const batches = encodeTableInBatches(input, writer, options);
+  expect(preloads).toBe(0);
+  const chunks: string[] = [];
+  for await (const chunk of batches) {
+    chunks.push(TEXT_DECODER.decode(chunk));
+  }
+  expect(preloads).toBe(1);
+  expect(chunks).toEqual(['table:1']);
+  const eagerBatchWriter = {...metadata, encodeInBatches};
+  expect(TEXT_DECODER.decode(await encodeTable(input, eagerBatchWriter, options))).toBe('table:1');
+});
+
+test('metadata without an encoder reports unsupported encoding', async () => {
+  const {encode: _encode, ...metadata} = makeWriter();
+
+  await expect(encode('binary', metadata)).rejects.toThrow('could not encode data');
+  expect(() => encodeTableInBatches({shape: 'object-row-table', data: []}, metadata)).toThrow(
+    'could not encode data in batches'
+  );
+});
+
+test.each([
+  ['binary', (writer: Writer) => encodeInBatches([], writer), 'could not encode in batches'],
+  ['text', (writer: Writer) => encodeTextInBatches([], writer), 'could not encode text in batches'],
+  [
+    'table',
+    (writer: Writer) => encodeTableInBatches({shape: 'object-row-table', data: []}, writer),
+    'could not encode data in batches'
+  ]
+] as const)('lazy %s batching resolves once when the encoder also has a preload hook', async (_, encodeBatches, errorMessage) => {
+  let preloads = 0;
+  const implementation = makeWriter({
+    async preload() {
+      if (++preloads > 1) {
+        throw new Error('encoder was preloaded again');
+      }
+      return implementation;
+    }
+  });
+  const {encode: _encode, ...writer} = implementation;
+  const batches = encodeBatches(writer);
+  expect(preloads).toBe(0);
+  await expect(batches[Symbol.asyncIterator]().next()).rejects.toThrow(errorMessage);
+  expect(preloads).toBe(1);
 });
