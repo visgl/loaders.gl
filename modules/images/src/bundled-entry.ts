@@ -28,13 +28,10 @@ export {ThreeDLLUTLoader} from './3dl-lut-loader-types';
 export {ImageLUTLoader} from './image-lut-loader-types';
 export {IESLoader} from './ies-loader-types';
 export {EXRLoader} from './exr-loader-types';
+export type {ImageLoaderOptions} from './image-loader-types';
+export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
+export type {GPUTextureFormat, TextureFormat} from '@loaders.gl/core/schema';
 export type {
-  ImageLoaderOptions,
-  ImageDataType,
-  ImageType,
-  ImageTypeEnum,
-  GPUTextureFormat,
-  TextureFormat,
   BasisLoaderOptions,
   BasisASTCBlockSize,
   BasisCodec,
@@ -44,19 +41,21 @@ export type {
   BasisImageData,
   BasisSupportedTextureFeatures,
   BasisTargetFormat,
-  BasisTextureInfo,
+  BasisTextureInfo
+} from './basis-types';
+export type {
   CompressedTextureLoaderOptions,
-  CrunchLoaderOptions,
-  RadianceHDRLoaderOptions,
-  RadianceHDRMetadata,
-  TextureManifestLoaderOptions,
-  TextureManifest,
-  TextureArrayLoaderOptions,
-  TextureArrayManifest,
-  TextureCubeLoaderOptions,
-  TextureCubeManifest,
-  TextureCubeArrayLoaderOptions,
-  TextureCubeArrayManifest,
+  CompressedTextureLoaderOptions as TextureLoaderOptions
+} from './compressed-texture-loader-types';
+export type {CrunchLoaderOptions} from './crunch-loader';
+export type {RadianceHDRLoaderOptions} from './radiance-hdr-loader-types';
+export type {RadianceHDRMetadata} from './lib/parsers/parse-hdr';
+export type {TextureManifestLoaderOptions} from './texture-loader-types';
+export type {
+  ImageTextureManifest as TextureManifest,
+  ImageTextureArrayManifest as TextureArrayManifest,
+  ImageTextureCubeManifest as TextureCubeManifest,
+  ImageTextureCubeArrayManifest as TextureCubeArrayManifest,
   CompositeImageManifest,
   ImageTextureArrayManifest,
   ImageTextureCubeArrayLayer,
@@ -65,15 +64,16 @@ export type {
   ImageTextureCubeManifest,
   ImageTextureManifest,
   ImageTextureSource,
-  ImageTextureTemplateSource,
-  KTX2BasisWriterOptions,
-  TextureLoaderOptions,
-  VideoLoaderOptions,
-  CubeLUTLoaderOptions,
-  ThreeDLLUTLoaderOptions,
-  ImageLUTLoaderOptions,
-  ColorLUT,
-  IESProfile,
-  EXRImage,
-  EXRChannel
-} from './bundled';
+  ImageTextureTemplateSource
+} from './lib/composite-image/composite-image-manifest-schema';
+export type {TextureArrayLoaderOptions} from './texture-array-loader-types';
+export type {TextureCubeLoaderOptions} from './texture-cube-loader-types';
+export type {TextureCubeArrayLoaderOptions} from './texture-cube-array-loader-types';
+export type {KTX2BasisWriterOptions} from './ktx2-basis-writer';
+export type {VideoLoaderOptions} from './video-loader-types';
+export type {CubeLUTLoaderOptions} from './cube-lut-loader-types';
+export type {ThreeDLLUTLoaderOptions} from './3dl-lut-loader-types';
+export type {ImageLUTLoaderOptions} from './image-lut-loader-types';
+export type {ColorLUT} from './lut/lut-types';
+export type {IESProfile} from './ies/parse-ies';
+export type {EXRImage, EXRChannel} from './exr/parse-exr';

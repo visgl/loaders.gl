@@ -30,17 +30,12 @@ export {
   KTX2BasisTextureFormat,
   DDSTextureFormat
 } from './texture-format';
+export type {TextureCubeLoaderOptions} from './texture-cube-loader';
 export type {
-  TextureCubeLoaderOptions,
-  TextureCubeManifest,
-  CompressedTextureWriterOptions,
-  CompressedTextureLoaderOptions,
-  TextureManifestLoaderOptions,
-  TextureManifest,
-  TextureCubeArrayLoaderOptions,
-  TextureCubeArrayManifest,
-  TextureArrayLoaderOptions,
-  TextureArrayManifest,
+  ImageTextureCubeManifest as TextureCubeManifest,
+  ImageTextureManifest as TextureManifest,
+  ImageTextureCubeArrayManifest as TextureCubeArrayManifest,
+  ImageTextureArrayManifest as TextureArrayManifest,
   CompositeImageManifest,
   ImageTextureArrayManifest,
   ImageTextureCubeArrayLayer,
@@ -49,8 +44,12 @@ export type {
   ImageTextureCubeManifest,
   ImageTextureManifest,
   ImageTextureSource,
-  ImageTextureTemplateSource,
-  GPUTextureFormat,
-  TextureFormat,
-  TextureLoaderOptions
-} from './texture-bundled';
+  ImageTextureTemplateSource
+} from './lib/composite-image/composite-image-manifest-schema';
+export type {CompressedTextureWriterOptions} from './compressed-texture-writer';
+export type {CompressedTextureLoaderOptions} from './compressed-texture-loader';
+export type {TextureManifestLoaderOptions} from './texture-loader';
+export type {TextureCubeArrayLoaderOptions} from './texture-cube-array-loader';
+export type {TextureArrayLoaderOptions} from './texture-array-loader-types';
+export type {GPUTextureFormat, TextureFormat} from '@loaders.gl/core/schema';
+export type {CompressedTextureLoaderOptions as TextureLoaderOptions} from './compressed-texture-loader-types';

@@ -19,18 +19,6 @@ import type {
   ImageTextureTemplateSource
 } from './composite-image-manifest-schema';
 
-export type {
-  CompositeImageManifest,
-  ImageTextureArrayManifest,
-  ImageTextureCubeArrayLayer,
-  ImageTextureCubeArrayManifest,
-  ImageTextureCubeFaces,
-  ImageTextureCubeManifest,
-  ImageTextureManifest,
-  ImageTextureSource,
-  ImageTextureTemplateSource
-} from './composite-image-manifest-schema';
-
 export type CompositeImageUrlTree =
   | ImageTextureSource
   | ImageTextureSource[]
@@ -50,8 +38,6 @@ export async function parseCompositeImageManifest(
   }
   return await loadCompositeImageManifest(manifest, options, context);
 }
-
-export {testCompositeImageManifestShape} from './test-composite-image-manifest';
 
 export async function loadCompositeImageManifest(
   manifest: CompositeImageManifest,

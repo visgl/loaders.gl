@@ -85,22 +85,20 @@ export type {
   RandomAccessFileSystem,
   SourceLoader
 } from '@loaders.gl/core';
-export {ImageFormat, ImageBitmapFormat, ImageLoader} from '@loaders.gl/images/image';
-export {ImageWriter} from '@loaders.gl/images/image/bundled';
+export {ImageFormat, ImageBitmapFormat} from './src/image-format';
+export {ImageLoader} from './src/image-loader-types';
+export {ImageWriter} from './src/image-writer';
+export {getBinaryImageMetadata} from './src/lib/category-api/binary-image-api';
+export {isImageTypeSupported, getDefaultImageType} from './src/lib/category-api/image-type';
 export {
-  getBinaryImageMetadata,
-  isImageTypeSupported,
-  getDefaultImageType,
   isImage,
   getImageType,
   getImageSize,
-  getImageData,
+  getImageData
+} from './src/lib/category-api/parsed-image-api';
+export {
   getSupportedImageFormats,
   isImageFormatSupported
-} from '@loaders.gl/images/api';
-export type {
-  ImageDataType,
-  ImageType,
-  ImageTypeEnum,
-  ImageLoaderOptions
-} from '@loaders.gl/images/image';
+} from './src/lib/category-api/image-format';
+export type {ImageDataType, ImageType, ImageTypeEnum} from './src/types';
+export type {ImageLoaderOptions} from './src/image-loader-types';
