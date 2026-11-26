@@ -11,7 +11,7 @@ import {DataSourceManager} from '@loaders.gl/core/loader-utils';
 import {FederatedTableScanSource, getFederatedTableBatchProvenance} from '@loaders.gl/core/query';
 import {IcebergTableSource} from '../../src/parquet/iceberg-table-source';
 import {AvroWriter} from '@loaders.gl/tables/avro/bundled';
-import {ParquetWriter} from '../../src/parquet/parquet-writer';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 
 function createMetadataUrl(metadata: unknown): string {
   return `data:application/json,${encodeURIComponent(JSON.stringify(metadata))}`;

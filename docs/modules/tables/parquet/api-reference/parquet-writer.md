@@ -58,9 +58,15 @@ import {WriterPipelineGraphic} from '@site/src/components/docs/writer-pipeline-g
 The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/tables/parquet';
-import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import {encode} from '@loaders.gl/core';
+import type {Table} from 'apache-arrow';
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
+
+declare const table: Table;
+const data = await encode(table, ParquetWriter);
 ```
+
+Core loads the encoder when encoding begins. For direct calls to `ParquetWriter.encode`, import the writer from `@loaders.gl/tables/parquet/bundled`.
 
 ## Geospatial Metadata
 

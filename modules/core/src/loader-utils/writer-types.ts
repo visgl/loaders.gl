@@ -39,6 +39,8 @@ export type Writer<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOpt
   dataType?: DataT;
   /** The batched result type of this loader  */
   batchType?: BatchT;
+  /** Loads the encoder implementation on demand. */
+  preload?(): Promise<WriterWithEncoder<DataT, BatchT, WriterOptionsT>>;
   /** Version should be injected by build tools */
   version: string;
   /** A boolean, or a URL */

@@ -4,7 +4,7 @@ import {encode} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 
-import {ParquetWriter} from '../../src/parquet/parquet-writer';
+import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {ParquetReader} from '../../src/parquet/parquetjs/parser/parquet-reader';
 
 const TABLE: ObjectRowTable = {
