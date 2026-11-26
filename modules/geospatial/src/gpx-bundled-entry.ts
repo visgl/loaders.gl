@@ -4,4 +4,4 @@
 
 export {GPXLoaderWithParser as GPXLoader, GPXLoaderWithParser} from './kml/gpx-loader';
 export {GPXFormat} from './kml/kml-format';
-export type {GPXLoaderOptions} from './gpx-bundled';
+export type {GPXLoaderOptions} from './kml/gpx-loader-types';

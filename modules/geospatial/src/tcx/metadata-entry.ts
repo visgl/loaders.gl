@@ -4,4 +4,5 @@
 
 export {TCXLoader} from '../kml/tcx-loader-types';
 export {TCXFormat} from '../kml/kml-format';
-export type * from '../tcx';
+export type {TCXLoaderOptions} from '../kml/tcx-loader-types';
+export type {TCXLoaderWithParser, parseTCXTextToFeatureCollection} from '../kml/tcx-loader';

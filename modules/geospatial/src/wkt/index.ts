@@ -12,8 +12,8 @@ export {WKTWriter} from './wkt-writer';
 
 export {type WKTLoaderOptions} from './wkt-loader-types';
 
-export {WKTCRSLoaderWithParser} from '../wkt-crs-loader';
+export {WKTCRSLoaderWithParser} from './wkt-crs-loader';
 
-export {WKTWorkerLoaderWithParser, WKTLoaderWithParser} from '../wkt-loader';
+export {WKTWorkerLoaderWithParser, WKTLoaderWithParser} from './wkt-loader';
 
-export {type WKTWriterOptions} from '../wkt-writer';
+export type {WKTWriterOptions} from './wkt-writer';

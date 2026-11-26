@@ -36,7 +36,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing GeoPackage loader implementation. */
 async function preload() {
-  const {GeoPackageLoaderWithParser} = await import('@loaders.gl/geospatial/geopackage/bundled');
+  const {GeoPackageLoaderWithParser} = await import('@loaders.gl/geospatial/geopackage/parser');
   return GeoPackageLoaderWithParser;
 }
 

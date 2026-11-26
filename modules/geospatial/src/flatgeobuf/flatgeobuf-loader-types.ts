@@ -8,7 +8,7 @@ export type {FlatGeobufLoaderOptions} from './flatgeobuf-loader-definition';
 
 /** Preloads the parser-bearing FlatGeobuf loader implementation. */
 async function preload() {
-  const {FlatGeobufLoaderWithParser} = await import('@loaders.gl/geospatial/flatgeobuf/bundled');
+  const {FlatGeobufLoaderWithParser} = await import('@loaders.gl/geospatial/flatgeobuf/parser');
   return FlatGeobufLoaderWithParser;
 }
 

@@ -17,6 +17,6 @@ export type {GeoPackageTileTableMetadata} from './lib/geopackage-tile-metadata';
 
 export {DEFAULT_SQLJS_CDN} from './geopackage-loader-options';
 
-export {createGeoPackageSource} from '../geopackage-source';
+export {createGeoPackageSource} from './geopackage-source';
 
-export {GeoPackageLoaderWithParser} from '../geopackage-loader';
+export {GeoPackageLoaderWithParser} from './geopackage-loader';

@@ -7,14 +7,12 @@ export {KMZLoaderWithParser as KMZLoader} from './kmz-loader';
 export {KMZVectorSource} from './kmz-source';
 export {KMLWriter, KMZWriter} from './kml-writer';
 export {KMLFormat, KMZFormat} from './kml-format';
+export type {KMLLoaderOptions} from './kml-loader-types';
+export type {KMZLoaderOptions} from './kmz-loader-types';
+export type {KMZSourceOptions} from './kmz-source';
+export type {KMLWriterData, KMLWriterOptions, KMZWriterOptions} from './kml-writer';
+export type {KMZArchive} from './kmz-archive';
 export type {
-  KMLLoaderOptions,
-  KMZLoaderOptions,
-  KMZSourceOptions,
-  KMLWriterData,
-  KMLWriterOptions,
-  KMZWriterOptions,
-  KMZArchive,
   KMLDocument,
   KMLFeatureConversionOptions,
   KMLFolder,
@@ -22,4 +20,4 @@ export type {
   KMLNetworkLink,
   KMLOverlay,
   KMLStyle
-} from './bundled';
+} from './kml-parser';

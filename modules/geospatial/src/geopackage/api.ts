@@ -4,11 +4,11 @@
 
 export {DEFAULT_SQLJS_CDN} from './geopackage-loader-options';
 export {createGeoPackageSource} from './geopackage-source';
+export type {GeoPackageLoaderOptions} from './geopackage-loader-types';
 export type {
-  GeoPackageLoaderOptions,
   GeoPackageTileReadOptions,
   GeoPackageSourceOptions,
   GeoPackageSourceMetadata,
-  GeoPackageSourceTableMetadata,
-  GeoPackageTileTableMetadata
-} from './bundled';
+  GeoPackageSourceTableMetadata
+} from './geopackage-source';
+export type {GeoPackageTileTableMetadata} from './lib/geopackage-tile-metadata';

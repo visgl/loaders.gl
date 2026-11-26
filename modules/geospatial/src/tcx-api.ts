@@ -3,4 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 export {parseTCXTextToFeatureCollection} from './kml/tcx-loader';
-export type {TCXLoaderOptions} from './tcx-bundled';
+export type {TCXLoaderOptions} from './kml/tcx-loader-types';
