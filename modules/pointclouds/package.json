@@ -37,6 +37,11 @@
       "import": "./dist/las/metadata-entry.js",
       "require": "./dist/las/metadata-entry.cjs"
     },
+    "./las/parser": {
+      "types": "./dist/las/las-loader.d.ts",
+      "import": "./dist/las/las-loader.js",
+      "require": "./dist/las/las-loader.cjs"
+    },
     "./las/bundled": {
       "types": "./dist/las/bundled.d.ts",
       "import": "./dist/las/bundled.js",
@@ -47,6 +52,11 @@
       "import": "./dist/pcd/metadata-entry.js",
       "require": "./dist/pcd/metadata-entry.cjs"
     },
+    "./pcd/parser": {
+      "types": "./dist/pcd-loader.d.ts",
+      "import": "./dist/pcd-loader.js",
+      "require": "./dist/pcd-loader.cjs"
+    },
     "./pcd/bundled": {
       "types": "./dist/pcd/bundled.d.ts",
       "import": "./dist/pcd/bundled.js",
@@ -56,6 +66,11 @@
       "types": "./dist/ply/metadata-entry.d.ts",
       "import": "./dist/ply/metadata-entry.js",
       "require": "./dist/ply/metadata-entry.cjs"
+    },
+    "./ply/parser": {
+      "types": "./dist/ply-loader.d.ts",
+      "import": "./dist/ply-loader.js",
+      "require": "./dist/ply-loader.cjs"
     },
     "./ply/bundled": {
       "types": "./dist/ply/bundled.d.ts",

@@ -744,11 +744,20 @@
       "@loaders.gl/pointclouds": [
         "modules/pointclouds/src/index.ts"
       ],
+      "@loaders.gl/pointclouds/las/parser": [
+        "modules/pointclouds/src/las/las-loader.ts"
+      ],
       "@loaders.gl/pointclouds/las/bundled": [
         "modules/pointclouds/src/las/bundled.ts"
       ],
+      "@loaders.gl/pointclouds/pcd/parser": [
+        "modules/pointclouds/src/pcd-loader.ts"
+      ],
       "@loaders.gl/pointclouds/pcd/bundled": [
         "modules/pointclouds/src/pcd/bundled.ts"
+      ],
+      "@loaders.gl/pointclouds/ply/parser": [
+        "modules/pointclouds/src/ply-loader.ts"
       ],
       "@loaders.gl/pointclouds/ply/bundled": [
         "modules/pointclouds/src/ply/bundled.ts"
