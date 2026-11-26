@@ -280,3 +280,23 @@ test('core API subpath shares the existing registry and the tileset subpath expo
     expect(i3s.I3SSource).toBeTypeOf('function');
   }
 });
+
+test('core compatibility subpaths share their implementations with the grouped APIs', async () => {
+  const require = createRequire(import.meta.url);
+  const entries = [
+    ['geoarrow', 'cluster-source', 'ClusterSource'],
+    ['geoarrow', 'geoarrow/geoarrow-builder', 'GeoArrowBuilder'],
+    ['arrow-geometry', 'geoarrow/geoarrow-builder', 'GeoArrowBuilder'],
+    ['query', 'federated-table-scan-source', 'FederatedTableScanSource'],
+    ['query', 'vector-table-scan-source', 'VectorTileTableScanSource'],
+    ['query', 'query/sql-predicate', 'parseSQLPredicate']
+  ];
+  for (const loadPackage of [require, (specifier: string) => import(specifier)]) {
+    for (const [groupedPath, focusedPath, exportName] of entries) {
+      const grouped = await loadPackage('@loaders.gl/core/' + groupedPath);
+      const focused = await loadPackage('@loaders.gl/core/' + focusedPath);
+      expect(focused[exportName], focusedPath).toBeTypeOf('function');
+      expect(focused[exportName], focusedPath).toBe(grouped[exportName]);
+    }
+  }
+});
