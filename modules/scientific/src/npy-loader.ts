@@ -5,7 +5,7 @@
 import {NPYLoader} from './npy-loader-types.js';
 import {NPYLoaderWithParser as parser} from './npy-parser.js';
 
-export * from './npy-parser.js';
+export type {NPYLoaderOptions} from './npy-loader-definition';
 
 /** Parser-bearing NPY loader with its browser module worker factory. */
 export const NPYLoaderWithParser = {
