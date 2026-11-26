@@ -10,6 +10,7 @@ import type {OtlpTrace} from './otlp-trace-arrow-schema';
 import {buildOtlpTracesData} from './otlp-trace-message';
 import {convertProtobufJsonIdsToOtlp} from './otlp-json';
 import type {ZipkinEndpoint, ZipkinSpan} from './zipkin-trace-types';
+import {ZIPKIN_TRACE_WRITER_METADATA} from './zipkin-trace-writer-types';
 
 /** Zipkin v2 JSON writer options. */
 export type ZipkinTraceWriterOptions = WriterOptions & {
@@ -23,14 +24,7 @@ export type ZipkinTraceWriterOptions = WriterOptions & {
 
 /** Serializes normalized OTLP Arrow tables as Zipkin v2 JSON. */
 export const ZipkinTraceWriter = {
-  name: 'Zipkin Trace Writer',
-  id: 'zipkinTrace',
-  module: 'traces',
-  version: 'latest',
-  extensions: ['zipkin.json'],
-  mimeTypes: ['application/json'],
-  text: true,
-  options: {},
+  ...ZIPKIN_TRACE_WRITER_METADATA,
   encode: async (trace: OtlpTrace, options?: ZipkinTraceWriterOptions) =>
     encodeZipkinTrace(trace, options),
   encodeSync: (trace: OtlpTrace, options?: ZipkinTraceWriterOptions) =>

@@ -121,7 +121,7 @@ const imageBitmap = await load('image.png', ImageLoader);
 
 Direct parser access uses flat subpaths and `*WithParser` exports. For example,
 `BasisLoaderWithParser` is available from `@loaders.gl/images/basis`.
-Import `ImageWriter` from `@loaders.gl/images/image/writer`. Texture writers use direct subpaths such as `@loaders.gl/images/basis`;
+Import `ImageWriter` from `@loaders.gl/images/image/bundled`. Import texture writer metadata from format subpaths such as `@loaders.gl/images/basis`;
 manifest schemas use `@loaders.gl/images/texture`.
 
 ### Direct parser and sync access

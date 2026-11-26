@@ -17,6 +17,7 @@ import DRACOBuilder from './lib/draco-builder';
 import {loadDracoEncoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
 import {DracoFormat} from './draco-format';
+import {DRACO_WRITER_METADATA} from './draco-writer-types';
 
 /** Legacy flat attribute map accepted by `DracoWriter`. */
 export type DracoWriterAttributes = Record<string, TypedArray>;
@@ -49,17 +50,6 @@ export type DracoBatchOptions = DracoWriterOptions & {
 /** A batch of Draco-writable geometries. */
 export type DracoWriterInputBatch = DracoWriterInput[];
 
-const DEFAULT_DRACO_WRITER_OPTIONS = {
-  pointcloud: false, // Set to true if pointcloud (mode: 0, no indices)
-  attributeNameEntry: 'name'
-  // Draco Compression Parameters
-  // method: 'MESH_EDGEBREAKER_ENCODING', // Use draco defaults
-  // speed: [5, 5], // Use draco defaults
-  // quantization: { // Use draco defaults
-  //   POSITION: 10
-  // }
-};
-
 /** Worker-enabled exporter for Draco3D compressed geometries. */
 export const DracoWriterWorker = {
   ...DracoFormat,
@@ -80,12 +70,7 @@ export const DracoWriterWorker = {
  * Exporter for Draco3D compressed geometries
  */
 export const DracoWriter = {
-  ...DracoFormat,
-  name: 'DRACO',
-  version: VERSION,
-  options: {
-    draco: DEFAULT_DRACO_WRITER_OPTIONS
-  },
+  ...DRACO_WRITER_METADATA,
   encode,
   encodeInBatches,
   /** Encodes one geometry and returns its Draco attribute mapping. */

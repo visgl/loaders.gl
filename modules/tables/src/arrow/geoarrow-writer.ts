@@ -6,34 +6,14 @@
 
 import type {Table as ArrowJSTable} from 'apache-arrow';
 import {encodeArrowSync} from './lib/encoders/encode-arrow';
-import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
+import type {WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {GeoJSONTable, BinaryGeometry} from '@loaders.gl/core/schema';
 import {encodeGeoArrowSync} from './lib/encoders/encode-geoarrow';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-type ArrowWriterOptions = WriterOptions & {
-  arrow?: {};
-};
+import {GEO_ARROW_WRITER_METADATA, type GeoArrowWriterOptions} from './geoarrow-writer-types';
 
 /** Apache Arrow writer */
 export const GeoArrowWriter = {
-  name: 'Apache Arrow',
-  id: 'arrow',
-  module: 'tables',
-  version: VERSION,
-  encoding: 'arrow',
-  format: 'geoarrow',
-  extensions: ['arrow', 'feather'],
-  mimeTypes: [
-    'application/vnd.apache.arrow.file',
-    'application/vnd.apache.arrow.stream',
-    'application/octet-stream'
-  ],
-  binary: true,
-  options: {},
+  ...GEO_ARROW_WRITER_METADATA,
   encode: async function encodeArrow(data, options?): Promise<ArrayBuffer> {
     if ('batches' in data) {
       return encodeArrowSync(data);
@@ -51,5 +31,5 @@ export const GeoArrowWriter = {
 } as const satisfies WriterWithEncoder<
   GeoJSONTable | BinaryGeometry | ArrowJSTable,
   never,
-  ArrowWriterOptions
+  GeoArrowWriterOptions
 >;

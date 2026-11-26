@@ -20,7 +20,7 @@ export type {
   BasisImageData
 } from '../basis-types';
 export type {BasisWorkerLoaderWithParser, BasisLoaderWithParser} from '../basis-loader';
-export type {KTX2BasisWriterOptions, KTX2BasisWriter} from '../ktx2-basis-writer';
+export type {KTX2BasisWriterOptions} from '../ktx2-basis-writer';
 export type {getSupportedBasisFormats} from '../lib/utils/basis-format-utils';
 export type {
   loadBasisTranscoderModule,
@@ -28,3 +28,4 @@ export type {
   BASIS_EXTERNAL_LIBRARIES
 } from '../lib/parsers/basis-module-loader';
 export type {KTX2BasisWriterWorker} from '../ktx2-basis-writer-worker-loader';
+export {KTX2BasisWriter} from '../ktx2-basis-writer-types';

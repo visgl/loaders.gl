@@ -5,8 +5,7 @@
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {Geometry} from '@loaders.gl/core/schema';
 import {convertGeometryToTWKB} from '@loaders.gl/core/wkt/twkb';
-import {VERSION} from './lib/version';
-import {TWKBFormat} from './wkt-format';
+import {TWKB_WRITER_METADATA} from './twkb-writer-types';
 
 export type TWKBWriterOptions = WriterOptions & {
   twkb?: {
@@ -19,21 +18,9 @@ export type TWKBWriterOptions = WriterOptions & {
  * WKB exporter
  */
 export const TWKBWriter = {
-  ...TWKBFormat,
-  name: 'TWKB (Tiny Well Known Binary)',
-  id: 'twkb',
-  module: 'geospatial',
-  version: VERSION,
-  extensions: ['twkb'],
-  mimeTypes: ['application/text'],
+  ...TWKB_WRITER_METADATA,
   encode: async (geometry: Geometry, options?: TWKBWriterOptions) =>
     convertGeometryToTWKB(geometry, options?.twkb),
   encodeSync: (geometry: Geometry, options?: TWKBWriterOptions) =>
-    convertGeometryToTWKB(geometry, options?.twkb),
-  options: {
-    twkb: {
-      hasZ: false,
-      hasM: false
-    }
-  }
+    convertGeometryToTWKB(geometry, options?.twkb)
 } as const satisfies WriterWithEncoder<Geometry, never, TWKBWriterOptions>;

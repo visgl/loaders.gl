@@ -5,7 +5,7 @@
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Table} from 'apache-arrow';
 import {encodeMLT} from './lib/encode-mlt';
-import {MLTFormat} from './mlt-format';
+import {MLT_WRITER_METADATA} from './mlt-writer-types';
 
 /** Controls single-layer MLT v1 encoding of tile-local GeoArrow WKB. */
 export type MLTWriterOptions = WriterOptions & {
@@ -28,17 +28,9 @@ export type MLTWriterOptions = WriterOptions & {
   };
 };
 
-// __VERSION__ is injected by babel-plugin-version-inline.
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
 /** Browser-portable MLT v1 writer for GeoArrow tiles produced by the existing tiler. */
 export const MLTWriter = {
-  ...MLTFormat,
-  name: 'MLT Writer',
-  version: VERSION,
-  binary: true,
-  options: {mlt: {}},
+  ...MLT_WRITER_METADATA,
   /** Encodes a materialized tile asynchronously for the core writer API. */
   encode: async (data: Table, options?: MLTWriterOptions) => encodeMLT(data, options),
   /** Encodes one tile synchronously. */

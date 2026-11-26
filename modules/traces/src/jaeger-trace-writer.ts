@@ -17,6 +17,7 @@ import type {
   JaegerTag,
   JaegerTrace
 } from './jaeger-trace-types';
+import {JAEGER_TRACE_WRITER_METADATA} from './jaeger-trace-writer-types';
 
 /** Jaeger JSON writer options. */
 export type JaegerTraceWriterOptions = WriterOptions & {
@@ -30,14 +31,7 @@ export type JaegerTraceWriterOptions = WriterOptions & {
 
 /** Serializes normalized OTLP Arrow tables as Jaeger JSON. */
 export const JaegerTraceWriter = {
-  name: 'Jaeger Trace Writer',
-  id: 'jaegerTrace',
-  module: 'traces',
-  version: 'latest',
-  extensions: ['jaeger.json'],
-  mimeTypes: ['application/json'],
-  text: true,
-  options: {},
+  ...JAEGER_TRACE_WRITER_METADATA,
   encode: async (trace: OtlpTrace, options?: JaegerTraceWriterOptions) =>
     encodeJaegerTrace(trace, options),
   encodeSync: (trace: OtlpTrace, options?: JaegerTraceWriterOptions) =>

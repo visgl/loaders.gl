@@ -17,7 +17,6 @@ export type {
   DracoBatchOptions,
   DracoWriterInputBatch,
   DracoWriterWorker,
-  DracoWriter,
   encodeDraco,
   encodeDracoBatch,
   encodeDracoInBatches,
@@ -46,3 +45,4 @@ export type {
   DracoExplicitQuantization,
   DracoMetadata
 } from './lib/draco-builder';
+export {DracoWriter} from './draco-writer-types';

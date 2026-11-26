@@ -6,11 +6,7 @@ import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {PCDFormat} from './pcd-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {PCD_WRITER_METADATA} from './pcd-writer-types';
 
 /** Options for `PCDWriter`. */
 export type PCDWriterOptions = WriterOptions & {
@@ -22,14 +18,7 @@ export type PCDWriterOptions = WriterOptions & {
  * Writer for the PCD point cloud format.
  */
 export const PCDWriter = {
-  ...PCDFormat,
-  dataType: null as unknown as Mesh | Table,
-  batchType: null as never,
-  version: VERSION,
-  options: {
-    pcd: {}
-  },
-  text: true,
+  ...PCD_WRITER_METADATA,
   encode: async (data, options) => encodePCDSync(data, options),
   encodeSync: encodePCDSync,
   encodeTextSync: encodePCD

@@ -3,10 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
-import {TarFormat} from './tar-format';
-
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {TAR_WRITER_METADATA} from './tar-writer-types';
 const BLOCK_SIZE = 512;
 const encoder = new TextEncoder();
 
@@ -94,9 +91,7 @@ export async function encodeTar(files: TarWriterFiles): Promise<ArrayBuffer> {
 
 /** Buffered UTF-8 ustar writer. */
 export const TarWriter = {
-  ...TarFormat,
-  version: VERSION,
-  options: {},
+  ...TAR_WRITER_METADATA,
   encode: async (files: TarWriterFiles, _options?: WriterOptions): Promise<ArrayBuffer> =>
     encodeTar(files)
 } as const satisfies WriterWithEncoder<TarWriterFiles, never, WriterOptions>;

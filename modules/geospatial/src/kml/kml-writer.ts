@@ -11,12 +11,8 @@ import type {
   ObjectRowTable,
   Position
 } from '@loaders.gl/core/schema';
-import {KMLFormat, KMZFormat} from './kml-format';
-import {ZipWriter} from '@loaders.gl/archives/zip-writer';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {ZipWriter} from '@loaders.gl/archives/zip/bundled';
+import {KML_WRITER_METADATA, KMZ_WRITER_METADATA} from './kml-writer-types';
 
 /** Supported feature-oriented input values for KML writing. */
 export type KMLWriterData = FeatureCollection | GeoJSONTable | ObjectRowTable;
@@ -32,14 +28,7 @@ export type KMLWriterOptions = WriterOptions & {
 
 /** Writer for core KML geometry and feature properties. */
 export const KMLWriter = {
-  ...KMLFormat,
-  version: VERSION,
-  text: true,
-  options: {
-    kml: {
-      coordinateReferenceSystem: 'OGC:CRS84'
-    }
-  },
+  ...KML_WRITER_METADATA,
   encode: async (data: KMLWriterData, options?: KMLWriterOptions) =>
     new TextEncoder().encode(encodeKMLText(data, options)).buffer,
   encodeTextSync: (data: KMLWriterData, options?: KMLWriterOptions) => encodeKMLText(data, options)
@@ -56,11 +45,7 @@ export type KMZWriterOptions = WriterOptions & {
 
 /** Writer that serializes core KML features and packages them with optional resources. */
 export const KMZWriter = {
-  ...KMZFormat,
-  version: VERSION,
-  options: {
-    kmz: {kmlFileName: 'doc.kml', files: {}}
-  },
+  ...KMZ_WRITER_METADATA,
   encode: async (data: KMLWriterData, options?: KMZWriterOptions) => {
     const kmlFileName = options?.kmz?.kmlFileName || 'doc.kml';
     const files: Record<string, ArrayBuffer> = {

@@ -15,7 +15,14 @@ export {
   Draco3DLoaderWithParser as Draco3DLoader,
   Draco3DLoaderWithParser
 } from './draco/draco3d-loader-with-parser';
-export {DracoWriterWorker, DracoWriter} from './draco/draco-writer';
+export {
+  DracoWriterWorker,
+  DracoWriter,
+  encodeDraco,
+  encodeDracoBatch,
+  encodeDracoInBatches,
+  encodeDracoInBatchesLocally
+} from './draco/draco-writer';
 export {DracoFormat} from './draco/draco-format';
 export type {DracoLoaderOptions} from './draco/draco-loader-options';
 export type {

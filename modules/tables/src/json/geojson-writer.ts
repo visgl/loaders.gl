@@ -11,7 +11,7 @@ import {
 import type {RecordBatch} from 'apache-arrow';
 import type {TableWriterInput, TableWriterBatch} from '../arrow/table-writer-input';
 import {encodeTableAsGeojsonInBatches} from './lib/encoders/geojson-encoder';
-import {GeoJSONFormat} from './json-format';
+import {GEO_JSON_WRITER_METADATA} from './geojson-writer-types';
 
 export type GeoJSONWriterOptions = WriterOptions & {
   geojson?: {
@@ -22,21 +22,11 @@ export type GeoJSONWriterOptions = WriterOptions & {
 };
 
 export const GeoJSONWriter = {
-  ...GeoJSONFormat,
-  version: 'latest',
-  text: true,
-  options: {
-    geojson: {
-      featureArray: false,
-      geometryColumn: null
-    }
-  },
-
+  ...GEO_JSON_WRITER_METADATA,
   async encode(table: TableWriterInput, options: GeoJSONWriterOptions): Promise<ArrayBuffer> {
     const batches = encodeTableAsGeojsonInBatches([table], options);
     return await concatenateArrayBuffersAsync(batches);
   },
-
   encodeInBatches: (
     tableIterator:
       | AsyncIterable<TableWriterBatch | RecordBatch>

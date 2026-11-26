@@ -20,3 +20,4 @@ export type {ChromeTraceInstant} from './chrome-trace-types';
 export type {ChromeTraceProcess} from './chrome-trace-types';
 export type {ChromeTraceSpan} from './chrome-trace-types';
 export type {ChromeTraceThread} from './chrome-trace-types';
+export {ChromeTraceWriter} from './chrome-trace-writer-types';

@@ -3,23 +3,14 @@
 // Copyright vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
-import {VERSION} from './lib/utils/version';
 import encode3DTile from './lib/encoders/encode-3d-tile';
+import {TILE3_D_WRITER_METADATA} from './tile-3d-writer-types';
 
 /**
  * Exporter for 3D Tiles
  */
 export const Tile3DWriter = {
-  name: '3D Tile',
-  id: '3d-tiles',
-  module: 'tiles-3d',
-  version: VERSION,
-  extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
-  mimeTypes: ['application/octet-stream'],
-  binary: true,
-  options: {
-    ['3d-tiles']: {}
-  },
+  ...TILE3_D_WRITER_METADATA,
   encode: async (tile, options) => encodeSync(tile, options),
   encodeSync
 } as const satisfies WriterWithEncoder<unknown, never, WriterOptions>;

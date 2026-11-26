@@ -5,8 +5,7 @@
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/archives/indexed-zip-writer';
 import type {IndexedZipOptions} from '@loaders.gl/archives/indexed-zip-writer';
-import {ThreeTZFormat} from './tiles-3d-format';
-import {VERSION} from './lib/utils/version';
+import {TILES_3D_ARCHIVE_WRITER_METADATA, MAX_ARCHIVE_BYTES} from './3d-tiles-archive-writer-types';
 
 /** Portable resources with canonical relative ASCII paths; JSON and content must already be valid. */
 export type Tiles3DArchiveFiles = Readonly<Record<string, ArrayBuffer | Blob>>;
@@ -23,9 +22,6 @@ export type Tiles3DArchiveWriterOptions = WriterOptions & {
     signal?: AbortSignal;
   };
 };
-
-/** Largest supported archive, below the ZIP64 sentinel. */
-const MAX_ARCHIVE_BYTES = 0xfffffffe;
 /** Required final uncompressed index entry. */
 const INDEX_PATH = '@3dtilesIndex1@';
 
@@ -36,10 +32,7 @@ const INDEX_PATH = '@3dtilesIndex1@';
  * or external references. ZIP64, compression, streaming, and scene authoring are separate APIs.
  */
 export const Tiles3DArchiveWriter = {
-  ...ThreeTZFormat,
-  version: VERSION,
-  mimeTypes: ['application/vnd.maxar.archive.3tz+zip'],
-  options: {'3tz': {maxArchiveBytes: MAX_ARCHIVE_BYTES}},
+  ...TILES_3D_ARCHIVE_WRITER_METADATA,
   encode: encodeArchive
 } as const satisfies WriterWithEncoder<Tiles3DArchiveFiles, never, Tiles3DArchiveWriterOptions>;
 

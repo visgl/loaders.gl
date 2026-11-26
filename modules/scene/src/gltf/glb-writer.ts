@@ -6,8 +6,7 @@ import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-uti
 import type {GLB} from './lib/types/glb-types';
 import type {GLBEncodeOptions} from './lib/encoders/encode-glb';
 import {encodeGLBSync} from './lib/encoders/encode-glb';
-import {VERSION} from './lib/utils/version';
-import {GLBFormat} from './gltf-format';
+import {GLB_WRITER_METADATA} from './glb-writer-types';
 
 export type {GLBChunk} from './lib/types/glb-types';
 
@@ -20,12 +19,7 @@ export type GLBWriterOptions = WriterOptions & {
  * GLB is the binary container format for GLTF
  */
 export const GLBWriter = {
-  ...GLBFormat,
-  version: VERSION,
-  options: {
-    glb: {}
-  },
-
+  ...GLB_WRITER_METADATA,
   encode: async (glb, options: GLBWriterOptions = {}) => encodeSync(glb, options),
   encodeSync
 } as const satisfies WriterWithEncoder<GLB, never, GLBWriterOptions>;
