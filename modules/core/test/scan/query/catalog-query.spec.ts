@@ -4,7 +4,7 @@
 
 import {RecordBatch} from 'apache-arrow';
 import {expect, expectTypeOf, test, vi} from 'vitest';
-import {query, queryInBatches} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query/sql';
 import {createSQLCatalog, parseSQLQuery, parseSQLSelect} from '../../../src/scan/query';
 import type {SQLCatalog, SQLCatalogQuery} from '../../../src/scan/query';
 import {DataSource, createScanQueryMetadata} from '@loaders.gl/core/loader-utils';

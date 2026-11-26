@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {RecordBatch, Table} from 'apache-arrow';
-import {query} from '@loaders.gl/core/query';
+import {query} from '@loaders.gl/core/query/sql';
 import {load, loadInBatches, parse, parseFile, parseInBatches, parseSync} from '@loaders.gl/core';
 import {
   parseFromContext,

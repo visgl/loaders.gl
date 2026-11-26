@@ -4,7 +4,7 @@
 
 import {expect, test, vi} from 'vitest';
 import {createDataSource, createDataSourceSync, load, preload} from '@loaders.gl/core';
-import {query} from '@loaders.gl/core/query';
+import {query} from '@loaders.gl/core/query/sql';
 import {CSVLoader} from '@loaders.gl/tables/csv';
 import {CSVTableSource} from '@loaders.gl/tables/csv/bundled';
 import {JSONLoader, JSONTableLoader} from '@loaders.gl/tables/json';

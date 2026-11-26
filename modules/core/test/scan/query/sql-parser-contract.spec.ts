@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 import * as arrow from 'apache-arrow';
 import {expect, test, vi} from 'vitest';
-import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query/sql';
+import {type QueryOptions} from '@loaders.gl/core/query';
 import type {SQLQueryParser} from '@loaders.gl/core/query';
 import {parseSQLQuery} from '@loaders.gl/core/query/sql';
 
