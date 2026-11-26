@@ -19,9 +19,32 @@ export {
 } from './lib/types/gltf-version-zod-schemas';
 
 // Permissive extension schemas retain unknown properties and do not insert defaults.
-export * from './lib/types/gltf-additional-extension-schemas';
-export * from './lib/types/gltf-audio-extension-schemas';
-export * from './lib/types/gltf-extension-schemas';
+export type {
+  GLTF_KHR_materials_variants,
+  GLTFMaterialVariant,
+  GLTF_KHR_materials_variants_primitive,
+  GLTFMaterialVariantMapping,
+  GLTF_EXT_mesh_gpu_instancing,
+  GLTF_KHR_animation_pointer,
+  GLTF_KHR_node_visibility,
+  GLTF_KHR_node_selectability,
+  GLTF_KHR_node_hoverability,
+  GLTF_KHR_xmp_json_ld,
+  GLTFXMPPacket,
+  GLTF_KHR_xmp_json_ld_reference,
+  GLTF_KHR_materials_emissive_strength,
+  GLTF_FB_geometry_metadata
+} from './lib/types/gltf-additional-extension-schemas';
+
+export type {
+  GLTFRootExtensions,
+  GLTFMaterialExtensions,
+  GLTFNodeExtensions,
+  GLTFSceneExtensions,
+  GLTFMeshPrimitiveExtensions,
+  GLTFAnimationTargetExtensions,
+  GLTFPropertyExtensions
+} from './lib/types/gltf-extension-schemas';
 export {GLTFEXTTextureAvifSchema} from './lib/types/gltf-zod-schema';
 
 export {

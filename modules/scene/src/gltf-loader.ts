@@ -1,1 +1,1 @@
-export * from './gltf/gltf-loader.js';
+export {type GLTFLoaderOptions, GLTFLoaderWithParser, parse} from './gltf/gltf-loader';

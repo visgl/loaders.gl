@@ -1,1 +1,1 @@
-export * from './obj/mtl-loader-types.js';
+export {type MTLLoaderOptions, MTLLoader} from './obj/mtl-loader-types';

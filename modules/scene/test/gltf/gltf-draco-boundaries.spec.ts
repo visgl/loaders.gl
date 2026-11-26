@@ -2,11 +2,11 @@
 
 import {beforeEach, expect, test, vi} from 'vitest';
 import {type DracoEncodingResult} from '@loaders.gl/scene/draco';
-import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
+import {DracoWriter} from '../../src/draco/draco-writer.js';
 import type {GLTFWithBuffers} from '../../src/gltf/lib/types/gltf-types';
 import {compressGLTFWithDraco} from '../../src/gltf/lib/encoders/encode-gltf-draco';
 
-vi.mock('@loaders.gl/scene/draco/bundled', () => ({DracoWriter: {encodeGeometry: vi.fn()}}));
+vi.mock('../../src/draco/draco-writer.js', () => ({DracoWriter: {encodeGeometry: vi.fn()}}));
 
 const encodeDracoMock = vi.mocked(DracoWriter.encodeGeometry);
 const ENABLED_OPTIONS = {gltf: {draco: {enabled: true}}};

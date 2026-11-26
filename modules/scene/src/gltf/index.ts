@@ -254,9 +254,65 @@ export {
 } from './lib/types/gltf-interactivity';
 
 // Permissive extension schemas retain unknown properties and do not insert defaults.
-export * from './lib/types/gltf-additional-extension-schemas';
-export * from './lib/types/gltf-audio-extension-schemas';
-export * from './lib/types/gltf-extension-schemas';
+export {
+  GLTFKHRMaterialVariantSchema,
+  GLTFKHRMaterialsVariantsSchema,
+  GLTFKHRMaterialVariantMappingSchema,
+  GLTFKHRMaterialsVariantsPrimitiveSchema,
+  GLTFEXTMeshGPUInstancingSchema,
+  GLTFKHRAnimationPointerSchema,
+  GLTFKHRNodeVisibilitySchema,
+  GLTFKHRNodeSelectabilitySchema,
+  GLTFKHRNodeHoverabilitySchema,
+  GLTFKHRXMPPacketSchema,
+  GLTFKHRXMPJSONLDSchema,
+  GLTFKHRXMPJSONLDReferenceSchema,
+  type GLTF_KHR_materials_variants,
+  type GLTFMaterialVariant,
+  type GLTF_KHR_materials_variants_primitive,
+  type GLTFMaterialVariantMapping,
+  type GLTF_EXT_mesh_gpu_instancing,
+  type GLTF_KHR_animation_pointer,
+  type GLTF_KHR_node_visibility,
+  type GLTF_KHR_node_selectability,
+  type GLTF_KHR_node_hoverability,
+  type GLTF_KHR_xmp_json_ld,
+  type GLTFXMPPacket,
+  type GLTF_KHR_xmp_json_ld_reference,
+  GLTFKHRMaterialsEmissiveStrengthSchema,
+  type GLTF_KHR_materials_emissive_strength,
+  GLTFFBGeometryMetadataSchema,
+  type GLTF_FB_geometry_metadata
+} from './lib/types/gltf-additional-extension-schemas';
+export {
+  GLTFKHRAudioDataSchema,
+  GLTFKHRAudioSourceSchema,
+  GLTFKHRAudioPositionalSchema,
+  GLTFKHRAudioEmitterSchema,
+  GLTFKHRAudioEmitterExtensionSchema,
+  GLTFKHRAudioAttachmentSchema,
+  GLTFSpatialAudioSourceSchema,
+  GLTFSpatialAudioReverbPropertySchema,
+  GLTFSpatialAudioReverbSchema,
+  GLTFSpatialAudioListenerSchema,
+  GLTFMPEGAudioSpatialSchema
+} from './lib/types/gltf-audio-extension-schemas';
+export {
+  GLTFPropertyExtensionsSchema,
+  GLTFMaterialExtensionsSchema,
+  GLTFRootExtensionsSchema,
+  GLTFNodeExtensionsSchema,
+  GLTFSceneExtensionsSchema,
+  GLTFMeshPrimitiveExtensionsSchema,
+  GLTFAnimationTargetExtensionsSchema,
+  type GLTFRootExtensions,
+  type GLTFMaterialExtensions,
+  type GLTFNodeExtensions,
+  type GLTFSceneExtensions,
+  type GLTFMeshPrimitiveExtensions,
+  type GLTFAnimationTargetExtensions,
+  type GLTFPropertyExtensions
+} from './lib/types/gltf-extension-schemas';
 export {
   getMaterialVariantMappings,
   getMeshInstances,
@@ -274,8 +330,8 @@ export type {GLTFAccessorReference} from './lib/api/gltf-accessors';
 
 export {type GLTFLoaderOptions} from './gltf-loader-types';
 
-export {GLTFLoaderWithParser, parse} from '../gltf-loader';
+export {GLTFLoaderWithParser, parse} from './gltf-loader';
 
-export {type GLTFWriterOptions} from '../gltf-writer';
+export type {GLTFWriterOptions} from './gltf-writer';
 
 export {getGLTFPrimitiveOutline} from './lib/api/gltf-primitive-outline';
