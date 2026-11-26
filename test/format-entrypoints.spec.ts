@@ -21,6 +21,8 @@ import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 import {NetCDFSource} from '@loaders.gl/scientific/netcdf/bundled';
 import {ADSBLoader} from '@loaders.gl/scientific/adsb';
 import {AISLoader} from '@loaders.gl/scientific/ais';
+import {GTFSLoader} from '@loaders.gl/scientific/gtfs';
+import {GTFSRealtimeLoader} from '@loaders.gl/scientific/gtfs-realtime';
 import {OMMLoader} from '@loaders.gl/geospatial/omm';
 import {TLELoader} from '@loaders.gl/geospatial/tle';
 
@@ -32,6 +34,8 @@ test.each([
   TCXLoader,
   ADSBLoader,
   AISLoader,
+  GTFSLoader,
+  GTFSRealtimeLoader,
   OMMLoader,
   TLELoader
 ])('$id format entrypoint exposes metadata and preloads its parser', async loader => {

@@ -70,6 +70,10 @@ function makeAliases() {
     '@loaders.gl/geospatial/wkt/test': resolveTestPath('./modules/geospatial/test/wkt'),
     '@loaders.gl/scientific/adsb/test': resolveTestPath('./modules/scientific/test/adsb'),
     '@loaders.gl/scientific/ais/test': resolveTestPath('./modules/scientific/test/ais'),
+    '@loaders.gl/scientific/gtfs/test': resolveTestPath('./modules/scientific/test/gtfs'),
+    '@loaders.gl/scientific/gtfs-realtime/test': resolveTestPath(
+      './modules/scientific/test/gtfs-realtime'
+    ),
     '@loaders.gl/geospatial/omm/test': resolveTestPath('./modules/geospatial/test/omm'),
     '@loaders.gl/geospatial/tle/test': resolveTestPath('./modules/geospatial/test/tle'),
     '@loaders.gl/ogc/wms/test': resolveTestPath('./modules/ogc/test/wms'),
