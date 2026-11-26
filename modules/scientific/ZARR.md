@@ -72,6 +72,37 @@ including response bodies and range reads.
 The [GeoZarr deck.gl example](https://loaders.gl/examples/geospatial/geo-zarr) reads NASA POWER
 climatology data directly from a public Zarr store and renders it on an interactive map.
 
+## Custom stores
+
+GeoZarr, OME-Zarr, and Zarr array sources accept a Zarrita `AsyncReadable` through `zarr.store`.
+The source input string serves as a label. The store handles metadata and chunk reads, so fetch
+options have no effect. For stores with only per-group and per-array metadata, set
+`zarr.requireConsolidatedMetadata` to `false`. `SpatialDataSource` requires element URLs and
+rejects `zarr.store`.
+
+```ts
+import {createDataSourceSync} from '@loaders.gl/core';
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
+import type {AsyncReadable} from 'zarrita';
+
+function openRaster(store: AsyncReadable) {
+  return createDataSourceSync('raster-snapshot', [GeoZarrLoader], {
+    zarr: {store},
+    geozarr: {array: 'air_temperature'}
+  });
+}
+```
+
+`IcechunkStore.open` from the separate `icechunk-js` package returns a Zarrita-compatible
+read-only store.
+
+```ts
+import {IcechunkStore} from 'icechunk-js';
+
+const store = await IcechunkStore.open(url, {tag});
+const source = openRaster(store);
+```
+
 ## OME-Zarr SourceLoader
 
 `OMEZarrLoader` is the first source-loader abstraction in this module. It is image-first:
