@@ -4,7 +4,8 @@
 
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {query, queryInBatches, type QueryOptions} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query/sql';
+import {type QueryOptions} from '@loaders.gl/core/query';
 import {ST_MAKEPOINT} from '@math.gl/geospatial/st-functions';
 import {parseSQLQuery} from '@math.gl/sql/parser';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';

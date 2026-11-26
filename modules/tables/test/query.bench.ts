@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import type {TableQuery} from '@loaders.gl/core/query';
-import {query, queryInBatches} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query/sql';
 import {CSVTableSource} from '@loaders.gl/tables/csv/bundled';
 import {NDJSONTableSource} from '@loaders.gl/tables/json/bundled';
 import {ArrowTableSource} from '@loaders.gl/tables/arrow/bundled';

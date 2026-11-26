@@ -118,7 +118,7 @@ test('common queries page DuckDB tables, widen integers natively, and fall back 
       if (typeof statement === 'string') statements.push(statement);
       return queryRows(statement, options);
     };
-    const {query} = await import('@loaders.gl/core/query');
+    const {query} = await import('@loaders.gl/core/query/sql');
     const {parseSQLQuery} = await import('@loaders.gl/core/query/sql');
     for (const offset of [0, 1]) {
       const result = await query(
@@ -174,7 +174,7 @@ test('common queries combine native DuckDB casts and residual Arrow expressions'
       if (typeof statement === 'string') statements.push(statement);
       return queryRows(statement, options);
     };
-    const {query} = await import('@loaders.gl/core/query');
+    const {query} = await import('@loaders.gl/core/query/sql');
     const {parseSQLQuery} = await import('@loaders.gl/core/query/sql');
     const projection =
       'SELECT CAST(id AS DOUBLE PRECISION) AS wide, CAST(fraction AS INTEGER) AS truncated';

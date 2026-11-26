@@ -7,7 +7,7 @@ import {expect, test} from 'vitest';
 import {hydrateArrowTable} from '@math.gl/core/arrow';
 import {createDataSource, createDataSourceSync, encode, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
-import {query, queryInBatches} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query/sql';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {PARQUET_SOURCE_CAPABILITIES} from '../../src/parquet/parquet-source-capabilities';
 import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
@@ -994,7 +994,7 @@ test('Parquet source pages skip footer-counted row groups and retain row provena
   const source = createRemoteSource(createRangeFetch(fixture, {requests: []}));
   try {
     const first = await collectParquetBatches(source.read({offset: 3, limit: 1, concurrency: 3}));
-    const {query} = await import('@loaders.gl/core/query');
+    const {query} = await import('@loaders.gl/core/query/sql');
     const second = await query({select: ['x'], offset: 4, limit: 1}, {source});
     expect(first.map(batch => [JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowGroupIndex, JSON.parse(batch.metadata.get('loaders.gl.parquetProvenance')!).rowOffset, batch.numRows]))
       .toEqual([[1, 3, 1]]);

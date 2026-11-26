@@ -17,13 +17,14 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import type {TableBatch, DataType, Schema} from '@loaders.gl/core/schema';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
-import {queryArrowTable, type SQLPredicate} from '@loaders.gl/core/query';
+import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
+import {type SQLPredicate} from '@loaders.gl/core/query';
 import {
   FederatedTableScanSource,
   getFederatedTableBatchProvenance,
-  parseSQLPredicate,
-  query
+  parseSQLPredicate
 } from '@loaders.gl/core/query';
+import {query} from '@loaders.gl/core/query/sql';
 
 const TEST_CAPABILITIES = Object.freeze({
   predicate: 'residual' as const,

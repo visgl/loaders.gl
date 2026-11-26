@@ -15,7 +15,7 @@ A URL requires an explicit **source loader**. This lets the format choose useful
 making core depend on format implementations.
 
 ```ts
-import {query} from '@loaders.gl/core/query';
+import {query} from '@loaders.gl/core/query/sql';
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
 
 const result = await query(
@@ -79,7 +79,7 @@ limits are errors.
 Change the function, not the query:
 
 ```ts
-import {queryInBatches} from '@loaders.gl/core/query';
+import {queryInBatches} from '@loaders.gl/core/query/sql';
 
 for await (const batch of queryInBatches(
   {select: ['name'], where: {op: '>', args: [{property: 'population'}, 100000]}},
@@ -102,7 +102,7 @@ buffers; slices can retain their original buffers, and scattered filtering can a
 previous table on every yield. Each result covers all input rows processed so far.
 
 ```ts
-import {queryProgressive} from '@loaders.gl/core/query';
+import {queryProgressive} from '@loaders.gl/core/query/sql';
 
 for await (const {table, rowsProcessed, final} of queryProgressive(
   {

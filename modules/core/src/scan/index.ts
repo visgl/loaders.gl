@@ -24,6 +24,7 @@ export type {
 // Re-export the query vocabulary from one optional entry point for applications. Format adapters
 // should continue importing the lightweight contracts from @loaders.gl/core/loader-utils.
 export {parseSQLPredicate} from './parse-sql-predicate';
+export type {ArrowFilterOptions} from './arrow-execution';
 export type {ArrowQueryOptions} from './query-arrow-table';
 export type {SQLPredicate} from './sql-predicate-types';
 export type {
@@ -102,8 +103,6 @@ export type {
   VectorTileTableScanSourceOptions
 } from './vector-table-scan-source';
 
-export {ARROW_TABLE_QUERY_CAPABILITIES, explainArrowTableQuery} from './plan-arrow-table-query';
-export {queryArrowTable} from './query-arrow-table';
 export {bindSQLPredicate} from './bind-sql-predicate';
 export {
   isSQLPredicate,
@@ -146,9 +145,6 @@ export type {
   LogicalTableQueryPlan
 } from '../loader-utils/lib/scan-utils/logical-table-query';
 
-export {projectArrowTable, filterArrowTable} from './arrow-execution';
-export type {ArrowFilterOptions} from './arrow-execution';
-
 export {queryGroupedSQL} from './query-grouped-sql';
 export {preloadQuery, query, queryInBatches, queryProgressive} from './query';
 export type {
@@ -180,9 +176,4 @@ export type {
   QueryPushdownCapabilityHints
 } from '@loaders.gl/core/loader-utils';
 
-export {
-  createArrowQueryWorker,
-  queryArrowTableInWorker,
-  type ArrowQueryWorkerOptions,
-  type ArrowQueryWorkerSession
-} from './arrow-query-worker';
+export type {ArrowQueryWorkerOptions, ArrowQueryWorkerSession} from './arrow-query-worker';
