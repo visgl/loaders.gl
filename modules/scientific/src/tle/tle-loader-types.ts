@@ -27,7 +27,7 @@ export type TLELoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing TLE loader implementation. */
 async function preloadTLELoader() {
-  const {TLELoaderWithParser} = await import('@loaders.gl/geospatial/tle/bundled');
+  const {TLELoaderWithParser} = await import('@loaders.gl/scientific/tle/bundled');
   return TLELoaderWithParser;
 }
 

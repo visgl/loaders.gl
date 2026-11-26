@@ -63,11 +63,11 @@ const canonicalEntrypoints: Record<string, string[]> = {
     '@loaders.gl/geospatial/geopackage',
     '@loaders.gl/geospatial/gpx',
     '@loaders.gl/geospatial/kml',
-    '@loaders.gl/geospatial/omm',
+    '@loaders.gl/scientific/omm',
     '@loaders.gl/geospatial/shapefile',
     '@loaders.gl/geospatial/shp',
     '@loaders.gl/geospatial/tcx',
-    '@loaders.gl/geospatial/tle',
+    '@loaders.gl/scientific/tle',
     '@loaders.gl/geospatial/wkb',
     '@loaders.gl/geospatial/wkt'
   ],

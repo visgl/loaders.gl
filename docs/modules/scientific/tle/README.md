@@ -1,4 +1,4 @@
-# 🧪 @loaders.gl/geospatial/tle
+# 🧪 @loaders.gl/scientific/tle
 
 Read satellite orbit elements in the two-line element set (TLE) format. This entry point exports
 `TLELoader`, `TLELoaderWithParser` and TLE helpers. The loader returns rows with the CCSDS OMM

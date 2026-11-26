@@ -117,6 +117,26 @@
       "types": "./dist/vtk-api.d.ts",
       "import": "./dist/vtk-api.js",
       "require": "./dist/vtk-api.cjs"
+    },
+    "./omm": {
+      "types": "./dist/omm/index.d.ts",
+      "import": "./dist/omm/index.js",
+      "require": "./dist/omm/index.cjs"
+    },
+    "./omm/bundled": {
+      "types": "./dist/omm/bundled.d.ts",
+      "import": "./dist/omm/bundled.js",
+      "require": "./dist/omm/bundled.cjs"
+    },
+    "./tle": {
+      "types": "./dist/tle/index.d.ts",
+      "import": "./dist/tle/index.js",
+      "require": "./dist/tle/index.cjs"
+    },
+    "./tle/bundled": {
+      "types": "./dist/tle/bundled.d.ts",
+      "import": "./dist/tle/bundled.js",
+      "require": "./dist/tle/bundled.cjs"
     }
   },
   "sideEffects": false,

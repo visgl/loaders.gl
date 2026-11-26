@@ -60,3 +60,10 @@ For parser access use the flat `@loaders.gl/scientific/npy` subpath.
 ## Package exports
 
 <ModuleSubpaths module="scientific" />
+
+## Experimental formats
+
+- [`/omm`](./omm/README.md)
+- [`/tle`](./tle/README.md)
+- [OMM - Orbit Mean-Elements Message](./omm/formats/omm.md)
+- [TLE - Two-Line Element Set](./tle/formats/tle.md)

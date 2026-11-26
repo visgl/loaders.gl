@@ -19,8 +19,8 @@ import {
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
 import {NetCDFSource} from '@loaders.gl/scientific/netcdf/bundled';
-import {OMMLoader} from '@loaders.gl/geospatial/omm';
-import {TLELoader} from '@loaders.gl/geospatial/tle';
+import {OMMLoader} from '@loaders.gl/scientific/omm';
+import {TLELoader} from '@loaders.gl/scientific/tle';
 
 test.each([
   GeoJSONLoader,
