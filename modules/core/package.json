@@ -165,9 +165,9 @@
       "require": "./dist/geoarrow/clustering/cluster-index.cjs"
     },
     "./cluster-source": {
-      "types": "./dist/cluster-source.d.ts",
-      "import": "./dist/cluster-source.js",
-      "require": "./dist/cluster-source.cjs"
+      "types": "./dist/geoarrow/clustering/cluster-source.d.ts",
+      "import": "./dist/geoarrow/clustering/cluster-source.js",
+      "require": "./dist/geoarrow/clustering/cluster-source.cjs"
     },
     "./geoarrow/get-representative-point": {
       "types": "./dist/geoarrow/clustering/get-representative-point.d.ts",
@@ -225,9 +225,9 @@
       "require": "./dist/geoarrow/geoarrow-converter/geoarrow-geometry-converter.cjs"
     },
     "./geoarrow/geoarrow-builder": {
-      "types": "./dist/geoarrow/geoarrow-builder.d.ts",
-      "import": "./dist/geoarrow/geoarrow-builder.js",
-      "require": "./dist/geoarrow/geoarrow-builder.cjs"
+      "types": "./dist/arrow-geometry/geoarrow-builder.d.ts",
+      "import": "./dist/arrow-geometry/geoarrow-builder.js",
+      "require": "./dist/arrow-geometry/geoarrow-builder.cjs"
     },
     "./query": {
       "types": "./dist/scan/index.d.ts",
@@ -320,14 +320,14 @@
       "require": "./dist/scan/scan-query.cjs"
     },
     "./federated-table-scan-source": {
-      "types": "./dist/federated-table-scan-source.d.ts",
-      "import": "./dist/federated-table-scan-source.js",
-      "require": "./dist/federated-table-scan-source.cjs"
+      "types": "./dist/scan/federated-table-scan-source.d.ts",
+      "import": "./dist/scan/federated-table-scan-source.js",
+      "require": "./dist/scan/federated-table-scan-source.cjs"
     },
     "./vector-table-scan-source": {
-      "types": "./dist/vector-table-scan-source.d.ts",
-      "import": "./dist/vector-table-scan-source.js",
-      "require": "./dist/vector-table-scan-source.cjs"
+      "types": "./dist/scan/vector-table-scan-source.d.ts",
+      "import": "./dist/scan/vector-table-scan-source.js",
+      "require": "./dist/scan/vector-table-scan-source.cjs"
     },
     "./wkt": {
       "types": "./dist/wkt/index.d.ts",

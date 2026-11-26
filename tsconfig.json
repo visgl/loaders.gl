@@ -735,6 +735,12 @@
       "@loaders.gl/core/geoarrow/test": [
         "modules/core/test/geoarrow"
       ],
+      "@loaders.gl/core/federated-table-scan-source": [
+        "modules/core/src/scan/federated-table-scan-source.ts"
+      ],
+      "@loaders.gl/core/vector-table-scan-source": [
+        "modules/core/src/scan/vector-table-scan-source.ts"
+      ],
       "@loaders.gl/core/query": [
         "modules/core/src/scan/index.ts"
       ],
@@ -779,6 +785,9 @@
       ],
       "@loaders.gl/core/geoarrow/get-representative-point": [
         "modules/core/src/geoarrow/clustering/get-representative-point.ts"
+      ],
+      "@loaders.gl/core/geoarrow/geoarrow-builder": [
+        "modules/core/src/arrow-geometry/geoarrow-builder.ts"
       ],
       "@loaders.gl/core/geoarrow/geoarrow-geometry-converter": [
         "modules/core/src/geoarrow/geoarrow-converter/geoarrow-geometry-converter.ts"
