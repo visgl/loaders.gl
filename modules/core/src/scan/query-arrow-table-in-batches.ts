@@ -31,28 +31,11 @@ export async function* queryArrowTableInBatches(
   validateTableQueryLimit(options.limit);
   options.signal?.throwIfAborted();
   if (options.limit === 0) return;
-  const iterator = batches[Symbol.asyncIterator]();
-  try {
-    const first = await iterator.next();
-    if (first.done) return;
-    /** Replays the first batch after reading its schema. */
-    async function* readBatches(): AsyncIterable<arrow.RecordBatch> {
-      for (
-        let next: IteratorResult<arrow.RecordBatch> = first;
-        !next.done;
-        next = await iterator.next()
-      ) {
-        yield next.value;
-      }
-    }
-    yield* executeArrowQueryInBatches(readBatches(), first.value.schema, {
-      select: options.select ?? options.columns,
-      where: options.predicate,
-      limit: options.limit,
-      signal: options.signal,
-      emitEmptyBatches: true
-    });
-  } finally {
-    await iterator.return?.();
-  }
+  yield* executeArrowQueryInBatches(batches, {
+    select: options.select ?? options.columns,
+    where: options.predicate,
+    limit: options.limit,
+    signal: options.signal,
+    emitEmptyBatches: true
+  });
 }
