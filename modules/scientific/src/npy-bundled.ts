@@ -2,5 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './npy';
-export {NPYLoaderWithParser as NPYLoader} from './npy';
+export type {NPYLoaderOptions} from './npy-loader-definition';
+export {NPYLoaderWithParser} from './npy-loader';
+export type {NPYTile} from './lib/parsers/parse-npy';
+export {NPYFormat} from './npy-format';
+export {NPYLoaderWithParser as NPYLoader} from './npy-loader';

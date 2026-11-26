@@ -68,25 +68,65 @@
       "import": "./dist/nrrd/metadata-entry.js",
       "require": "./dist/nrrd/metadata-entry.cjs"
     },
+    "./netcdf/parser": {
+      "types": "./dist/netcdf/netcdf-loader-with-parser.d.ts",
+      "import": "./dist/netcdf/netcdf-loader-with-parser.js",
+      "require": "./dist/netcdf/netcdf-loader-with-parser.cjs"
+    },
     "./netcdf/bundled": {
       "types": "./dist/netcdf-bundled-entry.d.ts",
       "import": "./dist/netcdf-bundled-entry.js",
       "require": "./dist/netcdf-bundled-entry.cjs"
+    },
+    "./zarr/spatial-data-parser": {
+      "types": "./dist/zarr/spatial-data-loader.d.ts",
+      "import": "./dist/zarr/spatial-data-loader.js",
+      "require": "./dist/zarr/spatial-data-loader.cjs"
+    },
+    "./zarr/array-parser": {
+      "types": "./dist/zarr/zarr-array-loader.d.ts",
+      "import": "./dist/zarr/zarr-array-loader.js",
+      "require": "./dist/zarr/zarr-array-loader.cjs"
+    },
+    "./zarr/geo-parser": {
+      "types": "./dist/zarr/geo-zarr-loader.d.ts",
+      "import": "./dist/zarr/geo-zarr-loader.js",
+      "require": "./dist/zarr/geo-zarr-loader.cjs"
+    },
+    "./zarr/ome-parser": {
+      "types": "./dist/zarr/ome-zarr-loader.d.ts",
+      "import": "./dist/zarr/ome-zarr-loader.js",
+      "require": "./dist/zarr/ome-zarr-loader.cjs"
     },
     "./zarr/bundled": {
       "types": "./dist/zarr-bundled-entry.d.ts",
       "import": "./dist/zarr-bundled-entry.js",
       "require": "./dist/zarr-bundled-entry.cjs"
     },
+    "./vtk/parser": {
+      "types": "./dist/vtk-loader.d.ts",
+      "import": "./dist/vtk-loader.js",
+      "require": "./dist/vtk-loader.cjs"
+    },
     "./vtk/bundled": {
       "types": "./dist/vtk-bundled-entry.d.ts",
       "import": "./dist/vtk-bundled-entry.js",
       "require": "./dist/vtk-bundled-entry.cjs"
     },
+    "./npy/parser": {
+      "types": "./dist/npy-loader.d.ts",
+      "import": "./dist/npy-loader.js",
+      "require": "./dist/npy-loader.cjs"
+    },
     "./npy/bundled": {
       "types": "./dist/npy-bundled.d.ts",
       "import": "./dist/npy-bundled.js",
       "require": "./dist/npy-bundled.cjs"
+    },
+    "./nrrd/parser": {
+      "types": "./dist/nrrd-loader.d.ts",
+      "import": "./dist/nrrd-loader.js",
+      "require": "./dist/nrrd-loader.cjs"
     },
     "./nrrd/bundled": {
       "types": "./dist/nrrd-bundled.d.ts",
@@ -97,6 +137,11 @@
       "types": "./dist/pdb/metadata-entry.d.ts",
       "import": "./dist/pdb/metadata-entry.js",
       "require": "./dist/pdb/metadata-entry.cjs"
+    },
+    "./pdb/parser": {
+      "types": "./dist/pdb-loader.d.ts",
+      "import": "./dist/pdb-loader.js",
+      "require": "./dist/pdb-loader.cjs"
     },
     "./pdb/bundled": {
       "types": "./dist/pdb-bundled.d.ts",
@@ -123,6 +168,11 @@
       "import": "./dist/adsb/index.js",
       "require": "./dist/adsb/index.cjs"
     },
+    "./adsb/parser": {
+      "types": "./dist/adsb/adsb-loader.d.ts",
+      "import": "./dist/adsb/adsb-loader.js",
+      "require": "./dist/adsb/adsb-loader.cjs"
+    },
     "./adsb/bundled": {
       "types": "./dist/adsb/bundled.d.ts",
       "import": "./dist/adsb/bundled.js",
@@ -132,6 +182,11 @@
       "types": "./dist/ais/index.d.ts",
       "import": "./dist/ais/index.js",
       "require": "./dist/ais/index.cjs"
+    },
+    "./ais/parser": {
+      "types": "./dist/ais/ais-loader.d.ts",
+      "import": "./dist/ais/ais-loader.js",
+      "require": "./dist/ais/ais-loader.cjs"
     },
     "./ais/bundled": {
       "types": "./dist/ais/bundled.d.ts",
@@ -143,6 +198,11 @@
       "import": "./dist/gtfs/index.js",
       "require": "./dist/gtfs/index.cjs"
     },
+    "./gtfs/parser": {
+      "types": "./dist/gtfs/gtfs-loader.d.ts",
+      "import": "./dist/gtfs/gtfs-loader.js",
+      "require": "./dist/gtfs/gtfs-loader.cjs"
+    },
     "./gtfs/bundled": {
       "types": "./dist/gtfs/bundled.d.ts",
       "import": "./dist/gtfs/bundled.js",
@@ -152,6 +212,11 @@
       "types": "./dist/gtfs-realtime/index.d.ts",
       "import": "./dist/gtfs-realtime/index.js",
       "require": "./dist/gtfs-realtime/index.cjs"
+    },
+    "./gtfs-realtime/parser": {
+      "types": "./dist/gtfs-realtime/gtfs-realtime-loader.d.ts",
+      "import": "./dist/gtfs-realtime/gtfs-realtime-loader.js",
+      "require": "./dist/gtfs-realtime/gtfs-realtime-loader.cjs"
     },
     "./gtfs-realtime/bundled": {
       "types": "./dist/gtfs-realtime/bundled.d.ts",
@@ -163,6 +228,11 @@
       "import": "./dist/omm/index.js",
       "require": "./dist/omm/index.cjs"
     },
+    "./omm/parser": {
+      "types": "./dist/omm/omm-loader.d.ts",
+      "import": "./dist/omm/omm-loader.js",
+      "require": "./dist/omm/omm-loader.cjs"
+    },
     "./omm/bundled": {
       "types": "./dist/omm/bundled.d.ts",
       "import": "./dist/omm/bundled.js",
@@ -172,6 +242,11 @@
       "types": "./dist/tle/index.d.ts",
       "import": "./dist/tle/index.js",
       "require": "./dist/tle/index.cjs"
+    },
+    "./tle/parser": {
+      "types": "./dist/tle/tle-loader.d.ts",
+      "import": "./dist/tle/tle-loader.js",
+      "require": "./dist/tle/tle-loader.cjs"
     },
     "./tle/bundled": {
       "types": "./dist/tle/bundled.d.ts",

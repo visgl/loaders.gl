@@ -27,7 +27,7 @@ export type AISLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing AIS loader implementation. */
 async function preloadAISLoader() {
-  const {AISLoaderWithParser} = await import('@loaders.gl/scientific/ais/bundled');
+  const {AISLoaderWithParser} = await import('@loaders.gl/scientific/ais/parser');
   return AISLoaderWithParser;
 }
 

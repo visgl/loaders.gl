@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {OMMLoaderOptions} from './omm-loader';
+export type {OMMLoaderOptions} from './omm-loader-types';
 export {OMMLoaderWithParser as OMMLoader, OMMLoaderWithParser} from './omm-loader';
 
-export * from '.';
+export {OMMFormat} from './omm-format';
+export type {OMMRow, OMMColumnName, OMMTableShape} from './omm-schema';

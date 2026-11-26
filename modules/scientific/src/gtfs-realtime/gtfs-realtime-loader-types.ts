@@ -25,7 +25,7 @@ export type GTFSRealtimeLoaderOptions = LoaderOptions & {
 /** Preloads the parser-bearing GTFS Realtime loader implementation. */
 async function preloadGTFSRealtimeLoader() {
   const {GTFSRealtimeLoaderWithParser} = await import(
-    '@loaders.gl/scientific/gtfs-realtime/bundled'
+    '@loaders.gl/scientific/gtfs-realtime/parser'
   );
   return GTFSRealtimeLoaderWithParser;
 }
