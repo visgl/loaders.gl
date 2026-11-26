@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import {KSPLATLoader} from '@loaders.gl/splats/ksplat';
-import {KSPLATLoaderWithParser} from '@loaders.gl/splats/ksplat/bundled';
+import {KSPLATLoaderWithParser} from '../src/ksplat-loader';
 import {parseKSPLATToGaussianSplats} from '../src/lib/parse-ksplat';
 const HEADER_BYTE_LENGTH = 4096;
 const SECTION_HEADER_BYTE_LENGTH = 1024;

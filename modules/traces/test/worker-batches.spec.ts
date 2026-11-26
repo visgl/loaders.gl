@@ -9,7 +9,7 @@ import {destroyWorkerTasks} from '@loaders.gl/core/worker-utils';
 import {ChromeTraceLoader} from '@loaders.gl/traces/chrome-trace';
 import {PerfettoTraceLoader} from '@loaders.gl/traces/perfetto';
 import {OtlpTraceLoader, OtlpTraceJsonLoader} from '@loaders.gl/traces/otlp';
-import {OtlpTraceWriter} from '@loaders.gl/traces/otlp/bundled';
+import {OtlpTraceWriter} from '../src/otlp-trace-writer';
 import {JaegerTraceLoader} from '@loaders.gl/traces/jaeger';
 import {ZipkinTraceLoader} from '@loaders.gl/traces/zipkin';
 import {

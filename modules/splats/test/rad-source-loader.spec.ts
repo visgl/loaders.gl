@@ -9,10 +9,10 @@ import {DeflateFflateCompressor} from '@loaders.gl/compression/deflate-compresso
 import {createDataSource, load, parse, parseSync} from '@loaders.gl/core';
 import {RADLoader} from '@loaders.gl/splats/rad';
 import {resolveRADChunkUrl} from '@loaders.gl/splats/rad/api';
-import type {RADSource} from '@loaders.gl/splats/rad/bundled';
+import type {RADSource} from '../src/rad-source-loader';
 import type {Table} from 'apache-arrow';
 import {parseRADChunkHeader, parseRADChunkToGaussianSplats} from '@loaders.gl/splats/rad/api';
-import {RADLoaderWithParser} from '@loaders.gl/splats/rad/bundled';
+import {RADLoaderWithParser} from '../src/rad-loader';
 preloadBeforeAll(preloadRADCompression);
 
 test('RADLoader parses Spark RAD metadata', async () => {

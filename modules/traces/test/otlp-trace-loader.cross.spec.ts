@@ -25,7 +25,8 @@ import {
   type OtlpTrace,
   type OtlpTraceBatch
 } from '@loaders.gl/traces/otlp';
-import {OtlpTraceJsonWriter, OtlpTraceWriter} from '@loaders.gl/traces/otlp/bundled';
+import {OtlpTraceJsonWriter} from '../src/otlp-trace-json-writer';
+import {OtlpTraceWriter} from '../src/otlp-trace-writer';
 
 // Parser ownership tests run instrumented source; worker conformance has its own suite.
 setLoaderOptions({core: {worker: false}});
