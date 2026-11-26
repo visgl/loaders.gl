@@ -60,6 +60,10 @@ To be compatible with `@loaders.gl/core` functions such as `encode`, writer obje
 `text` and `binary` remain compatibility hints used by encoding helpers. Check the
 writer reference for accepted input shapes and supported output methods.
 
+### Loading an encoder
+
+A metadata-only `Writer` can provide `preload()`, which resolves to a `WriterWithEncoder` with the same input and options types. Core async encoding APIs call this hook as needed. Batch encoders load on first iteration. For synchronous encoding, pass the bundled encoder or the result of an explicit `await writer.preload()`.
+
 ### Encoder Function
 
 | Field                            | Type       | Default | Description                                            |

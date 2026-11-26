@@ -47,15 +47,18 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
 
 ## Usage
 
+Use the format entry point with async core encoding. For synchronous or direct calls, use the bundled writer.
+
 ```typescript
 import {encode} from '@loaders.gl/core';
 import type {Table} from 'apache-arrow';
-import {CSVWriter} from '@loaders.gl/tables/csv/bundled';
+import {CSVWriter} from '@loaders.gl/tables/csv';
+import {CSVWriter as BundledCSVWriter} from '@loaders.gl/tables/csv/bundled';
 
 declare const table: Table;
 
 const data = await encode(table, CSVWriter); // ArrayBuffer
-const text = CSVWriter.encodeTextSync(table, {csv: options}); // string
+const text = BundledCSVWriter.encodeTextSync(table, {csv: {useDisplayNames: true}}); // string
 ```
 
 `CSVWriter` accepts the Apache Arrow table returned by `CSVLoader` and loaders.gl row or columnar tables.

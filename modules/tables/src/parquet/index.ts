@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+export {ParquetWriter} from './parquet-writer-types';
 export {ParquetFormat} from './parquet-format';
 export type {ParquetLoaderOptions} from './parquet-loader-options';
 export {ParquetLoader} from './parquet-loader-types';
@@ -65,7 +66,7 @@ export type {
 export type {ParquetSource} from './parquet-source';
 export type {ParquetDatasetSource} from './parquet-dataset-source';
 export type {ParquetSourceCapabilities} from './parquet-source-capabilities';
-export type {ParquetWriterEncoding, ParquetWriterOptions} from './parquet-writer';
+export type {ParquetWriterEncoding, ParquetWriterOptions} from './parquet-writer-types';
 export type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
 export type {
   ParquetWriterEncryptionOptions,

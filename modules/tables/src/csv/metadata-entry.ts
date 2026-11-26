@@ -10,7 +10,7 @@ export type {
   DEFAULT_CSV_SHAPE,
   CSV_LOADER_OPTIONS
 } from './csv-loader-options';
-export type {CSVWriterOptions, CSVWriter} from './csv-writer';
+export {CSVWriter, type CSVWriterOptions} from './csv-writer-types';
 export type {CSVTableSource, CSVSourceOptions} from './csv-source';
 export type {CSVLoaderWithParser} from '../csv-loader';
 export type {

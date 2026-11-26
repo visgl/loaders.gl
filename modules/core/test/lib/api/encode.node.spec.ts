@@ -36,3 +36,26 @@ test('encodeURLtoURL requires a command-line writer hook', async () => {
     encodeURLtoURL('/tmp/source', '/tmp/target', {name: 'MissingHook'} as any)
   ).rejects.toThrow();
 });
+
+test('encodeURLtoURL loads a lazy writer before invoking its URL hook', async () => {
+  const metadata = {
+    name: 'LazyCommandWriter',
+    mimeTypes: [],
+    id: 'lazy-command-writer',
+    module: 'core',
+    version: 'latest',
+    extensions: [],
+    options: {}
+  };
+  const writer = {
+    ...metadata,
+    async preload() {
+      return {
+        ...metadata,
+        encode: async () => new ArrayBuffer(0),
+        encodeURLtoURL: async (_inputUrl: string, outputUrl: string) => outputUrl
+      };
+    }
+  };
+  await expect(encodeURLtoURL('/tmp/source', '/tmp/target', writer)).resolves.toBe('/tmp/target');
+});

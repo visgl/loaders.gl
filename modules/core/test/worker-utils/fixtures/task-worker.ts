@@ -4,6 +4,7 @@ import {createWorker, type WorkerContext} from '../../../src/worker-utils';
 createWorker(
   async (input, options = {}, context, jobContext) => {
     if (options.estimate) return {execution: 'worker', byteLength: input.byteLength};
+    if (options.echoBinary) return input;
     if (options.echoZip) return options.zip;
     if (options.nested) return await requestNested(options, context);
     if (options.echoFetch)

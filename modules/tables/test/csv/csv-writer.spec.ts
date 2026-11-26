@@ -1,8 +1,9 @@
-import {expect, test} from 'vitest';
-import {CSVLoader, CSVWriterOptions} from '@loaders.gl/tables/csv';
+import {expect, expectTypeOf, test} from 'vitest';
+import {CSVLoader, CSVWriter as LazyCSVWriter, CSVWriterOptions} from '@loaders.gl/tables/csv';
 import {CSVWriter} from '@loaders.gl/tables/csv/bundled';
-import {encodeTableAsText, parse, preload} from '@loaders.gl/core';
+import {encode, encodeTableAsText, encodeTextSync, parse, preload} from '@loaders.gl/core';
 import {Table} from '@loaders.gl/core/schema';
+import type {WriterDataType, WriterOptionsType} from '@loaders.gl/core/loader-utils';
 import {convertTableToArrow} from '@loaders.gl/core/schema-utils';
 import {
   makeTestTable,
@@ -168,4 +169,17 @@ test('CSVWriter escapes header names and every line-break form', async () => {
   expect(await encodeTableAsText(input, CSVWriter)).toBe(
     '"comma,quote""",plain\n"a\rb",\n"a\r\nb",\n"a\nb",""""""\né,"x,y"\n,last'
   );
+});
+
+test('CSV metadata loads the same encoder as the bundled entry', async () => {
+  const input = makeTestTable([[{name: 'id', type: 'utf8'}, ['a']]]);
+  expectTypeOf<WriterDataType<typeof LazyCSVWriter>>().toEqualTypeOf<
+    Parameters<typeof CSVWriter.encode>[0]
+  >();
+  expectTypeOf<WriterOptionsType<typeof LazyCSVWriter>>().toEqualTypeOf<CSVWriterOptions>();
+  expect(LazyCSVWriter).not.toHaveProperty('encode');
+  expect(await LazyCSVWriter.preload()).toBe(CSVWriter);
+  expect(new TextDecoder().decode(await encode(input, LazyCSVWriter))).toBe('id\na');
+  expect(await encodeTableAsText(input, LazyCSVWriter)).toBe('id\na');
+  expect(encodeTextSync(input, CSVWriter)).toBe('id\na');
 });

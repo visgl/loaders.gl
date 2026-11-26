@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  Writer,
   WriterOptions,
   WriterWithEncoder,
   WriterOptionsType,
@@ -23,11 +24,14 @@ import {getLoaderOptions} from './loader-options';
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export async function encode<WriterT extends WriterWithEncoder>(
+export async function encode<WriterT extends Writer>(
   data: WriterDataType<WriterT>,
-  writer: WriterT,
+  writerDefinition: WriterT,
   options_?: WriterOptionsType<WriterT>
 ): Promise<ArrayBuffer> {
+  const writer: Writer & Partial<WriterWithEncoder> = writerDefinition.preload
+    ? await writerDefinition.preload()
+    : writerDefinition;
   const globalOptions = getLoaderOptions() as WriterOptions;
   // const globalOptions: WriterOptions = {}; // getWriterOptions();
   const options = {...globalOptions, ...options_};
@@ -43,6 +47,9 @@ export async function encode<WriterT extends WriterWithEncoder>(
   }
 
   // TODO Merge default writer options with options argument like it is done in load module.
+  if (!writer.encode) {
+    throw new Error(`Writer ${writer.name} could not encode data`);
+  }
   return await writer.encode(data, options);
 }
 
@@ -69,11 +76,14 @@ export function encodeSync<WriterT extends WriterWithEncoder>(
  * It is not optimized for performance. Data maybe converted from text to binary and back.
  * @throws if the writer does not generate text output
  */
-export async function encodeText<WriterT extends WriterWithEncoder>(
+export async function encodeText<WriterT extends Writer>(
   data: WriterDataType<WriterT>,
-  writer: WriterT,
+  writerDefinition: WriterT,
   options?: WriterOptionsType<WriterT>
 ): Promise<string> {
+  const writer: Writer & Partial<WriterWithEncoder> = writerDefinition.preload
+    ? await writerDefinition.preload()
+    : writerDefinition;
   if (writer.encodeText) {
     return await writer.encodeText(data, options);
   }
@@ -82,7 +92,7 @@ export async function encodeText<WriterT extends WriterWithEncoder>(
     return writer.encodeTextSync(data, options);
   }
 
-  if (writer.text) {
+  if (writer.text && writer.encode) {
     const arrayBuffer = await writer.encode(data, options);
     return new TextDecoder().decode(arrayBuffer);
   }
@@ -116,14 +126,22 @@ export function encodeTextSync<WriterT extends WriterWithEncoder>(
 /**
  * Encode loaded data into a sequence (iterator) of binary ArrayBuffers using the specified Writer.
  */
-export function encodeInBatches<WriterT extends WriterWithEncoder>(
+export function encodeInBatches<WriterT extends Writer>(
   data:
     | WriterBatchType<WriterT>
     | Iterable<WriterBatchType<WriterT>>
     | AsyncIterable<WriterBatchType<WriterT>>,
-  writer: WriterT,
+  writerDefinition: WriterT,
   options?: WriterOptionsType<WriterT>
 ): AsyncIterable<ArrayBuffer> {
+  const writer: Writer & Partial<WriterWithEncoder> = writerDefinition;
+  if (!writer.encodeInBatches && writer.preload) {
+    const preload = writer.preload.bind(writer);
+    return (async function* () {
+      const implementation = await preload();
+      yield* encodeInBatches<Writer>(data, implementation, options);
+    })();
+  }
   if (writer.encodeInBatches) {
     let dataIterator: unknown;
     if (data && typeof data === 'object') {
@@ -146,9 +164,17 @@ export function encodeInBatches<WriterT extends WriterWithEncoder>(
  */
 export function encodeTextInBatches(
   data: unknown,
-  writer: WriterWithEncoder,
+  writerDefinition: Writer,
   options?: WriterOptions
 ): AsyncIterable<ArrayBuffer> {
+  const writer: Writer & Partial<WriterWithEncoder> = writerDefinition;
+  if (!writer.encodeTextInBatches && writer.preload) {
+    const preload = writer.preload.bind(writer);
+    return (async function* () {
+      const implementation = await preload();
+      yield* encodeTextInBatches(data, implementation, options);
+    })();
+  }
   if (writer.encodeTextInBatches) {
     const dataIterator = getIterator(data);
     // @ts-expect-error
@@ -165,12 +191,18 @@ export function encodeTextInBatches(
 export async function encodeURLtoURL(
   inputUrl: string,
   outputUrl: string,
-  writer: Omit<WriterWithEncoder, 'encode'>,
+  writerDefinition: Omit<WriterWithEncoder, 'encode'>,
   options?: WriterOptions
 ): Promise<string> {
   inputUrl = resolvePath(inputUrl);
   outputUrl = resolvePath(outputUrl);
-  if (isBrowser || !writer.encodeURLtoURL) {
+  if (isBrowser) {
+    throw new Error();
+  }
+  const writer = writerDefinition.encodeURLtoURL
+    ? writerDefinition
+    : ((await writerDefinition.preload?.()) ?? writerDefinition);
+  if (!writer.encodeURLtoURL) {
     throw new Error();
   }
   const outputFilename = await writer.encodeURLtoURL(inputUrl, outputUrl, options);
@@ -179,7 +211,7 @@ export async function encodeURLtoURL(
 
 /** Helper function to encode via external tool (typically command line execution in Node.js) */
 async function encodeWithCommandLineTool(
-  writer: WriterWithEncoder,
+  writer: Omit<WriterWithEncoder, 'encode'>,
   data: unknown,
   options: WriterOptions
 ): Promise<ArrayBuffer> {
