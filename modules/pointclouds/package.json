@@ -38,9 +38,9 @@
       "require": "./dist/las/metadata-entry.cjs"
     },
     "./las/bundled": {
-      "types": "./dist/las/bundled-entry.d.ts",
-      "import": "./dist/las/bundled-entry.js",
-      "require": "./dist/las/bundled-entry.cjs"
+      "types": "./dist/las/bundled.d.ts",
+      "import": "./dist/las/bundled.js",
+      "require": "./dist/las/bundled.cjs"
     },
     "./pcd": {
       "types": "./dist/pcd/metadata-entry.d.ts",

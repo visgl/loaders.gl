@@ -43,19 +43,19 @@
       "require": "./dist/wms/metadata-entry.cjs"
     },
     "./wms/bundled": {
-      "types": "./dist/wms/bundled-entry.d.ts",
-      "import": "./dist/wms/bundled-entry.js",
-      "require": "./dist/wms/bundled-entry.cjs"
+      "types": "./dist/wms/bundled.d.ts",
+      "import": "./dist/wms/bundled.js",
+      "require": "./dist/wms/bundled.cjs"
     },
     "./gml-loader": {
-      "types": "./dist/gml-loader.d.ts",
-      "import": "./dist/gml-loader.js",
-      "require": "./dist/gml-loader.cjs"
+      "types": "./dist/wms/gml-loader.d.ts",
+      "import": "./dist/wms/gml-loader.js",
+      "require": "./dist/wms/gml-loader.cjs"
     },
     "./wmts-capabilities-loader-with-parser": {
-      "types": "./dist/wmts-capabilities-loader-with-parser.d.ts",
-      "import": "./dist/wmts-capabilities-loader-with-parser.js",
-      "require": "./dist/wmts-capabilities-loader-with-parser.cjs"
+      "types": "./dist/wms/wmts-capabilities-loader-with-parser.d.ts",
+      "import": "./dist/wms/wmts-capabilities-loader-with-parser.js",
+      "require": "./dist/wms/wmts-capabilities-loader-with-parser.cjs"
     },
     "./stac": {
       "types": "./dist/stac/metadata-entry.d.ts",
@@ -63,9 +63,9 @@
       "require": "./dist/stac/metadata-entry.cjs"
     },
     "./stac-loader": {
-      "types": "./dist/stac-loader.d.ts",
-      "import": "./dist/stac-loader.js",
-      "require": "./dist/stac-loader.cjs"
+      "types": "./dist/stac/stac-loader.d.ts",
+      "import": "./dist/stac/stac-loader.js",
+      "require": "./dist/stac/stac-loader.cjs"
     },
     "./csw": {
       "types": "./dist/csw/metadata-entry.d.ts",

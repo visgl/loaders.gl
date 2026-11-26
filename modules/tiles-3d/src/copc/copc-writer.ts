@@ -10,7 +10,7 @@ import {
   type WriterOptions,
   type WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
-import {LASWriter} from '@loaders.gl/pointclouds/las/bundled';
+import {LASWriter} from '@loaders.gl/pointclouds/las/api';
 import {type LASExtraBytesWriter} from '@loaders.gl/pointclouds/las';
 import type {Mesh} from '@loaders.gl/core/schema';
 import type {Table} from 'apache-arrow';

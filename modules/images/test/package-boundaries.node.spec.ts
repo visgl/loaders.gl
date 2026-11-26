@@ -45,6 +45,8 @@ test.each([
     assert.equal(typeof api.getBinaryImageMetadata, 'function');
     assert.equal(api.ImageLoader, undefined);
     assert.equal(api.ImageWriter, undefined);
+    const writer = await readPackage('@loaders.gl/images/image/writer');
+    assert.equal(typeof writer.ImageWriter.encode, 'function');
     assert.equal(parser.getBinaryImageMetadata, undefined);
     assert.equal(parser.GIFBuilder, undefined);
 

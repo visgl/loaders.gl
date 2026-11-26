@@ -131,6 +131,11 @@
       "import": "./dist/basis-bundled-entry.js",
       "require": "./dist/basis-bundled-entry.cjs"
     },
+    "./image/writer": {
+      "types": "./dist/image-writer.d.ts",
+      "import": "./dist/image-writer.js",
+      "require": "./dist/image-writer.cjs"
+    },
     "./image/bundled": {
       "types": "./dist/image-bundled.d.ts",
       "import": "./dist/image-bundled.js",

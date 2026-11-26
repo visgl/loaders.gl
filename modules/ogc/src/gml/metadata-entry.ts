@@ -4,4 +4,8 @@
 
 export {GMLLoader} from '../wms/gml-loader-types';
 export {GMLLoader as _GMLLoader} from '../wms/gml-loader-types';
-export type * from '../gml';
+export type {
+  GMLLoaderOptions,
+  GMLLoaderOptions as _GMLLoaderOptions
+} from '../wms/gml-loader-types';
+export type {GMLLoaderWithParser} from '../wms/gml-loader';

@@ -5,4 +5,6 @@
 export {CSWCapabilitiesLoader} from '../wms/csw-capabilities-loader';
 export {CSWDomainLoader} from '../wms/csw-domain-loader';
 export {CSWRecordsLoader} from '../wms/csw-records-loader';
-export type * from '../csw';
+export type {CSWCapabilitiesLoaderOptions, CSWCapabilities} from '../wms/csw-capabilities-loader';
+export type {CSWDomain} from '../wms/csw-domain-loader';
+export type {CSWRecords} from '../wms/csw-records-loader';
