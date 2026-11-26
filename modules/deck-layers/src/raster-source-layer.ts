@@ -803,10 +803,9 @@ export function createDefaultRasterRenderResult(
   const image = colorizeRasterData(rasterWithBandMetadata);
   return {
     ...placement,
-    // deck.gl v10 reads the texture dimensions from the image payload for mipmap allocation.
+    // deck.gl v10 draws a plain `{data, width, height}` image as black, so the bitmap gets an
+    // `ImageData` wherever the platform has it. It also reads the texture dimensions from it.
     image:
-      projectedCRS &&
-      placement.coordinateSystem === projectedCRS.identifier &&
       typeof ImageData !== 'undefined'
         ? new ImageData(image.data as Uint8ClampedArray<ArrayBuffer>, image.width, image.height)
         : image

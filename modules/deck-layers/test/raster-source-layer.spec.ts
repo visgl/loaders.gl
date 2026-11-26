@@ -409,6 +409,20 @@ describe('raster viewport and placement', () => {
     const image = result.image as {data: Uint8ClampedArray};
     expect(Array.from(image.data.slice(4, 8))).toEqual([0, 0, 0, 0]);
   });
+
+  test('gives the bitmap an ImageData for geographic rasters', () => {
+    // deck.gl v10 draws a plain {data, width, height} image as black.
+    const raster = createRaster(new Float32Array([0, 10, 20, 30]));
+    const metadata = {...GEOGRAPHIC_METADATA, noData: 10};
+    const result = createDefaultRasterRenderResult(
+      raster,
+      {viewport: createRasterViewport(createViewport([-10, -5, 20, 15]), metadata), bands: [0]},
+      metadata
+    );
+
+    expect(result.image).toBeInstanceOf(ImageData);
+    expect(Array.from((result.image as ImageData).data.slice(4, 8))).toEqual([0, 0, 0, 0]);
+  });
 });
 
 describe('RasterSourceLayer lifecycle', () => {
@@ -523,7 +537,13 @@ describe('RasterSourceLayer lifecycle', () => {
       layer.handleRasterLoad({requestId: 0, raster, parameters});
       const bitmap = layer.renderLayers();
       expect(bitmap.constructor).toBe(BitmapLayer);
-      expect(bitmap.props.image).toEqual(colorizeRasterData(raster));
+      const expected = colorizeRasterData(raster);
+      expect(bitmap.props.image).toBeInstanceOf(ImageData);
+      expect([bitmap.props.image.width, bitmap.props.image.height]).toEqual([
+        expected.width,
+        expected.height
+      ]);
+      expect(Array.from(bitmap.props.image.data)).toEqual(Array.from(expected.data));
     }
   });
 
