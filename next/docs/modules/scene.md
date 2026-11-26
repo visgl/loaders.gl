@@ -27,6 +27,8 @@ These exports are metadata-only loaders. Async core APIs preload implementations
 
 OBJ's transport helpers come directly from core and do not require the tables package. Draco, images and textures remain independent shared dependencies. See [Modules](https://loaders.gl/next/docs/modules.md) for the complete package map.
 
+Focused parser subpaths load individual implementations. For example, import the implementation from `@loaders.gl/scene/obj/parser`. The format metadata loaders use these subpaths in `preload()`.
+
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scene/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
@@ -49,7 +51,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->32<!-- -->)
+All exported subpaths (<!-- -->42<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -63,9 +65,13 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco-writer-worker-node.js`  |
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco-writer-worker.js`       |
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco/bundled`                |
+| [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco/draco3d-parser`         |
+| [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco/javascript-parser`      |
+| [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco/wasm-parser`            |
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco/writer`                 |
 | [![](/next/images/format-logos/gltf-logo.svg)GLB](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)       | `@loaders.gl/scene/glb`                          |
 | [![](/next/images/format-logos/gltf-logo.svg)GLB](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)       | `@loaders.gl/scene/glb/bundled`                  |
+| [![](/next/images/format-logos/gltf-logo.svg)GLB](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)       | `@loaders.gl/scene/glb/parser`                   |
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf`                         |
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf/bundled`                 |
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf/gltf-1.schema.json`      |
@@ -74,16 +80,22 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf/gltf-all.schema.json`    |
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf/gltf.schema.json`        |
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf/mesh-arrow`              |
+| [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf/parser`                  |
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf/schema`                  |
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf/schemas/*`               |
 |                                                                                                                              | `@loaders.gl/scene/materialx`                    |
 |                                                                                                                              | `@loaders.gl/scene/materialx/bundled`            |
+|                                                                                                                              | `@loaders.gl/scene/materialx/parser`             |
 |                                                                                                                              | `@loaders.gl/scene/mtl`                          |
 |                                                                                                                              | `@loaders.gl/scene/mtl/bundled`                  |
+|                                                                                                                              | `@loaders.gl/scene/mtl/parser`                   |
 |                                                                                                                              | `@loaders.gl/scene/obj`                          |
 |                                                                                                                              | `@loaders.gl/scene/obj-worker.js`                |
 |                                                                                                                              | `@loaders.gl/scene/obj/bundled`                  |
+|                                                                                                                              | `@loaders.gl/scene/obj/parser`                   |
 |                                                                                                                              | `@loaders.gl/scene/stl`                          |
 |                                                                                                                              | `@loaders.gl/scene/stl/bundled`                  |
+|                                                                                                                              | `@loaders.gl/scene/stl/parser`                   |
 | [![](/next/images/format-logos/openusd-logo.svg)OpenUSD](https://loaders.gl/next/docs/modules/scene/usd/formats/usd.md) | `@loaders.gl/scene/usd`                          |
 | [![](/next/images/format-logos/openusd-logo.svg)OpenUSD](https://loaders.gl/next/docs/modules/scene/usd/formats/usd.md) | `@loaders.gl/scene/usd/bundled`                  |
+| [![](/next/images/format-logos/openusd-logo.svg)OpenUSD](https://loaders.gl/next/docs/modules/scene/usd/formats/usd.md) | `@loaders.gl/scene/usd/parser`                   |
