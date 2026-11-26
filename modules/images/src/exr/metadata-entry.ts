@@ -3,4 +3,5 @@
 // Copyright (c) vis.gl contributors
 
 export {EXRLoader} from '../exr-loader-types';
-export type * from '../exr';
+export type {EXRLoaderWithParser} from '../exr-loader';
+export type {EXRImage, EXRChannel} from './parse-exr';

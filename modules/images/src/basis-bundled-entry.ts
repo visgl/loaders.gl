@@ -13,7 +13,6 @@ export {KTX2BasisWriterWorker} from './ktx2-basis-writer-worker-loader';
 export {BasisTextureFormat, KTX2BasisTextureFormat} from './texture-format';
 export type {
   BasisLoaderOptions,
-  KTX2BasisWriterOptions,
   BasisASTCBlockSize,
   BasisCodec,
   BasisFormat,
@@ -24,4 +23,5 @@ export type {
   BasisTargetFormat,
   BasisEncoderFormat,
   BasisImageData
-} from './basis-bundled';
+} from './basis-types';
+export type {KTX2BasisWriterOptions} from './ktx2-basis-writer';

@@ -66,11 +66,6 @@
       "require": "./dist/ktx2-basis-writer-worker-node.cjs",
       "default": "./dist/ktx2-basis-writer-worker-node.cjs"
     },
-    "./gl-extensions": {
-      "types": "./dist/gl-extensions.d.ts",
-      "import": "./dist/gl-extensions.js",
-      "require": "./dist/gl-extensions.cjs"
-    },
     "./types": {
       "types": "./dist/types.d.ts",
       "import": "./dist/types.js",
@@ -190,7 +185,7 @@
     "pre-build": "npm run generate-json-schema && npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers && npm run build-metadata",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/texture-manifest-schema.js --export CompositeImageManifestSchema --output ./dist/texture-manifest.schema.json --id https://unpkg.com/@loaders.gl/images/texture-manifest.schema.json --title 'loaders.gl composite image texture manifest'",
+    "generate-json-schema": "node ../../scripts/generate-json-schema.mjs --schema ./dist/lib/composite-image/composite-image-manifest-schema.js --export CompositeImageManifestSchema --output ./dist/texture-manifest.schema.json --id https://unpkg.com/@loaders.gl/images/texture-manifest.schema.json --title 'loaders.gl composite image texture manifest'",
     "copy-libs": "mkdir -p ./dist/libs && cp -rf ./src/libs/. ./dist/libs && node ../../scripts/build-library-modules.mjs images",
     "build-workers": "npm run build-basis-worker && npm run build-basis-worker-node && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-worker-node",
     "build-basis-worker": "esbuild src/workers/basis-worker.ts --outfile=dist/basis-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",

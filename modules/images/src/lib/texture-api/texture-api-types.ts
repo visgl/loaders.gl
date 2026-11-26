@@ -5,7 +5,7 @@
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {ImageLoaderOptions} from '../../image-loader-types';
 
-export type {ImageType} from '@loaders.gl/images/image';
+export type {ImageType} from '../../types';
 
 /** Shared options for image texture manifests. */
 export type TextureLoaderOptions = LoaderOptions & {

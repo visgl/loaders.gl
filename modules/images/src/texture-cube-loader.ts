@@ -5,17 +5,13 @@
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import type {Texture} from '@loaders.gl/core/schema';
 import type {TextureLoaderOptions as TextureApiLoaderOptions} from './lib/texture-api/texture-api-types';
-import {
-  parseCompositeImageManifest,
-  type ImageTextureCubeManifest
-} from './lib/composite-image/parse-composite-image';
+import {parseCompositeImageManifest} from './lib/composite-image/parse-composite-image';
 import {TextureCubeLoader as TextureCubeLoaderMetadata} from './texture-cube-loader-types';
 
 const {preload: _TextureCubeLoaderPreload, ...TextureCubeLoaderMetadataWithoutPreload} =
   TextureCubeLoaderMetadata;
 
 export type TextureCubeLoaderOptions = TextureApiLoaderOptions;
-export type {ImageTextureCubeManifest as TextureCubeManifest};
 
 export const TextureCubeLoaderWithParser = {
   ...TextureCubeLoaderMetadataWithoutPreload,
