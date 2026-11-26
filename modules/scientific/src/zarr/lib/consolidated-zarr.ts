@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {AsyncReadable} from 'zarrita';
+
 /** Consolidated metadata files supported by Zarr v2 and v3 stores. */
 export type ZarrMetadataPath = 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json';
 
@@ -43,38 +45,72 @@ export type LoadConsolidatedMetadataOptions = {
   signal?: AbortSignal;
 };
 
-/**
- * Loads and normalizes consolidated Zarr metadata across v2 and v3 layouts.
- */
-export async function loadConsolidatedMetadata(
+/** Reads a metadata file, deferring JSON decoding until after the read succeeds. */
+type ReadMetadataFile = (
+  path: string,
+  signal?: AbortSignal
+) => Promise<{json(): unknown} | {error: string}>;
+
+/** Loads and normalizes consolidated Zarr metadata from a URL. */
+export function loadConsolidatedMetadata(
   url: string,
   fetcher: (url: string, options?: RequestInit) => Promise<Response>,
   options: LoadConsolidatedMetadataOptions = {}
 ): Promise<ZarrConsolidatedMetadata> {
-  const metadataPaths = getMetadataPaths(options.metadataPath);
   let urlEnd = url.length;
   while (urlEnd > 0 && url[urlEnd - 1] === '/') {
     urlEnd--;
   }
   const normalizedUrl = url.slice(0, urlEnd);
+  return readConsolidatedMetadata(
+    url,
+    async (path, signal) => {
+      const response = await fetcher(`${normalizedUrl}/${path}`, {signal});
+      if (response.status === 404) {
+        return {error: '404'};
+      }
+      return response.ok ? response : {error: `${response.status} ${response.statusText}`};
+    },
+    options
+  );
+}
+
+/** Loads and normalizes consolidated Zarr metadata from a caller-supplied store. */
+export function loadConsolidatedMetadataFromStore(
+  label: string,
+  store: AsyncReadable,
+  options: LoadConsolidatedMetadataOptions = {}
+): Promise<ZarrConsolidatedMetadata> {
+  return readConsolidatedMetadata(
+    label,
+    async (path, signal) => {
+      signal?.throwIfAborted();
+      const bytes = await store.get(`/${path}`, {signal});
+      signal?.throwIfAborted();
+      return bytes ? {json: () => JSON.parse(new TextDecoder().decode(bytes))} : {error: '404'};
+    },
+    options
+  );
+}
+
+/** Probes and normalizes consolidated metadata with the given file reader. */
+async function readConsolidatedMetadata(
+  label: string,
+  readFile: ReadMetadataFile,
+  options: LoadConsolidatedMetadataOptions
+): Promise<ZarrConsolidatedMetadata> {
+  const metadataPaths = getMetadataPaths(options.metadataPath);
   const errors: string[] = [];
 
   for (const metadataPath of metadataPaths) {
-    const metadataUrl = `${normalizedUrl}/${metadataPath}`;
-    const response = await fetcher(metadataUrl, {signal: options.signal});
-
-    if (response.status === 404) {
-      errors.push(`${metadataPath}: 404`);
-      continue;
-    }
-
-    if (!response.ok) {
-      errors.push(`${metadataPath}: ${response.status} ${response.statusText}`);
+    const file = await readFile(metadataPath, options.signal);
+    if ('error' in file) {
+      errors.push(`${metadataPath}: ${file.error}`);
       continue;
     }
 
     try {
-      const json = (await response.json()) as V2ConsolidatedMetadata | V3ConsolidatedMetadata;
+      const json = (await file.json()) as V2ConsolidatedMetadata | V3ConsolidatedMetadata;
       return normalizeConsolidatedMetadata(json, metadataPath);
     } catch (error) {
       if (
@@ -89,7 +125,7 @@ export async function loadConsolidatedMetadata(
   }
 
   throw new Error(
-    `Could not load consolidated Zarr metadata for ${url}. Tried ${metadataPaths.join(', ')}. ${errors.join('; ')}`
+    `Could not load consolidated Zarr metadata for ${label}. Tried ${metadataPaths.join(', ')}. ${errors.join('; ')}`
   );
 }
 
