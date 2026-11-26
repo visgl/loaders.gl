@@ -109,10 +109,49 @@ const raster = await source.getRaster({
 });
 ```
 
+## Custom stores[​](#custom-stores "Direct link to Custom stores")
+
+Pass a Zarrita `AsyncReadable` as `zarr.store` to read metadata and chunks from your own store. The source input string serves as a label. Fetch options have no effect on store reads. GeoZarr applies `geozarr.maxConcurrentRequests` to the supplied store, including consolidated metadata reads. Set `zarr.requireConsolidatedMetadata` to `false` if the store only has per-group and per-array metadata. `SpatialDataSource` requires element URLs and rejects `zarr.store`.
+
+```
+import {createDataSourceSync} from '@loaders.gl/core';
+
+import {GeoZarrLoader} from '@loaders.gl/scientific/zarr/bundled';
+
+import type {AsyncReadable} from 'zarrita';
+
+
+
+function openRaster(store: AsyncReadable) {
+
+  return createDataSourceSync('raster-snapshot', [GeoZarrLoader], {
+
+    zarr: {store},
+
+    geozarr: {array: 'air_temperature'}
+
+  });
+
+}
+```
+
+`IcechunkStore.open` from the separate `icechunk-js` package returns a Zarrita-compatible read-only store.
+
+```
+import {IcechunkStore} from 'icechunk-js';
+
+
+
+const store = await IcechunkStore.open(url, {tag});
+
+const source = openRaster(store);
+```
+
 ## Source options[​](#source-options "Direct link to Source options")
 
 ### `zarr`[​](#zarr "Direct link to zarr")
 
+* `store?: AsyncReadable` supplies the backing store for metadata and chunks.
 * `path?: string | null` selects the group that contains the data and coordinate variables.
 * `metadataPath?: 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json'` controls consolidated metadata discovery.
 * `requireConsolidatedMetadata?: boolean` requires a consolidated metadata document before the group is opened. Defaults to `true`; set it to `false` for unconsolidated stores.
