@@ -17,20 +17,21 @@ export {
 } from './draco/draco3d-loader-with-parser';
 export {DracoWriterWorker, DracoWriter} from './draco/draco-writer';
 export {DracoFormat} from './draco/draco-format';
+export type {DracoLoaderOptions} from './draco/draco-loader-options';
 export type {
-  DracoLoaderOptions,
   DracoWriterAttributes,
   DracoWriterInput,
   DracoWriterOptions,
   DracoBatchProgress,
   DracoBatchOptions,
-  DracoWriterInputBatch,
-  DracoLibraryOptions,
-  GLTF_KHR_draco_mesh_compression,
-  GLTFDracoWriterOptions,
-  DracoDecoderProfile,
-  DracoMesh,
-  DracoLoaderData,
+  DracoWriterInputBatch
+} from './draco/draco-writer';
+export type {DracoLibraryOptions} from './draco/draco-library-options';
+export type {GLTF_KHR_draco_mesh_compression} from './gltf/lib/types/gltf-json-schema';
+export type {GLTFDracoWriterOptions} from './gltf/lib/encoders/encode-gltf-draco';
+export type {DracoDecoderProfile} from './draco/lib/draco-module-loader';
+export type {DracoMesh, DracoLoaderData} from './draco/lib/draco-types';
+export type {
   DracoAttributeQuantization,
   DracoAttributeType,
   DracoBuilderMesh,
@@ -41,4 +42,4 @@ export type {
   DracoEncodingResult,
   DracoExplicitQuantization,
   DracoMetadata
-} from './draco-bundled';
+} from './draco/lib/draco-builder';

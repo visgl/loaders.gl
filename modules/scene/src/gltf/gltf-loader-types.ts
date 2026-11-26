@@ -33,7 +33,7 @@ export type GLTFLoaderOptions = StrictLoaderOptions &
 
 /** Preloads the parser-bearing glTF loader implementation. */
 async function preload() {
-  const {GLTFLoaderWithParser} = await import('@loaders.gl/scene/gltf/bundled');
+  const {GLTFLoaderWithParser} = await import('@loaders.gl/scene/gltf/parser');
   return GLTFLoaderWithParser;
 }
 

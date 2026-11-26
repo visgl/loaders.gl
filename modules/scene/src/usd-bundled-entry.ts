@@ -12,7 +12,7 @@ export type {
   USDScenePath,
   USDStage,
   USDValue,
-  USDVariant,
-  FeatureTableJson,
-  PropertyAttribute
-} from './usd-bundled';
+  USDVariant
+} from './usd/lib/usd-types';
+export type {FeatureTableJson} from './gltf/lib/types/gltf-types';
+export type {PropertyAttribute} from './gltf/lib/extensions/EXT_structural_metadata';

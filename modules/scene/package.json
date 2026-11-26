@@ -39,6 +39,11 @@
       "import": "./dist/obj/metadata-entry.js",
       "require": "./dist/obj/metadata-entry.cjs"
     },
+    "./obj/parser": {
+      "types": "./dist/obj-loader.d.ts",
+      "import": "./dist/obj-loader.js",
+      "require": "./dist/obj-loader.cjs"
+    },
     "./obj/bundled": {
       "types": "./dist/obj/bundled.d.ts",
       "import": "./dist/obj/bundled.js",
@@ -48,6 +53,11 @@
       "types": "./dist/gltf/metadata-entry.d.ts",
       "import": "./dist/gltf/metadata-entry.js",
       "require": "./dist/gltf/metadata-entry.cjs"
+    },
+    "./gltf/parser": {
+      "types": "./dist/gltf/gltf-loader.d.ts",
+      "import": "./dist/gltf/gltf-loader.js",
+      "require": "./dist/gltf/gltf-loader.cjs"
     },
     "./gltf/bundled": {
       "types": "./dist/gltf/bundled-entry.d.ts",
@@ -118,30 +128,70 @@
       "import": "./dist/stl/metadata-entry.js",
       "require": "./dist/stl/metadata-entry.cjs"
     },
+    "./usd/parser": {
+      "types": "./dist/usd/usd-loader.d.ts",
+      "import": "./dist/usd/usd-loader.js",
+      "require": "./dist/usd/usd-loader.cjs"
+    },
     "./usd/bundled": {
       "types": "./dist/usd-bundled-entry.d.ts",
       "import": "./dist/usd-bundled-entry.js",
       "require": "./dist/usd-bundled-entry.cjs"
+    },
+    "./mtl/parser": {
+      "types": "./dist/obj/mtl-loader.d.ts",
+      "import": "./dist/obj/mtl-loader.js",
+      "require": "./dist/obj/mtl-loader.cjs"
     },
     "./mtl/bundled": {
       "types": "./dist/mtl-bundled.d.ts",
       "import": "./dist/mtl-bundled.js",
       "require": "./dist/mtl-bundled.cjs"
     },
+    "./glb/parser": {
+      "types": "./dist/gltf/glb-loader.d.ts",
+      "import": "./dist/gltf/glb-loader.js",
+      "require": "./dist/gltf/glb-loader.cjs"
+    },
     "./glb/bundled": {
       "types": "./dist/glb-bundled.d.ts",
       "import": "./dist/glb-bundled.js",
       "require": "./dist/glb-bundled.cjs"
+    },
+    "./draco/draco3d-parser": {
+      "types": "./dist/draco/draco3d-loader-with-parser.d.ts",
+      "import": "./dist/draco/draco3d-loader-with-parser.js",
+      "require": "./dist/draco/draco3d-loader-with-parser.cjs"
+    },
+    "./draco/javascript-parser": {
+      "types": "./dist/draco/draco-javascript-loader-with-parser.d.ts",
+      "import": "./dist/draco/draco-javascript-loader-with-parser.js",
+      "require": "./dist/draco/draco-javascript-loader-with-parser.cjs"
+    },
+    "./draco/wasm-parser": {
+      "types": "./dist/draco/draco-wasm-loader-with-parser.d.ts",
+      "import": "./dist/draco/draco-wasm-loader-with-parser.js",
+      "require": "./dist/draco/draco-wasm-loader-with-parser.cjs"
     },
     "./draco/bundled": {
       "types": "./dist/draco-bundled-entry.d.ts",
       "import": "./dist/draco-bundled-entry.js",
       "require": "./dist/draco-bundled-entry.cjs"
     },
+    "./materialx/parser": {
+      "types": "./dist/materialx-loader.d.ts",
+      "import": "./dist/materialx-loader.js",
+      "require": "./dist/materialx-loader.cjs"
+    },
     "./materialx/bundled": {
       "types": "./dist/materialx-bundled.d.ts",
       "import": "./dist/materialx-bundled.js",
       "require": "./dist/materialx-bundled.cjs"
+    },
+    "./stl/parser": {
+      "types": "./dist/stl-loader.d.ts",
+      "import": "./dist/stl-loader.js",
+      "require": "./dist/stl-loader.cjs"
     },
     "./stl/bundled": {
       "types": "./dist/stl-bundled.d.ts",

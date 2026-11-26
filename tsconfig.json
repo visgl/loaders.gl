@@ -762,8 +762,14 @@
       "@loaders.gl/pointclouds/ply/bundled": [
         "modules/pointclouds/src/ply/bundled.ts"
       ],
+      "@loaders.gl/scene/obj/parser": [
+        "modules/scene/src/obj-loader.ts"
+      ],
       "@loaders.gl/scene/obj/bundled": [
         "modules/scene/src/obj/bundled.ts"
+      ],
+      "@loaders.gl/scene/gltf/parser": [
+        "modules/scene/src/gltf/gltf-loader.ts"
       ],
       "@loaders.gl/scene/gltf/bundled": [
         "modules/scene/src/gltf/bundled-entry.ts"
@@ -1062,20 +1068,44 @@
       "@loaders.gl/scene/stl": [
         "modules/scene/src/stl/metadata-entry.ts"
       ],
+      "@loaders.gl/scene/usd/parser": [
+        "modules/scene/src/usd/usd-loader.ts"
+      ],
       "@loaders.gl/scene/usd/bundled": [
         "modules/scene/src/usd-bundled-entry.ts"
+      ],
+      "@loaders.gl/scene/mtl/parser": [
+        "modules/scene/src/obj/mtl-loader.ts"
       ],
       "@loaders.gl/scene/mtl/bundled": [
         "modules/scene/src/mtl-bundled.ts"
       ],
+      "@loaders.gl/scene/glb/parser": [
+        "modules/scene/src/gltf/glb-loader.ts"
+      ],
       "@loaders.gl/scene/glb/bundled": [
         "modules/scene/src/glb-bundled.ts"
+      ],
+      "@loaders.gl/scene/draco/draco3d-parser": [
+        "modules/scene/src/draco/draco3d-loader-with-parser.ts"
+      ],
+      "@loaders.gl/scene/draco/javascript-parser": [
+        "modules/scene/src/draco/draco-javascript-loader-with-parser.ts"
+      ],
+      "@loaders.gl/scene/draco/wasm-parser": [
+        "modules/scene/src/draco/draco-wasm-loader-with-parser.ts"
       ],
       "@loaders.gl/scene/draco/bundled": [
         "modules/scene/src/draco-bundled-entry.ts"
       ],
+      "@loaders.gl/scene/materialx/parser": [
+        "modules/scene/src/materialx-loader.ts"
+      ],
       "@loaders.gl/scene/materialx/bundled": [
         "modules/scene/src/materialx-bundled.ts"
+      ],
+      "@loaders.gl/scene/stl/parser": [
+        "modules/scene/src/stl-loader.ts"
       ],
       "@loaders.gl/scene/stl/bundled": [
         "modules/scene/src/stl-bundled.ts"

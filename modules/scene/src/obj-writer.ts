@@ -1,1 +1,1 @@
-export * from './obj/obj-writer.js';
+export {type OBJWriterOptions, OBJWriter} from './obj/obj-writer';
