@@ -2,5 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './html';
-export {HTMLLoaderWithParser as HTMLLoader} from './html';
+export {type HTMLLoaderOptions, HTMLLoaderWithParser} from './html-loader';
+export {HTMLFormat} from './xml-format';
+export {HTMLLoaderWithParser as HTMLLoader} from './html-loader';

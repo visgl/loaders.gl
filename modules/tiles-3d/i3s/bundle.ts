@@ -114,7 +114,9 @@ export {
   preloadI3SMeshCompression,
   encodeI3SMeshLayerWithDraco
 } from '@loaders.gl/tiles-3d/i3s-mesh-writer';
-export {SLPKWriter, SLPKSource, I3SPointCloudSource} from '@loaders.gl/tiles-3d/i3s/bundled';
+export {SLPKWriter} from '../src/i3s/i3s-slpk-writer';
+export {SLPKSource} from '../src/i3s/i3s-slpk-source';
+export {I3SPointCloudSource} from '../src/i3s/i3s-point-cloud-source';
 export {
   ArcGISWebSceneFormat,
   I3SAttributeFormat,

@@ -27,6 +27,8 @@ const raster = await parse(tiffBytes, GeoTIFFRasterLoader);
 const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 ```
 
+Import parsers directly from `/geotiff/parser`, `/geotiff/raster-parser`, `/lerc/parser`, `/terrain/parser`, and `/quantized-mesh/parser`.
+
 ## Format entry points
 
 | Logo | Entry point | Implementation |
