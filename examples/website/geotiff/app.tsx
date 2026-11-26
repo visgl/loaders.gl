@@ -84,6 +84,10 @@ export default function App(props: AppProps = {}) {
           }
         },
         rasterParameters: {resampleMethod: 'nearest'},
+        // Most values are near zero (mean 24, max 573), so a gray stretch looks black.
+        rendering: 'gpu',
+        colormap: 'viridis',
+        valueScale: 'log',
         bitmapLayerProps: {opacity: 0.78},
         pickable: true,
         onMetadataLoad: nextMetadata => {
