@@ -3,23 +3,24 @@
 // Copyright (c) vis.gl contributors
 
 /** Type-only entry point for loaders.gl Arrow APIs and Apache Arrow 17 types. */
+export type {VECTOR_TYPES} from './lib/types';
+export type {ArrowFormat} from './exports/arrow-format';
+export type {ArrowLoaderOptions} from './arrow-loader-definition';
+export type {ArrowLoader} from './arrow-loader-types';
+export type {ArrowTableSource} from './arrow-source';
+export type {ArrowWriter, ArrowWriterOptions} from './arrow-writer';
 export type {
-  VECTOR_TYPES,
-  ArrowFormat,
-  ArrowLoaderOptions,
-  ArrowLoader,
-  ArrowTableSource,
-  ArrowWriter,
-  ArrowWriterOptions,
   ArrowConvertFromOptions,
   ArrowConvertToOptions,
   ARROW_CONVERTERS,
   ArrowConverter,
   tightenArrowTableSchemaNullability,
-  GeoArrowLoader,
   convertArrowTableVariableWidthTypes,
   convertArrowVariableWidthVector,
-  ConvertArrowVariableWidthOptions,
+  ConvertArrowVariableWidthOptions
+} from '@loaders.gl/core/schema-utils';
+export type {GeoArrowLoader} from './geoarrow-loader-types';
+export type {
   ParseGeoArrowInput,
   ParseGeoArrowResult,
   TriangulateWKBColumnInput,
@@ -27,10 +28,12 @@ export type {
   TriangulationWorker,
   triangulateOnWorker,
   triangulateWKBColumnOnWorker,
-  parseGeoArrowOnWorker,
+  parseGeoArrowOnWorker
+} from './triangulate-on-worker';
+export type {
   triangulateWKBGeometryColumn,
   TriangulatedWKBGeometryColumns
-} from '.';
+} from '@loaders.gl/core/arrow-geometry';
 // Keep the upstream surface compatible with the minimum supported Apache Arrow release.
 export type {
   TypeMap,

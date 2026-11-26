@@ -5,7 +5,7 @@
 import {JSONTableLoader} from './json/json-table-loader-types.js';
 import {JSONTableLoaderWithParser as parser} from './json/json-table-loader.js';
 
-export * from './json/json-table-loader.js';
+export type {JSONTableLoaderOptions} from './json/json-table-loader-definition';
 
 /** Parser-bearing JSONTable loader with its browser module worker factory. */
 export const JSONTableLoaderWithParser = {
