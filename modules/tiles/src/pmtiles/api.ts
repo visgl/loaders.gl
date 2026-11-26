@@ -3,18 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 export {encodePMTiles} from './lib/encode-pmtiles';
+export type {PMTilesLoaderOptions} from './pmtiles-loader-with-parser';
+export type {PMTilesMetadata} from './lib/parse-pmtiles';
+export type {PMTilesRangeRequestOptions, PMTilesSourceLoaderOptions} from './pmtiles-source';
+export type {PMTilesWriterOptions} from './pmtiles-writer';
 export type {
-  PMTilesLoaderOptions,
-  PMTilesMetadata,
-  PMTilesRangeRequestOptions,
-  PMTilesSourceLoaderOptions,
-  PMTilesWriterOptions,
   PMTilesTile,
   PMTilesTileInput,
   PMTilesTileType,
-  PMTilesEncodeOptions,
-  GeoArrowPMTilesOptions,
-  GeoArrowPMTilesTileIndex,
-  RasterPMTilesOptions,
-  RasterPMTilesSource
-} from './bundled';
+  PMTilesEncodeOptions
+} from './pmtiles-writer-types';
+export type {GeoArrowPMTilesOptions, GeoArrowPMTilesTileIndex} from './geoarrow';
+export type {RasterPMTilesOptions, RasterPMTilesSource} from './raster';

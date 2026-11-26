@@ -86,7 +86,7 @@ export type {
   SourceLoader
 } from '@loaders.gl/core';
 export {ZipFormat, ZipLoader} from '@loaders.gl/archives/zip';
-export {ZipWriter} from '@loaders.gl/archives/zip/bundled';
+export {ZipWriter} from '@loaders.gl/archives/zip-writer';
 export {
   IndexedArchive,
   ZipFileSystem,
@@ -117,5 +117,5 @@ export type {
 
 export {encodeIndexedZip} from '@loaders.gl/archives/indexed-zip-writer';
 export {encodeTar, readTarArchive} from '@loaders.gl/archives/api';
-export {TarWriter} from '@loaders.gl/archives/tar/bundled';
+export {TarWriter} from '@loaders.gl/archives/tar-writer';
 export {TarLoader} from '@loaders.gl/archives/tar';

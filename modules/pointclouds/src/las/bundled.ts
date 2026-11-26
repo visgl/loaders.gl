@@ -2,36 +2,34 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {LASLoaderOptions} from './las-loader-types';
-export {LASLoaderWithParser as LASLoader} from './las-loader';
-export {decodeLAZFileInBatches} from './lib/typescript/parse-las';
-export {
-  decodeLASWaveformSamples,
-  getLASWaveformStorage,
-  parseLASWaveformPacketReference,
-  readLASWaveformPacket,
-  readLASWaveformPackets,
-  scaleLASWaveformSamples
-} from './lib/las-waveform';
+export {LASLoaderWithParser as LASLoader, LASColumnLoader, LASLoaderWithParser} from './las-loader';
+export {LASFormat} from './las-format';
+export {LASWriter} from './las-writer';
+export type {LASLoaderOptions, LASColumnName} from './las-loader-shared';
 export type {
   LASWaveformPacket,
   LASWaveformPacketReference,
   LASWaveformReadOptions,
   LASWaveformStorage
 } from './lib/las-waveform';
-export {
-  NeedsMoreData,
-  createLAZChunkDecoder,
-  createLAZChunkEncoder,
-  decodeLAZChunk,
-  decodeLAZChunkInBatches,
-  encodeLAZChunk
-} from '@loaders.gl/core/loader-utils';
 export type {
   FeedableLAZChunkDecoder,
   FeedableLAZChunkEncoder,
   LAZChunkDecoderOptions,
   LAZChunkMetadata
 } from '@loaders.gl/core/loader-utils';
-
-export * from '.';
+export type {LASSourceOptions} from './las-source';
+export type {LASExtraBytesWriter, LASWriterOptions} from './las-writer';
+export type {
+  LASExtendedVariableLengthRecord,
+  LASExtraBytesDescriptor,
+  LASGeoTIFFKey,
+  LASGeoTIFFKeyDirectory,
+  LASHeader,
+  LASMetadata,
+  LASMesh,
+  LASVariableLengthRecord,
+  LASWaveformPacketDescriptor
+} from './lib/las-types';
+export type {LASTypedExtraBytesAttribute, LASTypedExtraBytesValue} from './lib/las-extra-bytes';
+export type {LASCompatibilityLayout} from './lib/las-compatibility';

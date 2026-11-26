@@ -38,7 +38,7 @@ export type {
   WMSLayer,
   WMSBoundingBox,
   WMSDimension
-} from './wms-capabilities-loader';
+} from './lib/parsers/wms/parse-wms-capabilities';
 export type {WMSCapabilitiesLoaderOptions} from './wms-capabilities-loader';
 export {WMSCapabilitiesLoader} from './wms-capabilities-loader';
 
@@ -148,7 +148,7 @@ export {
   WCSCoverageLoader
 } from './wcs-coverage-loader';
 
-export type {GeoServiceType, ServiceCapabilities} from './service-capabilities';
+export type {GeoServiceType, ServiceCapabilities} from '@loaders.gl/core/loader-utils';
 export {
   normalizeWMSCapabilities,
   normalizeWMTSCapabilities,
