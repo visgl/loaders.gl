@@ -3,12 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {existsSync, readdirSync, readFileSync} from 'node:fs';
-import {resolve} from 'node:path';
+import {dirname, resolve} from 'node:path';
 
 /** An exact Vite alias for one published package entry point. */
 type EntrypointAlias = {find: RegExp; replacement: string};
 
-/** Resolves published package subpaths to their local TypeScript sources for Vite. */
+/** A string target or named package export conditions used by browser builds. */
+type PackageExport = string | {browser?: string; import?: string; default?: string; types?: string} | null;
+
+/** Resolves published subpaths to local sources or emitted assets for Vite. */
 export function getWorkspaceEntrypointAliases(frameworkName: string, frameworkRootDirectory: string): EntrypointAlias[] {
   const modulesDirectory = resolve(frameworkRootDirectory, 'modules');
   const aliases: EntrypointAlias[] = [];
@@ -18,19 +21,28 @@ export function getWorkspaceEntrypointAliases(frameworkName: string, frameworkRo
     if (!existsSync(manifestPath)) continue;
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
     if (!manifest.name?.startsWith(frameworkName + '/')) continue;
-    for (const [exportPath, conditions] of Object.entries<{types?: string}>(manifest.exports || {})) {
-      if (!exportPath.startsWith('./') || exportPath.includes('*')) continue;
-      const target = conditions?.types;
-      if (typeof target !== 'string' || !target.startsWith('./dist/') || !target.endsWith('.d.ts')) continue;
-      const source = resolve(
-        moduleDirectory,
-        target.replace('./dist/', './src/').replace(/\.d\.ts$/, '.ts')
-      );
-      if (!existsSync(source)) continue;
+    for (const [exportPath, conditions] of Object.entries<PackageExport>(manifest.exports || {})) {
+      if (!exportPath.startsWith('./')) continue;
+      const target =
+        typeof conditions === 'string'
+          ? conditions
+          : conditions?.browser ?? conditions?.import ?? conditions?.default;
+      if (typeof target !== 'string' || !target.startsWith('./')) continue;
+      const types = typeof conditions === 'object' ? conditions?.types : undefined;
+      const sourceTarget = types && (target.endsWith('.js') ? target : types);
+      const sourcePath = sourceTarget?.startsWith('./dist/')
+        ? resolve(moduleDirectory, sourceTarget.replace('./dist/', './src/').replace(/(?:\.d\.ts|\.js)$/, '.ts'))
+        : undefined;
+      const wildcard = exportPath.includes('*');
+      const replacement =
+        sourcePath && existsSync(wildcard ? dirname(sourcePath) : sourcePath)
+          ? sourcePath
+          : resolve(moduleDirectory, target);
       const specifier = manifest.name + exportPath.slice(1);
+      const escaped = specifier.replace(/[.*+?^$\x7b\x7d()|[\]\\]/g, '\\$&');
       aliases.push({
-        find: new RegExp('^' + specifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'),
-        replacement: source
+        find: new RegExp('^' + escaped.replace('\\*', '(.+)') + '$'),
+        replacement: wildcard ? replacement.replace('*', '$1') : replacement
       });
     }
   }

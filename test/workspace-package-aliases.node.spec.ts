@@ -27,3 +27,19 @@ test('workspace root fallbacks come after the published subpaths', () => {
   expect(parserIndex).toBeGreaterThanOrEqual(0);
   expect(rootIndex).toBeGreaterThan(parserIndex);
 });
+
+test('workspace aliases route generated workers and schemas to the emitted assets', () => {
+  const aliases = getWorkspaceEntrypointAliases('@loaders.gl', process.cwd());
+  const worker = aliases.find(({find}) => find.test('@loaders.gl/images/basis-worker.js'));
+  expect(worker?.replacement).toBe(resolve('modules/images/dist/basis-worker.js'));
+
+  const schemaPath = '@loaders.gl/tiles/mvt/tilejson.schema.json';
+  const schema = aliases.find(({find}) => find.test(schemaPath));
+  expect(schema?.replacement).toBe(resolve('modules/tiles/dist/mvt/tilejson.schema.json'));
+
+  const nestedSchemaPath = '@loaders.gl/scene/gltf/schemas/glTF.schema.json';
+  const nestedSchema = aliases.find(({find}) => find.test(nestedSchemaPath));
+  expect(nestedSchemaPath.replace(nestedSchema!.find, nestedSchema!.replacement)).toBe(
+    resolve('modules/scene/dist/gltf/schemas/glTF.schema.json')
+  );
+});
