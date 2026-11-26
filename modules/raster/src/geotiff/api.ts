@@ -10,17 +10,19 @@ export {
   createGeoTIFFSource,
   getImageTileGrid
 } from './geotiff-source';
+export type {GeoTIFFLoaderOptions} from './geotiff-loader-types';
+export type {GeoTIFFSourceLoaderOptions} from './geotiff-source';
 export type {
-  GeoTIFFLoaderOptions,
-  GeoTIFFSourceLoaderOptions,
   GetOMETiffParameters,
   OMETiffChannelMetadata,
   OMETiffLevelMetadata,
   OMETiffSourceLoaderMetadata,
-  OMETiffLoaderOptions,
+  OMETiffLoaderOptions
+} from './ometiff-loader';
+export type {
   GeoTIFFRasterData,
   GeoTIFFRasterImage,
   GeoTIFFRasterBand,
-  GeoTIFFRasterLoaderOptions,
-  DiscoverGeoTIFFOptions
-} from './bundled';
+  GeoTIFFRasterLoaderOptions
+} from './geotiff-raster-types';
+export type {DiscoverGeoTIFFOptions} from './discover-geotiff';

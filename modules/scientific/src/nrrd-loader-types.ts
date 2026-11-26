@@ -6,7 +6,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 import type {NRRDData} from './nrrd/parse-nrrd';
 /** Loads the attached NRRD parser on demand. */
 async function preload() {
-  const {NRRDLoaderWithParser} = await import('@loaders.gl/scientific/nrrd/bundled');
+  const {NRRDLoaderWithParser} = await import('@loaders.gl/scientific/nrrd/parser');
   return NRRDLoaderWithParser;
 }
 /** Metadata-only attached NRRD array loader. */

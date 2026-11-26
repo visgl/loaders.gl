@@ -15,15 +15,40 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "exports": {
+    "./quantized-mesh/parser": {
+      "types": "./dist/terrain/quantized-mesh-loader.d.ts",
+      "import": "./dist/terrain/quantized-mesh-loader.js",
+      "require": "./dist/terrain/quantized-mesh-loader.cjs"
+    },
+    "./terrain/parser": {
+      "types": "./dist/terrain/terrain-loader.d.ts",
+      "import": "./dist/terrain/terrain-loader.js",
+      "require": "./dist/terrain/terrain-loader.cjs"
+    },
+    "./lerc/parser": {
+      "types": "./dist/lerc/lerc-loader.d.ts",
+      "import": "./dist/lerc/lerc-loader.js",
+      "require": "./dist/lerc/lerc-loader.cjs"
+    },
+    "./geotiff/raster-parser": {
+      "types": "./dist/geotiff/geotiff-raster-loader.d.ts",
+      "import": "./dist/geotiff/geotiff-raster-loader.js",
+      "require": "./dist/geotiff/geotiff-raster-loader.cjs"
+    },
+    "./geotiff/parser": {
+      "types": "./dist/geotiff/geotiff-loader.d.ts",
+      "import": "./dist/geotiff/geotiff-loader.js",
+      "require": "./dist/geotiff/geotiff-loader.cjs"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./geotiff/bundled": {
-      "types": "./dist/geotiff/bundled-entry.d.ts",
-      "import": "./dist/geotiff/bundled-entry.js",
-      "require": "./dist/geotiff/bundled-entry.cjs"
+      "types": "./dist/geotiff/bundled.d.ts",
+      "import": "./dist/geotiff/bundled.js",
+      "require": "./dist/geotiff/bundled.cjs"
     },
     "./geotiff/discover-geotiff": {
       "types": "./dist/geotiff/discover-geotiff.d.ts",
@@ -115,9 +140,9 @@
       "import": "./dist/geotiff/types.js"
     },
     "./lerc/bundled": {
-      "types": "./dist/lerc/bundled-entry.d.ts",
-      "import": "./dist/lerc/bundled-entry.js",
-      "require": "./dist/lerc/bundled-entry.cjs"
+      "types": "./dist/lerc/bundled.d.ts",
+      "import": "./dist/lerc/bundled.js",
+      "require": "./dist/lerc/bundled.cjs"
     },
     "./lerc": {
       "types": "./dist/lerc/metadata-entry.d.ts",
@@ -139,9 +164,9 @@
       "require": "./dist/quantized-mesh/metadata-entry.cjs"
     },
     "./terrain/bundled": {
-      "types": "./dist/terrain/bundled-entry.d.ts",
-      "import": "./dist/terrain/bundled-entry.js",
-      "require": "./dist/terrain/bundled-entry.cjs"
+      "types": "./dist/terrain/bundled.d.ts",
+      "import": "./dist/terrain/bundled.js",
+      "require": "./dist/terrain/bundled.cjs"
     },
     "./terrain/heightmap": {
       "types": "./dist/terrain/heightmap.d.ts",

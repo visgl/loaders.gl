@@ -24,6 +24,41 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "exports": {
+    "./markdown/parser": {
+      "types": "./dist/markdown-loader.d.ts",
+      "import": "./dist/markdown-loader.js",
+      "require": "./dist/markdown-loader.cjs"
+    },
+    "./bson/parser": {
+      "types": "./dist/bson-loader.d.ts",
+      "import": "./dist/bson-loader.js",
+      "require": "./dist/bson-loader.cjs"
+    },
+    "./html/parser": {
+      "types": "./dist/html-loader.d.ts",
+      "import": "./dist/html-loader.js",
+      "require": "./dist/html-loader.cjs"
+    },
+    "./toml/parser": {
+      "types": "./dist/toml-loader.d.ts",
+      "import": "./dist/toml-loader.js",
+      "require": "./dist/toml-loader.cjs"
+    },
+    "./yaml/parser": {
+      "types": "./dist/yaml-loader.d.ts",
+      "import": "./dist/yaml-loader.js",
+      "require": "./dist/yaml-loader.cjs"
+    },
+    "./xml/parser": {
+      "types": "./dist/xml-loader.d.ts",
+      "import": "./dist/xml-loader.js",
+      "require": "./dist/xml-loader.cjs"
+    },
+    "./json/parser": {
+      "types": "./dist/json-loader.d.ts",
+      "import": "./dist/json-loader.js",
+      "require": "./dist/json-loader.cjs"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",

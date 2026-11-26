@@ -24,6 +24,8 @@ BSON document loaders and codecs live in [`@loaders.gl/documents`](/docs/modules
 Parquet BSON logical columns use that codec automatically.
 
 
+Focused parser subpaths load individual implementations. For example, import the implementation from `@loaders.gl/tables/csv/parser`. The format metadata loaders use these subpaths in `preload()`.
+
 ## Package exports
 
 <ModuleSubpaths module="tables" />

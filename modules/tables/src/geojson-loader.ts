@@ -8,7 +8,7 @@ import {
   GeoJSONWorkerLoaderWithParser as workerParser
 } from './json/geojson-loader.js';
 
-export * from './json/geojson-loader.js';
+export type {GeoJSONLoaderOptions} from './json/geojson-loader-definition';
 
 /** Parser-bearing GeoJSON loader with its browser module worker factory. */
 export const GeoJSONLoaderWithParser = {

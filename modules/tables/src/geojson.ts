@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {GeoJSONLoaderOptions} from './json/geojson-loader-types';
+export type {GeoJSONLoaderOptions} from './json/geojson-loader-definition';
 import {GeoJSONLoader as GeoJSONLoaderMetadata} from './json/geojson-loader-types';
 import {
   deserializeGeoJSONWorkerResult,
@@ -24,4 +24,4 @@ export {NDGeoJSONLoader, type NDGeoJSONLoaderOptions} from './json/ndgeojson-loa
 
 export {GeoJSONWorkerLoaderWithParser, GeoJSONLoaderWithParser} from './geojson-loader';
 
-export {NDGeoJSONLoaderWithParser} from './ndgeojson-loader';
+export {NDGeoJSONLoaderWithParser} from './json/ndgeojson-loader';

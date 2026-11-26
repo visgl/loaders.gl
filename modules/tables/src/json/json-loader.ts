@@ -70,4 +70,4 @@ function getFastStreamingJSONParserFactory(): StreamingJSONParserFactory {
   return parserOptions => new FastStreamingJSONParser(parserOptions);
 }
 
-export type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-types';
+export type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-definition';

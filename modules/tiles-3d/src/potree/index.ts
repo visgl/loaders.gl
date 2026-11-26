@@ -14,7 +14,7 @@ export type {
   PotreeAttribute,
   PotreeBoundingBox,
   PotreeMetadata
-} from './potree-metadata-schema';
+} from './types/potree-metadata';
 
 export {type POTreeNode} from './parsers/parse-potree-hierarchy-chunk';
 

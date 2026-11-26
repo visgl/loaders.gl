@@ -4,4 +4,7 @@
 
 export {ADSBLoaderWithParser as ADSBLoader, ADSBLoaderWithParser} from './adsb-loader';
 
-export * from '.';
+export {ADSBFormat} from './adsb-format';
+export type {ADSBLoaderOptions} from './adsb-loader-types';
+export type {ADSBRow} from './adsb-schema';
+export type {MovingObjectTableShape} from '../moving-objects/moving-object-table';

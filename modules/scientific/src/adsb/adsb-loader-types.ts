@@ -23,7 +23,7 @@ export type ADSBLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing ADSB loader implementation. */
 async function preloadADSBLoader() {
-  const {ADSBLoaderWithParser} = await import('@loaders.gl/scientific/adsb/bundled');
+  const {ADSBLoaderWithParser} = await import('@loaders.gl/scientific/adsb/parser');
   return ADSBLoaderWithParser;
 }
 

@@ -4,4 +4,7 @@
 
 export {AISLoaderWithParser as AISLoader, AISLoaderWithParser} from './ais-loader';
 
-export * from '.';
+export {AISFormat} from './ais-format';
+export type {AISLoaderOptions} from './ais-loader-types';
+export type {AISRow} from './ais-schema';
+export type {MovingObjectTableShape} from '../moving-objects/moving-object-table';

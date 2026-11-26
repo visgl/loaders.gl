@@ -35,6 +35,11 @@
       "import": "./dist/hudi/index.js",
       "require": "./dist/hudi/index.cjs"
     },
+    "./csv/parser": {
+      "types": "./dist/csv-loader.d.ts",
+      "import": "./dist/csv-loader.js",
+      "require": "./dist/csv-loader.cjs"
+    },
     "./csv/bundled": {
       "types": "./dist/csv/bundled-entry.d.ts",
       "import": "./dist/csv/bundled-entry.js",
@@ -65,6 +70,11 @@
       "import": "./dist/arrow/types.js",
       "require": "./dist/arrow/types.cjs"
     },
+    "./arrow/parser": {
+      "types": "./dist/arrow-loader.d.ts",
+      "import": "./dist/arrow-loader.js",
+      "require": "./dist/arrow-loader.cjs"
+    },
     "./arrow/bundled": {
       "types": "./dist/arrow/bundled-entry.d.ts",
       "import": "./dist/arrow/bundled-entry.js",
@@ -87,6 +97,21 @@
       "import": "./dist/arrow/geometry/index.js",
       "require": "./dist/arrow/geometry/index.cjs"
     },
+    "./json/parser": {
+      "types": "./dist/json-loader.d.ts",
+      "import": "./dist/json-loader.js",
+      "require": "./dist/json-loader.cjs"
+    },
+    "./json/table-parser": {
+      "types": "./dist/json-table-loader.d.ts",
+      "import": "./dist/json-table-loader.js",
+      "require": "./dist/json-table-loader.cjs"
+    },
+    "./json/ndjson-parser": {
+      "types": "./dist/ndjson-loader.d.ts",
+      "import": "./dist/ndjson-loader.js",
+      "require": "./dist/ndjson-loader.cjs"
+    },
     "./json/bundled": {
       "types": "./dist/json/bundled-entry.d.ts",
       "import": "./dist/json/bundled-entry.js",
@@ -104,6 +129,11 @@
       "types": "./dist/lance/metadata-entry.d.ts",
       "import": "./dist/lance/metadata-entry.js",
       "require": "./dist/lance/metadata-entry.cjs"
+    },
+    "./orc/parser": {
+      "types": "./dist/orc/orc-loader.d.ts",
+      "import": "./dist/orc/orc-loader.js",
+      "require": "./dist/orc/orc-loader.cjs"
     },
     "./orc/bundled": {
       "types": "./dist/orc/bundled-entry.d.ts",
@@ -166,25 +196,55 @@
       "import": "./dist/geoarrow/metadata-entry.js",
       "require": "./dist/geoarrow/metadata-entry.cjs"
     },
+    "./delta/parser": {
+      "types": "./dist/parquet/delta-loader.d.ts",
+      "import": "./dist/parquet/delta-loader.js",
+      "require": "./dist/parquet/delta-loader.cjs"
+    },
     "./delta/bundled": {
       "types": "./dist/delta-bundled.d.ts",
       "import": "./dist/delta-bundled.js",
       "require": "./dist/delta-bundled.cjs"
+    },
+    "./avro/parser": {
+      "types": "./dist/avro/avro-loader.d.ts",
+      "import": "./dist/avro/avro-loader.js",
+      "require": "./dist/avro/avro-loader.cjs"
     },
     "./avro/bundled": {
       "types": "./dist/avro-bundled-entry.d.ts",
       "import": "./dist/avro-bundled-entry.js",
       "require": "./dist/avro-bundled-entry.cjs"
     },
+    "./lance/parser": {
+      "types": "./dist/lance/lance-loader.d.ts",
+      "import": "./dist/lance/lance-loader.js",
+      "require": "./dist/lance/lance-loader.cjs"
+    },
     "./lance/bundled": {
       "types": "./dist/lance-bundled-entry.d.ts",
       "import": "./dist/lance-bundled-entry.js",
       "require": "./dist/lance-bundled-entry.cjs"
     },
+    "./geojson/parser": {
+      "types": "./dist/geojson-loader.d.ts",
+      "import": "./dist/geojson-loader.js",
+      "require": "./dist/geojson-loader.cjs"
+    },
+    "./geojson/ndgeojson-parser": {
+      "types": "./dist/json/ndgeojson-loader.d.ts",
+      "import": "./dist/json/ndgeojson-loader.js",
+      "require": "./dist/json/ndgeojson-loader.cjs"
+    },
     "./geojson/bundled": {
       "types": "./dist/geojson-bundled.d.ts",
       "import": "./dist/geojson-bundled.js",
       "require": "./dist/geojson-bundled.cjs"
+    },
+    "./geoarrow/parser": {
+      "types": "./dist/geoarrow-loader.d.ts",
+      "import": "./dist/geoarrow-loader.js",
+      "require": "./dist/geoarrow-loader.cjs"
     },
     "./geoarrow/bundled": {
       "types": "./dist/geoarrow-bundled.d.ts",

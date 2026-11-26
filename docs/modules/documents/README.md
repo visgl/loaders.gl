@@ -1,6 +1,6 @@
 ---
 title: Documents
-description: Basic document loaders with a lightweight package root and flat parser imports.
+description: Basic document loaders with metadata and parser subpaths.
 ---
 
 import {FormatLogo} from '@site/src/components/docs/format-logo';
@@ -17,7 +17,7 @@ no third-party XML or JSON parser is installed by this package.
 npm install @loaders.gl/core @loaders.gl/documents
 ```
 
-Format subpaths export metadata loaders, format descriptors, and shared types. Bundled subpaths export parsers and writers. Async core APIs preload implementations:
+Format subpaths export metadata loaders, format descriptors, and shared types. Use `/<format>/parser` to import a parser directly. Bundled subpaths export parsers and writers. Async core APIs preload implementations:
 
 ```typescript
 import {load} from '@loaders.gl/core';

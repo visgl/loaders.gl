@@ -4,4 +4,6 @@
 
 export {GTFSLoaderWithParser as GTFSLoader, GTFSLoaderWithParser} from './gtfs-loader';
 
-export * from '.';
+export {GTFSFormat} from './gtfs-format';
+export type {GTFSLoaderOptions} from './gtfs-loader-types';
+export type {GTFSData, GTFSFileWarnings, GTFSTable, GTFSRow} from './gtfs-schema';

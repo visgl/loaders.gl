@@ -9,7 +9,7 @@ export {VECTOR_TYPES} from './lib/types';
 
 export {ArrowFormat} from './exports/arrow-format';
 
-export type {ArrowLoaderOptions} from './arrow-loader-types';
+export type {ArrowLoaderOptions} from './arrow-loader-definition';
 
 export {ArrowLoader} from './arrow-loader-types';
 export {ArrowTableSource} from './arrow-source';
@@ -56,4 +56,4 @@ export {
 
 export {ArrowLoaderWithParser} from '../arrow-loader';
 
-export {createArrowSource} from '../arrow-source';
+export {createArrowSource} from './arrow-source';

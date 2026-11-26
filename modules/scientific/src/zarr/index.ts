@@ -37,19 +37,8 @@ export type {
   SpatialDataSourceMetadata,
   SpatialDataZarrElementSource
 } from './spatial-data-loader';
-export type {
-  GetOMEZarrParameters,
-  LoadConsolidatedMetadataOptions,
-  LoadZarrConsolidatedMetadataOptions,
-  OMEZarrChannelMetadata,
-  OMEZarrLevelMetadata,
-  OMEZarrSourceLoaderMetadata,
-  ZarrConsolidatedFormat,
-  ZarrConsolidatedMetadata,
-  ZarrMetadataPath,
-  ZarrLoader,
-  ZarrLoaderOptions
-} from './ome-zarr-loader';
+export type {GetOMEZarrParameters, LoadZarrConsolidatedMetadataOptions, OMEZarrChannelMetadata, OMEZarrLevelMetadata, OMEZarrSourceLoaderMetadata, ZarrLoader, ZarrLoaderOptions} from './ome-zarr-loader';
+export type {LoadConsolidatedMetadataOptions, ZarrConsolidatedFormat, ZarrConsolidatedMetadata, ZarrMetadataPath} from './lib/consolidated-zarr';
 export type {
   GeoZarrLevelMetadata,
   GeoZarrAffineTransform,

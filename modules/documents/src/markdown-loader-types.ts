@@ -11,7 +11,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Preloads the parser-bearing Markdown loader. */
 async function preload() {
-  const {MarkdownLoaderWithParser} = await import('@loaders.gl/documents/markdown/bundled');
+  const {MarkdownLoaderWithParser} = await import('@loaders.gl/documents/markdown/parser');
   return MarkdownLoaderWithParser;
 }
 
