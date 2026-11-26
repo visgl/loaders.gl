@@ -87,10 +87,20 @@ The sections below cover usage, geospatial metadata precedence, options, and wri
 `ParquetWriter` supports native Arrow tables and schema-bearing row tables. The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```
-import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {encode} from '@loaders.gl/core';
 
-import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import type {Table} from 'apache-arrow';
+
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
+
+
+
+declare const table: Table;
+
+const data = await encode(table, ParquetWriter);
 ```
+
+Core loads the encoder when encoding begins. For direct calls to `ParquetWriter.encode`, import the writer from `@loaders.gl/tables/parquet/bundled`.
 
 ## Geospatial Metadata[​](#geospatial-metadata "Direct link to Geospatial Metadata")
 
