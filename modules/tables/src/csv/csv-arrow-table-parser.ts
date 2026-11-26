@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrayRowTable, ObjectRowTable, Schema, TableBatch} from '@loaders.gl/core/schema';
+import {createArrowUtf8Reader} from '@math.gl/core/arrow';
 import {parseUTF8Boolean, parseUTF8Number} from '@math.gl/core/utf8';
 import {
   ArrowTableBuilder,
@@ -1323,30 +1324,14 @@ function readRawArrowDynamicValues(
     return new Array(rowCount).fill(null);
   }
 
-  const rawArrowData = rawArrowColumn.data[0];
-  if (
-    rawArrowColumn.data.length === 1 &&
-    rawArrowData?.type instanceof arrow.Utf8 &&
-    rawArrowData.valueOffsets &&
-    rawArrowData.values
-  ) {
+  if (rawArrowColumn.data.length === 1 && rawArrowColumn.type instanceof arrow.Utf8) {
+    const readRange = createArrowUtf8Reader(rawArrowColumn);
     const dynamicValues = new Array<DynamicColumnValue>(rowCount);
-    const valueOffsets = rawArrowData.valueOffsets;
-    const valueBytes = rawArrowData.values;
-
     for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-      if (!rawArrowData.getValid(rowIndex)) {
-        dynamicValues[rowIndex] = null;
-        continue;
-      }
-
-      const valueStart = Number(valueOffsets[rowIndex]);
-      const valueEnd = Number(valueOffsets[rowIndex + 1]);
-      dynamicValues[rowIndex] = parseRawUtf8ValueWithDynamicTyping(
-        valueBytes,
-        valueStart,
-        valueEnd
-      );
+      const range = readRange(rowIndex);
+      dynamicValues[rowIndex] = range
+        ? parseRawUtf8ValueWithDynamicTyping(range[0], range[1], range[2])
+        : null;
     }
     return dynamicValues;
   }
@@ -1590,7 +1575,7 @@ function getTypedColumnValues(
   return columnValues.map((columnValue, rowIndex) => {
     const resolvedColumnValue =
       columnValue === RAW_UTF8_VALUE
-        ? readRawArrowStringAtIndex(rawArrowColumn, rowIndex)
+        ? readRawArrowStringValue(rawArrowColumn?.get(rowIndex))
         : (columnValue as DynamicColumnValue);
     return convertDynamicValueToTypedColumnValue(resolvedColumnValue, typedColumnDataType);
   });
@@ -1783,26 +1768,6 @@ function readRawArrowStringValue(rawArrowValue: unknown): string | null {
   }
 
   return String(rawArrowValue);
-}
-
-/** Reads one UTF-8 value from a raw Arrow column for mixed-type string conversion. */
-function readRawArrowStringAtIndex(
-  rawArrowColumn: arrow.Vector | null,
-  rowIndex: number
-): string | null {
-  const rawArrowData = rawArrowColumn?.data[0];
-  if (
-    rawArrowColumn?.data.length === 1 &&
-    rawArrowData?.type instanceof arrow.Utf8 &&
-    rawArrowData.valueOffsets &&
-    rawArrowData.values &&
-    rawArrowData.getValid(rowIndex)
-  ) {
-    const valueStart = Number(rawArrowData.valueOffsets[rowIndex]);
-    const valueEnd = Number(rawArrowData.valueOffsets[rowIndex + 1]);
-    return UTF8_DECODER.decode(rawArrowData.values.subarray(valueStart, valueEnd));
-  }
-  return readRawArrowStringValue(rawArrowColumn?.get(rowIndex));
 }
 
 /** Applies Papa-compatible dynamic typing to one nullable CSV string value. */
