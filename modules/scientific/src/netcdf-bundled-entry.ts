@@ -11,10 +11,6 @@ export {
 export {NetCDFFormat} from './netcdf/netcdf-format';
 export {NetCDFSource} from './netcdf/netcdf-source';
 export {NetCDF4Source} from './netcdf/netcdf4-source';
-export type {
-  NetCDF,
-  NetCDFLoaderOptions,
-  NetCDFRasterQueryOptions,
-  NetCDFSourceOptions,
-  CFVariableMetadata
-} from './netcdf-bundled';
+export type {NetCDF, NetCDFLoaderOptions} from './netcdf/netcdf-loader';
+export type {NetCDFRasterQueryOptions, NetCDFSourceOptions} from './netcdf/netcdf-source';
+export type {CFVariableMetadata} from './netcdf/cf-conventions';

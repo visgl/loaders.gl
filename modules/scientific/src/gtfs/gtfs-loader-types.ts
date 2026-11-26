@@ -31,7 +31,7 @@ export type GTFSLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing GTFS Schedule loader implementation. */
 async function preloadGTFSLoader() {
-  const {GTFSLoaderWithParser} = await import('@loaders.gl/scientific/gtfs/bundled');
+  const {GTFSLoaderWithParser} = await import('@loaders.gl/scientific/gtfs/parser');
   return GTFSLoaderWithParser;
 }
 

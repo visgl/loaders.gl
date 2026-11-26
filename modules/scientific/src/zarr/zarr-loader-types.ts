@@ -36,7 +36,7 @@ export const OMEZarrLoader = {
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () => {
-    const loaderModule = await import('@loaders.gl/scientific/zarr/bundled');
+    const loaderModule = await import('@loaders.gl/scientific/zarr/ome-parser');
     return loaderModule.OMEZarrLoaderWithParser;
   },
   createDataSourceSync(
@@ -89,7 +89,7 @@ export const GeoZarrLoader = {
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () => {
-    const loaderModule = await import('@loaders.gl/scientific/zarr/bundled');
+    const loaderModule = await import('@loaders.gl/scientific/zarr/geo-parser');
     return loaderModule.GeoZarrLoaderWithParser;
   },
   createDataSourceSync(
@@ -126,7 +126,7 @@ export const ZarrArrayLoader = {
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () => {
-    const loaderModule = await import('@loaders.gl/scientific/zarr/bundled');
+    const loaderModule = await import('@loaders.gl/scientific/zarr/array-parser');
     return loaderModule.ZarrArrayLoaderWithParser;
   },
   createDataSourceSync(
@@ -161,7 +161,7 @@ export const SpatialDataLoader = {
   },
   testURL: (url: string): boolean => /\.zarr(?:$|[/?#])/i.test(url),
   preload: async () => {
-    const loaderModule = await import('@loaders.gl/scientific/zarr/bundled');
+    const loaderModule = await import('@loaders.gl/scientific/zarr/spatial-data-parser');
     return loaderModule.SpatialDataLoaderWithParser;
   },
   createDataSourceSync(

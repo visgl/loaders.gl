@@ -831,20 +831,38 @@
       "@loaders.gl/geospatial/geopackage/bundled": [
         "modules/geospatial/src/geopackage/bundled-entry.ts"
       ],
+      "@loaders.gl/scientific/adsb/parser": [
+        "modules/scientific/src/adsb/adsb-loader.ts"
+      ],
       "@loaders.gl/scientific/adsb/bundled": [
         "modules/scientific/src/adsb/bundled.ts"
+      ],
+      "@loaders.gl/scientific/ais/parser": [
+        "modules/scientific/src/ais/ais-loader.ts"
       ],
       "@loaders.gl/scientific/ais/bundled": [
         "modules/scientific/src/ais/bundled.ts"
       ],
+      "@loaders.gl/scientific/gtfs/parser": [
+        "modules/scientific/src/gtfs/gtfs-loader.ts"
+      ],
       "@loaders.gl/scientific/gtfs/bundled": [
         "modules/scientific/src/gtfs/bundled.ts"
+      ],
+      "@loaders.gl/scientific/gtfs-realtime/parser": [
+        "modules/scientific/src/gtfs-realtime/gtfs-realtime-loader.ts"
       ],
       "@loaders.gl/scientific/gtfs-realtime/bundled": [
         "modules/scientific/src/gtfs-realtime/bundled.ts"
       ],
+      "@loaders.gl/scientific/omm/parser": [
+        "modules/scientific/src/omm/omm-loader.ts"
+      ],
       "@loaders.gl/scientific/omm/bundled": [
         "modules/scientific/src/omm/bundled.ts"
+      ],
+      "@loaders.gl/scientific/tle/parser": [
+        "modules/scientific/src/tle/tle-loader.ts"
       ],
       "@loaders.gl/scientific/tle/bundled": [
         "modules/scientific/src/tle/bundled.ts"
@@ -1188,17 +1206,41 @@
       "@loaders.gl/scientific/nrrd": [
         "modules/scientific/src/nrrd/metadata-entry.ts"
       ],
+      "@loaders.gl/scientific/netcdf/parser": [
+        "modules/scientific/src/netcdf/netcdf-loader-with-parser.ts"
+      ],
       "@loaders.gl/scientific/netcdf/bundled": [
         "modules/scientific/src/netcdf-bundled-entry.ts"
+      ],
+      "@loaders.gl/scientific/zarr/spatial-data-parser": [
+        "modules/scientific/src/zarr/spatial-data-loader.ts"
+      ],
+      "@loaders.gl/scientific/zarr/array-parser": [
+        "modules/scientific/src/zarr/zarr-array-loader.ts"
+      ],
+      "@loaders.gl/scientific/zarr/geo-parser": [
+        "modules/scientific/src/zarr/geo-zarr-loader.ts"
+      ],
+      "@loaders.gl/scientific/zarr/ome-parser": [
+        "modules/scientific/src/zarr/ome-zarr-loader.ts"
       ],
       "@loaders.gl/scientific/zarr/bundled": [
         "modules/scientific/src/zarr-bundled-entry.ts"
       ],
+      "@loaders.gl/scientific/vtk/parser": [
+        "modules/scientific/src/vtk-loader.ts"
+      ],
       "@loaders.gl/scientific/vtk/bundled": [
         "modules/scientific/src/vtk-bundled-entry.ts"
       ],
+      "@loaders.gl/scientific/npy/parser": [
+        "modules/scientific/src/npy-loader.ts"
+      ],
       "@loaders.gl/scientific/npy/bundled": [
         "modules/scientific/src/npy-bundled.ts"
+      ],
+      "@loaders.gl/scientific/nrrd/parser": [
+        "modules/scientific/src/nrrd-loader.ts"
       ],
       "@loaders.gl/scientific/nrrd/bundled": [
         "modules/scientific/src/nrrd-bundled.ts"
@@ -1382,6 +1424,9 @@
       ],
       "@loaders.gl/ogc/gml": [
         "modules/ogc/src/gml/metadata-entry.ts"
+      ],
+      "@loaders.gl/scientific/pdb/parser": [
+        "modules/scientific/src/pdb-loader.ts"
       ],
       "@loaders.gl/scientific/pdb/bundled": [
         "modules/scientific/src/pdb-bundled.ts"

@@ -3,4 +3,5 @@
 // Copyright (c) vis.gl contributors
 
 export {PDBLoader} from '../pdb-loader-types';
-export type * from '../pdb';
+export type {PDBLoaderWithParser} from '../pdb-loader';
+export type {PDBAtom, PDBModel, PDBStructure} from './parse-pdb';
