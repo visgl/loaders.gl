@@ -266,6 +266,8 @@
     "gpkg",
     "ADSB",
     "AIS",
+    "GTFS",
+    "GTFS Realtime",
     "OMM",
     "CCSDS",
     "TLE",

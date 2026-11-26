@@ -137,6 +137,26 @@
       "types": "./dist/ais/bundled.d.ts",
       "import": "./dist/ais/bundled.js",
       "require": "./dist/ais/bundled.cjs"
+    },
+    "./gtfs": {
+      "types": "./dist/gtfs/index.d.ts",
+      "import": "./dist/gtfs/index.js",
+      "require": "./dist/gtfs/index.cjs"
+    },
+    "./gtfs/bundled": {
+      "types": "./dist/gtfs/bundled.d.ts",
+      "import": "./dist/gtfs/bundled.js",
+      "require": "./dist/gtfs/bundled.cjs"
+    },
+    "./gtfs-realtime": {
+      "types": "./dist/gtfs-realtime/index.d.ts",
+      "import": "./dist/gtfs-realtime/index.js",
+      "require": "./dist/gtfs-realtime/index.cjs"
+    },
+    "./gtfs-realtime/bundled": {
+      "types": "./dist/gtfs-realtime/bundled.d.ts",
+      "import": "./dist/gtfs-realtime/bundled.js",
+      "require": "./dist/gtfs-realtime/bundled.cjs"
     }
   },
   "sideEffects": false,
@@ -166,6 +186,7 @@
     "build-cjs-pdb": "esbuild src/pdb-loader.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/pdb-loader.cjs --external:@loaders.gl/*"
   },
   "dependencies": {
+    "@loaders.gl/archives": "5.0.0",
     "@loaders.gl/documents": "5.0.0",
     "@math.gl/core": "^5.0.3",
     "@math.gl/geospatial": "^5.0.3",
