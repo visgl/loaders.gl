@@ -613,6 +613,7 @@ export class GeoZarrRasterSource
       options?.coordinateReferenceSystem ||
       normalizeDeclaredCoordinateReferenceSystem(attributes) ||
       getGridMappingCoordinateReferenceSystem((await getGridMapping())?.attributes) ||
+      getGDALCoordinateReferenceSystem(attributes._CRS) ||
       normalizeString(levelGroupAttributes.crs) ||
       normalizeString(groupAttributes.crs) ||
       inferGeographicCoordinateReferenceSystem(spatialDimensions);
@@ -1051,8 +1052,26 @@ function declaresCoordinateReferenceSystem(attributes: GeoZarrAttributes): boole
   return Boolean(
     normalizeDeclaredCoordinateReferenceSystem(attributes) ||
       normalizeString(attributes.grid_mapping) ||
-      normalizeString(attributes.crs)
+      normalizeString(attributes.crs) ||
+      getGDALCoordinateReferenceSystem(attributes._CRS)
   );
+}
+
+/**
+ * Reads the `_CRS` attribute that the GDAL Zarr driver writes: an object with `wkt`, `projjson`
+ * and `url` members. Prefers the WKT, then an EPSG code from an OGC definition URL.
+ */
+function getGDALCoordinateReferenceSystem(value: unknown): string | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+  const {wkt, url} = value as {wkt?: unknown; url?: unknown};
+  const wellKnownText = normalizeString(wkt);
+  if (wellKnownText) {
+    return wellKnownText;
+  }
+  const code = normalizeString(url)?.match(/\/def\/crs\/EPSG\/[^/]+\/(\d+)\/?$/i)?.[1];
+  return code ? `EPSG:${code}` : undefined;
 }
 
 /** Largest axis-aligned pixel size, or infinity for a grid unsuitable for overview selection. */

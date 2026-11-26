@@ -213,9 +213,44 @@ test('GeoZarr discovers group-per-level CF geometry without a CRS declaration', 
 test.each([
   {caseName: 'root CRS', mapping: 'none', rootCRS: PROJECTED_WKT, expected: PROJECTED_WKT},
   {caseName: 'named grid mapping', mapping: 'named', rootCRS: CUSTOM_WKT, expected: PROJECTED_WKT},
-  {caseName: 'nested authority only', mapping: 'none', rootCRS: CUSTOM_WKT, expected: CUSTOM_WKT}
-] as const)('GeoZarr resolves CF CRS from $caseName', async ({mapping, rootCRS, expected}) => {
-  const {source} = createPyramid({mapping, rootCRS, options: {array: '0/backscatter'}});
+  {caseName: 'nested authority only', mapping: 'none', rootCRS: CUSTOM_WKT, expected: CUSTOM_WKT},
+  {
+    caseName: 'GDAL _CRS WKT',
+    mapping: 'none',
+    attributes: {_CRS: {wkt: PROJECTED_WKT, url: 'http://www.opengis.net/def/crs/EPSG/0/4326'}},
+    expected: PROJECTED_WKT
+  },
+  {
+    caseName: 'GDAL _CRS URL',
+    mapping: 'none',
+    attributes: {_CRS: {url: 'http://www.opengis.net/def/crs/EPSG/0/32610'}},
+    expected: 'EPSG:32610'
+  },
+  {
+    caseName: 'grid mapping over GDAL _CRS',
+    mapping: 'named',
+    attributes: {_CRS: {wkt: CUSTOM_WKT}},
+    expected: PROJECTED_WKT
+  },
+  {
+    caseName: 'GDAL _CRS over root CRS',
+    mapping: 'none',
+    rootCRS: CUSTOM_WKT,
+    attributes: {_CRS: {wkt: PROJECTED_WKT}},
+    expected: PROJECTED_WKT
+  }
+] as const)('GeoZarr resolves CF CRS from $caseName', async ({
+  mapping,
+  rootCRS,
+  attributes,
+  expected
+}: {
+  mapping: PyramidOptions['mapping'];
+  rootCRS?: string;
+  attributes?: Record<string, unknown>;
+  expected: string;
+}) => {
+  const {source} = createPyramid({mapping, rootCRS, attributes, options: {array: '0/backscatter'}});
   const metadata = await source.getMetadata();
   expect(metadata.crs).toBe(expected);
   expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual([
