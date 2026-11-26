@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {Table} from 'apache-arrow';
 import {parse} from '@loaders.gl/core';
-import {ADSBLoader} from '@loaders.gl/geospatial/adsb';
+import {ADSBLoader} from '@loaders.gl/scientific/adsb';
 
 test('ADS-B metadata preloads an Arrow parser and preserves its schema for empty data', async () => {
   const table = (await parse(

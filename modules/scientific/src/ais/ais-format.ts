@@ -21,7 +21,7 @@ function testAIS(arrayBuffer: ArrayBuffer): boolean {
 export const AISFormat = {
   name: 'AIS (Automatic Identification System)',
   id: 'ais',
-  module: 'geospatial',
+  module: 'scientific',
   category: 'table',
   encoding: 'text',
   format: 'ais',

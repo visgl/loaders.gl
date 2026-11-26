@@ -27,7 +27,7 @@ function testADSB(arrayBuffer: ArrayBuffer): boolean {
 export const ADSBFormat = {
   name: 'ADS-B Aircraft State JSON',
   id: 'adsb',
-  module: 'geospatial',
+  module: 'scientific',
   category: 'table',
   encoding: 'json',
   format: 'adsb',

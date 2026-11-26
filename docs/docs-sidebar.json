@@ -621,8 +621,8 @@
               "modules/geospatial/kml/formats/gpx",
               "modules/geospatial/kml/formats/kml",
               "modules/geospatial/kml/formats/tcx",
-              "modules/geospatial/adsb/formats/adsb",
-              "modules/geospatial/ais/formats/ais",
+              "modules/scientific/adsb/formats/adsb",
+              "modules/scientific/ais/formats/ais",
               "modules/geospatial/omm/formats/omm",
               "modules/geospatial/shapefile/formats/shapefile",
               "modules/geospatial/tle/formats/tle",
@@ -676,20 +676,20 @@
           },
           {
             "type": "category",
-            "label": "@loaders.gl/geospatial/adsb",
-            "items": ["modules/geospatial/adsb/api-reference/adsb-loader"],
+            "label": "@loaders.gl/scientific/adsb",
+            "items": ["modules/scientific/adsb/api-reference/adsb-loader"],
             "link": {
               "type": "doc",
-              "id": "modules/geospatial/adsb/README"
+              "id": "modules/scientific/adsb/README"
             }
           },
           {
             "type": "category",
-            "label": "@loaders.gl/geospatial/ais",
-            "items": ["modules/geospatial/ais/api-reference/ais-loader"],
+            "label": "@loaders.gl/scientific/ais",
+            "items": ["modules/scientific/ais/api-reference/ais-loader"],
             "link": {
               "type": "doc",
-              "id": "modules/geospatial/ais/README"
+              "id": "modules/scientific/ais/README"
             }
           },
           {

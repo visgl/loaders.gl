@@ -5,7 +5,7 @@
 import {expect, test} from 'vitest';
 import {Table} from 'apache-arrow';
 import {parse} from '@loaders.gl/core';
-import {AISLoader} from '@loaders.gl/geospatial/ais';
+import {AISLoader} from '@loaders.gl/scientific/ais';
 import {corruptChecksum, encodeAISPayload, encodeAIVDM, encodeTagBlock} from './encode-aivdm';
 
 test('AIS metadata preloads an Arrow parser for tagged NMEA with schema metadata', async () => {

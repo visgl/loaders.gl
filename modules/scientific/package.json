@@ -117,6 +117,26 @@
       "types": "./dist/vtk-api.d.ts",
       "import": "./dist/vtk-api.js",
       "require": "./dist/vtk-api.cjs"
+    },
+    "./adsb": {
+      "types": "./dist/adsb/index.d.ts",
+      "import": "./dist/adsb/index.js",
+      "require": "./dist/adsb/index.cjs"
+    },
+    "./adsb/bundled": {
+      "types": "./dist/adsb/bundled.d.ts",
+      "import": "./dist/adsb/bundled.js",
+      "require": "./dist/adsb/bundled.cjs"
+    },
+    "./ais": {
+      "types": "./dist/ais/index.d.ts",
+      "import": "./dist/ais/index.js",
+      "require": "./dist/ais/index.cjs"
+    },
+    "./ais/bundled": {
+      "types": "./dist/ais/bundled.d.ts",
+      "import": "./dist/ais/bundled.js",
+      "require": "./dist/ais/bundled.cjs"
     }
   },
   "sideEffects": false,
@@ -153,7 +173,8 @@
     "zarrita": "~0.7.1"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "apache-arrow": ">= 17.0.0"
   },
   "keywords": [
     "loaders.gl",

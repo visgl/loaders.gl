@@ -19,7 +19,7 @@ coordinates set to `null`.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ADSBLoader} from '@loaders.gl/geospatial/adsb';
+import {ADSBLoader} from '@loaders.gl/scientific/adsb';
 
 const table = await load('aircraft.json', ADSBLoader, {
   adsb: {shape: 'object-row-table'}
@@ -27,7 +27,7 @@ const table = await load('aircraft.json', ADSBLoader, {
 ```
 
 For synchronous parsing, import `ADSBLoader` or `ADSBLoaderWithParser` from
-`@loaders.gl/geospatial/adsb/bundled`.
+`@loaders.gl/scientific/adsb/bundled`.
 
 ## Options
 

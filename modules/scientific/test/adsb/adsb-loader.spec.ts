@@ -5,8 +5,8 @@
 import {expect, test} from 'vitest';
 import {parse, parseSync} from '@loaders.gl/core';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
-import {ADSBLoader} from '@loaders.gl/geospatial/adsb';
-import {ADSBLoader as BundledADSBLoader} from '@loaders.gl/geospatial/adsb/bundled';
+import {ADSBLoader} from '@loaders.gl/scientific/adsb';
+import {ADSBLoader as BundledADSBLoader} from '@loaders.gl/scientific/adsb/bundled';
 import {testADSBText} from '../../src/adsb/adsb-format';
 
 test('ADS-B named-field snapshots convert aviation units and retain aircraft without positions', async () => {

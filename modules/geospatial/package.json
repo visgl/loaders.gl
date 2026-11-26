@@ -95,26 +95,6 @@
       "import": "./dist/wkt/bundled.js",
       "require": "./dist/wkt/bundled.cjs"
     },
-    "./adsb": {
-      "types": "./dist/adsb/index.d.ts",
-      "import": "./dist/adsb/index.js",
-      "require": "./dist/adsb/index.cjs"
-    },
-    "./adsb/bundled": {
-      "types": "./dist/adsb/bundled.d.ts",
-      "import": "./dist/adsb/bundled.js",
-      "require": "./dist/adsb/bundled.cjs"
-    },
-    "./ais": {
-      "types": "./dist/ais/index.d.ts",
-      "import": "./dist/ais/index.js",
-      "require": "./dist/ais/index.cjs"
-    },
-    "./ais/bundled": {
-      "types": "./dist/ais/bundled.d.ts",
-      "import": "./dist/ais/bundled.js",
-      "require": "./dist/ais/bundled.cjs"
-    },
     "./omm": {
       "types": "./dist/omm/index.d.ts",
       "import": "./dist/omm/index.js",

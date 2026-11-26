@@ -20,7 +20,7 @@ Type 19 can carry position and static fields in the same row.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {AISLoader} from '@loaders.gl/geospatial/ais';
+import {AISLoader} from '@loaders.gl/scientific/ais';
 
 const table = await load('positions.ais', AISLoader, {
   ais: {shape: 'object-row-table'}
@@ -28,7 +28,7 @@ const table = await load('positions.ais', AISLoader, {
 ```
 
 For synchronous parsing, import `AISLoader` or `AISLoaderWithParser` from
-`@loaders.gl/geospatial/ais/bundled`.
+`@loaders.gl/scientific/ais/bundled`.
 
 ## Options
 

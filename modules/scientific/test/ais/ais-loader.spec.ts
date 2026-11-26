@@ -4,8 +4,8 @@
 
 import {expect, test} from 'vitest';
 import {parseSync} from '@loaders.gl/core';
-import {type AISLoaderOptions, type AISRow} from '@loaders.gl/geospatial/ais';
-import {AISLoader} from '@loaders.gl/geospatial/ais/bundled';
+import {type AISLoaderOptions, type AISRow} from '@loaders.gl/scientific/ais';
+import {AISLoader} from '@loaders.gl/scientific/ais/bundled';
 import type {ObjectRowTable} from '@loaders.gl/core/schema';
 import {corruptChecksum, encodeAISPayload, encodeAIVDM, encodeTagBlock} from './encode-aivdm';
 
