@@ -19,7 +19,7 @@ import {concatUint8Arrays} from '../../parquetjs/utils/binary-utils';
 import {ParquetEncoder} from '../../parquetjs/encoder/parquet-encoder';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
 import type {FieldDefinition, SchemaDefinition} from '../../parquetjs/schema/declare';
-import type {ParquetWriterOptions} from '../../parquet-writer';
+import type {ParquetWriterOptions} from '../../parquet-writer-types';
 
 /** Encode a plain loaders.gl table with the parquetjs implementation. */
 export async function encodeTableToParquetJs(

@@ -7,16 +7,21 @@
 import {
   concatenateArrayBuffers,
   ensureArrayBuffer,
+  Writer,
+  WriterOptions,
   WriterOptionsType,
   WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
 import type {Table} from '@loaders.gl/core/schema';
 
-export async function encodeTable<WriterT extends WriterWithEncoder = WriterWithEncoder>(
+export async function encodeTable<WriterT extends Writer = Writer>(
   data: Table,
-  writer: WriterT,
+  writerDefinition: WriterT,
   options?: WriterOptionsType<WriterT>
 ): Promise<ArrayBuffer> {
+  const writer: Writer & Partial<WriterWithEncoder> = writerDefinition.preload
+    ? await writerDefinition.preload()
+    : writerDefinition;
   if (writer.encode) {
     return await writer.encode(data, options);
   }
@@ -42,11 +47,14 @@ export async function encodeTable<WriterT extends WriterWithEncoder = WriterWith
   throw new Error('Writer could not encode data');
 }
 
-export async function encodeTableAsText<WriterT extends WriterWithEncoder = WriterWithEncoder>(
+export async function encodeTableAsText<WriterT extends Writer = Writer>(
   data: Table,
-  writer: WriterT,
+  writerDefinition: WriterT,
   options?: WriterOptionsType<WriterT>
 ): Promise<string> {
+  const writer: Writer & Partial<WriterWithEncoder> = writerDefinition.preload
+    ? await writerDefinition.preload()
+    : writerDefinition;
   if (writer.text && writer.encodeText) {
     return await writer.encodeText(data, options);
   }
@@ -58,10 +66,27 @@ export async function encodeTableAsText<WriterT extends WriterWithEncoder = Writ
   throw new Error(`Writer ${writer.name} could not encode data as text`);
 }
 
-export function encodeTableInBatches<WriterT extends WriterWithEncoder = WriterWithEncoder>(
+export function encodeTableInBatches<WriterT extends Writer = Writer>(
   data: Table,
-  writer: WriterT,
+  writerDefinition: WriterT,
   options?: WriterOptionsType<WriterT>
+): AsyncIterable<ArrayBuffer> {
+  const writer: Writer & Partial<WriterWithEncoder> = writerDefinition;
+  if (!writer.encodeInBatches && writer.preload) {
+    const preload = writer.preload.bind(writer);
+    return (async function* () {
+      const implementation = await preload();
+      yield* encodeWriterTableInBatches(data, implementation, options);
+    })();
+  }
+  return encodeWriterTableInBatches(data, writer, options);
+}
+
+/** Encodes table batches using the resolved writer's batch method. */
+function encodeWriterTableInBatches(
+  data: Table,
+  writer: Writer & Partial<WriterWithEncoder>,
+  options?: WriterOptions
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);

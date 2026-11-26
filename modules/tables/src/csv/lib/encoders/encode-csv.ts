@@ -9,7 +9,7 @@ import {
   getTableNumCols,
   convertArrowToSchema
 } from '@loaders.gl/core/schema-utils';
-import type {CSVWriterOptions} from '../../csv-writer';
+import type {CSVWriterOptions} from '../../csv-writer-types';
 
 type EncodableData = string | null;
 

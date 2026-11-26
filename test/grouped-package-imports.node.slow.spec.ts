@@ -111,11 +111,12 @@ test.each([
 
 test.each([
   'ParquetLoader',
-  'GeoParquetLoader'
-])('the Parquet format entry does not pull unrelated format helpers into %s preload', async loader => {
+  'GeoParquetLoader',
+  'ParquetWriter'
+])('the Parquet format entry defers implementation code for %s', async exportName => {
   const {metafile} = await build({
     stdin: {
-      contents: `export {${loader}} from '@loaders.gl/tables/parquet';`,
+      contents: `export {${exportName}} from '@loaders.gl/tables/parquet';`,
       resolveDir: REPOSITORY_ROOT,
       sourcefile: 'parquet-metadata-entry.js'
     },
@@ -150,6 +151,13 @@ test.each([
     )
   ).toEqual([]);
   expect(eagerBytes).toBeLessThan(8 * 1024);
+  if (exportName === 'ParquetWriter') {
+    const deferredInputs = Object.keys(outputs)
+      .filter(filename => !eager.has(filename))
+      .flatMap(filename => Object.keys(outputs[filename].inputs));
+    expect(deferredInputs.some(filename => /parquet-writer\.js$/.test(filename))).toBe(true);
+    expect(eagerInputs.some(filename => filename.includes('apache-arrow'))).toBe(false);
+  }
 });
 
 test.each([

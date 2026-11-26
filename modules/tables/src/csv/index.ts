@@ -6,8 +6,8 @@ export type {CSVLoaderOptions} from './csv-loader-options';
 export {CSVFormat} from './csv-format';
 export {CSVLoader} from './csv-loader-types';
 
-export type {CSVWriterOptions} from './csv-writer';
-export {CSVWriter} from './csv-writer';
+export type {CSVWriterOptions} from './csv-writer-types';
+export {CSVWriter} from './csv-writer-types';
 export {CSVTableSource} from './csv-source';
 export type {CSVSourceOptions} from './csv-source';
 
