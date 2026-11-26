@@ -150,7 +150,7 @@ export {projectArrowTable, filterArrowTable} from './arrow-execution';
 export type {ArrowFilterOptions} from './arrow-execution';
 
 export {queryGroupedSQL} from './query-grouped-sql';
-export {query, queryInBatches, queryProgressive} from './query';
+export {preloadQuery, query, queryInBatches, queryProgressive} from './query';
 export type {
   ProgressiveAggregate,
   ProgressiveAggregateQuery,

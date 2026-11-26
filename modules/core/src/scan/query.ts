@@ -2,40 +2,44 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import * as arrow from 'apache-arrow';
+import type * as arrow from 'apache-arrow';
+import type {SQLQuery} from '@math.gl/sql/parser';
 import type {
   ProgressiveAggregateQuery,
   ProgressiveQueryOptions,
   ProgressiveQuerySnapshot
 } from './query-progressive';
-import type {SQLQuery} from '@math.gl/sql/parser';
-import type {TableBatch, Schema} from '@loaders.gl/core/schema';
 import {
-  normalizeTableQuery,
-  getColumnarPredicateColumns,
-  executeTableScanBatches,
-  planTableQuery,
   emitQueryComplete,
   type TableQuery,
   type TableQueryExecutionOptions,
   type TableQueryExecutionSummary,
   type TableScanSource,
-  type TableScanReadOptions,
   type LoaderOptions,
   type DataSourceOptions,
-  type Loader
+  type Loader,
+  type DataSource
 } from '@loaders.gl/core/loader-utils';
-import {
-  convertArrowToSchema,
-  convertSchemaToArrow,
-  makeArrowMetadataBatch,
-  makeArrowTableFromBatches,
-  convertTableToArrow
-} from '@loaders.gl/core/schema-utils';
-import {projectArrowTable, filterArrowTable} from './arrow-execution';
-import {filterArrowRows} from './arrow-execution/filter-arrow-table';
+import {resolveQuerySource} from './resolve-query-source';
+import {openQuerySource} from './query-open-source';
 import type {SQLCatalogQuery} from './sql-catalog';
-import type {DataSource} from '@loaders.gl/core/loader-utils';
+
+type QueryExecutor = typeof import('./query-executor');
+let pendingExecutor: Promise<QueryExecutor> | undefined;
+
+/** Shares the executor import across queries and explicit preload calls. */
+function loadQueryExecutor(): Promise<QueryExecutor> {
+  pendingExecutor ??= import('./query-executor').catch(error => {
+    pendingExecutor = undefined;
+    throw error;
+  });
+  return pendingExecutor;
+}
+
+/** Loads the ordinary query executor without opening a source or reading data. */
+export async function preloadQuery(): Promise<void> {
+  await loadQueryExecutor();
+}
 
 /** Logical table or metadata request. */
 export type Query = TableQuery | SQLQuery | TypedTableQuery;
@@ -124,9 +128,17 @@ export async function query(
   tableQuery: Query | string,
   options: QueryOptions
 ): Promise<arrow.Table> {
-  return (await makeArrowTableFromBatches(
-    queryInBatches(tableQuery, {...options, queryOutput: 'batches'})
-  ))!;
+  const results = runQuery(
+    tableQuery,
+    {...options, queryOutput: 'batches'},
+    async function* collect(executor, batches) {
+      const table = await executor.makeArrowTableFromBatches(batches);
+      if (table) yield table;
+    }
+  );
+  let result: arrow.Table | undefined;
+  for await (const table of results) result = table;
+  return result!;
 }
 
 /** Streams native Arrow batches or complete replacement snapshots. */
@@ -151,13 +163,7 @@ export async function* queryInBatches(
   if (options.queryOutput !== undefined && options.queryOutput !== 'batches') {
     throw new Error('Unsupported queryOutput.');
   }
-  if (typeof tableQuery === 'object' && tableQuery && 'aggregates' in tableQuery) {
-    throw new Error('Aggregates require snapshots.');
-  }
-  for await (const table of queryAppendBatches(tableQuery as Query | string, options)) {
-    if (table.batches.length) yield* table.batches;
-    else yield makeArrowMetadataBatch(table.schema);
-  }
+  yield* runQuery(tableQuery as Query | string, options, (_executor, batches) => batches);
 }
 
 /** Streams complete aggregate snapshots and loads the grouped executor on demand. */
@@ -170,19 +176,27 @@ export async function* queryProgressive(
 }
 
 /** Executes one logical query with bounded batch buffering and cooperative cancellation. */
-async function* queryAppendBatches(
+async function* runQuery<Result>(
   tableQuery: Query | string,
-  options: QueryOptions
-): AsyncIterable<arrow.Table> {
+  options: QueryOptions,
+  consume: (
+    executor: QueryExecutor,
+    batches: AsyncIterable<arrow.RecordBatch>
+  ) => AsyncIterable<Result>
+): AsyncGenerator<Result> {
+  if (typeof tableQuery === 'object' && tableQuery && 'aggregates' in tableQuery)
+    throw new Error('Aggregates require snapshots.');
   const startedAt = Date.now();
   let status: TableQueryExecutionSummary['status'] = 'early-terminated';
-  let rowsRead = 0;
-  let rowsReturned = 0;
-  let batchesRead = 0;
-  let sourcesRead = 0;
+  const metrics = {
+    rowsRead: 0,
+    rowsReturned: 0,
+    batchesRead: 0,
+    sourcesRead: 0,
+    earlyTerminationReason: undefined as TableQueryExecutionSummary['earlyTerminationReason']
+  };
   let error: unknown;
   let ownedSource: {close?: () => void | Promise<void>} | undefined;
-  let earlyTerminationReason: TableQueryExecutionSummary['earlyTerminationReason'];
   try {
     options.signal?.throwIfAborted();
     const scan = options._scan;
@@ -194,6 +208,58 @@ async function* queryAppendBatches(
     ) {
       throw new Error('Put offset and limit in the logical query, not the execution options.');
     }
+    const executorImport = loadQueryExecutor();
+
+    const preparation = prepareSource();
+    const [executor, prepared] = await Promise.all([executorImport, preparation]).catch(
+      async failure => {
+        // Preparation can still be using an owned source when the executor import fails.
+        await preparation.catch(() => {});
+        throw failure;
+      }
+    );
+    options.signal?.throwIfAborted();
+    const batches = executor.executePreparedQuery(prepared, options, metrics);
+    yield* consume(executor, batches);
+    status = metrics.earlyTerminationReason ? 'early-terminated' : 'completed';
+  } catch (failure) {
+    error = failure;
+    status = options.signal?.aborted ? 'cancelled' : 'failed';
+    throw failure;
+  } finally {
+    if (status === 'early-terminated' && !metrics.earlyTerminationReason)
+      metrics.earlyTerminationReason = 'consumer-return';
+    try {
+      await ownedSource?.close?.();
+    } catch (failure) {
+      if (error === undefined) {
+        error = failure;
+        status = options.signal?.aborted ? 'cancelled' : 'failed';
+        metrics.earlyTerminationReason = undefined;
+        throw failure;
+      }
+    } finally {
+      emitQueryComplete(
+        options.onQueryComplete,
+        Object.freeze({
+          status,
+          sourcesPlanned: 1,
+          sourcesRead: metrics.sourcesRead,
+          batchesRead: metrics.batchesRead,
+          rowsRead: metrics.rowsRead,
+          rowsReturned: metrics.rowsReturned,
+          durationMilliseconds: Date.now() - startedAt,
+          ...(metrics.earlyTerminationReason
+            ? {earlyTerminationReason: metrics.earlyTerminationReason}
+            : {}),
+          ...(error === undefined ? {} : {error})
+        })
+      );
+    }
+  }
+
+  /** Resolves the query input and its schema without loading the Arrow executor. */
+  async function prepareSource() {
     let parsedQuery: Query;
     if (typeof tableQuery === 'string') {
       const parser = await options.sqlParser;
@@ -220,14 +286,10 @@ async function* queryAppendBatches(
       source =
         logicalQuery.from === undefined
           ? options.source
-          : await (await import('./resolve-query-source')).resolveQuerySource(
-              logicalQuery.from,
-              options.sources,
-              options.signal
-            );
+          : await resolveQuerySource(logicalQuery.from, options.sources, options.signal);
     }
     if (logicalQuery.from === undefined && typeof source === 'string') {
-      const opened = await (await import('./query-open-source')).openQuerySource(options);
+      const opened = await openQuerySource(options);
       if (
         opened &&
         typeof opened === 'object' &&
@@ -267,241 +329,14 @@ async function* queryAppendBatches(
         'Query source has a default offset or limit. Remove the source defaults and put offset and limit in the logical query.'
       );
     }
-    const sourceSchema = inMemory ? inMemory.schema : convertSchemaToArrow(metadata!.schema);
-    const names = sourceSchema.fields.map(field => field.name);
-    const {select: requestedSelect, where, ...controls} = logicalQuery;
-    const computedProjection =
-      Array.isArray(requestedSelect) &&
-      requestedSelect.some(
-        selection =>
-          selection &&
-          typeof selection === 'object' &&
-          ('expression' in selection || 'array' in selection)
-      );
-    // Resolve the public scan aliases before planning either native or residual projection.
-    const select = computedProjection
-      ? requestedSelect.map((item, index) =>
-          item && typeof item === 'object' && ('expression' in item || 'array' in item)
-            ? {...item, as: item.as ?? `column${index + 1}`}
-            : item
-        )
-      : requestedSelect;
-    const expressionFilter =
-      where && typeof where === 'object' && 'expression' in where ? where : undefined;
-    const portablePredicate = expressionFilter ? undefined : (where as TableQuery['where']);
-    const normalized = normalizeTableQuery(names, {
-      ...controls,
-      select: computedProjection ? undefined : (select as TableQuery['select']),
-      where: castPredicate ? undefined : portablePredicate
-    });
-    const expressionTools =
-      computedProjection || expressionFilter || castPredicate
-        ? await import('./arrow-execution/expressions')
-        : undefined;
-    const outputColumns = computedProjection
-      ? expressionTools!.getProjectionColumns(select!)
-      : normalized.select.map(selection => selection.column);
-    const expressionColumns = expressionFilter
-      ? expressionTools!.getExpressionColumns(expressionFilter.expression)
-      : castPredicate && portablePredicate
-        ? getColumnarPredicateColumns(portablePredicate)
-        : [];
-    const required = [...new Set([...outputColumns, ...expressionColumns])];
-    const plan = planTableQuery(names, {
-      // A literal-only projection still needs a physical column to retain row counts.
-      columns: required.length ? required : names.slice(0, 1),
-      predicate: normalized.where
-    });
-    const requiredColumns = plan[0].kind === 'scan' ? plan[0].columns : names;
-    const capabilities = (metadata?.queryCapabilities ?? metadata?.capabilities)?.table;
-    // read() must perform exact filtering when it advertises pushdown+residual, not only pruning.
-    const delegatePredicate = Boolean(
-      normalized.where &&
-        capabilities &&
-        ['pushdown', 'pushdown+residual'].includes(capabilities.predicate)
-    );
-    const residual = delegatePredicate ? undefined : normalized.where;
-    const canDelegateWindow = !residual && !expressionFilter && !castPredicate;
-    const delegateOffset = Boolean(
-      canDelegateWindow &&
-        normalized.offset !== undefined &&
-        capabilities &&
-        ['pushdown', 'pushdown+residual'].includes(capabilities.offset ?? 'unsupported')
-    );
-    const requestedRows =
-      normalized.limit === undefined
-        ? undefined
-        : (delegateOffset ? 0 : (normalized.offset ?? 0)) + normalized.limit;
-    const readOptions: TableScanReadOptions = {
-      signal: options.signal,
-      ...(capabilities && capabilities.projection !== 'unsupported'
-        ? {columns: requiredColumns}
-        : {}),
-      ...(delegatePredicate ? {predicate: normalized.where} : {}),
-      ...(delegateOffset ? {offset: normalized.offset} : {}),
-      ...(canDelegateWindow &&
-      requestedRows !== undefined &&
-      Number.isSafeInteger(requestedRows) &&
-      capabilities &&
-      ['pushdown', 'pushdown+residual'].includes(capabilities.limit)
-        ? {limit: requestedRows}
-        : {})
+    return {
+      logicalQuery,
+      source,
+      inMemory,
+      metadata,
+      castPredicate,
+      catalogQuery: 'command' in parsedQuery
     };
-    const inputSchema = readOptions.columns
-      ? sourceSchema.select([...readOptions.columns])
-      : sourceSchema;
-    const readSchema = convertArrowToSchema(inputSchema);
-    const comparisonInputSchema = expressionTools ? convertSchemaToArrow(readSchema) : undefined;
-    const compiledFilter = expressionFilter
-      ? expressionTools!.compileArrowExpression(expressionFilter.expression, {
-          inputSchema,
-          functions: options.functions
-        })
-      : castPredicate && portablePredicate
-        ? expressionTools!.compileArrowPredicate(portablePredicate, {inputSchema})
-        : undefined;
-    if (compiledFilter && !arrow.DataType.isBool(compiledFilter.outputField.type))
-      throw new Error('SQL WHERE expression must return Boolean.');
-    const project = computedProjection
-      ? expressionTools!.prepareArrowProjection(inputSchema, select!, {
-          signal: options.signal,
-          functions: options.functions
-        }).projectTable
-      : (data: arrow.Table) => projectArrowTable(data, normalized.select);
-    const empty = project(new arrow.Table(inputSchema));
-    const comparisonSchema = convertSchemaToArrow(convertArrowToSchema(empty.schema));
-    const pushedPlan =
-      !inMemory &&
-      !options.functions?.length &&
-      !('command' in parsedQuery) &&
-      (source as TableScanSource).planQueryPushdown
-        ? await (await import('./query-pushdown')).planQueryPushdown(
-            source as TableScanSource,
-            {...logicalQuery, select},
-            capabilities,
-            comparisonSchema,
-            Boolean(computedProjection || expressionFilter),
-            inputSchema,
-            options.signal
-          )
-        : null;
-    options.signal?.throwIfAborted();
-    let emitted = false;
-    /** Adapts physical batches without pulling ahead of the query consumer. */
-    async function* inputs(): AsyncIterable<arrow.Table> {
-      sourcesRead = 1;
-      const batches: AsyncIterable<unknown> = pushedPlan
-        ? pushedPlan.read({signal: options.signal})
-        : inMemory
-          ? memoryBatches(inMemory)
-          : (source as TableScanSource).read(readOptions);
-      for await (const value of batches) {
-        options.signal?.throwIfAborted();
-        let batch = normalizeBatch(value, pushedPlan?.schema ?? readSchema);
-        if (
-          !pushedPlan &&
-          comparisonInputSchema &&
-          !arrow.util.compareSchemas(
-            comparisonInputSchema,
-            convertSchemaToArrow(convertArrowToSchema(batch.schema))
-          )
-        ) {
-          // A source may return a wider or differently ordered projection than requested.
-          batch = batch.select(inputSchema.names);
-          if (
-            !arrow.util.compareSchemas(
-              comparisonInputSchema,
-              convertSchemaToArrow(convertArrowToSchema(batch.schema))
-            )
-          )
-            throw new Error('Query input schema does not match source metadata.');
-        }
-        batchesRead++;
-        rowsRead += batch.numRows;
-        yield batch;
-      }
-    }
-    for await (const value of executeTableScanBatches<arrow.Table>(
-      () => inputs(),
-      {
-        predicate: pushedPlan ? undefined : residual,
-        offset: pushedPlan || delegateOffset ? undefined : normalized.offset,
-        limit: normalized.limit,
-        skipEmptyBatches: true,
-        signal: options.signal
-      },
-      {
-        filter: (batch, predicate, signal) => {
-          if (pushedPlan) return batch;
-          if (compiledFilter) {
-            return filterArrowRows(
-              batch,
-              recordBatch => {
-                const matches = compiledFilter.evaluate(recordBatch, {signal});
-                return index => matches.get(index) === true;
-              },
-              {signal}
-            );
-          }
-          return predicate ? filterArrowTable(batch, predicate, {signal}) : batch;
-        },
-        project: batch => (pushedPlan || computedProjection ? batch : project(batch))
-      }
-    )) {
-      const finishProjection = pushedPlan
-        ? pushedPlan.project
-        : computedProjection
-          ? project
-          : undefined;
-      const batch = finishProjection ? finishProjection(value) : value;
-      if (
-        !arrow.util.compareSchemas(
-          comparisonSchema,
-          convertSchemaToArrow(convertArrowToSchema(batch.schema))
-        )
-      )
-        throw new Error('Query output schema does not match source metadata.');
-      emitted = true;
-      rowsReturned += batch.numRows;
-      yield batch;
-    }
-    // An empty schema-bearing batch makes collected and streaming empty results identical.
-    if (!emitted) yield empty;
-    if (normalized.limit !== undefined && rowsReturned >= normalized.limit)
-      earlyTerminationReason = 'limit';
-    status = earlyTerminationReason ? 'early-terminated' : 'completed';
-  } catch (failure) {
-    error = failure;
-    status = options.signal?.aborted ? 'cancelled' : 'failed';
-    throw failure;
-  } finally {
-    if (status === 'early-terminated' && !earlyTerminationReason)
-      earlyTerminationReason = 'consumer-return';
-    try {
-      await ownedSource?.close?.();
-    } catch (failure) {
-      if (error === undefined) {
-        error = failure;
-        status = options.signal?.aborted ? 'cancelled' : 'failed';
-        earlyTerminationReason = undefined;
-        throw failure;
-      }
-    } finally {
-      emitQueryComplete(
-        options.onQueryComplete,
-        Object.freeze({
-          status,
-          sourcesPlanned: 1,
-          sourcesRead,
-          batchesRead,
-          rowsRead,
-          rowsReturned,
-          durationMilliseconds: Date.now() - startedAt,
-          ...(earlyTerminationReason ? {earlyTerminationReason} : {}),
-          ...(error === undefined ? {} : {error})
-        })
-      );
-    }
   }
 }
 
@@ -515,28 +350,6 @@ async function normalizeTypedQuery(query: Query): Promise<SQLQuery | TableQuery>
     return query as SQLQuery | TableQuery;
   }
   return (await import('./arrow-execution/expressions')).normalizeTypedProjection(query);
-}
-
-/** Emits original Arrow RecordBatches without copying their buffers. */
-async function* memoryBatches(data: arrow.Table): AsyncIterable<arrow.Table> {
-  for (const batch of data.batches) yield new arrow.Table(data.schema, [batch]);
-}
-
-/** Converts supported native table batches to Arrow while preserving their declared schema. */
-function normalizeBatch(value: unknown, fallbackSchema: Schema): arrow.Table {
-  if (!value || typeof value !== 'object') throw new Error('Unsupported query batch.');
-  if ('numRows' in value) {
-    const batch = value as arrow.RecordBatch;
-    return new arrow.Table(batch.schema, [batch]);
-  }
-  if (!('shape' in value)) throw new Error('Unsupported query batch.');
-  const input = value as TableBatch;
-  const batch = {...input, schema: input.schema ?? fallbackSchema} as TableBatch;
-  if (!['object-row-table', 'array-row-table', 'columnar-table'].includes(batch.shape))
-    throw new Error(`Unsupported query batch shape: ${batch.shape}`);
-  return batch.length === 0 && batch.schema
-    ? new arrow.Table(convertSchemaToArrow(batch.schema))
-    : convertTableToArrow(batch);
 }
 
 /** Checks predicate tree bounds and detects casts that require Arrow execution. */

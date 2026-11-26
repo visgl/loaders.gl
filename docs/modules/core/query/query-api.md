@@ -263,3 +263,18 @@ Run `yarn bench scale-query` to compare fixed-domain streaming, exact
 percentile collection, and approximate percentile snapshots over equivalent
 Arrow IPC, Parquet, and CSV sources. The benchmark starts with warm source
 metadata and applies the same row predicate in each format.
+
+## Preloading query execution
+
+Import `preloadQuery` from `@loaders.gl/core/query` to warm the ordinary Arrow executor
+when an application anticipates a query, for example when it opens a query panel.
+
+```ts
+await preloadQuery();
+```
+
+Preloading does not open a source or read rows. Concurrent queries share the executor import.
+Without an explicit preload, `query()` starts loading the executor alongside SQL parsing,
+source opening, and metadata discovery. `queryInBatches()` starts on the first iterator pull.
+Row reads begin after planning. Progressive aggregates and computed expressions load their
+specialized implementations on demand.
