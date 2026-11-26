@@ -19,8 +19,6 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 | <FormatLogo slug="wkt" /> | [`/wkt`](./wkt/README.md) | WKT and WKT CRS |
 | <FormatLogo slug="wkb" /> | [`/wkb`](./wkt/formats/wkb.md) | WKB and Hex WKB |
 | — | [`/twkb`](./wkt/formats/twkb.md) | Tiny WKB |
-| — | [`/omm`](./omm/README.md) | 🧪 CCSDS OMM satellite orbit mean elements (JSON, KVN) |
-| — | [`/tle`](./tle/README.md) | 🧪 Two-line element sets (TLE) |
 
 Import metadata from format subpaths. Import parser-bearing loaders from bundled subpaths, such as `@loaders.gl/geospatial/wkb/bundled`. GeoPackage requires the optional `sql.js` peer dependency. See [Get Started](../../developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
 
@@ -31,10 +29,8 @@ Import metadata from format subpaths. Import parser-bearing loaders from bundled
 - [GeoPackage](./geopackage/formats/geopackage.md)
 - [GPX](./kml/formats/gpx.md)
 - [KML](./kml/formats/kml.md)
-- [OMM - Orbit Mean-Elements Message](./omm/formats/omm.md)
 - [TCX](./kml/formats/tcx.md)
 - [Shapefile](./shapefile/formats/shapefile.md)
-- [TLE - Two-Line Element Set](./tle/formats/tle.md)
 - [TWKB - Tiny Well-Known Binary](./wkt/formats/twkb.md)
 - [WKB - Well-Known Binary](./wkt/formats/wkb.md)
 - [WKT-CRS - Coordinate Systems](./wkt/formats/wkt-crs.md)

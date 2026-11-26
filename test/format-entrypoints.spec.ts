@@ -23,8 +23,8 @@ import {ADSBLoader} from '@loaders.gl/scientific/adsb';
 import {AISLoader} from '@loaders.gl/scientific/ais';
 import {GTFSLoader} from '@loaders.gl/scientific/gtfs';
 import {GTFSRealtimeLoader} from '@loaders.gl/scientific/gtfs-realtime';
-import {OMMLoader} from '@loaders.gl/geospatial/omm';
-import {TLELoader} from '@loaders.gl/geospatial/tle';
+import {OMMLoader} from '@loaders.gl/scientific/omm';
+import {TLELoader} from '@loaders.gl/scientific/tle';
 
 test.each([
   GeoJSONLoader,
