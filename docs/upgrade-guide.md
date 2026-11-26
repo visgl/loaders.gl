@@ -28,6 +28,14 @@ The `@loaders.gl/images/gl-extensions` subpath was removed. Texture levels still
 the numeric WebGL `format` when available. Use the level’s `textureFormat` for renderer
 capability checks, or use WebGL context and extension constants for numeric comparisons.
 
+The Arrow query, execution, and worker helpers moved from `@loaders.gl/core/query` to focused subpaths.
+
+| Symbol | Subpath under `@loaders.gl/core` |
+| --- | --- |
+| `queryArrowTable`, `explainArrowTableQuery`, `ARROW_TABLE_QUERY_CAPABILITIES` | `/query/arrow-query` |
+| `projectArrowTable`, `filterArrowTable` | `/query/arrow-execution` |
+| `createArrowQueryWorker`, `queryArrowTableInWorker` | `/query/arrow-query-worker` |
+
 Update existing `@loaders.gl/tiles-3d` root imports as follows.
 
 | Symbol | Import |

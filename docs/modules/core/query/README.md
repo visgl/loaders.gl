@@ -40,9 +40,10 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-`@loaders.gl/core/query` is the optional application-facing runtime for portable queries. It collects the
-reference Arrow executor, query parsing, source-neutral query metadata, ordered append federation,
-and adapters that expose an already-addressed vector result as a table.
+Import `query`, `queryInBatches`, `queryProgressive`, and `preloadQuery` from
+`@loaders.gl/core/query/sql`. The `/sql` entry point also accepts logical queries and
+loads the ordinary Arrow executor on demand. The optional `@loaders.gl/core/query` entry
+point collects query metadata, planning, federation, and addressed vector source adapters.
 
 For application table queries, start with [Querying tables](/docs/developer-guide/querying-tables)
 and the [query API reference](/docs/modules/core/query/query-api).
@@ -112,7 +113,8 @@ once and run multiple queries, open a session with `createArrowQueryWorker()`. B
 same query options as `queryArrowTable()`, including parsed SQL predicates.
 
 ```ts
-import {createArrowQueryWorker, parseSQLPredicate} from '@loaders.gl/core/query';
+import {createArrowQueryWorker} from '@loaders.gl/core/query/arrow-query-worker';
+import {parseSQLPredicate} from '@loaders.gl/core/query/parse-sql-predicate';
 
 const session = await createArrowQueryWorker(table, {
   worker: {
@@ -291,6 +293,8 @@ These helpers plan operations only; execution of aliased projections is a separa
 `select` for ordered projection with aliases:
 
 ```ts
+import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
+
 const result = queryArrowTable(table, {
   select: [{column: 'longitude', as: 'lng'}, 'latitude'],
   predicate: {op: '>', args: [{property: 'population'}, 100000]},
@@ -300,7 +304,7 @@ const result = queryArrowTable(table, {
 
 Predicates resolve against source fields before aliases are applied. `select` cannot be
 combined with `columns` or relational operators in this linear execution path.
-`explainArrowTableQuery()` reports the aliased output names and physical source columns.
+`explainArrowTableQuery()` from the same subpath reports the aliased output names and physical source columns.
 
 The shared `projectArrowTable(arrowTable, selections)` helper is available through
 `@loaders.gl/core/query/arrow-execution`. Projection creates schema and batch wrappers while
@@ -344,9 +348,9 @@ semantics, source capabilities, and benchmarks.
 
 ## Query naming and pushdown capabilities
 
-New applications can import `query` and `queryInBatches` from `@loaders.gl/core/query`.
-The legacy `/scan` entry point and its focused subpaths remain available; `/query` aliases share
-exactly the same runtime implementation.
+Use `@loaders.gl/core/query/sql` for application queries. Import synchronous Arrow query
+and explain helpers from `/query/arrow-query`, direct filtering and projection from
+`/query/arrow-execution`, and worker helpers from `/query/arrow-query-worker`.
 
 Source metadata exposes `queryCapabilities` (with the legacy `capabilities` alias). Its `.table`
 field is a `TableQueryCapabilities` contract, including optional `cast` and `offset` support.

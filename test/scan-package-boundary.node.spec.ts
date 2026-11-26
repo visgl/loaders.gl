@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import {build} from 'esbuild';
+import {build, type Metafile} from 'esbuild';
 import {expect, test} from 'vitest';
 import {preProcessFile} from 'typescript';
 
@@ -73,13 +73,7 @@ test('optional scan runtime budgets startup and lazy expression code separately'
   const entry = Object.keys(outputs).find(output =>
     outputs[output].entryPoint?.endsWith('scan-bundle.ts')
   )!;
-  const eager = new Set([entry]);
-  for (const output of eager) {
-    for (const dependency of outputs[output].imports) {
-      if (!dependency.external && dependency.kind === 'import-statement')
-        eager.add(dependency.path);
-    }
-  }
+  const eager = getEagerOutputs(outputs, entry);
   const eagerBytes = [...eager].reduce((sum, output) => sum + outputs[output].bytes, 0);
   const totalBytes = Object.values(outputs).reduce((sum, output) => sum + output.bytes, 0);
   const eagerInputs = [...eager].flatMap(output => Object.keys(outputs[output].inputs));
@@ -87,6 +81,43 @@ test('optional scan runtime budgets startup and lazy expression code separately'
   expect(eagerInputs.some(input => input.endsWith('/query-executor.ts'))).toBe(false);
   expect(eagerBytes).toBeLessThanOrEqual(MAXIMUM_EAGER_SCAN_BUNDLE_BYTES);
   expect(totalBytes).toBeLessThanOrEqual(MAXIMUM_COMPLETE_SCAN_BUNDLE_BYTES);
+});
+
+test('named async query imports defer Arrow through both public entrypoints', async () => {
+  for (const subpath of ['query', 'query/sql']) {
+    const result = await build({
+      stdin: {
+        contents: `export {query, queryInBatches} from '@loaders.gl/core/${subpath}';`,
+        resolveDir: REPOSITORY_ROOT
+      },
+      outdir: path.join(REPOSITORY_ROOT, 'dist/query-entrypoint-budget'),
+      bundle: true,
+      splitting: true,
+      format: 'esm',
+      minify: true,
+      platform: 'browser',
+      metafile: true,
+      write: false
+    });
+    const outputs = result.metafile.outputs;
+    const entry = Object.keys(outputs).find(output => outputs[output].entryPoint === '<stdin>')!;
+    const eager = getEagerOutputs(outputs, entry);
+    const inputs = [...eager].flatMap(output => Object.keys(outputs[output].inputs));
+    expect(
+      inputs.some(input => input.includes('/apache-arrow/')),
+      subpath
+    ).toBe(false);
+    expect(
+      inputs.some(input => input.includes('@math.gl/sql/dist/arrow/compiler')),
+      subpath
+    ).toBe(false);
+    expect(
+      inputs.some(input => input.endsWith('/query-executor.ts')),
+      subpath
+    ).toBe(false);
+    const startupBytes = [...eager].reduce((sum, output) => sum + outputs[output].bytes, 0);
+    expect(startupBytes, subpath).toBeLessThanOrEqual(40 * 1024);
+  }
 });
 
 test('query-vocabulary-only imports shake out the Arrow executor', async () => {
@@ -106,6 +137,18 @@ test('query-vocabulary-only imports shake out the Arrow executor', async () => {
   const byteLength = result.outputFiles.reduce((sum, file) => sum + file.contents.byteLength, 0);
   expect(byteLength).toBeLessThanOrEqual(MAXIMUM_PREDICATE_ONLY_BUNDLE_BYTES);
 });
+
+/** Finds the entry and all chunks loaded through static imports. */
+function getEagerOutputs(outputs: Metafile['outputs'], entry: string): Set<string> {
+  const eager = new Set([entry]);
+  for (const output of eager) {
+    for (const dependency of outputs[output].imports) {
+      if (!dependency.external && dependency.kind === 'import-statement')
+        eager.add(dependency.path);
+    }
+  }
+  return eager;
+}
 
 /** Lists immediate package directories in deterministic order. */
 function listDirectories(directory: string): string[] {

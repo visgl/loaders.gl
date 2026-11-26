@@ -5,8 +5,9 @@
 import {expect, test, vi} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {parseSQLQuery} from '@math.gl/sql/parser';
-import {query, queryInBatches, createQueryMetadata} from '@loaders.gl/core/query';
-import {query as legacyQuery} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query/sql';
+import {createQueryMetadata} from '@loaders.gl/core/query';
+import {query as legacyQuery} from '@loaders.gl/core/query/sql';
 import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import {executeTableScanBatches} from '@loaders.gl/core/loader-utils';
 import type {
