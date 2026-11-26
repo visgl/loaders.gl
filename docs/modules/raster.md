@@ -24,6 +24,8 @@ const raster = await parse(tiffBytes, GeoTIFFRasterLoader);
 const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 ```
 
+Import parsers directly from `/geotiff/parser`, `/geotiff/raster-parser`, `/lerc/parser`, `/terrain/parser`, and `/quantized-mesh/parser`.
+
 ## Format entry points[​](#format-entry-points "Direct link to Format entry points")
 
 | Logo                                                                                                                  | Entry point                            | Implementation                                    |
@@ -37,6 +39,11 @@ const terrain = parseSync(terrainBytes, QuantizedMeshLoaderWithParser);
 | [![](/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff`           | Synchronous OME-TIFF source constructor           |
 
 GeoTIFF and OME-TIFF source metadata is available from `@loaders.gl/raster/geotiff`. Use asynchronous `createDataSource()` with metadata or import an explicit source implementation for synchronous `createDataSourceSync()`. Use the named source, discovery, and heightmap subpaths for advanced APIs; their references list the exported constructors and helpers.
+
+## Rendering with deck.gl[​](#rendering-with-deckgl "Direct link to Rendering with deck.gl")
+
+* [RasterSourceLayer](https://loaders.gl/docs/modules/raster/api-reference/raster-source-layer.md) requests a raster for the current viewport.
+* [RasterBitmapLayer](https://loaders.gl/docs/modules/raster/api-reference/raster-bitmap-layer.md) draws a single-band raster with GPU styling.
 
 ## Optional decoder packages[​](#optional-decoder-packages "Direct link to Optional decoder packages")
 
@@ -69,7 +76,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->47<!-- -->)
+All exported subpaths (<!-- -->52<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -98,6 +105,8 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/lib/tiff/tiff-types`              |
 | [![](/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/lib/utils/tiff-utils`             |
 | [![](/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/loaders`                          |
+| [![](/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/parser`                           |
+| [![](/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/raster-parser`                    |
 | [![](/images/format-logos/ogc-mark.svg)OGCGeoTIFF](https://loaders.gl/docs/modules/raster/geotiff/formats/geotiff.md) | `@loaders.gl/raster/geotiff/types`                            |
 |                                                                                                                       | `@loaders.gl/raster/lerc`                                     |
 |                                                                                                                       | `@loaders.gl/raster/lerc-wasm-url`                            |
@@ -105,9 +114,11 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                       | `@loaders.gl/raster/lerc/bundled`                             |
 |                                                                                                                       | `@loaders.gl/raster/lerc/lerc-wasm.wasm`                      |
 |                                                                                                                       | `@loaders.gl/raster/lerc/lib/parsers/lerc/lerc-types`         |
+|                                                                                                                       | `@loaders.gl/raster/lerc/parser`                              |
 |                                                                                                                       | `@loaders.gl/raster/quantized-mesh`                           |
 |                                                                                                                       | `@loaders.gl/raster/quantized-mesh-worker.js`                 |
 |                                                                                                                       | `@loaders.gl/raster/quantized-mesh/bundled`                   |
+|                                                                                                                       | `@loaders.gl/raster/quantized-mesh/parser`                    |
 |                                                                                                                       | `@loaders.gl/raster/terrain`                                  |
 |                                                                                                                       | `@loaders.gl/raster/terrain-worker.js`                        |
 |                                                                                                                       | `@loaders.gl/raster/terrain/api`                              |
@@ -122,3 +133,4 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                       | `@loaders.gl/raster/terrain/lib/terrain-contracts`            |
 |                                                                                                                       | `@loaders.gl/raster/terrain/lib/terrain-heightmap-types`      |
 |                                                                                                                       | `@loaders.gl/raster/terrain/lib/utils/version`                |
+|                                                                                                                       | `@loaders.gl/raster/terrain/parser`                           |

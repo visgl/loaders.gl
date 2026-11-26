@@ -12,7 +12,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->11<!-- -->)
+All exported subpaths (<!-- -->9<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -22,10 +22,8 @@ These are the package's public exports, including format entry points, parsers, 
 |        | `@loaders.gl/archives/indexed-zip-writer` |
 |        | `@loaders.gl/archives/tar`                |
 |        | `@loaders.gl/archives/tar-loader`         |
-|        | `@loaders.gl/archives/tar-writer`         |
 |        | `@loaders.gl/archives/tar/bundled`        |
 |        | `@loaders.gl/archives/zip`                |
 |        | `@loaders.gl/archives/zip-encode`         |
 |        | `@loaders.gl/archives/zip-loader`         |
-|        | `@loaders.gl/archives/zip-writer`         |
 |        | `@loaders.gl/archives/zip/bundled`        |

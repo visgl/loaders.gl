@@ -6,7 +6,7 @@
 npm install @loaders.gl/core @loaders.gl/documents
 ```
 
-Format subpaths export metadata loaders, format descriptors, and shared types. Bundled subpaths export parsers and writers. Async core APIs preload implementations:
+Format subpaths export metadata loaders, format descriptors, and shared types. Use `/<format>/parser` to import a parser directly. Bundled subpaths export parsers and writers. Async core APIs preload implementations:
 
 ```
 import {load} from '@loaders.gl/core';
@@ -58,7 +58,7 @@ XML is strict by default, with one root element, bounded nesting (default 256), 
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->19<!-- -->)
+All exported subpaths (<!-- -->26<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -68,18 +68,25 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/images/format-logos/bson-logo.png)](https://loaders.gl/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson-codec`       |
 | [![](/images/format-logos/bson-logo.png)](https://loaders.gl/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson/api`         |
 | [![](/images/format-logos/bson-logo.png)](https://loaders.gl/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson/bundled`     |
+| [![](/images/format-logos/bson-logo.png)](https://loaders.gl/docs/modules/documents/bson/formats/bson.md)       | `@loaders.gl/documents/bson/parser`      |
 |                                                                                                                 | `@loaders.gl/documents/html`             |
 |                                                                                                                 | `@loaders.gl/documents/html/bundled`     |
+|                                                                                                                 | `@loaders.gl/documents/html/parser`      |
 | [![](/images/format-logos/json-logo.gif)JSON](https://loaders.gl/docs/modules/tables/json/formats/json.md)      | `@loaders.gl/documents/json`             |
 | [![](/images/format-logos/json-logo.gif)JSON](https://loaders.gl/docs/modules/tables/json/formats/json.md)      | `@loaders.gl/documents/json/bundled`     |
+| [![](/images/format-logos/json-logo.gif)JSON](https://loaders.gl/docs/modules/tables/json/formats/json.md)      | `@loaders.gl/documents/json/parser`      |
 |                                                                                                                 | `@loaders.gl/documents/markdown`         |
 |                                                                                                                 | `@loaders.gl/documents/markdown/bundled` |
+|                                                                                                                 | `@loaders.gl/documents/markdown/parser`  |
 |                                                                                                                 | `@loaders.gl/documents/sax-parser`       |
 | [![](/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/docs/modules/documents/config/formats/toml.md) | `@loaders.gl/documents/toml`             |
 | [![](/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/docs/modules/documents/config/formats/toml.md) | `@loaders.gl/documents/toml/bundled`     |
+| [![](/images/format-logos/toml-logo.svg)TOML](https://loaders.gl/docs/modules/documents/config/formats/toml.md) | `@loaders.gl/documents/toml/parser`      |
 |                                                                                                                 | `@loaders.gl/documents/xml`              |
 |                                                                                                                 | `@loaders.gl/documents/xml-parser`       |
 |                                                                                                                 | `@loaders.gl/documents/xml-utils`        |
 |                                                                                                                 | `@loaders.gl/documents/xml/bundled`      |
+|                                                                                                                 | `@loaders.gl/documents/xml/parser`       |
 | [![](/images/format-logos/yaml-logo.svg)](https://loaders.gl/docs/modules/documents/config/formats/yaml.md)     | `@loaders.gl/documents/yaml`             |
 | [![](/images/format-logos/yaml-logo.svg)](https://loaders.gl/docs/modules/documents/config/formats/yaml.md)     | `@loaders.gl/documents/yaml/bundled`     |
+| [![](/images/format-logos/yaml-logo.svg)](https://loaders.gl/docs/modules/documents/config/formats/yaml.md)     | `@loaders.gl/documents/yaml/parser`      |

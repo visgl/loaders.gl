@@ -11,7 +11,7 @@ Import `Tileset3D` and `Tile3D` from `@loaders.gl/tiles-3d/tileset`. Spatial and
 ```
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/tiles-3d-source';
 
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
@@ -22,7 +22,7 @@ const source = new Tiles3DSource({url, loader: Tiles3DLoader});
 const tileset = new Tileset3D(source, options);
 ```
 
-Use `@loaders.gl/tiles-3d/i3s` for I3S and SLPK formats. The older package names `@loaders.gl/3d-tiles` and `@loaders.gl/i3s` are removed in v5.
+Use `@loaders.gl/tiles-3d/i3s` for I3S and SLPK formats. Import `I3SSource` from `@loaders.gl/tiles-3d/i3s-source`. The older package names `@loaders.gl/3d-tiles` and `@loaders.gl/i3s` are removed in v5.
 
 | Logo                                                                                                                                   | Format                      | Reference                                                        |
 | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------- |
@@ -53,7 +53,6 @@ These are the package's public exports, including format entry points, parsers, 
 | Format                                                                                                                                 | Import subpath                                                     |
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | [![](/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles`                                    |
-| [![](/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles-archive-writer`                     |
 | [![](/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles/bundled`                            |
 | [![](/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles/subtree-zod-schema`                 |
 | [![](/images/format-logos/3d-tiles-logo.png)](https://loaders.gl/docs/modules/tiles-3d/3d-tiles/formats/3d-tiles.md)                   | `@loaders.gl/tiles-3d/3d-tiles/subtree.schema.json`                |
@@ -65,7 +64,7 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s`                                         |
 | [![](/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-lepcc-loader`                            |
 | [![](/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-mesh-writer`                             |
-| [![](/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-slpk-writer`                             |
+| [![](/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-source`                                  |
 | [![](/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-zod-schema`                              |
 | [![](/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/bundled`                                 |
 | [![](/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-content-worker-node.js`              |
@@ -85,4 +84,5 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                        | `@loaders.gl/tiles-3d/potree/bundled`                              |
 |                                                                                                                                        | `@loaders.gl/tiles-3d/potree/potree-metadata.schema.json`          |
 |                                                                                                                                        | `@loaders.gl/tiles-3d/spatial`                                     |
+|                                                                                                                                        | `@loaders.gl/tiles-3d/tiles-3d-source`                             |
 |                                                                                                                                        | `@loaders.gl/tiles-3d/tileset`                                     |

@@ -414,9 +414,9 @@ Hash data incrementally as loaders and streams process it.
 
 #### documents
 
-Basic document loaders with a lightweight package root and flat parser imports.
+Basic document loaders with metadata and parser subpaths.
 
-- [Documents](https://loaders.gl/docs/modules/documents.md): Basic document loaders with a lightweight package root and flat parser imports.
+- [Documents](https://loaders.gl/docs/modules/documents.md): Basic document loaders with metadata and parser subpaths.
 - [JSONLoader](https://loaders.gl/docs/modules/documents/api-reference/json-loader.md): The documents JSONLoader parses one ordinary JSON document into its JavaScript value. Objects,
 - [MarkdownLoader](https://loaders.gl/docs/modules/documents/api-reference/markdown-loader.md): Loads UTF-8 Markdown into a MarkdownDocument syntax tree, without a renderer or UI dependency.
 - [Keep JSON-like documents in a binary form.](https://loaders.gl/docs/modules/documents/bson.md): Read and write BSON documents through the loaders.gl API.
@@ -602,6 +602,8 @@ Point-cloud decoders and writers for LAS/LAZ, PCD and PLY. PLY keeps both point-
 GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh.
 
 - [@loaders.gl/raster](https://loaders.gl/docs/modules/raster.md): GeoTIFF, numeric TIFF, OME-TIFF, LERC, image-encoded terrain, and quantized mesh.
+- [RasterBitmapLayer](https://loaders.gl/docs/modules/raster/api-reference/raster-bitmap-layer.md): RasterBitmapLayer from @loaders.gl/deck-layers draws one band of numeric samples with a
+- [RasterSourceLayer](https://loaders.gl/docs/modules/raster/api-reference/raster-source-layer.md): RasterSourceLayer from @loaders.gl/deck-layers requests the active viewport from a
 - [GeoTIFF and OME-TIFF](https://loaders.gl/docs/modules/raster/geotiff.md): Read GeoTIFF, Cloud Optimized GeoTIFF, and OME-TIFF rasters with windows, bands, and metadata.
 - [GeoTIFFLoader](https://loaders.gl/docs/modules/raster/geotiff/api-reference/geotiff-loader.md): Read georeferenced TIFF imagery and its spatial metadata.
 - [GeoTIFFRasterLoader](https://loaders.gl/docs/modules/raster/geotiff/api-reference/geotiff-raster-loader.md): GeoTIFFRasterLoader decodes original numeric TIFF samples for elevation models,
@@ -662,17 +664,35 @@ Load scene graphs and meshes from glTF/GLB, OBJ/MTL, OpenUSD and Draco. Install 
 Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
 
 - [@loaders.gl/scientific](https://loaders.gl/docs/modules/scientific.md): Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK. Support differs by
+- [🧪 @loaders.gl/scientific/adsb](https://loaders.gl/docs/modules/scientific/adsb.md): Read ADS-B aircraft state snapshots in two JSON layouts. The format subpath exports
+- [🧪 ADSBLoader](https://loaders.gl/docs/modules/scientific/adsb/api-reference/adsb-loader.md): ADSBLoader auto-detects the two supported aircraft state JSON layouts
+- [🧪 ADS-B aircraft state JSON](https://loaders.gl/docs/modules/scientific/adsb/formats/adsb.md): | Type | API |
+- [🧪 @loaders.gl/scientific/ais](https://loaders.gl/docs/modules/scientific/ais.md): Read maritime Automatic Identification System (AIS) reports from NMEA text logs. The format
+- [🧪 AISLoader](https://loaders.gl/docs/modules/scientific/ais/api-reference/ais-loader.md): AISLoader reads AIS reports from !AIVDM and !AIVDO sentences and
+- [🧪 AIS (Automatic Identification System)](https://loaders.gl/docs/modules/scientific/ais/formats/ais.md): | Type | API |
 - [Bring a NumPy array into a typed JavaScript pipeline.](https://loaders.gl/docs/modules/scientific/api-reference/npy-loader.md): Read NumPy NPY arrays into typed JavaScript data while preserving dtype, order, and shape metadata.
 - [NumPy NPY](https://loaders.gl/docs/modules/scientific/formats/npy.md): Typed multidimensional NumPy arrays loaded as scientific data.
 - [GRIB2](https://loaders.gl/docs/modules/scientific/grib2.md): The @loaders.gl/scientific/grib2 subpath exports a parser and scientific-array source for a
+- [🧪 @loaders.gl/scientific/gtfs](https://loaders.gl/docs/modules/scientific/gtfs.md): Read GTFS Schedule ZIP feeds as typed CSV tables, stop points, and route shapes.
+- [🧪 @loaders.gl/scientific/gtfs-realtime](https://loaders.gl/docs/modules/scientific/gtfs-realtime.md): Read vehicle positions, trip updates, and service alerts from GTFS Realtime feeds.
+- [🧪 GTFSRealtimeLoader](https://loaders.gl/docs/modules/scientific/gtfs-realtime/api-reference/gtfs-realtime-loader.md): GTFSRealtimeLoader decodes a binary GTFS Realtime snapshot.
+- [🧪 GTFS Realtime protobuf](https://loaders.gl/docs/modules/scientific/gtfs-realtime/formats/gtfs-realtime.md): | Type | API |
+- [🧪 GTFSLoader](https://loaders.gl/docs/modules/scientific/gtfs/api-reference/gtfs-loader.md): GTFSLoader reads GTFS Schedule ZIP archives. It returns a named
+- [🧪 GTFS Schedule ZIP](https://loaders.gl/docs/modules/scientific/gtfs/formats/gtfs.md): | Type | API |
 - [HDF5](https://loaders.gl/docs/modules/scientific/hdf5.md): @loaders.gl/scientific/hdf5 exposes scientific-array source APIs and experimental TypeScript
 - [NetCDF](https://loaders.gl/docs/modules/scientific/netcdf.md): Install @loaders.gl/scientific and import NetCDFLoader from its root for asynchronous parsing
 - [Read selected variables without guessing the whole dataset.](https://loaders.gl/docs/modules/scientific/netcdf/api-reference.md): Discover NetCDF variables and read selected slices as raster data.
 - [Keep the dimensions that give data meaning.](https://loaders.gl/docs/modules/scientific/netcdf/formats/netcdf.md): A scientific array format for named dimensions, variables, attributes, and typed data.
 - [@loaders.gl/scientific/npy](https://loaders.gl/docs/modules/scientific/npy.md): Read NumPy arrays from NPY files. This entry point exports NPYLoader and NPYLoaderWithParser.
 - [NRRD — multidimensional sampled data](https://loaders.gl/docs/modules/scientific/nrrd.md): Read array samples and preserve the authored spatial mapping.
+- [🧪 @loaders.gl/scientific/omm](https://loaders.gl/docs/modules/scientific/omm.md): Read the general perturbations (GP) subset of CCSDS Orbit Mean-Elements Message (OMM) for SGP4.
+- [🧪 OMMLoader](https://loaders.gl/docs/modules/scientific/omm/api-reference/omm-loader.md): OMMLoader reads the general perturbations (GP) subset of
+- [🧪 OMM (Orbit Mean-Elements Message)](https://loaders.gl/docs/modules/scientific/omm/formats/omm.md): loaders.gl support
 - [PDB — molecular coordinate records](https://loaders.gl/docs/modules/scientific/pdb.md): Read atoms, models, and authored connectivity without choosing a molecular display.
 - [@loaders.gl/scientific/scientific-array](https://loaders.gl/docs/modules/scientific/scientific-array.md): APIs for SCIENTIFIC-ARRAY data in the scientific module.
+- [🧪 @loaders.gl/scientific/tle](https://loaders.gl/docs/modules/scientific/tle.md): Read satellite orbit elements in the two-line element set (TLE) format. This entry point exports
+- [🧪 TLELoader](https://loaders.gl/docs/modules/scientific/tle/api-reference/tle-loader.md): TLELoader parses two-line element sets (TLE). It converts each set to a row
+- [🧪 TLE (Two-Line Element Set)](https://loaders.gl/docs/modules/scientific/tle/formats/tle.md): loaders.gl support
 - [VTK — scientific meshes and fields](https://loaders.gl/docs/modules/scientific/vtk.md): Preserve cell topology and field associations before choosing a visualization.
 - [Read the chunks that cover the question.](https://loaders.gl/docs/modules/scientific/zarr.md): Read chunked multidimensional arrays and spatial windows from Zarr, GeoZarr, and OME-Zarr datasets.
 - [Ask a multidimensional array for a spatial slice.](https://loaders.gl/docs/modules/scientific/zarr/api-reference/geo-zarr-loader.md): Query GeoZarr arrays as geospatial rasters while preserving dimensions, chunks, and CRS metadata.

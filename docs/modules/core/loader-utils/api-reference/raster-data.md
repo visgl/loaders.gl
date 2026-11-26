@@ -4,6 +4,8 @@
 
 `RasterData` retains its existing common dtype and planar/interleaved layouts. Optional `bands` describe original source indices, dtype, name, units, raw nodata, scale, offset and categorical values. `RasterMixedData` adds a distinct `dtype: 'mixed'` planar variant with required per-band types; `NumericRasterData` accepts both. Mixed bands are never silently widened or interleaved.
 
+`RasterBandMetadata.colorInterpretation` is an optional GDAL-style display role. It accepts `gray`, `red`, `green`, `blue`, `alpha`, `palette`, and `undefined`. The string `undefined` records an explicitly unspecified role. Omit the field when the source does not declare a role. On an alpha band, `alphaMode` describes whether color samples are `premultiplied` or `straight`. Omission means `straight`.
+
 `transform` stores `[columnScale, rowShear, originX, columnShear, rowScale, originY]`. It maps raster grid coordinates into the explicitly declared source CRS. Area sample centers are `(column + 0.5, row + 0.5)`; point centers are `(column, row)`. Missing CRS/transform remain unavailable. For legacy payloads without registration, the helper uses area registration; sources should declare registration explicitly. A bbox alone cannot reconstruct a rotated grid. `rasterCoordinateToPixel(raster, coordinate, crs)` inverts this affine, returns fractional sample indices, and rejects missing, singular or mismatched georeferencing. Applications supply any CRS conversion.
 
 ```

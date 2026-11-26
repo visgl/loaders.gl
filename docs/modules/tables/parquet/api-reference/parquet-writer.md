@@ -87,10 +87,20 @@ The sections below cover usage, geospatial metadata precedence, options, and wri
 `ParquetWriter` supports native Arrow tables and schema-bearing row tables. The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```
-import {ParquetLoader} from '@loaders.gl/tables/parquet';
+import {encode} from '@loaders.gl/core';
 
-import {ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
+import type {Table} from 'apache-arrow';
+
+import {ParquetWriter} from '@loaders.gl/tables/parquet';
+
+
+
+declare const table: Table;
+
+const data = await encode(table, ParquetWriter);
 ```
+
+Core loads the encoder when encoding begins. For direct calls to `ParquetWriter.encode`, import the writer from `@loaders.gl/tables/parquet/bundled`.
 
 ## Geospatial Metadata[​](#geospatial-metadata "Direct link to Geospatial Metadata")
 
@@ -121,9 +131,9 @@ The writer does not invent `orientation`, `bbox`, `covering`, or `epoch` values.
 
 When valid `geo` metadata declares version 2.x and a binary column with `encoding: "WKB"`, `ParquetWriter` writes that column as the native Parquet `GEOMETRY` logical type for planar edges or `GEOGRAPHY` for spherical, Vincenty, Thomas, Andoyer, or Karney edges. It carries inline PROJJSON into the logical type, uses Parquet's default `OGC:CRS84` when CRS is omitted, and writes `srid:0` when GeoParquet explicitly declares `crs: null`.
 
-Every row group receives native `GeospatialStatistics`: a bounding box with independent X, Y, Z, and M handling plus the unique ISO WKB codes for XY, XYZ, XYM, and XYZM geometry families.
+Row groups record unique ISO WKB type codes. Planar groups and geography groups containing only Point or MultiPoint values also record finite bounds for each available dimension. Groups containing geography lines or polygons omit bounds because edges can extend beyond their vertices.
 
-Without GeoParquet `geo` metadata, a `geoarrow.wkb` field is still written using native Parquet geospatial types. GeoArrow inline or authority-code CRS values are carried directly; an omitted GeoArrow CRS means unknown and is written as `srid:0`, rather than being silently changed to the Parquet default CRS84.
+Without GeoParquet `geo` metadata, a `geoarrow.wkb` field is still written using native Parquet geospatial types. Supply inline PROJJSON for a non-default CRS. To retain an authority identifier such as `EPSG:3857` on the native type alone, set `parquet.nativeGeospatialOnly: true`, which omits the entire GeoParquet footer. An omitted GeoArrow CRS means unknown and is written as `srid:0`, rather than being silently changed to the Parquet default CRS84.
 
 ### Read/Write Example[​](#readwrite-example "Direct link to Read/Write Example")
 
