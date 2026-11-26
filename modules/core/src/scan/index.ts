@@ -104,7 +104,27 @@ export type {
 
 export {ARROW_TABLE_QUERY_CAPABILITIES, explainArrowTableQuery} from './plan-arrow-table-query';
 export {queryArrowTable} from './query-arrow-table';
-export * from './sql-predicate';
+export {bindSQLPredicate} from './bind-sql-predicate';
+export {
+  isSQLPredicate,
+  SQL_PREDICATE_JSON_SCHEMA,
+  validateSQLPredicate
+} from './sql-predicate-schema';
+export {isSQLPredicateParameter} from './sql-predicate-types';
+export type {
+  BoundSQLPredicate,
+  SQLComparisonPredicate,
+  SQLInPredicate,
+  SQLLogicalPredicate,
+  SQLNotPredicate,
+  SQLNullPredicate,
+  SQLPredicateParameter,
+  SQLPredicateParameterValues,
+  SQLPredicateParserOptions,
+  SQLPredicateProperty,
+  SQLPredicateScalar,
+  SQLPredicateValue
+} from './sql-predicate-types';
 export {explainTableQuery, getSQLPredicateColumnNames, planTableQuery} from './table-query';
 export type {
   TableQueryPlan,

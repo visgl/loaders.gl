@@ -123,7 +123,7 @@ export type {GeoArrowRingOrientation, RewindGeoArrowOptions} from './rewind-geoa
 export type {GeoArrowResourceLimitOptions} from './geoarrow-resource-limits';
 
 // GeoArrow exposes the shared builder used by loader-facing GIS integrations.
-export {GeoArrowBuilder} from './geoarrow-builder';
+export {GeoArrowBuilder} from '../arrow-geometry/geoarrow-builder';
 export type {
   GeoArrowBuilderEncoding,
   GeoArrowCoordinateTransform,
@@ -139,7 +139,7 @@ export type {
   GeoArrowBuilderWriteOptions,
   GeoArrowBuilderOptions,
   GeoArrowGeometryWriter
-} from './geoarrow-builder';
+} from '../arrow-geometry/geoarrow-builder';
 export {
   getGeoArrowFieldInfo,
   validateGeoArrowField,

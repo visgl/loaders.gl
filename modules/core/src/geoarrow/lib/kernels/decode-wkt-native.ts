@@ -14,7 +14,7 @@ import {
   GeoArrowBuilder,
   type GeoArrowBuilderEncoding,
   type GeoArrowGeometryWriter
-} from '../../geoarrow-builder';
+} from '../../../arrow-geometry/geoarrow-builder';
 
 type WKTGeometryKind =
   | 'Point'
