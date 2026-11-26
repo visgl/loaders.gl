@@ -19,9 +19,11 @@ export type {
   RADChunkRange,
   RADMetadata,
   RADMetadataJSON,
-  RADSplatEncoding,
+  RADSplatEncoding
+} from '../lib/parse-rad';
+export type {
   RADChunkRequestOptions,
   RADChunkTableIteratorOptions,
-  RADSourceLoaderOptions,
-  RADChunkDecodeOptions
-} from './bundled';
+  RADSourceLoaderOptions
+} from '../rad-source-loader';
+export type {RADChunkDecodeOptions} from '../lib/parse-rad-chunk';
