@@ -7,6 +7,8 @@ import {
   encode,
   encodeInBatches,
   encodeSync,
+  encodeTable,
+  encodeTableInBatches,
   encodeText,
   encodeTextSync,
   encodeURLtoURL
@@ -167,4 +169,46 @@ test('encode keeps worker dispatch for an on-demand encoder', async () => {
   const data = TEXT_ENCODER.encode('worker').buffer;
   const result = await encode(data, writer, {core: {worker: true}, echoBinary: {}});
   expect(TEXT_DECODER.decode(result)).toBe('worker');
+});
+
+test('lazy table batch encoding resolves once on iteration and forwards the table and options', async () => {
+  const input = {shape: 'object-row-table' as const, data: [{id: 1}]};
+  const options = {batch: {marker: 'table'}};
+  let preloads = 0;
+  const implementation = makeWriter({
+    async *encodeInBatches(batches: Iterable<typeof input>, writerOptions: typeof options) {
+      expect(writerOptions).toBe(options);
+      for (const batch of batches) {
+        yield TEXT_ENCODER.encode(`${writerOptions.batch.marker}:${batch.data[0].id}`).buffer;
+      }
+    }
+  });
+  const {encode: _encode, encodeInBatches, ...metadata} = implementation;
+  const writer = {
+    ...metadata,
+    async preload() {
+      preloads++;
+      return implementation;
+    }
+  };
+
+  const batches = encodeTableInBatches(input, writer, options);
+  expect(preloads).toBe(0);
+  const chunks: string[] = [];
+  for await (const chunk of batches) {
+    chunks.push(TEXT_DECODER.decode(chunk));
+  }
+  expect(preloads).toBe(1);
+  expect(chunks).toEqual(['table:1']);
+  const eagerBatchWriter = {...metadata, encodeInBatches};
+  expect(TEXT_DECODER.decode(await encodeTable(input, eagerBatchWriter, options))).toBe('table:1');
+});
+
+test('metadata without an encoder reports unsupported encoding', async () => {
+  const {encode: _encode, ...metadata} = makeWriter();
+
+  await expect(encode('binary', metadata)).rejects.toThrow('could not encode data');
+  expect(() => encodeTableInBatches({shape: 'object-row-table', data: []}, metadata)).toThrow(
+    'could not encode data in batches'
+  );
 });
