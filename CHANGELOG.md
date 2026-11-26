@@ -4,7 +4,7 @@
 
 ### v5.0.0
 
-- Upgrade to math.gl 5.0.3 and share Arrow projection, predicate evaluation, row selection, and schema metadata.
+- Upgrade to math.gl 5.0.4 and share streaming Arrow schema inference, CSV UTF-8 reads, Arrow projection, predicate evaluation, row selection, and schema metadata.
 - Delegate WKT parsing, WKB ring traversal, and TWKB encoding and decoding to math.gl.
 - Apply a 1% resolution tolerance to GeoTIFF overview selection and overzoom reporting.
 
