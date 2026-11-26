@@ -9,4 +9,4 @@ export {
   SHPWorkerLoaderWithParser
 } from './shapefile/shp-loader';
 export {SHPFormat, ShapefileFormat} from './shapefile/shp-format';
-export type {SHPLoaderOptions} from './shp-bundled';
+export type {SHPLoaderOptions} from './shapefile/shp-loader-types';

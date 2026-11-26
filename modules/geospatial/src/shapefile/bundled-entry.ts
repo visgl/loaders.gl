@@ -16,4 +16,6 @@ export {
 } from './shp-loader';
 export {ShapefileFormat, SHPFormat} from './shp-format';
 export {DBFFormat} from './dbf-format';
-export type {ShapefileLoaderOptions, DBFLoaderOptions, SHPLoaderOptions} from './bundled';
+export type {ShapefileLoaderOptions} from './shapefile-loader';
+export type {DBFLoaderOptions} from './dbf-loader';
+export type {SHPLoaderOptions} from './shp-loader';

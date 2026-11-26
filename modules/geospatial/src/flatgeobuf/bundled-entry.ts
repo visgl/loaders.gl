@@ -10,9 +10,9 @@ export {
 } from '../flatgeobuf-loader';
 export {FlatGeobufFormat} from './flatgeobuf-format';
 export {FlatGeobufVectorSource} from './flatgeobuf-source';
+export type {FlatGeobufLoaderOptions} from './flatgeobuf-loader-definition';
 export type {
-  FlatGeobufLoaderOptions,
   FlatGeobufReadOptions,
   FlatGeobufSourceExplain,
   FlatGeobufSourceLoaderOptions
-} from './bundled';
+} from './flatgeobuf-source';

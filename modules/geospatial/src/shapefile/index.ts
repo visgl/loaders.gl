@@ -15,13 +15,13 @@ export {SHPLoader} from './shp-loader-types';
 
 // EXPERIMENTAL
 export {BinaryReader as _BinaryReader} from './lib/streaming/binary-reader';
-export {BinaryChunkReader as _BinaryChunkReader} from './lib/streaming/binary-chunk-reader';
+export {BinaryChunkReader as _BinaryChunkReader} from '@loaders.gl/core/loader-utils';
 export {zipBatchIterators as _zipBatchIterators} from './lib/streaming/zip-batch-iterators';
 
 export {
   parseShapefileToArrow,
   parseShapefileToArrowInBatches,
   SHAPEFILE_HEADER_KEY
-} from '../shapefile-arrow-loader';
+} from './shapefile-arrow-loader';
 
-export {ShapefileLoaderWithParser} from '../shapefile-loader';
+export {ShapefileLoaderWithParser} from './shapefile-loader';

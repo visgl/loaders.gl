@@ -16,7 +16,7 @@ export type HexWKBLoaderOptions = WKBLoaderOptions;
  * Preloads the parser-bearing Hex WKB loader implementation.
  */
 async function preload() {
-  const {HexWKBLoaderWithParser} = await import('@loaders.gl/geospatial/wkb/bundled');
+  const {HexWKBLoaderWithParser} = await import('@loaders.gl/geospatial/wkb/hex-parser');
   return HexWKBLoaderWithParser;
 }
 

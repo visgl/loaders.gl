@@ -27,7 +27,7 @@ export type GPXLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing GPX loader implementation. */
 async function preloadGPXLoader() {
-  const {GPXLoaderWithParser} = await import('@loaders.gl/geospatial/gpx/bundled');
+  const {GPXLoaderWithParser} = await import('@loaders.gl/geospatial/gpx/parser');
   return GPXLoaderWithParser;
 }
 
