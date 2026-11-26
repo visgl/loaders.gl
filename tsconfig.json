@@ -1086,6 +1086,9 @@
       "@loaders.gl/scene/glb/bundled": [
         "modules/scene/src/glb-bundled.ts"
       ],
+      "@loaders.gl/scene/draco/bundled": [
+        "modules/scene/src/draco-bundled-entry.ts"
+      ],
       "@loaders.gl/scene/draco/draco3d-parser": [
         "modules/scene/src/draco/draco3d-loader-with-parser.ts"
       ],
@@ -1094,9 +1097,6 @@
       ],
       "@loaders.gl/scene/draco/wasm-parser": [
         "modules/scene/src/draco/draco-wasm-loader-with-parser.ts"
-      ],
-      "@loaders.gl/scene/draco/bundled": [
-        "modules/scene/src/draco-bundled-entry.ts"
       ],
       "@loaders.gl/scene/materialx/parser": [
         "modules/scene/src/materialx-loader.ts"

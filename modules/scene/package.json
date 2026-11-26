@@ -158,6 +158,11 @@
       "import": "./dist/glb-bundled.js",
       "require": "./dist/glb-bundled.cjs"
     },
+    "./draco/bundled": {
+      "types": "./dist/draco-bundled-entry.d.ts",
+      "import": "./dist/draco-bundled-entry.js",
+      "require": "./dist/draco-bundled-entry.cjs"
+    },
     "./draco/draco3d-parser": {
       "types": "./dist/draco/draco3d-loader-with-parser.d.ts",
       "import": "./dist/draco/draco3d-loader-with-parser.js",
@@ -172,11 +177,6 @@
       "types": "./dist/draco/draco-wasm-loader-with-parser.d.ts",
       "import": "./dist/draco/draco-wasm-loader-with-parser.js",
       "require": "./dist/draco/draco-wasm-loader-with-parser.cjs"
-    },
-    "./draco/bundled": {
-      "types": "./dist/draco-bundled-entry.d.ts",
-      "import": "./dist/draco-bundled-entry.js",
-      "require": "./dist/draco-bundled-entry.cjs"
     },
     "./materialx/parser": {
       "types": "./dist/materialx-loader.d.ts",
