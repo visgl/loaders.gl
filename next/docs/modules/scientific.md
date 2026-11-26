@@ -36,6 +36,8 @@ const synchronousResult = parseSync(bytes, NetCDFLoaderWithParser);
 
 The package currently installs `h5wasm`, `zarr`, `zarrita`, and XML parsing support as dependencies. Subpath imports control which code is loaded, but do not create separate installation units.
 
+Focused parser subpaths load individual implementations. For example, import the implementation from `@loaders.gl/scientific/netcdf/parser`. The format metadata loaders use these subpaths in `preload()`.
+
 ## Sources and credits[​](#sources-and-credits "Direct link to Sources and credits")
 
 See the [package source and license inventory](https://github.com/visgl/loaders.gl/blob/master/modules/scientific/THIRD-PARTY-NOTICES.md) and the project-wide [Attributions and Credits](https://loaders.gl/next/docs/references-and-credits.md).
@@ -58,44 +60,59 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->32<!-- -->)
+All exported subpaths (<!-- -->47<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
-| Format                                                                                                                                | Import subpath                                 |
-| ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-|                                                                                                                                       | `@loaders.gl/scientific/adsb`                  |
-|                                                                                                                                       | `@loaders.gl/scientific/adsb/bundled`          |
-|                                                                                                                                       | `@loaders.gl/scientific/ais`                   |
-|                                                                                                                                       | `@loaders.gl/scientific/ais/bundled`           |
-|                                                                                                                                       | `@loaders.gl/scientific/grib2`                 |
-|                                                                                                                                       | `@loaders.gl/scientific/gtfs`                  |
-|                                                                                                                                       | `@loaders.gl/scientific/gtfs-realtime`         |
-|                                                                                                                                       | `@loaders.gl/scientific/gtfs-realtime/bundled` |
-|                                                                                                                                       | `@loaders.gl/scientific/gtfs/bundled`          |
-|                                                                                                                                       | `@loaders.gl/scientific/hdf5`                  |
-| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf`                |
-| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/api`            |
-| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/bundled`        |
-|                                                                                                                                       | `@loaders.gl/scientific/npy`                   |
-|                                                                                                                                       | `@loaders.gl/scientific/npy-worker.js`         |
-|                                                                                                                                       | `@loaders.gl/scientific/npy/bundled`           |
-|                                                                                                                                       | `@loaders.gl/scientific/nrrd`                  |
-|                                                                                                                                       | `@loaders.gl/scientific/nrrd/bundled`          |
-|                                                                                                                                       | `@loaders.gl/scientific/omm`                   |
-|                                                                                                                                       | `@loaders.gl/scientific/omm/bundled`           |
-|                                                                                                                                       | `@loaders.gl/scientific/pdb`                   |
-|                                                                                                                                       | `@loaders.gl/scientific/pdb/bundled`           |
-|                                                                                                                                       | `@loaders.gl/scientific/scientific-array`      |
-|                                                                                                                                       | `@loaders.gl/scientific/tle`                   |
-|                                                                                                                                       | `@loaders.gl/scientific/tle/bundled`           |
-|                                                                                                                                       | `@loaders.gl/scientific/vector-field`          |
-| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk`                   |
-| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/api`               |
-| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/bundled`           |
-| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr`                  |
-| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/api`              |
-| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/bundled`          |
+| Format                                                                                                                                | Import subpath                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+|                                                                                                                                       | `@loaders.gl/scientific/adsb`                     |
+|                                                                                                                                       | `@loaders.gl/scientific/adsb/bundled`             |
+|                                                                                                                                       | `@loaders.gl/scientific/adsb/parser`              |
+|                                                                                                                                       | `@loaders.gl/scientific/ais`                      |
+|                                                                                                                                       | `@loaders.gl/scientific/ais/bundled`              |
+|                                                                                                                                       | `@loaders.gl/scientific/ais/parser`               |
+|                                                                                                                                       | `@loaders.gl/scientific/grib2`                    |
+|                                                                                                                                       | `@loaders.gl/scientific/gtfs`                     |
+|                                                                                                                                       | `@loaders.gl/scientific/gtfs-realtime`            |
+|                                                                                                                                       | `@loaders.gl/scientific/gtfs-realtime/bundled`    |
+|                                                                                                                                       | `@loaders.gl/scientific/gtfs-realtime/parser`     |
+|                                                                                                                                       | `@loaders.gl/scientific/gtfs/bundled`             |
+|                                                                                                                                       | `@loaders.gl/scientific/gtfs/parser`              |
+|                                                                                                                                       | `@loaders.gl/scientific/hdf5`                     |
+| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf`                   |
+| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/api`               |
+| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/bundled`           |
+| [![](/next/images/format-logos/netcdf-logo.png)NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf/formats/netcdf.md) | `@loaders.gl/scientific/netcdf/parser`            |
+|                                                                                                                                       | `@loaders.gl/scientific/npy`                      |
+|                                                                                                                                       | `@loaders.gl/scientific/npy-worker.js`            |
+|                                                                                                                                       | `@loaders.gl/scientific/npy/bundled`              |
+|                                                                                                                                       | `@loaders.gl/scientific/npy/parser`               |
+|                                                                                                                                       | `@loaders.gl/scientific/nrrd`                     |
+|                                                                                                                                       | `@loaders.gl/scientific/nrrd/bundled`             |
+|                                                                                                                                       | `@loaders.gl/scientific/nrrd/parser`              |
+|                                                                                                                                       | `@loaders.gl/scientific/omm`                      |
+|                                                                                                                                       | `@loaders.gl/scientific/omm/bundled`              |
+|                                                                                                                                       | `@loaders.gl/scientific/omm/parser`               |
+|                                                                                                                                       | `@loaders.gl/scientific/pdb`                      |
+|                                                                                                                                       | `@loaders.gl/scientific/pdb/bundled`              |
+|                                                                                                                                       | `@loaders.gl/scientific/pdb/parser`               |
+|                                                                                                                                       | `@loaders.gl/scientific/scientific-array`         |
+|                                                                                                                                       | `@loaders.gl/scientific/tle`                      |
+|                                                                                                                                       | `@loaders.gl/scientific/tle/bundled`              |
+|                                                                                                                                       | `@loaders.gl/scientific/tle/parser`               |
+|                                                                                                                                       | `@loaders.gl/scientific/vector-field`             |
+| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk`                      |
+| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/api`                  |
+| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/bundled`              |
+| [![](/next/images/format-logos/vtk-logo.png)](https://loaders.gl/next/docs/modules/scientific/vtk.md)                            | `@loaders.gl/scientific/vtk/parser`               |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr`                     |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/api`                 |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/array-parser`        |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/bundled`             |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/geo-parser`          |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/ome-parser`          |
+| [![](/next/images/format-logos/zarr-logo.svg)Zarr](https://loaders.gl/next/docs/modules/scientific/zarr/formats/zarr.md)         | `@loaders.gl/scientific/zarr/spatial-data-parser` |
 
 ## Experimental formats[​](#experimental-formats "Direct link to Experimental formats")
 
