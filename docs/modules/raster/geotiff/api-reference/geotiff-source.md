@@ -100,6 +100,7 @@ const raster = await source.getRaster({
 - Loads GeoTIFF metadata once and exposes source CRS, bounds, band count, dtype, tile size, and overview information through `getMetadata()`.
 - Supports URL and `Blob` inputs.
 - Uses HTTP byte ranges for remote GeoTIFF access and can integrate with a shared `RangeRequestScheduler`.
+- Sends every remote request, including each byte range, through the loaders.gl request pipeline. `core.fetch`, `core.credentials` and request authentications apply to all of them, with token refresh and request signing. See [Authentication](/docs/developer-guide/authentication).
 - Returns native-projection raster values; reprojection is not performed in v1.
 - Rejects viewport requests whose `viewport.crs` does not match the dataset CRS.
 
