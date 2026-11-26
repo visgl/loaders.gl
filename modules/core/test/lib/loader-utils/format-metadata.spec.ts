@@ -30,6 +30,8 @@ import {JSONFormat, NDJSONFormat} from '@loaders.gl/tables/json';
 import {KMLFormat, KMZFormat} from '@loaders.gl/geospatial/kml';
 import {GPXFormat} from '@loaders.gl/geospatial/gpx';
 import {TCXFormat} from '@loaders.gl/geospatial/tcx';
+import {ADSBFormat} from '@loaders.gl/scientific/adsb';
+import {AISFormat} from '@loaders.gl/scientific/ais';
 import {OMMFormat} from '@loaders.gl/geospatial/omm';
 import {TLEFormat} from '@loaders.gl/geospatial/tle';
 import {LASFormat} from '@loaders.gl/pointclouds/las';
@@ -109,6 +111,8 @@ const FORMAT_EXPORTS = [
   ['KMZFormat', KMZFormat, 'zip'],
   ['GPXFormat', GPXFormat, 'xml'],
   ['TCXFormat', TCXFormat, 'xml'],
+  ['ADSBFormat', ADSBFormat, 'json'],
+  ['AISFormat', AISFormat, 'text'],
   ['OMMFormat', OMMFormat, 'text'],
   ['TLEFormat', TLEFormat, 'text'],
   ['LASFormat', LASFormat, 'binary'],
