@@ -679,6 +679,12 @@ Scientific array sources and parsers for NPY, NetCDF, Zarr, HDF5, GRIB2, and VTK
 - [Bring a NumPy array into a typed JavaScript pipeline.](https://loaders.gl/next/docs/modules/scientific/api-reference/npy-loader.md): Read NumPy NPY arrays into typed JavaScript data while preserving dtype, order, and shape metadata.
 - [NumPy NPY](https://loaders.gl/next/docs/modules/scientific/formats/npy.md): Typed multidimensional NumPy arrays loaded as scientific data.
 - [GRIB2](https://loaders.gl/next/docs/modules/scientific/grib2.md): The @loaders.gl/scientific/grib2 subpath exports a parser and scientific-array source for a
+- [🧪 @loaders.gl/scientific/gtfs](https://loaders.gl/next/docs/modules/scientific/gtfs.md): Read GTFS Schedule ZIP feeds as typed CSV tables, stop points, and route shapes.
+- [🧪 @loaders.gl/scientific/gtfs-realtime](https://loaders.gl/next/docs/modules/scientific/gtfs-realtime.md): Read vehicle positions, trip updates, and service alerts from GTFS Realtime feeds.
+- [🧪 GTFSRealtimeLoader](https://loaders.gl/next/docs/modules/scientific/gtfs-realtime/api-reference/gtfs-realtime-loader.md): GTFSRealtimeLoader decodes a binary GTFS Realtime snapshot.
+- [🧪 GTFS Realtime protobuf](https://loaders.gl/next/docs/modules/scientific/gtfs-realtime/formats/gtfs-realtime.md): | Type | API |
+- [🧪 GTFSLoader](https://loaders.gl/next/docs/modules/scientific/gtfs/api-reference/gtfs-loader.md): GTFSLoader reads GTFS Schedule ZIP archives. It returns a named
+- [🧪 GTFS Schedule ZIP](https://loaders.gl/next/docs/modules/scientific/gtfs/formats/gtfs.md): | Type | API |
 - [HDF5](https://loaders.gl/next/docs/modules/scientific/hdf5.md): @loaders.gl/scientific/hdf5 exposes scientific-array source APIs and experimental TypeScript
 - [NetCDF](https://loaders.gl/next/docs/modules/scientific/netcdf.md): Install @loaders.gl/scientific and import NetCDFLoader from its root for asynchronous parsing
 - [Read selected variables without guessing the whole dataset.](https://loaders.gl/next/docs/modules/scientific/netcdf/api-reference.md): Discover NetCDF variables and read selected slices as raster data.
