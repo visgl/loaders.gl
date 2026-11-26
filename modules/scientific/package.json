@@ -174,7 +174,8 @@
     "zarrita": "~0.7.1"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~5.0.0-alpha.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0",
+    "apache-arrow": ">= 17.0.0"
   },
   "keywords": [
     "loaders.gl",
