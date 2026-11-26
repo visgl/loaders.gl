@@ -623,6 +623,8 @@
               "modules/geospatial/kml/formats/tcx",
               "modules/scientific/adsb/formats/adsb",
               "modules/scientific/ais/formats/ais",
+              "modules/scientific/gtfs/formats/gtfs",
+              "modules/scientific/gtfs-realtime/formats/gtfs-realtime",
               "modules/scientific/omm/formats/omm",
               "modules/geospatial/shapefile/formats/shapefile",
               "modules/scientific/tle/formats/tle",
@@ -690,6 +692,24 @@
             "link": {
               "type": "doc",
               "id": "modules/scientific/ais/README"
+            }
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/scientific/gtfs",
+            "items": ["modules/scientific/gtfs/api-reference/gtfs-loader"],
+            "link": {
+              "type": "doc",
+              "id": "modules/scientific/gtfs/README"
+            }
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/scientific/gtfs-realtime",
+            "items": ["modules/scientific/gtfs-realtime/api-reference/gtfs-realtime-loader"],
+            "link": {
+              "type": "doc",
+              "id": "modules/scientific/gtfs-realtime/README"
             }
           },
           {

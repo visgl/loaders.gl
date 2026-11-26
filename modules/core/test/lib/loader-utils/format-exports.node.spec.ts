@@ -19,6 +19,8 @@ const FORMAT_EXPORTS = {
   'scene/draco': ['DracoFormat'],
   'scientific/adsb': ['ADSBFormat'],
   'scientific/ais': ['AISFormat'],
+  'scientific/gtfs': ['GTFSFormat'],
+  'scientific/gtfs-realtime': ['GTFSRealtimeFormat'],
   'scientific/omm': ['OMMFormat'],
   'scientific/tle': ['TLEFormat'],
   'geospatial/flatgeobuf': ['FlatGeobufFormat'],

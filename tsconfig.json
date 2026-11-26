@@ -501,6 +501,12 @@
       "@loaders.gl/scientific/ais": [
         "modules/scientific/src/ais/index.ts"
       ],
+      "@loaders.gl/scientific/gtfs": [
+        "modules/scientific/src/gtfs/index.ts"
+      ],
+      "@loaders.gl/scientific/gtfs-realtime": [
+        "modules/scientific/src/gtfs-realtime/index.ts"
+      ],
       "@loaders.gl/scientific/omm": [
         "modules/scientific/src/omm/index.ts"
       ],
@@ -509,6 +515,12 @@
       ],
       "@loaders.gl/scientific/ais/test": [
         "modules/scientific/test/ais"
+      ],
+      "@loaders.gl/scientific/gtfs/test": [
+        "modules/scientific/test/gtfs"
+      ],
+      "@loaders.gl/scientific/gtfs-realtime/test": [
+        "modules/scientific/test/gtfs-realtime"
       ],
       "@loaders.gl/scientific/omm/test": [
         "modules/scientific/test/omm"
@@ -773,6 +785,12 @@
       ],
       "@loaders.gl/scientific/ais/bundled": [
         "modules/scientific/src/ais/bundled.ts"
+      ],
+      "@loaders.gl/scientific/gtfs/bundled": [
+        "modules/scientific/src/gtfs/bundled.ts"
+      ],
+      "@loaders.gl/scientific/gtfs-realtime/bundled": [
+        "modules/scientific/src/gtfs-realtime/bundled.ts"
       ],
       "@loaders.gl/scientific/omm/bundled": [
         "modules/scientific/src/omm/bundled.ts"

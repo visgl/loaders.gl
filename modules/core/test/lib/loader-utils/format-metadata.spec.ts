@@ -32,6 +32,8 @@ import {GPXFormat} from '@loaders.gl/geospatial/gpx';
 import {TCXFormat} from '@loaders.gl/geospatial/tcx';
 import {ADSBFormat} from '@loaders.gl/scientific/adsb';
 import {AISFormat} from '@loaders.gl/scientific/ais';
+import {GTFSFormat} from '@loaders.gl/scientific/gtfs';
+import {GTFSRealtimeFormat} from '@loaders.gl/scientific/gtfs-realtime';
 import {OMMFormat} from '@loaders.gl/scientific/omm';
 import {TLEFormat} from '@loaders.gl/scientific/tle';
 import {LASFormat} from '@loaders.gl/pointclouds/las';
@@ -113,6 +115,8 @@ const FORMAT_EXPORTS = [
   ['TCXFormat', TCXFormat, 'xml'],
   ['ADSBFormat', ADSBFormat, 'json'],
   ['AISFormat', AISFormat, 'text'],
+  ['GTFSFormat', GTFSFormat, 'zip'],
+  ['GTFSRealtimeFormat', GTFSRealtimeFormat, 'protobuf'],
   ['OMMFormat', OMMFormat, 'text'],
   ['TLEFormat', TLEFormat, 'text'],
   ['LASFormat', LASFormat, 'binary'],

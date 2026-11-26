@@ -65,7 +65,8 @@ const sidebars = {
         'geospatial/geopackage',
         'geospatial/kml',
         'geospatial/gpx',
-        'geospatial/tcx'
+        'geospatial/tcx',
+        'geospatial/gtfs'
       ]
     },
     {

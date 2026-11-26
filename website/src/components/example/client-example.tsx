@@ -17,6 +17,7 @@ export type ClientExampleKind =
   | 'geospatial'
   | 'geotiff'
   | 'gltf'
+  | 'gtfs'
   | 'home'
   | 'fsq-places'
   | 'i3s-building-scene-layer'
@@ -55,6 +56,7 @@ const CLIENT_EXAMPLE_COMPONENTS: Record<ClientExampleKind, ClientExampleComponen
   geospatial: React.lazy(() => import('examples/website/geospatial/app')),
   geotiff: React.lazy(() => import('examples/website/geotiff/app')),
   gltf: React.lazy(() => import('../../examples/gltf-demo-app')),
+  gtfs: React.lazy(() => import('examples/website/gtfs/app')),
   home: React.lazy(() => import('../../examples/home-demo')),
   'fsq-places': React.lazy(() => import('examples/website/fsq-places/app')),
   'i3s-building-scene-layer': React.lazy(
