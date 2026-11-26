@@ -39,7 +39,7 @@ export const LANCE_LOADER_OPTIONS = {
 async function preloadLanceLoader(): Promise<
   typeof import('./lance-loader').LanceLoaderWithParser
 > {
-  const {LanceLoaderWithParser} = await import('@loaders.gl/tables/lance/bundled');
+  const {LanceLoaderWithParser} = await import('@loaders.gl/tables/lance/parser');
   return LanceLoaderWithParser;
 }
 

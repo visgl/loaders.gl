@@ -9,10 +9,6 @@ export {
   isBSONObjectId,
   BSONObjectId
 } from './bson-types';
-export type {
-  BSONLoaderOptions,
-  BSONWriterOptions,
-  BSONTaggedValue,
-  ParseBSONOptions,
-  EncodeBSONOptions
-} from './bson-bundled';
+export type {BSONLoaderOptions} from './bson-loader-types';
+export type {BSONWriterOptions} from './bson-writer';
+export type {BSONTaggedValue, ParseBSONOptions, EncodeBSONOptions} from './bson-types';

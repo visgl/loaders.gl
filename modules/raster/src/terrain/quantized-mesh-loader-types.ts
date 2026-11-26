@@ -36,7 +36,7 @@ export const QuantizedMeshLoader = {
   worker: true,
   /** Loads the parser-bearing quantized mesh loader implementation. */
   preload: async () => {
-    const loaderModule = await import('@loaders.gl/raster/quantized-mesh/bundled');
+    const loaderModule = await import('@loaders.gl/raster/quantized-mesh/parser');
     return loaderModule.QuantizedMeshLoaderWithParser;
   },
   options: {

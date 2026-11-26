@@ -11,15 +11,17 @@ export {ParquetWriter} from './parquet-writer';
 export {ParquetSource} from './parquet-source';
 export {ParquetDatasetSource} from './parquet-dataset-source';
 export {ParquetFormat} from './parquet-format';
+export type {ParquetLoaderOptions} from './parquet-loader-options';
 export type {
-  ParquetLoaderOptions,
   ParquetDeferredPageFilter,
   ParquetEncodedColumnChunk,
   ParquetEncodedPage,
   ParquetEncodedPageBatch,
   ParquetEncodedPageReadOptions,
   ParquetEncodedPageSection,
-  ParquetPageCompressionState,
+  ParquetPageCompressionState
+} from './parquet-encoded-page-types';
+export type {
   ParquetBatch,
   ParquetBatchMetadata,
   ParquetBatchProvenance,
@@ -65,19 +67,22 @@ export type {
   ParquetSourceExplain,
   ParquetTelemetry,
   ParquetTelemetryEvent,
-  ParquetSourceCapabilities,
-  ParquetWriterEncoding,
-  ParquetWriterOptions,
-  ParquetSortingColumnOption,
+  ParquetDecodedBatch
+} from './parquet-source-types';
+export type {ParquetSourceCapabilities} from './parquet-source-capabilities';
+export type {ParquetWriterEncoding, ParquetWriterOptions} from './parquet-writer';
+export type {ParquetSortingColumnOption} from './parquetjs/encoder/parquet-encoder';
+export type {
   ParquetWriterEncryptionOptions,
   ParquetWriterFooterSignatureOptions,
-  ParquetPageStatistics,
   ParquetDecryptModuleOptions,
   ParquetEncryptionAlgorithm,
-  ParquetKeyRetriever,
+  ParquetKeyRetriever
+} from './lib/parquet-encryption';
+export type {ParquetPageStatistics} from './lib/parquet-page-index';
+export type {
   ParquetBloomFilterPhysicalType,
-  ParquetSplitBlockBloomFilter,
-  ParquetBloomFilterProbe,
-  ParquetDecodedBatch,
-  GeoParquetLoaderOptions
-} from './bundled';
+  ParquetSplitBlockBloomFilter
+} from './lib/parquet-bloom-filter';
+export type {ParquetBloomFilterProbe} from './lib/parquet-bloom-filter-planner';
+export type {GeoParquetLoaderOptions} from './geoparquet-loader-types';

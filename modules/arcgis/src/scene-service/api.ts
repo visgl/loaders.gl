@@ -7,4 +7,4 @@ export type {
   ArcGISSceneServerLoaderOptions,
   ArcGISSceneQueryOptions,
   ArcGISSceneQueryResult
-} from './bundled';
+} from '../arcgis-source-types';

@@ -119,4 +119,4 @@ function validateNDJSONArrowOptions(options?: NDJSONLoaderOptions): void {
   }
 }
 
-export type {NDJSONLoaderOptions, NDJSONShape} from './ndjson-loader-types';
+export type {NDJSONLoaderOptions, NDJSONShape} from './ndjson-loader-definition';

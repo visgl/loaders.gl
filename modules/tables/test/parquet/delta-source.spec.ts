@@ -2,8 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {DeltaLoader} from '@loaders.gl/tables/delta';
+import {DeltaLoaderWithParser as publishedParser} from '@loaders.gl/tables/delta/parser';
 import {expect, test} from 'vitest';
 import {DeltaLoaderWithParser, DeltaTableSource} from '../../src/parquet/delta-loader';
+
+test('DeltaLoader recognizes log URLs and preloads the published parser', async () => {
+  expect(DeltaLoader.testURL('https://example.com/table/_delta_log/00000000000000000001.json?token=test')).toBe(true);
+  expect(DeltaLoader.testURL('https://example.com/table/_delta_log/_last_checkpoint')).toBe(true);
+  expect(DeltaLoader.testURL('https://example.com/table/part-0.parquet')).toBe(false);
+  expect(DeltaLoader).not.toHaveProperty('createDataSourceSync');
+  await expect(DeltaLoader.preload()).resolves.toBe(publishedParser);
+});
 
 test('DeltaTableSource selects active files from commit actions', async () => {
   const log = [

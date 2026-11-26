@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {getArcGISLoader} from './bundled';
+export {getArcGISLoader} from './arcgis-loader-registry';
 export {ArcGISFeatureQueryError} from './arcgis/arcgis-feature-query';
 export {ArcGISSceneServerQueryError} from './arcgis/arcgis-scene-server-loader';
 export {getArcGISServices} from './arcgis/arcgis-server';
@@ -10,12 +10,14 @@ export {discoverArcGISCapabilities, selectArcGISService} from './arcgis/arcgis-c
 export {aggregateArcGISSceneFeatures} from './arcgis/arcgis-scene-aggregation';
 export {ArcGISAuthentication, createArcGISCredential} from './authentication';
 export {resolveArcGISItem} from './arcgis-items';
+export type {Service as ArcGISService} from './arcgis/arcgis-server';
 export type {
-  ArcGISService,
   ArcGISCapabilityGraph,
   ArcGISCapabilityGraphOptions,
   ArcGISServiceCapabilities,
-  ArcGISServiceSelection,
+  ArcGISServiceSelection
+} from './arcgis/arcgis-capability-graph';
+export type {
   ArcGISFeatureServiceQueryOptions,
   ArcGISFeatureServerLoaderOptions,
   ArcGISExportImageParameters,
@@ -26,21 +28,27 @@ export type {
   ArcGISVectorTileServerLoaderOptions,
   ArcGISSceneServerLoaderOptions,
   ArcGISSceneQueryOptions,
-  ArcGISSceneQueryResult,
+  ArcGISSceneQueryResult
+} from './arcgis-source-types';
+export type {
   ArcGISSceneAggregationOperation,
   ArcGISSceneAggregationSpec,
   ArcGISSceneAggregationOptions,
-  ArcGISSceneAggregationGroup,
-  ArcGISCredentialOptions,
+  ArcGISSceneAggregationGroup
+} from './arcgis/arcgis-scene-aggregation';
+export type {ArcGISCredentialOptions} from './authentication';
+export type {
   ArcGISFeatureQueryParameters,
   ArcGISFeatureQueryOptions,
   ArcGISFeatureQueryProgress,
   ArcGISFeatureQueryResult,
   ArcGISFeatureObjectIds,
-  ArcGISFeatureExtent,
+  ArcGISFeatureExtent
+} from './arcgis-feature-query-types';
+export type {
   ArcGISItem,
   ArcGISItemLayer,
   ArcGISItemResolution,
-  ArcGISItemOptions,
-  ArcGISLoader
-} from './bundled';
+  ArcGISItemOptions
+} from './arcgis-items';
+export type {ArcGISLoader} from './arcgis-loader-registry';

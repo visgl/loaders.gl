@@ -21,6 +21,48 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
+      "@loaders.gl/tiles-3d/tiles-3d-source": [
+        "modules/tiles-3d/src/tileset-3d/format-3d-tiles/tiles-3d-source.ts"
+      ],
+      "@loaders.gl/tiles-3d/i3s-source": [
+        "modules/tiles-3d/src/tileset-3d/format-i3s/i3s-source.ts"
+      ],
+      "@loaders.gl/raster/quantized-mesh/parser": [
+        "modules/raster/src/terrain/quantized-mesh-loader.ts"
+      ],
+      "@loaders.gl/raster/terrain/parser": [
+        "modules/raster/src/terrain/terrain-loader.ts"
+      ],
+      "@loaders.gl/raster/lerc/parser": [
+        "modules/raster/src/lerc/lerc-loader.ts"
+      ],
+      "@loaders.gl/raster/geotiff/raster-parser": [
+        "modules/raster/src/geotiff/geotiff-raster-loader.ts"
+      ],
+      "@loaders.gl/raster/geotiff/parser": [
+        "modules/raster/src/geotiff/geotiff-loader.ts"
+      ],
+      "@loaders.gl/documents/markdown/parser": [
+        "modules/documents/src/markdown-loader.ts"
+      ],
+      "@loaders.gl/documents/bson/parser": [
+        "modules/documents/src/bson-loader.ts"
+      ],
+      "@loaders.gl/documents/html/parser": [
+        "modules/documents/src/html-loader.ts"
+      ],
+      "@loaders.gl/documents/toml/parser": [
+        "modules/documents/src/toml-loader.ts"
+      ],
+      "@loaders.gl/documents/yaml/parser": [
+        "modules/documents/src/yaml-loader.ts"
+      ],
+      "@loaders.gl/documents/xml/parser": [
+        "modules/documents/src/xml-loader.ts"
+      ],
+      "@loaders.gl/documents/json/parser": [
+        "modules/documents/src/json-loader.ts"
+      ],
       "zarr": [
         "node_modules/zarr/types/zarr.d.ts"
       ],
@@ -55,7 +97,7 @@
         "modules/traces/src/perfetto-bundled.ts"
       ],
       "@loaders.gl/arcgis/feature-service/bundled": [
-        "modules/arcgis/src/feature-service/bundled-entry.ts"
+        "modules/arcgis/src/feature-service/bundled.ts"
       ],
       "@loaders.gl/arcgis/image-service/bundled": [
         "modules/arcgis/src/image-service/bundled.ts"
@@ -64,7 +106,7 @@
         "modules/arcgis/src/map-service/bundled.ts"
       ],
       "@loaders.gl/arcgis/scene-service/bundled": [
-        "modules/arcgis/src/scene-service/bundled-entry.ts"
+        "modules/arcgis/src/scene-service/bundled.ts"
       ],
       "@loaders.gl/arcgis/vector-tile-service/bundled": [
         "modules/arcgis/src/vector-tile-service/bundled.ts"
@@ -115,10 +157,10 @@
         "modules/splats/src/spz/bundled-entry.ts"
       ],
       "@loaders.gl/tiles-3d/copc/bundled": [
-        "modules/tiles-3d/src/copc/bundled-entry.ts"
+        "modules/tiles-3d/src/copc/bundled.ts"
       ],
       "@loaders.gl/tiles-3d/point-cloud/bundled": [
-        "modules/tiles-3d/src/point-cloud/bundled-entry.ts"
+        "modules/tiles-3d/src/point-cloud/bundled.ts"
       ],
       "@loaders.gl/core/null": [
         "modules/core/src/null-loader-metadata.ts"
@@ -226,25 +268,25 @@
         "modules/arcgis/src/arcgis/arcgis-scene-aggregation.ts"
       ],
       "@loaders.gl/arcgis/bundled": [
-        "modules/arcgis/src/bundled-entry.ts"
+        "modules/arcgis/src/bundled.ts"
       ],
       "@loaders.gl/arcgis/arcgis-feature-server-loader": [
         "modules/arcgis/src/arcgis-feature-server-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-image-server-loader": [
-        "modules/arcgis/src/arcgis-image-server-loader.ts"
+        "modules/arcgis/src/arcgis/arcgis-image-server-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-image-tile-loader": [
-        "modules/arcgis/src/arcgis-image-tile-loader.ts"
+        "modules/arcgis/src/arcgis/arcgis-image-tile-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-map-tile-loader": [
-        "modules/arcgis/src/arcgis-map-tile-loader.ts"
+        "modules/arcgis/src/arcgis/arcgis-map-tile-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-scene-server-loader": [
-        "modules/arcgis/src/arcgis-scene-server-loader.ts"
+        "modules/arcgis/src/arcgis/arcgis-scene-server-loader.ts"
       ],
       "@loaders.gl/arcgis/arcgis-vector-tile-server-loader": [
-        "modules/arcgis/src/arcgis-vector-tile-server-loader.ts"
+        "modules/arcgis/src/arcgis/arcgis-vector-tile-server-loader.ts"
       ],
       "@loaders.gl/core/constants": [
         "modules/core/src/constants"
@@ -442,7 +484,7 @@
         "modules/scene/test"
       ],
       "@loaders.gl/tiles-3d/potree-loader": [
-        "modules/tiles-3d/src/potree-loader.ts"
+        "modules/tiles-3d/src/potree/potree-loader.ts"
       ],
       "@loaders.gl/tiles-3d/potree": [
         "modules/tiles-3d/src/potree/metadata-entry.ts"
@@ -559,7 +601,7 @@
         "modules/archives/src/zip/zip-writer.ts"
       ],
       "@loaders.gl/tiles-3d/3d-tiles-archive-writer": [
-        "modules/tiles-3d/src/3d-tiles-archive-writer.ts"
+        "modules/tiles-3d/src/3d-tiles/3d-tiles-archive-writer.ts"
       ],
       "@loaders.gl/archives": [
         "modules/archives/src"
@@ -900,6 +942,9 @@
       "@loaders.gl/tables/hudi": [
         "modules/tables/src/hudi/index.ts"
       ],
+      "@loaders.gl/tables/csv/parser": [
+        "modules/tables/src/csv-loader.ts"
+      ],
       "@loaders.gl/tables/csv/bundled": [
         "modules/tables/src/csv/bundled-entry.ts"
       ],
@@ -909,14 +954,29 @@
       "@loaders.gl/tables/arrow/types": [
         "modules/tables/src/arrow/types.ts"
       ],
+      "@loaders.gl/tables/arrow/parser": [
+        "modules/tables/src/arrow-loader.ts"
+      ],
       "@loaders.gl/tables/arrow/bundled": [
         "modules/tables/src/arrow/bundled-entry.ts"
       ],
       "@loaders.gl/tables/arrow/geometry": [
         "modules/tables/src/arrow/geometry/index.ts"
       ],
+      "@loaders.gl/tables/json/parser": [
+        "modules/tables/src/json-loader.ts"
+      ],
+      "@loaders.gl/tables/json/table-parser": [
+        "modules/tables/src/json-table-loader.ts"
+      ],
+      "@loaders.gl/tables/json/ndjson-parser": [
+        "modules/tables/src/ndjson-loader.ts"
+      ],
       "@loaders.gl/tables/json/bundled": [
         "modules/tables/src/json/bundled-entry.ts"
+      ],
+      "@loaders.gl/tables/orc/parser": [
+        "modules/tables/src/orc/orc-loader.ts"
       ],
       "@loaders.gl/tables/orc/bundled": [
         "modules/tables/src/orc/bundled-entry.ts"
@@ -924,17 +984,35 @@
       "@loaders.gl/tables/parquet/bundled": [
         "modules/tables/src/parquet/bundled-entry.ts"
       ],
+      "@loaders.gl/tables/delta/parser": [
+        "modules/tables/src/parquet/delta-loader.ts"
+      ],
       "@loaders.gl/tables/delta/bundled": [
         "modules/tables/src/delta-bundled.ts"
+      ],
+      "@loaders.gl/tables/avro/parser": [
+        "modules/tables/src/avro/avro-loader.ts"
       ],
       "@loaders.gl/tables/avro/bundled": [
         "modules/tables/src/avro-bundled-entry.ts"
       ],
+      "@loaders.gl/tables/lance/parser": [
+        "modules/tables/src/lance/lance-loader.ts"
+      ],
       "@loaders.gl/tables/lance/bundled": [
         "modules/tables/src/lance-bundled-entry.ts"
       ],
+      "@loaders.gl/tables/geojson/parser": [
+        "modules/tables/src/geojson-loader.ts"
+      ],
+      "@loaders.gl/tables/geojson/ndgeojson-parser": [
+        "modules/tables/src/json/ndgeojson-loader.ts"
+      ],
       "@loaders.gl/tables/geojson/bundled": [
         "modules/tables/src/geojson-bundled.ts"
+      ],
+      "@loaders.gl/tables/geoarrow/parser": [
+        "modules/tables/src/geoarrow-loader.ts"
       ],
       "@loaders.gl/tables/geoarrow/bundled": [
         "modules/tables/src/geoarrow-bundled.ts"
@@ -958,7 +1036,7 @@
         "modules/geospatial/src/wkb-bundled-entry.ts"
       ],
       "@loaders.gl/raster/geotiff/bundled": [
-        "modules/raster/src/geotiff/bundled-entry.ts"
+        "modules/raster/src/geotiff/bundled.ts"
       ],
       "@loaders.gl/raster/geotiff/discover-geotiff": [
         "modules/raster/src/geotiff/discover-geotiff.ts"
@@ -1024,7 +1102,7 @@
         "modules/raster/src/geotiff/types.ts"
       ],
       "@loaders.gl/raster/lerc/bundled": [
-        "modules/raster/src/lerc/bundled-entry.ts"
+        "modules/raster/src/lerc/bundled.ts"
       ],
       "@loaders.gl/raster/lerc/lib/parsers/lerc/lerc-types": [
         "modules/raster/src/lerc/lib/parsers/lerc/lerc-types.ts"
@@ -1033,7 +1111,7 @@
         "modules/raster/src/quantized-mesh/metadata-entry.ts"
       ],
       "@loaders.gl/raster/terrain/bundled": [
-        "modules/raster/src/terrain/bundled-entry.ts"
+        "modules/raster/src/terrain/bundled.ts"
       ],
       "@loaders.gl/raster/terrain/heightmap": [
         "modules/raster/src/terrain/heightmap.ts"
@@ -1088,6 +1166,9 @@
       ],
       "@loaders.gl/scene/glb/bundled": [
         "modules/scene/src/glb-bundled.ts"
+      ],
+      "@loaders.gl/scene/draco/writer": [
+        "modules/scene/src/draco/draco-writer.ts"
       ],
       "@loaders.gl/scene/draco/bundled": [
         "modules/scene/src/draco-bundled-entry.ts"
@@ -1408,7 +1489,7 @@
         "modules/tiles/src/raster-set.ts"
       ],
       "@loaders.gl/tiles-3d/potree/bundled": [
-        "modules/tiles-3d/src/potree/bundled-entry.ts"
+        "modules/tiles-3d/src/potree/bundled.ts"
       ],
       "@loaders.gl/tiles-3d/3d-tiles/tileset-zod-schema": [
         "modules/tiles-3d/src/3d-tiles/tileset-zod-schema.ts"
@@ -1417,13 +1498,13 @@
         "modules/tiles-3d/src/3d-tiles/subtree-zod-schema.ts"
       ],
       "@loaders.gl/tiles-3d/3d-tiles/bundled": [
-        "modules/tiles-3d/src/3d-tiles/bundled-entry.ts"
+        "modules/tiles-3d/src/3d-tiles/bundled.ts"
       ],
       "@loaders.gl/tiles-3d/i3s-lepcc-loader": [
-        "modules/tiles-3d/src/i3s-lepcc-loader.ts"
+        "modules/tiles-3d/src/i3s/i3s-lepcc-loader.ts"
       ],
       "@loaders.gl/tiles-3d/i3s-slpk-writer": [
-        "modules/tiles-3d/src/i3s-slpk-writer.ts"
+        "modules/tiles-3d/src/i3s/i3s-slpk-writer.ts"
       ],
       "@loaders.gl/tiles-3d/i3s-mesh-writer": [
         "modules/tiles-3d/src/i3s-mesh-writer.ts"
@@ -1534,7 +1615,7 @@
         "modules/tiles/src/pmtiles/api.ts"
       ],
       "@loaders.gl/tiles-3d/i3s/bundled": [
-        "modules/tiles-3d/src/i3s/bundled-entry.ts"
+        "modules/tiles-3d/src/i3s/bundled.ts"
       ],
       "@loaders.gl/traces/chrome-trace/api": [
         "modules/traces/src/chrome-trace-api.ts"

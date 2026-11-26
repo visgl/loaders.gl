@@ -1,1 +1,1 @@
-export * from './avro/avro-writer.js';
+export {type AvroWriterOptions, AvroWriter} from './avro/avro-writer';

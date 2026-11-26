@@ -131,9 +131,9 @@ export type {
   I3SMeshWriterOptions,
   I3SDracoLibraryOptions,
   EncodedI3SMeshLayer,
-  I3SMeshFeatures,
-  I3SMeshMaterial,
-  I3SMeshTexture
+  I3SMeshMaterial
 } from './i3s-mesh-writer';
+export type {I3SMeshFeatures} from './i3s-mesh-attributes';
+export type {I3SMeshTexture} from './i3s-mesh-texture';
 
 export {I3SSource} from '../tileset-3d/format-i3s/i3s-source';
