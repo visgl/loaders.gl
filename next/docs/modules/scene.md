@@ -49,7 +49,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->31<!-- -->)
+All exported subpaths (<!-- -->32<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -63,6 +63,7 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco-writer-worker-node.js`  |
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco-writer-worker.js`       |
 | [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco/bundled`                |
+| [![](/next/images/format-logos/draco-logo.svg)](https://loaders.gl/next/docs/modules/scene/draco/formats/draco.md)      | `@loaders.gl/scene/draco/writer`                 |
 | [![](/next/images/format-logos/gltf-logo.svg)GLB](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)       | `@loaders.gl/scene/glb`                          |
 | [![](/next/images/format-logos/gltf-logo.svg)GLB](https://loaders.gl/next/docs/modules/scene/gltf/formats/glb.md)       | `@loaders.gl/scene/glb/bundled`                  |
 | [![](/next/images/format-logos/gltf-logo.svg)](https://loaders.gl/next/docs/modules/scene/gltf/formats/gltf.md)         | `@loaders.gl/scene/gltf`                         |

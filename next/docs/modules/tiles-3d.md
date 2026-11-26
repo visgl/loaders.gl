@@ -11,7 +11,7 @@ Import `Tileset3D` and `Tile3D` from `@loaders.gl/tiles-3d/tileset`. Spatial and
 ```
 import {Tileset3D} from '@loaders.gl/tiles-3d/tileset';
 
-import {Tiles3DSource} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+import {Tiles3DSource} from '@loaders.gl/tiles-3d/tiles-3d-source';
 
 import {Tiles3DLoader} from '@loaders.gl/tiles-3d/3d-tiles';
 
@@ -22,7 +22,7 @@ const source = new Tiles3DSource({url, loader: Tiles3DLoader});
 const tileset = new Tileset3D(source, options);
 ```
 
-Use `@loaders.gl/tiles-3d/i3s` for I3S and SLPK formats. The older package names `@loaders.gl/3d-tiles` and `@loaders.gl/i3s` are removed in v5.
+Use `@loaders.gl/tiles-3d/i3s` for I3S and SLPK formats. Import `I3SSource` from `@loaders.gl/tiles-3d/i3s-source`. The older package names `@loaders.gl/3d-tiles` and `@loaders.gl/i3s` are removed in v5.
 
 | Logo                                                                                                                                                  | Format                      | Reference                                                                  |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------- |
@@ -46,7 +46,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->34<!-- -->)
+All exported subpaths (<!-- -->36<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -66,6 +66,7 @@ These are the package's public exports, including format entry points, parsers, 
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-lepcc-loader`                            |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-mesh-writer`                             |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-slpk-writer`                             |
+| [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-source`                                  |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s-zod-schema`                              |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/bundled`                                 |
 | [![](/next/images/format-logos/ogc-mark.svg)OGCI3S](https://loaders.gl/next/docs/modules/tiles-3d/i3s/formats/i3s.md)                            | `@loaders.gl/tiles-3d/i3s/i3s-content-worker-node.js`              |
@@ -85,4 +86,5 @@ These are the package's public exports, including format entry points, parsers, 
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree/bundled`                              |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/potree/potree-metadata.schema.json`          |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/spatial`                                     |
+|                                                                                                                                                       | `@loaders.gl/tiles-3d/tiles-3d-source`                             |
 |                                                                                                                                                       | `@loaders.gl/tiles-3d/tileset`                                     |

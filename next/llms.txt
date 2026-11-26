@@ -414,9 +414,9 @@ Hash data incrementally as loaders and streams process it.
 
 #### documents
 
-Basic document loaders with a lightweight package root and flat parser imports.
+Basic document loaders with metadata and parser subpaths.
 
-- [Documents](https://loaders.gl/next/docs/modules/documents.md): Basic document loaders with a lightweight package root and flat parser imports.
+- [Documents](https://loaders.gl/next/docs/modules/documents.md): Basic document loaders with metadata and parser subpaths.
 - [JSONLoader](https://loaders.gl/next/docs/modules/documents/api-reference/json-loader.md): The documents JSONLoader parses one ordinary JSON document into its JavaScript value. Objects,
 - [MarkdownLoader](https://loaders.gl/next/docs/modules/documents/api-reference/markdown-loader.md): Loads UTF-8 Markdown into a MarkdownDocument syntax tree, without a renderer or UI dependency.
 - [Keep JSON-like documents in a binary form.](https://loaders.gl/next/docs/modules/documents/bson.md): Read and write BSON documents through the loaders.gl API.
