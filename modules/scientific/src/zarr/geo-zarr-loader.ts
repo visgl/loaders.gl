@@ -8,6 +8,7 @@ import type {
   TileGridMatrix,
   CoreAPI,
   GetRasterParameters,
+  GetRasterTileParameters,
   RasterBoundingBox,
   RasterChannelDataType,
   RasterData,
@@ -22,7 +23,9 @@ import type {CRSDefinition} from '@math.gl/geospatial/crs';
 import {
   createTileGrid,
   createScanQueryMetadata,
-  getRasterViewportBoundingBox
+  getRasterViewportBoundingBox,
+  isRasterSampleValid,
+  resolveTileGridTile
 } from '@loaders.gl/core/loader-utils';
 
 import {getMultiscaleVariablePaths, getSpatialMultiscaleLevels} from './lib/spatial-multiscales';
@@ -153,6 +156,14 @@ type PixelWindow = {
   rowStart: number;
   /** First excluded row. */
   rowStop: number;
+};
+
+/** GeoZarr's single-band raster window with its required pixel-corner transform. */
+type GeoZarrRasterWindow = RasterData & {
+  /** Packed row-major samples for the selected slice. */
+  data: SupportedTypedArray;
+  /** Affine transform anchored at the window's first pixel corner. */
+  transform: GeoZarrAffineTransform;
 };
 
 /** Source factory for GeoZarr and regular CF/xarray Zarr raster arrays. */
@@ -298,7 +309,7 @@ export class GeoZarrRasterSource
         ...(advertisedLevels.length ? {levels: advertisedLevels} : {}),
         tileGrid: createTileGrid(commonCoordinateReferenceSystem, matrices)
       },
-      levels
+      levels: advertisedLevels.length ? levels : [selected]
     };
   }
 
@@ -398,7 +409,7 @@ export class GeoZarrRasterSource
       }
     }
     parameters.signal?.throwIfAborted();
-    const {array, metadata, xDimensionIndex, yDimensionIndex} = initialization;
+    const {metadata} = initialization;
     const clippedBoundingBox =
       sourceIntersection && intersectBoundingBoxes(sourceIntersection, metadata.boundingBox);
     if (!clippedBoundingBox) {
@@ -413,6 +424,72 @@ export class GeoZarrRasterSource
       return createEmptyRaster(metadata, clippedBoundingBox, overview);
     }
 
+    return this.readRasterWindow(initialization, pixelWindow, overview, parameters);
+  }
+
+  /** Experimental. Reads one spatial chunk from the named level at its native resolution. */
+  async getRasterTile(parameters: GetRasterTileParameters): Promise<RasterData | null> {
+    const {tileMatrix, signal, bands, interleaved = false} = parameters;
+    signal?.throwIfAborted();
+    const {metadata: sourceMetadata, levels} = await awaitWithAbort(this.getGridPromise(), signal);
+    signal?.throwIfAborted();
+    const {tileGrid} = sourceMetadata;
+    const matrixSet = tileGrid?.tileMatrixSet;
+    if (!matrixSet?.crs || !matrixSet.matrices.length) {
+      throw new Error('GeoZarr native tile reads require a complete native tile matrix set');
+    }
+    const tile = resolveTileGridTile(tileGrid, {...parameters, z: 0});
+    if (!tile) return null;
+    const overview = matrixSet.matrices.findIndex(matrix => matrix.id === tileMatrix);
+    const level = levels[overview];
+    if (!level) return null;
+
+    const {metadata} = level;
+    const [width, height] = matrixSet.matrices[overview].tileSize;
+    const columnStart = tile.x * width;
+    const rowStart = tile.y * height;
+    if (columnStart >= metadata.width || rowStart >= metadata.height) return null;
+    if (bands && (bands.length !== 1 || bands[0] !== 0)) {
+      throw new Error(
+        'GeoZarr exposes one raster band. Use bands: [0] and select non-spatial indices by name.'
+      );
+    }
+
+    const pixelWindow = {
+      columnStart,
+      columnStop: Math.min(columnStart + width, metadata.width),
+      rowStart,
+      rowStop: Math.min(rowStart + height, metadata.height)
+    };
+    const raster = await this.readRasterWindow(level, pixelWindow, overview, parameters);
+    signal?.throwIfAborted();
+    const {transform} = raster;
+    const resolution: [number, number] = [transform[0], Math.abs(transform[4])];
+    return {
+      ...raster,
+      ...padRasterTile(raster, width, height),
+      width,
+      height,
+      interleaved,
+      bands: raster.bands?.map(band => ({...band})),
+      boundingBox: getTransformBoundingBox(transform, width, height),
+      pixelRegistration: 'area',
+      resolution,
+      nativeResolution: resolution,
+      overzoom: false,
+      provenance: {sourceType: 'geozarr'},
+      ownership: 'owned'
+    };
+  }
+
+  /** Reads a selected 2D integer window and returns row-major samples in source coordinates. */
+  private async readRasterWindow(
+    initialization: GeoZarrInit,
+    pixelWindow: PixelWindow,
+    overview: number,
+    parameters: Pick<GetGeoZarrParameters, 'selection' | 'signal'>
+  ): Promise<GeoZarrRasterWindow> {
+    const {array, metadata, xDimensionIndex, yDimensionIndex} = initialization;
     const selection = normalizeSelection(parameters.selection, metadata.selectionDimensions);
     const zarritaSelection = metadata.dimensions.map((dimensionName, dimensionIndex) => {
       if (dimensionIndex === xDimensionIndex) {
@@ -430,18 +507,21 @@ export class GeoZarrRasterSource
         zarrita.get(array, zarritaSelection) as Promise<{
           data: SupportedTypedArray;
           shape: number[];
+          stride: number[];
         }>,
       parameters.signal
     );
+    parameters.signal?.throwIfAborted();
     if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
       throw new Error('Failed to read GeoZarr raster selection.');
     }
 
     const width = pixelWindow.columnStop - pixelWindow.columnStart;
     const height = pixelWindow.rowStop - pixelWindow.rowStart;
-    const typedData = cloneZarrSelection(chunk).data as SupportedTypedArray;
-    const data =
-      xDimensionIndex < yDimensionIndex ? transposeRaster(typedData, width, height) : typedData;
+    const {data: typedData, stride} = cloneZarrSelection(chunk);
+    const [columnStride, rowStride] =
+      xDimensionIndex < yDimensionIndex ? stride : [stride[1], stride[0]];
+    const data = toRowMajorRaster(typedData, width, height, columnStride, rowStride);
     const transform = getPixelWindowTransform(pixelWindow, metadata.transform);
 
     return {
@@ -1230,20 +1310,50 @@ function normalizeSelection(
   );
 }
 
-/** Transposes a C-order 2D raster whose physical dimensions are `[x, y]`. */
-function transposeRaster(
+/** Packs a strided 2D array into contiguous raster rows. */
+function toRowMajorRaster(
   source: SupportedTypedArray,
   width: number,
-  height: number
+  height: number,
+  columnStride: number,
+  rowStride: number
 ): SupportedTypedArray {
+  if (columnStride === 1 && rowStride === width) return source;
   const TypedArrayConstructor = source.constructor as new (length: number) => SupportedTypedArray;
   const target = new TypedArrayConstructor(source.length);
   for (let row = 0; row < height; row++) {
     for (let column = 0; column < width; column++) {
-      target[row * width + column] = source[column * height + row];
+      target[row * width + column] = source[row * rowStride + column * columnStride];
     }
   }
   return target;
+}
+
+/** Pads edge chunks and records validity using the common raw raster sample rules. */
+function padRasterTile(
+  raster: GeoZarrRasterWindow,
+  width: number,
+  height: number
+): Pick<RasterData, 'data' | 'validityMasks'> {
+  const padded = raster.width !== width || raster.height !== height;
+  const TypedArrayConstructor = getTypedArrayConstructor(raster.dtype);
+  const data = padded
+    ? new TypedArrayConstructor(width * height).fill(raster.noData ?? 0)
+    : raster.data;
+  if (!padded && raster.noData == null && raster.dtype !== 'float32' && raster.dtype !== 'float64') {
+    return {data};
+  }
+  const mask = new Uint8Array(width * height);
+  for (let row = 0; row < raster.height; row++) {
+    const rowOffset = row * width;
+    if (padded) {
+      data.set(raster.data.subarray(row * raster.width, (row + 1) * raster.width), rowOffset);
+    }
+    for (let column = 0; column < raster.width; column++) {
+      mask[rowOffset + column] = isRasterSampleValid(raster, column, row, 0) ? 1 : 0;
+    }
+  }
+  return {data, validityMasks: [{data: mask, width, height}]};
 }
 
 /** Creates a zero-sized raster for a viewport outside the source extent. */

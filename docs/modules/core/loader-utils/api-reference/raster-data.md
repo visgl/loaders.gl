@@ -71,6 +71,7 @@ at the selected native level. Pass the matrix ID from `getMetadata().tileGrid` a
 `tileMatrix` and the native column and row as `x` and `y`. The bridge requires a
 complete matrix set and delegates to the optional `RasterSource.getRasterTile`.
 It forwards `bands`, `interleaved`, named dimension `selection`, and `signal`.
+GeoTIFF and GeoZarr implement native tile reads.
 
 ```ts
 import {readRasterTile} from '@loaders.gl/core/loader-utils';
@@ -81,8 +82,9 @@ const tile = await readRasterTile(source, {tileMatrix: '1', x: 2, y: 3, bands: [
 The bridge returns `null` for a tile outside matrix coverage or when the source
 reports an absent tile. It throws for unknown matrices, incomplete grids, and
 sources without a native tile reader. Returned tiles must match the matrix pixel
-dimensions, including padded edges. Sources that report a numeric `overview` on a
-tile use its string representation as the matrix ID. Sources may omit `overview`
-for opaque IDs. Edge padding and source masks use `validityMasks`, and each band's
+dimensions, including padded edges. Use the published matrix ID to address a tile.
+GeoTIFF reports the IFD index as `overview`. GeoZarr reports the level index and
+uses the array or multiscale asset identifier as its matrix ID. Sources may omit
+`overview`. Edge padding and source masks use `validityMasks`, and each band's
 raw NoData rules still apply. Reads preserve the native sampling grid and perform
 no reprojection or resampling.
