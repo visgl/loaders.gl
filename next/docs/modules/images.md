@@ -175,7 +175,7 @@ The Node backend detects formats from encoded bytes and returns RGBA pixels thro
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->32<!-- -->)
+All exported subpaths (<!-- -->31<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -197,7 +197,6 @@ These are the package's public exports, including format entry points, parsers, 
 |        | `@loaders.gl/images/exr`                               |
 |        | `@loaders.gl/images/exr/bundled`                       |
 |        | `@loaders.gl/images/gif-builder`                       |
-|        | `@loaders.gl/images/gl-extensions`                     |
 |        | `@loaders.gl/images/ies`                               |
 |        | `@loaders.gl/images/ies/bundled`                       |
 |        | `@loaders.gl/images/image`                             |
