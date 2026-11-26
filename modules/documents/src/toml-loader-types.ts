@@ -12,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Preloads the parser-bearing TOML loader implementation. */
 async function preload() {
-  const {TOMLLoaderWithParser} = await import('@loaders.gl/documents/toml/bundled');
+  const {TOMLLoaderWithParser} = await import('@loaders.gl/documents/toml/parser');
   return TOMLLoaderWithParser;
 }
 

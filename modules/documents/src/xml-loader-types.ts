@@ -16,7 +16,7 @@ export type XMLLoaderOptions = LoaderOptions & {
 
 /** Preloads the parser-bearing XML loader implementation. */
 async function preload() {
-  const {XMLLoaderWithParser} = await import('@loaders.gl/documents/xml/bundled');
+  const {XMLLoaderWithParser} = await import('@loaders.gl/documents/xml/parser');
   return XMLLoaderWithParser;
 }
 

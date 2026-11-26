@@ -2,5 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './toml';
-export {TOMLLoaderWithParser as TOMLLoader} from './toml';
+export {TOMLLoaderWithParser} from './toml-loader';
+export type {TOMLLoaderOptions, TOMLParseOptions} from './toml-loader-options';
+export {TOMLFormat} from './toml-format';
+export {TOMLLoaderWithParser as TOMLLoader} from './toml-loader';
