@@ -3,12 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import {PMTilesFormat} from './pmtiles-format';
 import {encodePMTiles} from './lib/encode-pmtiles';
 import type {PMTilesEncodeOptions, PMTilesTileInput} from './pmtiles-writer-types';
-
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {PM_TILES_WRITER_METADATA} from './pmtiles-writer-definition';
 
 /** Options for packaging already encoded tiles with the standard writer API. */
 export type PMTilesWriterOptions = WriterOptions & {
@@ -18,9 +15,7 @@ export type PMTilesWriterOptions = WriterOptions & {
 
 /** Bounded, portable PMTiles v3 writer; tile payloads are copied without transcoding. */
 export const PMTilesWriter = {
-  ...PMTilesFormat,
-  version: VERSION,
-  options: {},
+  ...PM_TILES_WRITER_METADATA,
   encode: (tiles: PMTilesTileInput, options?: PMTilesWriterOptions): Promise<ArrayBuffer> =>
     encodePMTiles(tiles, options?.pmtiles)
 } as const satisfies WriterWithEncoder<PMTilesTileInput, never, PMTilesWriterOptions>;

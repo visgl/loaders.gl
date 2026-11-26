@@ -6,7 +6,7 @@ export {LASLoader} from './las-loader-types';
 export {LASFormat} from './las-format';
 export type {LASColumnName, LASLoaderOptions} from './las-loader-shared';
 export type {LASSourceOptions} from './las-source';
-export type {LASExtraBytesWriter, LASWriterOptions, LASWriter} from './las-writer';
+export type {LASExtraBytesWriter, LASWriterOptions} from './las-writer';
 export type {
   LASExtendedVariableLengthRecord,
   LASExtraBytesDescriptor,
@@ -70,3 +70,4 @@ export const LASColumnLoader = {
     return implementation.LASColumnLoader;
   }
 } as const;
+export {LASWriter} from './las-writer-types';

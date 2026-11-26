@@ -4,7 +4,7 @@ Packages already-authored 3D Tiles resources into a deterministic indexed `.3tz`
 This writes an archive container, not a scene, mesh hierarchy, or I3S layer.
 
 ```ts
-import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles-archive-writer';
+import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 
 const archive = await Tiles3DArchiveWriter.encode(
   {'tileset.json': tilesetBlob, 'mesh.glb': meshArrayBuffer},
@@ -60,7 +60,7 @@ storage, use the iterator below.
 resources/options and yields `Uint8Array` views with byte-identical archive content:
 
 ```ts
-import {encodeTiles3DArchiveInBatches} from '@loaders.gl/tiles-3d/3d-tiles-archive-writer';
+import {encodeTiles3DArchiveInBatches} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 
 try {
   for await (const chunk of encodeTiles3DArchiveInBatches(resources, {

@@ -9,20 +9,14 @@ import {
   type AvroSchema,
   type AvroWriterOptions as AvroEncoderOptions
 } from './lib/encoders/encode-avro';
-import {AvroFormat} from './avro-format';
+import {AVRO_WRITER_METADATA} from './avro-writer-types';
 
 /** Public options for the Apache Avro writer. */
 export type AvroWriterOptions = WriterOptions & AvroEncoderOptions;
 
-// __VERSION__ is injected by the build tooling.
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
 /** Writer for Arrow tables in Avro Object Container File format. */
 export const AvroWriter = {
-  ...AvroFormat,
-  version: VERSION,
-  options: {avro: {}},
+  ...AVRO_WRITER_METADATA,
   async encode(table: ArrowJSTable, options?: AvroWriterOptions) {
     return encodeAvro(table, options);
   }

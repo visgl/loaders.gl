@@ -158,11 +158,6 @@
       "import": "./dist/glb-bundled.js",
       "require": "./dist/glb-bundled.cjs"
     },
-    "./draco/writer": {
-      "types": "./dist/draco/draco-writer.d.ts",
-      "import": "./dist/draco/draco-writer.js",
-      "require": "./dist/draco/draco-writer.cjs"
-    },
     "./draco/bundled": {
       "types": "./dist/draco-bundled-entry.d.ts",
       "import": "./dist/draco-bundled-entry.js",

@@ -22,4 +22,5 @@ export type {
 export type {QuantizedMeshLoaderOptions} from './quantized-mesh-loader-types';
 export type {parseTerrain, TerrainLoaderWithParser} from './terrain-loader';
 export type {QuantizedMeshLoaderWithParser} from './quantized-mesh-loader';
-export type {QuantizedMeshWriterOptions, QuantizedMeshWriter} from './quantized-mesh-writer';
+export type {QuantizedMeshWriterOptions} from './quantized-mesh-writer';
+export {QuantizedMeshWriter} from './quantized-mesh-writer-types';

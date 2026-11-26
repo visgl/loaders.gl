@@ -4,8 +4,8 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {ImageDataType} from './types';
-import {VERSION} from './lib/utils/version';
 import {encodeImage} from './lib/encoders/encode-image';
+import {IMAGE_WRITER_METADATA} from './image-writer-types';
 
 export type ImageWriterOptions = WriterOptions & {
   image?: {
@@ -16,17 +16,6 @@ export type ImageWriterOptions = WriterOptions & {
 
 /** Writer for image data */
 export const ImageWriter = {
-  name: 'Images',
-  id: 'image',
-  module: 'images',
-  version: VERSION,
-  extensions: ['jpeg'],
-  mimeTypes: [],
-  options: {
-    image: {
-      mimeType: 'image/png',
-      jpegQuality: null
-    }
-  },
+  ...IMAGE_WRITER_METADATA,
   encode: encodeImage
 } as const satisfies WriterWithEncoder<ImageDataType, never, ImageWriterOptions>;

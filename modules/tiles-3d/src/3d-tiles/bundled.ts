@@ -8,7 +8,7 @@ export {Tiles3DArchiveFileLoaderWithParser as Tiles3DArchiveFileLoader} from './
 export {Tiles3DArchiveSource} from './3d-tiles-archive-source';
 export {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from './tiles-3d-format';
 export {Tile3DWriter} from './tile-3d-writer';
-export {Tiles3DArchiveWriter} from './3d-tiles-archive-writer';
+export {Tiles3DArchiveWriter, encodeTiles3DArchiveInBatches} from './3d-tiles-archive-writer';
 export {Tiles3DSource} from '../tileset-3d/format-3d-tiles/tiles-3d-source';
 export type {Tiles3DArchiveFileLoaderOptions} from './3d-tiles-archive-loader';
 export type {Tiles3DArchiveSourceInput} from './3d-tiles-archive-source';

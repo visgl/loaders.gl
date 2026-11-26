@@ -15,3 +15,5 @@ export type {OtlpTraceBatch} from './otlp-trace-arrow-schema';
 export type {OtlpTraceTableName} from './otlp-trace-arrow-schema';
 export type {OtlpTraceJsonWriterOptions} from './otlp-trace-json-writer';
 export type {OtlpTraceWriterOptions} from './otlp-trace-writer';
+export {OtlpTraceJsonWriter} from './otlp-trace-json-writer-types';
+export {OtlpTraceWriter} from './otlp-trace-writer-types';

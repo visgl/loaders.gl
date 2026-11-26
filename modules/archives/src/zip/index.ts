@@ -21,3 +21,4 @@ export type {ZipByteSource} from './zip-encode-types';
 export type {ZipEncodeEntry} from './zip-encode-types';
 export type {ZipEncodeFiles} from './zip-encode-types';
 export type {ZipEncodeOptions} from './zip-encode-types';
+export {ZipWriter} from './zip-writer-types';

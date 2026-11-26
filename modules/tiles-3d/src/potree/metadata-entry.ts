@@ -24,9 +24,5 @@ export type {
   Potree2AttributeType,
   Potree2HierarchyNode
 } from './potree2-types';
-export type {
-  PotreeWriter,
-  PotreeWriterOptions,
-  PotreeWriterNode,
-  PotreeDataset
-} from './potree-writer';
+export type {PotreeWriterOptions, PotreeWriterNode, PotreeDataset} from './potree-writer';
+export {PotreeWriter} from './potree-writer-types';

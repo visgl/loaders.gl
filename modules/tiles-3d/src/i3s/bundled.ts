@@ -22,7 +22,7 @@ export {
   I3SNodePageFormat,
   SLPKFormat
 } from './i3s-format';
-export {SLPKWriter} from './i3s-slpk-writer';
+export {SLPKWriter, encodeSLPKArchiveInBatches} from './i3s-slpk-writer';
 export {I3SSource} from '../tileset-3d/format-i3s/i3s-source';
 export type {I3SLoaderOptions} from './i3s-loader';
 export type {I3SConformanceProfile} from './i3s-conformance';

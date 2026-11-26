@@ -74,7 +74,7 @@ export type {
   I3SPointCloudStoreSchema
 } from './i3s-zod-schema';
 export type {COORDINATE_SYSTEM} from './lib/parsers/constants';
-export type {SLPKWriter, SLPKWriterFiles, SLPKWriterOptions} from './i3s-slpk-writer';
+export type {SLPKWriterFiles, SLPKWriterOptions} from './i3s-slpk-writer';
 export type {SLPKSourceInput, SLPKSource} from './i3s-slpk-source';
 export type {I3SLEPCCLoaderOptions, I3SLEPCCLoaderResult} from './i3s-lepcc-loader-types';
 export type {loadFeatureAttributes} from './i3s-attribute-loader';
@@ -117,3 +117,4 @@ export type {
 export type {I3SMeshFeatures} from './i3s-mesh-attributes';
 export type {I3SMeshTexture} from './i3s-mesh-texture';
 export type {I3SSource} from '../tileset-3d/format-i3s/i3s-source';
+export {SLPKWriter} from './i3s-slpk-writer-types';

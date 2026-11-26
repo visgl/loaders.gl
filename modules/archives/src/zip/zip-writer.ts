@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
-import {ZipFormat} from './zip-format';
 import {encodeZip} from './zip-encode';
 import type {
   ZipEncodeFiles,
@@ -11,9 +10,7 @@ import type {
   ZipByteSource,
   ZipEncodeEntry
 } from './zip-encode-types';
-
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {ZIP_WRITER_METADATA} from './zip-writer-types';
 
 /** Named binary sources or UTF-8 strings accepted by the buffered writer. */
 export type ZipWriterFiles = Readonly<Record<string, string | ZipByteSource | ZipEncodeEntry>>;
@@ -31,9 +28,7 @@ export type ZipWriterOptions = WriterOptions & {
 
 /** Buffered native ZIP32/ZIP64 writer with STORE as the default compression. */
 export const ZipWriter = {
-  ...ZipFormat,
-  version: VERSION,
-  options: {zip: {createFolders: false}},
+  ...ZIP_WRITER_METADATA,
   encode: encodeZipFiles
 } as const satisfies WriterWithEncoder<ZipWriterFiles, never, ZipWriterOptions>;
 

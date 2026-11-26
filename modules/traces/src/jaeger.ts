@@ -12,3 +12,4 @@ export type {JaegerSpan} from './jaeger-trace-types';
 export type {JaegerSpanReference} from './jaeger-trace-types';
 export type {JaegerTag} from './jaeger-trace-types';
 export type {JaegerTrace} from './jaeger-trace-types';
+export {JaegerTraceWriter} from './jaeger-trace-writer-types';

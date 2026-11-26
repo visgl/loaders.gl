@@ -112,11 +112,6 @@
     },
     "./3d-tiles/tileset.schema.json": "./dist/3d-tiles/tileset.schema.json",
     "./3d-tiles/subtree.schema.json": "./dist/3d-tiles/subtree.schema.json",
-    "./3d-tiles-archive-writer": {
-      "types": "./dist/3d-tiles/3d-tiles-archive-writer.d.ts",
-      "import": "./dist/3d-tiles/3d-tiles-archive-writer.js",
-      "require": "./dist/3d-tiles/3d-tiles-archive-writer.cjs"
-    },
     "./i3s": {
       "types": "./dist/i3s/metadata-entry.d.ts",
       "import": "./dist/i3s/metadata-entry.js",
@@ -151,11 +146,6 @@
     "./i3s/i3s-scene-layer.schema.json": "./dist/i3s/i3s-scene-layer.schema.json",
     "./i3s/i3s-node-page.schema.json": "./dist/i3s/i3s-node-page.schema.json",
     "./i3s/i3s-point-cloud-scene-layer.schema.json": "./dist/i3s/i3s-point-cloud-scene-layer.schema.json",
-    "./i3s-slpk-writer": {
-      "types": "./dist/i3s/i3s-slpk-writer.d.ts",
-      "import": "./dist/i3s/i3s-slpk-writer.js",
-      "require": "./dist/i3s/i3s-slpk-writer.cjs"
-    },
     "./i3s-mesh-writer": {
       "types": "./dist/i3s-mesh-writer.d.ts",
       "import": "./dist/i3s-mesh-writer.js",
