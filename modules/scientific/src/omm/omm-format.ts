@@ -23,7 +23,7 @@ function testOMM(arrayBuffer: ArrayBuffer): boolean {
 export const OMMFormat = {
   name: 'CCSDS OMM (Orbit Mean-Elements Message)',
   id: 'omm',
-  module: 'geospatial',
+  module: 'scientific',
   category: 'table',
   encoding: 'text',
   format: 'omm',
