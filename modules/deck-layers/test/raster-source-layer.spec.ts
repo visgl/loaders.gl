@@ -311,6 +311,27 @@ describe('raster viewport and placement', () => {
     expect(viewport.width).toBeGreaterThanOrEqual(400);
   });
 
+  test('keeps the viewport shape when it caps the request size', () => {
+    const viewport = createRasterViewport(
+      {...createViewport([-41.66, -27.18, 41.66, 27.18]), width: 1896, height: 1286},
+      GEOGRAPHIC_METADATA,
+      1024
+    );
+
+    expect(viewport.width).toBe(1024);
+    expect(viewport.height).toBe(Math.round((1286 * 1024) / 1896));
+  });
+
+  test('does not enlarge a viewport that fits the texture size', () => {
+    const viewport = createRasterViewport(
+      createViewport([-10, -5, 20, 15]),
+      GEOGRAPHIC_METADATA,
+      1024
+    );
+
+    expect([viewport.width, viewport.height]).toEqual([400, 200]);
+  });
+
   test('accepts an authority-coded CRS object from current RasterSource metadata', () => {
     const metadata = {
       ...GEOGRAPHIC_METADATA,

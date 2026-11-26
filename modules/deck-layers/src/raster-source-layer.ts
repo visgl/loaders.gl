@@ -329,6 +329,7 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       const props: RasterBitmapLayerProps = {
         ...this.getSubLayerProps({id: 'raster-bitmap'}),
         ...placement,
+        _imageCoordinateSystem: getImageCoordinateSystem(placement.coordinateSystem),
         ...bitmapLayerProps,
         raster: !valueRange && percentileRange === null ? null : raster,
         valueRange: valueRange ?? percentileRange ?? [0, 1],
@@ -346,6 +347,7 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       coordinateSystem: renderResult.coordinateSystem,
       image: renderResult.image as any,
       bounds: renderResult.bounds,
+      _imageCoordinateSystem: getImageCoordinateSystem(renderResult.coordinateSystem),
       ...bitmapLayerProps
     };
     return renderSubLayer ? renderSubLayer(props) : new BitmapLayer(props);
@@ -886,6 +888,17 @@ export function createRasterRenderResult(
   return customRenderResult ? {...defaultRenderResult, ...customRenderResult} : defaultRenderResult;
 }
 
+/**
+ * Samples longitude/latitude rasters per fragment. Without this, deck.gl stretches the image
+ * linearly between its corners in Web Mercator, so rows land at the wrong latitude and move
+ * when the requested window changes.
+ */
+function getImageCoordinateSystem(
+  coordinateSystem: CoordinateSystem | undefined
+): BitmapLayerProps['_imageCoordinateSystem'] {
+  return coordinateSystem === 'lnglat' ? 'lnglat' : 'default';
+}
+
 /** Converts a deck.gl viewport into the normalized viewport accepted by RasterSource. */
 export function createRasterViewport(
   viewport: Viewport,
@@ -1096,14 +1109,13 @@ function createRasterViewportForBounds(
   maxTextureSize: number
 ): RasterViewport {
   const devicePixelRatio = globalThis.devicePixelRatio || 1;
-  const width = Math.max(
-    1,
-    Math.min(maxTextureSize, Math.round(viewport.width * devicePixelRatio))
-  );
-  const height = Math.max(
-    1,
-    Math.min(maxTextureSize, Math.round(viewport.height * devicePixelRatio))
-  );
+  const deviceWidth = viewport.width * devicePixelRatio;
+  const deviceHeight = viewport.height * devicePixelRatio;
+  // Scale both sides by one factor, so the request keeps the viewport's shape. Separate caps
+  // would make a wide viewport square, and sources would select a finer level than needed.
+  const scale = Math.min(1, maxTextureSize / deviceWidth, maxTextureSize / deviceHeight);
+  const width = Math.max(1, Math.min(maxTextureSize, Math.round(deviceWidth * scale)));
+  const height = Math.max(1, Math.min(maxTextureSize, Math.round(deviceHeight * scale)));
   const center = bounds
     ? [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2]
     : [0, 0];
