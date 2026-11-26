@@ -419,10 +419,12 @@ function createOMESource({
     documents[`/${level}/values/zarr.json`] = arrayDocument([size, size], ['y', 'x'], {
       ...(gridMapping ? {grid_mapping: gridMapping} : {})
     });
-    documents[`/${level}/spatial_ref/zarr.json`] = arrayDocument([], [], {
-      crs_wkt: 'PROJCRS["Example UTM"]',
-      ...(geoTransform ? {GeoTransform: `500000 ${resolution} 0 4650000 0 ${-resolution}`} : {})
-    });
+    if (gridMapping) {
+      documents[`/${level}/spatial_ref/zarr.json`] = arrayDocument([], [], {
+        crs_wkt: 'PROJCRS["Example UTM"]',
+        ...(geoTransform ? {GeoTransform: `500000 ${resolution} 0 4650000 0 ${-resolution}`} : {})
+      });
+    }
     for (const [name, origin, step] of [
       ['x', 500000, resolution],
       ['y', 4650000, -resolution]
@@ -465,14 +467,13 @@ test.each([
   ]);
   expect(metadata.levels?.map(level => level.metadata?.boundingBox)).toEqual([
     metadata.boundingBox,
-    geoTransform ? metadata.boundingBox : undefined
+    metadata.boundingBox
   ]);
   expect(requests.some(url => url.endsWith('/0/x/c/0'))).toBe(!geoTransform);
-  if (geoTransform) {
-    expect(metadata.tileGrid?.tileMatrixSet?.matrices.map(matrix => matrix.resolution)).toEqual([
-      2, 4
-    ]);
-  }
+  expect(requests.some(url => url.endsWith('/1/x/c/0'))).toBe(!geoTransform);
+  expect(metadata.tileGrid?.tileMatrixSet?.matrices.map(matrix => matrix.resolution)).toEqual([
+    2, 4
+  ]);
 });
 
 test('OME-NGFF levels may use their own frame when level ratios agree', async () => {

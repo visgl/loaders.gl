@@ -1499,7 +1499,28 @@ function parseFiniteMetadataValue(value: unknown): number | undefined {
   return Number.isFinite(numericValue) ? numericValue : undefined;
 }
 
-/** Interprets optional GDAL band attributes while retaining samples in the raw domain. */
+/** Maps TIFF photometric and extra-sample tags to a band's display role and alpha association. */
+function getImageBandInterpretation(
+  image: TiffSourceImage,
+  index: number
+): Pick<RasterBandMetadata, 'colorInterpretation' | 'alphaMode'> {
+  const photometric = image.fileDirectory?.PhotometricInterpretation;
+  if (photometric === 2 && index < 3)
+    return {colorInterpretation: (['red', 'green', 'blue'] as const)[index]};
+  if (index === 0 && (photometric === 0 || photometric === 1)) return {colorInterpretation: 'gray'};
+  if (index === 0 && photometric === 3) return {colorInterpretation: 'palette'};
+
+  const extraSamples = image.fileDirectory?.ExtraSamples;
+  if (extraSamples) {
+    const extraSample = extraSamples[index - (image.getSamplesPerPixel() - extraSamples.length)];
+    if (extraSample === 1) return {colorInterpretation: 'alpha', alphaMode: 'premultiplied'};
+    if (extraSample === 2) return {colorInterpretation: 'alpha', alphaMode: 'straight'};
+    if (extraSample === 0) return {colorInterpretation: 'undefined'};
+  }
+  return {colorInterpretation: undefined};
+}
+
+/** Interprets optional TIFF and GDAL band attributes while retaining samples in the raw domain. */
 function getImageBandMetadata(
   image: TiffSourceImage,
   index: number,
@@ -1519,6 +1540,7 @@ function getImageBandMetadata(
   const hasMaximum = maximumValue !== undefined;
   const hasDeclaredRange =
     (hasMinimum || hasMaximum) && !(hasMinimum && hasMaximum && minimumValue > maximumValue);
+  const interpretation = getImageBandInterpretation(image, index);
   return {
     index,
     declaredStatistics: hasDeclaredRange
@@ -1532,8 +1554,8 @@ function getImageBandMetadata(
         }
       : undefined,
     dtype: getImageDataType(image, index),
-    categorical:
-      index === 0 && image.fileDirectory?.PhotometricInterpretation === 3 ? true : undefined,
+    ...interpretation,
+    categorical: interpretation.colorInterpretation === 'palette' ? true : undefined,
     name: typeof metadata.DESCRIPTION === 'string' ? metadata.DESCRIPTION : undefined,
     units: typeof metadata.UNITTYPE === 'string' ? metadata.UNITTYPE : undefined,
     scale,
@@ -1564,6 +1586,7 @@ async function resizeRasterWindow(
   }
   const data = normalizeRasterReadResult(nativeRaster, false);
   const mixed = bands.some(band => band.dtype !== bands[0].dtype);
+  const hasAlpha = bands.some(band => band.colorInterpretation === 'alpha');
   const input = {
     data,
     dtype: mixed ? 'mixed' : bands[0].dtype,
@@ -1571,9 +1594,26 @@ async function resizeRasterWindow(
     width: nativeRaster.width,
     height: nativeRaster.height,
     bandCount: bands.length,
-    bands,
+    bands: hasAlpha
+      ? bands.map(band => (band.colorInterpretation === 'alpha' ? {...band, noData: null} : band))
+      : bands,
     validityMasks: nativeValidityMasks
   } as NumericRasterData;
+  // Keep nodata-only output distinguishable from invalid masks or non-finite samples for display.
+  const noDataBands = bands.map(({colorInterpretation, noData}) =>
+    Number.isFinite(noData) &&
+    colorInterpretation !== 'alpha' &&
+    (hasAlpha ||
+      colorInterpretation === 'red' ||
+      colorInterpretation === 'green' ||
+      colorInterpretation === 'blue')
+      ? noData
+      : undefined
+  );
+  const inputWithoutNoData = {
+    ...input,
+    bands: bands.map(band => ({...band, noData: null}))
+  };
   const pixelCount = targetSize.width * targetSize.height;
   const output = interleaved
     ? createInterleavedNoDataArray(bands, pixelCount)
@@ -1594,17 +1634,31 @@ async function resizeRasterWindow(
         if (pixelIndex > 0) await new Promise<void>(resolve => setTimeout(resolve, 0));
         signal?.throwIfAborted();
       }
-      const sample = sampleRaster(
-        input,
-        [
-          ((column + 0.5) * nativeRaster.width) / targetSize.width - 0.5,
-          ((row + 0.5) * nativeRaster.height) / targetSize.height - 0.5
-        ],
-        {method}
-      );
+      const pixel: [number, number] = [
+        ((column + 0.5) * nativeRaster.width) / targetSize.width - 0.5,
+        ((row + 0.5) * nativeRaster.height) / targetSize.height - 0.5
+      ];
+      const sample = sampleRaster(input, pixel, {method});
       for (let band = 0; band < bands.length; band++) {
-        const value = sample.values[band];
-        if (value === undefined || !Number.isFinite(value)) continue;
+        let value = sample.values[band];
+        if (value === undefined) {
+          const noData = noDataBands[band];
+          if (
+            noData === undefined ||
+            noData === null ||
+            !sampleRaster(inputWithoutNoData, pixel, {bands: [band], method}).valid[0]
+          )
+            continue;
+          // Only a sample whose nearest source pixel is noData becomes noData. A bilinear kernel
+          // that merely touches noData stays invalid, so edge colors do not turn into fill while
+          // an alpha band still blends there.
+          if (
+            method === 'bilinear' &&
+            sampleRaster(input, pixel, {bands: [band], method: 'nearest'}).values[0] !== undefined
+          )
+            continue;
+          value = noData;
+        }
         if (Array.isArray(output)) output[band][pixelIndex] = value;
         else output[pixelIndex * bands.length + band] = value;
         validityMasks[band].data[pixelIndex] = 1;

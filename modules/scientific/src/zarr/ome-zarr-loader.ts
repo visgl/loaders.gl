@@ -23,6 +23,7 @@ import {
 import type {Labels, Channel, Multiscale, RootAttrs, SupportedTypedArray} from './types';
 import {guessLabels, guessTileSize, validLabels} from './lib/utils';
 import ZarritaPixelSource from './lib/zarrita-pixel-source';
+import {limitZarrStore} from './lib/limited-zarr-store';
 import {
   loadConsolidatedMetadata,
   type LoadConsolidatedMetadataOptions,
@@ -190,14 +191,19 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
     cancellation: true
   });
   /** Zarrita store used for metadata and chunk reads. */
-  protected readonly store: zarrita.FetchStore;
+  protected readonly store: Readable;
   /** Selected group path within the store root. */
   protected readonly path: string | null;
   /** Shared consolidated metadata request. */
   private consolidatedMetadataPromise: Promise<ZarrConsolidatedMetadata> | null = null;
 
   /** Creates a Zarr-backed source. */
-  constructor(data: string, options: ZarrLoaderOptions, coreApi?: CoreAPI) {
+  constructor(
+    data: string,
+    options: ZarrLoaderOptions,
+    coreApi?: CoreAPI,
+    maxConcurrentRequests?: number
+  ) {
     super(
       data,
       options,
@@ -217,7 +223,7 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
     );
 
     this.path = this.options.zarr?.path || null;
-    this.store = new zarrita.FetchStore(getZarritaStoreUrl(this.url), {
+    const store = new zarrita.FetchStore(getZarritaStoreUrl(this.url), {
       fetch: async (request: Request) => {
         const headers = Object.fromEntries(request.headers.entries());
         return await this.fetchZarrFile(request.url, {
@@ -227,6 +233,8 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
         });
       }
     });
+    this.store =
+      maxConcurrentRequests === undefined ? store : limitZarrStore(store, maxConcurrentRequests);
   }
 
   /** Returns raster-query capabilities without reading array chunks. */

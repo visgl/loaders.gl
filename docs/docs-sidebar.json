@@ -1381,6 +1381,8 @@
               "slug": "/modules/_sections/raster/formats"
             }
           },
+          "modules/raster/api-reference/raster-source-layer",
+          "modules/raster/api-reference/raster-bitmap-layer",
           {
             "type": "category",
             "label": "@loaders.gl/raster/geotiff",

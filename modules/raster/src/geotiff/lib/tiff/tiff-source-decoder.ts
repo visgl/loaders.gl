@@ -14,6 +14,8 @@ export type TiffSourceDirectory = Readonly<Record<string, unknown>> & {
   readonly PlanarConfiguration?: number;
   /** Stored color-space or palette designation. */
   readonly PhotometricInterpretation?: number;
+  /** Interpretations of trailing samples, including TIFF associated and unassociated alpha. */
+  readonly ExtraSamples?: ArrayLike<number>;
   /** Explicit source-coordinate matrix. */
   readonly ModelTransformation?: ArrayLike<number>;
   /** Raster/source tiepoint pairs. */
