@@ -85,11 +85,15 @@ runtime sources.
 ## RasterSourceLayer
 
 `RasterSourceLayer` requests the active viewport through `RasterSet` and renders typed samples with
-`BitmapLayer`. It supports EPSG:4326 and EPSG:3857 bounds, RGB band selection, sampled 2nd/98th
-percentile scaling, transparent no-data pixels (including metadata-level no-data values), and a
-blue-to-yellow single-band ramp. CRS identifiers may be supplied as strings or authority-coded
-PROJJSON definitions. Rasters without geospatial bounds use a full pixel-coordinate plane for
-`OrthographicView`.
+`BitmapLayer`. The default colorizer uses tagged RGB or grayscale bands when available, with
+sampled 2nd/98th percentile scaling and a blue-to-yellow single-band ramp. Tagged 8-bit RGB
+shows as stored, without scaling. Tagged alpha sets
+opacity using the unsigned type's full range, the range 0–1 for floats, or clamped byte values
+for signed integers. With color metadata and no alpha, RGB pixels are transparent when all
+three channels match nodata. Masks and non-finite samples also make pixels transparent.
+The layer supports EPSG:4326 and EPSG:3857 bounds. CRS identifiers may be supplied as strings
+or authority-coded PROJJSON definitions. Rasters without geospatial bounds use a full
+pixel-coordinate plane for `OrthographicView`.
 
 Use `rasterParameters` for source-specific dimensions, `getRasterParameters` for custom request or
 projection logic, and `colorizeRaster` for application color maps.
