@@ -8,7 +8,7 @@ export type {GeoArrowLoaderOptions} from './geoarrow-loader-definition';
 
 /** Preloads the parser-bearing GeoArrow loader implementation. */
 async function preload() {
-  const {GeoArrowLoaderWithParser} = await import('@loaders.gl/tables/geoarrow/bundled');
+  const {GeoArrowLoaderWithParser} = await import('@loaders.gl/tables/geoarrow/parser');
   const {preloadArrowCompressionDecoders} = await import('./lib/parsers/arrow-compression');
   await preloadArrowCompressionDecoders();
   return GeoArrowLoaderWithParser;

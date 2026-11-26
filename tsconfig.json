@@ -924,6 +924,9 @@
       "@loaders.gl/tables/hudi": [
         "modules/tables/src/hudi/index.ts"
       ],
+      "@loaders.gl/tables/csv/parser": [
+        "modules/tables/src/csv-loader.ts"
+      ],
       "@loaders.gl/tables/csv/bundled": [
         "modules/tables/src/csv/bundled-entry.ts"
       ],
@@ -933,14 +936,29 @@
       "@loaders.gl/tables/arrow/types": [
         "modules/tables/src/arrow/types.ts"
       ],
+      "@loaders.gl/tables/arrow/parser": [
+        "modules/tables/src/arrow-loader.ts"
+      ],
       "@loaders.gl/tables/arrow/bundled": [
         "modules/tables/src/arrow/bundled-entry.ts"
       ],
       "@loaders.gl/tables/arrow/geometry": [
         "modules/tables/src/arrow/geometry/index.ts"
       ],
+      "@loaders.gl/tables/json/parser": [
+        "modules/tables/src/json-loader.ts"
+      ],
+      "@loaders.gl/tables/json/table-parser": [
+        "modules/tables/src/json-table-loader.ts"
+      ],
+      "@loaders.gl/tables/json/ndjson-parser": [
+        "modules/tables/src/ndjson-loader.ts"
+      ],
       "@loaders.gl/tables/json/bundled": [
         "modules/tables/src/json/bundled-entry.ts"
+      ],
+      "@loaders.gl/tables/orc/parser": [
+        "modules/tables/src/orc/orc-loader.ts"
       ],
       "@loaders.gl/tables/orc/bundled": [
         "modules/tables/src/orc/bundled-entry.ts"
@@ -948,17 +966,35 @@
       "@loaders.gl/tables/parquet/bundled": [
         "modules/tables/src/parquet/bundled-entry.ts"
       ],
+      "@loaders.gl/tables/delta/parser": [
+        "modules/tables/src/parquet/delta-loader.ts"
+      ],
       "@loaders.gl/tables/delta/bundled": [
         "modules/tables/src/delta-bundled.ts"
+      ],
+      "@loaders.gl/tables/avro/parser": [
+        "modules/tables/src/avro/avro-loader.ts"
       ],
       "@loaders.gl/tables/avro/bundled": [
         "modules/tables/src/avro-bundled-entry.ts"
       ],
+      "@loaders.gl/tables/lance/parser": [
+        "modules/tables/src/lance/lance-loader.ts"
+      ],
       "@loaders.gl/tables/lance/bundled": [
         "modules/tables/src/lance-bundled-entry.ts"
       ],
+      "@loaders.gl/tables/geojson/parser": [
+        "modules/tables/src/geojson-loader.ts"
+      ],
+      "@loaders.gl/tables/geojson/ndgeojson-parser": [
+        "modules/tables/src/json/ndgeojson-loader.ts"
+      ],
       "@loaders.gl/tables/geojson/bundled": [
         "modules/tables/src/geojson-bundled.ts"
+      ],
+      "@loaders.gl/tables/geoarrow/parser": [
+        "modules/tables/src/geoarrow-loader.ts"
       ],
       "@loaders.gl/tables/geoarrow/bundled": [
         "modules/tables/src/geoarrow-bundled.ts"

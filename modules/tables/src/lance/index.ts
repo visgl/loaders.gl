@@ -15,9 +15,9 @@ export {LanceDecoderUnavailableError} from './lance-errors';
 
 export {LANCE_LOADER_OPTIONS} from './lance-loader-types';
 
-export {LanceLoaderWithParser} from '../lance-loader';
+export {LanceLoaderWithParser} from './lance-loader';
 
-export {createLanceSource} from '../lance-source';
+export {createLanceSource} from './lance-source';
 
 export {
   parseLanceColumnMetadata,

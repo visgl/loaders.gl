@@ -5,23 +5,25 @@
 export {LanceLoaderWithParser as LanceLoader, LanceLoaderWithParser} from './lance/lance-loader';
 export {LanceFormat} from './lance/lance-format';
 export {LanceSource} from './lance/lance-source';
+export type {LanceLoaderOptions} from './lance/lance-loader-types';
+export type {LanceSourceLoaderOptions, LanceSourceMetadata} from './lance/lance-source';
+export type {LanceSourceCapabilities} from './lance/lance-source-capabilities';
 export type {
-  LanceLoaderOptions,
-  LanceSourceLoaderOptions,
-  LanceSourceMetadata,
-  LanceSourceCapabilities,
   LanceFileRange,
   LanceFilePageMetadata,
   LanceFileColumnMetadata,
-  LanceFileMetadata,
+  LanceFileMetadata
+} from './lance/lance-file';
+export type {
   LanceManifestInteger,
   LanceManifestField,
   LanceManifestDataFile,
   LanceManifestFragment,
-  LanceManifest,
-  LanceFlatPrimitiveType,
-  LanceFlatPrimitiveArray,
+  LanceManifest
+} from './lance/lance-manifest';
+export type {LanceFlatPrimitiveType, LanceFlatPrimitiveArray} from './lance/lance-decoder';
+export type {
   LanceArrowReadOptions,
   LanceRemoteColumnRead,
   LanceRemoteCoordinateRead
-} from './lance-bundled';
+} from './lance/lance-arrow';

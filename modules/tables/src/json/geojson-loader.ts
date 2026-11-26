@@ -319,4 +319,4 @@ function validateGeoJSONArrowOptions(options: GeoJSONLoaderOptions): void {
   }
 }
 
-export type {GeoJSONLoaderOptions} from './geojson-loader-types';
+export type {GeoJSONLoaderOptions} from './geojson-loader-definition';

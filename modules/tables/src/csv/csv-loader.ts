@@ -46,7 +46,7 @@ import {
   serializeCSVWorkerResult
 } from './lib/csv-worker-transport';
 
-export type {CSVLoaderOptions} from './csv-loader-types';
+export type {CSVLoaderOptions} from './csv-loader-options';
 
 /** Loader for CSV and other delimiter-separated tabular text formats. */
 export const CSVLoaderWithParser = {

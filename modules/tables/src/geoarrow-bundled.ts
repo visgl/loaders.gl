@@ -2,5 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './geoarrow';
-export {GeoArrowLoaderWithParser as GeoArrowLoader} from './geoarrow';
+export type {GeoArrowLoaderOptions} from './arrow/geoarrow-loader-definition';
+export {GeoArrowLoaderWithParser} from './geoarrow-loader';
+export {GeoArrowWriter} from './arrow/geoarrow-writer';
+export {GeoArrowLoaderWithParser as GeoArrowLoader} from './geoarrow-loader';
