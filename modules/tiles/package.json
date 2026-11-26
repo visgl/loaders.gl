@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "2D tileset runtime and MLT, MVT, TileJSON, and PMTiles loaders and writers",
   "license": "MIT",
   "type": "module",
@@ -161,10 +161,10 @@
     "generate-mlt-esm-decoder": "esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=esm --banner:js='// SPDX-License-Identifier: MIT' --outfile=src/mlt/libs/mlt-decoder.mjs"
   },
   "dependencies": {
-    "@loaders.gl/compression": "5.0.0",
-    "@loaders.gl/images": "5.0.0",
-    "@loaders.gl/tables": "5.0.0",
-    "@loaders.gl/tiles-3d": "5.0.0",
+    "@loaders.gl/compression": "5.0.1",
+    "@loaders.gl/images": "5.0.1",
+    "@loaders.gl/tables": "5.0.1",
+    "@loaders.gl/tiles-3d": "5.0.1",
     "@maplibre/mlt": "^1.1.6",
     "@math.gl/core": "^5.0.4",
     "@math.gl/geometry": "^5.0.4",

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/graphs",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Graph loaders for Graphviz DOT, GraphML, and GEXF",
   "license": "MIT",
   "type": "module",
@@ -97,7 +97,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@loaders.gl/documents": "5.0.0",
+    "@loaders.gl/documents": "5.0.1",
     "apache-arrow": ">= 17.0.0"
   }
 }
