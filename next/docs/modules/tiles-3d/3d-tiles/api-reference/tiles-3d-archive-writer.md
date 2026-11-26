@@ -3,7 +3,7 @@
 Packages already-authored 3D Tiles resources into a deterministic indexed `.3tz` archive. This writes an archive container, not a scene, mesh hierarchy, or I3S layer.
 
 ```
-import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles-archive-writer';
+import {Tiles3DArchiveWriter} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 
 
 
@@ -37,7 +37,7 @@ Payload reads/copies use blocks of at most 64 KiB. A checksum pass precedes each
 `encodeTiles3DArchiveInBatches` is exported from the implementation subpath. It accepts the same resources/options and yields `Uint8Array` views with byte-identical archive content:
 
 ```
-import {encodeTiles3DArchiveInBatches} from '@loaders.gl/tiles-3d/3d-tiles-archive-writer';
+import {encodeTiles3DArchiveInBatches} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
 
 
 

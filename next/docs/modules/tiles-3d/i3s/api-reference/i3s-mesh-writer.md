@@ -5,7 +5,7 @@ Authors a small I3S 1.7 **3D Object** layer from one triangle mesh using portabl
 ```
 import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
 
-import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
+import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/bundled';
 
 
 
