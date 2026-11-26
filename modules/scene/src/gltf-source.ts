@@ -1,1 +1,1 @@
-export * from './gltf/gltf-source.js';
+export {type GLTFSourceOptions, GLTFSource} from './gltf/gltf-source';

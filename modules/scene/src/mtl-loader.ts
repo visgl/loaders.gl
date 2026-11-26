@@ -1,1 +1,5 @@
-export * from './obj/mtl-loader.js';
+export {
+  type MTLLoaderOptions,
+  MTLWorkerLoaderWithParser,
+  MTLLoaderWithParser
+} from './obj/mtl-loader';

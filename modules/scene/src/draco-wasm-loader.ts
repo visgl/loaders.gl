@@ -1,2 +1,2 @@
 // SPDX-License-Identifier: MIT
-export * from './draco/draco-wasm-loader-with-parser';
+export {DracoWASMLoaderWithParser} from './draco/draco-wasm-loader-with-parser';

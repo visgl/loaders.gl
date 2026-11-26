@@ -1,2 +1,3 @@
 // SPDX-License-Identifier: MIT
-export * from './draco/draco-loader';
+export type {DracoLoaderOptions} from './draco/draco-loader-options';
+export {DracoLoaderWithParser} from './draco/draco-loader';

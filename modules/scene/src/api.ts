@@ -49,11 +49,10 @@ export {
   setGLTFAccessorValue
 } from './gltf/lib/api/gltf-accessors';
 export {getGLTFPrimitiveOutline} from './gltf/lib/api/gltf-primitive-outline';
+export type {GLTFLoaderOptions} from './gltf/gltf-loader';
+export type {GLBLoaderOptions} from './gltf/glb-loader';
+export type {GLB, GLBChunk} from './gltf/lib/types/glb-types';
 export type {
-  GLTFLoaderOptions,
-  GLBLoaderOptions,
-  GLB,
-  GLBChunk,
   GLTF,
   GLTFAccessor,
   GLTFBuffer,
@@ -77,15 +76,18 @@ export type {
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp,
   GLTF_EXT_texture_avif,
-  GLTF_MSFT_texture_dds,
-  GLTFShape,
-  GLTFBoundingVolume,
+  GLTF_MSFT_texture_dds
+} from './gltf/lib/types/gltf-json-schema';
+export type {GLTFShape, GLTFBoundingVolume} from './gltf/lib/types/gltf-shape-schema';
+export type {
   GLTF_MPEG_audio_spatial,
   GLTFSpatialAudio,
   GLTFSpatialAudioSource,
   GLTFSpatialAudioListener,
   GLTFSpatialAudioReverb,
-  GLTFSpatialAudioReverbProperty,
+  GLTFSpatialAudioReverbProperty
+} from './gltf/lib/types/gltf-mpeg-audio-spatial-schema';
+export type {
   GLTF_KHR_audio_emitter,
   GLTFKHRAudioData,
   GLTFKHRAudioSource,
@@ -94,18 +96,26 @@ export type {
   GLTFKHRAudioAttachment,
   GLTFAudioClip,
   GLTFAudioEmitterSource,
-  GLTFAudioEmitter,
+  GLTFAudioEmitter
+} from './gltf/lib/types/gltf-khr-audio-emitter-schema';
+export type {
   GLTF_EXT_mesh_polygon,
   GLTFImplicitFeatureIdRange,
   GLTFMeshPolygonData,
   GLTFPolygon,
   GLTFPrimitiveIndexRange,
-  GLTFPrimitiveRestartData,
+  GLTFPrimitiveRestartData
+} from './gltf/lib/types/gltf-vector-topology';
+export type {
   GLTF_KHR_gaussian_splatting,
   GLTF_KHR_gaussian_splatting_compression_spz_2,
-  GLTFGaussianSplatPrimitive,
+  GLTFGaussianSplatPrimitive
+} from './gltf/lib/types/gltf-ext-gaussian-splatting-schema';
+export type {
   GLTF_EXT_primitive_voxels,
-  GLTFVoxelPrimitive,
+  GLTFVoxelPrimitive
+} from './gltf/lib/types/gltf-ext-vector-voxel-schema';
+export type {
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_Schema,
   GLTF_EXT_feature_metadata_Class,
@@ -123,20 +133,28 @@ export type {
   GLTF_EXT_feature_metadata_FeatureIdAttribute,
   GLTF_EXT_feature_metadata_FeatureIdAttributeFeatureIds,
   GLTF_EXT_feature_metadata_FeatureIdTexture,
-  GLTF_EXT_feature_metadata_FeatureIdTextureAccessor,
+  GLTF_EXT_feature_metadata_FeatureIdTextureAccessor
+} from './gltf/lib/types/gltf-ext-feature-metadata-schema';
+export type {
   GLTF_EXT_structural_metadata_GLTF,
   GLTF_EXT_structural_metadata_Schema,
   GLTF_EXT_structural_metadata_PropertyTable,
   GLTF_EXT_structural_metadata_PropertyTexture,
   GLTF_EXT_structural_metadata_Class,
-  GLTF_EXT_structural_metadata_ClassProperty,
+  GLTF_EXT_structural_metadata_ClassProperty
+} from './gltf/lib/types/gltf-ext-structural-metadata-schema';
+export type {
   GLTF_EXT_mesh_features,
-  GLTF_EXT_mesh_features_featureId,
+  GLTF_EXT_mesh_features_featureId
+} from './gltf/lib/types/gltf-ext-mesh-features-schema';
+export type {
   GLTFWithBuffers,
   GLTFExternalFile,
-  FeatureTableJson,
-  GLTFSourceOptions,
-  GLTFDracoWriterOptions,
+  FeatureTableJson
+} from './gltf/lib/types/gltf-types';
+export type {GLTFSourceOptions} from './gltf/gltf-source';
+export type {GLTFDracoWriterOptions} from './gltf/lib/encoders/encode-gltf-draco';
+export type {
   GLTFIteratorType,
   GLTFIteratorMetadata,
   GLTFIteratorReferences,
@@ -155,11 +173,15 @@ export type {
   GLTFNodeReferences,
   GLTFSceneReferences,
   GLTFSkinReferences,
-  GLTFTextureReferences,
+  GLTFTextureReferences
+} from './gltf/lib/api/gltf-iterator';
+export type {
   GLTFV1NormalizationLog,
   GLTFV1NormalizationOptions,
-  GLTFV1NormalizationReport,
-  PropertyAttribute,
+  GLTFV1NormalizationReport
+} from './gltf/lib/api/normalize-gltf-v1';
+export type {PropertyAttribute} from './gltf/lib/extensions/EXT_structural_metadata';
+export type {
   GLTF_KHR_interactivity,
   GLTFInteractivityGraph,
   GLTFInteractivityNode,
@@ -172,11 +194,15 @@ export type {
   GLTFInteractivityType,
   GLTFInteractivityEventValue,
   GLTFInteractivityVariable,
-  GLTFInteractivityEvent,
+  GLTFInteractivityEvent
+} from './gltf/lib/types/gltf-interactivity';
+export type {
   GLTFMaterialVariantData,
-  GLTFMeshInstanceData,
-  GLTFAccessorReference,
-  GLTFWriterOptions,
+  GLTFMeshInstanceData
+} from './gltf/lib/api/gltf-extension-data';
+export type {GLTFAccessorReference} from './gltf/lib/api/gltf-accessors';
+export type {GLTFWriterOptions} from './gltf/gltf-writer';
+export type {
   GLTF_KHR_materials_variants,
   GLTFMaterialVariant,
   GLTF_KHR_materials_variants_primitive,
@@ -190,7 +216,9 @@ export type {
   GLTFXMPPacket,
   GLTF_KHR_xmp_json_ld_reference,
   GLTF_KHR_materials_emissive_strength,
-  GLTF_FB_geometry_metadata,
+  GLTF_FB_geometry_metadata
+} from './gltf/lib/types/gltf-additional-extension-schemas';
+export type {
   GLTFRootExtensions,
   GLTFMaterialExtensions,
   GLTFNodeExtensions,
@@ -198,7 +226,7 @@ export type {
   GLTFMeshPrimitiveExtensions,
   GLTFAnimationTargetExtensions,
   GLTFPropertyExtensions
-} from './gltf/bundled';
+} from './gltf/lib/types/gltf-extension-schemas';
 export {getDracoLibraryOptions} from './draco/draco-library-options';
 export {hasSameDracoMeshTriangles} from './draco/lib/compare-draco-mesh-triangles';
-export type {DracoLibraryOptions} from './draco-bundled';
+export type {DracoLibraryOptions} from './draco/draco-library-options';

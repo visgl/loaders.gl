@@ -3,4 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 export {STLLoader} from '../stl-loader-types';
-export type * from '../stl';
+export type {STLLoaderWithParser} from '../stl-loader';

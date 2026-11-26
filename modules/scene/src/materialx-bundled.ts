@@ -2,5 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export * from './materialx';
-export {MaterialXLoaderWithParser as MaterialXLoader} from './materialx';
+export {MaterialXLoaderWithParser} from './materialx-loader';
+export type {MaterialXDocument, MaterialXElement} from './materialx/parse-materialx';
+export {MaterialXLoaderWithParser as MaterialXLoader} from './materialx-loader';

@@ -1,1 +1,1 @@
-export * from './gltf/glb-loader.js';
+export {type GLBLoaderOptions, GLBLoaderWithParser} from './gltf/glb-loader';
