@@ -1,3 +1,4 @@
+import {getWorkspaceEntrypointAliases} from '../../scripts/workspace-package-aliases.js';
 import {defineConfig} from 'vite';
 import fs from 'fs';
 import path from 'path';
@@ -48,10 +49,13 @@ export default defineConfig(async () => ({
     __VERSION__: JSON.stringify(LOADERS_GL_VERSION)
   },
   resolve: {
-    alias: {
-      ...(await getAliases('@loaders.gl', `${__dirname}/../..`)),
-      ...getPackageAliases(__dirname)
-    },
+    alias: [
+      ...getWorkspaceEntrypointAliases('@loaders.gl', `${__dirname}/../..`),
+      ...Object.entries(await getAliases('@loaders.gl', `${__dirname}/../..`)).map(
+        ([find, replacement]) => ({find, replacement})
+      ),
+      ...Object.entries(getPackageAliases(__dirname)).map(([find, replacement]) => ({find, replacement}))
+    ],
     dedupe: DEDUPED_PACKAGES,
     extensions: ['.ts', '.tsx', '.mjs', '.js', '.mts', '.jsx', '.json']
   },
