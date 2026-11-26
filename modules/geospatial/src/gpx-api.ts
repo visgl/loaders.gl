@@ -3,4 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 export {parseGPXTextToFeatureCollection} from './kml/gpx-loader';
-export type {GPXLoaderOptions} from './gpx-bundled';
+export type {GPXLoaderOptions} from './kml/gpx-loader-types';

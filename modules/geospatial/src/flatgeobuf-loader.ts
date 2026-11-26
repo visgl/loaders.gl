@@ -8,7 +8,7 @@ import {
   FlatGeobufWorkerLoaderWithParser as workerParser
 } from './flatgeobuf/flatgeobuf-loader.js';
 
-export * from './flatgeobuf/flatgeobuf-loader.js';
+export type {FlatGeobufLoaderOptions} from './flatgeobuf/flatgeobuf-loader-definition';
 
 /** Parser-bearing FlatGeobuf loader with its browser module worker factory. */
 export const FlatGeobufLoaderWithParser = {

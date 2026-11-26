@@ -15,7 +15,7 @@ export type WKTCRSLoaderOptions = LoaderOptions & {
  * Preloads the parser-bearing WKT CRS loader implementation.
  */
 async function preload() {
-  const {WKTCRSLoaderWithParser} = await import('@loaders.gl/geospatial/wkt/bundled');
+  const {WKTCRSLoaderWithParser} = await import('@loaders.gl/geospatial/wkt/crs-parser');
   return WKTCRSLoaderWithParser;
 }
 

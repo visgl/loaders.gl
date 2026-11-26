@@ -18,9 +18,7 @@ export {
 export {WKBWriter} from './wkt/wkb-writer';
 export {TWKBWriter} from './wkt/twkb-writer';
 export {WKBFormat, HexWKBFormat, TWKBFormat} from './wkt/wkt-format';
-export type {
-  WKBLoaderOptions,
-  HexWKBLoaderOptions,
-  TWKBWriterOptions,
-  WKBWriterOptions
-} from './wkb-bundled';
+export type {WKBLoaderOptions} from './wkt/wkb-loader-types';
+export type {HexWKBLoaderOptions} from './wkt/hex-wkb-loader-types';
+export type {TWKBWriterOptions} from './wkt/twkb-writer';
+export type {WKBWriterOptions} from './wkt/wkb-writer';

@@ -23,6 +23,8 @@ Geospatial vector formats and geometry loader/writer descriptors share one packa
 Import metadata from format subpaths. Import parser-bearing loaders from bundled subpaths, such as `@loaders.gl/geospatial/wkb/bundled`. GeoPackage requires the optional `sql.js` peer dependency. See [Get Started](../../developer-guide/get-started.md#install-packages-import-subpaths) for installation and loading patterns.
 
 
+Focused parser subpaths load individual implementations. For example, import the implementation from `@loaders.gl/geospatial/kml/parser`. The format metadata loaders use these subpaths in `preload()`.
+
 ## Format guides
 
 - [FlatGeobuf](./flatgeobuf/formats/flatgeobuf.md)

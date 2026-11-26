@@ -4,9 +4,9 @@
 
 export {FLATGEOBUF_TABLE_QUERY_CAPABILITIES} from './flatgeobuf-table-query-capabilities';
 export {createFlatGeobufSource} from './flatgeobuf-source';
+export type {FlatGeobufLoaderOptions} from './flatgeobuf-loader-definition';
 export type {
-  FlatGeobufLoaderOptions,
   FlatGeobufReadOptions,
   FlatGeobufSourceExplain,
   FlatGeobufSourceLoaderOptions
-} from './bundled';
+} from './flatgeobuf-source';

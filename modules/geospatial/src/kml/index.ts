@@ -36,4 +36,4 @@ export {
   parseKMLDocument as _parseKMLDocument
 } from './kml-parser';
 
-export {KMLLoaderWithParser, parseKMLTextToFeatureCollection} from '../kml-loader';
+export {KMLLoaderWithParser, parseKMLTextToFeatureCollection} from './kml-loader';
