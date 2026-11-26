@@ -93,11 +93,9 @@ export {
   Tile3DSubtreeLoader,
   Tiles3DArchiveFileLoader
 } from '@loaders.gl/tiles-3d/3d-tiles';
-export {
-  Tiles3DArchiveSource,
-  Tile3DWriter,
-  Tiles3DArchiveWriter
-} from '@loaders.gl/tiles-3d/3d-tiles/bundled';
+export {Tiles3DArchiveSource} from '../src/3d-tiles/3d-tiles-archive-source';
+export {Tile3DWriter} from '../src/3d-tiles/tile-3d-writer';
+export {Tiles3DArchiveWriter} from '../src/3d-tiles/3d-tiles-archive-writer';
 export {
   Tile3DFeatureTable,
   Tile3DBatchTable,

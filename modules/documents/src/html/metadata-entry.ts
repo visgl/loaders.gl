@@ -4,4 +4,4 @@
 
 export {HTMLLoader} from '../html-loader-types';
 export {HTMLFormat} from '../xml-format';
-export type * from '../html';
+export type {HTMLLoaderOptions, HTMLLoaderWithParser} from '../html-loader';
