@@ -13,7 +13,7 @@ export type JSONLoaderOptions = LoaderOptions;
 
 /** Loads the native JSON parser only when requested. */
 async function preload() {
-  const {JSONLoaderWithParser} = await import('@loaders.gl/documents/json/bundled');
+  const {JSONLoaderWithParser} = await import('@loaders.gl/documents/json/parser');
   return JSONLoaderWithParser;
 }
 

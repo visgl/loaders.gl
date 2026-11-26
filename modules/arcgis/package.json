@@ -36,32 +36,32 @@
       "require": "./dist/index.cjs"
     },
     "./bundled": {
-      "types": "./dist/bundled-entry.d.ts",
-      "import": "./dist/bundled-entry.js"
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
     },
     "./arcgis-feature-server-loader": {
       "types": "./dist/arcgis-feature-server-loader.d.ts",
       "import": "./dist/arcgis-feature-server-loader.js"
     },
     "./arcgis-image-server-loader": {
-      "types": "./dist/arcgis-image-server-loader.d.ts",
-      "import": "./dist/arcgis-image-server-loader.js"
+      "types": "./dist/arcgis/arcgis-image-server-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-image-server-loader.js"
     },
     "./arcgis-image-tile-loader": {
-      "types": "./dist/arcgis-image-tile-loader.d.ts",
-      "import": "./dist/arcgis-image-tile-loader.js"
+      "types": "./dist/arcgis/arcgis-image-tile-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-image-tile-loader.js"
     },
     "./arcgis-map-tile-loader": {
-      "types": "./dist/arcgis-map-tile-loader.d.ts",
-      "import": "./dist/arcgis-map-tile-loader.js"
+      "types": "./dist/arcgis/arcgis-map-tile-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-map-tile-loader.js"
     },
     "./arcgis-scene-server-loader": {
-      "types": "./dist/arcgis-scene-server-loader.d.ts",
-      "import": "./dist/arcgis-scene-server-loader.js"
+      "types": "./dist/arcgis/arcgis-scene-server-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-scene-server-loader.js"
     },
     "./arcgis-vector-tile-server-loader": {
-      "types": "./dist/arcgis-vector-tile-server-loader.d.ts",
-      "import": "./dist/arcgis-vector-tile-server-loader.js"
+      "types": "./dist/arcgis/arcgis-vector-tile-server-loader.d.ts",
+      "import": "./dist/arcgis/arcgis-vector-tile-server-loader.js"
     },
     "./authentication": {
       "types": "./dist/authentication.d.ts",
@@ -106,9 +106,9 @@
       "require": "./dist/vector-tile-service/metadata-entry.cjs"
     },
     "./feature-service/bundled": {
-      "types": "./dist/feature-service/bundled-entry.d.ts",
-      "import": "./dist/feature-service/bundled-entry.js",
-      "require": "./dist/feature-service/bundled-entry.cjs"
+      "types": "./dist/feature-service/bundled.d.ts",
+      "import": "./dist/feature-service/bundled.js",
+      "require": "./dist/feature-service/bundled.cjs"
     },
     "./image-service/bundled": {
       "types": "./dist/image-service/bundled.d.ts",
@@ -121,9 +121,9 @@
       "require": "./dist/map-service/bundled.cjs"
     },
     "./scene-service/bundled": {
-      "types": "./dist/scene-service/bundled-entry.d.ts",
-      "import": "./dist/scene-service/bundled-entry.js",
-      "require": "./dist/scene-service/bundled-entry.cjs"
+      "types": "./dist/scene-service/bundled.d.ts",
+      "import": "./dist/scene-service/bundled.js",
+      "require": "./dist/scene-service/bundled.cjs"
     },
     "./vector-tile-service/bundled": {
       "types": "./dist/vector-tile-service/bundled.d.ts",

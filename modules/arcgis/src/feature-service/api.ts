@@ -5,11 +5,13 @@
 export {ArcGISFeatureQueryError} from '../arcgis/arcgis-feature-query';
 export type {
   ArcGISFeatureServiceQueryOptions,
-  ArcGISFeatureServerLoaderOptions,
+  ArcGISFeatureServerLoaderOptions
+} from '../arcgis-source-types';
+export type {
   ArcGISFeatureQueryParameters,
   ArcGISFeatureQueryOptions,
   ArcGISFeatureQueryProgress,
   ArcGISFeatureQueryResult,
   ArcGISFeatureObjectIds,
   ArcGISFeatureExtent
-} from './bundled';
+} from '../arcgis-feature-query-types';

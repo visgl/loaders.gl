@@ -93,7 +93,7 @@ export {
   PotreeHierarchyChunkLoader,
   PotreeBinLoader
 } from '@loaders.gl/tiles-3d/potree';
-export {PotreeWriter} from '@loaders.gl/tiles-3d/potree/bundled';
+export {PotreeWriter} from '../src/potree/potree-writer';
 export type {
   PotreeDatasetMetadata,
   HierarchyItem,
