@@ -431,7 +431,7 @@ function tryParseTypedNumericCSVText(
   ) {
     const character = csvText.charCodeAt(characterIndex);
     if (character >= 48 && character <= 57) {
-      value = value * 10 + character - 48;
+      value = value * 10 + (character - 48);
       continue;
     }
 
@@ -1400,7 +1400,7 @@ function parseRawUtf8ValueWithDynamicTyping(
         if (byte < 48 || byte > 57) {
           break;
         }
-        integerValue = integerValue * 10 + byte - 48;
+        integerValue = integerValue * 10 + (byte - 48);
         byteIndex++;
       }
       if (byteIndex === valueEnd) {

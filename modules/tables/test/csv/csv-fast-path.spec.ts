@@ -26,6 +26,16 @@ describe('CSV optimized parsing paths', () => {
     expect(getArrowColumnValues(table, 'empty')).toEqual(['x', '']);
   });
 
+  test.each([false, true])('preserves large safe integers with quoted=%s', async quoted => {
+    const integers = ['9007199254740991', '9007199254740989'];
+    const rows = integers.map(integer => (quoted ? `"${integer}"` : integer));
+    const table = await CSVLoader.parseText(['value', ...rows].join('\n'), {
+      csv: {header: true, shape: 'arrow', dynamicTyping: true}
+    });
+
+    expect(getArrowColumnValues(table, 'value')).toEqual(integers.map(Number));
+  });
+
   test.each([false, true])('matches row output for dynamicTyping=%s', async dynamicTyping => {
     const csvText = 'name,count,enabled\nitem,42,TRUE\nother,,false';
     const options = {header: true as const, dynamicTyping, skipEmptyLines: false as const};
