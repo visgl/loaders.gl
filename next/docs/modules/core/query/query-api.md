@@ -208,3 +208,13 @@ Use `queryScalesProgressive()` for data-derived domains. It reads the query once
 Computed quantile inputs such as `SCALE_QUANTILE(value * 2, 5, PALETTE('Blues'))` work in materialized and progressive queries. Fixed ordinal mappings and threshold scales can use explicit colors. Use `queryScaleExpressions()` for scale calls inside `CASE`, `COALESCE`, or nested expressions. Its `scales` map contains an ordered array of resolved samplers for every expression, matching the scale calls that produced the output.
 
 Run `yarn bench scale-query` to compare fixed-domain streaming, exact percentile collection, and approximate percentile snapshots over equivalent Arrow IPC, Parquet, and CSV sources. The benchmark starts with warm source metadata and applies the same row predicate in each format.
+
+## Preloading query execution[​](#preloading-query-execution "Direct link to Preloading query execution")
+
+Import `preloadQuery` from `@loaders.gl/core/query` to warm the ordinary Arrow executor when an application anticipates a query, for example when it opens a query panel.
+
+```
+await preloadQuery();
+```
+
+Preloading does not open a source or read rows. Concurrent queries share the executor import. Without an explicit preload, `query()` starts loading the executor alongside SQL parsing, source opening, and metadata discovery. `queryInBatches()` starts on the first iterator pull. Row reads begin after planning. Progressive aggregates and computed expressions load their specialized implementations on demand.
