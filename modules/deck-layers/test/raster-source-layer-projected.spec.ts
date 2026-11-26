@@ -389,3 +389,75 @@ test('reports unresolvable CRS definitions and keeps custom request and placemen
     bounds: customBounds
   });
 });
+
+/** NAD83 / UTM zone 19N is not a built-in projection engine code. */
+const NAD83_UTM19_DEFINITION = '+proj=utm +zone=19 +datum=NAD83 +units=m +no_defs';
+
+test.for([
+  'cpu',
+  'gpu'
+] as const)('places a %s raster in a CRS supplied by resolveCRSDefinition', async (rendering, {
+  onTestFinished
+}) => {
+  await expect(projectionEngine.getCRS('EPSG:26919')).rejects.toThrow(/EPSG:26919/);
+  const viewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -69,
+    latitude: 41,
+    zoom: 12
+  });
+  const resolveCRSDefinition = vi.fn(async (identifier: string) =>
+    identifier === 'EPSG:26919' ? NAD83_UTM19_DEFINITION : null
+  );
+  const {layer, getRaster, onRasterLoad} = createProjectedLayer(
+    viewport,
+    {
+      ...PROJECTED_METADATA,
+      crs: 'EPSG:26919',
+      boundingBox: [
+        [400_000, 4_400_000],
+        [600_000, 4_700_000]
+      ]
+    },
+    {rendering, resolveCRSDefinition}
+  );
+  onTestFinished(() => layer['releaseRasterSet']());
+  await layer['resolveSource'](layer.props);
+  await vi.waitFor(() => expect(onRasterLoad).toHaveBeenCalledOnce());
+
+  expect(resolveCRSDefinition).toHaveBeenCalledOnce();
+  expect(resolveCRSDefinition).toHaveBeenCalledWith('EPSG:26919');
+  const request = getRaster.mock.calls[0][0].viewport;
+  expect(request.crs).toBe('EPSG:26919');
+  const [minimumX, minimumY, maximumX, maximumY] = request.getBounds!();
+  expect(minimumX).toBeLessThan(500_000);
+  expect(maximumX).toBeGreaterThan(500_000);
+  expect(minimumY).toBeGreaterThan(4_500_000);
+  expect(maximumY).toBeLessThan(4_600_000);
+
+  const bitmap = layer.renderLayers() as BitmapLayer;
+  expect(bitmap.props.coordinateSystem).toBe(NAD83_UTM19_DEFINITION);
+});
+
+test('keeps the built-in identifier when resolveCRSDefinition returns nothing', async ({
+  onTestFinished
+}) => {
+  const viewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -27,
+    latitude: 38,
+    zoom: 12
+  });
+  const resolveCRSDefinition = vi.fn(() => undefined);
+  const {layer, onRasterLoad} = createProjectedLayer(viewport, PROJECTED_METADATA, {
+    resolveCRSDefinition
+  });
+  onTestFinished(() => layer['releaseRasterSet']());
+  await layer['resolveSource'](layer.props);
+  await vi.waitFor(() => expect(onRasterLoad).toHaveBeenCalledOnce());
+
+  expect(resolveCRSDefinition).toHaveBeenCalledWith('EPSG:32626');
+  expect((layer.renderLayers() as BitmapLayer).props.coordinateSystem).toBe('EPSG:32626');
+});

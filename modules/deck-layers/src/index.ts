@@ -33,6 +33,7 @@ export type {
   RasterColorizerContext,
   RasterRenderResult,
   RasterSourceLayerProps,
+  RasterCRSDefinition,
   RasterSourceSubLayerProps
 } from './raster-source-layer';
 export {colorizeRasterData, RasterSourceLayer} from './raster-source-layer';

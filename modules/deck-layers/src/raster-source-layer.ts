@@ -83,6 +83,9 @@ export type RasterRenderResult = {
 /** Props passed to a custom sublayer for the active raster rendering mode. */
 export type RasterSourceSubLayerProps = Partial<BitmapLayerProps> | RasterBitmapLayerProps;
 
+/** A CRS definition that deck.gl and the projection engine accept, such as a PROJ string or WKT. */
+export type RasterCRSDefinition = Exclude<CoordinateSystem, 'lnglat' | 'cartesian' | 'default'>;
+
 /** Props for {@link RasterSourceLayer}. */
 export type RasterSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders'> & {
   /** Raster source runtime, URL, or Blob. */
@@ -100,6 +103,14 @@ export type RasterSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders
     viewport: RasterViewport,
     metadata: RasterSourceMetadata
   ) => GetRasterParameters | Record<string, unknown>;
+  /**
+   * Returns a CRS definition (for example a PROJ string or WKT) for a source CRS identifier.
+   * Use it for codes that the built-in projection engine does not know, such as NAD83 UTM
+   * zones. Return `null` or `undefined` to use the identifier. Called once when metadata loads.
+   */
+  resolveCRSDefinition?: (
+    identifier: string
+  ) => RasterCRSDefinition | null | undefined | Promise<RasterCRSDefinition | null | undefined>;
   /** Optional raster-to-bitmap colorizer for the CPU path. */
   colorizeRaster?: (raster: RasterData, context: RasterColorizerContext) => RasterRenderResult;
   /** Props forwarded to either bitmap sublayer. */
@@ -139,8 +150,10 @@ type RasterBitmapPlacement = Pick<RasterRenderResult, 'bounds' | 'coordinateSyst
 
 /** A deck.gl CRS definition and its prepared conversion between source units and WGS84. */
 type ProjectedRasterCRS = {
-  /** CRS identifier passed to the source and bitmap layers. */
+  /** CRS identifier passed to the source. */
   identifier: string;
+  /** CRS definition passed to the bitmap layers. */
+  definition: RasterCRSDefinition;
   /** Synchronous conversions for viewport sampling and raster coordinates. */
   converter: CRSConverter;
 };
@@ -460,14 +473,18 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
   /** Prepares the source CRS once and resumes requests on the latest layer and viewport. */
   private async resolveProjectedCRS(identifier: string): Promise<void> {
     const {resolutionId, rasterSet} = this.state;
-    const descriptor = await projectionEngine.getCRS(identifier).catch(() => null);
+    const resolved = await resolveRasterCRS(identifier, this.props.resolveCRSDefinition);
     const layer = (this.getCurrentLayer() as this | null) ?? this;
     if (resolutionId !== layer.state.resolutionId || rasterSet !== layer.state.rasterSet) {
       return;
     }
     const projectedCRS =
-      descriptor?.coordinateFrame === 'projected'
-        ? {identifier, converter: descriptor.converter.WGS84}
+      resolved?.descriptor.coordinateFrame === 'projected'
+        ? {
+            identifier,
+            definition: resolved.definition,
+            converter: resolved.descriptor.converter.WGS84
+          }
         : null;
     layer.setState({projectedCRS});
     layer.requestRaster(layer.context.viewport, 0);
@@ -806,7 +823,7 @@ export function createDefaultRasterRenderResult(
     // deck.gl v10 reads the texture dimensions from the image payload for mipmap allocation.
     image:
       projectedCRS &&
-      placement.coordinateSystem === projectedCRS.identifier &&
+      placement.coordinateSystem === projectedCRS.definition &&
       typeof ImageData !== 'undefined'
         ? new ImageData(image.data as Uint8ClampedArray<ArrayBuffer>, image.width, image.height)
         : image
@@ -856,7 +873,7 @@ function getRasterBitmapPlacement(
         `RasterSourceLayer requires explicit bounds and coordinateSystem for an unsupported source CRS (${rasterCoordinateReferenceSystem}).`
       );
     }
-    coordinateSystem = rasterCoordinateReferenceSystem;
+    coordinateSystem = projectedCRS.definition;
   }
   const mercator = rasterCoordinateReferenceSystem === 'EPSG:3857';
   const bounds = raster.transform
@@ -921,6 +938,21 @@ export function createRasterViewport(
   }
 
   return createRasterViewportForBounds(viewport, bounds, coordinateReferenceSystem, maxTextureSize);
+}
+
+/** Resolves a source CRS, preferring the app definition over the built-in identifier lookup. */
+async function resolveRasterCRS(
+  identifier: string,
+  resolveCRSDefinition: RasterSourceLayerProps['resolveCRSDefinition']
+): Promise<{
+  definition: RasterCRSDefinition;
+  descriptor: Awaited<ReturnType<typeof projectionEngine.getCRS>>;
+} | null> {
+  const definition = (await resolveCRSDefinition?.(identifier)) ?? identifier;
+  const descriptor = await projectionEngine
+    .getCRS(definition as Parameters<typeof projectionEngine.getCRS>[0])
+    .catch(() => null);
+  return descriptor ? {definition, descriptor} : null;
 }
 
 /** Maps screen samples into the source CRS and fits square pixels within the texture budget. */
