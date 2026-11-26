@@ -507,8 +507,8 @@
       "@loaders.gl/scientific/gtfs-realtime": [
         "modules/scientific/src/gtfs-realtime/index.ts"
       ],
-      "@loaders.gl/geospatial/omm": [
-        "modules/geospatial/src/omm/index.ts"
+      "@loaders.gl/scientific/omm": [
+        "modules/scientific/src/omm/index.ts"
       ],
       "@loaders.gl/scientific/adsb/test": [
         "modules/scientific/test/adsb"
@@ -522,14 +522,14 @@
       "@loaders.gl/scientific/gtfs-realtime/test": [
         "modules/scientific/test/gtfs-realtime"
       ],
-      "@loaders.gl/geospatial/omm/test": [
-        "modules/geospatial/test/omm"
+      "@loaders.gl/scientific/omm/test": [
+        "modules/scientific/test/omm"
       ],
-      "@loaders.gl/geospatial/tle": [
-        "modules/geospatial/src/tle/index.ts"
+      "@loaders.gl/scientific/tle": [
+        "modules/scientific/src/tle/index.ts"
       ],
-      "@loaders.gl/geospatial/tle/test": [
-        "modules/geospatial/test/tle"
+      "@loaders.gl/scientific/tle/test": [
+        "modules/scientific/test/tle"
       ],
       "@loaders.gl/geospatial/wkt": [
         "modules/geospatial/src/wkt/metadata-entry.ts"
@@ -792,11 +792,11 @@
       "@loaders.gl/scientific/gtfs-realtime/bundled": [
         "modules/scientific/src/gtfs-realtime/bundled.ts"
       ],
-      "@loaders.gl/geospatial/omm/bundled": [
-        "modules/geospatial/src/omm/bundled.ts"
+      "@loaders.gl/scientific/omm/bundled": [
+        "modules/scientific/src/omm/bundled.ts"
       ],
-      "@loaders.gl/geospatial/tle/bundled": [
-        "modules/geospatial/src/tle/bundled.ts"
+      "@loaders.gl/scientific/tle/bundled": [
+        "modules/scientific/src/tle/bundled.ts"
       ],
       "@loaders.gl/geospatial/wkt/bundled": [
         "modules/geospatial/src/wkt/bundled.ts"
