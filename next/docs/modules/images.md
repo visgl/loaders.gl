@@ -129,7 +129,7 @@ import {VideoLoader} from '@loaders.gl/images/video';
 const imageBitmap = await load('image.png', ImageLoader);
 ```
 
-Direct parser access uses flat subpaths and `*WithParser` exports. For example, `BasisLoaderWithParser` is available from `@loaders.gl/images/basis`. Texture writers use direct subpaths such as `@loaders.gl/images/basis`; manifest schemas use `@loaders.gl/images/texture`.
+Direct parser access uses flat subpaths and `*WithParser` exports. For example, `BasisLoaderWithParser` is available from `@loaders.gl/images/basis`. Import `ImageWriter` from `@loaders.gl/images/image/writer`. Texture writers use direct subpaths such as `@loaders.gl/images/basis`; manifest schemas use `@loaders.gl/images/texture`.
 
 ### Direct parser and sync access[​](#direct-parser-and-sync-access "Direct link to Direct parser and sync access")
 
@@ -175,7 +175,7 @@ The Node backend detects formats from encoded bytes and returns RGBA pixels thro
 
 ## Package exports[​](#package-exports "Direct link to Package exports")
 
-All exported subpaths (<!-- -->31<!-- -->)
+All exported subpaths (<!-- -->32<!-- -->)
 
 These are the package's public exports, including format entry points, parsers, writers, sources, and worker assets.
 
@@ -201,6 +201,7 @@ These are the package's public exports, including format entry points, parsers, 
 |        | `@loaders.gl/images/ies/bundled`                       |
 |        | `@loaders.gl/images/image`                             |
 |        | `@loaders.gl/images/image/bundled`                     |
+|        | `@loaders.gl/images/image/writer`                      |
 |        | `@loaders.gl/images/ktx2-basis-writer-worker-node.cjs` |
 |        | `@loaders.gl/images/ktx2-basis-writer-worker-node.js`  |
 |        | `@loaders.gl/images/ktx2-basis-writer-worker.js`       |
