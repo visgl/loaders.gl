@@ -7,6 +7,8 @@ import {parse} from '@loaders.gl/core';
 import {KMLLoader, KMZLoader} from '@loaders.gl/geospatial/kml';
 import {GPXLoader} from '@loaders.gl/geospatial/gpx';
 import {TCXLoader} from '@loaders.gl/geospatial/tcx';
+import {ADSBLoader} from '@loaders.gl/scientific/adsb';
+import {AISLoader} from '@loaders.gl/scientific/ais';
 import {OMMLoader} from '@loaders.gl/scientific/omm';
 import {TLELoader} from '@loaders.gl/scientific/tle';
 import {ShapefileLoader} from '@loaders.gl/geospatial/shapefile';
@@ -21,6 +23,8 @@ import {TCXLoaderWithParser} from '@loaders.gl/geospatial/tcx/bundled';
 import {ShapefileLoaderWithParser} from '@loaders.gl/geospatial/shapefile/bundled';
 import {SHPLoaderWithParser} from '@loaders.gl/geospatial/shp/bundled';
 import {DBFLoaderWithParser} from '@loaders.gl/geospatial/dbf/bundled';
+import {ADSBLoaderWithParser} from '@loaders.gl/scientific/adsb/bundled';
+import {AISLoaderWithParser} from '@loaders.gl/scientific/ais/bundled';
 import {OMMLoaderWithParser} from '@loaders.gl/scientific/omm/bundled';
 import {TLELoaderWithParser} from '@loaders.gl/scientific/tle/bundled';
 import {KMLLoader as FormatKMLLoader} from '@loaders.gl/geospatial/kml';
@@ -37,6 +41,8 @@ test.each([
   [KMZLoader, KMZLoaderWithParser],
   [GPXLoader, GPXLoaderWithParser],
   [TCXLoader, TCXLoaderWithParser],
+  [ADSBLoader, ADSBLoaderWithParser],
+  [AISLoader, AISLoaderWithParser],
   [OMMLoader, OMMLoaderWithParser],
   [TLELoader, TLELoaderWithParser],
   [ShapefileLoader, ShapefileLoaderWithParser],

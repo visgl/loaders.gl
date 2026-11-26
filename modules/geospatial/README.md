@@ -1,8 +1,8 @@
 # @loaders.gl/geospatial
 
-Geospatial loaders and writers for vector files, geometry encodings, and satellite orbit elements.
+Geospatial loaders and writers for vector files, geometry encodings, satellite orbit elements, and vessel and aircraft position reports.
 
-Supported formats: KML, KMZ, GPX, TCX, Shapefile, SHP, SHX, DBF, CPG, PRJ, FlatGeobuf, GeoPackage, WKT, WKT CRS, WKB, TWKB.
+Supported formats: KML, KMZ, GPX, TCX, Shapefile, SHP, SHX, DBF, CPG, PRJ, FlatGeobuf, GeoPackage, WKT, WKT CRS, WKB, TWKB, AIS, and ADS-B aircraft state JSON.
 
 
 Proof of concept for [RFC #4248](https://github.com/visgl/loaders.gl/issues/4248).

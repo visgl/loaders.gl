@@ -621,6 +621,8 @@
               "modules/geospatial/kml/formats/gpx",
               "modules/geospatial/kml/formats/kml",
               "modules/geospatial/kml/formats/tcx",
+              "modules/scientific/adsb/formats/adsb",
+              "modules/scientific/ais/formats/ais",
               "modules/scientific/omm/formats/omm",
               "modules/geospatial/shapefile/formats/shapefile",
               "modules/scientific/tle/formats/tle",
@@ -670,6 +672,24 @@
             "link": {
               "type": "doc",
               "id": "modules/geospatial/kml/README"
+            }
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/scientific/adsb",
+            "items": ["modules/scientific/adsb/api-reference/adsb-loader"],
+            "link": {
+              "type": "doc",
+              "id": "modules/scientific/adsb/README"
+            }
+          },
+          {
+            "type": "category",
+            "label": "@loaders.gl/scientific/ais",
+            "items": ["modules/scientific/ais/api-reference/ais-loader"],
+            "link": {
+              "type": "doc",
+              "id": "modules/scientific/ais/README"
             }
           },
           {

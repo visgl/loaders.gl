@@ -495,8 +495,20 @@
       "@loaders.gl/traces/test": [
         "modules/traces/test"
       ],
+      "@loaders.gl/scientific/adsb": [
+        "modules/scientific/src/adsb/index.ts"
+      ],
+      "@loaders.gl/scientific/ais": [
+        "modules/scientific/src/ais/index.ts"
+      ],
       "@loaders.gl/scientific/omm": [
         "modules/scientific/src/omm/index.ts"
+      ],
+      "@loaders.gl/scientific/adsb/test": [
+        "modules/scientific/test/adsb"
+      ],
+      "@loaders.gl/scientific/ais/test": [
+        "modules/scientific/test/ais"
       ],
       "@loaders.gl/scientific/omm/test": [
         "modules/scientific/test/omm"
@@ -755,6 +767,12 @@
       ],
       "@loaders.gl/geospatial/geopackage/bundled": [
         "modules/geospatial/src/geopackage/bundled-entry.ts"
+      ],
+      "@loaders.gl/scientific/adsb/bundled": [
+        "modules/scientific/src/adsb/bundled.ts"
+      ],
+      "@loaders.gl/scientific/ais/bundled": [
+        "modules/scientific/src/ais/bundled.ts"
       ],
       "@loaders.gl/scientific/omm/bundled": [
         "modules/scientific/src/omm/bundled.ts"
