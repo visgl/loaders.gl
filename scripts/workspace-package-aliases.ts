@@ -39,10 +39,13 @@ export function getWorkspaceEntrypointAliases(frameworkName: string, frameworkRo
           ? sourcePath
           : resolve(moduleDirectory, target);
       const specifier = manifest.name + exportPath.slice(1);
-      const escaped = specifier.replace(/[.*+?^$\x7b\x7d()|[\]\\]/g, '\\$&');
+      const pattern = specifier
+        .split('*')
+        .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('(.+)');
       aliases.push({
-        find: new RegExp('^' + escaped.replace('\\*', '(.+)') + '$'),
-        replacement: wildcard ? replacement.replace('*', '$1') : replacement
+        find: new RegExp('^' + pattern + '$'),
+        replacement: wildcard ? replacement.split('*').join('$1') : replacement
       });
     }
   }
