@@ -13,11 +13,7 @@ import {
 } from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {LASFormat} from './las-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {LAS_WRITER_METADATA} from './las-writer-types';
 
 const LAS_HEADER_LENGTH = 227;
 const LAS_1_4_HEADER_LENGTH = 375;
@@ -86,14 +82,7 @@ export type LASWriterOptions = WriterOptions & {
  * Writer for LAS and LAZ point cloud data.
  */
 export const LASWriter = {
-  ...LASFormat,
-  dataType: null as unknown as Mesh | Table,
-  batchType: null as never,
-  version: VERSION,
-  extensions: ['las', 'laz'],
-  options: {
-    las: {}
-  },
+  ...LAS_WRITER_METADATA,
   encode: async (data, options) => encodeLASSync(data, options),
   encodeSync: encodeLASSync,
   encodeInBatches: async function* (dataIterator, options) {

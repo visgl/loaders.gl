@@ -11,6 +11,7 @@ import {
   encodeProtobufStringField,
   encodeProtobufVarintField
 } from './perfetto-protobuf';
+import {PERFETTO_TRACE_WRITER_METADATA} from './perfetto-trace-writer-types';
 
 /** Perfetto trace writer options. */
 export type PerfettoTraceWriterOptions = WriterOptions & {
@@ -19,14 +20,7 @@ export type PerfettoTraceWriterOptions = WriterOptions & {
 
 /** Serializes package-owned Arrow tables as a canonical Perfetto protobuf trace. */
 export const PerfettoTraceWriter = {
-  name: 'Perfetto Trace Writer',
-  id: 'perfettoTrace',
-  module: 'traces',
-  version: 'latest',
-  extensions: ['perfetto-trace', 'pftrace'],
-  mimeTypes: ['application/x-perfetto-trace', 'application/vnd.google.protobuf'],
-  binary: true,
-  options: {},
+  ...PERFETTO_TRACE_WRITER_METADATA,
   encode: async (trace: PerfettoTrace) => encodePerfettoTrace(trace),
   encodeSync: encodePerfettoTrace
 } as const satisfies WriterWithEncoder<PerfettoTrace, never, PerfettoTraceWriterOptions>;

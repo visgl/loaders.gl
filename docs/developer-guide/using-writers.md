@@ -39,7 +39,7 @@ import {DocOrientation, ReferenceBoundary} from '@site/src/components/docs/desig
   ]}
 />
 
-Writers allow applications to encode data into many of the formats supported by loaders.gl.
+Writers allow applications to encode data into many of the formats supported by loaders.gl. Import a writer from its format entry point to load its encoder on the first async write. Use the format’s `/bundled` entry point for synchronous encoding and direct encoder methods.
 
 For a detailed specification of the writer object format see the [API reference](/docs/specifications/writer-object-format).
 
@@ -54,7 +54,7 @@ For a detailed specification of the writer object format see the [API reference]
 As an example, to Draco-compress a mesh using the `DracoWriter`:
 
 ```typescript
-import {DracoWriter} from '@loaders.gl/scene/draco/bundled';
+import {DracoWriter} from '@loaders.gl/scene/draco';
 import {encode} from '@loaders.gl/core';
 
 const mesh = {

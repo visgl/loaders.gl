@@ -4,18 +4,12 @@
 
 import type {TableWriterInput, TableWriterBatch} from '../arrow/table-writer-input';
 import type {WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import {ORCFormat} from './orc-format';
 import {encodeORC, type ORCWriterOptions} from './lib/encoders/encode-orc';
-
-// __VERSION__ is injected by babel-plugin-version-inline.
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {ORC_WRITER_METADATA} from './orc-writer-types';
 
 /** Writer for Apache ORC files. */
 export const ORCWriter = {
-  ...ORCFormat,
-  version: VERSION,
-  options: {orc: {}},
+  ...ORC_WRITER_METADATA,
   async encode(table: TableWriterInput, options?: ORCWriterOptions) {
     return encodeORC(table, options);
   }

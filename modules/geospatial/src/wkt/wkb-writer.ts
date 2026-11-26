@@ -5,8 +5,7 @@
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
 import type {Geometry, Feature} from '@loaders.gl/core/schema';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
-import {VERSION} from './lib/version';
-import {WKBFormat} from './wkt-format';
+import {WKB_WRITER_METADATA} from './wkb-writer-types';
 
 export type WKBWriterOptions = WriterOptions & {
   wkb?: {
@@ -25,19 +24,7 @@ export type WKBWriterOptions = WriterOptions & {
  * WKB exporter
  */
 export const WKBWriter = {
-  ...WKBFormat,
-  name: 'WKB (Well Known Binary)',
-  id: 'wkb',
-  module: 'geospatial',
-  version: VERSION,
-  extensions: ['wkb'],
-  mimeTypes: ['application/wkb', 'application/octet-stream'],
-  options: {
-    wkb: {
-      hasZ: false,
-      hasM: false
-    }
-  },
+  ...WKB_WRITER_METADATA,
   async encode(data: Geometry | Feature, options?: WKBWriterOptions): Promise<ArrayBuffer> {
     return convertGeometryToWKB(data, options?.wkb);
   },

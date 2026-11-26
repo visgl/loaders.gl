@@ -6,11 +6,7 @@ import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {OBJFormat} from './obj-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {OBJ_WRITER_METADATA} from './obj-writer-types';
 
 /** Options for `OBJWriter`. */
 export type OBJWriterOptions = WriterOptions & {
@@ -22,14 +18,7 @@ export type OBJWriterOptions = WriterOptions & {
  * Writer for the OBJ geometry format.
  */
 export const OBJWriter = {
-  ...OBJFormat,
-  dataType: null as unknown as Mesh | Table,
-  batchType: null as never,
-  version: VERSION,
-  options: {
-    obj: {}
-  },
-  text: true,
+  ...OBJ_WRITER_METADATA,
   encode: async (data, options) => encodeOBJSync(data, options),
   encodeSync: encodeOBJSync,
   encodeTextSync: encodeOBJ

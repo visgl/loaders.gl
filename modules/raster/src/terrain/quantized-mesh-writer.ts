@@ -6,8 +6,7 @@ import type {Table} from 'apache-arrow';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {Mesh, MeshAttribute} from '@loaders.gl/core/schema';
 import {convertMeshToArrowTable, convertTableToMesh} from '@loaders.gl/core/schema-utils';
-import {VERSION} from './lib/utils/version';
-import {QuantizedMeshFormat} from './terrain-format';
+import {QUANTIZED_MESH_WRITER_METADATA} from './quantized-mesh-writer-types';
 
 const QUANTIZED_MESH_HEADER_LENGTH = 88;
 const QUANTIZED_COORDINATE_RANGE = 32767;
@@ -26,13 +25,7 @@ export type QuantizedMeshWriterOptions = WriterOptions & {
  * Writer for the quantized mesh terrain format.
  */
 export const QuantizedMeshWriter = {
-  ...QuantizedMeshFormat,
-  version: VERSION,
-  dataType: null as unknown as Mesh | Table,
-  batchType: null as never,
-  options: {
-    'quantized-mesh': {}
-  },
+  ...QUANTIZED_MESH_WRITER_METADATA,
   encode: async (data, options) => encodeQuantizedMeshSync(data, options),
   encodeSync: encodeQuantizedMeshSync
 } as const satisfies WriterWithEncoder<Mesh | Table, never, QuantizedMeshWriterOptions>;

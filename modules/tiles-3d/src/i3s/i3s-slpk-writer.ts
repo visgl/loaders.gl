@@ -6,11 +6,7 @@ import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-uti
 import {encodeIndexedZip, encodeIndexedZipInBatches} from '@loaders.gl/archives/indexed-zip-writer';
 import type {IndexedZipOptions} from '@loaders.gl/archives/indexed-zip-writer';
 import type {IndexedZipFiles} from '@loaders.gl/archives/indexed-zip-writer';
-import {SLPKFormat} from './i3s-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {SLPK_WRITER_METADATA, MAX_ARCHIVE_BYTES} from './i3s-slpk-writer-types';
 
 /** Encoded I3S layer resources, with archive paths and individual GZIP compression already applied. */
 export type SLPKWriterFiles = IndexedZipFiles;
@@ -28,9 +24,6 @@ export type SLPKWriterOptions = WriterOptions & {
   };
 };
 
-/** SLPK requires ZIP64 above 2 GiB; the default output budget retains the original 2 GiB bound. */
-const MAX_ARCHIVE_BYTES = 0x7fffffff;
-
 /**
  * Packages already-authored I3S resources in a portable, deterministic SLPK archive.
  * Requires root 3dSceneLayer.json.gz, canonical ASCII paths, and no case-folded duplicates.
@@ -38,9 +31,7 @@ const MAX_ARCHIVE_BYTES = 0x7fffffff;
  * Uses STORE and the required final lowercase MD5 index. ZIP64 is automatic above 2 GiB; scene authoring remains separate.
  */
 export const SLPKWriter = {
-  ...SLPKFormat,
-  version: VERSION,
-  options: {slpk: {maxArchiveBytes: MAX_ARCHIVE_BYTES}},
+  ...SLPK_WRITER_METADATA,
   encode: encodeArchive
 } as const satisfies WriterWithEncoder<SLPKWriterFiles, never, SLPKWriterOptions>;
 

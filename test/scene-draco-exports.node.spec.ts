@@ -21,7 +21,8 @@ test.each([
     assert.equal(scene.DracoLoader.module, 'scene');
     assert.equal(scene.DracoLoader.parse, undefined);
     assert.equal(scene.DracoLoaderWithParser, undefined);
-    assert.equal(scene.DracoWriter, undefined);
+    assert.equal(scene.DracoWriter.encode, undefined);
+    assert.equal(typeof scene.DracoWriter.preload, 'function');
     assert.deepEqual(Object.keys(require.cache).filter(filename => filename.includes('/scene/dist/draco/lib/') && ['draco-builder.cjs', 'draco-parser.cjs', 'draco-module-loader.cjs'].some(name => filename.endsWith(name))), []);
     assert.equal(typeof (await scene.DracoLoader.preload('', {draco: {backend: 'wasm'}})).parse, 'function');
     const parser = ${format === 'esm' ? "await import('@loaders.gl/scene/draco/bundled')" : "require('@loaders.gl/scene/draco/bundled')"};

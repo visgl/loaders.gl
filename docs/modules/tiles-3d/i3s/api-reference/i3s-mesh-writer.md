@@ -5,7 +5,7 @@ ArrayBuffer, typed-array, TextEncoder, and GZIP APIs. Package the result with `S
 
 ```ts
 import {encodeI3SMeshLayer} from '@loaders.gl/tiles-3d/i3s-mesh-writer';
-import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
+import {SLPKWriter} from '@loaders.gl/tiles-3d/i3s/bundled';
 
 const layer = encodeI3SMeshLayer(absoluteEcefMesh, {
   name: 'My mesh',

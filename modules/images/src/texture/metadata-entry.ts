@@ -37,10 +37,7 @@ export type {
   ImageTextureSource,
   ImageTextureTemplateSource
 } from '../lib/composite-image/composite-image-manifest-schema';
-export type {
-  CompressedTextureWriterOptions,
-  CompressedTextureWriter
-} from '../compressed-texture-writer';
+export type {CompressedTextureWriterOptions} from '../compressed-texture-writer';
 export type {
   CompressedTextureLoaderOptions,
   CompressedTextureWorkerLoaderWithParser,
@@ -55,3 +52,4 @@ export type {TextureArrayLoaderOptions} from '../texture-array-loader-types';
 export type {TextureArrayLoaderWithParser} from '../texture-array-loader';
 export type {GPUTextureFormat, TextureFormat} from '@loaders.gl/core/schema';
 export type {CompressedTextureLoaderOptions as TextureLoaderOptions} from '../compressed-texture-loader-types';
+export {CompressedTextureWriter} from '../compressed-texture-writer-types';

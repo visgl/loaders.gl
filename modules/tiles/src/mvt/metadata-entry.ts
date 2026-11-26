@@ -32,7 +32,7 @@ export type {
 export type {MVTLoaderOptions} from './mvt-loader';
 export type {MVTGeoJSONLoaderOptions} from './mvt-geojson-loader-types';
 export type {MVTGeoJSONFeature, MVTGeoJSONTable} from './lib/types';
-export type {MVTWriter} from './mvt-writer';
+
 export type {MVTWriterOptions} from './lib/encode-mvt';
 export type {MVTTileSource, MVTSourceLoaderOptions} from './mvt-source';
 export type {TableVectorTileSource, TableTileLoaderOptions} from './table-tile-loader';
@@ -42,3 +42,4 @@ export type {
   ArrowTableTileSourceInput
 } from './arrow-table-tile-source-types';
 export {TableTileLoader} from './table-tile-loader-metadata';
+export {MVTWriter} from './mvt-writer-types';

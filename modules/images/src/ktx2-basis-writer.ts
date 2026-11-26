@@ -3,10 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/core/loader-utils';
-import {KTX2BasisTextureFormat} from './texture-format';
-import {VERSION} from './lib/utils/version';
 import type {BasisEncoderFormat, BasisImageData} from './basis-types';
 import {encodeKTX2BasisTexture} from './lib/encoders/encode-ktx2-basis-texture';
+import {KTX2_BASIS_WRITER_METADATA} from './ktx2-basis-writer-types';
 
 /** Options for the KTX2 Basis writer. */
 export type KTX2BasisWriterOptions = WriterOptions & {
@@ -34,23 +33,6 @@ export type KTX2BasisWriterOptions = WriterOptions & {
  *  Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/textureSetDefinitionFormat.cmn.md
  */
 export const KTX2BasisWriter = {
-  ...KTX2BasisTextureFormat,
-  name: 'Basis Universal Supercompressed GPU Texture',
-  id: 'ktx2-basis-writer',
-  module: 'images',
-  version: VERSION,
-
-  extensions: ['ktx2'],
-  mimeTypes: ['image/ktx2'],
-  options: {
-    ['ktx2-basis-writer']: {
-      format: 'etc1s',
-      contentType: 'linear',
-      mipmaps: false,
-      zstd: false,
-      ldrToHdrNitMultiplier: 100
-    }
-  },
-
+  ...KTX2_BASIS_WRITER_METADATA,
   encode: encodeKTX2BasisTexture
 } as const satisfies WriterWithEncoder<BasisImageData, unknown, KTX2BasisWriterOptions>;

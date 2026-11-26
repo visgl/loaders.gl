@@ -597,12 +597,6 @@
       "@loaders.gl/archives/zip-loader": [
         "modules/archives/src/zip/zip-loader.ts"
       ],
-      "@loaders.gl/archives/zip-writer": [
-        "modules/archives/src/zip/zip-writer.ts"
-      ],
-      "@loaders.gl/tiles-3d/3d-tiles-archive-writer": [
-        "modules/tiles-3d/src/3d-tiles/3d-tiles-archive-writer.ts"
-      ],
       "@loaders.gl/archives": [
         "modules/archives/src"
       ],
@@ -611,9 +605,6 @@
       ],
       "@loaders.gl/archives/tar-loader": [
         "modules/archives/src/tar/tar-loader.ts"
-      ],
-      "@loaders.gl/archives/tar-writer": [
-        "modules/archives/src/tar/tar-writer.ts"
       ],
       "@loaders.gl/archives/zip": [
         "modules/archives/src/zip/index.ts"
@@ -1233,9 +1224,6 @@
       "@loaders.gl/scene/glb/bundled": [
         "modules/scene/src/glb-bundled.ts"
       ],
-      "@loaders.gl/scene/draco/writer": [
-        "modules/scene/src/draco/draco-writer.ts"
-      ],
       "@loaders.gl/scene/draco/bundled": [
         "modules/scene/src/draco-bundled-entry.ts"
       ],
@@ -1419,9 +1407,6 @@
       "@loaders.gl/images/basis/bundled": [
         "modules/images/src/basis-bundled-entry.ts"
       ],
-      "@loaders.gl/images/image/writer": [
-        "modules/images/src/image-writer.ts"
-      ],
       "@loaders.gl/images/image/bundled": [
         "modules/images/src/image-bundled.ts"
       ],
@@ -1584,9 +1569,6 @@
       "@loaders.gl/tiles-3d/i3s-lepcc-loader": [
         "modules/tiles-3d/src/i3s/i3s-lepcc-loader.ts"
       ],
-      "@loaders.gl/tiles-3d/i3s-slpk-writer": [
-        "modules/tiles-3d/src/i3s/i3s-slpk-writer.ts"
-      ],
       "@loaders.gl/tiles-3d/i3s-mesh-writer": [
         "modules/tiles-3d/src/i3s-mesh-writer.ts"
       ],
@@ -1643,9 +1625,6 @@
       ],
       "@loaders.gl/ogc/wms/api": [
         "modules/ogc/src/wms/api.ts"
-      ],
-      "@loaders.gl/pointclouds/las/writer": [
-        "modules/pointclouds/src/las/las-writer.ts"
       ],
       "@loaders.gl/pointclouds/las/api": [
         "modules/pointclouds/src/las/api.ts"

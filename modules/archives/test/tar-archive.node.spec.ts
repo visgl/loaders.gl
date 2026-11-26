@@ -7,7 +7,7 @@ test('TAR package subpaths expose metadata and parser APIs', async () => {
   const archivePackage = require('@loaders.gl/archives');
   const tarPackage = require('@loaders.gl/archives/tar');
   const parserPackage = require('@loaders.gl/archives/tar-loader');
-  const writerPackage = require('@loaders.gl/archives/tar-writer');
+  const writerPackage = require('@loaders.gl/archives/tar/bundled');
 
   expect(Object.keys(archivePackage)).toEqual([]);
   expect(tarPackage.TarLoader.parse).toBeUndefined();

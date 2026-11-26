@@ -11,11 +11,7 @@ import {
   preloadArrowCompressionEncoder,
   type ArrowIPCCompression
 } from './lib/parsers/arrow-compression';
-import {ArrowFormat} from './exports/arrow-format';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {ARROW_WRITER_METADATA} from './arrow-writer-types';
 
 /** Options for Arrow IPC stream and file encoding. */
 export type ArrowWriterOptions = WriterOptions & {
@@ -29,14 +25,7 @@ export type ArrowWriterOptions = WriterOptions & {
 
 /** Apache Arrow writer */
 export const ArrowWriter = {
-  ...ArrowFormat,
-  version: VERSION,
-  options: {
-    arrow: {
-      container: 'stream',
-      compression: null
-    }
-  },
+  ...ARROW_WRITER_METADATA,
   encode: async function encodeArrow(data, options?): Promise<ArrayBuffer> {
     const arrowOptions = options?.arrow;
     if (arrowOptions?.compression) {

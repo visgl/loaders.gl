@@ -177,9 +177,9 @@ export type {
   GLTFBoundingVolumeSchema
 } from './lib/types/gltf-zod-schema';
 export type {GLTFSource, GLTFSourceOptions} from './gltf-source';
-export type {GLTFWriter, GLTFWriterOptions} from './gltf-writer';
+export type {GLTFWriterOptions} from './gltf-writer';
 export type {compressGLTFWithDraco, GLTFDracoWriterOptions} from './lib/encoders/encode-gltf-draco';
-export type {GLBWriter} from './glb-writer';
+
 export type {GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export type {
   GLTFIterator,
@@ -304,3 +304,5 @@ export type {
   GLTFAnimationTargetExtensions,
   GLTFPropertyExtensions
 } from './lib/types/gltf-extension-schemas';
+export {GLBWriter} from './glb-writer-types';
+export {GLTFWriter} from './gltf-writer-types';

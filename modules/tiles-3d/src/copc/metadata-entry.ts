@@ -12,7 +12,7 @@ export type {
   COPCTileContentLoadOptions,
   COPCTileSource
 } from './copc-loader';
-export type {COPCWriterOptions, COPCWriter} from './copc-writer';
+export type {COPCWriterOptions} from './copc-writer';
 export type {
   formatCOPCKey,
   getCOPCKeyBounds,
@@ -35,3 +35,4 @@ export type {
   COPCVariableLengthRecord
 } from './lib/copc-reader';
 export {COPCLoader} from './copc-loader-metadata';
+export {COPCWriter} from './copc-writer-types';

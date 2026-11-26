@@ -8,7 +8,7 @@ export {ArrowFormat} from './exports/arrow-format';
 export type {VECTOR_TYPES} from './lib/types';
 export type {ArrowLoaderOptions} from './arrow-loader-definition';
 export type {ArrowTableSource, createArrowSource} from './arrow-source';
-export type {ArrowWriter, ArrowWriterOptions} from './arrow-writer';
+export type {ArrowWriterOptions} from './arrow-writer';
 export type {
   ArrowConvertFromOptions,
   ArrowConvertToOptions,
@@ -34,3 +34,4 @@ export type {
   TriangulatedWKBGeometryColumns
 } from '@loaders.gl/core/arrow-geometry';
 export type {ArrowLoaderWithParser} from '../arrow-loader';
+export {ArrowWriter} from './arrow-writer-types';

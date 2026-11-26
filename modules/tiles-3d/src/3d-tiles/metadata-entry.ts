@@ -10,12 +10,8 @@ export {Tile3DSubtreeFormat} from './tiles-3d-format';
 export {ThreeTZFormat} from './tiles-3d-format';
 export type {Tiles3DArchiveFileLoaderOptions} from './3d-tiles-archive-loader';
 export type {Tiles3DArchiveSourceInput, Tiles3DArchiveSource} from './3d-tiles-archive-source';
-export type {Tile3DWriter} from './tile-3d-writer';
-export type {
-  Tiles3DArchiveWriter,
-  Tiles3DArchiveFiles,
-  Tiles3DArchiveWriterOptions
-} from './3d-tiles-archive-writer';
+
+export type {Tiles3DArchiveFiles, Tiles3DArchiveWriterOptions} from './3d-tiles-archive-writer';
 export type {default as Tile3DFeatureTable} from './lib/classes/tile-3d-feature-table';
 export type {default as Tile3DBatchTable} from './lib/classes/tile-3d-batch-table';
 export type {TILE3D_TYPE} from './lib/constants';
@@ -83,3 +79,5 @@ export type {
   replaceImplicitUrlTemplate,
   ImplicitTileCoordinates
 } from '../tileset-3d/format-3d-tiles/implicit-tiling';
+export {Tiles3DArchiveWriter} from './3d-tiles-archive-writer-types';
+export {Tile3DWriter} from './tile-3d-writer-types';

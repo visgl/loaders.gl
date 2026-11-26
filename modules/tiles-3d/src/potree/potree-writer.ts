@@ -7,6 +7,7 @@ import {convertTableToMesh} from '@loaders.gl/core/schema-utils';
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
 import type {PotreeAttribute, PotreeMetadata} from './types/potree-metadata';
 import type {Potree2Attribute, Potree2AttributeType, Potree2Metadata} from './potree2-types';
+import {POTREE_WRITER_METADATA} from './potree-writer-types';
 
 /** One additive octree node supplied by an application or dynamic tiler. */
 export type PotreeWriterNode = {
@@ -51,20 +52,9 @@ export type PotreeWriterOptions = WriterOptions & {
   };
 };
 
-// @ts-ignore __VERSION__ is injected by the package build.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
 /** Writer for Potree metadata and complete datasets. */
 export const PotreeWriter = {
-  name: 'Potree metadata',
-  id: 'potree',
-  module: 'tiles-3d',
-  version: VERSION,
-  extensions: ['js', 'json'],
-  mimeTypes: ['application/json'],
-  dataType: null as unknown as PotreeMetadata | Potree2Metadata,
-  batchType: null as never,
-  options: {},
+  ...POTREE_WRITER_METADATA,
   /** Encodes one already validated dataset declaration. */
   encode: async (metadata: PotreeMetadata | Potree2Metadata) => encodeMetadata(metadata),
   encodeSync: encodeMetadata,

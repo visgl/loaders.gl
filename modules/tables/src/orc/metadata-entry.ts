@@ -14,7 +14,8 @@ export type {
   getORCDataType
 } from './orc-source';
 export type {ORCLoaderOptions} from './orc-loader-types';
-export type {ORCWriter} from './orc-writer';
+
 export type {ORCWriterOptions} from './lib/encoders/encode-orc';
 export type {ORCFile, ORCFooter, ORCPostScript, ORCCompression} from './lib/parsers/parse-orc';
 export type {ORCLoaderWithParser} from './orc-loader';
+export {ORCWriter} from './orc-writer-types';

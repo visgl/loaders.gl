@@ -6,7 +6,7 @@ export {BSONLoader} from '../bson-loader-types';
 export {BSONFormat} from '../bson-format';
 export type {BSONLoaderOptions} from '../bson-loader-types';
 export type {BSONLoaderWithParser} from '../bson-loader';
-export type {BSONWriterOptions, BSONWriter} from '../bson-writer';
+export type {BSONWriterOptions} from '../bson-writer';
 export type {
   getBSONMaxDepth,
   createBSONValue,
@@ -17,3 +17,4 @@ export type {
   ParseBSONOptions,
   EncodeBSONOptions
 } from '../bson-types';
+export {BSONWriter} from '../bson-writer-types';

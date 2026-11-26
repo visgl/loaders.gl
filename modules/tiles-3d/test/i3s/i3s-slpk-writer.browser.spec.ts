@@ -7,7 +7,7 @@ import {encode} from '@loaders.gl/core';
 import {validateWriter} from 'test/common/conformance';
 import {SLPKWriter as RootWriter} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {parseSLPKArchive} from '@loaders.gl/tiles-3d/api';
-import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s-slpk-writer';
+import {SLPKWriter, encodeSLPKArchiveInBatches} from '@loaders.gl/tiles-3d/i3s/bundled';
 import {GZipCompressor} from '@loaders.gl/compression/gzip';
 import {BlobFile} from '@loaders.gl/core/loader-utils';
 import {readZip} from 'test/common/read-zip';

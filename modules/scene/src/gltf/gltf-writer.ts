@@ -3,12 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/core/loader-utils';
-import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encoders/encode-gltf';
 import type {GLTFWithBuffers} from './lib/types/gltf-types';
 import {compressGLTFWithDraco, type GLTFDracoWriterOptions} from './lib/encoders/encode-gltf-draco';
 import {encodeExtensions} from './lib/api/gltf-extensions';
-import {GLTFFormat} from './gltf-format';
+import {GLTF_WRITER_METADATA} from './gltf-writer-types';
 
 export type GLTFWriterOptions = WriterOptions & {
   gltf?: {
@@ -22,15 +21,7 @@ export type GLTFWriterOptions = WriterOptions & {
  * GLTF exporter
  */
 export const GLTFWriter = {
-  dataType: null as unknown as any,
-  batchType: null as never,
-
-  ...GLTFFormat,
-  version: VERSION,
-  options: {
-    gltf: {}
-  },
-
+  ...GLTF_WRITER_METADATA,
   encode: async (gltf: GLTFWithBuffers, options: GLTFWriterOptions = {}) => {
     const compressed = await compressGLTFWithDraco(gltf, options);
     const encodeOptions = {...options};
