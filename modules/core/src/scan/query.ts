@@ -196,7 +196,6 @@ async function* runQuery<Result>(
     earlyTerminationReason: undefined as TableQueryExecutionSummary['earlyTerminationReason']
   };
   let error: unknown;
-  let finished = false;
   let ownedSource: {close?: () => void | Promise<void>} | undefined;
   try {
     options.signal?.throwIfAborted();
@@ -209,7 +208,16 @@ async function* runQuery<Result>(
     ) {
       throw new Error('Put offset and limit in the logical query, not the execution options.');
     }
-    const [executor, prepared] = await Promise.all([loadQueryExecutor(), prepareSource()]);
+    const executorImport = loadQueryExecutor();
+
+    const preparation = prepareSource();
+    const [executor, prepared] = await Promise.all([executorImport, preparation]).catch(
+      async failure => {
+        // Preparation can still be using an owned source when the executor import fails.
+        await preparation.catch(() => {});
+        throw failure;
+      }
+    );
     options.signal?.throwIfAborted();
     const batches = executor.executePreparedQuery(prepared, options, metrics);
     yield* consume(executor, batches);
@@ -219,7 +227,6 @@ async function* runQuery<Result>(
     status = options.signal?.aborted ? 'cancelled' : 'failed';
     throw failure;
   } finally {
-    finished = true;
     if (status === 'early-terminated' && !metrics.earlyTerminationReason)
       metrics.earlyTerminationReason = 'consumer-return';
     try {
@@ -263,7 +270,6 @@ async function* runQuery<Result>(
     } else parsedQuery = tableQuery;
     if (!parsedQuery || typeof parsedQuery !== 'object' || Array.isArray(parsedQuery))
       throw new Error('Table query must be an object.');
-    if (finished) throw new Error('Query preparation ended.');
     const normalizedQuery = await normalizeTypedQuery(parsedQuery);
     const castPredicate =
       'command' in normalizedQuery ? false : validatePredicateOperands(normalizedQuery.where);
@@ -282,7 +288,6 @@ async function* runQuery<Result>(
           ? options.source
           : await resolveQuerySource(logicalQuery.from, options.sources, options.signal);
     }
-    if (finished) throw new Error('Query preparation ended.');
     if (logicalQuery.from === undefined && typeof source === 'string') {
       const opened = await openQuerySource(options);
       if (
@@ -290,14 +295,8 @@ async function* runQuery<Result>(
         typeof opened === 'object' &&
         'close' in opened &&
         typeof opened.close === 'function'
-      ) {
-        const created = opened as {close: () => void | Promise<void>};
-        if (finished) {
-          await created.close();
-          throw new Error('Query preparation ended.');
-        }
-        ownedSource = created;
-      }
+      )
+        ownedSource = opened as {close: () => void | Promise<void>};
       source = opened;
     }
     options.signal?.throwIfAborted();
