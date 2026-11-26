@@ -37,7 +37,7 @@ export const NDGeoJSONLoader = {
   preload: async (): Promise<
     LoaderWithParser<Table | ObjectRowTable, RecordBatch | TableBatch, NDGeoJSONLoaderOptions>
   > => {
-    const loaderModule = await import('@loaders.gl/tables/geojson/bundled');
+    const loaderModule = await import('@loaders.gl/tables/geojson/ndgeojson-parser');
     return loaderModule.NDGeoJSONLoaderWithParser;
   }
 } as const satisfies Loader<

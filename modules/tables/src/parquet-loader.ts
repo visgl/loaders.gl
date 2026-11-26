@@ -6,7 +6,7 @@ import {ParquetLoaderWithParser as ParquetParser} from './parquet/parquet-loader
 import {ParquetLoader} from './parquet/parquet-loader-types.js';
 import {createParquetSource} from './parquet/parquet-source.js';
 
-export type {ParquetLoaderOptions} from './parquet/parquet-loader.js';
+export type {ParquetLoaderOptions} from './parquet/parquet-loader-options';
 export {getParquetOptions} from './parquet/parquet-loader.js';
 
 /** Parquet parser and reusable source factory. */

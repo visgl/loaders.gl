@@ -8,10 +8,10 @@ export type {ORCSourceOptions as ORCSourceLoaderOptions} from './orc-source';
 export type {ORCLoaderOptions} from './orc-loader-types';
 export {ORCLoader} from './orc-loader-types';
 export {ORCWriter} from './orc-writer';
-export type {ORCWriterOptions} from './orc-writer';
+export type {ORCWriterOptions} from './lib/encoders/encode-orc';
 export type {ORCFile, ORCFooter, ORCPostScript, ORCCompression} from './lib/parsers/parse-orc';
 
-export {ORCLoaderWithParser} from '../orc-loader';
+export {ORCLoaderWithParser} from './orc-loader';
 
 export {
   type ORCSourceOptions,
@@ -20,4 +20,4 @@ export {
   createORCSource,
   createORCSchema,
   getORCDataType
-} from '../orc-source';
+} from './orc-source';

@@ -252,4 +252,4 @@ function validateJSONTableArrowOptions(options: JSONTableLoaderOptions): void {
   }
 }
 
-export type {JSONTableLoaderOptions} from './json-table-loader-types';
+export type {JSONTableLoaderOptions} from './json-table-loader-definition';
