@@ -7,7 +7,7 @@ import {Vector3} from '@math.gl/core/matrix';
 import {CullingVolume, Plane} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/coordinates';
-import {GeospatialViewport, Viewport} from '../../types';
+import type {TraversalViewport, Viewport} from '../../types';
 
 export type FrameState = {
   camera: {
@@ -24,8 +24,10 @@ export type FrameState = {
     /** Elapsed seconds since camera position or direction last changed. */
     timeSinceMovement: number;
   };
-  viewport: GeospatialViewport;
-  topDownViewport: GeospatialViewport; // Use it to calculate projected radius for a tile
+  /** Viewport used for traversal. */
+  viewport: TraversalViewport;
+  /** Zero-pitch viewport used to measure projected tile size. */
+  topDownViewport: TraversalViewport;
   height: number;
   cullingVolume: CullingVolume;
   /** Optional world-space clipping planes applied to render-content culling. */
@@ -84,20 +86,20 @@ const cullingVolume = new CullingVolume([
  * `options.timeSinceCameraMovement` can be supplied by a caller that retains camera pose across
  * calls. It defaults to a stationary camera so standalone callers do not defer requests.
  *
- * @param viewport - Geospatial viewport supplying camera and projection measurements.
+ * @param viewport - Viewport supplying camera and projection measurements.
  * @param frameNumber - Current tileset traversal frame number.
  * @param options - Additional camera and projection measurements for traversal.
  * @returns Frame state used for visibility, SSE, and request-priority calculations.
  */
 export function getFrameState(
-  viewport: GeospatialViewport,
+  viewport: TraversalViewport,
   frameNumber: number,
   options: GetFrameStateOptions = {}
 ): FrameState {
   // Traverse and and request. Update _selectedTiles so that we know what to render.
   // Traverse and and request. Update _selectedTiles so that we know what to render.
   const {cameraUp, height} = viewport;
-  const cameraDirection = viewport.cameraDirection as number[] | undefined;
+  const cameraDirection = viewport.cameraDirection;
   const {metersPerUnit} = viewport.distanceScales;
 
   const viewportCenterCartesian = worldToCartesian(viewport, viewport.center);
@@ -261,7 +263,7 @@ export function limitSelectedTiles(
  * @param viewport - Viewport of the current traversal.
  * @returns The viewport's own top-down viewport, or a new instance of its class with zero pitch.
  */
-function getTopDownViewport(viewport: GeospatialViewport): GeospatialViewport {
+function getTopDownViewport(viewport: TraversalViewport): TraversalViewport {
   if (viewport.getTopDownViewport) {
     return viewport.getTopDownViewport();
   }
@@ -286,9 +288,14 @@ function getTopDownViewport(viewport: GeospatialViewport): GeospatialViewport {
  * @returns `[longitude, latitude]` in degrees, from the viewport fields when both are finite, or
  * else from the unprojected viewport center.
  */
-function getViewportLongitudeLatitude(viewport: GeospatialViewport): [number, number] {
+function getViewportLongitudeLatitude(viewport: TraversalViewport): [number, number] {
   const {longitude, latitude} = viewport;
-  if (Number.isFinite(longitude) && Number.isFinite(latitude)) {
+  if (
+    typeof longitude === 'number' &&
+    typeof latitude === 'number' &&
+    Number.isFinite(longitude) &&
+    Number.isFinite(latitude)
+  ) {
     return [longitude, latitude];
   }
   const [centerLongitude, centerLatitude] = viewport.unprojectPosition(viewport.center);

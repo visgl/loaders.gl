@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {beforeAll, expect, test} from 'vitest';
+import {assert, beforeAll, expect, test} from 'vitest';
 import {getFrameState, type Tile3D} from '@loaders.gl/tiles-3d/tileset';
 import {getProjectedRadius} from '../../../src/tileset-3d/helpers/i3s-lod';
 import {
@@ -10,7 +10,6 @@ import {
   updateCameraMotionState,
   type FrameState
 } from '../../../src/tileset-3d/helpers/frame-state';
-import type {GeospatialViewport} from '../../../src/types';
 import {
   _CustomProjectionViewport as CustomProjectionViewport,
   WebMercatorViewport,
@@ -323,23 +322,20 @@ test('getFrameState uses the top-down viewport supplied by a projected-CRS viewp
     pitch: 45,
     bearing: 20
   });
-  expect(
-    (viewport as unknown as {longitude?: number}).longitude,
-    'the viewport has no longitude field'
-  ).toBeUndefined();
-  const frameState = getFrameState(viewport as unknown as GeospatialViewport, 1);
-  const topDownViewport = frameState.topDownViewport as unknown as CustomProjectionViewport;
-  expect(topDownViewport).toBeInstanceOf(CustomProjectionViewport);
+  expect(viewport).not.toHaveProperty('longitude');
+  expect(viewport).not.toHaveProperty('latitude');
+  const {topDownViewport, camera, cullingVolume} = getFrameState(viewport, 1);
+  assert.instanceOf(topDownViewport, CustomProjectionViewport);
   expect(topDownViewport.crs).toBe(utmZone18North);
   expect(topDownViewport.pitch).toBe(0);
   expect(topDownViewport.bearing).toBe(20);
   expect(topDownViewport.zoom).toBe(16);
-  expect(Array.from(frameState.camera.position).every(Number.isFinite)).toBe(true);
+  expect(Array.from(camera.position).every(Number.isFinite)).toBe(true);
   const centerCartesian = Ellipsoid.WGS84.cartographicToCartesian(
     PROJECTED_VIEWPORT_CENTER,
     new Vector3()
   );
-  for (const plane of frameState.cullingVolume.planes) {
+  for (const plane of cullingVolume.planes) {
     expect(plane.getPointDistance(centerCartesian)).toBeGreaterThanOrEqual(0);
   }
 });
