@@ -83,7 +83,7 @@ An attribute declaration does not guarantee a decoded ID array. A texture declar
 
 Raw references preserve schema links and unsupported fields. They are not a promise that every property encoding is decoded. With `gltf.loadBuffers: true`, glTF structural-metadata parsing decodes supported property-table columns: numeric scalars/vectors/matrices, booleans, strings, enums, and fixed/variable arrays. Numeric normalization, scale, and offset are applied while raw values remain available for `noData` comparison. Property-texture sampling is a separate concern.
 
-`getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)` and `getStructuralMetadataProperty(...)`, exported by `@loaders.gl/tiles-3d/3d-tiles`, read these decoded tables. Rows apply class defaults and `noData` semantics; they do not fetch missing buffers. An out-of-range row returns `null`. JSON batch-table hierarchy access is also supported; binary hierarchy property access remains unsupported.
+`getStructuralMetadataRow(propertyTable, schemaClass, rowIndex)` and `getStructuralMetadataProperty(...)`, exported by `@loaders.gl/tiles-3d/api`, read these decoded tables. Rows apply class defaults and `noData` semantics; they do not fetch missing buffers. An out-of-range row returns `null`. JSON batch-table hierarchy access is also supported; binary hierarchy property access remains unsupported.
 
 ## Renderer-neutral style inputs[​](#renderer-neutral-style-inputs "Direct link to Renderer-neutral style inputs")
 

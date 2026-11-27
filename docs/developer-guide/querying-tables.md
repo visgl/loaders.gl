@@ -7,7 +7,7 @@ Use `query()` when you need one Arrow table, or `queryInBatches()` to process Ar
 A URL requires an explicit **source loader**. This lets the format choose useful reads without making core depend on format implementations.
 
 ```
-import {query} from '@loaders.gl/core/query';
+import {query} from '@loaders.gl/core/query/sql';
 
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
 
@@ -76,7 +76,7 @@ Rows retain source order. A limit counts matches after filtering; it is not a sa
 Change the function, not the query:
 
 ```
-import {queryInBatches} from '@loaders.gl/core/query';
+import {queryInBatches} from '@loaders.gl/core/query/sql';
 
 
 
@@ -102,7 +102,7 @@ The iterator starts work when consumed and requests input as the consumer advanc
 `queryProgressive()` streams complete replacement tables for aggregate views. Replace the previous table on every yield. Each result covers all input rows processed so far.
 
 ```
-import {queryProgressive} from '@loaders.gl/core/query';
+import {queryProgressive} from '@loaders.gl/core/query/sql';
 
 
 

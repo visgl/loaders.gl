@@ -63,7 +63,7 @@ The reference below covers input vectors, output column types, row alignment, nu
 ## Usage[​](#usage "Direct link to Usage")
 
 ```
-import {triangulateWKBGeometryColumn} from '@loaders.gl/tables/arrow/api';
+import {triangulateWKBGeometryColumn} from '@loaders.gl/core/arrow-geometry';
 
 
 

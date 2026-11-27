@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkproject_website=self.webpackChunkproject_website||[]).push([["83294"],{38696(e,r,t){t.d(r,{queryArrowTable:()=>c});var s=t(78470),u=t(59850);function c(e,r){return(0,u.MD)(e,r,s.MD)}}}]);

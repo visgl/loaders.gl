@@ -55,7 +55,7 @@ The source recognizes two interoperable metadata patterns:
 * GeoZarr `proj:code` / `proj:wkt2`, `spatial:dimensions`, `spatial:transform`, `spatial:bbox`, and `spatial:registration` attributes.
 * Regular one-dimensional CF/xarray longitude/latitude or x/y coordinate variables. The source derives an affine transform when those coordinates are evenly spaced. It checks the data array's group first and then its ancestors up to the selected group when resolving coordinates and a named CF `grid_mapping` variable. If the named mapping is absent, it tries a sibling `spatial_ref` variable. GDAL and rioxarray can provide a pixel-corner `GeoTransform` on the mapping variable. A sibling's `GeoTransform` takes precedence over regular coordinates and requires no coordinate chunk reads. An ancestor mapping supplies the CRS only. Errors reading an existing CF variable are surfaced to the caller.
 
-Without an explicit override or a GeoZarr `proj:` CRS, the source checks the mapping's `crs_wkt` and `spatial_ref` attributes, then the group-level `crs` attribute. The source preserves the definition as written in `metadata.crs`, per-level metadata, and the returned raster's `crs`.
+Without an explicit override or a GeoZarr `proj:` CRS, the source checks the mapping's `crs_wkt` and `spatial_ref` attributes, then GDAL's `_CRS` attribute, then the group-level `crs` attribute. Within `_CRS`, the source prefers `wkt`, followed by an OGC EPSG definition `url` normalized to `EPSG:<code>`. If neither is available, it keeps `projjson` as a structured `metadata.crs` with the same limits as `proj:projjson` described below. The resolved CRS also appears in per-level metadata and the returned raster's `crs`.
 
 Detailed guide
 
@@ -152,6 +152,7 @@ const source = openRaster(store);
 ### `zarr`[​](#zarr "Direct link to zarr")
 
 * `store?: AsyncReadable` supplies the backing store for metadata and chunks.
+* `chunkCacheProps?: {maxEntries?: number; maxBytes?: number} | false` controls the per-source cache for encoded chunks. It defaults to 256 entries and 64 MiB. Set it to `false` to disable encoded chunk caching. Metadata and byte-range reads bypass this cache. GeoZarr also retains up to 1,024 decoded chunk-aligned selections and 128 MiB per open array for overlapping windows.
 * `path?: string | null` selects the group that contains the data and coordinate variables.
 * `metadataPath?: 'auto' | '.zmetadata' | 'zmetadata' | 'zarr.json'` controls consolidated metadata discovery.
 * `requireConsolidatedMetadata?: boolean` requires a consolidated metadata document before the group is opened. Defaults to `true`; set it to `false` for unconsolidated stores.
@@ -164,7 +165,7 @@ const source = openRaster(store);
 * `coordinateReferenceSystem?: string` supplies an authority identifier or WKT when the store does not provide one.
 * `defaultSelection?: Record<string, number>` supplies default indices for non-spatial dimensions.
 * `fillValueAsNoData?: boolean` defaults to `false` for all dtypes because a storage fill value may also be a valid sample. Set it to `true` to use a finite Zarr `fill_value` when CF `_FillValue` and `missing_value` supply no nodata value.
-* `maxConcurrentRequests?: number` caps simultaneous Zarrita store reads per source, including chunk response bodies and byte-range reads. Defaults to `16`.
+* `maxConcurrentRequests?: number` caps simultaneous Zarrita store reads per source, including chunk response bodies and byte-range reads. The same limit caps in-flight chunk selections for each raster window. Defaults to `16`.
 
 ## API[​](#api "Direct link to API")
 
@@ -194,6 +195,12 @@ Supply viewport bounds in source coordinates. If you set `viewport.crs`, pass th
 The returned raster contains one typed-array band, exact source-coordinate bounds, and an affine transform whose origin is the first pixel corner of the returned window. `overview` gives the index in `levels` and `metadata.array` identifies the array that supplied the samples.
 
 See the [GeoZarr deck.gl example](https://loaders.gl/examples/geospatial/geo-zarr) for a complete browser workflow that selects monthly NASA POWER climatology data, colorizes the returned typed raster, and displays it with deck.gl's `BitmapLayer`.
+
+### Native tiles (experimental)[​](#native-tiles-experimental "Direct link to Native tiles (experimental)")
+
+Use `readRasterTile` from `@loaders.gl/core/loader-utils` with a `tileMatrix` ID from `getMetadata().nativeTileMatrixIds` and the chunk column `x` and row `y` for that matrix. GeoZarr lists the same IDs as its storage grid. Reads require a complete matrix set with rightward, axis-aligned geometry in a common string CRS. The read returns the exact samples of one spatial chunk at the named level, with `overview` set to its zero-based level index. For sharded arrays, the grid uses the inner chunk dimensions exposed by Zarrita.
+
+Use `selection` to choose non-spatial indices and omit `bands` or pass `[0]` for the single output band. Edge chunks are padded to the matrix's tile size. The returned affine and bounds cover the full tile, and `validityMasks` mark padding and invalid samples according to the source's nodata rules.
 
 ## Current scope[​](#current-scope "Direct link to Current scope")
 

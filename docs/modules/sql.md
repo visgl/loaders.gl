@@ -87,7 +87,7 @@ See the [package source and license inventory](https://github.com/visgl/loaders.
 
 ### Common queries on DuckDB tables[​](#common-queries-on-duckdb-tables "Direct link to Common queries on DuckDB tables")
 
-Resolve a DuckDB table once with `await source.getTable(name)` and pass the handle as `source` to `query` or `queryInBatches` from `@loaders.gl/core/query`. You can also use a structured `from: {source, table}` reference with a registered DuckDB source. Reuse the table handle for adjacent pages to avoid repeating schema and table discovery.
+Resolve a DuckDB table once with `await source.getTable(name)` and pass the handle as `source` to `query` or `queryInBatches` from `@loaders.gl/core/query/sql`. You can also use a structured `from: {source, table}` reference with a registered DuckDB source. Reuse the table handle for adjacent pages to avoid repeating schema and table discovery.
 
 For base tables with an accessible DuckDB `rowid`, the reader uses row ID order and passes `OFFSET` and `LIMIT` into SQL. Page boundaries assume the underlying table stays unchanged between calls. Deep offsets can still cost work inside DuckDB.
 

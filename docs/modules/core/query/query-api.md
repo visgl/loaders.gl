@@ -1,6 +1,6 @@
 # query and queryInBatches
 
-For a step-by-step introduction, see [Querying tables](https://loaders.gl/docs/developer-guide/querying-tables.md). Both functions are available from `@loaders.gl/core/query`.
+For a step-by-step introduction, see [Querying tables](https://loaders.gl/docs/developer-guide/querying-tables.md). Both functions are available from `@loaders.gl/core/query/sql`.
 
 ```
 query(query: Query | string, options: QueryOptions): Promise<Table>;
@@ -211,7 +211,7 @@ Run `yarn bench scale-query` to compare fixed-domain streaming, exact percentile
 
 ## Preloading query execution[​](#preloading-query-execution "Direct link to Preloading query execution")
 
-Import `preloadQuery` from `@loaders.gl/core/query` to warm the ordinary Arrow executor when an application anticipates a query, for example when it opens a query panel.
+Import `preloadQuery` from `@loaders.gl/core/query/sql` to warm the ordinary Arrow executor when an application anticipates a query, for example when it opens a query panel.
 
 ```
 await preloadQuery();

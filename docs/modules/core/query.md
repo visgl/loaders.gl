@@ -94,7 +94,7 @@ Federation
 
 Ordered append with schema reconciliation and provenance
 
-`@loaders.gl/core/query` is the optional application-facing runtime for portable queries. It collects the reference Arrow executor, query parsing, source-neutral query metadata, ordered append federation, and adapters that expose an already-addressed vector result as a table.
+Import `query`, `queryInBatches`, `queryProgressive`, and `preloadQuery` from `@loaders.gl/core/query/sql`. The `/sql` entry point also accepts logical queries and loads the ordinary Arrow executor on demand. The optional `@loaders.gl/core/query` entry point collects query metadata, planning, federation, and addressed vector source adapters.
 
 For application table queries, start with [Querying tables](https://loaders.gl/docs/developer-guide/querying-tables.md) and the [query API reference](https://loaders.gl/docs/modules/core/query/query-api.md).
 
@@ -159,7 +159,9 @@ The query is immutable and follows `filter -> project -> limit` semantics. Predi
 Use `queryArrowTableInWorker(table, options, {worker})` for a single query. To send a source table once and run multiple queries, open a session with `createArrowQueryWorker()`. Both APIs accept the same query options as `queryArrowTable()`, including parsed SQL predicates.
 
 ```
-import {createArrowQueryWorker, parseSQLPredicate} from '@loaders.gl/core/query';
+import {createArrowQueryWorker} from '@loaders.gl/core/query/arrow-query-worker';
+
+import {parseSQLPredicate} from '@loaders.gl/core/query/parse-sql-predicate';
 
 
 
@@ -337,6 +339,10 @@ WHERE always refers to source names. Output names must be unique and non-empty; 
 `queryArrowTable()` accepts and returns Apache Arrow `Table` objects. Use `select` for ordered projection with aliases:
 
 ```
+import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
+
+
+
 const result = queryArrowTable(table, {
 
   select: [{column: 'longitude', as: 'lng'}, 'latitude'],
@@ -348,7 +354,7 @@ const result = queryArrowTable(table, {
 });
 ```
 
-Predicates resolve against source fields before aliases are applied. `select` cannot be combined with `columns` or relational operators in this linear execution path. `explainArrowTableQuery()` reports the aliased output names and physical source columns.
+Predicates resolve against source fields before aliases are applied. `select` cannot be combined with `columns` or relational operators in this linear execution path. `explainArrowTableQuery()` from the same subpath reports the aliased output names and physical source columns.
 
 The shared `projectArrowTable(arrowTable, selections)` helper is available through `@loaders.gl/core/query/arrow-execution`. Projection creates schema and batch wrappers while reusing data buffers, including nested children and dictionaries. It preserves field names/types/nullability/metadata, schema metadata, RecordBatch metadata and boundaries, and row order; selected aliases replace only field names. Projection-only limits retain Arrow slice views. Sparse residual filters use math.gl's Arrow row gatherer to copy physical buffers without decoding nested or dictionary-encoded columns.
 
@@ -368,7 +374,7 @@ Use `query()` for a collected Arrow table and `queryInBatches()` for streamed Ar
 
 ## Query naming and pushdown capabilities[​](#query-naming-and-pushdown-capabilities "Direct link to Query naming and pushdown capabilities")
 
-New applications can import `query` and `queryInBatches` from `@loaders.gl/core/query`. The legacy `/scan` entry point and its focused subpaths remain available; `/query` aliases share exactly the same runtime implementation.
+Use `@loaders.gl/core/query/sql` for application queries. Import synchronous Arrow query and explain helpers from `/query/arrow-query`, direct filtering and projection from `/query/arrow-execution`, and worker helpers from `/query/arrow-query-worker`.
 
 Source metadata exposes `queryCapabilities` (with the legacy `capabilities` alias). Its `.table` field is a `TableQueryCapabilities` contract, including optional `cast` and `offset` support. Use `createQueryMetadata({..., queryCapabilities: {table: ...}})` for new source adapters. `TableQuerySource` and `TableQueryReadOptions` are the preferred source contract names.
 
