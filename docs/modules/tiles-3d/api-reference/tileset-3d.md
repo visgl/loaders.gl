@@ -430,13 +430,11 @@ Apply new options to an instance of the class. Use this method to update options
 
 ##### `update`
 
-`update(viewport: WebMercatorViewport) : Number`:
+`update(viewports?: TraversalViewport | TraversalViewport[] | null): void`
 
-Parameters:
-
-- `viewport`: a [`WebMercatorViewport`](https://deck.gl/#/documentation/deckgl-api-reference/viewports/web-mercator-viewport)
-
-Execute traversal under current viewport and fetch tiles needed for current viewport and update `selectedTiles`. Return `frameNumber` of this update frame.
+Schedules tile selection and content requests for the supplied viewports. With no argument, it
+uses the most recent viewports. Import `TraversalViewport` from `@loaders.gl/tiles-3d/tileset`.
+Its `longitude` and `latitude` fields are optional.
 
 ### I3S content options
 

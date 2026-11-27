@@ -41,6 +41,7 @@ import {Tileset3D, getTileset3DTraversalSnapshot, traverseTilesetContents, isTil
 | `getFrameState` | Utility |
 | `FrameState` | Type |
 | `GetFrameStateOptions` | Type |
+| `TraversalViewport` | Type |
 | `getLodStatus` | Utility |
 | `TILE_CONTENT_STATE` | Utility |
 | `TILE_REFINEMENT` | Utility |
