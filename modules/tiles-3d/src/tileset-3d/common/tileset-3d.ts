@@ -20,7 +20,7 @@ import {
 import {interpolateLinearly} from '../helpers/tiles-3d-request-priority';
 import type {FoveatedInterpolationCallback} from '../helpers/tiles-3d-request-priority';
 
-import type {GeospatialViewport, Viewport} from '../../types';
+import type {TraversalViewport} from '../../types';
 import {Tile3D} from './tile-3d';
 import {TILESET_TYPE} from '../../constants';
 import type {TilesetSpatialOptions, TilesetSpatialReference} from '../../spatial/spatial-types';
@@ -383,7 +383,8 @@ export class Tileset3D {
 
   traverseCounter = 0;
   geometricError = 0;
-  private lastUpdatedVieports: Viewport[] | Viewport | null = null;
+  /** Most recent viewports supplied for traversal. */
+  private lastUpdatedVieports: TraversalViewport[] | TraversalViewport | null = null;
   private _requestedTiles: Tile3D[] = [];
   private _emptyTiles: Tile3D[] = [];
   private frameStateData: any = {};
@@ -577,7 +578,8 @@ export class Tileset3D {
     return Boolean(this.source.hasExtension?.(extensionName));
   }
 
-  update(viewports: Viewport[] | Viewport | null = null): void {
+  /** Schedules traversal for the supplied or most recent viewports. */
+  update(viewports: TraversalViewport[] | TraversalViewport | null = null): void {
     this.tilesetInitializationPromise.then(() => {
       if (!viewports && this.lastUpdatedVieports) {
         viewports = this.lastUpdatedVieports;
@@ -590,7 +592,10 @@ export class Tileset3D {
     });
   }
 
-  async selectTiles(viewports: Viewport[] | Viewport | null = null): Promise<number> {
+  /** Traverses the supplied or most recent viewports and returns the frame number. */
+  async selectTiles(
+    viewports: TraversalViewport[] | TraversalViewport | null = null
+  ): Promise<number> {
     await this.tilesetInitializationPromise;
     if (viewports) {
       this.lastUpdatedVieports = viewports;
@@ -627,7 +632,8 @@ export class Tileset3D {
     }
   }
 
-  private doUpdate(viewports: Viewport[] | Viewport): void {
+  /** Updates tile selection for each viewport. */
+  private doUpdate(viewports: TraversalViewport[] | TraversalViewport): void {
     if ('loadTiles' in this.options && !this.options.loadTiles) {
       return;
     }
@@ -668,7 +674,7 @@ export class Tileset3D {
       if (!viewportsToTraverse.includes(id)) {
         continue;
       }
-      const frameState = getFrameState(viewport as GeospatialViewport, this._frameNumber);
+      const frameState = getFrameState(viewport, this._frameNumber);
       const root = this.roots[id];
       const cameraMotionUpdate = updateCameraMotionState(
         this._cameraMotionStates[id],

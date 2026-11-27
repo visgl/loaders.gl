@@ -34,6 +34,7 @@ export {TilesetCache} from './tileset-3d/common/tileset-cache';
 export {getFrameState} from './tileset-3d/helpers/frame-state';
 export type {FrameState} from './tileset-3d/helpers/frame-state';
 export type {GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
+export type {TraversalViewport} from './types';
 export {getLodStatus} from './tileset-3d/helpers/i3s-lod';
 export {TILE_CONTENT_STATE} from './constants';
 export {TILE_REFINEMENT} from './constants';
