@@ -8,6 +8,7 @@ import {
   encodeInBatches,
   encodeSync,
   encodeTable,
+  encodeTableAsText,
   encodeTableInBatches,
   encodeText,
   encodeTextSync,
@@ -237,4 +238,17 @@ test.each([
   expect(preloads).toBe(0);
   await expect(batches[Symbol.asyncIterator]().next()).rejects.toThrow(errorMessage);
   expect(preloads).toBe(1);
+});
+
+test('encodeTableAsText uses synchronous text capability without an unnecessary binary conversion', async () => {
+  const writer = makeWriter({
+    text: true,
+    encodeTextSync: () => 'direct text',
+    encode: () => {
+      throw new Error('binary path should not run');
+    }
+  });
+  expect(await encodeTableAsText({shape: 'object-row-table', data: []}, writer)).toBe(
+    'direct text'
+  );
 });

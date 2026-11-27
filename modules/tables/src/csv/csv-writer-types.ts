@@ -11,6 +11,8 @@ export type CSVWriterOptions = WriterOptions & {
   csv?: {
     /** Use field metadata display names as CSV column names when available. */
     useDisplayNames?: boolean;
+    /** Format native Arrow timestamp columns as ISO UTC text, preserving their unit precision. */
+    timestampFormat?: 'number' | 'iso';
   };
 };
 
@@ -20,7 +22,8 @@ export const CSV_WRITER_METADATA = {
   version: 'latest',
   options: {
     csv: {
-      useDisplayNames: false
+      useDisplayNames: false,
+      timestampFormat: 'number'
     }
   } as CSVWriterOptions,
   text: true,
