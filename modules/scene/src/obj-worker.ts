@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {OBJLoaderWithParser} from '../obj-loader';
+import {OBJLoaderWithParser} from './obj/obj-loader';
 
 createLoaderWorker({
   ...OBJLoaderWithParser,

@@ -15,16 +15,7 @@ async function preload() {
 /** Starts the browser module worker for NPY decoding. */
 function loadNPYWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
-    const moduleUrl = import.meta.url;
-    // Native browser workers cannot use the page's import map.
-    if (
-      /^https?:/.test(moduleUrl) &&
-      new URL(moduleUrl).pathname.endsWith('/dist/npy-loader-types.js')
-    ) {
-      const workerUrl = new URL('./npy-worker.js', moduleUrl);
-      return new Worker(workerUrl, {type: 'module'});
-    }
-    return new Worker(new URL('./workers/npy-worker.js', import.meta.url), {type: 'module'});
+    return new Worker(new URL('./npy-worker.js', import.meta.url), {type: 'module'});
   }
   return null;
 }

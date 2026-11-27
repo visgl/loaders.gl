@@ -89,7 +89,7 @@ export const TriangulationWorker = {
   /** Creates a bundler-resolved ES module worker in browsers. */
   loadWorker: () =>
     typeof Worker !== 'undefined'
-      ? new Worker(new URL('./workers/triangulation-worker-module.js', import.meta.url), {
+      ? new Worker(new URL('../triangulation-worker.js', import.meta.url), {
           type: 'module'
         })
       : null,

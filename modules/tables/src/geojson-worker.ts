@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {NPYLoaderWithParser} from '../npy-parser';
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
+import {GeoJSONLoaderWithParser} from './json/geojson-loader';
 
-createLoaderWorker(NPYLoaderWithParser);
+createLoaderWorker(GeoJSONLoaderWithParser);

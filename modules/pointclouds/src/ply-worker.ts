@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {parsePLYNativeBatches, parsePLYTable} from '../lib/parse-ply-output';
-import {PLYLoaderWithParser} from '../ply-loader';
-import type {PLYLoaderOptions} from '../ply-loader-types';
+import {parsePLYNativeBatches, parsePLYTable} from './ply/lib/parse-ply-output';
+import {PLYLoaderWithParser} from './ply/ply-loader';
+import type {PLYLoaderOptions} from './ply/ply-loader-types';
 
 createLoaderWorker({
   ...PLYLoaderWithParser,

@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import {JSONLoaderWithParser} from '../json-loader';
-import {JSONTableLoaderWithParser} from '../json-table-loader';
-import {NDJSONLoaderWithParser} from '../ndjson-loader';
+import {JSONLoaderWithParser} from './json/json-loader';
+import {JSONTableLoaderWithParser} from './json/json-table-loader';
+import {NDJSONLoaderWithParser} from './json/ndjson-loader';
 
 /** Selects the requested JSON-family parser in the shared worker bundle. */
 function selectLoader(options: Record<string, unknown>): LoaderWithParser {

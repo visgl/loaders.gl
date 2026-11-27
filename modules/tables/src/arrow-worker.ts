@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {parseArrowSync} from '../lib/parsers/parse-arrow';
+import {parseArrowSync} from './arrow/lib/parsers/parse-arrow';
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {preloadArrowCompressionDecoders} from '../lib/parsers/arrow-compression';
-import {ArrowLoaderWithParser} from '../arrow-loader';
+import {preloadArrowCompressionDecoders} from './arrow/lib/parsers/arrow-compression';
+import {ArrowLoaderWithParser} from './arrow/arrow-loader';
 
 createLoaderWorker({
   ...ArrowLoaderWithParser,

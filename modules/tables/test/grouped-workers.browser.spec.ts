@@ -2,11 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {Schema, Field, Utf8, Binary} from 'apache-arrow';
 import {load, parse} from '@loaders.gl/core';
+import {preloadWorker} from '@loaders.gl/core/worker-utils';
+import {CSVLoader} from '@loaders.gl/tables/csv';
 import {GeoJSONLoader} from '@loaders.gl/tables/json/bundled';
 import {ParquetLoader} from '@loaders.gl/tables/parquet';
+
+test('CSV loads its default module worker without a worker URL override', async () => {
+  const loadWorker = vi.fn(CSVLoader.loadWorker);
+  await preloadWorker({...CSVLoader, loadWorker});
+
+  expect(loadWorker).toHaveBeenCalledOnce();
+});
 
 test.each(['tables'])('GeoJSON worker transport remains executable under %s', async owner => {
   const workerUrl = new URL(`/modules/${owner}/dist/geojson-worker.js`, window.location.origin)
