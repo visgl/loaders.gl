@@ -15,7 +15,8 @@ import * as maplibregl from 'maplibre-gl'
 import {tableFromJSON} from 'apache-arrow'
 
 import type {Table} from 'apache-arrow'
-import {bindSQLPredicate, parseSQLPredicate, queryArrowTable} from '@loaders.gl/core/query';
+import {bindSQLPredicate, parseSQLPredicate} from '@loaders.gl/core/query';
+import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
 import {compileSQLTableQuery} from '@loaders.gl/sql/query';
 import {DuckDBSQLDataSource} from '@loaders.gl/sql/duckdb';
 import type {SQLTableQuery} from '@loaders.gl/sql/query';

@@ -6,9 +6,9 @@ import {expect, test} from 'vitest';
 import {tableFromArrays} from 'apache-arrow';
 import {
   createArrowQueryWorker,
-  parseSQLPredicate,
   queryArrowTableInWorker
-} from '@loaders.gl/core/query';
+} from '@loaders.gl/core/query/arrow-query-worker';
+import {parseSQLPredicate} from '@loaders.gl/core/query';
 
 const worker =
   typeof Worker === 'undefined'

@@ -12,6 +12,10 @@ export type TiffSourceDirectory = Readonly<Record<string, unknown>> & {
   readonly SubfileType?: number;
   /** Chunky or separate-plane storage. */
   readonly PlanarConfiguration?: number;
+  /** Encoded storage-tile offsets; a zero entry denotes an absent tile. */
+  readonly TileOffsets?: ArrayLike<number | bigint>;
+  /** Encoded storage-tile byte counts; a zero entry denotes an absent tile. */
+  readonly TileByteCounts?: ArrayLike<number | bigint>;
   /** Stored color-space or palette designation. */
   readonly PhotometricInterpretation?: number;
   /** Interpretations of trailing samples, including TIFF associated and unassociated alpha. */

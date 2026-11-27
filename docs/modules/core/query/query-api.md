@@ -6,7 +6,7 @@ description: Execute logical or parsed SQL queries against Arrow tables and tabl
 # query and queryInBatches
 
 For a step-by-step introduction, see [Querying tables](/docs/developer-guide/querying-tables).
-Both functions are available from `@loaders.gl/core/query`.
+Both functions are available from `@loaders.gl/core/query/sql`.
 
 ```ts
 query(query: Query | string, options: QueryOptions): Promise<Table>;
@@ -266,7 +266,7 @@ metadata and applies the same row predicate in each format.
 
 ## Preloading query execution
 
-Import `preloadQuery` from `@loaders.gl/core/query` to warm the ordinary Arrow executor
+Import `preloadQuery` from `@loaders.gl/core/query/sql` to warm the ordinary Arrow executor
 when an application anticipates a query, for example when it opens a query panel.
 
 ```ts

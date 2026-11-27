@@ -56,9 +56,11 @@ The source recognizes two interoperable metadata patterns:
   reading an existing CF variable are surfaced to the caller.
 
 Without an explicit override or a GeoZarr `proj:` CRS, the source checks the mapping's
-`crs_wkt` and `spatial_ref` attributes, then the group-level `crs` attribute. The source
-preserves the definition as written in `metadata.crs`, per-level metadata, and the returned
-raster's `crs`.
+`crs_wkt` and `spatial_ref` attributes, then GDAL's `_CRS` attribute, then the group-level `crs`
+attribute. Within `_CRS`, the source prefers `wkt`, followed by an OGC EPSG definition `url`
+normalized to `EPSG:<code>`. If neither is available, it keeps `projjson` as a structured
+`metadata.crs` with the same limits as `proj:projjson` described below. The resolved CRS also
+appears in per-level metadata and the returned raster's `crs`.
 
 <ReferenceBoundary
   title="GeoZarr source usage"
@@ -201,6 +203,21 @@ index in `levels` and `metadata.array` identifies the array that supplied the sa
 See the [GeoZarr deck.gl example](/examples/geospatial/geo-zarr) for a complete browser workflow
 that selects monthly NASA POWER climatology data, colorizes the returned typed raster, and displays
 it with deck.gl's `BitmapLayer`.
+
+### Native tiles (experimental)
+
+Use `readRasterTile` from `@loaders.gl/core/loader-utils` with a `tileMatrix` ID from
+`getMetadata().nativeTileMatrixIds` and the chunk column `x` and row `y` for that
+matrix. GeoZarr lists the same IDs as its storage grid. Reads require a complete
+matrix set with rightward, axis-aligned geometry in a common string CRS. The read
+returns the exact samples of one spatial chunk at the named level,
+with `overview` set to its zero-based level index. For sharded arrays, the grid uses
+the inner chunk dimensions exposed by Zarrita.
+
+Use `selection` to choose non-spatial indices and omit `bands` or pass `[0]` for the
+single output band. Edge chunks are padded to the matrix's tile size. The returned
+affine and bounds cover the full tile, and `validityMasks` mark padding and invalid
+samples according to the source's nodata rules.
 
 ## Current scope
 

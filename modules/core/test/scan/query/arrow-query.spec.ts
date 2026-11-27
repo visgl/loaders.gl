@@ -5,13 +5,8 @@
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 
-import {
-  ARROW_TABLE_QUERY_CAPABILITIES,
-  bindSQLPredicate,
-  parseSQLPredicate,
-  planTableQuery,
-  queryArrowTable
-} from '@loaders.gl/core/query';
+import {ARROW_TABLE_QUERY_CAPABILITIES, queryArrowTable} from '@loaders.gl/core/query/arrow-query';
+import {bindSQLPredicate, parseSQLPredicate, planTableQuery} from '@loaders.gl/core/query';
 import {ArrowTableSource} from '@loaders.gl/sql/arrow';
 
 test('Arrow executor advertises portable query capabilities', () => {

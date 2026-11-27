@@ -472,6 +472,7 @@ export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-sou
 export type {GetTileDataBatchResult, GetTileDataParameters} from './lib/sources/tile-source';
 export {getTileDataBatch} from './lib/sources/tile-source-utils';
 export {TileSourceAdapter} from './lib/sources/tile-source-adapter';
+export {readRasterTile} from './lib/sources/raster-tile';
 
 export type {ImageTileSource} from './lib/sources/image-tile-source';
 
@@ -487,6 +488,7 @@ export type {
   RasterData,
   RasterSelection,
   GetRasterParameters,
+  GetRasterTileParameters,
   RasterOverview,
   RasterSourceMetadata
 } from './lib/sources/raster-source';

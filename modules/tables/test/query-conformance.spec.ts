@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import {beforeAll, expect, test, vi} from 'vitest';
 import type {TableQuery} from '@loaders.gl/core/query';
-import {query, queryInBatches} from '@loaders.gl/core/query';
+import {query, queryInBatches} from '@loaders.gl/core/query/sql';
 import {convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
 import type {TableScanSource, TableScanReadOptions} from '@loaders.gl/core/loader-utils';
 import type {Schema} from '@loaders.gl/core/schema';

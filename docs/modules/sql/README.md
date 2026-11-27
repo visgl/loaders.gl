@@ -82,7 +82,7 @@ and the project-wide [Attributions and Credits](/docs/references-and-credits).
 ### Common queries on DuckDB tables
 
 Resolve a DuckDB table once with `await source.getTable(name)` and pass the handle as
-`source` to `query` or `queryInBatches` from `@loaders.gl/core/query`. You can also
+`source` to `query` or `queryInBatches` from `@loaders.gl/core/query/sql`. You can also
 use a structured `from: {source, table}` reference with a registered DuckDB source.
 Reuse the table handle for adjacent pages to avoid repeating schema and table discovery.
 
