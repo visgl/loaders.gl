@@ -199,6 +199,21 @@ See the [GeoZarr deck.gl example](/examples/geospatial/geo-zarr) for a complete 
 that selects monthly NASA POWER climatology data, colorizes the returned typed raster, and displays
 it with deck.gl's `BitmapLayer`.
 
+### Native tiles (experimental)
+
+Use `readRasterTile` from `@loaders.gl/core/loader-utils` with a `tileMatrix` ID from
+`getMetadata().nativeTileMatrixIds` and the chunk column `x` and row `y` for that
+matrix. GeoZarr lists the same IDs as its storage grid. Reads require a complete
+matrix set with rightward, axis-aligned geometry in a common string CRS. The read
+returns the exact samples of one spatial chunk at the named level,
+with `overview` set to its zero-based level index. For sharded arrays, the grid uses
+the inner chunk dimensions exposed by Zarrita.
+
+Use `selection` to choose non-spatial indices and omit `bands` or pass `[0]` for the
+single output band. Edge chunks are padded to the matrix's tile size. The returned
+affine and bounds cover the full tile, and `validityMasks` mark padding and invalid
+samples according to the source's nodata rules.
+
 ## Current scope
 
 Window reads support regular, axis-aligned 2D grids in the source CRS, with optional named

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
+import {readRasterTile} from '@loaders.gl/core/loader-utils';
 import type {GeoZarrLoaderOptions} from '@loaders.gl/scientific/zarr';
 import {GeoZarrRasterSource} from '@loaders.gl/scientific/zarr/bundled';
 import {limitZarrStore} from '../../src/zarr/lib/limited-zarr-store';
@@ -78,6 +79,8 @@ test.each([
 ] as const)('GeoZarr opens a CF level-group pyramid with %s scale transforms and selects an overview', async scaleTransforms => {
   const {source, chunkRequests} = createPyramid({scaleTransforms});
   const metadata = await source.getMetadata();
+  expect(metadata.tileGrid?.matrixIds).toEqual(['0', '1', '2']);
+  expect(metadata.nativeTileMatrixIds).toEqual(metadata.tileGrid?.matrixIds);
   expect(metadata.array).toBe('0/backscatter');
   expect(metadata.crs).toBe(PROJECTED_WKT);
   expect(metadata.noData).toBeUndefined();
@@ -261,6 +264,157 @@ test('GeoZarr discovers group-per-level CF geometry without a CRS declaration', 
 });
 
 test.each([
+  {
+    overview: 0,
+    x: 1,
+    y: 1,
+    resolution: 1,
+    origin: [4, 4],
+    bounds: [
+      [4, 0],
+      [8, 4]
+    ]
+  },
+  {
+    overview: 1,
+    x: 0,
+    y: 0,
+    resolution: 2,
+    origin: [0, 8],
+    bounds: [
+      [0, 0],
+      [8, 8]
+    ]
+  }
+])('GeoZarr reads the exact full chunk in overview $overview', async ({
+  overview,
+  x,
+  y,
+  resolution,
+  origin,
+  bounds
+}) => {
+  const chunkValues = Array.from({length: 16}, (_, index) => 20 * overview + index);
+  const {source, chunkRequests} = createPyramid({chunkValues});
+  const {tileGrid} = await source.getMetadata();
+  const matrix = tileGrid!.tileMatrixSet!.matrices[overview];
+  const parameters = {tileMatrix: matrix.id, x, y};
+  const tile = await readRasterTile(source, parameters);
+
+  expect(chunkRequests).toEqual([`${overview}/backscatter/0.${y}.${x}`]);
+  expect(tile).toMatchObject({
+    data: Uint8Array.from(chunkValues),
+    width: 4,
+    height: 4,
+    bandCount: 1,
+    dtype: 'uint8',
+    interleaved: false,
+    bands: [{index: 0, dtype: 'uint8'}],
+    overview,
+    boundingBox: bounds,
+    transform: [resolution, 0, origin[0], 0, -resolution, origin[1]],
+    crs: PROJECTED_WKT,
+    pixelRegistration: 'area',
+    resolution: [resolution, resolution],
+    nativeResolution: [resolution, resolution],
+    overzoom: false,
+    provenance: {sourceType: 'geozarr'},
+    ownership: 'owned',
+    metadata: {array: `${overview}/backscatter`}
+  });
+  expect(tile?.validityMasks).toBeUndefined();
+
+  (tile!.data as Uint8Array)[0] = 255;
+  await expect(source.getRasterTile(parameters)).resolves.toMatchObject({
+    data: Uint8Array.from(chunkValues)
+  });
+  expect(chunkRequests).toHaveLength(1);
+});
+
+test('GeoZarr pads a short edge chunk and masks padding and nodata', async () => {
+  const chunkValues = [1, 255, 201, 202, 2, 3, 203, 204, ...new Array<number>(8).fill(205)];
+  const {source, chunkRequests} = createPyramid({attributes: {_FillValue: 255}, chunkValues});
+  const tile = await source.getRasterTile({tileMatrix: '2', x: 0, y: 0});
+
+  expect(chunkRequests).toEqual(['2/backscatter/0.0.0']);
+  expect(tile).toMatchObject({
+    data: new Uint8Array([
+      1, 255, 255, 255, 2, 3, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
+    ]),
+    noData: 255,
+    bands: [{index: 0, noData: 255}],
+    width: 4,
+    height: 4,
+    overview: 2,
+    boundingBox: [
+      [0, -8],
+      [16, 8]
+    ],
+    transform: [4, 0, 0, 0, -4, 8],
+    validityMasks: [
+      {data: new Uint8Array([1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), width: 4, height: 4}
+    ]
+  });
+});
+
+test('GeoZarr selects a named slice for its single raster band', async () => {
+  const {source, chunkRequests} = createPyramid({sampleCount: 2});
+  const parameters = {tileMatrix: '0', x: 1, y: 0};
+  const tile = await readRasterTile(source, {
+    ...parameters,
+    selection: {band: 1},
+    bands: [0],
+    interleaved: true
+  });
+
+  expect(tile).toMatchObject({
+    data: new Uint8Array(16).fill(2),
+    bandCount: 1,
+    interleaved: true,
+    metadata: {selection: {band: 1}}
+  });
+  await expect(source.getRasterTile({...parameters, bands: [1]})).rejects.toThrow(
+    /one raster band/
+  );
+  expect(chunkRequests).toEqual(['0/backscatter/1.0.1']);
+});
+
+test('GeoZarr validates matrix IDs and returns null outside tile coverage', async () => {
+  const {source, chunkRequests} = createPyramid();
+  const {tileGrid} = await source.getMetadata();
+  const [matrix] = tileGrid!.tileMatrixSet!.matrices;
+  const outside = {tileMatrix: matrix.id, x: matrix.matrixSize[0], y: 0};
+  const unknown = {tileMatrix: 'unknown', x: 0, y: 0};
+
+  await expect(readRasterTile(source, outside)).resolves.toBeNull();
+  await expect(source.getRasterTile(outside)).resolves.toBeNull();
+  await expect(readRasterTile(source, unknown)).rejects.toThrow(/Unknown tile matrix "unknown"/);
+  await expect(source.getRasterTile(unknown)).rejects.toThrow(/Unknown tile matrix "unknown"/);
+  expect(chunkRequests).toEqual([]);
+});
+
+test('GeoZarr honors pre-aborted and in-flight signals for native tiles', async () => {
+  const controller = new AbortController();
+  const {source, chunkRequests} = createPyramid({
+    delayChunks: true,
+    onChunkRequest: () => controller.abort()
+  });
+  const parameters = {tileMatrix: '0', x: 0, y: 0};
+  await expect(
+    source.getRasterTile({...parameters, signal: AbortSignal.abort()})
+  ).rejects.toMatchObject({name: 'AbortError'});
+  expect(chunkRequests).toEqual([]);
+
+  await expect(
+    source.getRasterTile({...parameters, signal: controller.signal})
+  ).rejects.toMatchObject({name: 'AbortError'});
+  await expect(readRasterTile(source, parameters)).resolves.toMatchObject({
+    data: new Uint8Array(16).fill(1)
+  });
+  expect(chunkRequests).toEqual(['0/backscatter/0.0.0']);
+});
+
+test.each([
   {caseName: 'root CRS', mapping: 'none', rootCRS: PROJECTED_WKT, expected: PROJECTED_WKT},
   {caseName: 'named grid mapping', mapping: 'named', rootCRS: CUSTOM_WKT, expected: PROJECTED_WKT},
   {caseName: 'nested authority only', mapping: 'none', rootCRS: CUSTOM_WKT, expected: CUSTOM_WKT},
@@ -342,22 +496,46 @@ test('GeoZarr detects spatial OME levels from an array with PROJJSON-only GDAL _
 });
 
 test.each([
-  {caseName: 'CF _FillValue', attributes: {_FillValue: 255, missing_value: 254}, expected: 255},
-  {caseName: 'CF missing_value', attributes: {missing_value: 254}, expected: 254},
+  {
+    caseName: 'CF _FillValue',
+    attributes: {_FillValue: 255, missing_value: 254},
+    expected: 255,
+    maskedIndex: 2
+  },
+  {caseName: 'CF missing_value', attributes: {missing_value: 254}, expected: 254, maskedIndex: 1},
   {caseName: 'integer default', expected: undefined},
-  {caseName: 'integer opt-in', fillValueAsNoData: true, expected: 0},
+  {caseName: 'integer opt-in', fillValueAsNoData: true, expected: 0, maskedIndex: 0},
   {caseName: 'float default', float: true, expected: undefined},
-  {caseName: 'float opt-in', float: true, fillValueAsNoData: true, expected: 0}
-])('GeoZarr reports nodata from $caseName', async ({
+  {caseName: 'float opt-in', float: true, fillValueAsNoData: true, expected: 0, maskedIndex: 0},
+  {
+    caseName: 'float CF _FillValue',
+    float: true,
+    attributes: {_FillValue: 0.1},
+    expected: 0.1,
+    maskedIndex: 3
+  }
+])('GeoZarr reports and masks nodata from $caseName', async ({
   attributes,
   float,
   fillValueAsNoData,
-  expected
+  expected,
+  maskedIndex
 }) => {
-  const {source} = createPyramid({attributes, float, options: {fillValueAsNoData}});
+  const chunkValues = [0, 254, 255, 0.1, ...new Array<number>(12).fill(1)];
+  if (!float) chunkValues[3] = 1;
+  const {source} = createPyramid({attributes, float, chunkValues, options: {fillValueAsNoData}});
   const metadata = await source.getMetadata();
   expect(metadata.noData).toBe(expected);
   expect(metadata.bands?.[0].noData).toBe(expected);
+  const tile = await source.getRasterTile({tileMatrix: '0', x: 0, y: 0});
+  expect(tile?.noData).toBe(expected);
+  if (maskedIndex !== undefined || float) {
+    const expectedMask = new Uint8Array(16).fill(1);
+    if (maskedIndex !== undefined) expectedMask[maskedIndex] = 0;
+    expect(tile?.validityMasks).toEqual([{data: expectedMask, width: 4, height: 4}]);
+  } else {
+    expect(tile?.validityMasks).toBeUndefined();
+  }
 });
 
 test('GeoZarr caps concurrent chunk fetches through response body reads', async () => {
@@ -427,10 +605,16 @@ type PyramidOptions = {
   attributes?: Record<string, unknown>;
   /** Use float32 instead of uint8. */
   float?: boolean;
+  /** Number of selectable samples on the non-spatial band dimension. */
+  sampleCount?: number;
+  /** Raw values for each raster chunk, overriding the uniform per-sample defaults. */
+  chunkValues?: number[];
   /** Override GeoZarr source options. */
   options?: GeoZarrLoaderOptions['geozarr'];
   /** Return immediately from fetch while delaying the response body for raster chunks. */
   delayChunks?: boolean;
+  /** Callback when the fixture receives a raster chunk request. */
+  onChunkRequest?: () => void;
   /** Override or fail a metadata fetch. Returning undefined uses the fixture response. */
   overrideMetadataResponse?: (path: string) => Response | undefined;
 };
@@ -447,8 +631,11 @@ function createPyramid({
   rootCRS,
   attributes,
   float,
+  sampleCount = 1,
+  chunkValues,
   options,
   delayChunks,
+  onChunkRequest,
   overrideMetadataResponse
 }: PyramidOptions = {}) {
   const baseUrl = 'https://example.com/cf-pyramid.zarr/';
@@ -498,11 +685,17 @@ function createPyramid({
     const width = (maximumX - minimumX) / resolution;
     const height = 8 / resolution;
     documents.set(`${level}/.zgroup`, {zarr_format: 2});
-    addArray(`${level}/backscatter`, [1, height, width], [1, 4, 4], float ? '<f4' : '|u1', {
-      _ARRAY_DIMENSIONS: ['band', 'y', 'x'],
-      ...(mapping === 'named' ? {grid_mapping: 'utm'} : {}),
-      ...attributes
-    });
+    addArray(
+      `${level}/backscatter`,
+      [sampleCount, height, width],
+      [1, 4, 4],
+      float ? '<f4' : '|u1',
+      {
+        _ARRAY_DIMENSIONS: ['band', 'y', 'x'],
+        ...(mapping === 'named' ? {grid_mapping: 'utm'} : {}),
+        ...attributes
+      }
+    );
     if (mapping !== 'none') {
       const variable = mapping === 'named' ? 'utm' : 'spatial_ref';
       addArray(`${level}/${variable}`, [], [], '<i4', {
@@ -520,12 +713,14 @@ function createPyramid({
       );
     }
     const ChunkArray = float ? Float32Array : Uint8Array;
-    for (let row = 0; row < Math.ceil(height / 4); row++) {
-      for (let column = 0; column < Math.ceil(width / 4); column++) {
-        chunks.set(
-          `${level}/backscatter/0.${row}.${column}`,
-          new ChunkArray(16).fill(level + 1).buffer
-        );
+    for (let sample = 0; sample < sampleCount; sample++) {
+      const chunk = chunkValues
+        ? ChunkArray.from(chunkValues)
+        : new ChunkArray(16).fill(level + sample + 1);
+      for (let row = 0; row < Math.ceil(height / 4); row++) {
+        for (let column = 0; column < Math.ceil(width / 4); column++) {
+          chunks.set(`${level}/backscatter/${sample}.${row}.${column}`, chunk.buffer);
+        }
       }
     }
   }
@@ -551,6 +746,7 @@ function createPyramid({
     }
     if (path.includes('/backscatter/')) {
       chunkRequests.push(path);
+      onChunkRequest?.();
       if (delayChunks) {
         activeRequests++;
         peakRequests = Math.max(peakRequests, activeRequests);

@@ -63,3 +63,34 @@ dimension selections must match. Coverage must contain the candidate and satisfy
 both resolution axes at the configured maximum stretch. Rotated grids are rejected.
 
 Source declarations use `RasterDeclaredBandStatistics` under each band’s `declaredStatistics`, separately from computed payload statistics. The method is `declared`, the scope is `source` or `overview`, and the domain may be `unknown`. An unavailable valid count is omitted. Consumers must not use an unknown-domain declaration as a raw or physical display range.
+
+## Reading native tiles (experimental)
+
+`readRasterTile(source, parameters)` reads one tile at the selected native level.
+For default-band reads, choose `tileMatrix` from `getMetadata().nativeTileMatrixIds`
+when the source publishes it. Use `tileGrid` for physical storage
+geometry, including the matrix's native column and row coordinates `x` and `y`.
+The bridge requires a complete matrix set and delegates to the optional
+`RasterSource.getRasterTile`. It forwards `bands`, `interleaved`, named dimension
+`selection`, and `signal`. When you pass `bands`, the source checks whether the
+matrix supports that selection. GeoTIFF and GeoZarr implement native tile reads.
+
+```ts
+import {readRasterTile} from '@loaders.gl/core/loader-utils';
+
+const {tileGrid, nativeTileMatrixIds} = await source.getMetadata();
+const tileMatrix = tileGrid?.tileMatrixSet ? nativeTileMatrixIds?.[0] : undefined;
+const tile =
+  tileMatrix === undefined ? null : await readRasterTile(source, {tileMatrix, x: 0, y: 0, signal});
+```
+
+For a readable matrix, the bridge returns `null` outside matrix coverage or when the source
+reports an absent tile. It throws for unknown matrices, incomplete grids, and
+sources without a native tile reader. With default bands, it also throws for
+matrices omitted from a published `nativeTileMatrixIds` list. Returned tiles must
+match the matrix pixel dimensions, including padded edges.
+GeoTIFF reports the IFD index as `overview`. GeoZarr reports the level index and
+uses the array or multiscale asset identifier as its matrix ID. Sources may omit
+`overview`. Edge padding and source masks use `validityMasks`, and each band's
+raw NoData rules still apply. Reads preserve the native sampling grid and perform
+no reprojection or resampling.
