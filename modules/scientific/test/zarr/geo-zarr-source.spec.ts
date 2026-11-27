@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {RasterBoundingBox, RasterViewport} from '@loaders.gl/core/loader-utils';
+import {readRasterTile} from '@loaders.gl/core/loader-utils';
 import {GeoZarrRasterSource} from '@loaders.gl/scientific/zarr/bundled';
 import {expect, test} from 'vitest';
 
@@ -59,14 +60,32 @@ test('GeoZarrRasterSource returns typed empty rasters outside each supported dty
   }
 });
 
-test('GeoZarrRasterSource transposes physical x/y arrays into row-major raster order', async () => {
+test.each([
+  {caseName: 'physical x/y axes', dimensions: ['x', 'y'], shape: [2, 3], overrides: undefined},
+  {
+    caseName: 'a transpose codec',
+    dimensions: ['y', 'x'],
+    shape: [3, 2],
+    overrides: {
+      codecs: [
+        {name: 'transpose', configuration: {order: [1, 0]}},
+        {name: 'bytes', configuration: {endian: 'little'}}
+      ]
+    }
+  }
+] as const)('GeoZarrRasterSource returns row-major samples with $caseName', async ({
+  dimensions,
+  shape,
+  overrides
+}) => {
   const baseUrl = 'https://example.com/transposed.zarr';
   const fetcher = createDirectGeoZarrFetcher(
     baseUrl,
     'uint8',
-    ['x', 'y'],
-    [2, 3],
-    new Uint8Array([1, 2, 3, 4, 5, 6])
+    dimensions,
+    shape,
+    new Uint8Array([1, 2, 3, 4, 5, 6]),
+    overrides
   );
   const source = new GeoZarrRasterSource(baseUrl, {
     zarr: {requireConsolidatedMetadata: false},
@@ -86,6 +105,19 @@ test('GeoZarrRasterSource transposes physical x/y arrays into row-major raster o
   expect(raster.width).toBe(2);
   expect(raster.height).toBe(3);
   expect(Array.from(raster.data as Uint8Array)).toEqual([1, 4, 2, 5, 3, 6]);
+
+  const {tileGrid} = await source.getMetadata();
+  const [matrix] = tileGrid!.tileMatrixSet!.matrices;
+  expect(matrix.id).toBe('values');
+  await expect(readRasterTile(source, {tileMatrix: matrix.id, x: 0, y: 0})).resolves.toMatchObject({
+    data: new Uint8Array([1, 4, 2, 5, 3, 6]),
+    overview: 0,
+    boundingBox: [
+      [0, 0],
+      [2, 3]
+    ],
+    transform: [1, 0, 0, 0, 1, 0]
+  });
 });
 
 test('GeoZarrRasterSource validates structural metadata and retries failed initialization', async () => {
@@ -153,6 +185,10 @@ test('GeoZarrRasterSource applies node registration and rejects rotated reads', 
   const metadata = await source.getMetadata();
   expect(metadata.registration).toBe('node');
   expect(metadata.transform).toEqual([1, 0.25, -0.625, 0.5, -1, 2.25]);
+  expect(metadata.tileGrid?.tileMatrixSet).toBeUndefined();
+  const tile = {tileMatrix: 'values', x: 0, y: 0};
+  await expect(readRasterTile(source, tile)).rejects.toThrow(/complete native tile matrix set/);
+  await expect(source.getRasterTile(tile)).rejects.toThrow(/complete native tile matrix set/);
   await expect(
     source.getRaster({viewport: createViewport(metadata.boundingBox!, 'EPSG:4326')})
   ).rejects.toThrow(/rotated affine window reads/);
@@ -181,8 +217,8 @@ function createViewport(
 function createDirectGeoZarrFetcher(
   baseUrl: string,
   dataType: (typeof DATA_TYPES)[number],
-  dimensionNames: [string, string],
-  shape: [number, number],
+  dimensionNames: readonly [string, string],
+  shape: readonly [number, number],
   data?: Uint8Array,
   arrayMetadataOverrides: Record<string, any> = {}
 ): typeof fetch {
