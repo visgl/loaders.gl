@@ -812,7 +812,10 @@
       "path": "modules/tables/src/arrow",
       "sourcePaths": [
         "modules/tables/src/arrow/",
-        "modules/core/src/arrow-worker-transport.ts"
+        "modules/core/src/arrow-worker-transport.ts",
+        "modules/tables/src/arrow-worker.ts",
+        "modules/tables/src/geoarrow-worker.ts",
+        "modules/tables/src/triangulation-worker.js"
       ],
       "browser": {
         "statements": 85,
@@ -869,7 +872,9 @@
       "owner": "@loaders.gl/tables",
       "path": "modules/tables/src/json",
       "sourcePaths": [
-        "modules/tables/src/json/"
+        "modules/tables/src/json/",
+        "modules/tables/src/geojson-worker.ts",
+        "modules/tables/src/json-worker.ts"
       ],
       "browser": {
         "statements": 86,
@@ -1170,7 +1175,8 @@
       },
       "owner": "@loaders.gl/pointclouds",
       "sourcePaths": [
-        "modules/pointclouds/src/pcd/"
+        "modules/pointclouds/src/pcd/",
+        "modules/pointclouds/src/pcd-worker.ts"
       ]
     },
     "pointclouds/ply": {
@@ -1189,7 +1195,8 @@
       },
       "owner": "@loaders.gl/pointclouds",
       "sourcePaths": [
-        "modules/pointclouds/src/ply/"
+        "modules/pointclouds/src/ply/",
+        "modules/pointclouds/src/ply-worker.ts"
       ]
     },
     "scene/obj": {
@@ -1208,7 +1215,8 @@
       },
       "owner": "@loaders.gl/scene",
       "sourcePaths": [
-        "modules/scene/src/obj/"
+        "modules/scene/src/obj/",
+        "modules/scene/src/obj-worker.ts"
       ]
     },
     "scene/gltf": {
