@@ -92,6 +92,10 @@ import {CSVLoader} from '@loaders.gl/tables/csv';
 const data = await parse(csvText, CSVLoader);
 ```
 
+### Browser worker[​](#browser-worker "Direct link to Browser worker")
+
+The CSV loader resolves its browser worker relative to the loader module. A bundler that supports module worker URLs in dependencies, such as Vite 8, can emit the worker automatically. If Vite 7 dependency optimization rewrites the worker URL incorrectly, add `@loaders.gl/tables/csv` to `optimizeDeps.exclude`. If your toolchain cannot relocate the worker URL, serve `@loaders.gl/tables/csv-worker.js` as a static asset and pass its served URL in `csv.workerUrl`.
+
 ### Header Detection[​](#header-detection "Direct link to Header Detection")
 
 A complication with the CSV format is that CSV files can come with or without an initial header line. While `CSVLoader` attempts to detect if the first line is a header, this can fail. If you know the file shape, use `options.csv.header` to specify how to handle the first line.
