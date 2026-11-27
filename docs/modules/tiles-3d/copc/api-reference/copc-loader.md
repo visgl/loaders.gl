@@ -114,7 +114,9 @@ For shared loading controls and parser configuration, see
 
 ## Low-Level Range APIs
 
-The package exports the native parsing primitives used by `COPCLoader`:
+Import the native parsing primitives used by `COPCLoader` from
+`@loaders.gl/tiles-3d/copc/bundled`. The lighter `@loaders.gl/tiles-3d/copc` entry does not export
+these functions at runtime.
 
 | API | Description |
 | --- | --- |

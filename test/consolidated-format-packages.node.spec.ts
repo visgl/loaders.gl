@@ -143,10 +143,7 @@ test.each([
 
 test.each([
   ['module', "import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles';"],
-  [
-    'commonjs',
-    "const {resolveCesiumIonTileset} = require('@loaders.gl/tiles-3d/3d-tiles');"
-  ]
+  ['commonjs', "const {resolveCesiumIonTileset} = require('@loaders.gl/tiles-3d/3d-tiles');"]
 ])('the 3D Tiles package exports the Cesium ion resolver in %s', (moduleType, load) => {
   const result = execFileSync(
     process.execPath,
@@ -158,6 +155,27 @@ test.each([
     {encoding: 'utf8'}
   );
   expect(result).toBe('function');
+});
+
+test.each(['module', 'commonjs'])('the bundled COPC range API is available in %s', moduleType => {
+  const load =
+    moduleType === 'module'
+      ? "import * as copc from '@loaders.gl/tiles-3d/copc/bundled';"
+      : "const copc = require('@loaders.gl/tiles-3d/copc/bundled');";
+  const result = execFileSync(
+    process.execPath,
+    [
+      `--input-type=${moduleType}`,
+      '--eval',
+      `${load}
+      for (const name of ['openCOPC', 'loadCOPCHierarchyPage', 'loadCOPCNodeData', 'parseCOPCHeader', 'parseCOPCInfo', 'parseCOPCHierarchy']) {
+        if (typeof copc[name] !== 'function') throw new Error('Missing COPC range helper: ' + name);
+      }
+      process.stdout.write('loaded');`
+    ],
+    {encoding: 'utf8'}
+  );
+  expect(result).toBe('loaded');
 });
 
 test('emitted services and splats ESM entrypoints keep valid index references', () => {
