@@ -97,3 +97,23 @@ test('CSVWriter rejects timestamps outside the supported ISO calendar range', as
     'outside the ISO date range'
   );
 });
+
+test('CSVWriter follows Arrow canonical storage for Int32 input and explicit validity offsets', async () => {
+  const type = new arrow.TimestampNanosecond('UTC');
+  const storage = BigInt64Array.from([1479600000123456789n, -1n]);
+  const column = arrow.makeVector(
+    arrow.makeData({
+      type,
+      data: new Int32Array(storage.buffer),
+      offset: 2,
+      length: 2,
+      nullBitmap: new Uint8Array([12]),
+      nullCount: 0
+    })
+  );
+  expect(column.data[0].values).toBeInstanceOf(BigInt64Array);
+  expect(column.get(0)).toBeCloseTo(1479600000123.4568, 3);
+  expect(
+    await encodeText(new arrow.Table({time: column}), CSVWriter, {csv: {timestampFormat: 'iso'}})
+  ).toBe('time\n2016-11-20T00:00:00.123456789Z\n1969-12-31T23:59:59.999999999Z');
+});
