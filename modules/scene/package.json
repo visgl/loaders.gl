@@ -221,7 +221,7 @@
     "pre-build": "npm run copy-libs-usd && npm run copy-libs-gltf && npm run build-worker-obj && npm run build-format-subpaths && npm run generate-gltf-schemas && npm run build-bundle && npm run build-bundle-dev && npm run copy-libs-draco && npm run build-draco-workers",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker-obj": "node ../../scripts/build-codec-worker.mjs src/obj/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-obj": "node ../../scripts/build-codec-worker.mjs src/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__filename=undefined --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
     "generate-gltf-schemas": "node scripts/gltf/generate-json-schema.mjs",
     "copy-libs-gltf": "mkdir -p dist/gltf/libs && cp -rf src/gltf/libs/. dist/gltf/libs/",

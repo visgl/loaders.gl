@@ -274,7 +274,7 @@
     "build-cjs-hdf5": "esbuild src/hdf5/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/hdf5/index.cjs --external:@loaders.gl/*",
     "build-cjs-vtk": "esbuild src/vtk/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vtk/index.cjs --external:@loaders.gl/*",
     "build-cjs-vector-field": "esbuild src/vector-field/index.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vector-field/index.cjs --external:@loaders.gl/*",
-    "build-npy-worker": "esbuild src/workers/npy-worker.ts --outfile=dist/npy-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-npy-worker": "esbuild src/npy-worker.ts --outfile=dist/npy-worker.js --define:__filename=undefined --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-metadata": "node ../../scripts/build-scientific-metadata.mjs",
     "build-cjs-vtk-loader": "esbuild src/vtk-loader.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/vtk-loader.cjs --external:@loaders.gl/*",
     "build-cjs-nrrd": "esbuild src/nrrd-loader.ts --bundle --format=cjs --platform=node --target=node22 --outfile=dist/nrrd-loader.cjs --external:@loaders.gl/*",

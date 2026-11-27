@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {parseGeoArrowSync} from '../lib/parsers/parse-geoarrow';
-import {preloadArrowCompressionDecoders} from '../lib/parsers/arrow-compression';
+import {parseGeoArrowSync} from './arrow/lib/parsers/parse-geoarrow';
+import {preloadArrowCompressionDecoders} from './arrow/lib/parsers/arrow-compression';
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {GeoArrowLoaderWithParser} from '../geoarrow-loader';
+import {GeoArrowLoaderWithParser} from './arrow/geoarrow-loader';
 
 createLoaderWorker({
   ...GeoArrowLoaderWithParser,

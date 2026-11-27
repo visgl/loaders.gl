@@ -4,7 +4,14 @@
     "src/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/arrow-worker.ts",
+    "src/geoarrow-worker.ts",
+    "src/json-worker.ts",
+    "src/geojson-worker.ts",
+    "src/parquet-worker.js",
+    "src/csv-worker.ts",
+    "src/triangulation-worker.js"
   ],
   "compilerOptions": {
     "composite": true,
