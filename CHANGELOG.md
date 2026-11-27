@@ -2,6 +2,15 @@
 
 ## v5.0
 
+### v5.0.2
+
+- Move eager Arrow helpers off the query entry point (#4650).
+- Read GDAL CRS metadata in GeoZarr and cache chunks across raster pans (#4656, #4651).
+- Read individual native GeoTIFF tiles or GeoZarr chunks with `readRasterTile` (#4648).
+- Reject nonpositive WMTS scale denominators (#4659).
+- Allow 3D Tiles traversal viewports without longitude and latitude (#4658).
+- Restore the public Cesium ion resolver used by deck.gl and correct import documentation (#4657).
+
 ### v5.0.1
 
 - Reorganize public package subpaths and load format writers on demand. See the upgrade guide for changed imports (#4627, #4636, #4638–#4647).
