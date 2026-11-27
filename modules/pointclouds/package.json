@@ -112,8 +112,8 @@
   ],
   "scripts": {
     "build-worker-las": "esbuild src/las/workers/las-worker.ts --bundle --outfile=dist/las-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-pcd": "node ../../scripts/build-codec-worker.mjs src/pcd/workers/pcd-worker.ts --bundle --outfile=dist/pcd-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-ply": "node ../../scripts/build-codec-worker.mjs src/ply/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-pcd": "node ../../scripts/build-codec-worker.mjs src/pcd-worker.ts --bundle --outfile=dist/pcd-worker.js --define:__filename=undefined --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-ply": "node ../../scripts/build-codec-worker.mjs src/ply-worker.ts --bundle --outfile=dist/ply-worker.js --define:__filename=undefined --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-format-subpaths": "node ../../scripts/build-format-subpaths.mjs",
     "pre-build": "npm run build-worker-las && npm run build-worker-pcd && npm run build-worker-ply && npm run build-format-subpaths && npm run build-bundle && npm run build-bundle-dev",
     "build-bundle": "node ../../scripts/build-codec-bundle.mjs ./bundle.ts --output=dist/dist.min.js",
