@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {CSVLoaderWithParser} from '../csv/csv-loader';
+import {CSVLoaderWithParser} from './csv/csv-loader';
 
 createLoaderWorker(CSVLoaderWithParser);

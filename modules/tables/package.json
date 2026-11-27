@@ -283,7 +283,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker-csv && npm run build-worker-node-csv && npm run build-triangulation-worker-arrow && npm run build-triangulation-worker-node-arrow && npm run build-worker-arrow && npm run build-worker-json && npm run build-worker-parquet && npm run build-worker-node-parquet && npm run build-source-worker-parquet && npm run build-worker-json-tables && npm run build-worker-node-json-tables && npm run build-worker-geoarrow && npm run build-worker-node-arrow && npm run build-worker-node-geoarrow",
-    "build-worker-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-csv": "node ../../scripts/build-codec-worker.mjs src/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__filename=undefined --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node-csv": "node ../../scripts/build-codec-worker.mjs src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-triangulation-worker-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-triangulation-worker-node-arrow": "node ../../scripts/build-codec-worker.mjs src/arrow/workers/triangulation-worker-node.ts --bundle --outfile=dist/triangulation-worker-node.js --platform=node --target=node16 --format=esm --tree-shaking=false --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
