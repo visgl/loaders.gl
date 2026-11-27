@@ -15,6 +15,56 @@ const PROJECTED_WKT =
 /** Outer WKT without an EPSG authority. */
 const CUSTOM_WKT = 'PROJCS["Custom grid",GEOGCS["NAD83",AUTHORITY["EPSG","4269"]]]';
 
+/** PROJJSON definition of WGS 84 / UTM zone 10N. */
+const PROJECTED_PROJJSON = {
+  type: 'ProjectedCRS',
+  name: 'WGS 84 / UTM zone 10N',
+  base_crs: {
+    name: 'WGS 84',
+    datum_ensemble: {
+      name: 'World Geodetic System 1984 ensemble',
+      members: [
+        {name: 'World Geodetic System 1984 (Transit)'},
+        {name: 'World Geodetic System 1984 (G730)'},
+        {name: 'World Geodetic System 1984 (G873)'},
+        {name: 'World Geodetic System 1984 (G1150)'},
+        {name: 'World Geodetic System 1984 (G1674)'},
+        {name: 'World Geodetic System 1984 (G1762)'},
+        {name: 'World Geodetic System 1984 (G2139)'},
+        {name: 'World Geodetic System 1984 (G2296)'}
+      ],
+      ellipsoid: {name: 'WGS 84', semi_major_axis: 6378137, inverse_flattening: 298.257223563},
+      accuracy: '2.0'
+    },
+    coordinate_system: {
+      subtype: 'ellipsoidal',
+      axis: [
+        {name: 'Geodetic latitude', abbreviation: 'Lat', direction: 'north', unit: 'degree'},
+        {name: 'Geodetic longitude', abbreviation: 'Lon', direction: 'east', unit: 'degree'}
+      ]
+    }
+  },
+  conversion: {
+    name: 'UTM zone 10N',
+    method: {name: 'Transverse Mercator'},
+    parameters: [
+      {name: 'Latitude of natural origin', value: 0, unit: 'degree'},
+      {name: 'Longitude of natural origin', value: -123, unit: 'degree'},
+      {name: 'Scale factor at natural origin', value: 0.9996, unit: 'unity'},
+      {name: 'False easting', value: 500000, unit: 'metre'},
+      {name: 'False northing', value: 0, unit: 'metre'}
+    ]
+  },
+  coordinate_system: {
+    subtype: 'Cartesian',
+    axis: [
+      {name: 'Easting', abbreviation: 'E', direction: 'east', unit: 'metre'},
+      {name: 'Northing', abbreviation: 'N', direction: 'north', unit: 'metre'}
+    ]
+  },
+  id: {authority: 'EPSG', code: 32610}
+};
+
 /** Full extent with centers at half-integer coordinates on the finest grid. */
 const EXTENT: RasterBoundingBox = [
   [0, 0],
@@ -213,16 +263,82 @@ test('GeoZarr discovers group-per-level CF geometry without a CRS declaration', 
 test.each([
   {caseName: 'root CRS', mapping: 'none', rootCRS: PROJECTED_WKT, expected: PROJECTED_WKT},
   {caseName: 'named grid mapping', mapping: 'named', rootCRS: CUSTOM_WKT, expected: PROJECTED_WKT},
-  {caseName: 'nested authority only', mapping: 'none', rootCRS: CUSTOM_WKT, expected: CUSTOM_WKT}
-] as const)('GeoZarr resolves CF CRS from $caseName', async ({mapping, rootCRS, expected}) => {
-  const {source} = createPyramid({mapping, rootCRS, options: {array: '0/backscatter'}});
+  {caseName: 'nested authority only', mapping: 'none', rootCRS: CUSTOM_WKT, expected: CUSTOM_WKT},
+  {
+    caseName: 'GDAL _CRS WKT',
+    mapping: 'none',
+    attributes: {_CRS: {wkt: PROJECTED_WKT, url: 'http://www.opengis.net/def/crs/EPSG/0/4326'}},
+    expected: PROJECTED_WKT
+  },
+  {
+    caseName: 'GDAL _CRS URL',
+    mapping: 'none',
+    attributes: {_CRS: {url: 'http://www.opengis.net/def/crs/EPSG/0/32610'}},
+    expected: 'EPSG:32610'
+  },
+  {
+    caseName: 'GDAL _CRS URL over PROJJSON',
+    mapping: 'none',
+    attributes: {
+      _CRS: {url: 'http://www.opengis.net/def/crs/EPSG/0/32610', projjson: PROJECTED_PROJJSON}
+    },
+    expected: 'EPSG:32610'
+  },
+  {
+    caseName: 'GDAL _CRS PROJJSON only',
+    mapping: 'none',
+    attributes: {_CRS: {projjson: PROJECTED_PROJJSON}},
+    expected: PROJECTED_PROJJSON
+  },
+  {
+    caseName: 'GDAL _CRS WKT over PROJJSON',
+    mapping: 'none',
+    attributes: {_CRS: {wkt: PROJECTED_WKT, projjson: PROJECTED_PROJJSON}},
+    expected: PROJECTED_WKT
+  },
+  {
+    caseName: 'grid mapping over GDAL _CRS',
+    mapping: 'named',
+    attributes: {_CRS: {wkt: CUSTOM_WKT}},
+    expected: PROJECTED_WKT
+  },
+  {
+    caseName: 'GDAL _CRS over root CRS',
+    mapping: 'none',
+    rootCRS: CUSTOM_WKT,
+    attributes: {_CRS: {wkt: PROJECTED_WKT}},
+    expected: PROJECTED_WKT
+  }
+] as const)('GeoZarr resolves CF CRS from $caseName', async ({
+  mapping,
+  rootCRS,
+  attributes,
+  expected
+}: {
+  mapping: PyramidOptions['mapping'];
+  rootCRS?: string;
+  attributes?: Record<string, unknown>;
+  expected: string | typeof PROJECTED_PROJJSON;
+}) => {
+  const {source} = createPyramid({mapping, rootCRS, attributes, options: {array: '0/backscatter'}});
   const metadata = await source.getMetadata();
-  expect(metadata.crs).toBe(expected);
+  expect(metadata.crs).toEqual(expected);
   expect(metadata.levels?.map(level => level.metadata?.crs)).toEqual([
     expected,
     expected,
     expected
   ]);
+});
+
+test('GeoZarr detects spatial OME levels from an array with PROJJSON-only GDAL _CRS', async () => {
+  const {source} = createPyramid({
+    mapping: 'none',
+    scaleTransforms: 'named',
+    attributes: {_CRS: {projjson: PROJECTED_PROJJSON}},
+    options: {array: '0/backscatter'}
+  });
+  const metadata = await source.getMetadata();
+  expect(metadata.levels?.map(level => level.metadata?.width)).toEqual([8, 4, 2]);
 });
 
 test.each([

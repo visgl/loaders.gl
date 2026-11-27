@@ -7,6 +7,7 @@
 - Upgrade to math.gl 5.0.4 and share streaming Arrow schema inference, CSV UTF-8 reads, Arrow projection, predicate evaluation, row selection, and schema metadata.
 - Delegate WKT parsing, WKB ring traversal, and TWKB encoding and decoding to math.gl.
 - Apply a 1% resolution tolerance to GeoTIFF overview selection and overzoom reporting.
+- Read the GDAL `_CRS` attribute in GeoZarr: `wkt`, an OGC EPSG `url`, or `projjson` only.
 
 ### v5.0.0
 
