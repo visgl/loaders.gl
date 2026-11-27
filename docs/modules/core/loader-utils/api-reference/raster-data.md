@@ -67,13 +67,13 @@ Source declarations use `RasterDeclaredBandStatistics` under each band’s `decl
 ## Reading native tiles (experimental)
 
 `readRasterTile(source, parameters)` reads one tile at the selected native level.
-Choose `tileMatrix` from `getMetadata().nativeTileMatrixIds`, which lists the
-matrices readable with the default bands. Use `tileGrid` for physical storage
+For default-band reads, choose `tileMatrix` from `getMetadata().nativeTileMatrixIds`
+when the source publishes it. Use `tileGrid` for physical storage
 geometry, including the matrix's native column and row coordinates `x` and `y`.
 The bridge requires a complete matrix set and delegates to the optional
 `RasterSource.getRasterTile`. It forwards `bands`, `interleaved`, named dimension
-`selection`, and `signal`. A band selection can still be rejected if the matrix
-has a different band layout. GeoTIFF and GeoZarr implement native tile reads.
+`selection`, and `signal`. When you pass `bands`, the source checks whether the
+matrix supports that selection. GeoTIFF and GeoZarr implement native tile reads.
 
 ```ts
 import {readRasterTile} from '@loaders.gl/core/loader-utils';
@@ -85,11 +85,10 @@ const tile =
 ```
 
 For a readable matrix, the bridge returns `null` outside matrix coverage or when the source
-reports an absent tile. It throws for unknown matrices, matrices omitted from a
-published `nativeTileMatrixIds` list, incomplete grids, and sources without a
-native tile reader. Sources that omit `nativeTileMatrixIds` leave eligibility to
-the reader. Returned tiles must match the matrix pixel dimensions, including
-padded edges.
+reports an absent tile. It throws for unknown matrices, incomplete grids, and
+sources without a native tile reader. With default bands, it also throws for
+matrices omitted from a published `nativeTileMatrixIds` list. Returned tiles must
+match the matrix pixel dimensions, including padded edges.
 GeoTIFF reports the IFD index as `overview`. GeoZarr reports the level index and
 uses the array or multiscale asset identifier as its matrix ID. Sources may omit
 `overview`. Edge padding and source masks use `validityMasks`, and each band's

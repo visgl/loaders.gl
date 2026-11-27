@@ -41,7 +41,7 @@ for stable v4 migrations.
   in MapView and GlobeView with either CPU or GPU styling.
 - **GeoTIFF transparency.** `RasterSourceLayer` honors alpha bands in RGB and grayscale GeoTIFFs,
   and shows tagged 8-bit RGB as stored. Grayscale with alpha uses CPU rendering.
-- **Native raster tiles (experimental).** Discover readable GeoTIFF and GeoZarr matrices through `nativeTileMatrixIds`. `readRasterTile` reads a storage tile or spatial chunk at its exact overview with edge padding and validity masks.
+- **Native raster tiles (experimental).** Discover GeoTIFF and GeoZarr matrices readable with the default bands through `nativeTileMatrixIds`. `readRasterTile` reads a storage tile or spatial chunk at its exact overview with edge padding and validity masks. The source validates explicit band selections against the requested matrix.
 - **3D content and tiles.** [Scene](./modules/scene/README.md) groups glTF, Draco, and mesh
   formats. [Tile Converter](./modules/tile-converter/README.md) defaults to the v5 engine.
   The [TileMatrix adapter](./modules/tiles/api-reference/tile-matrix.md) adds coarse-to-fine

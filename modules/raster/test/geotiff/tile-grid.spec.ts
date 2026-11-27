@@ -31,10 +31,15 @@ function createMaskedOverviewSource(hasOverviewMask: boolean): GeoTIFFRasterSour
         ]
       : [])
   ];
+  return createTiledSource(images);
+}
+
+/** Builds a GeoTIFF source from a chain of tiled image directories. */
+function createTiledSource(images: Parameters<typeof createTiffFixture>[0][]): GeoTIFFRasterSource {
   let fileOffset = 0;
   const fragments = images.map((image, index) => {
     const {data, directoryOffset, entryOffsets} = createTiffFixture(
-      {...image, tileSize: [2, 2], bits: [8]},
+      {tileSize: [2, 2], bits: [8], ...image},
       fileOffset
     );
     fileOffset += data.byteLength;
@@ -242,6 +247,32 @@ test('GeoTIFF native discovery includes an overview with a matching mask', async
       overview: 2,
       validityMasks: [{data: new Uint8Array([1, 0, 0, 1]), width: 2, height: 2}]
     });
+  } finally {
+    source.finalize();
+  }
+});
+
+test('readRasterTile lets GeoTIFF validate explicit bands for a single-band overview', async () => {
+  const source = createTiledSource([
+    {width: 4, height: 4, bits: [8, 8], tags: TILE_GEO_TAGS},
+    {width: 2, height: 2, tags: [{tag: 254, type: 4, values: [1]}]}
+  ]);
+  try {
+    const address = {tileMatrix: '1', x: 0, y: 0};
+    const metadata = await source.getMetadata();
+    expect(metadata.nativeTileMatrixIds).toEqual(['0']);
+    await expect(readRasterTile(source, address)).rejects.toThrow(
+      'Tile matrix "1" does not support native tile reads. Readable matrix IDs: ["0"]'
+    );
+    await expect(readRasterTile(source, {...address, bands: [0]})).resolves.toMatchObject({
+      data: new Uint8Array([1, 2, 3, 4]),
+      width: 2,
+      height: 2,
+      overview: 1
+    });
+    await expect(readRasterTile(source, {...address, bands: [1]})).rejects.toThrow(
+      'GeoTIFF IFD 1 is incompatible with native tile decoding'
+    );
   } finally {
     source.finalize();
   }

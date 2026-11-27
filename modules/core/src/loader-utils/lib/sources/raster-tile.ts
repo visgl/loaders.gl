@@ -6,12 +6,15 @@ import type {GetRasterTileParameters, NumericRasterData, RasterSource} from './r
 import {resolveTileGridTile} from './tile-grid';
 import {waitForPromiseWithSignal} from '../request-utils/abort-utils';
 
-/** Experimental. Validates native tile addressing and delegates to the source's unresampled read. */
+/**
+ * Reads one native tile without resampling (experimental).
+ * Uses the advertised matrix IDs for default bands and lets the source validate explicit bands.
+ */
 export async function readRasterTile(
   source: RasterSource<NumericRasterData>,
   parameters: GetRasterTileParameters
 ): Promise<NumericRasterData | null> {
-  const {tileMatrix, signal} = parameters;
+  const {tileMatrix, bands, signal} = parameters;
   signal?.throwIfAborted();
   const {tileGrid, nativeTileMatrixIds} = await waitForPromiseWithSignal(
     source.getMetadata({signal}),
@@ -24,7 +27,7 @@ export async function readRasterTile(
 
   const resolved = resolveTileGridTile(tileGrid, {...parameters, z: 0});
   const matrix = matrixSet.matrices.find(candidate => candidate.id === tileMatrix)!;
-  if (nativeTileMatrixIds && !nativeTileMatrixIds.includes(tileMatrix))
+  if (bands === undefined && nativeTileMatrixIds && !nativeTileMatrixIds.includes(tileMatrix))
     throw new Error(
       `Tile matrix "${tileMatrix}" does not support native tile reads. Readable matrix IDs: ${JSON.stringify(nativeTileMatrixIds)}`
     );
