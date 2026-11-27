@@ -29,6 +29,9 @@ const layer = new RasterSourceLayer({
 | `colorizeRaster`   | `(raster, context) => RasterRenderResult`        | —                                   | Overrides CPU colorization and optionally supplies bounds and a coordinate system.                                                                                                                       |
 | `bitmapLayerProps` | `Partial<BitmapLayerProps>`                      | `{}`                                | Additional props for either sublayer, including placement and projection settings.                                                                                                                       |
 
+A `colorizeRaster` result with both `bounds` and `coordinateSystem` controls placement and leaves
+`_imageCoordinateSystem` to BitmapLayer's default unless you set `bitmapLayerProps._imageCoordinateSystem`.
+
 Both paths use the same default stretch, square-root scale, and color ramp for single-band rasters.
 The stretch uses up to 4,096 evenly spaced samples from the current response. The GPU interpolates
 sample values before applying color, which can change the appearance of smoothed edges.

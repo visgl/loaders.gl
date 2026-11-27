@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (c) vis.gl contributors
 
 import {describe, expect, test, vi} from 'vitest';
-import {BitmapLayer} from '@deck.gl/layers';
+import {BitmapLayer, type BitmapLayerProps} from '@deck.gl/layers';
 import type {
   RasterBandMetadata,
   RasterData,
@@ -16,7 +16,8 @@ import {
   colorizeRasterData,
   createDefaultRasterRenderResult,
   createRasterRenderResult,
-  createRasterViewport
+  createRasterViewport,
+  type RasterRenderResult
 } from '../src/raster-source-layer';
 
 const GEOGRAPHIC_METADATA: RasterSourceMetadata = {
@@ -407,15 +408,15 @@ describe('raster viewport and placement', () => {
     const raster = createRaster(new Float32Array([0, 1, 2, 3]));
     const viewport = createRasterViewport(createViewport([-10, -5, 20, 15]), GEOGRAPHIC_METADATA);
     const customImage = {data: new Uint8ClampedArray(16), width: 2, height: 2};
-    const result = createRasterRenderResult(
+    const {renderResult} = createRasterRenderResult(
       {requestId: 1, raster, parameters: {viewport, bands: [0]}},
       GEOGRAPHIC_METADATA,
       () => ({image: customImage})
     );
 
-    expect(result.image).toBe(customImage);
-    expect(result.bounds).toEqual([-10, -5, 20, 15]);
-    expect(result.coordinateSystem).toBe('lnglat');
+    expect(renderResult.image).toBe(customImage);
+    expect(renderResult.bounds).toEqual([-10, -5, 20, 15]);
+    expect(renderResult.coordinateSystem).toBe('lnglat');
   });
 
   test('uses metadata no-data values when a response omits the repeated field', () => {
@@ -624,32 +625,77 @@ describe('RasterSourceLayer lifecycle', () => {
     expect(requestRaster).toHaveBeenCalledTimes(1);
 
     layer.getSubLayerProps = (props: any) => props;
-    layer.state.renderResult = {
-      image: {data: new Uint8ClampedArray(4), width: 1, height: 1},
-      bounds: [-10, -5, 20, 15],
-      coordinateSystem: 'lnglat'
-    };
+    layer.handleRasterLoad({
+      requestId: 0,
+      raster: createRaster(new Float32Array([0, 1, 2, 3])),
+      parameters: requestRaster.mock.calls[0][0]
+    });
     const bitmapLayer = layer.renderLayers();
     expect(bitmapLayer.props.bounds).toEqual([-10, -5, 20, 15]);
     expect(bitmapLayer.props.coordinateSystem).toBe('lnglat');
   });
 
-  test('samples geographic rasters per pixel and keeps Web Mercator rasters linear', () => {
+  test.each([
+    ['EPSG:4326', 'lnglat'],
+    ['EPSG:3857', 'default']
+  ])('uses %s raster sampling for inferred placement (%s)', (crs, imageCoordinateSystem) => {
+    const metadata = {...GEOGRAPHIC_METADATA, crs};
     const layer = createRasterLayer();
     layer.initializeState();
-    layer.getSubLayerProps = (props: any) => props;
-    layer.state.renderResult = {
-      image: {data: new Uint8ClampedArray(4), width: 1, height: 1},
-      bounds: [-10, -5, 20, 15],
-      coordinateSystem: 'lnglat'
-    };
+    layer.state.metadata = metadata;
+    layer.handleRasterLoad({
+      requestId: 0,
+      raster: createRaster(new Float32Array([0, 1, 2, 3]), {crs}),
+      parameters: {viewport: createRasterViewport(createViewport([-10, -5, 20, 15]), metadata)}
+    });
 
+    expect(layer.renderLayers().props._imageCoordinateSystem).toBe(imageCoordinateSystem);
+  });
+
+  test.each<{
+    name: string;
+    placement: Pick<RasterRenderResult, 'bounds'>;
+    bitmapLayerProps?: Partial<BitmapLayerProps>;
+    expected: BitmapLayerProps['_imageCoordinateSystem'];
+  }>([
+    {name: 'complete placement', placement: {bounds: [0, 0, 1, 1]}, expected: 'default'},
+    {name: 'no bounds', placement: {}, expected: 'lnglat'},
+    {
+      name: 'complete placement and an explicit override',
+      placement: {bounds: [0, 0, 1, 1]},
+      bitmapLayerProps: {_imageCoordinateSystem: 'cartesian'},
+      expected: 'cartesian'
+    }
+  ])('uses $expected image coordinates for a colorizer with $name', ({
+    placement,
+    bitmapLayerProps,
+    expected
+  }) => {
+    const raster = createRaster(new Float32Array([0, 1, 2, 3]), {crs: 'EPSG:4326'});
+    const image = colorizeRasterData(raster);
+    const renderSubLayer = vi.fn((props: Partial<BitmapLayerProps>) => new BitmapLayer(props));
+    const layer = createRasterLayer({
+      colorizeRaster: (): RasterRenderResult => ({image, coordinateSystem: 'lnglat', ...placement}),
+      bitmapLayerProps,
+      renderSubLayer
+    });
+    layer.initializeState();
     layer.state.metadata = GEOGRAPHIC_METADATA;
-    expect(layer.renderLayers().props._imageCoordinateSystem).toBe('lnglat');
+    layer.handleRasterLoad({
+      requestId: 0,
+      raster,
+      parameters: {
+        viewport: createRasterViewport(createViewport([-10, -5, 20, 15]), GEOGRAPHIC_METADATA)
+      }
+    });
 
-    // EPSG:3857 bounds are unprojected to longitude and latitude, but the rows stay linear.
-    layer.state.metadata = {...GEOGRAPHIC_METADATA, crs: 'EPSG:3857'};
-    expect(layer.renderLayers().props._imageCoordinateSystem).toBe('default');
+    const bitmap = layer.renderLayers();
+    expect(bitmap.props._imageCoordinateSystem).toBe(expected);
+    expect(Object.hasOwn(renderSubLayer.mock.calls[0][0], '_imageCoordinateSystem')).toBe(
+      expected !== 'default'
+    );
+    expect(bitmap.props.bounds).toEqual(placement.bounds ?? [-10, -5, 20, 15]);
+    expect(bitmap.props.image).toBe(image);
   });
 
   test('requests default and custom raster bands from viewport metadata', () => {
@@ -666,7 +712,7 @@ describe('RasterSourceLayer lifecycle', () => {
       unsubscribeRasterSetEvents: null,
       metadata: {...GEOGRAPHIC_METADATA, bandCount: 4},
       projectedCRS: null,
-      renderResult: null
+      cpuResult: null
     };
     layer.requestRaster(createViewport([-10, -5, 20, 15]));
     expect(getRasterParameters).toHaveBeenCalled();
@@ -726,7 +772,7 @@ describe('RasterSourceLayer lifecycle', () => {
       rasterSet: {requestRaster, finalize},
       unsubscribeRasterSetEvents: unsubscribe,
       metadata: null,
-      renderResult: null
+      cpuResult: null
     };
     layer.handleRasterLoad({} as any);
     expect(onRasterLoad).not.toHaveBeenCalled();
@@ -742,7 +788,7 @@ describe('RasterSourceLayer lifecycle', () => {
         bands: [0]
       }
     });
-    expect(layer.state.renderResult).toBeTruthy();
+    expect(layer.state.cpuResult).toBeTruthy();
     expect(onRasterLoad).toHaveBeenCalled();
 
     layer.releaseRasterSet();
@@ -928,7 +974,7 @@ test('raster placement retains affine shear and reports unsupported CRS values',
       crs: 'EPSG:999999'
     })
   ).toThrow('unsupported source CRS (EPSG:999999)');
-  const custom = createRasterRenderResult(
+  const {renderResult} = createRasterRenderResult(
     {requestId: 0, raster: projected, parameters},
     {...GEOGRAPHIC_METADATA, crs: 'EPSG:999999'},
     () => ({
@@ -937,7 +983,7 @@ test('raster placement retains affine shear and reports unsupported CRS values',
       coordinateSystem: 'cartesian'
     })
   );
-  expect(custom.coordinateSystem).toBe('cartesian');
+  expect(renderResult.coordinateSystem).toBe('cartesian');
 });
 
 test('raster placement uses an affine when neither source nor payload supplies a bbox', () => {

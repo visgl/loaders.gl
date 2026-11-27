@@ -145,6 +145,14 @@ type ProjectedRasterCRS = {
   converter: CRSConverter;
 };
 
+/** CPU bitmap and the placement decision that applies to its image. */
+type RasterSourceCPUResult = {
+  /** Bitmap image and placement returned for the accepted raster. */
+  renderResult: RasterRenderResult;
+  /** True when the layer supplied at least part of the placement. */
+  usesDefaultPlacement: boolean;
+};
+
 /** GPU sublayer inputs for the accepted raster and its placement. */
 type RasterSourceGPUResult = RasterBitmapPlacement &
   Pick<RasterBitmapLayerProps, 'noData'> & {
@@ -173,7 +181,7 @@ type RasterSourceLayerState = {
   /** Latest accepted raster request. */
   rasterRequest: RasterSetRequest | null;
   /** Cached CPU bitmap. */
-  renderResult: RasterRenderResult | null;
+  cpuResult: RasterSourceCPUResult | null;
   /** Cached GPU raster and placement. */
   gpuResult: RasterSourceGPUResult | null;
 };
@@ -256,7 +264,7 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       metadata: null,
       projectedCRS: null,
       rasterRequest: null,
-      renderResult: null,
+      cpuResult: null,
       gpuResult: null
     };
   }
@@ -316,7 +324,7 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
 
   /** Renders the current raster with the selected bitmap sublayer. */
   renderLayers(): Layer | null {
-    const {renderResult, gpuResult} = this.state;
+    const {cpuResult, gpuResult} = this.state;
     const {
       bitmapLayerProps,
       colormap = 'default',
@@ -341,16 +349,19 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       };
       return renderSubLayer ? renderSubLayer(props) : new RasterBitmapLayer(props);
     }
-    if (!renderResult) {
+    if (!cpuResult) {
       return null;
     }
 
+    const {renderResult, usesDefaultPlacement} = cpuResult;
     const props: Partial<BitmapLayerProps> = {
       ...this.getSubLayerProps({id: 'bitmap'}),
       coordinateSystem: renderResult.coordinateSystem,
       image: renderResult.image as any,
       bounds: renderResult.bounds,
-      _imageCoordinateSystem: getImageCoordinateSystem(renderResult.coordinateSystem, rasterCRS),
+      ...(usesDefaultPlacement && {
+        _imageCoordinateSystem: getImageCoordinateSystem(renderResult.coordinateSystem, rasterCRS)
+      }),
       ...bitmapLayerProps
     };
     return renderSubLayer ? renderSubLayer(props) : new BitmapLayer(props);
@@ -514,15 +525,10 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
             ? getRasterStretchRange(rasterWithNoData, 0)
             : percentileRange
       };
-      this.setState({gpuResult, renderResult: null});
+      this.setState({gpuResult, cpuResult: null});
     } else {
-      const renderResult = createRasterRenderResult(
-        request,
-        metadata,
-        colorizeRaster,
-        projectedCRS
-      );
-      this.setState({renderResult, gpuResult: null});
+      const cpuResult = createRasterRenderResult(request, metadata, colorizeRaster, projectedCRS);
+      this.setState({cpuResult, gpuResult: null});
     }
   }
 
@@ -584,7 +590,7 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
       projectedCRS: null,
       projectedSourceOffscreen: false,
       rasterRequest: null,
-      renderResult: null,
+      cpuResult: null,
       gpuResult: null
     });
   }
@@ -878,17 +884,23 @@ export function createRasterRenderResult(
   metadata: RasterSourceMetadata,
   colorizeRaster?: RasterSourceLayerProps['colorizeRaster'],
   projectedCRS?: ProjectedRasterCRS | null
-): RasterRenderResult {
+): RasterSourceCPUResult {
   const customRenderResult = colorizeRaster?.(request.raster, {metadata, request});
-  if (customRenderResult?.bounds && customRenderResult.coordinateSystem !== undefined)
-    return customRenderResult;
+  if (customRenderResult?.bounds && customRenderResult.coordinateSystem !== undefined) {
+    return {renderResult: customRenderResult, usesDefaultPlacement: false};
+  }
   const defaultRenderResult = createDefaultRasterRenderResult(
     request.raster,
     request.parameters,
     metadata,
     projectedCRS
   );
-  return customRenderResult ? {...defaultRenderResult, ...customRenderResult} : defaultRenderResult;
+  return {
+    renderResult: customRenderResult
+      ? {...defaultRenderResult, ...customRenderResult}
+      : defaultRenderResult,
+    usesDefaultPlacement: true
+  };
 }
 
 /**
