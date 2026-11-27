@@ -54,14 +54,15 @@ test('Zarr selection cache isolates waiter cancellation and returned buffers', a
 test('Zarr selection cache evicts least-recently-used entries and propagates failures with signals', async () => {
   const array = {};
   let reads = 0;
-  const read = async () => ({data: new Uint8Array([++reads]), shape: [1]});
+  const read = async () => ({data: new Uint16Array([++reads]), shape: [1]});
   await getCachedZarrSelection(array, 'keep', read);
   await getCachedZarrSelection(array, 'evict', read);
-  for (let index = 0; index < 30; index++) await getCachedZarrSelection(array, String(index), read);
+  for (let index = 0; index < 1022; index++)
+    await getCachedZarrSelection(array, String(index), read);
   await getCachedZarrSelection(array, 'keep', read);
   await getCachedZarrSelection(array, 'new', read);
   expect((await getCachedZarrSelection(array, 'keep', read)).data[0]).toBe(1);
-  expect((await getCachedZarrSelection(array, 'evict', read)).data[0]).toBe(34);
+  expect((await getCachedZarrSelection(array, 'evict', read)).data[0]).toBe(1026);
   const controller = new AbortController();
   await expect(
     getCachedZarrSelection(
@@ -77,4 +78,25 @@ test('Zarr selection cache evicts least-recently-used entries and propagates fai
   await expect(getCachedZarrSelection(array, 'keep', read, controller.signal)).rejects.toThrow(
     'cancelled'
   );
+});
+
+test('Zarr selection cache evicts by decoded bytes and skips oversized selections', async () => {
+  const array = {};
+  const limit = 128 * 1024 * 1024;
+  let reads = 0;
+  /** Simulates large decoded sizes without allocating large test buffers. */
+  const read = async (byteLength: number) => {
+    const data = new Uint8Array([++reads]);
+    Object.defineProperty(data, 'byteLength', {value: byteLength});
+    return {data, shape: [1]};
+  };
+  const readHalfBudget = () => read(limit / 2);
+  const first = await getCachedZarrSelection(array, 'first', readHalfBudget);
+  const second = await getCachedZarrSelection(array, 'second', readHalfBudget);
+  await getCachedZarrSelection(array, 'first', readHalfBudget);
+  await getCachedZarrSelection(array, 'third', readHalfBudget);
+  await getCachedZarrSelection(array, 'oversized', () => read(limit + 1));
+  expect(await getCachedZarrSelection(array, 'first', readHalfBudget)).toBe(first);
+  expect(await getCachedZarrSelection(array, 'second', readHalfBudget)).not.toBe(second);
+  expect((await getCachedZarrSelection(array, 'oversized', () => read(limit + 1))).data[0]).toBe(6);
 });
