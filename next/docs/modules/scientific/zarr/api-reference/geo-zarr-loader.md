@@ -55,7 +55,7 @@ The source recognizes two interoperable metadata patterns:
 * GeoZarr `proj:code` / `proj:wkt2`, `spatial:dimensions`, `spatial:transform`, `spatial:bbox`, and `spatial:registration` attributes.
 * Regular one-dimensional CF/xarray longitude/latitude or x/y coordinate variables. The source derives an affine transform when those coordinates are evenly spaced. It checks the data array's group first and then its ancestors up to the selected group when resolving coordinates and a named CF `grid_mapping` variable. If the named mapping is absent, it tries a sibling `spatial_ref` variable. GDAL and rioxarray can provide a pixel-corner `GeoTransform` on the mapping variable. A sibling's `GeoTransform` takes precedence over regular coordinates and requires no coordinate chunk reads. An ancestor mapping supplies the CRS only. Errors reading an existing CF variable are surfaced to the caller.
 
-Without an explicit override or a GeoZarr `proj:` CRS, the source checks the mapping's `crs_wkt` and `spatial_ref` attributes, then the group-level `crs` attribute. The source preserves the definition as written in `metadata.crs`, per-level metadata, and the returned raster's `crs`.
+Without an explicit override or a GeoZarr `proj:` CRS, the source checks the mapping's `crs_wkt` and `spatial_ref` attributes, then GDAL's `_CRS` attribute, then the group-level `crs` attribute. Within `_CRS`, the source prefers `wkt`, followed by an OGC EPSG definition `url` normalized to `EPSG:<code>`. If neither is available, it keeps `projjson` as a structured `metadata.crs` with the same limits as `proj:projjson` described below. The resolved CRS also appears in per-level metadata and the returned raster's `crs`.
 
 Detailed guide
 
