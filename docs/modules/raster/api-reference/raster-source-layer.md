@@ -45,8 +45,16 @@ viewport logic. MapView and GlobeView support EPSG:4326, EPSG:3857, and projecte
 math.gl can resolve, such as UTM EPSG:32626. For a projected source, the layer requests the
 visible portion of the source extent and places the CPU or GPU bitmap in source coordinates.
 Ungeoreferenced rasters use a pixel-coordinate plane.
-math.gl resolves some EPSG codes without help, for example WGS 84 UTM. For other codes, such as
-NAD83 / UTM zone 19N (EPSG:26919), configure a CRS resolver on the math.gl projection engine, or
+
+Set `resolveCRSDefinition(identifier)` to return a projected or geographic CRS definition as a
+PROJ string or WKT. For example, return `+proj=longlat +datum=NAD83 +no_defs` for `EPSG:4269`.
+The callback can return the definition synchronously or through a promise. Return `null` or
+`undefined` to fall back to identifier lookup. The layer calls the callback once when metadata
+loads for an identifier outside its built-in set (`EPSG:4326`, `CRS:84`, `OGC:CRS84`, and `EPSG:3857`).
+Raster requests keep the source identifier and express bounds in source coordinates. Both bitmap
+rendering modes use the resolved definition for placement.
+
+For projected CRSs, you can also configure a CRS resolver on the math.gl projection engine or
 give the source CRS as WKT.
 
 The layer requests one raster per viewport, so distant visible ground near the horizon can make the request coarser.

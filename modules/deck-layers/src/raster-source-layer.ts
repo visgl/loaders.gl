@@ -104,9 +104,9 @@ export type RasterSourceLayerProps = Omit<CompositeLayerProps, 'data' | 'loaders
     metadata: RasterSourceMetadata
   ) => GetRasterParameters | Record<string, unknown>;
   /**
-   * Returns a CRS definition (for example a PROJ string or WKT) for a source CRS identifier.
-   * Use it for codes that the built-in projection engine does not know, such as NAD83 UTM
-   * zones. Return `null` or `undefined` to use the identifier. Called once when metadata loads.
+   * Returns a projected or geographic CRS definition (for example a PROJ string or WKT)
+   * for a source CRS identifier. Return `null` or `undefined` to use the identifier.
+   * Called once when metadata loads for a CRS outside the layer's built-in set.
    */
   resolveCRSDefinition?: (
     identifier: string
@@ -179,9 +179,9 @@ type RasterSourceLayerState = {
   unsubscribeRasterSetEvents: (() => void) | null;
   /** Current source metadata. */
   metadata: RasterSourceMetadata | null;
-  /** Prepared projected CRS, null when unavailable, or undefined while resolving. */
+  /** Prepared projected or geographic source CRS, null when unavailable, or undefined while resolving. */
   projectedCRS: ProjectedRasterCRS | null | undefined;
-  /** True when the projected source does not overlap the current viewport, so no request is due. */
+  /** True when the current viewport has no overlap with the source in its resolved CRS. */
   projectedSourceOffscreen?: boolean;
   /** Latest accepted raster request. */
   rasterRequest: RasterSetRequest | null;
@@ -473,19 +473,11 @@ export class RasterSourceLayer extends CompositeLayer<RasterSourceLayerProps> {
   /** Prepares the source CRS once and resumes requests on the latest layer and viewport. */
   private async resolveProjectedCRS(identifier: string): Promise<void> {
     const {resolutionId, rasterSet} = this.state;
-    const resolved = await resolveRasterCRS(identifier, this.props.resolveCRSDefinition);
+    const projectedCRS = await resolveRasterCRS(identifier, this.props.resolveCRSDefinition);
     const layer = (this.getCurrentLayer() as this | null) ?? this;
     if (resolutionId !== layer.state.resolutionId || rasterSet !== layer.state.rasterSet) {
       return;
     }
-    const projectedCRS =
-      resolved?.descriptor.coordinateFrame === 'projected'
-        ? {
-            identifier,
-            definition: resolved.definition,
-            converter: resolved.descriptor.converter.WGS84
-          }
-        : null;
     layer.setState({projectedCRS});
     layer.requestRaster(layer.context.viewport, 0);
   }
@@ -940,19 +932,24 @@ export function createRasterViewport(
   return createRasterViewportForBounds(viewport, bounds, coordinateReferenceSystem, maxTextureSize);
 }
 
-/** Resolves a source CRS, preferring the app definition over the built-in identifier lookup. */
+/** Prepares projected CRSs and geographic CRSs explicitly supplied by the app. */
 async function resolveRasterCRS(
   identifier: string,
   resolveCRSDefinition: RasterSourceLayerProps['resolveCRSDefinition']
-): Promise<{
-  definition: RasterCRSDefinition;
-  descriptor: Awaited<ReturnType<typeof projectionEngine.getCRS>>;
-} | null> {
-  const definition = (await resolveCRSDefinition?.(identifier)) ?? identifier;
+): Promise<ProjectedRasterCRS | null> {
+  const suppliedDefinition = await resolveCRSDefinition?.(identifier);
+  const definition = suppliedDefinition ?? identifier;
   const descriptor = await projectionEngine
     .getCRS(definition as Parameters<typeof projectionEngine.getCRS>[0])
     .catch(() => null);
-  return descriptor ? {definition, descriptor} : null;
+  if (
+    descriptor &&
+    (descriptor.coordinateFrame === 'projected' ||
+      (suppliedDefinition != null && descriptor.coordinateFrame === 'geographic'))
+  ) {
+    return {identifier, definition, converter: descriptor.converter.WGS84};
+  }
+  return null;
 }
 
 /** Maps screen samples into the source CRS and fits square pixels within the texture budget. */

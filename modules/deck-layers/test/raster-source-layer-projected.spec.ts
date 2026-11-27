@@ -37,7 +37,8 @@ const RASTER_BOUNDS: RasterBoundingBox = [
 function createProjectedLayer(
   viewport: Viewport,
   metadata: RasterSourceMetadata,
-  props: Partial<RasterSourceLayerProps> = {}
+  props: Partial<RasterSourceLayerProps> = {},
+  rasterBounds = RASTER_BOUNDS
 ) {
   const getRaster = vi.fn(async (_parameters: GetRasterParameters) => ({
     width: 2,
@@ -45,7 +46,7 @@ function createProjectedLayer(
     bandCount: 1,
     dtype: 'float32' as const,
     data: new Float32Array([0, 1, 2, 3]),
-    boundingBox: RASTER_BOUNDS
+    boundingBox: rasterBounds
   }));
   const onRasterLoad = vi.fn();
   const onSourceError = vi.fn();
@@ -438,6 +439,109 @@ test.for([
 
   const bitmap = layer.renderLayers() as BitmapLayer;
   expect(bitmap.props.coordinateSystem).toBe(NAD83_UTM19_DEFINITION);
+});
+
+/** Geographic NAD83 definition supplied by the app. */
+const NAD83_GEOGRAPHIC_DEFINITION = '+proj=longlat +datum=NAD83 +no_defs';
+
+/** Geographic NAD83 source extent around the test viewport. */
+const NAD83_GEOGRAPHIC_METADATA: RasterSourceMetadata = {
+  ...PROJECTED_METADATA,
+  crs: 'EPSG:4269',
+  boundingBox: [
+    [-70, 40],
+    [-68, 42]
+  ]
+};
+
+/** Response extent in NAD83 degrees, distinct from the requested extent. */
+const NAD83_RASTER_BOUNDS: RasterBoundingBox = [
+  [-69.02, 40.99],
+  [-68.98, 41.01]
+];
+
+test.for([
+  'cpu',
+  'gpu'
+] as const)('requests and places a %s raster in a geographic CRS supplied by resolveCRSDefinition', async (rendering, {
+  onTestFinished
+}) => {
+  const viewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -69,
+    latitude: 41,
+    zoom: 12
+  });
+  const resolveCRSDefinition = vi.fn(async (identifier: string) =>
+    identifier === 'EPSG:4269' ? NAD83_GEOGRAPHIC_DEFINITION : null
+  );
+  const {layer, getRaster, onRasterLoad, onSourceError} = createProjectedLayer(
+    viewport,
+    NAD83_GEOGRAPHIC_METADATA,
+    {rendering, resolveCRSDefinition},
+    NAD83_RASTER_BOUNDS
+  );
+  onTestFinished(() => layer['releaseRasterSet']());
+  await layer['resolveSource'](layer.props);
+  expect(onSourceError).not.toHaveBeenCalled();
+  await vi.waitFor(() => expect(onRasterLoad).toHaveBeenCalledOnce());
+
+  expect(resolveCRSDefinition).toHaveBeenCalledExactlyOnceWith('EPSG:4269');
+  expect(getRaster).toHaveBeenCalledOnce();
+  const request = getRaster.mock.calls[0][0].viewport;
+  expect(request.crs).toBe('EPSG:4269');
+  const {from} = (await projectionEngine.getCRS(NAD83_GEOGRAPHIC_DEFINITION)).converter.WGS84;
+  const [west, south] = from(viewport.unproject([0, viewport.height]));
+  const [east, north] = from(viewport.unproject([viewport.width, 0]));
+  expect(request.getBounds!()).toEqual([
+    expect.closeTo(west, 8),
+    expect.closeTo(south, 8),
+    expect.closeTo(east, 8),
+    expect.closeTo(north, 8)
+  ]);
+
+  const bitmap = layer.renderLayers() as BitmapLayer;
+  expect(bitmap.constructor).toBe(rendering === 'gpu' ? RasterBitmapLayer : BitmapLayer);
+  expect(bitmap.props.coordinateSystem).toBe(NAD83_GEOGRAPHIC_DEFINITION);
+  expect(bitmap.props.bounds).toEqual([-69.02, 40.99, -68.98, 41.01]);
+});
+
+test('reports the unsupported source CRS placement error for EPSG:4269 without a hook', async ({
+  onTestFinished
+}) => {
+  const viewport = new WebMercatorViewport({
+    width: 480,
+    height: 240,
+    longitude: -69,
+    latitude: 41,
+    zoom: 12
+  });
+  const onRasterLoadError = vi.fn();
+  const {layer, onRasterLoad} = createProjectedLayer(
+    viewport,
+    NAD83_GEOGRAPHIC_METADATA,
+    {
+      // Supply request bounds so the unsupported CRS reaches bitmap placement.
+      getRasterParameters: rasterViewport => ({
+        viewport: {...rasterViewport, bounds: NAD83_RASTER_BOUNDS}
+      }),
+      onRasterLoadError
+    },
+    NAD83_RASTER_BOUNDS
+  );
+  onTestFinished(() => layer['releaseRasterSet']());
+  await layer['resolveSource'](layer.props);
+  await vi.waitFor(() =>
+    expect(onRasterLoadError).toHaveBeenCalledExactlyOnceWith(
+      expect.any(Number),
+      expect.objectContaining({
+        message:
+          'RasterSourceLayer requires explicit bounds and coordinateSystem for an unsupported source CRS (EPSG:4269).'
+      })
+    )
+  );
+  expect(onRasterLoad).not.toHaveBeenCalled();
 });
 
 test('keeps the built-in identifier when resolveCRSDefinition returns nothing', async ({

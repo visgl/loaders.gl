@@ -38,7 +38,8 @@ for stable v4 migrations.
   can render single-band rasters on WebGL2 and WebGPU with CPU-matched default colors, per-raster
   percentile stretching, and texel picking. Set `valueRange` for a fixed stretch.
 - **Projected raster sources.** RasterSourceLayer renders supported projected CRSs, including UTM,
-  in MapView and GlobeView with either CPU or GPU styling.
+  in MapView and GlobeView with either CPU or GPU styling. Use `resolveCRSDefinition` to supply
+  projected or geographic CRS definitions for source identifiers.
 - **GeoTIFF transparency.** `RasterSourceLayer` honors alpha bands in RGB and grayscale GeoTIFFs,
   and shows tagged 8-bit RGB as stored. Grayscale with alpha uses CPU rendering.
 - **3D content and tiles.** [Scene](./modules/scene/README.md) groups glTF, Draco, and mesh
