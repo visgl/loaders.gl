@@ -24,6 +24,7 @@ import type {Labels, Channel, Multiscale, RootAttrs, SupportedTypedArray} from '
 import {guessLabels, guessTileSize, validLabels} from './lib/utils';
 import ZarritaPixelSource from './lib/zarrita-pixel-source';
 import {limitZarrStore} from './lib/limited-zarr-store';
+import {cacheZarrChunks, type ZarrChunkCacheProps} from './lib/zarr-chunk-cache';
 import {
   loadConsolidatedMetadata,
   loadConsolidatedMetadataFromStore,
@@ -51,6 +52,8 @@ export type ZarrLoaderOptions = DataSourceOptions & {
      * The input string is a label, and fetch options do not apply.
      */
     store?: zarrita.AsyncReadable;
+    /** Encoded chunk cache limits per source. Set to `false` to disable. */
+    chunkCacheProps?: ZarrChunkCacheProps | false;
     /** Consolidated metadata file to load, or `auto` to probe known names. */
     metadataPath?: ZarrMetadataPath;
     /** Group path within the store root. */
@@ -249,8 +252,11 @@ export abstract class ZarrSource extends DataSource<string, ZarrLoaderOptions> {
           });
         }
       });
-    this.store =
+    const limitedStore =
       maxConcurrentRequests === undefined ? store : limitZarrStore(store, maxConcurrentRequests);
+    const chunkCacheProps = this.options.zarr?.chunkCacheProps;
+    this.store =
+      chunkCacheProps === false ? limitedStore : cacheZarrChunks(limitedStore, chunkCacheProps);
   }
 
   /** Returns raster-query capabilities without reading array chunks. */
