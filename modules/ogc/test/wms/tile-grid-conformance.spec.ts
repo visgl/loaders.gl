@@ -65,8 +65,8 @@ const PNG_BYTES = Uint8Array.from(
 type ScenarioMatrix = {
   /** Native matrix identifier. */
   id: string;
-  /** OGC scale denominator. */
-  scaleDenominator: number;
+  /** OGC scale denominator; omitted to leave the scale unknown. */
+  scaleDenominator?: number;
   /** Coordinate units per pixel; omitted to leave the resolution unknown. */
   cellSize?: number;
   /** Top-left origin in X/Y order. */
@@ -142,7 +142,9 @@ function createWMTSSource(scenario: Scenario): AdapterSource {
     .map(
       matrix =>
         `<TileMatrix><ows:Identifier>${matrix.id}</ows:Identifier>` +
-        `<ScaleDenominator>${matrix.scaleDenominator}</ScaleDenominator>` +
+        (matrix.scaleDenominator !== undefined
+          ? `<ScaleDenominator>${matrix.scaleDenominator}</ScaleDenominator>`
+          : '') +
         // CRS84 is longitude first on the wire, so the X/Y origin is written unchanged.
         `<TopLeftCorner>${matrix.origin[0]} ${matrix.origin[1]}</TopLeftCorner>` +
         `<TileWidth>${matrix.tileSize[0]}</TileWidth><TileHeight>${matrix.tileSize[1]}</TileHeight>` +
@@ -189,7 +191,7 @@ function createTileMatrixSetDocument(scenario: Scenario) {
     crs: scenario.crs,
     tileMatrices: scenario.matrices.map(matrix => ({
       id: matrix.id,
-      scaleDenominator: matrix.scaleDenominator,
+      ...(matrix.scaleDenominator !== undefined ? {scaleDenominator: matrix.scaleDenominator} : {}),
       ...(matrix.cellSize !== undefined ? {cellSize: matrix.cellSize} : {}),
       cornerOfOrigin: 'topLeft',
       pointOfOrigin: [matrix.origin[0], matrix.origin[1]],
@@ -419,6 +421,62 @@ describe.each(ADAPTERS)('$name grid conformance', adapter => {
       }
     ]);
     // Partial metadata still addresses native matrices and enforces coverage.
+    expect(await source.getTile({x: 3, y: 1, z: 1, tileMatrix: 'detail'})).not.toBeNull();
+    expect(await source.getTile({x: 1, y: 1, z: 1, tileMatrix: 'detail'})).toBeNull();
+    expect(source.tileRequests).toHaveLength(1);
+  });
+
+  test.each([
+    {scaleDenominator: 0, crs: CRS84},
+    {scaleDenominator: -139770566.00717944, crs: CRS84},
+    // The unit of UTM zone 31N is not built in, but a scale of zero is malformed in any unit.
+    {scaleDenominator: 0, crs: 'EPSG:32631'}
+  ])('an advertised scale denominator of $scaleDenominator in $crs is invalid and blocks requests', async ({
+    scaleDenominator,
+    crs
+  }) => {
+    // Without a cell size, the resolution comes from the scale denominator.
+    const [coarse, detail] = REFERENCE_MATRICES.map(({cellSize, ...matrix}) => matrix);
+    const source = adapter.createSource(
+      withChanges({crs, matrices: [coarse, {...detail, scaleDenominator}]})
+    );
+    const tileGrid = await source.getTileGrid();
+    expect(tileGrid!.tileMatrixSet).toBeUndefined();
+    const resolution = tileGrid!.matrices![1].resolution!;
+    expect(Number.isFinite(resolution) && resolution > 0).toBe(false);
+    const validation = getTileGridValidation(tileGrid!);
+    expect(validation.status).toBe('invalid');
+    expect(validation.issues).toContainEqual({
+      code: 'invalid-matrix',
+      tileMatrix: 'detail',
+      message: 'Resolution must be positive and finite.'
+    });
+    for (const parameters of [
+      {x: 3, y: 1, z: 1, tileMatrix: 'detail'},
+      {x: 0, y: 0, z: 0, tileMatrix: 'coarse'}
+    ]) {
+      await expect(source.getTile(parameters)).rejects.toThrow('Resolution must be positive');
+    }
+    expect(source.tileRequests).toEqual([]);
+  });
+
+  test('an absent scale denominator keeps partial metadata and allows requests', async () => {
+    const [coarse, detail] = REFERENCE_MATRICES.map(
+      ({cellSize, scaleDenominator, ...matrix}) => matrix
+    );
+    const source = adapter.createSource(withChanges({matrices: [coarse, detail]}));
+    const tileGrid = await source.getTileGrid();
+    expect(tileGrid!.tileMatrixSet).toBeUndefined();
+    expect(tileGrid!.matrices!.map(matrix => matrix.resolution)).toEqual([undefined, undefined]);
+    const validation = getTileGridValidation(tileGrid!);
+    expect(validation.status).toBe('partial');
+    expect(validation.issues.slice(1)).toEqual(
+      ['coarse', 'detail'].map(tileMatrix => ({
+        code: 'missing-geometry',
+        tileMatrix,
+        message: 'Incomplete tile matrix geometry: missing resolution.'
+      }))
+    );
     expect(await source.getTile({x: 3, y: 1, z: 1, tileMatrix: 'detail'})).not.toBeNull();
     expect(await source.getTile({x: 1, y: 1, z: 1, tileMatrix: 'detail'})).toBeNull();
     expect(source.tileRequests).toHaveLength(1);
