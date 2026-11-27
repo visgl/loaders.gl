@@ -56,9 +56,11 @@ The source recognizes two interoperable metadata patterns:
   reading an existing CF variable are surfaced to the caller.
 
 Without an explicit override or a GeoZarr `proj:` CRS, the source checks the mapping's
-`crs_wkt` and `spatial_ref` attributes, then the group-level `crs` attribute. The source
-preserves the definition as written in `metadata.crs`, per-level metadata, and the returned
-raster's `crs`.
+`crs_wkt` and `spatial_ref` attributes, then GDAL's `_CRS` attribute, then the group-level `crs`
+attribute. Within `_CRS`, the source prefers `wkt`, followed by an OGC EPSG definition `url`
+normalized to `EPSG:<code>`. If neither is available, it keeps `projjson` as a structured
+`metadata.crs` with the same limits as `proj:projjson` described below. The resolved CRS also
+appears in per-level metadata and the returned raster's `crs`.
 
 <ReferenceBoundary
   title="GeoZarr source usage"

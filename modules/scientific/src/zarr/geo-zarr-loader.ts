@@ -613,6 +613,7 @@ export class GeoZarrRasterSource
       options?.coordinateReferenceSystem ||
       normalizeDeclaredCoordinateReferenceSystem(attributes) ||
       getGridMappingCoordinateReferenceSystem((await getGridMapping())?.attributes) ||
+      getGDALCoordinateReferenceSystem(attributes._CRS) ||
       normalizeString(levelGroupAttributes.crs) ||
       normalizeString(groupAttributes.crs) ||
       inferGeographicCoordinateReferenceSystem(spatialDimensions);
@@ -1046,13 +1047,36 @@ function getOMELevelsOrEmpty(attributes: GeoZarrAttributes, arrayPath: string) {
   }
 }
 
-/** Whether attributes declare a GeoZarr CRS, a CF grid mapping, or a group CRS. */
+/** Whether attributes declare a GeoZarr CRS, a CF grid mapping, a GDAL CRS, or a group CRS. */
 function declaresCoordinateReferenceSystem(attributes: GeoZarrAttributes): boolean {
   return Boolean(
     normalizeDeclaredCoordinateReferenceSystem(attributes) ||
       normalizeString(attributes.grid_mapping) ||
-      normalizeString(attributes.crs)
+      normalizeString(attributes.crs) ||
+      getGDALCoordinateReferenceSystem(attributes._CRS)
   );
+}
+
+/**
+ * Reads the `_CRS` attribute that the GDAL Zarr driver writes: an object with `wkt`, `projjson`
+ * and `url` members. Prefers WKT, then an EPSG code from an OGC definition URL, then PROJJSON.
+ */
+function getGDALCoordinateReferenceSystem(value: unknown): CRSDefinition | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+  const {wkt, url, projjson} = value as {wkt?: unknown; url?: unknown; projjson?: unknown};
+  const wellKnownText = normalizeString(wkt);
+  if (wellKnownText) {
+    return wellKnownText;
+  }
+  const code = normalizeString(url)?.match(/\/def\/crs\/EPSG\/[^/]+\/(\d+)\/?$/i)?.[1];
+  if (code) {
+    return `EPSG:${code}`;
+  }
+  return projjson && typeof projjson === 'object' && !Array.isArray(projjson)
+    ? (projjson as CRSDefinition)
+    : undefined;
 }
 
 /** Largest axis-aligned pixel size, or infinity for a grid unsuitable for overview selection. */
