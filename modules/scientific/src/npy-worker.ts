@@ -2,5 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// Classic-worker entrypoint that lazily loads the ESM worker implementation.
-import(/* @vite-ignore */ new URL('./workers/npy-worker.js', import.meta.url).toString());
+import {NPYLoaderWithParser} from './npy-parser';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
+
+createLoaderWorker(NPYLoaderWithParser);

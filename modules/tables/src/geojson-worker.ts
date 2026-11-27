@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
-import {FlatGeobufLoaderWithParser} from '../flatgeobuf/flatgeobuf-loader';
+import {GeoJSONLoaderWithParser} from './json/geojson-loader';
 
-createLoaderWorker(FlatGeobufLoaderWithParser);
+createLoaderWorker(GeoJSONLoaderWithParser);

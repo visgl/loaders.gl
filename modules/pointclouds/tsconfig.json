@@ -4,7 +4,9 @@
     "src/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/pcd-worker.ts",
+    "src/ply-worker.ts"
   ],
   "compilerOptions": {
     "composite": true,

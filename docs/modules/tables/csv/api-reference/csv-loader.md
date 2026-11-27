@@ -79,7 +79,7 @@ const data = await parse(csvText, CSVLoader);
 
 ### Browser worker
 
-The CSV loader resolves its browser worker relative to the loader module. A bundler that supports module worker URLs in dependencies, such as Vite 8, can emit the worker automatically. If your toolchain cannot relocate the worker URL, serve `@loaders.gl/tables/csv-worker.js` as a static asset and pass its served URL in `csv.workerUrl`.
+The CSV loader resolves its browser worker relative to the loader module. A bundler that supports module worker URLs in dependencies, such as Vite 8, can emit the worker automatically. If Vite 7 dependency optimization rewrites the worker URL incorrectly, add `@loaders.gl/tables/csv` to `optimizeDeps.exclude`. If your toolchain cannot relocate the worker URL, serve `@loaders.gl/tables/csv-worker.js` as a static asset and pass its served URL in `csv.workerUrl`.
 
 ### Header Detection
 

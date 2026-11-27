@@ -15,18 +15,7 @@ async function preloadParquetLoader() {
 /** Starts the browser module worker for Parquet decoding. */
 function loadParquetWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
-    const moduleUrl = import.meta.url;
-    // Native workers cannot resolve the page's import map. The distributed
-    // standalone asset handles that case while app bundles use the ESM entry.
-    // Bundlers may replace import.meta.url with a build-machine file URL.
-    if (
-      /^https?:/.test(moduleUrl) &&
-      new URL(moduleUrl).pathname.endsWith('/dist/parquet/parquet-loader-types.js')
-    ) {
-      const workerUrl = new URL('../parquet-worker.js', moduleUrl);
-      return new Worker(workerUrl, {type: 'module'});
-    }
-    return new Worker(new URL('./workers/parquet-worker.js', import.meta.url), {type: 'module'});
+    return new Worker(new URL('../parquet-worker.js', import.meta.url), {type: 'module'});
   }
   return null;
 }

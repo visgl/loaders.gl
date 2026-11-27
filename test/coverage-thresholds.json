@@ -1499,7 +1499,6 @@
         "modules/scientific/src/npy-loader-types.ts",
         "modules/scientific/src/npy-loader.ts",
         "modules/scientific/src/npy-worker.ts",
-        "modules/scientific/src/workers/npy-worker.ts",
         "modules/scientific/src/npy-format.ts"
       ]
     },

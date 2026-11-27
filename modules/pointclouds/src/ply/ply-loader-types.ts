@@ -18,16 +18,7 @@ async function preload() {
 /** Starts the browser module worker for PLY decoding. */
 function loadPLYWorker(): Worker | null {
   if (typeof Worker !== 'undefined') {
-    const moduleUrl = import.meta.url;
-    // Native browser workers cannot use the page's import map.
-    if (
-      /^https?:/.test(moduleUrl) &&
-      new URL(moduleUrl).pathname.endsWith('/dist/ply/ply-loader-types.js')
-    ) {
-      const workerUrl = new URL('../ply-worker.js', moduleUrl);
-      return new Worker(workerUrl, {type: 'module'});
-    }
-    return new Worker(new URL('./workers/ply-worker.js', import.meta.url), {type: 'module'});
+    return new Worker(new URL('../ply-worker.js', import.meta.url), {type: 'module'});
   }
   return null;
 }
