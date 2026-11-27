@@ -73,6 +73,11 @@ await tileset.selectTiles(viewport);
 
 ## Data Source
 
+Create a source with `COPCLoader`, or import `COPCTileSource` from
+`@loaders.gl/tiles-3d/copc/bundled` for direct construction. Use the source methods below for
+metadata, hierarchy traversal, and node content. The low-level range readers and binary
+parsers are internal implementation details.
+
 The created data source exposes the point-cloud tile methods used by `PointCloudTileset`:
 
 - `getMetadata()` returns COPC metadata, inferred bounds, and an initial view state.
@@ -111,20 +116,3 @@ For shared loading controls and parser configuration, see
 | `returnNumber`, `numberOfReturns`, `scannerChannel` | Pulse-return and scanner metadata. |
 | `scanDirectionFlag`, `edgeOfFlightLine` | Flight-line flags as 0/1 byte columns. |
 | `EXTRA_BYTES` | One named typed `EXTRA_BYTES_*` Arrow attribute per VLR descriptor, including vector size and scale/offset transforms. |
-
-## Low-Level Range APIs
-
-Import the native parsing primitives used by `COPCLoader` from
-`@loaders.gl/tiles-3d/copc/bundled`. The lighter `@loaders.gl/tiles-3d/copc` entry does not export
-these functions at runtime.
-
-| API | Description |
-| --- | --- |
-| `openCOPC(readRange)` | Reads and validates the LAS 1.4 header, VLR/EVLR descriptors, COPC info VLR, WKT, and Extra Bytes metadata. |
-| `loadCOPCHierarchyPage(readRange, page)` | Fetches and parses one hierarchy page. |
-| `loadCOPCNodeData(readRange, node)` | Fetches one exact compressed node range. |
-| `parseCOPCHeader(bytes)` | Parses and validates a 375-byte COPC LAS header. |
-| `parseCOPCInfo(bytes)` | Parses a 160-byte COPC info payload. |
-| `parseCOPCHierarchy(bytes)` | Parses native 32-byte hierarchy entries. |
-
-`readRange(begin, end, signal)` returns exactly the requested half-open range as a `Uint8Array`. Offsets and lengths must remain within JavaScript's safe integer range.

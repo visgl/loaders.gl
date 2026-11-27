@@ -5,14 +5,6 @@
 export {COPCLoader, COPCTileSource} from './copc-loader';
 export {COPCFormat} from './copc-format';
 export {COPCWriter} from './copc-writer';
-export {
-  openCOPC,
-  loadCOPCHierarchyPage,
-  loadCOPCNodeData,
-  parseCOPCHeader,
-  parseCOPCInfo,
-  parseCOPCHierarchy
-} from './lib/copc-reader';
 export type {
   COPCLoaderOptions,
   COPCHierarchyBatch,
