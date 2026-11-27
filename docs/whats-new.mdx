@@ -34,6 +34,8 @@ for stable v4 migrations.
   arrays and VTK, NRRD, and PDB formats.
 - **GeoZarr pyramids.** [GeoZarrRasterSource](./modules/scientific/zarr/api-reference/geo-zarr-loader.md) opens xarray level groups, preserves CF CRS definitions, reads CF nodata with optional Zarr fill values, and selects native overviews by viewport.
   Pass `zarr.store` to read GeoZarr metadata and chunks through a custom Zarrita store.
+  Zarr sources cache encoded chunks, and GeoZarr reuses decoded chunks across overlapping raster windows.
+  GeoZarr bounds in-flight chunk selections per window and returns row-major pixels for arrays with a transpose codec.
 - **GPU raster styling.** [RasterSourceLayer](./modules/raster/api-reference/raster-source-layer.md)
   can render single-band rasters on WebGL2 and WebGPU with CPU-matched default colors, per-raster
   percentile stretching, and texel picking. Set `valueRange` for a fixed stretch.

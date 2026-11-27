@@ -32,12 +32,8 @@ import {getMultiscaleVariablePaths, getSpatialMultiscaleLevels} from './lib/spat
 import type {SpatialMultiscaleLevel} from './lib/spatial-multiscales';
 import type {SupportedTypedArray} from './types';
 import {ZarrSource, type ZarrLoaderOptions} from './ome-zarr-loader';
-import {
-  awaitWithAbort,
-  cloneZarrSelection,
-  getCachedZarrSelection,
-  getZarrSelectionKey
-} from './lib/zarr-data-cache';
+import {awaitWithAbort} from './lib/zarr-data-cache';
+import {readChunkAlignedWindow, type PixelWindow} from './lib/read-chunk-aligned-window';
 import {GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS} from './lib/geo-zarr-defaults';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -108,7 +104,7 @@ export type GeoZarrLoaderOptions = ZarrLoaderOptions & {
     defaultSelection?: Record<string, number>;
     /** Uses a finite Zarr fill value as no-data in the absence of a CF declaration. Defaults to false for all dtypes. */
     fillValueAsNoData?: boolean;
-    /** Maximum concurrent store reads. Defaults to 16. */
+    /** Maximum concurrent store reads per source and chunk selections per window. Defaults to 16. */
     maxConcurrentRequests?: number;
   };
 };
@@ -144,18 +140,6 @@ type GeoZarrGrid = {
   metadata: GeoZarrSourceMetadata;
   /** Open arrays in advertised level order. */
   levels: (GeoZarrInit | undefined)[];
-};
-
-/** Inclusive start and exclusive stop coordinates for a pixel window. */
-type PixelWindow = {
-  /** First included column. */
-  columnStart: number;
-  /** First excluded column. */
-  columnStop: number;
-  /** First included row. */
-  rowStart: number;
-  /** First excluded row. */
-  rowStop: number;
 };
 
 /** GeoZarr's single-band raster window with its required pixel-corner transform. */
@@ -233,6 +217,9 @@ export class GeoZarrRasterSource
     RasterSource<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata>,
     ScanQueryMetadataProvider
 {
+  /** Shared limit for store reads and for chunk selections in each raster window. */
+  private readonly maxConcurrentRequests: number;
+
   /** Shared source initialization request. */
   private initializationPromise: Promise<GeoZarrInit> | null = null;
 
@@ -241,12 +228,10 @@ export class GeoZarrRasterSource
 
   /** Creates a GeoZarr raster source. */
   constructor(data: string, options: GeoZarrLoaderOptions, coreApi?: CoreAPI) {
-    super(
-      data,
-      options,
-      coreApi,
-      options.geozarr?.maxConcurrentRequests ?? GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS
-    );
+    const maxConcurrentRequests =
+      options.geozarr?.maxConcurrentRequests ?? GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS;
+    super(data, options, coreApi, maxConcurrentRequests);
+    this.maxConcurrentRequests = maxConcurrentRequests;
   }
 
   /** Returns normalized geospatial, array, and selectable-dimension metadata. */
@@ -494,37 +479,21 @@ export class GeoZarrRasterSource
   ): Promise<GeoZarrRasterWindow> {
     const {array, metadata, xDimensionIndex, yDimensionIndex} = initialization;
     const selection = normalizeSelection(parameters.selection, metadata.selectionDimensions);
-    const zarritaSelection = metadata.dimensions.map((dimensionName, dimensionIndex) => {
-      if (dimensionIndex === xDimensionIndex) {
-        return zarrita.slice(pixelWindow.columnStart, pixelWindow.columnStop);
-      }
-      if (dimensionIndex === yDimensionIndex) {
-        return zarrita.slice(pixelWindow.rowStart, pixelWindow.rowStop);
-      }
-      return selection[dimensionName];
-    });
-    const chunk = await getCachedZarrSelection(
+    const {data: typedData, columnMajor} = await readChunkAlignedWindow(
       array,
-      getZarrSelectionKey(zarritaSelection),
-      () =>
-        zarrita.get(array, zarritaSelection) as Promise<{
-          data: SupportedTypedArray;
-          shape: number[];
-          stride: number[];
-        }>,
+      pixelWindow,
+      yDimensionIndex,
+      xDimensionIndex,
+      metadata.dimensions.map(dimensionName => selection[dimensionName] ?? 0),
+      this.maxConcurrentRequests,
       parameters.signal
     );
-    parameters.signal?.throwIfAborted();
-    if (!chunk || typeof chunk !== 'object' || !('data' in chunk) || !('shape' in chunk)) {
-      throw new Error('Failed to read GeoZarr raster selection.');
-    }
 
     const width = pixelWindow.columnStop - pixelWindow.columnStart;
     const height = pixelWindow.rowStop - pixelWindow.rowStart;
-    const {data: typedData, stride} = cloneZarrSelection(chunk);
-    const [columnStride, rowStride] =
-      xDimensionIndex < yDimensionIndex ? stride : [stride[1], stride[0]];
-    const data = toRowMajorRaster(typedData, width, height, columnStride, rowStride);
+    const data = columnMajor
+      ? toRowMajorRaster(typedData, width, height, height, 1)
+      : typedData;
     const transform = getPixelWindowTransform(pixelWindow, metadata.transform);
 
     return {
