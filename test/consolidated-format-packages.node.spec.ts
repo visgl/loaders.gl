@@ -141,6 +141,22 @@ test.each([
   expect(entry[loaderName].version).toBe(manifest.version);
 });
 
+test.each([
+  ['module', "import {resolveCesiumIonTileset} from '@loaders.gl/tiles-3d/3d-tiles';"],
+  ['commonjs', "const {resolveCesiumIonTileset} = require('@loaders.gl/tiles-3d/3d-tiles');"]
+])('the 3D Tiles package exports the Cesium ion resolver in %s', (moduleType, load) => {
+  const result = execFileSync(
+    process.execPath,
+    [
+      `--input-type=${moduleType}`,
+      '--eval',
+      `${load} process.stdout.write(typeof resolveCesiumIonTileset);`
+    ],
+    {encoding: 'utf8'}
+  );
+  expect(result).toBe('function');
+});
+
 test('emitted services and splats ESM entrypoints keep valid index references', () => {
   const result = execFileSync(
     process.execPath,
