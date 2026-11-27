@@ -157,7 +157,8 @@ const source = openRaster(store);
   may also be a valid sample. Set it to `true` to use a finite Zarr `fill_value` when CF
   `_FillValue` and `missing_value` supply no nodata value.
 - `maxConcurrentRequests?: number` caps simultaneous Zarrita store reads per source, including
-  chunk response bodies and byte-range reads. Defaults to `16`.
+  chunk response bodies and byte-range reads. The same limit caps in-flight chunk selections
+  for each raster window. Defaults to `16`.
 
 ## API
 

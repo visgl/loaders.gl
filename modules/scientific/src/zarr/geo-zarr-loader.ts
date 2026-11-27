@@ -101,7 +101,7 @@ export type GeoZarrLoaderOptions = ZarrLoaderOptions & {
     defaultSelection?: Record<string, number>;
     /** Uses a finite Zarr fill value as no-data in the absence of a CF declaration. Defaults to false for all dtypes. */
     fillValueAsNoData?: boolean;
-    /** Maximum concurrent store reads. Defaults to 16. */
+    /** Maximum concurrent store reads per source and chunk selections per window. Defaults to 16. */
     maxConcurrentRequests?: number;
   };
 };
@@ -206,6 +206,9 @@ export class GeoZarrRasterSource
     RasterSource<RasterData, GetGeoZarrParameters, GeoZarrSourceMetadata>,
     ScanQueryMetadataProvider
 {
+  /** Shared limit for store reads and for chunk selections in each raster window. */
+  private readonly maxConcurrentRequests: number;
+
   /** Shared source initialization request. */
   private initializationPromise: Promise<GeoZarrInit> | null = null;
 
@@ -214,12 +217,10 @@ export class GeoZarrRasterSource
 
   /** Creates a GeoZarr raster source. */
   constructor(data: string, options: GeoZarrLoaderOptions, coreApi?: CoreAPI) {
-    super(
-      data,
-      options,
-      coreApi,
-      options.geozarr?.maxConcurrentRequests ?? GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS
-    );
+    const maxConcurrentRequests =
+      options.geozarr?.maxConcurrentRequests ?? GEO_ZARR_DEFAULT_MAX_CONCURRENT_REQUESTS;
+    super(data, options, coreApi, maxConcurrentRequests);
+    this.maxConcurrentRequests = maxConcurrentRequests;
   }
 
   /** Returns normalized geospatial, array, and selectable-dimension metadata. */
@@ -398,19 +399,19 @@ export class GeoZarrRasterSource
     }
 
     const selection = normalizeSelection(parameters.selection, metadata.selectionDimensions);
-    const typedData = await readChunkAlignedWindow(
+    const {data: typedData, columnMajor} = await readChunkAlignedWindow(
       array,
       pixelWindow,
       yDimensionIndex,
       xDimensionIndex,
       metadata.dimensions.map(dimensionName => selection[dimensionName] ?? 0),
+      this.maxConcurrentRequests,
       parameters.signal
     );
 
     const width = pixelWindow.columnStop - pixelWindow.columnStart;
     const height = pixelWindow.rowStop - pixelWindow.rowStart;
-    const data =
-      xDimensionIndex < yDimensionIndex ? transposeRaster(typedData, width, height) : typedData;
+    const data = columnMajor ? transposeRaster(typedData, width, height) : typedData;
     const transform = getPixelWindowTransform(pixelWindow, metadata.transform);
 
     return {
@@ -1199,7 +1200,7 @@ function normalizeSelection(
   );
 }
 
-/** Transposes a C-order 2D raster whose physical dimensions are `[x, y]`. */
+/** Packs a column-major 2D raster into contiguous rows. */
 function transposeRaster(
   source: SupportedTypedArray,
   width: number,

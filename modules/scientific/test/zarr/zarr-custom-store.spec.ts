@@ -146,7 +146,7 @@ test.each([
   {transposed: true, columnMajor: false},
   {transposed: false, columnMajor: true},
   {transposed: true, columnMajor: true}
-])('GeoZarr matches a whole-window read with transposed=$transposed and columnMajor=$columnMajor', async ({
+])('GeoZarr packs row-major windows with transposed=$transposed and columnMajor=$columnMajor', async ({
   transposed,
   columnMajor
 }) => {
@@ -201,14 +201,13 @@ test.each([
   const selection = dimensions.map(name =>
     name === 'band' ? 1 : zarrita.slice(1, name === 'y' ? 5 : 7)
   );
-  const whole = (await zarrita.get(array, selection)) as {data: Uint16Array};
-  // GeoZarr's whole-window path applied this transpose when x preceded y.
-  const expected = transposed
-    ? Uint16Array.from(
-        whole.data,
-        (_, index) => whole.data[(index % width) * height + Math.floor(index / width)]
-      )
-    : whole.data;
+  const whole = (await zarrita.get(array, selection)) as {data: Uint16Array; stride: number[]};
+  const rowStride = whole.stride[transposed ? 1 : 0];
+  const columnStride = whole.stride[transposed ? 0 : 1];
+  const expected = Uint16Array.from(
+    whole.data,
+    (_, index) => whole.data[Math.floor(index / width) * rowStride + (index % width) * columnStride]
+  );
   expect(raster.data).toBeInstanceOf(Uint16Array);
   expect(raster.data).toEqual(expected);
   expect(expected).toContain(999);
@@ -313,7 +312,72 @@ function createMemoryStore(consolidated: boolean): AsyncReadable {
   return {get: async key => files.get(key)};
 }
 
-test('a GeoZarr window with more than 32 chunks keeps all its decoded chunks', async () => {
+test('GeoZarr bounds cold chunk reads and reuses all decoded chunks for a warm window', async () => {
+  const maxConcurrentRequests = 3;
+  const {source, viewport, pixels} = await createChunkedRaster(maxConcurrentRequests);
+  const releaseFirstChunk = Promise.withResolvers<void>();
+  const readChunk = zarrita.Array.prototype.getChunk;
+  let activeReads = 0;
+  let peakReads = 0;
+  const getChunk = vi.spyOn(zarrita.Array.prototype, 'getChunk').mockImplementation(async function (
+    this: zarrita.Array<zarrita.DataType, zarrita.Readable>,
+    coordinates,
+    ...options
+  ) {
+    activeReads++;
+    peakReads = Math.max(peakReads, activeReads);
+    try {
+      if (coordinates[0] === 0 && coordinates[1] === 0) await releaseFirstChunk.promise;
+      return await readChunk.call(this, coordinates, ...options);
+    } finally {
+      activeReads--;
+    }
+  });
+
+  const raster = source.getRaster({viewport});
+  try {
+    // Count reads before the store limiter and require progress while the first read is held.
+    await Promise.race([
+      vi.waitFor(() => expect(getChunk.mock.calls.length).toBeGreaterThan(maxConcurrentRequests)),
+      raster
+    ]);
+  } finally {
+    releaseFirstChunk.resolve();
+    await raster;
+  }
+  expect((await raster).data).toEqual(pixels);
+  expect(peakReads).toBe(maxConcurrentRequests);
+
+  getChunk.mockClear();
+  expect((await source.getRaster({viewport})).data).toEqual(pixels);
+  expect(getChunk).not.toHaveBeenCalled();
+});
+
+test('aborting a GeoZarr window leaves unscheduled chunks unread', async () => {
+  const maxConcurrentRequests = 3;
+  const {source, viewport} = await createChunkedRaster(maxConcurrentRequests);
+  const chunkStarted = Promise.withResolvers<void>();
+  const releaseChunks = Promise.withResolvers<void>();
+  const getChunk = vi.spyOn(zarrita.Array.prototype, 'getChunk').mockImplementation(async () => {
+    chunkStarted.resolve();
+    await releaseChunks.promise;
+    return {data: new Uint8Array([0]), shape: [1, 1], stride: [1, 1]};
+  });
+  const controller = new AbortController();
+  const reason = new DOMException('Read cancelled', 'AbortError');
+  const raster = source.getRaster({viewport, signal: controller.signal});
+  try {
+    await Promise.race([chunkStarted.promise, raster]);
+    controller.abort(reason);
+    await expect(raster).rejects.toBe(reason);
+  } finally {
+    releaseChunks.resolve();
+  }
+  expect(getChunk).toHaveBeenCalledTimes(maxConcurrentRequests);
+});
+
+/** Creates an 8-by-8 raster with a separate chunk for each pixel. */
+async function createChunkedRaster(maxConcurrentRequests: number) {
   const files = new Map<zarrita.AbsolutePath, Uint8Array>();
   const group = await zarrita.create(files);
   const array = await zarrita.create(group.resolve('raster'), {
@@ -326,15 +390,12 @@ test('a GeoZarr window with more than 32 chunks keeps all its decoded chunks', a
       'spatial:transform': [1, 0, 0, 0, -1, 8]
     }
   });
-  await zarrita.set(array, [null, null], {
-    data: Uint8Array.from({length: 64}, (_, index) => index),
-    shape: [8, 8],
-    stride: [8, 1]
-  });
+  const pixels = Uint8Array.from({length: 64}, (_, index) => index);
+  await zarrita.set(array, [null, null], {data: pixels, shape: [8, 8], stride: [8, 1]});
   const store: AsyncReadable = {get: async key => files.get(key)};
   const source = createDataSourceSync(SOURCE_LABEL, [GeoZarrLoader], {
     zarr: {store, requireConsolidatedMetadata: false, chunkCacheProps: false},
-    geozarr: {array: 'raster'}
+    geozarr: {array: 'raster', maxConcurrentRequests}
   });
   const viewport: RasterViewport = {
     ...VIEWPORT,
@@ -345,10 +406,5 @@ test('a GeoZarr window with more than 32 chunks keeps all its decoded chunks', a
     width: 8,
     height: 8
   };
-  await source.getRaster({viewport});
-  const getChunk = vi.spyOn(zarrita.Array.prototype, 'getChunk');
-  const raster = await source.getRaster({viewport});
-  expect(raster.data).toEqual(Uint8Array.from({length: 64}, (_, index) => index));
-  expect(getChunk).not.toHaveBeenCalled();
-  getChunk.mockRestore();
-});
+  return {source, viewport, pixels};
+}

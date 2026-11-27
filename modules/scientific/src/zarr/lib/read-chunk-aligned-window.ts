@@ -28,6 +28,14 @@ type RasterSelection = {
   stride: number[];
 };
 
+/** Assembled window and the storage order of its spatial axes. */
+type ChunkAlignedWindow = {
+  /** Contiguous window samples. */
+  data: SupportedTypedArray;
+  /** Whether samples along each column are contiguous. */
+  columnMajor: boolean;
+};
+
 /** Asks Zarrita for the selection's layout without scheduling any chunk reads. */
 const LAYOUT_ONLY: zarrita.GetOptions = {
   /** Supplies a queue that discards the chunk read tasks. */
@@ -46,8 +54,9 @@ export async function readChunkAlignedWindow(
   yDimension: number,
   xDimension: number,
   indices: number[],
+  maxConcurrentRequests: number,
   signal?: AbortSignal
-): Promise<SupportedTypedArray> {
+): Promise<ChunkAlignedWindow> {
   signal?.throwIfAborted();
   // Two elements per axis suffice to distinguish the projected axis order.
   const template = await readSelection(
@@ -56,10 +65,9 @@ export async function readChunkAlignedWindow(
     ),
     LAYOUT_ONLY
   );
+  signal?.throwIfAborted();
   const innerDimension =
-    template.stride[0] === 1
-      ? Math.min(yDimension, xDimension)
-      : Math.max(yDimension, xDimension);
+    template.stride[0] === 1 ? Math.min(yDimension, xDimension) : Math.max(yDimension, xDimension);
   const outerDimension = innerDimension === xDimension ? yDimension : xDimension;
   const {rowStart, rowStop, columnStart, columnStop} = window;
   const [outerStart, outerStop, innerStart, innerStop] =
@@ -74,16 +82,31 @@ export async function readChunkAlignedWindow(
   ) => SupportedTypedArray;
   const output = new TypedArrayConstructor((outerStop - outerStart) * innerLength);
 
-  const reads: Promise<void>[] = [];
   const firstOuter = Math.floor(outerStart / outerChunkSize) * outerChunkSize;
   const firstInner = Math.floor(innerStart / innerChunkSize) * innerChunkSize;
-  for (let outer = firstOuter; outer < outerStop; outer += outerChunkSize) {
-    for (let inner = firstInner; inner < innerStop; inner += innerChunkSize) {
-      reads.push(copyChunk(outer, inner));
+  const innerChunkCount = Math.ceil((innerStop - firstInner) / innerChunkSize);
+  const chunkCount = Math.ceil((outerStop - firstOuter) / outerChunkSize) * innerChunkCount;
+  let nextChunk = 0;
+  let failed = false;
+  // Zarrita allocates each selection before its store read can enter the request limiter.
+  await Promise.all(Array.from({length: Math.min(maxConcurrentRequests, chunkCount)}, copyChunks));
+  return {data: output, columnMajor: innerDimension === yDimension};
+
+  /** Claims the next chunk as soon as this worker finishes copying its current chunk. */
+  async function copyChunks(): Promise<void> {
+    try {
+      while (!failed && nextChunk < chunkCount) {
+        signal?.throwIfAborted();
+        const chunkIndex = nextChunk++;
+        const outer = firstOuter + Math.floor(chunkIndex / innerChunkCount) * outerChunkSize;
+        const inner = firstInner + (chunkIndex % innerChunkCount) * innerChunkSize;
+        await copyChunk(outer, inner);
+      }
+    } catch (error) {
+      failed = true;
+      throw error;
     }
   }
-  await Promise.all(reads);
-  return output;
 
   /** Reads the entire in-bounds chunk plane and copies only its overlap with the window. */
   async function copyChunk(outer: number, inner: number): Promise<void> {
