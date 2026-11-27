@@ -15,11 +15,8 @@ export type {Tiles3DArchiveFiles, Tiles3DArchiveWriterOptions} from './3d-tiles-
 export type {default as Tile3DFeatureTable} from './lib/classes/tile-3d-feature-table';
 export type {default as Tile3DBatchTable} from './lib/classes/tile-3d-batch-table';
 export type {TILE3D_TYPE} from './lib/constants';
-export type {
-  CesiumIonRequestOptions,
-  CesiumIonTilesetMetadata,
-  resolveCesiumIonTileset
-} from './lib/ion/ion';
+export {resolveCesiumIonTileset} from './lib/ion/ion';
+export type {CesiumIonRequestOptions, CesiumIonTilesetMetadata} from './lib/ion/ion';
 export type {
   FeatureTableJson,
   B3DMContent,
