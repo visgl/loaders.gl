@@ -131,6 +131,35 @@ describe('Parquet page-index pruning', () => {
     await source.close();
   });
 
+  test.each([false, true])(
+    'reads only output pages with exact predicate matches (worker=%s)',
+    async worker => {
+      const source = createRemoteSource(pageIndexFixture, {core: {worker}});
+      const metadata = await source.getMetadata();
+      const before = source.getTelemetry().requestedBytes;
+      const selectedRows = [SELECTED_ROW_START, SELECTED_ROW_START + 2];
+      try {
+        const batches = await collectBatches(
+          source.read({
+            columns: ['payload'],
+            predicate: {op: 'in', args: [{property: 'id'}, selectedRows]}
+          })
+        );
+        expect(getBatchValues(batches, 'payload')).toEqual(
+          selectedRows.map(row => `payload-${row}-${'-'.repeat(20)}`)
+        );
+        expect(
+          JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowIndices
+        ).toEqual(selectedRows);
+        expect(source.getTelemetry().requestedBytes - before).toBeLessThan(
+          getColumnMetadata(metadata, 'payload').compressedByteLength / 2
+        );
+      } finally {
+        await source.close();
+      }
+    }
+  );
+
   test('exposes page-index and byte-range decisions in the physical scan plan', async () => {
     const source = createRemoteSource(pageIndexFixture, {core: {worker: false}});
     const plan = await source.getScanPlan({

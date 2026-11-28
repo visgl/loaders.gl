@@ -90,6 +90,8 @@ export type ParquetPageIndexDecryptor = (
 export type ParquetPagePruningOptions = {
   /** Row-group ordinal used when constructing encrypted-module AAD. */
   rowGroupOrdinal?: number;
+  /** Exact sorted logical row positions for a late-materialized projection. */
+  selectedRowIndices?: readonly number[];
   /** Decode legacy INT96 page statistics as epoch nanoseconds. */
   int96AsTimestamp?: boolean;
   /** Decrypts encrypted index modules; omitted for plaintext files. */
@@ -123,7 +125,7 @@ export async function createParquetPagePruningPlan(
   rowGroup: RowGroup,
   schema: ParquetSchema,
   selectedColumnPaths: readonly string[][],
-  predicate: ParquetPredicate,
+  predicate: ParquetPredicate | undefined,
   signal?: AbortSignal,
   options?: ParquetPagePruningOptions
 ): Promise<ParquetPagePruningPlan | undefined> {
@@ -136,7 +138,7 @@ export async function createParquetPagePruningPlan(
   const pageLocations: ParquetPageLocations = {};
   const pageStatistics: Record<string, ParquetColumnPageStatistics> = {};
   const predicatePaths = new Set(
-    getParquetPredicatePaths(predicate).map(path => JSON.stringify(path))
+    predicate ? getParquetPredicatePaths(predicate).map(path => JSON.stringify(path)) : []
   );
   let indexCount = 0;
 
@@ -226,7 +228,9 @@ export async function createParquetPagePruningPlan(
     return undefined;
   }
 
-  const candidateRanges = getPredicateRowRanges(predicate, pageStatistics, rowCount);
+  const candidateRanges = options?.selectedRowIndices
+    ? getExactRowRanges(options.selectedRowIndices)
+    : predicate && getPredicateRowRanges(predicate, pageStatistics, rowCount);
   if (candidateRanges === undefined) {
     return undefined;
   }
@@ -252,6 +256,20 @@ export async function createParquetPagePruningPlan(
     selectedPageCount,
     prunedRowCount
   };
+}
+
+/** Coalesces consecutive exact matches before expanding them to page boundaries. */
+function getExactRowRanges(rowIndices: readonly number[]): ParquetRowRange[] {
+  const ranges: ParquetRowRange[] = [];
+  for (const rowIndex of rowIndices) {
+    const last = ranges.at(-1);
+    if (last?.end === rowIndex) {
+      last.end++;
+    } else {
+      ranges.push({start: rowIndex, end: rowIndex + 1});
+    }
+  }
+  return ranges;
 }
 
 /** Returns data-page byte ranges needed to decode a selective row-group plan. */

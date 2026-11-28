@@ -80,7 +80,9 @@ export async function decodeParquetSourceWorkerInput(
   const localRowIndices = input.predicate
     ? filterParquetRowIndices(input.predicate, columns, sourceRowCount)
     : undefined;
-  const rowIndices = localRowIndices?.map(rowIndex => sourceRowIndices?.[rowIndex] ?? rowIndex);
+  const rowIndices = localRowIndices
+    ? localRowIndices.map(rowIndex => sourceRowIndices?.[rowIndex] ?? rowIndex)
+    : sourceRowIndices;
   const decodeDurationMs = getCurrentTime() - decodeStartTime;
 
   const conversionStartTime = getCurrentTime();
