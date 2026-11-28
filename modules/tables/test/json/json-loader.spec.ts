@@ -898,6 +898,74 @@ test('JSONTableLoader#parseInBatches(arrow with supplied schema)', async () => {
   }
   expect(rowCount, 'converts all streamed rows').toBe(2);
 });
+test.each([
+  1, 2
+])('JSONTableLoader maps ragged positional rows with batch size %s', async batchSize => {
+  const text = '[[1],[2,3]]';
+  const options: JSONTableLoaderOptions = {
+    core: {batchSize},
+    json: {
+      shape: 'arrow',
+      schema: {
+        fields: [
+          {name: 'longitude', type: 'float64', nullable: false},
+          {name: 'latitude', type: 'float64', nullable: true}
+        ],
+        metadata: {}
+      },
+      arrowConversion: {onMissingField: 'null', logRecoveries: false}
+    }
+  };
+  const whole = BundledJSONTableLoader.parseTextSync?.(text, options) as arrow.Table;
+  expect(whole.schema.names).toEqual(['longitude', 'latitude']);
+  expect(Array.from(whole.getChild('longitude')!)).toEqual([1, 2]);
+  expect(Array.from(whole.getChild('latitude')!)).toEqual([null, 3]);
+
+  const batches: arrow.RecordBatch[] = [];
+  for await (const batch of BundledJSONTableLoader.parseInBatches!(
+    makeChunkedTextIterator(text, 1),
+    options
+  )) {
+    if (batch.numRows) {
+      batches.push(batch);
+    }
+  }
+  expect(batches.map(batch => batch.numRows)).toEqual(batchSize === 1 ? [1, 1] : [2]);
+  const streamed = new arrow.Table(batches);
+  expect(streamed.schema.names).toEqual(whole.schema.names);
+  expect(Array.from(streamed.getChild('longitude')!)).toEqual([1, 2]);
+  expect(Array.from(streamed.getChild('latitude')!)).toEqual([null, 3]);
+});
+
+test('JSONTableLoader preserves positional values during inference and checks the frozen schema', async () => {
+  const text = '[[1],[2,3]]';
+  const options: JSONTableLoaderOptions = {json: {shape: 'arrow'}};
+  async function collect(batchSize: number): Promise<arrow.Table> {
+    const batches: arrow.RecordBatch[] = [];
+    for await (const batch of BundledJSONTableLoader.parseInBatches!(
+      makeChunkedTextIterator(text, 1),
+      {...options, core: {batchSize}}
+    )) {
+      if (batch.numRows) {
+        batches.push(batch);
+      }
+    }
+    return new arrow.Table(batches);
+  }
+
+  const streamed = await collect(2);
+  expect(Array.from(streamed.getChild('column2')!)).toEqual([null, 3]);
+  await expect(collect(1)).rejects.toThrow(/unexpected field column2/);
+
+  const wrapped =
+    '{"shape":"array-row-table","schema":{"fields":[],"metadata":{"source":"test"}},"data":' +
+    text +
+    '}';
+  const whole = BundledJSONTableLoader.parseTextSync?.(wrapped, options) as arrow.Table;
+  expect(whole.schema.metadata.get('source')).toBe('test');
+  expect(Array.from(whole.getChild('column2')!)).toEqual([null, 3]);
+});
+
 test('JSONTableLoader#parseInBatches(fast arrow preserves raw Utf8 JSON fields)', async () => {
   const schema: Schema = {
     fields: [

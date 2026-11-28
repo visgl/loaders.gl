@@ -696,6 +696,19 @@ export function makeJSONArrowSchemaInferer(): {
   };
 }
 
+/** Applies the row conversion policy to cells beyond the declared positional schema. */
+export function makeJSONArrowExtraCellHandler(options: JSONArrowConversionOptions) {
+  const conversion = normalizeArrowConversionOptions(options.arrowConversion);
+  const log = makeConversionLogger(options.log, conversion.logRecoveries);
+  return (index: number) =>
+    handleExtraField(
+      `column${index + 1}`,
+      conversion,
+      log,
+      `JSONLoader: incompatible Arrow schema, unexpected column index ${index}`
+    );
+}
+
 /** Writes lexically decoded fields directly into an existing Arrow builder. */
 export function makeJSONArrowFieldAppender(
   builder: ArrowTableBuilder,

@@ -7,11 +7,13 @@ import type {Schema} from '@loaders.gl/core/schema';
 import {makeTextDecoderIterator, toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {ArrowTableBuilder, updateNativeArrowTableMetadata} from '@loaders.gl/core/schema-utils';
 import FastStreamingJSONParser, {
+  visitJSONArrayCells,
   visitJSONObjectFields
 } from '../json-parser/fast-streaming-json-parser';
 import {
   makeEmptyFieldArrowTable,
   makeJSONArrowFieldAppender,
+  makeJSONArrowExtraCellHandler,
   makeJSONArrowSchemaInferer,
   type JSONArrowConversionOptions
 } from './convert-row-table-to-arrow';
@@ -66,6 +68,46 @@ export async function* parseDirectJSONArrowInBatches(
   batchSize: number | 'auto',
   options: JSONArrowConversionOptions
 ): AsyncIterable<RecordBatch> {
+  const parser = createJSONArrowParser(declaredSchema, jsonpaths, batchSize, options);
+  for await (const chunk of makeTextDecoderIterator(toArrayBufferIterator(input))) {
+    yield* parser.write(chunk);
+  }
+  yield* parser.finish();
+}
+
+/** Parses a complete document with the shared text tokenizer and column writers. */
+export function parseDirectJSONArrowText(
+  text: string,
+  declaredSchema: Schema | undefined,
+  options: JSONArrowConversionOptions
+): Table {
+  let rowTable = false;
+  if (text.trimStart().startsWith('{')) {
+    visitJSONObjectFields(text, (name, start, end) => {
+      if (name === 'shape') {
+        const shape: unknown = JSON.parse(text.slice(start, end));
+        rowTable = shape === 'object-row-table' || shape === 'array-row-table';
+      }
+    });
+  }
+  const parser = createJSONArrowParser(
+    declaredSchema,
+    rowTable ? ['$.data'] : undefined,
+    'auto',
+    options,
+    true
+  );
+  return new Table([...parser.write(text), ...parser.finish()]);
+}
+
+/** Creates the shared tokenizer and Arrow writer for a single input. */
+function createJSONArrowParser(
+  declaredSchema: Schema | undefined,
+  jsonpaths: string[] | undefined,
+  batchSize: number | 'auto',
+  options: JSONArrowConversionOptions,
+  wholeFile = false
+) {
   const builderOptions = {viewTypes: options.arrowConversion?.viewTypes};
   let schema = declaredSchema;
   let builder = schema ? new ArrowTableBuilder(schema, builderOptions) : undefined;
@@ -78,16 +120,25 @@ export async function* parseDirectJSONArrowInBatches(
   const inferer = makeJSONArrowSchemaInferer();
   const columns = new Map<string, unknown[]>();
   let inferredRows = 0;
-  let batchFieldNames: string[] | undefined;
+  let seenRow = false;
   const rawJSONFields = new Set(
-    declaredSchema?.fields.filter(field => field.type === 'utf8').map(field => field.name)
+    (wholeFile ? undefined : declaredSchema)?.fields
+      .filter(field => field.type === 'utf8')
+      .map(field => field.name)
   );
   const buffered: RecordBatch[] = [];
   const fields = new Map<string, unknown>();
+  const handleExtraCell = makeJSONArrowExtraCellHandler(options);
 
   /** Freezes the inferred schema and appends the buffered columns to their Arrow builders. */
   function finishInference(): void {
     schema = inferer.getSchema();
+    if (wholeFile) {
+      const wrapper = parser.getPartialResult() as {shape?: string; schema?: Schema} | null;
+      if (wrapper?.shape === 'object-row-table' || wrapper?.shape === 'array-row-table') {
+        schema.metadata = wrapper.schema?.metadata ?? {};
+      }
+    }
     builder = new ArrowTableBuilder(schema, builderOptions);
     matcher = compileDirectJSONArrowRow(schema);
     decoders = schema.fields.map(
@@ -118,7 +169,6 @@ export async function* parseDirectJSONArrowInBatches(
       : makeEmptyFieldArrowTable(schema, builder.length).batches[0];
     if (batch) buffered.push(batch);
     builder.length = 0;
-    batchFieldNames = undefined;
   }
 
   /** Emits a complete batch when the configured row limit is reached. */
@@ -133,7 +183,7 @@ export async function* parseDirectJSONArrowInBatches(
     const tokens = matcher.exec(source);
     if (!tokens) return offset;
     const nextOffset = matcher.lastIndex;
-    batchFieldNames ??= schema.fields.map(field => field.name);
+    seenRow = true;
     for (let index = 0; index < schema.fields.length; index++) {
       const token = tokens[index + 1];
       builder.arrowBuilders[index].append(token === 'null' ? null : decoders[index](token));
@@ -150,11 +200,25 @@ export async function* parseDirectJSONArrowInBatches(
       consume(text) {
         if (match(text, 0) > 0) return;
         fields.clear();
+        if (wholeFile && !seenRow && text[0] !== '{' && text[0] !== '[') {
+          throw new Error(
+            'JSONTableLoader: expected a JSON row array or an object containing a JSON row array'
+          );
+        }
+        seenRow = true;
         if (text[0] === '[') {
-          const values: unknown[] = JSON.parse(text);
-          batchFieldNames ??= values.map((_value, index) => `column${index + 1}`);
-          for (let index = 0; index < batchFieldNames.length; index++) {
-            fields.set(batchFieldNames[index], values[index]);
+          if (
+            !visitJSONArrayCells(text, (index, start, end) => {
+              const value: unknown = JSON.parse(text.slice(start, end));
+              const name = declaredSchema?.fields[index]?.name;
+              if (declaredSchema && name === undefined) {
+                handleExtraCell(index);
+                return;
+              }
+              fields.set(name ?? `column${index + 1}`, value);
+            })
+          ) {
+            throw new SyntaxError('Invalid positional row in streamed JSON array');
           }
         } else if (text[0] !== '{') {
           const value: unknown = JSON.parse(text);
@@ -173,7 +237,6 @@ export async function* parseDirectJSONArrowInBatches(
         ) {
           throw new SyntaxError('Invalid object in streamed JSON array');
         }
-        batchFieldNames ??= orderJSONObjectFieldNames(fields.keys());
         if (appendFields) {
           appendFields(fields);
         } else {
@@ -206,20 +269,32 @@ export async function* parseDirectJSONArrowInBatches(
     buffered.length = 0;
   }
 
-  for await (const chunk of makeTextDecoderIterator(toArrayBufferIterator(input))) {
-    parser.write(chunk);
-    if (batchSize === 'auto') flush();
-    yield* emitBufferedBatches();
-  }
-  parser.close();
-  flush();
-  yield* emitBufferedBatches();
-  const path = parser.getStreamingJsonPathAsString() ?? undefined;
-  const metadata = getJSONContainerMetadata(parser.getPartialResult(), path);
-  if (lastMetadata !== JSON.stringify(metadata)) {
-    const finalBuilder = builder ?? new ArrowTableBuilder({fields: [], metadata: {}});
-    yield* updateNativeArrowTableMetadata(finalBuilder.finishTable(), metadata).batches;
-  }
+  return {
+    /** Consumes a text chunk and emits any complete streaming batches. */
+    *write(chunk: string): Iterable<RecordBatch> {
+      parser.write(chunk);
+      if (wholeFile) return;
+      if (batchSize === 'auto') flush();
+      yield* emitBufferedBatches();
+    },
+    /** Validates the document ending and emits the final data and metadata. */
+    *finish(): Iterable<RecordBatch> {
+      parser.close();
+      const path = parser.getStreamingJsonPathAsString() ?? undefined;
+      if (wholeFile && !path) {
+        throw new Error(
+          'JSONTableLoader: expected a JSON row array or an object containing a JSON row array'
+        );
+      }
+      flush();
+      yield* emitBufferedBatches();
+      const metadata = getJSONContainerMetadata(parser.getPartialResult(), path);
+      if (lastMetadata !== JSON.stringify(metadata)) {
+        const finalBuilder = builder ?? new ArrowTableBuilder({fields: [], metadata: {}});
+        yield* updateNativeArrowTableMetadata(finalBuilder.finishTable(), metadata).batches;
+      }
+    }
+  };
 }
 
 /** Matches JavaScript's own-property enumeration order for integer field names. */

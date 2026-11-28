@@ -7,9 +7,10 @@ import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source'
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
-import {updateNativeArrowTableMetadata} from '@loaders.gl/core/schema-utils';
-import {parseDirectJSONArrowInBatches} from './lib/parsers/parse-direct-json-arrow';
-import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
+import {
+  parseDirectJSONArrowInBatches,
+  parseDirectJSONArrowText
+} from './lib/parsers/parse-direct-json-arrow';
 
 import {
   serializeJSONWorkerOptions,
@@ -20,10 +21,7 @@ import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {getJSONRowTable} from './lib/parsers/convert-json-to-arrow';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
-import {
-  convertRowTableToArrowTable,
-  normalizeJSONArrowSchema
-} from './lib/parsers/convert-row-table-to-arrow';
+import {normalizeJSONArrowSchema} from './lib/parsers/convert-row-table-to-arrow';
 import type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-types';
 import {
   JSONTableLoaderDefinition,
@@ -75,28 +73,23 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
   const jsonOptions = normalizeJSONTableLoaderOptions(options);
   validateJSONTableArrowOptions(jsonOptions);
 
-  const json = parseJSONSync(text, getRawJSONOptions(jsonOptions));
-  const table = getJSONRowTable(json);
+  const json = jsonOptions.json;
+  if (json?.shape === 'arrow') {
+    return parseDirectJSONArrowText(
+      text,
+      json.schema ? normalizeJSONArrowSchema(json.schema) : undefined,
+      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)}
+    );
+  }
+  const table = getJSONRowTable(parseJSONSync(text, getRawJSONOptions(jsonOptions)));
   if (!table) {
     throw new Error(
       'JSONTableLoader: expected a JSON row array or an object containing a JSON row array'
     );
   }
-
-  if (jsonOptions.json?.shape !== 'arrow') {
-    return jsonOptions.json?.shape === 'array-row-table'
-      ? convertTable(table, 'array-row-table')
-      : convertTable(table, 'object-row-table');
-  }
-
-  return updateNativeArrowTableMetadata(
-    convertRowTableToArrowTable(table, {
-      schema: jsonOptions.json.schema,
-      arrowConversion: jsonOptions.json.arrowConversion,
-      log: getLoaderLog(jsonOptions)
-    }),
-    getJSONContainerMetadata(json)
-  );
+  return json?.shape === 'array-row-table'
+    ? convertTable(table, 'array-row-table')
+    : convertTable(table, 'object-row-table');
 }
 
 /**

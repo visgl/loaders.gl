@@ -773,6 +773,29 @@ export function visitJSONObjectFields(
   return false;
 }
 
+/** Visits each top-level array cell by index and source offsets without materializing the row. */
+export function visitJSONArrayCells(
+  text: string,
+  visit: (index: number, start: number, end: number) => void
+): boolean {
+  let start = skipWhitespace(text, 0);
+  if (text[start++] !== '[') return false;
+  start = skipWhitespace(text, start);
+  if (text[start] === ']') return skipWhitespace(text, start + 1) === text.length;
+
+  let index = 0;
+  while (start < text.length) {
+    const end = findJSONValueEnd(text, start);
+    if (end === null || end === start) return false;
+    visit(index++, start, end);
+    const delimiter = skipWhitespace(text, end);
+    if (text[delimiter] === ']') return skipWhitespace(text, delimiter + 1) === text.length;
+    if (text[delimiter] !== ',') return false;
+    start = skipWhitespace(text, delimiter + 1);
+  }
+  return false;
+}
+
 /**
  * Returns the first non-whitespace offset at or after the supplied index.
  *
@@ -805,7 +828,12 @@ function findJSONValueEnd(jsonText: string, valueStartIndex: number): number | n
   }
 
   let index = valueStartIndex;
-  while (index < jsonText.length && jsonText[index] !== ',' && jsonText[index] !== '}') {
+  while (
+    index < jsonText.length &&
+    jsonText[index] !== ',' &&
+    jsonText[index] !== '}' &&
+    jsonText[index] !== ']'
+  ) {
     index++;
   }
   return index < jsonText.length ? index : null;
