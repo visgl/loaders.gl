@@ -11,6 +11,7 @@ import {
 } from '../xml/parse-xml-helpers';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
+import {normalizeServiceCRS} from '../../../crs-utils';
 
 /** All capabilities of a WMS service - response to a WMS `GetCapabilities` data structure extracted from XML */
 export type WMSCapabilities = {
@@ -407,7 +408,16 @@ function mergeInheritedCRS(
   parentCRS: CRSIdentifier[],
   layerCRS: CRSIdentifier[] | undefined
 ): CRSIdentifier[] {
-  return Array.from(new Set([...parentCRS, ...(layerCRS || [])]));
+  const merged = [...parentCRS];
+  const keys = new Set(parentCRS.map(getCRSKey));
+  for (const crs of layerCRS || []) {
+    const key = getCRSKey(crs);
+    if (!keys.has(key)) {
+      keys.add(key);
+      merged.push(crs);
+    }
+  }
+  return merged;
 }
 
 /**
@@ -420,10 +430,16 @@ function mergeInheritedBoundingBoxes(
 ): WMSBoundingBox[] {
   const layerBoxes = layerBoundingBoxes || [];
   const merged = parentBoundingBoxes.map(
-    parentBox => layerBoxes.find(layerBox => layerBox.crs === parentBox.crs) || parentBox
+    parentBox =>
+      layerBoxes.find(layerBox => getCRSKey(layerBox.crs) === getCRSKey(parentBox.crs)) || parentBox
   );
-  const parentCRS = new Set(parentBoundingBoxes.map(parentBox => parentBox.crs));
-  return [...merged, ...layerBoxes.filter(layerBox => !parentCRS.has(layerBox.crs))];
+  const parentCRS = new Set(parentBoundingBoxes.map(parentBox => getCRSKey(parentBox.crs)));
+  return [...merged, ...layerBoxes.filter(layerBox => !parentCRS.has(getCRSKey(layerBox.crs)))];
+}
+
+/** Returns the key that identifies one CRS in its different service spellings. */
+function getCRSKey(crs: CRSIdentifier): string {
+  return normalizeServiceCRS(crs) ?? crs;
 }
 
 /** Traverse layers and inject missing props from parents */

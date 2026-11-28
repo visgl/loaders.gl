@@ -82,3 +82,18 @@ test('WMSCapabilitiesLoader#inherited-crs.xml merges parent and child CRS lists'
     'EPSG:3857'
   ]);
 });
+
+test('WMSCapabilitiesLoader#inherited-crs.xml compares CRS spellings when it merges', async () => {
+  const capabilities = await load(
+    '@loaders.gl/ogc/wms/test/data/wms/get-capabilities/inherited-crs.xml',
+    WMSCapabilitiesLoader,
+    {wms: {inheritedLayerProps: true}}
+  );
+  const maps = capabilities.layers[0].layers?.[2];
+  // The child spells EPSG:3857 as a URN. It is the same CRS, so it is not added again.
+  expect(maps?.crs).toEqual(['EPSG:4326', 'EPSG:3857', 'EPSG:3035']);
+  expect(maps?.boundingBoxes?.map(boundingBox => boundingBox.crs)).toEqual([
+    'EPSG:4326',
+    'urn:ogc:def:crs:EPSG::3857'
+  ]);
+});
