@@ -454,6 +454,8 @@ Apply new options to an instance of the class. Use this method to update options
 
 Schedules tile selection and content requests for the supplied viewports. With no argument, it uses the most recent viewports. Import `TraversalViewport` from `@loaders.gl/tiles-3d/tileset`. Its `longitude` and `latitude` fields are optional.
 
+`TraversalViewport` requires `getFrustumPlanes()`, even when `cameraDirection` is supplied. The method returns the `left`, `right`, `bottom`, `top`, `near`, and `far` planes in common space. Each plane has a numeric `distance` and a `Vector3` `normal`, matching deck.gl's viewport API.
+
 ### I3S content options[​](#i3s-content-options "Direct link to I3S content options")
 
 `Tileset3DProps.i3s` forwards format options to I3S content requests. A dedicated conversion runtime can set `{geometryMode: 'source', decodeTextures: false, useCompressedTextures: false}` to retain original-coordinate geometry and encoded PNG/JPEG resources. Rendering runtimes keep the default `geometryMode: 'render'`. This option does not select or supply CRS/elevation resources.
