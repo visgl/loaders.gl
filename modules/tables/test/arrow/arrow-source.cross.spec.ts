@@ -115,3 +115,21 @@ test('ArrowTableSource reads responses without a streaming body', async () => {
   expect(batches).toHaveLength(1);
   expect(batches[0].getChild('value')?.get(0)).toBe(7);
 });
+
+test('Arrow IPC file offset skips entire batch bodies and slices the first matching batch', async () => {
+  const first = arrow.tableFromArrays({value: new Int32Array(4096).fill(1)});
+  const second = arrow.tableFromArrays({value: Int32Array.of(2, 3, 4)});
+  const bytes = arrow.tableToIPC(first.concat(second), 'file');
+  const source = new ArrowTableSource(new Blob([bytes]));
+  let transferred = 0;
+  const batches = await Array.fromAsync(
+    source.read({
+      offset: 4097,
+      limit: 1,
+      onQueryComplete: summary => (transferred = summary.bytesFetched ?? 0)
+    })
+  );
+  expect(batches.flatMap(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([{value: 3}]);
+  expect(transferred).toBeLessThan(bytes.byteLength / 2);
+  expect(await Array.fromAsync(source.read({offset: 4100}))).toEqual([]);
+});

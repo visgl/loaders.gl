@@ -114,3 +114,8 @@ projection, and the global limit counts only rows that survive filtering.
 ## Related Formats
 
 [GeoArrow](/docs/modules/tables/arrow/formats/geoarrow) is not a separate file format. It defines geospatial conventions for Arrow extension metadata and geometry column layout.
+
+For Arrow IPC files supplied as a `Blob`, an `ArrowTableSource` scan with an offset and
+no predicate can skip whole record batches by reading only their metadata. The scan reads
+the first overlapping batch body and applies the remaining offset within that batch.
+IPC streams use sequential decoding.
