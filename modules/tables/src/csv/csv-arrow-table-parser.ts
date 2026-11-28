@@ -300,7 +300,9 @@ function convertCSVToTypedArrowTable(
   options: ArrowTableCSVOptions,
   batchSize?: number | 'auto'
 ): arrow.Table {
+  /** Number of records that contribute to the atomic table schema. */
   const inferenceRows = getTableSchemaInferenceRows(options.schemaInference ?? 'full', batchSize);
+  /** Freeze prefix-inferred types before converting rows beyond the sample. */
   const frozenColumnDataTypes =
     inferenceRows < table.numRows ? inferCSVArrowTypes(table.slice(0, inferenceRows)) : undefined;
   return convertRawArrowTableToTypedArrowTable(table, {
@@ -329,12 +331,16 @@ async function* makeTypedArrowBatchIterator(
     return;
   }
 
+  /** Required sample size, or infinity when inference waits for EOF. */
   const inferenceRows = getTableSchemaInferenceRows(
     csvOptions.schemaInference ?? 'first-batch',
     batchSize
   );
+  /** Raw batches retained until the inference sample is complete. */
   const pending: arrow.RecordBatch[] = [];
+  /** Number of logical records in the retained batches. */
   let pendingRows = 0;
+  /** Frozen column types shared by the retained batches and all later batches. */
   let columnTypes: TypedColumnDataType[] | undefined;
 
   for await (const batch of rawArrowBatchIterator) {

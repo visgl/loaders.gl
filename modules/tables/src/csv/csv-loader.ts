@@ -153,6 +153,7 @@ function parseCSVTextSync(
     default:
       throw new Error(shape);
   }
+  /** Number of records used to infer the whole-file schema. */
   const inferenceRows = getTableSchemaInferenceRows(
     csvOptions.schemaInference ?? 'full',
     options?.core?.batchSize
@@ -229,13 +230,20 @@ function parseCSVInBatches(
   let headerRow: string[] | null = null;
   let tableBatchBuilder: TableBatchBuilder | null = null;
   let schema: Schema | null = null;
+  /** Sample size before exposing the streaming schema. Text mode needs only a header. */
   const inferenceRows = csvOptions.dynamicTyping
     ? getTableSchemaInferenceRows(
         csvOptions.schemaInference ?? 'first-batch',
         options.core?.batchSize
       )
     : 1;
-  const pendingRows: {row: unknown[]; bytesUsed: number}[] = [];
+  /** Retains records and their byte positions until type and geometry inference finish. */
+  const pendingRows: {
+    /** Parsed CSV record waiting for the final sample schema. */
+    row: unknown[];
+    /** Byte cursor that accompanied this record. */
+    bytesUsed: number;
+  }[] = [];
   let detectedGeometryColumns = [] as ReturnType<typeof detectGeometryColumns>;
   let geometryDetectionFinalized = !csvOptions.detectGeometryColumns;
 
