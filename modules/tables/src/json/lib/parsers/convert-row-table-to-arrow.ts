@@ -278,25 +278,39 @@ export function convertRowTableToArrowTable(
     viewTypes: conversionOptions.viewTypes
   });
 
+  const normalizationOptions = {allowMissingNullableFields};
   switch (table.shape) {
     case 'array-row-table':
       for (const row of table.data) {
         arrowTableBuilder.addArrayRow(
-          normalizeArrayRowForArrow(row, schema, conversionOptions, conversionLogger, {
-            allowMissingNullableFields
-          })
+          normalizeArrayRowForArrow(
+            row,
+            schema,
+            conversionOptions,
+            conversionLogger,
+            normalizationOptions
+          )
         );
       }
       break;
-    case 'object-row-table':
+    case 'object-row-table': {
+      const schemaFieldNames = new Set(schema.fields.map(field => field.name));
+      const normalizedValues = new Array<unknown>(schema.fields.length);
       for (const row of table.data) {
-        arrowTableBuilder.addObjectRow(
-          normalizeObjectRowForArrow(row, schema, conversionOptions, conversionLogger, {
-            allowMissingNullableFields
-          })
+        normalizeObjectRowForArrow(
+          row,
+          schema,
+          schemaFieldNames,
+          normalizedValues,
+          conversionOptions,
+          conversionLogger,
+          normalizationOptions
         );
+        // ArrowTableBuilder consumes the values synchronously, so the array can be reused.
+        arrowTableBuilder.addArrayRow(normalizedValues);
       }
       break;
+    }
     default:
       throw new Error('invalid row table shape');
   }
@@ -768,17 +782,16 @@ export function makeJSONArrowFieldAppender(
   };
 }
 
-/** Normalizes one object row against the active Arrow schema. */
+/** Writes an object's normalized values to a reusable array in Arrow schema order. */
 function normalizeObjectRowForArrow(
   row: {[columnName: string]: unknown},
   schema: Schema,
+  schemaFieldNames: ReadonlySet<string>,
+  normalizedValues: unknown[],
   conversionOptions: NormalizedArrowConversionOptions,
   conversionLogger: ConversionLogger,
   normalizationOptions: {allowMissingNullableFields: boolean}
-): {[columnName: string]: unknown} {
-  const schemaFieldNames = new Set(schema.fields.map(field => field.name));
-  const normalizedRow: {[columnName: string]: unknown} = {};
-
+): void {
   for (const columnName of Object.keys(row)) {
     if (!schemaFieldNames.has(columnName)) {
       handleExtraField(
@@ -790,8 +803,9 @@ function normalizeObjectRowForArrow(
     }
   }
 
-  for (const field of schema.fields) {
-    normalizedRow[field.name] = normalizeValueForArrow(
+  for (let fieldIndex = 0; fieldIndex < schema.fields.length; fieldIndex++) {
+    const field = schema.fields[fieldIndex];
+    normalizedValues[fieldIndex] = normalizeValueForArrow(
       field,
       row[field.name],
       field.name,
@@ -801,7 +815,6 @@ function normalizeObjectRowForArrow(
       normalizationOptions
     );
   }
-  return normalizedRow;
 }
 
 /** Normalizes one array row against the active Arrow schema. */
