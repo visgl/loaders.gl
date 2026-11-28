@@ -50,7 +50,10 @@ test('JSONTableLoader parses data and creates a source after preload', async () 
 test('JSON table source projects Blob rows and observes cancellation', async () => {
   const source = new JSONTableSource(new Blob(['[{"name":"a","value":1},{"name":"b","value":2}]']));
   const metadata = await source.getQueryMetadata();
-  expect(metadata.capabilities.table).toMatchObject({projection: 'residual', streaming: false});
+  expect(metadata.capabilities.table).toMatchObject({
+    projection: 'pushdown+residual',
+    streaming: false
+  });
 
   const batches = [];
   for await (const batch of source.read({
@@ -63,6 +66,126 @@ test('JSON table source projects Blob rows and observes cancellation', async () 
   const [batch] = batches;
   expect(batch.get(0)?.toJSON()).toEqual({name: 'b'});
   expect(batch.numRows).toBe(1);
+});
+
+test('JSON table source streams declared columns and cancels input at the limit', async () => {
+  const encoder = new TextEncoder();
+  const chunks = ['[[1,2],', '[3,4]]'];
+  const pull = vi.fn((controller: ReadableStreamDefaultController<Uint8Array>) => {
+    const chunk = chunks.shift();
+    if (chunk === undefined) controller.close();
+    else controller.enqueue(encoder.encode(chunk));
+  });
+  const cancel = vi.fn();
+  const fetch = vi.fn(
+    async () => new Response(new ReadableStream({pull, cancel}, {highWaterMark: 0}))
+  );
+  const source = new JSONTableSource('https://example.test/points.json', {
+    core: {fetch},
+    json: {
+      schema: {
+        fields: [
+          {name: 'longitude', type: 'float64', nullable: false},
+          {name: 'latitude', type: 'float64', nullable: false}
+        ],
+        metadata: {}
+      }
+    }
+  });
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.capabilities.table).toMatchObject({
+    projection: 'pushdown+residual',
+    predicate: 'pushdown+residual',
+    limit: 'pushdown',
+    streaming: true
+  });
+  expect(metadata.columns.map(column => column.name)).toEqual(['longitude', 'latitude']);
+  expect(fetch).not.toHaveBeenCalled();
+
+  const rows = [];
+  for await (const batch of source.read({columns: ['latitude'], limit: 1})) {
+    rows.push(...batch.toArray().map(row => row.toJSON()));
+  }
+  expect(rows).toEqual([{latitude: 2}]);
+  expect(pull).toHaveBeenCalledTimes(1);
+  expect(cancel).toHaveBeenCalledTimes(1);
+});
+
+test('JSON table source pushes scalar predicates before Arrow construction', async () => {
+  const source = new JSONTableSource(
+    new Blob([
+      '[{"label":false,"value":null,"ignored":{"nested":[1,{"a":true}]}},{"label":"match","value":2,"ignored": true }]'
+    ]),
+    {
+      json: {
+        schema: {
+          fields: [
+            {name: 'label', type: 'utf8', nullable: false},
+            {name: 'value', type: 'float64', nullable: true},
+            {name: 'ignored', type: 'bool', nullable: false}
+          ],
+          metadata: {}
+        }
+      }
+    }
+  );
+  const rows = [];
+  for await (const batch of source.read({
+    columns: ['label'],
+    predicate: {op: '>=', args: [{property: 'value'}, 2]},
+    limit: 1
+  })) {
+    rows.push(...batch.toArray().map(row => row.toJSON()));
+  }
+  expect(rows).toEqual([{label: 'match'}]);
+});
+
+test('JSON table source keeps predicate fields for late inference and residual filtering', async () => {
+  const data = new Blob(['[{"label":"a"},{"label":"b","value":2},{"label":"c","value":0}]']);
+  for (const predicate of [
+    {op: '>=', args: [{property: 'value'}, 2]},
+    {op: 'not', args: [{op: '<', args: [{property: 'value'}, 2]}]}
+  ] as const) {
+    const rows = [];
+    for await (const batch of new JSONTableSource(data).read({columns: ['label'], predicate})) {
+      rows.push(...batch.toArray().map(row => row.toJSON()));
+    }
+    expect(rows).toEqual([{label: 'b'}]);
+  }
+});
+
+test('JSON table source still validates the syntax of skipped fields', async () => {
+  const source = new JSONTableSource(new Blob(['[{"id":1,"ignored":{"nested":[1,]}}]']));
+  await expect(
+    source
+      .read({columns: ['id']})
+      [Symbol.asyncIterator]()
+      .next()
+  ).rejects.toThrow(SyntaxError);
+});
+
+test.each([
+  'full',
+  'first-batch'
+] as const)('JSON table source uses %s inference for projected columns', async schemaInference => {
+  const data = Array.from({length: 1025}, (_, id) =>
+    id < 1024 ? {id, ignored: true} : {id, late: 5, ignored: {a: 1}}
+  );
+  const source = new JSONTableSource(new Blob([JSON.stringify(data)]), {
+    json: {schemaInference}
+  });
+  let rowCount = 0;
+  const names = new Set<string>();
+  let late: unknown;
+  for await (const batch of source.read({columns: ['id', 'late']})) {
+    rowCount += batch.numRows;
+    for (const name of batch.schema.names) names.add(name);
+    if (batch.numRows) late = batch.getChild('late')?.get(batch.numRows - 1);
+  }
+  expect(rowCount).toBe(1025);
+  expect([...names]).toEqual(schemaInference === 'full' ? ['id', 'late'] : ['id']);
+  expect(late).toBe(schemaInference === 'full' ? 5 : undefined);
 });
 
 test('JSONTableLoader source matching preserves parser order for JSON URLs', async () => {

@@ -157,10 +157,7 @@ test('NDJSON worker preserves row counts for records with no fields', async () =
   expect(batches.map(batch => batch.numRows)).toEqual([1, 1]);
 });
 
-test.each([
-  'clarinet',
-  'fast'
-] as const)('JSON worker preserves path/container metadata with %s backend', async backend => {
+test('JSON worker preserves path and container metadata', async () => {
   const batches = await collectBatches(
     await parseInBatches(
       [
@@ -168,7 +165,7 @@ test.each([
         encoder.encode('{"id":2}],"tail":true}')
       ],
       JSONLoader,
-      {core: {worker: true, batchSize: 1, metadata: true}, json: {backend, jsonpaths: ['$.rows']}}
+      {core: {worker: true, batchSize: 1, metadata: true}, json: {jsonpaths: ['$.rows']}}
     )
   );
   expect(batches.map(batch => batch.batchType)).toEqual([
@@ -186,13 +183,13 @@ test.each([
     await parseInBatches(
       [encoder.encode('{"label":"before","rows":[{"id":1},{"id":2}],"tail":true}')],
       JSONLoader,
-      {core: {worker: false, batchSize: 1, metadata: true}, json: {backend, jsonpaths: ['$.rows']}}
+      {core: {worker: false, batchSize: 1, metadata: true}, json: {jsonpaths: ['$.rows']}}
     )
   );
   expect(batches.at(-1)).toEqual(callerBatches.at(-1));
   expect(batches.at(-1)).toMatchObject({
     jsonpath: '$.rows',
-    container: {label: 'before', ...(backend === 'clarinet' ? {tail: true} : {})}
+    container: {label: 'before', tail: true}
   });
 });
 

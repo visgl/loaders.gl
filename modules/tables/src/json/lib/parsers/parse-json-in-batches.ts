@@ -11,7 +11,7 @@ import {
   makeTextDecoderIterator,
   toArrayBufferIterator
 } from '@loaders.gl/core/loader-utils';
-import StreamingJSONParser from '../json-parser/streaming-json-parser';
+import FastStreamingJSONParser from '../json-parser/fast-streaming-json-parser';
 import type {
   StreamingJSONParserFactory,
   StreamingJSONParserOptions
@@ -55,7 +55,8 @@ export async function* parseJSONInBatches(
 
   const parserFactory =
     parseOptions.parserFactory ||
-    ((parserOptions: StreamingJSONParserOptions) => new StreamingJSONParser(parserOptions));
+    ((parserOptions: StreamingJSONParserOptions) =>
+      new FastStreamingJSONParser({...parserOptions, strict: true}));
   const parser = parserFactory({jsonpaths, metadata});
 
   for await (const chunk of asyncIterator) {
@@ -84,7 +85,7 @@ export async function* parseJSONInBatches(
 
     // Add the row
     for (const row of rows) {
-      tableBatchBuilder.addRow(row);
+      tableBatchBuilder.addRow(row as Parameters<TableBatchBuilder['addRow']>[0]);
       // If a batch has been completed, emit it
       const batch = tableBatchBuilder.getFullBatch({jsonpath});
       if (batch) {
