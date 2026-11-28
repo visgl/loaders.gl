@@ -137,11 +137,11 @@ for await (const batch of batches) {
 
 One worker retains parser state across byte chunks, including split UTF-8 sequences. It requests input as needed and waits for the consumer before advancing past an output batch. Completed rows can arrive before EOF; a large incomplete JSON value or input chunk can still require substantial memory. NDJSON keeps one inferred Arrow schema across batches, or uses `ndjson.schema` when supplied. JSONTable uses `json.schema`. Both portable loaders.gl schemas and Apache Arrow `Schema` instances are supported, including schema/field metadata and conversion policies.
 
-JSON supports both `clarinet` and `fast` backends, JSONPath selection, and partial/final container metadata, with the selected backend's existing behavior. The fast backend currently retains container fields before the selected array; use clarinet when trailing container fields are needed. Worker results contain owned Arrow column buffers or binary JSON buffers and small transport descriptors; decoded row arrays and container objects are never structured-cloned across the boundary. The caller hydrates Arrow tables or decodes JSON frames. JSON frames preserve negative zero, nonfinite parser results, and undefined metadata fields, and do not coerce heterogeneous rows into an Arrow schema. Worker progress counts decoded rows within the `decode` phase; it is not a byte or overall download percentage.
+JSON supports JSONPath selection and partial/final container metadata. The streaming parser retains container properties on either side of the selected array.
 
 Breaking out of the loop closes the input and releases the worker. Aborting also interrupts a blocked input read and rejects with the caller's reason; underlying iterator cleanup is best effort and cannot delay cancellation. Already transferred input buffers remain detached.
 
-Set `core.workerInBatches: false` to retain caller-side batch parsing. Custom worker URLs require `core.workerInBatches: true` to declare protocol support. Browser workers use the published CDN asset by default, so bundling the application does not require copying a worker beside it. To self-host, set `json.workerUrl`, `json-table.workerUrl`, or `ndjson.workerUrl` for the chosen loader. Node workers remain experimental and require `core._nodeWorkers: true`; browser and CommonJS Node worker bundles are included in the package. `GeoJSONLoader`, `NDGeoJSONLoader`, and the experimental `FastJSONLoader` do not opt into this new worker. Use `JSONTableLoader` with `json.backend: 'fast'` for fast-backend Arrow worker batches.
+Set `core.workerInBatches: false` to retain caller-side batch parsing. Custom worker URLs require `core.workerInBatches: true` to declare protocol support. Browser workers use the published CDN asset by default, so bundling the application does not require copying a worker beside it. To self-host, set `json.workerUrl`, `json-table.workerUrl`, or `ndjson.workerUrl` for the chosen loader. Node workers remain experimental and require `core._nodeWorkers: true`; browser and CommonJS Node worker bundles are included in the package. `GeoJSONLoader` and `NDGeoJSONLoader` do not opt into this worker. The experimental `FastJSONLoader` and the Clarinet comparison implementation now live under `website/src/alternate-loaders/json`. Use `JSONLoader` for streamed JSON rows and `JSONTableLoader` for streamed Arrow batches.
 
 For configuration formats with the same general object/array data model, see the dependency-free [`YAMLLoader`](https://loaders.gl/next/docs/modules/documents/config/api-reference/yaml-loader.md) and [`TOMLLoader`](https://loaders.gl/next/docs/modules/documents/config/api-reference/toml-loader.md) in `@loaders.gl/documents`.
 
@@ -150,8 +150,6 @@ Detailed guide
 ## JSON module details
 
 The sections below list loaders and writers, output shapes, streaming behavior, and parser options.
-
-`JSONLoader` exposes `json.backend: 'fast'` as an experimental opt-in backend for streaming extraction. This keeps atomic JSON parsing on the standard `JSON.parse` path while using the faster streaming parser for `loadInBatches`.
 
 ## Installation[​](#installation "Direct link to Installation")
 

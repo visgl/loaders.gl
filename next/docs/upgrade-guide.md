@@ -14,6 +14,8 @@ Update package imports first, then check the source APIs, output shapes, and cod
 
 Format packages now expose their loaders through subpaths. Replace a package-root loader import with `@loaders.gl/<package>/<format>`. For eager parsing, writers, and direct source construction, use `@loaders.gl/<package>/<format>/bundled`. Both paths export loaders under their ordinary names. The core framework is available at `@loaders.gl/core/api`, and tileset traversal at `@loaders.gl/tiles-3d/tileset`. Existing core root imports remain supported. Image utilities such as `getBinaryImageMetadata` now use `@loaders.gl/images/api`. The `@loaders.gl/images/gl-extensions` subpath was removed. Texture levels still carry the numeric WebGL `format` when available. Use the level’s `textureFormat` for renderer capability checks, or use WebGL context and extension constants for numeric comparisons.
 
+Remove `json.backend` from JSON loading options. `JSONLoader` and `JSONTableLoader` use one streaming parser. Replace imports of the experimental `FastJSONLoader` with `JSONLoader`. The previous backends are retained as website comparison loaders.
+
 The Arrow query, execution, and worker helpers moved from `@loaders.gl/core/query` to focused subpaths.
 
 | Symbol                                                                        | Subpath under `@loaders.gl/core` |

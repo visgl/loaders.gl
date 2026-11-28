@@ -119,16 +119,6 @@ for await (const batch of batches) {
 
 If no JSONPath is specified, the loader streams the first array it encounters in the JSON payload.
 
-For faster opt-in streaming extraction, set `json.backend: 'fast'`. This affects streaming parsing only; atomic JSON parsing still uses `JSON.parse`.
-
-```
-const batches = await loadInBatches('geojson.json', JSONLoader, {
-
-  json: {backend: 'fast', jsonpaths: ['$.features']}
-
-});
-```
-
 ### Metadata Batches[​](#metadata-batches "Direct link to Metadata Batches")
 
 When batch parsing an embedded JSON array as a table, set `metadata: true` to access the containing object. The loader yields an initial and final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result`.
@@ -207,23 +197,18 @@ Parsed batches are of the format:
 
 Supports table category options such as `batchType` and `batchSize`.
 
-| Option           | From                                                                                             | Type                                      | Default      | Description                                                                                                                                    |
-| ---------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `json.table`     | \[![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)]           | `boolean`                                 | `false`      | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing.          |
-| `json.backend`   | \[![Website shields.io](https://img.shields.io/badge/Experimental-orange.svg?style=flat-square)] | `'clarinet' \| 'fast'`                    | `'clarinet'` | Selects the streaming parser backend. Set to `'fast'` to opt into the faster streaming extractor.                                              |
-| `json.shape`     |                                                                                                  | `'object-row-table' \| 'array-row-table'` | `undefined`  | Selects row-table output for compatibility with existing table extraction workflows.                                                           |
-| `json.jsonpaths` | \[![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)]           | `string[]`                                | `[]`         | A list of JSON paths indicating the array that can be streamed.                                                                                |
-| `core.metadata`  | \[![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)]           | `boolean`                                 | `false`      | If `true`, yields an initial and final batch containing the partial and final result, i.e. the root object excluding the array being streamed. |
+| Option           | From                                                                                   | Type                                      | Default     | Description                                                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------- | ----------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `json.table`     | \[![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `boolean`                                 | `false`     | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing.          |
+| `json.shape`     |                                                                                        | `'object-row-table' \| 'array-row-table'` | `undefined` | Selects row-table output for compatibility with existing table extraction workflows.                                                           |
+| `json.jsonpaths` | \[![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]`                                | `[]`        | A list of JSON paths indicating the array that can be streamed.                                                                                |
+| `core.metadata`  | \[![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`                                 | `false`     | If `true`, yields an initial and final batch containing the partial and final result, i.e. the root object excluding the array being streamed. |
 
 ## JSONPaths[​](#jsonpaths "Direct link to JSONPaths")
 
 The loader implements a focused subset of the [IETF JSONPath specification (RFC 9535)](https://www.rfc-editor.org/rfc/rfc9535). See the [JSONPath support table](https://loaders.gl/next/docs/modules/tables/json/jsonpath.md) for the full list of supported and unsupported features.
 
 JSONPaths are used only to identify which array should be streamed, so selectors such as `$.features[*]` and `$.features[:]` are normalized to `$.features`. Descendant operators, element indexes, filters, and unions are not supported. Regardless of the paths provided, only arrays will be streamed.
-
-## Attribution[​](#attribution "Direct link to Attribution")
-
-This loader is based on a fork of dscape's [`clarinet`](https://github.com/dscape/clarinet) under BSD 2-clause license.
 
 ## Worker batches[​](#worker-batches "Direct link to Worker batches")
 

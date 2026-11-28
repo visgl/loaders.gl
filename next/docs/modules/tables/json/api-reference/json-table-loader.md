@@ -167,7 +167,31 @@ const table = await query(
 
 Use `createDataSource(input, [JSONTableLoader, CSVLoader])` to select a source from multiple loaders. JSON is identified by a `.json` filename or a Blob with the `application/json` MIME type. Pass `JSONTableLoader` directly for an unnamed Blob without a MIME type when the input is known to be JSON.
 
-The source downloads and decodes the entire JSON document before applying filters, projections, or limits.
+For a direct scan, pass `columns` to `JSONTableSource.read()` to decode only the requested columns and any columns used by the predicate. Simple comparisons, membership tests, and null checks on top-level Float64 and Boolean columns can filter rows before Arrow construction. Other predicates run on Arrow batches.
+
+By default, the source infers requested columns from the full document, including fields that appear late. Set `json.schemaInference: 'first-batch'` on the source to infer from the first 1,024 rows and exclude fields that first appear later. A supplied `json.schema` takes precedence over either inference mode.
+
+```
+import {JSONTableSource} from '@loaders.gl/tables/json';
+
+
+
+const source = new JSONTableSource(url, {
+
+  json: {schemaInference: 'first-batch'}
+
+});
+
+
+
+for await (const batch of source.read({columns: ['column1'], limit: 100})) {
+
+  console.log(batch.numRows);
+
+}
+```
+
+A source with a supplied schema or first-batch inference can stop reading once it returns the requested number of rows. Unrestricted SQL schema discovery with full inference still reads and caches the full table.
 
 ## Streaming[​](#streaming "Direct link to Streaming")
 
@@ -187,13 +211,12 @@ const batches = await loadInBatches('rows.json', JSONTableLoader, {
 });
 ```
 
-Arrow batches are native `RecordBatch` objects with a fixed column structure. A supplied `json.schema` determines that structure; otherwise it is inferred from the first nonempty batch. Each batch retains a metadata snapshot. Container properties accumulate in `schema.metadata.get('loaders.gl.containerJson')`, and a zero-row final batch carries any trailing refinements. Empty inputs retain their declared schema. The selected JSON path is available in `batch.metadata.get('jsonpath')`.
+The streaming parser writes JSON fields into Arrow column builders. Arrow batches are native `RecordBatch` objects with a fixed column structure. A supplied `json.schema` determines that structure; otherwise it is inferred from the first nonempty batch. Each batch retains a metadata snapshot. Container properties accumulate in `schema.metadata.get('loaders.gl.containerJson')`, and a zero-row final batch carries any trailing refinements. Empty inputs retain their declared schema. The selected JSON path is available in `batch.metadata.get('jsonpath')`.
 
 ## Options[​](#options "Direct link to Options")
 
 | Option                           | Type                                                 | Default                                                                                                                      | Description                                                                                                              |
 | -------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `json.backend`                   | `'clarinet' \| 'fast'`                               | `'clarinet'`                                                                                                                 | Selects the streaming parser backend.                                                                                    |
 | `json.shape`                     | `'arrow' \| 'object-row-table' \| 'array-row-table'` | `'arrow'`                                                                                                                    | Selects the requested table output shape.                                                                                |
 | `json.schema`                    | `Schema \| arrow.Schema`                             | `undefined`                                                                                                                  | Optional schema used when `json.shape` is `'arrow'`.                                                                     |
 | `json.arrowConversion`           | `object`                                             | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}` | Optional Arrow conversion policy.                                                                                        |
