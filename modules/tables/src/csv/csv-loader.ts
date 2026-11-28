@@ -16,14 +16,13 @@ import type {
 
 import {toArrayBufferIterator} from '@loaders.gl/core/loader-utils';
 import {
-  AsyncQueue,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
 } from '@loaders.gl/core/schema-utils';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
-import {DEFAULT_CSV_SHAPE} from './csv-loader-options';
+import {DEFAULT_CSV_SHAPE, type CSVRowScan} from './csv-loader-options';
 import {
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
@@ -63,10 +62,15 @@ export const CSVLoaderWithParser = {
       ? parseCSVTextAsArrow(text, options)
       : parseCSVText(text, options),
   parseTextSync: (text: string, options?: CSVLoaderOptions) => parseCSVTextSync(text, options),
-  parseInBatches: (asyncIterator, options?: CSVLoaderOptions) =>
+  parseInBatches: (
+    asyncIterator,
+    options?: CSVLoaderOptions,
+    _context?: unknown,
+    scan?: CSVRowScan
+  ) =>
     getCSVShape(options) === 'arrow'
       ? parseCSVInArrowBatches(asyncIterator, options)
-      : parseCSVInBatches(asyncIterator, options),
+      : parseCSVInBatches(asyncIterator, options, scan),
   serializeWorkerResult: serializeCSVWorkerResult,
   deserializeWorkerResult: deserializeCSVWorkerResult,
   serializeWorkerBatch: serializeCSVWorkerBatch,
@@ -201,11 +205,12 @@ function getCSVShape(options?: CSVLoaderOptions): NonNullable<CSVLoaderOptions['
 }
 
 // TODO - support batch size 0 = no batching/single batch?
-function parseCSVInBatches(
+async function* parseCSVInBatches(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
-  options?: CSVLoaderOptions
+  options?: CSVLoaderOptions,
+  scan?: CSVRowScan
 ): AsyncIterable<TableBatch> {
   // Papaparse does not support standard batch size handling
   // TODO - investigate papaparse chunks mode
@@ -224,7 +229,12 @@ function parseCSVInBatches(
     shape: getCSVShape(options)
   };
 
-  const asyncQueue = new AsyncQueue<TableBatch>();
+  const readyBatches: TableBatch[] = [];
+  const selectedColumns =
+    scan?.columns && !scan.columns.includes('__parsed_extra') ? new Set(scan.columns) : undefined;
+  let skipRows = scan?.offset ?? 0;
+  let selectedIndices: number[] | undefined;
+  let selectedIndexSet: ReadonlySet<number> | undefined;
 
   let isFirstRow: boolean = true;
   let headerRow: string[] | null = null;
@@ -262,6 +272,9 @@ function parseCSVInBatches(
     // - true doesn't work unless chunkSize is set: https://github.com/mholt/PapaParse/issues/465
     // - greedy doesn't work: https://github.com/mholt/PapaParse/issues/825
     skipEmptyLines: false,
+    shouldTypeField: selectedColumns
+      ? (field: string | number) => !selectedIndexSet || selectedIndexSet.has(Number(field))
+      : undefined,
 
     // step is called on every row
     // eslint-disable-next-line complexity, max-statements
@@ -328,29 +341,20 @@ function parseCSVInBatches(
 
     // complete is called when all rows have been read
     complete(results) {
-      try {
-        if (!schema && headerRow && pendingRows.length) {
-          initializeCSVBatchSchema(headerRow, getBatchShape(), geometryDetectionFinalized);
-        }
-        const bytesUsed = results.meta.cursor;
-        // Ensure any final (partial) batch gets emitted
-        const batch = tableBatchBuilder && tableBatchBuilder.getFinalBatch({bytesUsed});
-        if (batch) {
-          asyncQueue.enqueue(batch);
-        }
-      } catch (error) {
-        asyncQueue.enqueue(error as Error);
+      if (!schema && headerRow && pendingRows.length) {
+        initializeCSVBatchSchema(headerRow, getBatchShape(), geometryDetectionFinalized);
       }
-
-      asyncQueue.close();
+      const batch =
+        tableBatchBuilder && tableBatchBuilder.getFinalBatch({bytesUsed: results.meta.cursor});
+      if (batch) readyBatches.push(batch);
     }
   };
 
-  Papa.parse(toArrayBufferIterator(asyncIterator), config, AsyncIteratorStreamer);
-
-  // TODO - Does it matter if we return asyncIterable or asyncIterator
-  // return asyncQueue[Symbol.asyncIterator]();
-  return asyncQueue;
+  const streamer = new AsyncIteratorStreamer(config);
+  for await (const _chunk of streamer.parseChunks(toArrayBufferIterator(asyncIterator))) {
+    yield* readyBatches;
+    readyBatches.length = 0;
+  }
 
   /** Infers the schema once and emits any rows buffered for inference. */
   function initializeCSVBatchSchema(
@@ -373,6 +377,17 @@ function parseCSVInBatches(
       columns,
       detectedGeometryColumns
     );
+    if (selectedColumns && shape === 'object-row-table') {
+      const indices = columns.flatMap((column, index) =>
+        selectedColumns.has(column) ? [index] : []
+      );
+      selectedIndices = indices;
+      selectedIndexSet = new Set(indices);
+      schema = {...schema, fields: schema.fields.filter(field => selectedColumns.has(field.name))};
+      detectedGeometryColumns = detectedGeometryColumns.filter(column =>
+        indices.includes(column.columnIndex)
+      );
+    }
     isFirstRow = false;
     for (const [index, row] of normalizedRows.entries()) {
       addCSVBatchRow(row, shape, pendingRows[index].bytesUsed, emitFullBatches);
@@ -387,8 +402,14 @@ function parseCSVInBatches(
     bytesUsed: number,
     emitFullBatch = true
   ): void {
+    if (skipRows > 0) {
+      skipRows--;
+      return;
+    }
     let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;
-    if (shape === 'object-row-table' && headerRow && rowToAdd.length > headerRow.length) {
+    if (selectedIndices) {
+      batchRow = selectedIndices.map(index => rowToAdd[index]);
+    } else if (shape === 'object-row-table' && headerRow && rowToAdd.length > headerRow.length) {
       batchRow = convertToPapaObjectRow(rowToAdd, headerRow);
     }
 
@@ -399,15 +420,9 @@ function parseCSVInBatches(
         shape
       });
 
-    try {
-      tableBatchBuilder.addRow(batchRow);
-      const batch = emitFullBatch && tableBatchBuilder.getFullBatch({bytesUsed});
-      if (batch) {
-        asyncQueue.enqueue(batch);
-      }
-    } catch (error) {
-      asyncQueue.enqueue(error as Error);
-    }
+    tableBatchBuilder.addRow(batchRow);
+    const batch = emitFullBatch && tableBatchBuilder.getFullBatch({bytesUsed});
+    if (batch) readyBatches.push(batch);
   }
 
   function getBatchShape(): CSVBatchShape {
