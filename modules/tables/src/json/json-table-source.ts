@@ -93,7 +93,7 @@ export class JSONTableSource
       schema,
       capabilities: {
         table: {
-          predicate: declaredSchema ? 'pushdown+residual' : 'residual',
+          predicate: streaming ? 'pushdown+residual' : 'residual',
           projection: 'pushdown+residual',
           limit: streaming ? 'pushdown' : 'residual',
           streaming,
@@ -295,6 +295,13 @@ function planSimplePredicate(
   if (!('property' in property)) return undefined;
   const path = getColumnarPredicatePath(property);
   if (path.length !== 1 || property.casts?.length) return undefined;
+  const literal = predicate.args[1];
+  if (
+    literal instanceof Date ||
+    (Array.isArray(literal) && literal.some(value => value instanceof Date))
+  ) {
+    return undefined;
+  }
   const field = schema.fields.find(candidate => candidate.name === path[0]);
   // These scalar types preserve their logical value without Arrow storage coercions.
   if (!field || (field.type !== 'float64' && field.type !== 'bool')) return undefined;
