@@ -7,6 +7,7 @@ import {MemoryLog} from 'probe.gl/log';
 import {parse, load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import type {Schema} from '@loaders.gl/core/schema';
 import {JSONLoader, JSONTableLoader} from '@loaders.gl/tables/json';
+import {convertJSONToArrow} from '@loaders.gl/tables/json/api';
 import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 import type {JSONLoaderOptions, JSONTableLoaderOptions} from '@loaders.gl/tables/json';
 import {
@@ -1409,4 +1410,21 @@ test.each([
       }
     }).rejects.toThrow(SyntaxError);
   }
+});
+
+test('convertJSONToArrow writes object rows in schema order and clears missing values', () => {
+  const schema: Schema = {
+    fields: [
+      {name: 'label', type: 'utf8', nullable: true},
+      {name: 'id', type: 'float64', nullable: false}
+    ],
+    metadata: {}
+  };
+  const table = convertJSONToArrow([{id: 1, label: 'first'}, {id: 2}, {label: 'third', id: 3}], {
+    schema,
+    arrowConversion: {onMissingField: 'null'}
+  });
+  expect(table.schema.fields.map(field => field.name)).toEqual(['label', 'id']);
+  expect(Array.from(table.getChild('label')!)).toEqual(['first', null, 'third']);
+  expect(Array.from(table.getChild('id')!)).toEqual([1, 2, 3]);
 });
