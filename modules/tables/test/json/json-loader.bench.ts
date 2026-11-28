@@ -5,6 +5,8 @@
 import {JSONLoader} from '@loaders.gl/tables/json';
 import {load, loadInBatches, parse} from '@loaders.gl/core';
 
+import {ClarinetJSONReferenceLoader} from '../../../../website/src/alternate-loaders/json/reference-json-loaders';
+
 import clarinetBench from './lib/clarinet/clarinet.bench';
 
 const GEOJSON_URL = '@loaders.gl/tables/json/test/data/geojson-big.json';
@@ -28,13 +30,10 @@ export default async function jsonLoaderBench(suite) {
   });
 
   suite.addAsync(
-    'loadInBatches(JSONLoader, fast backend) - Streaming GeoJSON load',
+    'loadInBatches(Clarinet reference) - Streaming GeoJSON load',
     options,
     async () => {
-      const asyncIterator = await loadInBatches(GEOJSON_URL, JSONLoader, {
-        core: {worker: false},
-        json: {backend: 'fast'}
-      });
+      const asyncIterator = await loadInBatches(GEOJSON_URL, ClarinetJSONReferenceLoader);
       const data: unknown[] = [];
       for await (const batch of asyncIterator) {
         if (batch.shape === 'object-row-table') {

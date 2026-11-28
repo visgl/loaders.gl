@@ -4,25 +4,29 @@
 
 import {JSONLoader} from '@loaders.gl/tables/json/bundled';
 import type {JSONLoaderOptions} from '@loaders.gl/tables/json';
+import {_FastStreamingJSONParser, _parseJSONInBatches} from '@loaders.gl/tables/json/api';
+import StreamingJSONParser from './streaming-json-parser';
 
-/** Creates a caller-side reference loader for comparing the original row parsers. */
-function makeReferenceJSONLoader(backend: 'clarinet' | 'fast') {
+/** Creates a caller-side comparison loader for a reference row parser. */
+function makeReferenceJSONLoader(
+  backend: 'clarinet' | 'fast',
+  Parser: typeof StreamingJSONParser | typeof _FastStreamingJSONParser
+) {
   return {
     ...JSONLoader,
     id: `reference-json-${backend}`,
     worker: false,
-    /** Streams the selected row parser without worker transport. */
+    /** Streams the selected reference parser without worker transport. */
     parseInBatches(input: Parameters<typeof JSONLoader.parseInBatches>[0], options?: JSONLoaderOptions) {
-      return JSONLoader.parseInBatches(input, {
-        ...options,
-        json: {...options?.json, backend}
+      return _parseJSONInBatches(input, options ?? {}, {
+        parserFactory: parserOptions => new Parser(parserOptions)
       });
     }
   };
 }
 
-/** Website comparison equivalent to the experimental FastJSONLoader. */
-export const FastJSONReferenceLoader = makeReferenceJSONLoader('fast');
+/** Website reference equivalent to the experimental FastJSONLoader. */
+export const FastJSONReferenceLoader = makeReferenceJSONLoader('fast', _FastStreamingJSONParser);
 
-/** Website comparison using the legacy Clarinet parser. */
-export const ClarinetJSONReferenceLoader = makeReferenceJSONLoader('clarinet');
+/** Website reference using the legacy Clarinet parser. */
+export const ClarinetJSONReferenceLoader = makeReferenceJSONLoader('clarinet', StreamingJSONParser);

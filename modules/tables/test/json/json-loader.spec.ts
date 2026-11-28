@@ -22,19 +22,11 @@ import * as arrow from 'apache-arrow';
 const GEOJSON_PATH = '@loaders.gl/tables/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH =
   '@loaders.gl/tables/json/test/data/kepler-dataset-sf-incidents.json';
-const STREAMING_LOADER_CONFIGS: {
-  name: string;
-  options?: JSONLoaderOptions;
-}[] = [
-  {name: 'JSONLoader'},
-  {name: 'JSONLoader json.backend=fast', options: {json: {backend: 'fast'}}}
+const STREAMING_LOADER_CONFIGS: {name: string; options?: JSONLoaderOptions}[] = [
+  {name: 'JSONLoader'}
 ];
-const TABLE_STREAMING_LOADER_CONFIGS: {
-  name: string;
-  options?: JSONTableLoaderOptions;
-}[] = [
-  {name: 'JSONTableLoader'},
-  {name: 'JSONTableLoader json.backend=fast', options: {json: {backend: 'fast'}}}
+const TABLE_STREAMING_LOADER_CONFIGS: {name: string; options?: JSONTableLoaderOptions}[] = [
+  {name: 'JSONTableLoader'}
 ];
 const NESTED_JSON_TEXT = JSON.stringify({
   meta: {source: 'test'},
@@ -921,7 +913,6 @@ test('JSONTableLoader#parseInBatches(fast arrow preserves raw Utf8 JSON fields)'
   const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 3), {
     core: {batchSize: 1},
     json: {
-      backend: 'fast',
       shape: 'arrow',
       jsonpaths: ['$.items'],
       schema,
@@ -961,16 +952,6 @@ test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsin
       }),
     'sync parsing still rejects object values for Utf8 schema fields'
   ).toThrow(/expected string/);
-  const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 8), {
-    core: {batchSize: 1},
-    json: {shape: 'arrow', backend: 'clarinet', jsonpaths: ['$.items'], schema}
-  });
-  await expect(async () => {
-    for await (const _batch of iterator) {
-    }
-  }, 'clarinet streaming still rejects object values for Utf8 schema fields').rejects.toThrow(
-    /expected string/
-  );
 });
 test('NDJSONLoader#parseInBatches(arrow freezes inferred schema)', async () => {
   const iterator = BundledNDJSONLoader.parseInBatches?.(

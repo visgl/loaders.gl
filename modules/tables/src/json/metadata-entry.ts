@@ -26,7 +26,6 @@ export type {JSONWriterOptions} from './json-writer';
 export type {GeoJSONLoaderOptions} from './geojson-loader-definition';
 export type {GeoJSONWriterOptions} from './geojson-writer';
 export type {default as _JSONPath} from './lib/jsonpath/jsonpath';
-export type {default as _ClarinetParser} from './lib/clarinet/clarinet';
 export type {default as _FastStreamingJSONParser} from './lib/json-parser/fast-streaming-json-parser';
 export type {rebuildJsonObject as _rebuildJsonObject} from './lib/parsers/parse-json-in-batches';
 export type {JSONLoaderWithParser} from '../json-loader';

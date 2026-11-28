@@ -48,12 +48,9 @@ test('GeoJSON final Arrow batch refines trailing CRS and container metadata', as
   expect(table?.numRows).toBe(1);
 });
 
-test.each([
-  'clarinet',
-  'fast'
-] as const)('JSON Arrow streaming (%s) retains a trailing container without emitting legacy envelopes', async backend => {
+test('JSON Arrow streaming retains a trailing container without emitting legacy envelopes', async () => {
   const parts = ['{"rows":[{"value":1}', '],"title":', '"final"}'];
-  const options = {json: {shape: 'arrow' as const, backend}, core: {batchSize: 1}};
+  const options = {json: {shape: 'arrow' as const}, core: {batchSize: 1}};
   const batches = [];
   for await (const batch of JSONTableLoaderWithParser.parseInBatches(chunks(parts), options))
     batches.push(batch);
@@ -91,7 +88,6 @@ test('Fast JSON Arrow writes scalar fields directly across chunk and field-order
   const options = {
     json: {
       shape: 'arrow' as const,
-      backend: 'fast' as const,
       jsonpaths: ['$.rows'],
       schema: {
         fields: [
@@ -122,7 +118,7 @@ test('Fast JSON Arrow writes scalar fields directly across chunk and field-order
 test('Fast JSON Arrow infers ordered columns from the whole first batch', async () => {
   const parts = ['[{"2":2,"1":1},{"1":3,"2":4,"label":"later"},', '{"1":5,"2":6,"label":"last"}]'];
   const options = {
-    json: {shape: 'arrow' as const, backend: 'fast' as const},
+    json: {shape: 'arrow' as const},
     core: {batchSize: 2}
   };
   const batches: RecordBatch[] = [];

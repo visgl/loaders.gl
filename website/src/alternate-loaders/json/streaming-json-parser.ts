@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {default as JSONParser} from './json-parser';
-import JSONPath from '../jsonpath/jsonpath';
-import type {StreamingJSONParserOptions} from './streaming-json-parser-types';
+import {_JSONPath as JSONPath} from '@loaders.gl/tables/json/api';
+
 
 /**
  * The `StreamingJSONParser` looks for the first array in the JSON structure.
@@ -22,7 +22,7 @@ export default class StreamingJSONParser extends JSONParser {
   /** Root object used by metadata batches when streaming an embedded array. */
   private topLevelObject: object | null = null;
 
-  constructor(options: StreamingJSONParserOptions = {}) {
+  constructor(options: {jsonpaths?: string[]} = {}) {
     super({
       onopenarray: () => {
         if (!this.streamingArray) {

@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import ClarinetParser from '../../../../src/json/lib/clarinet/clarinet';
+import ClarinetParser from '../../../../../../website/src/alternate-loaders/json/clarinet/clarinet';
 import {fetchFile} from '@loaders.gl/core';
 const SAMPLE_PATH = '@loaders.gl/tables/json/test/data/clarinet/sample.json';
 test('clarinet#track position', async () => {

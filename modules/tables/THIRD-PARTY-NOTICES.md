@@ -2,8 +2,6 @@
 
 Matthew Holt's [PapaParse](https://github.com/mholt/PapaParse) 5.0.0-beta.0 supplies the adapted [CSV parser](./src/csv/papaparse): [MIT license](./third-party-licenses/papaparse-LICENSE).
 
-Nuno Job and Isaac Z. Schlueter's Clarinet supplies streaming JSON parsing: [BSD notice and full terms](./src/json/lib/clarinet/LICENSE).
-
 ironSource's parquetjs and the parquets fork supply the retained [Parquet implementation](./src/parquet/parquetjs): [MIT license](./src/parquet/parquetjs/LICENSE). Hyperparam contributors' hyparquet supplies adapted delta decoders: [source](./src/parquet/parquetjs/codecs/delta.ts), [MIT license](./third-party-licenses/hyparquet-LICENSE). parquet-go inspired documentation, not the retained JavaScript parser license.
 
 Kyle Barron and parquet-wasm contributors supply the optional WebAssembly reader/writer; SheetJS supplies optional xlsx. Those separately installed libraries retain their own licenses. Apache Arrow supplies columnar interchange. Paul Taylor at Graphistry provided extensive technical advice for the Arrow integration.

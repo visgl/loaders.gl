@@ -94,14 +94,8 @@ memory. NDJSON keeps one inferred Arrow schema across batches, or uses `ndjson.s
 JSONTable uses `json.schema`. Both portable loaders.gl schemas and Apache Arrow `Schema` instances
 are supported, including schema/field metadata and conversion policies.
 
-JSON supports both `clarinet` and `fast` backends, JSONPath selection, and partial/final container
-metadata, with the selected backend's existing behavior. The fast backend currently retains
-container fields before the selected array; use clarinet when trailing container fields are needed.
-Worker results contain owned Arrow column buffers or binary JSON buffers and small transport descriptors;
-decoded row arrays and container objects are never structured-cloned across the boundary. The caller
-hydrates Arrow tables or decodes JSON frames. JSON frames preserve negative zero, nonfinite parser
-results, and undefined metadata fields, and do not coerce heterogeneous rows into an Arrow schema. Worker progress counts decoded rows within the `decode` phase; it is not a byte or
-overall download percentage.
+JSON supports JSONPath selection and partial/final container metadata. The streaming parser
+retains container properties on either side of the selected array.
 
 Breaking out of the loop closes the input and releases the worker. Aborting also interrupts a
 blocked input read and rejects with the caller's reason; underlying iterator cleanup is best effort
@@ -113,9 +107,10 @@ asset by default, so bundling the application does not require copying a worker 
 self-host, set `json.workerUrl`, `json-table.workerUrl`, or `ndjson.workerUrl` for the chosen loader.
 Node workers remain experimental and require
 `core._nodeWorkers: true`; browser and CommonJS Node worker bundles are included in the package.
-`GeoJSONLoader` and `NDGeoJSONLoader` do not opt into this worker. Use `JSONLoader` with
-`json.backend: 'fast'` in place of the experimental `FastJSONLoader`. Use `JSONTableLoader` with
-the same backend for fast Arrow worker batches.
+`GeoJSONLoader` and `NDGeoJSONLoader` do not opt into this worker. The experimental
+`FastJSONLoader` and the Clarinet comparison implementation now live under
+`website/src/alternate-loaders/json`. Use `JSONLoader` for streamed JSON rows and
+`JSONTableLoader` for streamed Arrow batches.
 
 For configuration formats with the same general object/array data model, see the dependency-free
 [`YAMLLoader`](/docs/modules/documents/config/api-reference/yaml-loader) and
@@ -127,7 +122,6 @@ For configuration formats with the same general object/array data model, see the
   tone="yellow"
 />
 
-`JSONLoader` exposes `json.backend: 'fast'` as an experimental opt-in backend for streaming extraction. This keeps atomic JSON parsing on the standard `JSON.parse` path while using the faster streaming parser for `loadInBatches`.
 
 ## Installation
 

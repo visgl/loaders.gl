@@ -7,7 +7,7 @@ import {JSONTableSource, type JSONTableSourceOptions} from './json-table-source'
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
-import {updateNativeArrowTableMetadata, isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
+import {updateNativeArrowTableMetadata} from '@loaders.gl/core/schema-utils';
 import {parseDirectJSONArrowInBatches} from './lib/parsers/parse-direct-json-arrow';
 import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
 
@@ -17,14 +17,11 @@ import {
   deserializeJSONWorkerResult
 } from './lib/json-worker-transport';
 import type {CoreAPI, LoaderWithParser} from '@loaders.gl/core/loader-utils';
-import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
-import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
 import {getJSONRowTable} from './lib/parsers/convert-json-to-arrow';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {
   convertRowTableToArrowTable,
-  convertTableBatchesToArrow,
   normalizeJSONArrowSchema
 } from './lib/parsers/convert-row-table-to-arrow';
 import type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-types';
@@ -116,14 +113,9 @@ function parseInBatches(
   options?: JSONTableLoaderOptions
 ): AsyncIterable<TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = normalizeJSONTableLoaderOptions(options);
-  const rawJsonUtf8Fields = getRawJsonUtf8Fields(jsonOptions);
-  const parseOptions =
-    jsonOptions.json?.backend === 'fast'
-      ? {parserFactory: getFastStreamingJSONParserFactory(rawJsonUtf8Fields)}
-      : undefined;
   validateJSONTableArrowOptions(jsonOptions);
   const json = jsonOptions.json;
-  if (json?.shape === 'arrow' && json.backend === 'fast') {
+  if (json?.shape === 'arrow') {
     return parseDirectJSONArrowInBatches(
       asyncIterator,
       json.schema ? normalizeJSONArrowSchema(json.schema) : undefined,
@@ -133,31 +125,7 @@ function parseInBatches(
     );
   }
 
-  const rowBatches = parseJSONInBatches(
-    asyncIterator,
-    getRowBatchJSONOptions(jsonOptions),
-    parseOptions
-  );
-
-  if (jsonOptions.json?.shape !== 'arrow') {
-    return rowBatches;
-  }
-
-  const arrowBatches = convertTableBatchesToArrow(rowBatches, {
-    schema: jsonOptions.json.schema,
-    arrowConversion: jsonOptions.json.arrowConversion,
-    log: getLoaderLog(jsonOptions)
-  });
-  return makeNativeJSONBatches(arrowBatches);
-}
-
-/** Yields native data batches and schema refinements from the JSON stream. */
-async function* makeNativeJSONBatches(
-  batches: AsyncIterable<ArrowTableBatch | MetadataBatch | JSONBatch>
-): AsyncIterable<ArrowTableBatch> {
-  for await (const batch of batches) {
-    if (isArrowRecordBatch(batch)) yield batch;
-  }
+  return parseJSONInBatches(asyncIterator, getRowBatchJSONOptions(jsonOptions));
 }
 
 /**
@@ -186,7 +154,6 @@ function getRawJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOptions {
   return {
     ...options,
     json: {
-      backend: options.json?.backend,
       shape: undefined,
       table: false,
       jsonpaths: options.json?.jsonpaths
@@ -208,39 +175,11 @@ function getRowBatchJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOpti
       metadata: options.json?.shape === 'arrow' || options.core?.metadata
     },
     json: {
-      backend: options.json?.backend,
       shape: options.json?.shape === 'array-row-table' ? 'array-row-table' : 'object-row-table',
       table: true,
       jsonpaths: options.json?.jsonpaths
     }
   };
-}
-
-/**
- * Returns a factory for the fast streaming JSON parser backend.
- *
- * @returns Streaming parser factory used by the `fast` backend.
- */
-function getFastStreamingJSONParserFactory(
-  rawJsonUtf8Fields: string[]
-): StreamingJSONParserFactory {
-  return parserOptions =>
-    new FastStreamingJSONParser({...parserOptions, rawJsonUtf8Fields, strict: true});
-}
-
-/**
- * Resolves row-level Utf8 schema fields eligible for fast raw JSON source capture.
- *
- * @param options - Normalized JSON table loader options.
- * @returns Row-level Utf8 field names for streamed fast Arrow parsing.
- */
-function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
-  if (options.json?.shape !== 'arrow' || !options.json.schema) {
-    return [];
-  }
-
-  const schema = normalizeJSONArrowSchema(options.json.schema);
-  return schema.fields.filter(field => field.type === 'utf8').map(field => field.name);
 }
 
 /**

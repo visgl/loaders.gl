@@ -21,8 +21,6 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type JSONTableLoaderOptions = LoaderOptions & {
   /** JSON table parser options. */
   json?: {
-    /** Selects the streaming JSON parser backend. */
-    backend?: 'clarinet' | 'fast';
     /** Requested table output shape. */
     shape?: 'arrow' | 'object-row-table' | 'array-row-table';
     /** JSON paths identifying arrays that can be streamed as row batches. */
@@ -67,7 +65,6 @@ export const JSONTableLoaderDefinition = {
   workerInBatches: true,
   options: {
     json: {
-      backend: 'fast',
       shape: 'arrow',
       jsonpaths: [],
       schema: undefined,

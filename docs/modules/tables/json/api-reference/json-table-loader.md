@@ -150,13 +150,12 @@ const batches = await loadInBatches('rows.json', JSONTableLoader, {
 });
 ```
 
-Arrow batches are native `RecordBatch` objects with a fixed column structure. A supplied `json.schema` determines that structure; otherwise it is inferred from the first nonempty batch. Each batch retains a metadata snapshot. Container properties accumulate in `schema.metadata.get('loaders.gl.containerJson')`, and a zero-row final batch carries any trailing refinements. Empty inputs retain their declared schema. The selected JSON path is available in `batch.metadata.get('jsonpath')`.
+The streaming parser writes JSON fields into Arrow column builders. Arrow batches are native `RecordBatch` objects with a fixed column structure. A supplied `json.schema` determines that structure; otherwise it is inferred from the first nonempty batch. Each batch retains a metadata snapshot. Container properties accumulate in `schema.metadata.get('loaders.gl.containerJson')`, and a zero-row final batch carries any trailing refinements. Empty inputs retain their declared schema. The selected JSON path is available in `batch.metadata.get('jsonpath')`.
 
 ## Options
 
 | Option                 | Type                                                       | Default                                                                                                                                 | Description |
 | ---------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `json.backend`         | `'clarinet' \| 'fast'`                                    | `'fast'`                                                                                                                            | Selects the streaming parser backend. |
 | `json.shape`           | `'arrow' \| 'object-row-table' \| 'array-row-table'` | `'arrow'` | Selects the requested table output shape. |
 | `json.schema`          | `Schema \| arrow.Schema`                                   | `undefined`                                                                                                                             | Optional schema used when `json.shape` is `'arrow'`. |
 | `json.arrowConversion` | `object`                                                   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`         | Optional Arrow conversion policy. |

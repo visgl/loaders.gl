@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
-import StreamingJSONParser from '../../../../src/json/lib/json-parser/streaming-json-parser';
+import StreamingJSONParser from '../../../../../../website/src/alternate-loaders/json/streaming-json-parser';
 import FastStreamingJSONParser from '../../../../src/json/lib/json-parser/fast-streaming-json-parser';
 type StreamingParserConstructor = new (options?: {
   jsonpaths?: string[];
