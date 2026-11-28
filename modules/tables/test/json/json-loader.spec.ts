@@ -963,7 +963,7 @@ test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsin
   ).toThrow(/expected string/);
   const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 8), {
     core: {batchSize: 1},
-    json: {shape: 'arrow', jsonpaths: ['$.items'], schema}
+    json: {shape: 'arrow', backend: 'clarinet', jsonpaths: ['$.items'], schema}
   });
   await expect(async () => {
     for await (const _batch of iterator) {
@@ -1344,4 +1344,20 @@ test('JSON table recovery uses the operation logger and respects explicit suppre
   ]);
   await parse(input, JSONTableLoader, {json, core: {worker: false, log: null, log}});
   expect(log.messages).toHaveLength(1);
+});
+
+test.each([
+  '[{"value":1},{"value":}]',
+  '[{"value":1}',
+  '[{"value":1} {"value":2}]',
+  '[{"value":1},]',
+  '{"rows":[{"value":1}],"tail":}'
+])('default streamed JSON loaders reject malformed input %s', async text => {
+  for (const loader of [BundledJSONLoader, BundledJSONTableLoader]) {
+    await expect(async () => {
+      for await (const _batch of loader.parseInBatches!(makeChunkedTextIterator(text, 8))) {
+        // Drain the stream to validate the closing array and wrapper.
+      }
+    }).rejects.toThrow(SyntaxError);
+  }
 });

@@ -45,6 +45,7 @@ export type FastJSONElementConsumer = {
 export default class FastStreamingJSONParser implements StreamingJSONParserLike {
   private readonly allowedJsonPaths: string[][];
   private readonly trackMetadata: boolean;
+  private readonly strict: boolean;
   /** Row-level fields that keep nested object or array JSON source as Utf8 text. */
   private readonly rawJsonUtf8Fields: Set<string>;
 
@@ -67,15 +68,17 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   private streamEscape = false;
   private streamUnicodeDigitsRemaining = 0;
   private targetArrayClosed = false;
+  private expecting: 'first-or-end' | 'element' | 'separator' = 'first-or-end';
 
   private fullText = '';
 
   constructor(
-    options: StreamingJSONParserOptions = {},
+    options: StreamingJSONParserOptions & {strict?: boolean} = {},
     private readonly elementConsumer?: FastJSONElementConsumer
   ) {
     this.allowedJsonPaths = (options.jsonpaths || []).map(jsonpath => new JSONPath(jsonpath).path);
-    this.trackMetadata = Boolean(options.metadata);
+    this.strict = Boolean(options.strict);
+    this.trackMetadata = Boolean(options.metadata || this.strict);
     this.rawJsonUtf8Fields = new Set(options.rawJsonUtf8Fields || []);
   }
 
@@ -112,16 +115,23 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   close(): void {
     if (this.mode === 'stream') {
       this.parseStreamBuffer();
+      if (this.strict && !this.targetArrayClosed) {
+        throw new SyntaxError('Unexpected end of streamed JSON array');
+      }
     }
 
     if (!this.trackMetadata) {
       return;
     }
 
-    try {
+    if (this.strict) {
       this.finalResult = JSON.parse(this.fullText);
-    } catch {
-      this.finalResult = this.partialResult;
+    } else {
+      try {
+        this.finalResult = JSON.parse(this.fullText);
+      } catch {
+        this.finalResult = this.partialResult;
+      }
     }
   }
 
@@ -418,11 +428,22 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       const character = this.streamBuffer[index];
 
       if (this.streamElementType === 'none') {
-        if (isWhitespace(character) || character === ',') {
+        if (isWhitespace(character)) {
+          index++;
+          continue;
+        }
+        if (character === ',') {
+          if (this.strict && this.expecting !== 'separator') {
+            throw new SyntaxError('Unexpected comma in streamed JSON array');
+          }
+          this.expecting = 'element';
           index++;
           continue;
         }
         if (character === ']') {
+          if (this.strict && this.expecting === 'element') {
+            throw new SyntaxError('Unexpected trailing comma in streamed JSON array');
+          }
           this.targetArrayClosed = true;
           this.mode = 'after';
           index++;
@@ -432,8 +453,12 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
           continue;
         }
 
+        if (this.strict && this.expecting === 'separator') {
+          throw new SyntaxError('Expected a comma between streamed JSON rows');
+        }
         const nextOffset = this.elementConsumer?.match(this.streamBuffer, index) ?? index;
         if (nextOffset > index) {
+          this.expecting = 'separator';
           index = nextOffset;
           continue;
         }
@@ -533,16 +558,21 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       return;
     }
 
+    this.expecting = 'separator';
     if (this.elementConsumer) {
       this.elementConsumer.consume(this.streamElementBuffer);
       this.resetStreamElement();
       return;
     }
 
-    try {
+    if (this.strict) {
       this.emittedRows.push(parseStreamElement(this.streamElementBuffer, this.rawJsonUtf8Fields));
-    } catch {
-      // Ignore incomplete elements until more data arrives.
+    } else {
+      try {
+        this.emittedRows.push(parseStreamElement(this.streamElementBuffer, this.rawJsonUtf8Fields));
+      } catch {
+        // Preserve the reference parser's tolerant behavior.
+      }
     }
     this.resetStreamElement();
   }

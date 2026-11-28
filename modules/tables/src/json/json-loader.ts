@@ -67,7 +67,7 @@ function parseInBatches(
  * @returns Parser factory that constructs `FastStreamingJSONParser` instances.
  */
 function getFastStreamingJSONParserFactory(): StreamingJSONParserFactory {
-  return parserOptions => new FastStreamingJSONParser(parserOptions);
+  return parserOptions => new FastStreamingJSONParser({...parserOptions, strict: true});
 }
 
 export type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-definition';

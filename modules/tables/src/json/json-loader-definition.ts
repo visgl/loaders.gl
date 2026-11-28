@@ -54,7 +54,7 @@ export const JSONLoaderDefinition = {
   workerInBatches: true,
   options: {
     json: {
-      backend: 'clarinet',
+      backend: 'fast',
       shape: undefined,
       table: false,
       jsonpaths: []

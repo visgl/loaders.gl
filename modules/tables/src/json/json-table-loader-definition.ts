@@ -67,7 +67,7 @@ export const JSONTableLoaderDefinition = {
   workerInBatches: true,
   options: {
     json: {
-      backend: 'clarinet',
+      backend: 'fast',
       shape: 'arrow',
       jsonpaths: [],
       schema: undefined,

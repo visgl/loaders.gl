@@ -700,12 +700,14 @@ export function makeJSONArrowSchemaInferer(): {
 export function makeJSONArrowFieldAppender(
   builder: ArrowTableBuilder,
   schema: Schema,
-  allowMissingNullableFields = false
+  options: JSONArrowConversionOptions
 ): (fields: ReadonlyMap<string, unknown>) => void {
   const schemaFieldNames = new Set(schema.fields.map(field => field.name));
-  const conversionOptions = DEFAULT_ARROW_CONVERSION_OPTIONS;
-  const conversionLogger = makeConversionLogger(undefined, conversionOptions.logRecoveries);
-  const normalizationOptions = {allowMissingNullableFields};
+  const conversionOptions = normalizeArrowConversionOptions(options.arrowConversion);
+  const conversionLogger = makeConversionLogger(options.log, conversionOptions.logRecoveries);
+  const normalizationOptions = {
+    allowMissingNullableFields: options.allowMissingNullableFields ?? false
+  };
   const values = new Array<unknown>(schema.fields.length);
   return fields => {
     for (const name of fields.keys()) {

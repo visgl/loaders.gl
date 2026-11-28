@@ -123,12 +123,13 @@ function parseInBatches(
       : undefined;
   validateJSONTableArrowOptions(jsonOptions);
   const json = jsonOptions.json;
-  if (json?.shape === 'arrow' && json.backend === 'fast' && !json.arrowConversion) {
+  if (json?.shape === 'arrow' && json.backend === 'fast') {
     return parseDirectJSONArrowInBatches(
       asyncIterator,
       json.schema ? normalizeJSONArrowSchema(json.schema) : undefined,
       json.jsonpaths,
-      jsonOptions.core?.batchSize ?? 'auto'
+      jsonOptions.core?.batchSize ?? 'auto',
+      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)}
     );
   }
 
@@ -223,7 +224,8 @@ function getRowBatchJSONOptions(options: JSONTableLoaderOptions): JSONLoaderOpti
 function getFastStreamingJSONParserFactory(
   rawJsonUtf8Fields: string[]
 ): StreamingJSONParserFactory {
-  return parserOptions => new FastStreamingJSONParser({...parserOptions, rawJsonUtf8Fields});
+  return parserOptions =>
+    new FastStreamingJSONParser({...parserOptions, rawJsonUtf8Fields, strict: true});
 }
 
 /**

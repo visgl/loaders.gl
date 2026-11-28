@@ -156,7 +156,7 @@ Arrow batches are native `RecordBatch` objects with a fixed column structure. A 
 
 | Option                 | Type                                                       | Default                                                                                                                                 | Description |
 | ---------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `json.backend`         | `'clarinet' \| 'fast'`                                    | `'clarinet'`                                                                                                                            | Selects the streaming parser backend. |
+| `json.backend`         | `'clarinet' \| 'fast'`                                    | `'fast'`                                                                                                                            | Selects the streaming parser backend. |
 | `json.shape`           | `'arrow' \| 'object-row-table' \| 'array-row-table'` | `'arrow'` | Selects the requested table output shape. |
 | `json.schema`          | `Schema \| arrow.Schema`                                   | `undefined`                                                                                                                             | Optional schema used when `json.shape` is `'arrow'`. |
 | `json.arrowConversion` | `object`                                                   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`         | Optional Arrow conversion policy. |

@@ -12,7 +12,8 @@ import FastStreamingJSONParser, {
 import {
   makeEmptyFieldArrowTable,
   makeJSONArrowFieldAppender,
-  makeJSONArrowSchemaInferer
+  makeJSONArrowSchemaInferer,
+  type JSONArrowConversionOptions
 } from './convert-row-table-to-arrow';
 import {getJSONContainerMetadata} from './json-container-metadata';
 
@@ -62,15 +63,18 @@ export async function* parseDirectJSONArrowInBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   declaredSchema: Schema | undefined,
   jsonpaths: string[] | undefined,
-  batchSize: number | 'auto'
+  batchSize: number | 'auto',
+  options: JSONArrowConversionOptions
 ): AsyncIterable<RecordBatch> {
+  const builderOptions = {viewTypes: options.arrowConversion?.viewTypes};
   let schema = declaredSchema;
-  let builder = schema ? new ArrowTableBuilder(schema) : undefined;
+  let builder = schema ? new ArrowTableBuilder(schema, builderOptions) : undefined;
   let matcher = schema ? compileDirectJSONArrowRow(schema) : null;
   let decoders = schema?.fields.map(
     field => SCALAR_DECODERS[field.type as keyof typeof SCALAR_DECODERS]
   );
-  let appendFields = builder && schema ? makeJSONArrowFieldAppender(builder, schema) : undefined;
+  let appendFields =
+    builder && schema ? makeJSONArrowFieldAppender(builder, schema, options) : undefined;
   const inferer = makeJSONArrowSchemaInferer();
   const columns = new Map<string, unknown[]>();
   let inferredRows = 0;
@@ -84,12 +88,15 @@ export async function* parseDirectJSONArrowInBatches(
   /** Freezes the inferred schema and appends the buffered columns to their Arrow builders. */
   function finishInference(): void {
     schema = inferer.getSchema();
-    builder = new ArrowTableBuilder(schema);
+    builder = new ArrowTableBuilder(schema, builderOptions);
     matcher = compileDirectJSONArrowRow(schema);
     decoders = schema.fields.map(
       field => SCALAR_DECODERS[field.type as keyof typeof SCALAR_DECODERS]
     );
-    const appendInitialFields = makeJSONArrowFieldAppender(builder, schema, true);
+    const appendInitialFields = makeJSONArrowFieldAppender(builder, schema, {
+      ...options,
+      allowMissingNullableFields: true
+    });
     for (let row = 0; row < inferredRows; row++) {
       fields.clear();
       for (const [name, column] of columns) {
@@ -99,7 +106,7 @@ export async function* parseDirectJSONArrowInBatches(
     }
     columns.clear();
     inferredRows = 0;
-    appendFields = makeJSONArrowFieldAppender(builder, schema);
+    appendFields = makeJSONArrowFieldAppender(builder, schema, options);
   }
 
   /** Queues the current batch with the frozen schema. */
@@ -137,37 +144,34 @@ export async function* parseDirectJSONArrowInBatches(
   }
 
   const parser = new FastStreamingJSONParser(
-    {jsonpaths, metadata: true},
+    {jsonpaths, metadata: true, strict: true},
     {
       match,
       consume(text) {
         if (match(text, 0) > 0) return;
         fields.clear();
-        try {
-          if (text[0] === '[') {
-            const values: unknown[] = JSON.parse(text);
-            batchFieldNames ??= values.map((_value, index) => `column${index + 1}`);
-            for (let index = 0; index < batchFieldNames.length; index++) {
-              fields.set(batchFieldNames[index], values[index]);
-            }
-          } else if (text[0] !== '{') {
-            const value: unknown = JSON.parse(text);
-            if (typeof value === 'string') {
-              for (let index = 0; index < value.length; index++) {
-                fields.set(String(index), value[index]);
-              }
-            }
-          } else if (
-            !visitJSONObjectFields(text, (name, start, end) => {
-              const source = text.slice(start, end);
-              const raw = (source[0] === '{' || source[0] === '[') && rawJSONFields.has(name);
-              fields.set(name, raw ? source : JSON.parse(source));
-            })
-          ) {
-            return;
+        if (text[0] === '[') {
+          const values: unknown[] = JSON.parse(text);
+          batchFieldNames ??= values.map((_value, index) => `column${index + 1}`);
+          for (let index = 0; index < batchFieldNames.length; index++) {
+            fields.set(batchFieldNames[index], values[index]);
           }
-        } catch {
-          return;
+        } else if (text[0] !== '{') {
+          const value: unknown = JSON.parse(text);
+          if (typeof value === 'string') {
+            for (let index = 0; index < value.length; index++) {
+              fields.set(String(index), value[index]);
+            }
+          }
+        } else if (
+          !visitJSONObjectFields(text, (name, start, end) => {
+            const source = text.slice(start, end);
+            const value: unknown = JSON.parse(source);
+            const raw = (source[0] === '{' || source[0] === '[') && rawJSONFields.has(name);
+            fields.set(name, raw ? source : value);
+          })
+        ) {
+          throw new SyntaxError('Invalid object in streamed JSON array');
         }
         batchFieldNames ??= orderJSONObjectFieldNames(fields.keys());
         if (appendFields) {
