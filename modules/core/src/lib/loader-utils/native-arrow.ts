@@ -5,6 +5,8 @@
 import type * as arrow from 'apache-arrow';
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/core/loader-utils';
 
+const ARROW_RECORD_BATCH_BRAND = Symbol.for('apache-arrow/RecordBatch');
+
 /** Finds the option namespace used by a loader for shape selection. */
 export function getShapeOptionKey(loader: Loader): string | undefined {
   const keys = Object.keys(loader.options || {}).filter(key => {
@@ -78,7 +80,7 @@ export function isArrowRecordBatch(value: unknown): value is arrow.RecordBatch {
   if (!value || typeof value !== 'object') {
     return false;
   }
-  if ((value as Record<symbol, unknown>)[Symbol.for('apache-arrow/RecordBatch')] === true) {
+  if ((value as Record<symbol, unknown>)[ARROW_RECORD_BATCH_BRAND] === true) {
     return true;
   }
   // Earlier Arrow releases do not brand their record batches with the shared symbol.
