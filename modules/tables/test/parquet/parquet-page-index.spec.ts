@@ -137,7 +137,7 @@ describe('Parquet page-index pruning', () => {
       const source = createRemoteSource(pageIndexFixture, {core: {worker}});
       const metadata = await source.getMetadata();
       const before = source.getTelemetry().requestedBytes;
-      const selectedRows = [SELECTED_ROW_START, SELECTED_ROW_START + 2];
+      const selectedRows = [100, 101, SELECTED_ROW_START + 2];
       try {
         const batches = await collectBatches(
           source.read({
@@ -159,6 +159,39 @@ describe('Parquet page-index pruning', () => {
       }
     }
   );
+
+  test('falls back to the whole projected chunk when its offset index is unreadable', async () => {
+    const originalSource = createRemoteSource(pageIndexFixture, {core: {worker: false}});
+    const {offsetIndexOffset, offsetIndexByteLength, compressedByteLength} = getColumnMetadata(
+      await originalSource.getMetadata(),
+      'payload'
+    );
+    await originalSource.close();
+    expect(offsetIndexOffset).toBeGreaterThan(0);
+    expect(offsetIndexByteLength).toBeGreaterThan(0);
+    const fixture = pageIndexFixture.slice(0);
+    new Uint8Array(fixture).fill(0xff, offsetIndexOffset!, offsetIndexOffset! + offsetIndexByteLength!);
+
+    const source = createRemoteSource(fixture, {core: {worker: false}});
+    try {
+      await source.getMetadata();
+      const before = source.getTelemetry().requestedBytes;
+      const batches = await collectBatches(
+        source.read({
+          columns: ['payload'],
+          predicate: {op: '=', args: [{property: 'id'}, SELECTED_ROW_START]}
+        })
+      );
+      expect(getBatchValues(batches, 'payload')).toEqual([
+        `payload-${SELECTED_ROW_START}-${'-'.repeat(20)}`
+      ]);
+      expect(source.getTelemetry().requestedBytes - before).toBeGreaterThanOrEqual(
+        compressedByteLength
+      );
+    } finally {
+      await source.close();
+    }
+  });
 
   test('exposes page-index and byte-range decisions in the physical scan plan', async () => {
     const source = createRemoteSource(pageIndexFixture, {core: {worker: false}});
