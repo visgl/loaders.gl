@@ -12,6 +12,7 @@ import {
   deserializeBinaryJSON,
   type BinaryJSONResult
 } from './json-binary-transport';
+import {deserializeJSONRowOffsetBatch, isJSONRowOffsetBatch} from './json-row-offset-transport';
 import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import {normalizeJSONArrowSchema, type JSONArrowSchema} from './parsers/convert-row-table-to-arrow';
 
@@ -32,6 +33,7 @@ export function serializeJSONWorkerOptions(options: LoaderOptions): LoaderOption
 
 /** Owns all outgoing Arrow buffers so retained parser state cannot be detached by a transfer. */
 export function serializeJSONWorkerBatch(batch: unknown): unknown {
+  if (isJSONRowOffsetBatch(batch)) return batch;
   if (batch instanceof Table || batch instanceof RecordBatch) {
     return serializeNativeArrowWorkerResult(batch);
   }
@@ -40,6 +42,7 @@ export function serializeJSONWorkerBatch(batch: unknown): unknown {
 
 /** Hydrates transferred columns or decodes binary JSON on the caller. */
 export function deserializeJSONWorkerResult(result: unknown) {
+  if (isJSONRowOffsetBatch(result)) return deserializeJSONRowOffsetBatch(result);
   if ((result as BinaryJSONResult)?.transport === 'json-utf8') {
     return deserializeBinaryJSON(result as BinaryJSONResult);
   }
