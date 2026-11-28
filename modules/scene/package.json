@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/scene",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "glTF, GLB, OBJ, MTL, OpenUSD, and Draco geometry loaders and writers",
   "license": "MIT",
   "type": "module",
@@ -239,8 +239,8 @@
     "apache-arrow": ">= 17.0.0"
   },
   "dependencies": {
-    "@loaders.gl/documents": "5.0.2",
-    "@loaders.gl/images": "5.0.2",
+    "@loaders.gl/documents": "5.0.3",
+    "@loaders.gl/images": "5.0.3",
     "@math.gl/core": "^5.0.5",
     "@math.gl/geometry": "^5.0.5",
     "zod": "^4.1.12"
