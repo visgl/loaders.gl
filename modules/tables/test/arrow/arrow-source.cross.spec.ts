@@ -115,3 +115,60 @@ test('ArrowTableSource reads responses without a streaming body', async () => {
   expect(batches).toHaveLength(1);
   expect(batches[0].getChild('value')?.get(0)).toBe(7);
 });
+
+test('Arrow IPC file offset skips entire batch bodies and slices the first matching batch', async () => {
+  const first = arrow.tableFromArrays({value: new Int32Array(4096).fill(1)});
+  const second = arrow.tableFromArrays({value: Int32Array.of(2, 3, 4)});
+  const bytes = arrow.tableToIPC(first.concat(second), 'file');
+  const source = new ArrowTableSource(new Blob([bytes]));
+  let transferred = 0;
+  const batches = await Array.fromAsync(
+    source.read({
+      offset: 4097,
+      limit: 1,
+      onQueryComplete: summary => (transferred = summary.bytesFetched ?? 0)
+    })
+  );
+  expect(batches.flatMap(batch => batch.toArray().map(row => row?.toJSON()))).toEqual([{value: 3}]);
+  expect(transferred).toBeLessThan(bytes.byteLength / 2);
+  expect(await Array.fromAsync(source.read({offset: 4100}))).toEqual([]);
+});
+
+test('Arrow IPC file schema and a small limit avoid reading the complete Blob', async () => {
+  const first = arrow.tableFromArrays({value: Int32Array.of(1, 2, 3)});
+  const second = arrow.tableFromArrays({value: new Int32Array(4096).fill(4)});
+  const bytes = arrow.tableToIPC(first.concat(second), 'file');
+  let bytesRead = 0;
+  class MeasuredBlob extends Blob {
+    override slice(start?: number, end?: number, contentType?: string): Blob {
+      const slice = super.slice(start, end, contentType);
+      bytesRead += slice.size;
+      return slice;
+    }
+  }
+  const source = new ArrowTableSource(new MeasuredBlob([bytes]));
+  expect((await source.getQueryMetadata()).columns.map(column => column.name)).toEqual(['value']);
+  expect(bytesRead).toBeLessThan(bytes.byteLength / 2);
+  const batches = await Array.fromAsync(source.read({limit: 1}));
+  expect(batches[0].getChild('value')?.get(0)).toBe(1);
+  expect(bytesRead).toBeLessThan(bytes.byteLength / 2);
+});
+
+test('Arrow IPC file offsets apply only to the first overlapping batch', async () => {
+  const table = arrow
+    .tableFromArrays({value: Int32Array.of(1, 2)})
+    .concat(arrow.tableFromArrays({value: Int32Array.of(3, 4)}));
+  const source = new ArrowTableSource(new Blob([arrow.tableToIPC(table, 'file')]));
+  const batches = await Array.fromAsync(source.read({offset: 1}));
+  expect(batches.map(batch => Array.from(batch.getChild('value')!))).toEqual([[2], [3, 4]]);
+});
+
+test('Arrow IPC files with no rows expose their schema through reads', async () => {
+  const schema = new arrow.Schema([new arrow.Field('value', new arrow.Int32(), true)]);
+  const bytes = arrow.tableToIPC(new arrow.Table(schema), 'file');
+  const source = new ArrowTableSource(new Blob([bytes]));
+  const batches = await Array.fromAsync(source.read());
+  expect(batches).toHaveLength(1);
+  expect(batches[0].schema.names).toEqual(['value']);
+  expect(batches[0].numRows).toBe(0);
+});
