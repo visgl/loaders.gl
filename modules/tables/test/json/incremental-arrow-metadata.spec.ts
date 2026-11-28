@@ -160,3 +160,13 @@ test('whole-file JSON can opt into the streaming schema sample', () => {
   });
   expect(sampled.schema?.fields.map(field => field.name)).toEqual(['id']);
 });
+
+test('whole-file sampling preserves schema metadata after the row array', () => {
+  const input =
+    '{"shape":"object-row-table","data":[{"id":1},{"id":2}],"schema":{"fields":[],"metadata":{"source":"fixture"}}}';
+  const table = JSONTableLoaderWithParser.parseTextSync(input, {
+    core: {batchSize: 1},
+    json: {schemaInference: 'first-batch'}
+  });
+  expect(table.schema?.metadata.get('source')).toBe('fixture');
+});

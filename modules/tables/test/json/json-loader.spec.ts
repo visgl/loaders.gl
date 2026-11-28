@@ -1428,3 +1428,19 @@ test('convertJSONToArrow writes object rows in schema order and clears missing v
   expect(Array.from(table.getChild('label')!)).toEqual(['first', null, 'third']);
   expect(Array.from(table.getChild('id')!)).toEqual([1, 2, 3]);
 });
+
+test('JSONTableLoader parses BOM-prefixed Arrow text', () => {
+  const table = BundledJSONTableLoader.parseTextSync!('﻿[{"id":7}]');
+  expect(table.getChild('id')?.get(0)).toBe(7);
+});
+
+test.each([
+  'object-row-table',
+  'array-row-table'
+] as const)('JSONTableLoader preserves schema metadata on an empty %s wrapper', shape => {
+  const table = BundledJSONTableLoader.parseTextSync!(
+    JSON.stringify({shape, data: [], schema: {fields: [], metadata: {source: 'fixture'}}})
+  );
+  expect(table.numRows).toBe(0);
+  expect(table.schema.metadata.get('source')).toBe('fixture');
+});

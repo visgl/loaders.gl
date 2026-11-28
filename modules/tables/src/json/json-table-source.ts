@@ -310,11 +310,9 @@ function planSimplePredicate(
   if (!('property' in property)) return undefined;
   const path = getColumnarPredicatePath(property);
   if (path.length !== 1 || property.casts?.length) return undefined;
-  const literal = predicate.args[1];
-  if (
-    literal instanceof Date ||
-    (Array.isArray(literal) && literal.some(value => value instanceof Date))
-  ) {
+  if (predicate.op === 'in') {
+    if (!predicate.args[1].every(isJSONPushdownLiteral)) return undefined;
+  } else if (predicate.op !== 'isNull' && !isJSONPushdownLiteral(predicate.args[1])) {
     return undefined;
   }
   const field = schema.fields.find(candidate => candidate.name === path[0]);
@@ -328,4 +326,14 @@ function planSimplePredicate(
     value = read(fields) as typeof value;
     return evaluate(0) === true;
   };
+}
+
+/** Only inline primitive literals can be evaluated against the single decoded field. */
+function isJSONPushdownLiteral(value: unknown): boolean {
+  return (
+    typeof value === 'boolean' ||
+    typeof value === 'number' ||
+    typeof value === 'bigint' ||
+    typeof value === 'string'
+  );
 }

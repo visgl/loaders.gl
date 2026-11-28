@@ -257,3 +257,29 @@ test.each([
   }
   expect(rows).toEqual([{id: 1}]);
 });
+
+test.each([
+  {property: 'other'},
+  {parameter: 'threshold'}
+])('JSON source sends non-literal predicate operands to the residual executor', async operand => {
+  const source = new JSONTableSource(new Blob(['[{"value":1,"other":false}]']), {
+    json: {
+      schema: {
+        fields: [
+          {name: 'value', type: 'float64', nullable: false},
+          {name: 'other', type: 'utf8', nullable: false}
+        ],
+        metadata: {}
+      }
+    }
+  });
+  // The residual path constructs and validates the Arrow row before comparing operands.
+  await expect(
+    source
+      .read({
+        predicate: {op: '=', args: [{property: 'value'}, operand]}
+      })
+      [Symbol.asyncIterator]()
+      .next()
+  ).rejects.toThrow('incompatible Arrow field at other');
+});

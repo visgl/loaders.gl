@@ -163,15 +163,24 @@ export function parseDirectJSONArrowText(
   },
   scan?: JSONArrowScan
 ): Table {
+  const document = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   let rowTable = false;
-  if (text.trimStart().startsWith('{')) {
-    visitJSONObjectFields(text, (name, start, end) => {
+  let wrapperSchemaRange: [number, number] | undefined;
+  if (document.trimStart().startsWith('{')) {
+    visitJSONObjectFields(document, (name, start, end) => {
       if (name === 'shape') {
-        const shape: unknown = JSON.parse(text.slice(start, end));
+        const shape: unknown = JSON.parse(document.slice(start, end));
         rowTable = shape === 'object-row-table' || shape === 'array-row-table';
+      } else if (name === 'schema') {
+        wrapperSchemaRange = [start, end];
       }
     });
   }
+  // Whole-file sampling can freeze types before a trailing row-table schema is read.
+  const wrapperMetadata: Schema['metadata'] | undefined =
+    rowTable && !declaredSchema && options.schemaInference === 'first-batch' && wrapperSchemaRange
+      ? (JSON.parse(document.slice(...wrapperSchemaRange)) as Schema | null)?.metadata
+      : undefined;
   const parser = createJSONArrowParser(
     declaredSchema,
     options.jsonpaths?.length ? options.jsonpaths : rowTable ? ['$.data'] : undefined,
@@ -179,9 +188,10 @@ export function parseDirectJSONArrowText(
     getTableSchemaInferenceRows(options.schemaInference ?? 'full', options.batchSize),
     options,
     true,
-    scan
+    scan,
+    wrapperMetadata
   );
-  return new Table([...parser.write(text), ...parser.finish()]);
+  return new Table([...parser.write(document), ...parser.finish()]);
 }
 
 /** Creates the shared tokenizer and Arrow writer for a single input. */
@@ -192,7 +202,8 @@ function createJSONArrowParser(
   inferenceRows: number,
   options: JSONArrowConversionOptions,
   wholeFile = false,
-  scan?: JSONArrowScan
+  scan?: JSONArrowScan,
+  wrapperMetadata?: Schema['metadata']
 ) {
   const builderOptions = {viewTypes: options.arrowConversion?.viewTypes};
   const selected = scan?.columns;
@@ -226,15 +237,19 @@ function createJSONArrowParser(
   const fields = new Map<string, unknown>();
   const handleExtraCell = makeJSONArrowExtraCellHandler(options);
 
+  /** Reads schema metadata carried by a serialized loaders.gl row table. */
+  function getRowTableSchemaMetadata(): Schema['metadata'] {
+    if (wrapperMetadata) return wrapperMetadata;
+    const wrapper = parser.getPartialResult() as {shape?: string; schema?: Schema} | null;
+    return wrapper?.shape === 'object-row-table' || wrapper?.shape === 'array-row-table'
+      ? (wrapper.schema?.metadata ?? {})
+      : {};
+  }
+
   /** Freezes the inferred schema and appends the buffered columns to their Arrow builders. */
   function finishInference(): void {
     schema = inferer.getSchema();
-    if (wholeFile) {
-      const wrapper = parser.getPartialResult() as {shape?: string; schema?: Schema} | null;
-      if (wrapper?.shape === 'object-row-table' || wrapper?.shape === 'array-row-table') {
-        schema.metadata = wrapper.schema?.metadata ?? {};
-      }
-    }
+    if (wholeFile) schema.metadata = getRowTableSchemaMetadata();
     accept ??= scan?.prepareInferredPredicate?.(schema);
     builder = new ArrowTableBuilder(schema, builderOptions);
     if (scan?.ignoreLateFields) frozenNames = new Set(schema.fields.map(field => field.name));
@@ -409,7 +424,12 @@ function createJSONArrowParser(
       yield* emitBufferedBatches();
       const metadata = getJSONContainerMetadata(parser.getPartialResult(), path);
       if (lastMetadata !== JSON.stringify(metadata)) {
-        const finalBuilder = builder ?? new ArrowTableBuilder({fields: [], metadata: {}});
+        const finalBuilder =
+          builder ??
+          new ArrowTableBuilder({
+            fields: [],
+            metadata: wholeFile ? getRowTableSchemaMetadata() : {}
+          });
         yield* updateNativeArrowTableMetadata(finalBuilder.finishTable(), metadata).batches;
       }
     }
