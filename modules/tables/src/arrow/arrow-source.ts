@@ -56,9 +56,25 @@ export class ArrowTableSource
 
   /** Streams Arrow record batches in source order with an optional global limit. */
   async *read(options: TableScanReadOptions = {}): AsyncIterable<RecordBatch> {
+    const offset = options.offset ?? 0;
+    const limit = options.limit;
+    const file =
+      this.data instanceof Blob &&
+      !options.predicate &&
+      offset > 0 &&
+      Number.isSafeInteger(offset) &&
+      (limit === undefined || (limit > 0 && Number.isSafeInteger(limit))) &&
+      !options.signal?.aborted
+        ? this.data
+        : undefined;
+    const fileParser = file && (await import('./lib/parsers/read-arrow-file-window'));
+    const readFileWindow = file && fileParser && (await fileParser.isArrowIPCFile(file));
     for await (const batch of executeTableScanBatches<Table>(
-      (signal, onByteLength) => this.parseBatches(signal, onByteLength),
-      options,
+      (signal, onByteLength) =>
+        readFileWindow
+          ? fileParser.readArrowFileWindow(file, offset, signal, onByteLength)
+          : this.parseBatches(signal, onByteLength),
+      readFileWindow ? {...options, offset: undefined} : options,
       {filter: filterArrowBatch, project: projectArrowBatch}
     )) {
       if (batch.batches.length) yield* batch.batches;
@@ -67,19 +83,28 @@ export class ArrowTableSource
   }
 
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
+    signal?.throwIfAborted();
+    if (this.data instanceof Blob) {
+      const parser = await import('./lib/parsers/read-arrow-file-window');
+      if (await parser.isArrowIPCFile(this.data)) {
+        return this.createMetadata(await parser.readArrowFileSchema(this.data, signal));
+      }
+    }
     for await (const batch of this.parseBatches(signal)) {
-      const arrowSchema = batch.schema;
-      return createScanQueryMetadata({
-        sourceType: 'arrow',
-        queryType: 'table',
-        execution: {status: 'supported', method: 'read'},
-        schema: convertArrowToSchema(arrowSchema),
-        capabilities: {
-          table: ARROW_TABLE_QUERY_CAPABILITIES
-        }
-      });
+      return this.createMetadata(batch.schema);
     }
     throw new Error('Arrow source is empty and has no discoverable schema');
+  }
+
+  /** Wraps an IPC schema with the portable table-query capabilities. */
+  private createMetadata(schema: Table['schema']): ScanQueryMetadata {
+    return createScanQueryMetadata({
+      sourceType: 'arrow',
+      queryType: 'table',
+      execution: {status: 'supported', method: 'read'},
+      schema: convertArrowToSchema(schema),
+      capabilities: {table: ARROW_TABLE_QUERY_CAPABILITIES}
+    });
   }
 
   private async *parseBatches(
@@ -87,6 +112,13 @@ export class ArrowTableSource
     onByteLength?: (byteLength: number) => void
   ): AsyncIterable<Table> {
     if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    if (this.data instanceof Blob) {
+      const parser = await import('./lib/parsers/read-arrow-file-window');
+      if (await parser.isArrowIPCFile(this.data)) {
+        yield* parser.readArrowFileWindow(this.data, 0, signal, onByteLength);
+        return;
+      }
+    }
     const chunks =
       this.data instanceof Blob
         ? readStreamChunks(this.data.stream(), signal, onByteLength)
