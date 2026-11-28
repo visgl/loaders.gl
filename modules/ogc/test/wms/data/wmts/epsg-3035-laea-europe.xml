@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Hand-written, trimmed WMTS 1.0.0 capabilities. See ../README.md. -->
+<!-- Hand-written WMTS 1.0.0 capabilities with synthetic values. See ../README.md. -->
 <Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" version="1.0.0">
   <ows:ServiceIdentification>
     <ows:Title>LAEA Europe test service</ows:Title>

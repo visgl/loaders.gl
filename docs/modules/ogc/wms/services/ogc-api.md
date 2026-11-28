@@ -189,7 +189,10 @@ does the same conversion in `getMetadata()`, fetching the document once when it 
 relative URL resolves against the landing page.
 
 - Origins are returned in XY order. Declared `orderedAxes` decide the swap (a first axis naming
-  latitude, northing, southing, or Y); without them, only EPSG:4326 is swapped.
+  latitude, northing, southing, or Y). Without them, the built-in table of latitude-first and
+  northing-first EPSG CRSs decides, so EPSG:4326, EPSG:4258 and EPSG:3035 origins are swapped.
+  The `axisOrder` option (`ogc-api.axisOrder` on the source) overrides both. See
+  [CRS and tile-grid intelligence](../api-reference/crs-and-tile-grids.md).
 - A bottom-left origin is reported per level only; the grid-wide `tileGrid.origin` is top-left by
   definition and is omitted.
 - `cornerOfOrigin: 'bottomLeft'` is preserved on each matrix; omitted means top-left.
@@ -198,7 +201,7 @@ relative URL resolves against the landing page.
   and matrix size that pass `validateTileMatrix()`. `tileGrid.matrices` keeps the levels as
   advertised, which may be incomplete.
 - `cellSize` is used when present. A scale denominator alone becomes a resolution only for a known
-  unit: EPSG:4326, CRS:84, Web Mercator, or the `metersPerUnit` option.
+  unit: CRS84, the built-in EPSG geographic CRSs, Web Mercator, or the `metersPerUnit` option.
 - A `crs` URI string or `{uri}` object is reported as `tileGrid.crs`; embedded WKT and PROJJSON
   definitions are not interpreted.
 - `variableMatrixWidths` bands are preserved in native row numbering. Complete coalesced geometry supports canonical tile requests and row-aware fixed-frame selection. Limits use base-grid columns; a canonical column may precede the first covered alias. Coalesced requests require complete geometry, and the default XYZ renderer rejects these grids.
@@ -255,7 +258,7 @@ discovers the tile matrix set as OGC API - Tiles Part 1 describes it:
 
 `/tileMatrixSets` paths resolve against the landing page, and every request uses the source's
 fetch options. The discovered grid is used for `tileGrid` and for `{tileMatrix}`, like a configured
-one, and is reused until `tileTemplate`, `tileMatrixSet`, `tileMatrixSetLimits` or `metersPerUnit` changes. `getTile()`
+one, and is reused until `tileTemplate`, `tileMatrixSet`, `tileMatrixSetLimits`, `metersPerUnit` or `axisOrder` changes. `getTile()`
 waits for discovery before its first request.
 
 Discovery failure is an error, not an approximation. `getMetadata()` and `getTile()` reject with

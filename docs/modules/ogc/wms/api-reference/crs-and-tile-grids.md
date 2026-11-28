@@ -71,8 +71,10 @@ Set `wmts.crs` to select the compatible matrix set, and the source uses the matr
 identifier (for example `L04`) rather than assuming that a zoom level is its identifier.
 
 `getServiceCRSAxisOrder` returns the authority axis order of a CRS on the service wire. WMS 1.3.0
-`BBOX`, WMTS `TopLeftCorner`, WFS 1.1.0/2.0.0 `BBOX` and the OGC API Features `bbox` for a
-`bbox-crs` use this order.
+`BBOX`, WMTS `TopLeftCorner`, WFS 1.1.0/2.0.0 `BBOX`, the OGC API Features `bbox` for a
+`bbox-crs`, and an OGC TileMatrixSet `pointOfOrigin` without `orderedAxes` use this order.
+Decoded response geometry is not swapped. For example, WFS GML coordinates keep the order of the
+response.
 
 - `yx` for a small built-in table of EPSG CRSs. The table has EPSG geographic 2D CRSs
   (latitude first), for example EPSG:4326, EPSG:4258, EPSG:4269 and EPSG:4283. It also has
@@ -93,7 +95,9 @@ getServiceCRSAxisOrder('EPSG:4326', {axisOrder: 'xy'}); // 'xy'
 
 The table is not complete. If a service uses a CRS that is not in the table, set the `axisOrder`
 option of the source: `wms.axisOrder`, `wmts.axisOrder`, `wfs.axisOrder` or
-`'ogc-api'.axisOrder`. The option applies to every CRS of that source. A later math.gl authority
+`'ogc-api'.axisOrder`. The option applies to every CRS of that source. For OGC API Tiles, it
+also overrides the declared `orderedAxes`. `convertOGCTileMatrixSetToTileGrid` takes the same
+`axisOrder` option. A later math.gl authority
 axis-order query will replace the built-in table.
 
 Built-in units: all CRS84 forms and the geographic CRSs of the table use degrees. Web Mercator

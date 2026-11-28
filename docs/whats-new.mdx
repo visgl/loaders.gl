@@ -60,8 +60,8 @@ for stable v4 migrations.
 - 🧪 **Realtime transit.** [`GTFSRealtimeLoader`](./modules/scientific/gtfs-realtime/api-reference/gtfs-realtime-loader.md) reads GTFS Realtime snapshots as vehicle tables or decoded feeds with duplicate trip IDs, platform assignments, alerts, and realtime shapes, stops, and trip modifications.
 - **Service CRS identifiers and axis order.** [OGC sources](./modules/ogc/wms/api-reference/crs-and-tile-grids.md)
   read EPSG codes, EPSG URNs and URIs (also versioned), and all CRS84 spellings. WMS 1.3.0, WMTS,
-  WFS and OGC API Features use the authority axis order for a built-in table of latitude-first and
-  northing-first EPSG CRSs, such as EPSG:4258 and EPSG:3035. Set `axisOrder` to override it. CRS84
+  WFS, OGC API Features and OGC API Tiles use the authority axis order for a built-in table of
+  latitude-first and northing-first EPSG CRSs, such as EPSG:4258 and EPSG:3035. Set `axisOrder` to override it. CRS84
   WMTS matrix sets get degree resolutions. IAU and ESRI codes keep their authority. WMS layers merge
   inherited CRS lists.
 - **Documents and images.** [Documents](./modules/documents/README.md) groups text and
