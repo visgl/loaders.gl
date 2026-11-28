@@ -193,6 +193,52 @@ describe('Parquet page-index pruning', () => {
     }
   });
 
+  test('preserves native GeoArrow geometry across disjoint projected page ranges', async () => {
+    const wasm = await loadWasm();
+    const coordinate = new arrow.Struct([
+      new arrow.Field('x', new arrow.Float64(), false),
+      new arrow.Field('y', new arrow.Float64(), false)
+    ]);
+    const linestring = new arrow.List(new arrow.Field('element', coordinate, false));
+    const coordinates = Array.from({length: 64}, (_, index) => [
+      {x: index, y: index + 1},
+      {x: index + 1, y: index + 2}
+    ]);
+    const table = arrow.tableFromArrays({
+      id: Int32Array.from({length: coordinates.length}, (_, index) => index),
+      geometry: arrow.vectorFromArray(coordinates, linestring)
+    });
+    const writerProperties = new wasm.WriterPropertiesBuilder()
+      .setStatisticsEnabled(wasm.EnabledStatistics.Page)
+      .setWriteBatchSize(8)
+      .setDataPageSizeLimit(64)
+      .setDictionaryEnabled(false)
+      .setKeyValueMetadata(new Map([['geo', JSON.stringify({
+        version: '1.1.0',
+        primary_column: 'geometry',
+        columns: {geometry: {encoding: 'linestring', geometry_types: ['LineString']}}
+      })]]))
+      .build();
+    const fixture = wasm.writeParquet(
+      wasm.Table.fromIPCStream(arrow.tableToIPC(table)),
+      writerProperties
+    ).slice().buffer;
+    const selectedRows = [1, 62];
+    const source = createRemoteSource(fixture, {core: {worker: false}});
+    try {
+      const batches = await collectBatches(source.read({
+        columns: ['geometry'],
+        predicate: {op: 'in', args: [{property: 'id'}, selectedRows]}
+      }));
+      expect(JSON.parse(JSON.stringify(getBatchValues(batches, 'geometry')))).toEqual(
+        selectedRows.map(index => coordinates[index])
+      );
+      expect(source.getTelemetry().pageIndexesRead).toBeGreaterThanOrEqual(4);
+    } finally {
+      await source.close();
+    }
+  });
+
   test('exposes page-index and byte-range decisions in the physical scan plan', async () => {
     const source = createRemoteSource(pageIndexFixture, {core: {worker: false}});
     const plan = await source.getScanPlan({

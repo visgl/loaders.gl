@@ -1149,7 +1149,7 @@ export class ParquetSource
           )
         ];
     throwIfAborted(signal);
-    if (!predicate && hasNativeGeoArrowList(projectedSchema)) {
+    if (!predicate && !pagePlan && hasNativeGeoArrowList(projectedSchema)) {
       const decodeDurationMs = getCurrentTime() - decodeStartTime;
       this.recordTelemetry(
         'decode',
@@ -1386,7 +1386,7 @@ export class ParquetSource
         rowIndices: selectedRowIndices,
         arrowTable: new IndexedArrowTable(
           projectedResult.arrowTable,
-          selectedRowIndices
+          localRowIndices
         ).materializeArrowTable()
       };
     }
