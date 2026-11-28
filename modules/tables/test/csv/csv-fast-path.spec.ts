@@ -36,6 +36,15 @@ describe('CSV optimized parsing paths', () => {
     expect(getArrowColumnValues(table, 'value')).toEqual(integers.map(Number));
   });
 
+  test('rounds decimal and exponent values like Number', async () => {
+    const values = ['1.2345678901234567', '1.0000000000000002', '-2.2250738585072014e-308'];
+    const table = await CSVLoader.parseText(['value', ...values].join('\n'), {
+      csv: {header: true, shape: 'arrow', dynamicTyping: true}
+    });
+
+    expect(getArrowColumnValues(table, 'value')).toEqual(values.map(Number));
+  });
+
   test.each([false, true])('matches row output for dynamicTyping=%s', async dynamicTyping => {
     const csvText = 'name,count,enabled\nitem,42,TRUE\nother,,false';
     const options = {header: true as const, dynamicTyping, skipEmptyLines: false as const};

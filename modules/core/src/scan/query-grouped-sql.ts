@@ -16,6 +16,7 @@ export async function queryGroupedSQL(sql: string, options: QueryOptions): Promi
     key?.type !== 'Identifier' ||
     statement.joins.length ||
     statement.from.alias ||
+    statement.having ||
     statement.orderBy?.length ||
     statement.limit !== undefined ||
     statement.offset !== undefined

@@ -8,7 +8,7 @@ import {
   createRecordBatchWithMetadata,
   getRecordBatchMetadata
 } from '@math.gl/core/arrow';
-import {parseUTF8Boolean, parseUTF8Number} from '@math.gl/core/utf8';
+import {parseUTF8Boolean, parseUTF8NumberExact} from '@math.gl/core/utf8';
 import {
   ArrowTableBuilder,
   serializeArrowField,
@@ -1473,12 +1473,12 @@ function parseRawUtf8ValueWithDynamicTyping(
         integerValue = integerValue * 10 + (byte - 48);
         byteIndex++;
       }
-      if (byteIndex === valueEnd) {
+      if (byteIndex === valueEnd && Number.isSafeInteger(integerValue)) {
         return integerValue;
       }
     }
 
-    const numberValue = parseUTF8Number(valueBytes, valueStart, valueEnd);
+    const numberValue = parseUTF8NumberExact(valueBytes, valueStart, valueEnd);
     if (numberValue !== undefined) {
       return numberValue;
     }
