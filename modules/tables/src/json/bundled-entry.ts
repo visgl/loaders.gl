@@ -18,7 +18,6 @@ export {JSONTableSource} from './json-table-source';
 export {NDJSONTableSource} from './ndjson-source';
 export {JSONWriter} from './json-writer';
 export {GeoJSONWriter} from './geojson-writer';
-export {FastJSONLoader} from './fast-json-loader';
 export type {JSONLoaderOptions, MetadataBatch, JSONBatch} from './json-loader-definition';
 export type {JSONTableLoaderOptions} from './json-table-loader-definition';
 export type {NDJSONLoaderOptions, NDJSONShape} from './ndjson-loader-definition';

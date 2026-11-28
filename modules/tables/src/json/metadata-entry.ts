@@ -37,6 +37,5 @@ export type {
 } from './lib/parsers/convert-json-to-arrow';
 export type {NDJSONLoaderWithParser} from '../ndjson-loader';
 export {GeoJSONLoader} from './geojson-loader-types';
-export {FastJSONLoader} from './fast-json-loader-metadata';
 export {GeoJSONWriter} from './geojson-writer-types';
 export {JSONWriter} from './json-writer-types';

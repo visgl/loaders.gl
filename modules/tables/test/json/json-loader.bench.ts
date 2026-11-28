@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FastJSONLoader} from '@loaders.gl/tables/json/bundled';
 import {JSONLoader} from '@loaders.gl/tables/json';
 import {load, loadInBatches, parse} from '@loaders.gl/core';
 
@@ -28,30 +27,29 @@ export default async function jsonLoaderBench(suite) {
     }
   });
 
-  suite.addAsync('loadInBatches(FastJSONLoader) - Streaming GeoJSON load', options, async () => {
-    const asyncIterator = await loadInBatches(GEOJSON_URL, FastJSONLoader);
-    const data: unknown[] = [];
-    for await (const batch of asyncIterator) {
-      if (batch.shape === 'object-row-table') {
-        data.push(...batch.data);
+  suite.addAsync(
+    'loadInBatches(JSONLoader, fast backend) - Streaming GeoJSON load',
+    options,
+    async () => {
+      const asyncIterator = await loadInBatches(GEOJSON_URL, JSONLoader, {
+        core: {worker: false},
+        json: {backend: 'fast'}
+      });
+      const data: unknown[] = [];
+      for await (const batch of asyncIterator) {
+        if (batch.shape === 'object-row-table') {
+          data.push(...batch.data);
+        }
       }
     }
-  });
+  );
 
   suite.addAsync('load(JSONLoader) - Atomic GeoJSON load (JSON.parse)', options, async () => {
     await load(GEOJSON_URL, JSONLoader);
   });
 
-  suite.addAsync('load(FastJSONLoader) - Atomic GeoJSON load (JSON.parse)', options, async () => {
-    await load(GEOJSON_URL, FastJSONLoader);
-  });
-
   suite.addAsync('parse(JSONLoader) - Atomic GeoJSON parse (JSON.parse)', options, async () => {
     await parse(GEOJSON_TEXT, JSONLoader);
-  });
-
-  suite.addAsync('parse(FastJSONLoader) - Atomic GeoJSON parse (JSON.parse)', options, async () => {
-    await parse(GEOJSON_TEXT, FastJSONLoader);
   });
 
   suite.add('JSON.parse - Atomic GeoJSON parse from string', options, () => {

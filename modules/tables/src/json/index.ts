@@ -38,8 +38,6 @@ export {rebuildJsonObject as _rebuildJsonObject} from './lib/parsers/parse-json-
 
 export type {MetadataBatch, JSONBatch} from './json-loader-definition';
 
-export {FastJSONLoader} from './fast-json-loader';
-
 export {JSONLoaderWithParser} from '../json-loader';
 
 export type {NDJSONShape} from './ndjson-loader-definition';

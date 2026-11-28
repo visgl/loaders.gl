@@ -113,8 +113,9 @@ asset by default, so bundling the application does not require copying a worker 
 self-host, set `json.workerUrl`, `json-table.workerUrl`, or `ndjson.workerUrl` for the chosen loader.
 Node workers remain experimental and require
 `core._nodeWorkers: true`; browser and CommonJS Node worker bundles are included in the package.
-`GeoJSONLoader`, `NDGeoJSONLoader`, and the experimental `FastJSONLoader` do not opt into this new
-worker. Use `JSONTableLoader` with `json.backend: 'fast'` for fast-backend Arrow worker batches.
+`GeoJSONLoader` and `NDGeoJSONLoader` do not opt into this worker. Use `JSONLoader` with
+`json.backend: 'fast'` in place of the experimental `FastJSONLoader`. Use `JSONTableLoader` with
+the same backend for fast Arrow worker batches.
 
 For configuration formats with the same general object/array data model, see the dependency-free
 [`YAMLLoader`](/docs/modules/documents/config/api-reference/yaml-loader) and
