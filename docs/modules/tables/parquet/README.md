@@ -83,8 +83,10 @@ GeoParquet and GeoArrow metadata are handled as two parallel layers:
 - GeoParquet `schema.metadata.geo` is preserved as schema/file metadata
 - GeoArrow field metadata is added to geometry columns when it can be derived safely
 
-On read, geometry columns are passed through unchanged while loaders.gl maps supported GeoParquet
-geometry encodings onto field-level GeoArrow metadata.
+On read, loaders.gl preserves the geometry encoding and maps supported GeoParquet encodings onto
+field-level GeoArrow metadata. The Arrow reader can build native lists of required floating-point
+coordinate structs directly from Parquet repetition and definition levels. For example, this
+preserves LineString coordinates and the ring boundaries of Polygon and MultiPolygon columns.
 
 On write, GeoArrow field metadata can be used to synthesize missing or invalid GeoParquet `geo`
 metadata before Parquet encoding.

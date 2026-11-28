@@ -41,7 +41,7 @@ type SelectedRepeatedValues = SelectedLeafValues & {
 };
 
 /**
- * Creates an Arrow List vector directly from a repeated Parquet primitive or repeated struct.
+ * Creates Arrow lists directly from supported Parquet repetition and definition levels.
  * Returns undefined for shapes whose repetition tree is not supported by the direct path.
  */
 export function createNestedArrowVector(
@@ -51,14 +51,155 @@ export function createNestedArrowVector(
   start: number,
   end: number
 ): arrow.Vector | undefined {
-  if (!(arrowType instanceof arrow.List) || parquetField.repetitionType !== 'REPEATED') {
+  if (!(arrowType instanceof arrow.List)) {
     return undefined;
+  }
+
+  if (parquetField.repetitionType !== 'REPEATED') {
+    const data = createStandardListData(arrowType, parquetField, rowGroup, start, end);
+    return data ? new arrow.Vector([data]) : undefined;
   }
 
   const data = parquetField.fields
     ? createRepeatedStructData(arrowType, parquetField, rowGroup, start, end)
     : createRepeatedPrimitiveData(arrowType, parquetField, rowGroup, start, end);
   return data ? new arrow.Vector([data]) : undefined;
+}
+
+/** Parquet levels that delimit one standard three-level LIST. */
+type ListLevels = {
+  /** Arrow list type at this depth. */
+  type: arrow.List;
+  /** Parquet LIST group, whose definition level distinguishes null from empty. */
+  field: ParquetField;
+  /** Repeated group, whose definition level distinguishes empty from populated. */
+  repeated: ParquetField;
+  /** Starting child offset for each list in the selected range. */
+  offsets: number[];
+  /** Validity bits for nullable lists. */
+  validity: Uint8Array;
+  /** Number of null lists in the selected range. */
+  nullCount: number;
+};
+
+/** Builds standard lists of required floating-point struct fields directly from Parquet levels. */
+function createStandardListData(
+  listType: arrow.List,
+  parquetField: ParquetField,
+  rowGroup: ParquetRowGroup,
+  start: number,
+  end: number
+): arrow.Data | undefined {
+  const lists: ListLevels[] = [];
+  let valueType: arrow.DataType = listType;
+  let valueField = parquetField;
+  while (valueType instanceof arrow.List) {
+    const repeated = valueField.fields?.list;
+    const element = repeated?.fields?.element;
+    if (
+      valueField.logicalType?.type !== 'LIST' ||
+      repeated?.repetitionType !== 'REPEATED' ||
+      !element ||
+      element.repetitionType === 'REPEATED'
+    ) {
+      return undefined;
+    }
+    lists.push({
+      type: valueType,
+      field: valueField,
+      repeated,
+      offsets: [],
+      validity: new Uint8Array(),
+      nullCount: 0
+    });
+    valueType = valueType.children[0].type;
+    valueField = element;
+  }
+  if (!(valueType instanceof arrow.Struct) || valueField.repetitionType !== 'REQUIRED') {
+    return undefined;
+  }
+  const leaves = valueType.children.map(child => {
+    const field = valueField.fields?.[child.name];
+    const column = field && rowGroup.columnData[field.key];
+    const isFloat =
+      (field?.primitiveType === 'DOUBLE' && child.type instanceof arrow.Float64) ||
+      (field?.primitiveType === 'FLOAT' && child.type instanceof arrow.Float32);
+    return field?.repetitionType === 'REQUIRED' && isFloat && column
+      ? {field, column, type: child.type}
+      : undefined;
+  });
+  const driver = leaves[0];
+  if (!driver || !leaves.every(leaf => leaf?.column.count === driver.column.count)) {
+    return undefined;
+  }
+
+  // A required coordinate struct and required leaves share the same repetition/definition levels.
+  const {column, field} = driver;
+  let rowIndex = -1;
+  let firstValueIndex = 0;
+  let valueCount = 0;
+  for (let levelIndex = 0; levelIndex < column.count; levelIndex++) {
+    const repetition = column.rlevels[levelIndex];
+    const definition = column.dlevels[levelIndex];
+    if (repetition === 0) rowIndex++;
+    if (rowIndex >= end) break;
+    if (rowIndex < start) {
+      if (definition === field.dLevelMax) firstValueIndex++;
+      continue;
+    }
+
+    // Every LIST contributes one repeated node, so the repetition level identifies
+    // the shallowest list that can start at this entry.
+    for (let depth = repetition; depth < lists.length; depth++) {
+      const list = lists[depth];
+      if (depth > 0 && definition < lists[depth - 1].repeated.dLevelMax) break;
+      const index = list.offsets.length;
+      const nextList = lists[depth + 1];
+      list.offsets.push(nextList ? nextList.offsets.length : valueCount);
+      if (list.field.repetitionType === 'OPTIONAL') {
+        const byteIndex = index >>> 3;
+        if (byteIndex >= list.validity.length) {
+          const expanded = new Uint8Array(Math.max(8, list.validity.length * 2));
+          expanded.set(list.validity);
+          list.validity = expanded;
+        }
+        if (definition >= list.field.dLevelMax) {
+          list.validity[byteIndex] |= 1 << (index & 7);
+        } else {
+          list.nullCount++;
+        }
+      }
+    }
+    if (definition === field.dLevelMax) valueCount++;
+  }
+  if (lists[0].offsets.length !== end - start) return undefined;
+
+  const children = leaves.map(leaf =>
+    createSelectedLeafData(leaf!.type, leaf!.field, leaf!.column, {
+      length: valueCount,
+      firstValueIndex,
+      valueCount,
+      nullCount: 0
+    })
+  );
+  if (children.some(child => !child)) return undefined;
+  let data: arrow.Data = arrow.makeData({
+    type: valueType,
+    length: valueCount,
+    children: children as arrow.Data[]
+  });
+  for (let depth = lists.length - 1; depth >= 0; depth--) {
+    const list = lists[depth];
+    list.offsets.push(data.length);
+    data = arrow.makeData({
+      type: list.type,
+      valueOffsets: Int32Array.from(list.offsets),
+      nullBitmap: list.nullCount ? list.validity : undefined,
+      nullCount: list.nullCount,
+      child: data
+    });
+  }
+  return data;
 }
 
 /** Creates a top-level repeated primitive as Arrow List data. */
