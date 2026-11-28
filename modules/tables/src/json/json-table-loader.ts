@@ -81,7 +81,9 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
       {
         arrowConversion: json.arrowConversion,
         log: getLoaderLog(jsonOptions),
-        jsonpaths: json.jsonpaths
+        jsonpaths: json.jsonpaths,
+        schemaInference: json.schemaInference,
+        batchSize: jsonOptions.core?.batchSize
       }
     );
   }
@@ -118,7 +120,9 @@ function parseInBatches(
       json.schema ? normalizeJSONArrowSchema(json.schema) : undefined,
       json.jsonpaths,
       jsonOptions.core?.batchSize ?? 'auto',
-      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)}
+      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)},
+      undefined,
+      json.schemaInference
     );
   }
 

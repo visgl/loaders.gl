@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect, test} from 'vitest';
+import {expect, test, vi} from 'vitest';
 import {
   load,
   loadInBatches,
@@ -880,4 +880,34 @@ test('CSVLoader#worker transport serializes and hydrates Arrow table results', a
   const plainResult = {shape: 'object-row-table', data: [{city: 'Paris'}]};
   expect(() => serializeCSVWorkerResult(plainResult)).toThrow('Arrow table output');
   expect(() => deserializeCSVWorkerResult(plainResult)).toThrow('Arrow column transport');
+});
+
+test('CSVLoader emits a typed Arrow batch before EOF with empty lines skipped', async () => {
+  let releaseTail!: () => void;
+  const tailReady = new Promise<void>(resolve => {
+    releaseTail = resolve;
+  });
+  const encoder = new TextEncoder();
+  const input = (async function* () {
+    yield encoder.encode('value\n\n1\n2\n');
+    await tailReady;
+    yield encoder.encode('3\n');
+  })();
+  const batches = await parseInBatches(input, CSVLoader, {
+    core: {worker: false, batchSize: 1},
+    csv: {header: true, dynamicTyping: true}
+  });
+  const iterator = batches[Symbol.asyncIterator]();
+  let firstBatch: arrow.RecordBatch | undefined;
+  const first = iterator.next().then(result => {
+    firstBatch = result.value;
+  });
+  try {
+    await vi.waitFor(() => expect(firstBatch?.getChild('value')?.get(0)).toBe(1));
+    expect(firstBatch?.metadata.get('count')).toBe('0');
+  } finally {
+    releaseTail();
+    await first;
+    await iterator.return?.();
+  }
 });

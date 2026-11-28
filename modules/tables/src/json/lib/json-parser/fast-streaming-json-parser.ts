@@ -29,6 +29,8 @@ type StringContext = {
   unicodeDigitsRemaining: number;
   unicodeHex: string;
   keyText: string;
+  /** Offset of a root row-table shape string, when recognizing a wrapper. */
+  rowTableShapeStart?: number;
 };
 
 /** Lets a consumer decode a row directly from the text scanner. */
@@ -46,6 +48,10 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   private readonly allowedJsonPaths: string[][];
   private readonly trackMetadata: boolean;
   private readonly strict: boolean;
+  /** Prefer the data array after recognizing a serialized row table. */
+  private readonly preferRowTableData: boolean;
+  /** Whether the root shape identifies a serialized row table. */
+  private isRowTable = false;
   /** Row-level fields that keep nested object or array JSON source as Utf8 text. */
   private readonly rawJsonUtf8Fields: Set<string>;
 
@@ -73,12 +79,13 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   private fullText = '';
 
   constructor(
-    options: StreamingJSONParserOptions & {strict?: boolean} = {},
+    options: StreamingJSONParserOptions & {strict?: boolean; preferRowTableData?: boolean} = {},
     private readonly elementConsumer?: FastJSONElementConsumer
   ) {
     this.allowedJsonPaths = (options.jsonpaths || []).map(jsonpath => new JSONPath(jsonpath).path);
     this.strict = Boolean(options.strict);
-    this.trackMetadata = Boolean(options.metadata || this.strict);
+    this.preferRowTableData = Boolean(options.preferRowTableData);
+    this.trackMetadata = Boolean(options.metadata || this.strict || this.preferRowTableData);
     this.rawJsonUtf8Fields = new Set(options.rawJsonUtf8Fields || []);
   }
 
@@ -160,7 +167,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       const character = chunk[index];
 
       if (this.seekStringContext) {
-        this.consumeSeekStringCharacter(character);
+        this.consumeSeekStringCharacter(character, chunkStartOffset + index);
         index++;
         continue;
       }
@@ -334,6 +341,9 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
 
     if (character === '"') {
       this.seekStringContext = createStringContext(false);
+      if (this.preferRowTableData && valuePath.length === 2 && valuePath[1] === 'shape') {
+        this.seekStringContext.rowTableShapeStart = absoluteIndex;
+      }
       return null;
     }
 
@@ -344,7 +354,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   /**
    * Consumes one character while scanning a JSON string in seek mode.
    */
-  private consumeSeekStringCharacter(character: string): void {
+  private consumeSeekStringCharacter(character: string, absoluteIndex: number): void {
     const context = this.seekStringContext;
 
     if (!context) {
@@ -388,6 +398,12 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
           frame.expecting = 'colon';
         }
       } else {
+        if (context.rowTableShapeStart !== undefined) {
+          const shape: unknown = JSON.parse(
+            this.fullText.slice(context.rowTableShapeStart, absoluteIndex + 1)
+          );
+          this.isRowTable = shape === 'object-row-table' || shape === 'array-row-table';
+        }
         this.finishSeekValue();
       }
       return;
@@ -623,7 +639,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
    */
   private matchesPath(path: string[]): boolean {
     if (this.allowedJsonPaths.length === 0) {
-      return true;
+      return !this.isRowTable || (path.length === 2 && path[1] === 'data');
     }
 
     return this.allowedJsonPaths.some(jsonPath => pathsEqual(jsonPath, path));
