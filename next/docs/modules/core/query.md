@@ -358,6 +358,10 @@ Predicates resolve against source fields before aliases are applied. `select` ca
 
 The shared `projectArrowTable(arrowTable, selections)` helper is available through `@loaders.gl/core/query/arrow-execution`. Projection creates schema and batch wrappers while reusing data buffers, including nested children and dictionaries. It preserves field names/types/nullability/metadata, schema metadata, RecordBatch metadata and boundaries, and row order; selected aliases replace only field names. Projection-only limits retain Arrow slice views. Sparse residual filters use math.gl's Arrow row gatherer to copy physical buffers without decoding nested or dictionary-encoded columns.
 
+### Relational SQL over Arrow tables[​](#relational-sql-over-arrow-tables "Direct link to Relational SQL over Arrow tables")
+
+Use `queryArrowSQL(sql, tables)` from `@loaders.gl/core/query/arrow-query` for synchronous relational SQL over a map of named, in-memory Arrow tables. It supports `HAVING`, semi and anti joins, computed grouping keys, and ordering by expressions or aggregates outside the SELECT list.
+
 ### Streaming linear Arrow queries[​](#streaming-linear-arrow-queries "Direct link to Streaming linear Arrow queries")
 
 Import `queryArrowTableInBatches` from `@loaders.gl/core/query/arrow-query`. It consumes and yields native Arrow RecordBatches without collecting its output. It accepts predicates, ordered projection, aliases, a global limit, and cancellation. Sorting, aggregates, expressions, unions, and joins remain on the existing materializing paths.
