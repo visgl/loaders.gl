@@ -30,14 +30,22 @@ type InputChunk = {
   data: Uint8Array;
 };
 
+/** Decodes original row bytes and rejects malformed UTF-8. */
 const decoder = new TextDecoder('utf-8', {fatal: true});
 
+/** Byte that opens or closes a JSON string. */
 const QUOTE = 0x22;
+/** Byte separating objects in the top-level array. */
 const COMMA = 0x2c;
+/** Byte that opens a JSON array. */
 const OPEN_ARRAY = 0x5b;
+/** Byte that closes a JSON array. */
 const CLOSE_ARRAY = 0x5d;
+/** Byte that escapes the next character inside a JSON string. */
 const BACKSLASH = 0x5c;
+/** Byte that opens a JSON object. */
 const OPEN_OBJECT = 0x7b;
+/** Byte that closes a JSON object. */
 const CLOSE_OBJECT = 0x7d;
 
 /** Identifies byte-range frames without inspecting or parsing the returned rows. */
@@ -70,7 +78,9 @@ export async function* parseJSONRowOffsetsInBatches(
   batchSize: number | 'auto' = 'auto'
 ): AsyncIterable<JSONRowOffsetBatch> {
   const scanner = new JSONRowOffsetScanner();
+  /** Input fragments still referenced by the current batch or partial row. */
   const chunks: InputChunk[] = [];
+  /** Absolute start/end pairs for complete rows waiting to be emitted. */
   let ranges: number[] = [];
   let count = 0;
 
