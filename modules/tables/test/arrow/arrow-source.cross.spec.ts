@@ -153,3 +153,22 @@ test('Arrow IPC file schema and a small limit avoid reading the complete Blob', 
   expect(batches[0].getChild('value')?.get(0)).toBe(1);
   expect(bytesRead).toBeLessThan(bytes.byteLength / 2);
 });
+
+test('Arrow IPC file offsets apply only to the first overlapping batch', async () => {
+  const table = arrow
+    .tableFromArrays({value: Int32Array.of(1, 2)})
+    .concat(arrow.tableFromArrays({value: Int32Array.of(3, 4)}));
+  const source = new ArrowTableSource(new Blob([arrow.tableToIPC(table, 'file')]));
+  const batches = await Array.fromAsync(source.read({offset: 1}));
+  expect(batches.map(batch => Array.from(batch.getChild('value')!))).toEqual([[2], [3, 4]]);
+});
+
+test('Arrow IPC files with no rows expose their schema through reads', async () => {
+  const schema = new arrow.Schema([new arrow.Field('value', new arrow.Int32(), true)]);
+  const bytes = arrow.tableToIPC(new arrow.Table(schema), 'file');
+  const source = new ArrowTableSource(new Blob([bytes]));
+  const batches = await Array.fromAsync(source.read());
+  expect(batches).toHaveLength(1);
+  expect(batches[0].schema.names).toEqual(['value']);
+  expect(batches[0].numRows).toBe(0);
+});
