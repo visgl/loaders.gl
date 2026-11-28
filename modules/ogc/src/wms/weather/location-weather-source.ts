@@ -31,8 +31,14 @@ export type WeatherSourceOptions = {
 };
 
 const FIELDS = [
-  'temperature_2m', 'cloud_cover', 'rain', 'snowfall',
-  'visibility', 'wind_speed_10m', 'wind_direction_10m', 'weather_code'
+  'temperature_2m',
+  'cloud_cover',
+  'rain',
+  'snowfall',
+  'visibility',
+  'wind_speed_10m',
+  'wind_direction_10m',
+  'weather_code'
 ] as const;
 
 /**
@@ -40,24 +46,35 @@ const FIELDS = [
  * globe-scale weather requires a separate gridded-data provider.
  */
 export class LocationWeatherSource {
+  /** Provider endpoints, fetch implementation, and any grid size limits. */
   readonly options: WeatherSourceOptions;
+  /** Creates a source with optional provider configuration. */
   constructor(options: WeatherSourceOptions = {}) {
     this.options = options;
   }
 
+  /** Loads and normalizes observations for the requested place and time. */
   async getWeather(query: WeatherQueryOptions): Promise<WeatherObservation> {
     const {latitude, longitude, time} = query;
-    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-        !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    if (
+      !Number.isFinite(latitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      !Number.isFinite(longitude) ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
       throw new Error('Invalid weather coordinates');
     }
     if (time && !Number.isFinite(time.getTime())) {
       throw new Error('Invalid weather timestamp');
     }
     const historical = time !== undefined;
-    const url = new URL(historical
-      ? (this.options.archiveUrl ?? 'https://archive-api.open-meteo.com/v1/archive')
-      : (this.options.forecastUrl ?? 'https://api.open-meteo.com/v1/forecast'));
+    const url = new URL(
+      historical
+        ? (this.options.archiveUrl ?? 'https://archive-api.open-meteo.com/v1/archive')
+        : (this.options.forecastUrl ?? 'https://api.open-meteo.com/v1/forecast')
+    );
     url.searchParams.set('latitude', String(latitude));
     url.searchParams.set('longitude', String(longitude));
     url.searchParams.set('timezone', 'UTC');
@@ -78,7 +95,8 @@ export class LocationWeatherSource {
     let timestamp: string;
     if (historical) {
       const hourly = payload.hourly;
-      if (!hourly || !Array.isArray(hourly.time)) throw new Error('Missing historical weather data');
+      if (!hourly || !Array.isArray(hourly.time))
+        throw new Error('Missing historical weather data');
       // Select the containing UTC hour; historical Open-Meteo data is hourly.
       const hour = time!.toISOString().slice(0, 13) + ':00';
       const index = hourly.time.indexOf(hour);

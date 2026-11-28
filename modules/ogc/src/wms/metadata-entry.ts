@@ -143,3 +143,15 @@ export {OGCAPITilesLoader} from './ogc-api-loaders-metadata';
 export {OGCAPIEDRLoader} from './ogc-api-edr-loader-metadata';
 export {OGCAPICoveragesLoader} from './ogc-api-coverages-loader-metadata';
 export {WCSCoverageLoader} from './wcs-coverage-loader-metadata';
+
+export type {
+  WeatherObservation,
+  WeatherQueryOptions,
+  WeatherSourceOptions
+} from './weather/location-weather-source';
+export type {
+  WeatherBounds,
+  WeatherVariable,
+  WeatherGrid,
+  WeatherGridQuery
+} from './weather/weather-grid-source';

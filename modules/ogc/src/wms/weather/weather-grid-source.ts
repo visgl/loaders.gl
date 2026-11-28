@@ -7,8 +7,14 @@ import type {WeatherSourceOptions} from './location-weather-source';
 /** West, south, east, north in longitude/latitude degrees. Does not cross antimeridian. */
 export type WeatherBounds = [number, number, number, number];
 export type WeatherVariable =
-  | 'temperature' | 'cloudCover' | 'rain' | 'snowfall'
-  | 'visibility' | 'windSpeed' | 'windDirection' | 'weatherCode';
+  | 'temperature'
+  | 'cloudCover'
+  | 'rain'
+  | 'snowfall'
+  | 'visibility'
+  | 'windSpeed'
+  | 'windDirection'
+  | 'weatherCode';
 
 export type WeatherGridQuery = {
   bounds: WeatherBounds;
@@ -53,44 +59,60 @@ const ALL_VARIABLES = Object.keys(FIELD_NAMES) as WeatherVariable[];
  * high-resolution or globe-scale native model rasters.
  */
 export class WeatherGridSource {
+  /** Provider endpoints, fetch implementation, and any grid size limits. */
   readonly options: WeatherSourceOptions & {maxCells?: number; batchSize?: number};
+  /** Creates a source with optional provider configuration. */
   constructor(options: WeatherSourceOptions & {maxCells?: number; batchSize?: number} = {}) {
     this.options = options;
   }
 
+  /** Loads and normalizes observations for the requested place and time. */
   async getWeather(query: WeatherGridQuery): Promise<WeatherGrid> {
     const {bounds, width, height, time} = query;
     const [west, south, east, north] = bounds;
     const maxCells = this.options.maxCells ?? 100;
     const batchSize = this.options.batchSize ?? 20;
-    if (!bounds.every(Number.isFinite) || west < -180 || east > 180 ||
-        south < -90 || north > 90 || west > east || south > north) {
+    if (
+      !bounds.every(Number.isFinite) ||
+      west < -180 ||
+      east > 180 ||
+      south < -90 ||
+      north > 90 ||
+      west > east ||
+      south > north
+    ) {
       throw new Error('Invalid weather bounds (antimeridian crossing not supported)');
     }
-    if (!Number.isInteger(width) || !Number.isInteger(height) ||
-        width < 2 || height < 2 || width * height > maxCells) {
+    if (
+      !Number.isInteger(width) ||
+      !Number.isInteger(height) ||
+      width < 2 ||
+      height < 2 ||
+      width * height > maxCells
+    ) {
       throw new Error(`Weather grid requires at least 2x2 cells and at most ${maxCells} cells`);
     }
     if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 100) {
       throw new Error('Invalid weather batch size');
     }
     if (time && !Number.isFinite(time.getTime())) throw new Error('Invalid weather timestamp');
-    const variables = query.variables ?? ALL_VARIABLES;
+    const variables = [...(query.variables ?? ALL_VARIABLES)];
     if (!variables.length) throw new Error('At least one weather variable is required');
     for (const variable of variables) {
-      if (!(variable in FIELD_NAMES)) throw new Error(`Unknown weather variable: ${variable}`);
+      if (!Object.hasOwn(FIELD_NAMES, variable))
+        throw new Error(`Unknown weather variable: ${variable}`);
     }
 
     const latitudes: number[] = [];
     const longitudes: number[] = [];
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        latitudes.push(north - (north - south) * y / (height - 1));
-        longitudes.push(west + (east - west) * x / (width - 1));
+        latitudes.push(north - ((north - south) * y) / (height - 1));
+        longitudes.push(west + ((east - west) * x) / (width - 1));
       }
     }
 
-    const fields: WeatherGrid['fields'] = {};
+    const fields: WeatherGrid['fields'] = Object.create(null);
     for (const variable of variables) {
       fields[variable] = new Float32Array(width * height).fill(NaN);
     }

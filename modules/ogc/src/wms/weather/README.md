@@ -1,11 +1,11 @@
-# @loaders.gl/wms
+# @loaders.gl/ogc/wms
 
 Lightweight adapters for remote data services.
 
 ## Open-Meteo point weather
 
 ```ts
-import {LocationWeatherSource} from '@loaders.gl/wms';
+import {LocationWeatherSource} from '@loaders.gl/ogc/wms/bundled';
 
 const source = new LocationWeatherSource();
 const current = await source.getWeather({longitude: -80.4, latitude: 25.1});
@@ -30,7 +30,7 @@ its published terms and rate limits. Review licensing before commercial deployme
 ## Coarse regional weather grids
 
 ```ts
-import {WeatherGridSource} from '@loaders.gl/wms';
+import {WeatherGridSource} from '@loaders.gl/ogc/wms/bundled';
 
 const source = new WeatherGridSource();
 const grid = await source.getWeather({
