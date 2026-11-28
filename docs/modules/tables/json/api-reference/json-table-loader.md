@@ -139,16 +139,16 @@ requested columns and any columns used by the predicate. Simple comparisons,
 membership tests, and null checks on top-level Float64 and Boolean columns can
 filter rows before Arrow construction. Other predicates run on Arrow batches.
 
-By default, the source infers requested columns from the full document, including
-fields that appear late. Set `json.schemaInference: 'first-batch'` on the source
-to infer from the first 1,024 rows and exclude fields that first appear later.
+The source defaults to `json.schemaInference: 'first-batch'`. It infers from up to 1,024 rows and
+excludes fields that first appear later. Set `json.schemaInference: 'full'` to include fields that
+appear later in the document.
 A supplied `json.schema` takes precedence over either inference mode.
 
 ```typescript
-import {JSONTableSource} from '@loaders.gl/tables/json';
+import {JSONTableSource} from '@loaders.gl/tables/json/bundled';
 
 const source = new JSONTableSource(url, {
-  json: {schemaInference: 'first-batch'}
+  json: {schemaInference: 'full'}
 });
 
 for await (const batch of source.read({columns: ['column1'], limit: 100})) {
@@ -163,6 +163,8 @@ with full inference still reads and caches the full table.
 ## Streaming
 
 For larger JSON files, `JSONTableLoader` streams rows from one array. Set `json.jsonpaths` when the row array is embedded in a larger document.
+
+For Arrow output without a supplied schema, streaming freezes the schema after up to 1,024 rows, or the smaller explicit `core.batchSize`. Later fields and incompatible values follow `json.arrowConversion`. Set `json.schemaInference: 'full'` to infer from every row before emitting data. Whole-file parsing defaults to full inference.
 
 ```typescript
 import {JSONTableLoader} from '@loaders.gl/tables/json';

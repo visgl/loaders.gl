@@ -103,6 +103,8 @@ When `csv.shape: 'arrow'` is selected, `CSVLoader` returns a native Apache Arrow
 
 `csv.dynamicTyping` controls inference of numeric, boolean, and date values. Set it explicitly to `false` to preserve text as Arrow `Utf8` columns, or to `true` to infer typed columns. The loader's public default is `true`.
 
+With dynamic typing enabled, CSV streaming and CSVTableSource default to `csv.schemaInference: 'first-batch'`. They sample up to 1,024 data records, capped by a smaller explicit `core.batchSize`. Set `csv.schemaInference: 'full'` to include late records before emitting data. Whole-file parsing defaults to full inference. Mixed sampled value types widen to text. After an Arrow column's type freezes, incompatible late values are converted according to that type, or stored as null when they cannot be converted. Row-table output preserves parsed cell values.
+
 ```typescript
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/tables/csv';

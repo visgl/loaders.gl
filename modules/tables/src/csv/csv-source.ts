@@ -40,7 +40,7 @@ export class CSVTableSource
     super(data, options, undefined, coreApi);
   }
 
-  /** Discovers the schema by parsing the first batch. */
+  /** Discovers the schema with the same inference policy used by data reads. */
   async getQueryMetadata(options: TableScanReadOptions = {}): Promise<ScanQueryMetadata> {
     this.metadataPromise ||= this.discoverMetadata(options.signal);
     return await this.metadataPromise;
@@ -52,7 +52,7 @@ export class CSVTableSource
     return explainTableQuery(
       metadata.columns.map(column => column.name),
       options,
-      CSV_TABLE_QUERY_CAPABILITIES
+      this.getTableQueryCapabilities()
     );
   }
 
@@ -71,6 +71,18 @@ export class CSVTableSource
     return planTextFloatProjection(schema, query, readOptions => this.read(readOptions));
   }
 
+  /** Full inference reads the input to the end before a limit or offset can be applied. */
+  private getTableQueryCapabilities() {
+    return this.options.csv?.schemaInference === 'full' && this.options.csv.dynamicTyping !== false
+      ? ({
+          ...CSV_TABLE_QUERY_CAPABILITIES,
+          streaming: false,
+          limit: 'residual',
+          offset: 'residual'
+        } as const)
+      : CSV_TABLE_QUERY_CAPABILITIES;
+  }
+
   private async discoverMetadata(signal?: AbortSignal): Promise<ScanQueryMetadata> {
     for await (const batch of this.parseBatches(signal)) {
       if (!batch.schema) throw new Error('CSV source did not provide a schema');
@@ -80,7 +92,7 @@ export class CSVTableSource
         execution: {status: 'supported', method: 'read'},
         schema: batch.schema,
         capabilities: {
-          table: CSV_TABLE_QUERY_CAPABILITIES
+          table: this.getTableQueryCapabilities()
         }
       });
     }

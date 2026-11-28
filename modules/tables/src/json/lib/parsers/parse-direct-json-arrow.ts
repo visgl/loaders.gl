@@ -17,6 +17,10 @@ import {
   makeJSONArrowSchemaInferer,
   type JSONArrowConversionOptions
 } from './convert-row-table-to-arrow';
+import {
+  getTableSchemaInferenceRows,
+  type TableSchemaInference
+} from '../../../lib/table-schema-inference';
 import {getJSONContainerMetadata} from './json-container-metadata';
 
 const WHITESPACE = String.raw`[\x20\t\n\r]*`;
@@ -126,9 +130,19 @@ export async function* parseDirectJSONArrowInBatches(
   jsonpaths: string[] | undefined,
   batchSize: number | 'auto',
   options: JSONArrowConversionOptions,
-  scan?: JSONArrowScan
+  scan?: JSONArrowScan,
+  inference: TableSchemaInference = 'first-batch'
 ): AsyncIterable<RecordBatch> {
-  const parser = createJSONArrowParser(declaredSchema, jsonpaths, batchSize, options, false, scan);
+  const inferenceRows = getTableSchemaInferenceRows(inference, batchSize);
+  const parser = createJSONArrowParser(
+    declaredSchema,
+    jsonpaths,
+    batchSize,
+    inferenceRows,
+    options,
+    false,
+    scan
+  );
   for await (const chunk of makeTextDecoderIterator(toArrayBufferIterator(input))) {
     yield* parser.write(chunk);
   }
@@ -140,28 +154,42 @@ export function parseDirectJSONArrowText(
   text: string,
   declaredSchema: Schema | undefined,
   options: JSONArrowConversionOptions & {
-    /** Explicit array paths to use when selecting the table rows. */
+    /** Array paths to use when selecting rows from a document. */
     jsonpaths?: string[];
+    /** Records used to infer columns when no schema is supplied. */
+    schemaInference?: TableSchemaInference;
+    /** Optional logical output batch size that caps the first-batch sample. */
+    batchSize?: number | 'auto';
   },
   scan?: JSONArrowScan
 ): Table {
   const document = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   let rowTable = false;
+  let wrapperSchemaRange: [number, number] | undefined;
   if (document.trimStart().startsWith('{')) {
     visitJSONObjectFields(document, (name, start, end) => {
       if (name === 'shape') {
         const shape: unknown = JSON.parse(document.slice(start, end));
         rowTable = shape === 'object-row-table' || shape === 'array-row-table';
+      } else if (name === 'schema') {
+        wrapperSchemaRange = [start, end];
       }
     });
   }
+  // Whole-file sampling can freeze types before a trailing row-table schema is read.
+  const wrapperMetadata: Schema['metadata'] | undefined =
+    rowTable && !declaredSchema && options.schemaInference === 'first-batch' && wrapperSchemaRange
+      ? (JSON.parse(document.slice(...wrapperSchemaRange)) as Schema | null)?.metadata
+      : undefined;
   const parser = createJSONArrowParser(
     declaredSchema,
     options.jsonpaths?.length ? options.jsonpaths : rowTable ? ['$.data'] : undefined,
     'auto',
+    getTableSchemaInferenceRows(options.schemaInference ?? 'full', options.batchSize),
     options,
     true,
-    scan
+    scan,
+    wrapperMetadata
   );
   return new Table([...parser.write(document), ...parser.finish()]);
 }
@@ -171,9 +199,11 @@ function createJSONArrowParser(
   declaredSchema: Schema | undefined,
   jsonpaths: string[] | undefined,
   batchSize: number | 'auto',
+  inferenceRows: number,
   options: JSONArrowConversionOptions,
   wholeFile = false,
-  scan?: JSONArrowScan
+  scan?: JSONArrowScan,
+  wrapperMetadata?: Schema['metadata']
 ) {
   const builderOptions = {viewTypes: options.arrowConversion?.viewTypes};
   const selected = scan?.columns;
@@ -209,6 +239,7 @@ function createJSONArrowParser(
 
   /** Reads schema metadata carried by a serialized loaders.gl row table. */
   function getRowTableSchemaMetadata(): Schema['metadata'] {
+    if (wrapperMetadata) return wrapperMetadata;
     const wrapper = parser.getPartialResult() as {shape?: string; schema?: Schema} | null;
     return wrapper?.shape === 'object-row-table' || wrapper?.shape === 'array-row-table'
       ? (wrapper.schema?.metadata ?? {})
@@ -237,6 +268,7 @@ function createJSONArrowParser(
         if (row in column) fields.set(name, column[row]);
       }
       if (!accept || accept(fields)) appendInitialFields(fields);
+      if (!wholeFile && typeof batchSize === 'number' && builder.length >= batchSize) flush();
     }
     columns.clear();
     inferredRows = 0;
@@ -259,7 +291,8 @@ function createJSONArrowParser(
 
   /** Emits a complete batch when the configured row limit is reached. */
   function flushOnRowLimit(): void {
-    if (typeof batchSize === 'number' && (builder?.length ?? inferredRows) >= batchSize) flush();
+    if (!builder && inferredRows >= inferenceRows) finishInference();
+    if (typeof batchSize === 'number' && builder && builder.length >= batchSize) flush();
   }
 
   /** Appends an ordered scalar object straight from a compiled source match. */
@@ -375,7 +408,7 @@ function createJSONArrowParser(
     *write(chunk: string): Iterable<RecordBatch> {
       parser.write(chunk);
       if (wholeFile) return;
-      if (batchSize === 'auto') flush();
+      if (batchSize === 'auto' && builder) flush();
       yield* emitBufferedBatches();
     },
     /** Validates the document ending and emits the final data and metadata. */
