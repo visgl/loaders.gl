@@ -22,6 +22,7 @@ import {
   ArrowTableBuilder,
   convertArrowToSchema,
   convertSchemaToArrow,
+  makeArrowRecordBatch,
   type ArrowViewTypeMode
 } from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
@@ -444,8 +445,7 @@ function validateEmptySchemaRowTable(
 export function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): arrow.Table {
   const arrowSchema = convertSchemaToArrow(schema);
   const arrowData = new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, []);
-  const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowData);
-  Object.defineProperty(arrowRecordBatch, 'data', {value: arrowData});
+  const arrowRecordBatch = makeArrowRecordBatch(arrowSchema, arrowData);
 
   return new arrow.Table(arrowSchema, [arrowRecordBatch]);
 }

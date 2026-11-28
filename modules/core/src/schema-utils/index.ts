@@ -167,6 +167,7 @@ export {
   updateArrowTableSchema,
   updateNativeArrowTableMetadata,
   makeArrowMetadataBatch,
+  makeArrowRecordBatch,
   makeArrowTableFromBatches
 } from './lib/arrow/arrow-metadata';
 export {refineArrowTableBatches} from './lib/arrow/arrow-metadata';

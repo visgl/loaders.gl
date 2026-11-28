@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {makeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {expect, test, vi} from 'vitest';
 import {parse} from '@loaders.gl/core';
 import {GeoJSONWorkerLoader} from '@loaders.gl/tables/geojson/bundled';
@@ -52,7 +53,7 @@ test('GeoJSON explicit binary and feature outputs preserve streaming values', as
 
 test('GeoJSON native transport distinguishes batches, tables, and binary geometry', () => {
   const table = tableFromArrays({id: new Int32Array([7])});
-  const batch = new RecordBatch(
+  const batch = makeArrowRecordBatch(
     table.schema,
     table.batches[0].data,
     new Map([['jsonpath', '$.features']])

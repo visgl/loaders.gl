@@ -25,7 +25,8 @@ import type {DataType, Field, Schema, TableBatch} from '@loaders.gl/core/schema'
 import {
   convertArrowToSchema,
   convertTableToArrow,
-  convertSchemaToArrow
+  convertSchemaToArrow,
+  makeArrowRecordBatch
 } from '@loaders.gl/core/schema-utils';
 import {queryArrowTable} from './plan-arrow-table-query';
 import {type SQLPredicate} from './sql-predicate-types';
@@ -382,7 +383,7 @@ export class FederatedTableScanSource
                 native && resultLength === batchLength ? input.metadata : undefined
               );
               metadata.set('loaders.gl.federation', JSON.stringify(provenance));
-              yield new arrow.RecordBatch(recordBatch.schema, recordBatch.data, metadata);
+              yield makeArrowRecordBatch(recordBatch.schema, recordBatch.data, metadata);
             }
             remaining -= resultLength;
           }

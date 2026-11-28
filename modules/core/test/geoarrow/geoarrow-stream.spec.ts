@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {makeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
 import {expect, test} from 'vitest';
 import {convertGeometryToWKB} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
@@ -94,7 +95,7 @@ function createWKBBatch(geometry: Geometry): arrow.RecordBatch {
     ])
   );
   const schema = new arrow.Schema([geometryField]);
-  return new arrow.RecordBatch(
+  return makeArrowRecordBatch(
     schema,
     new arrow.Data(new arrow.Struct(schema.fields), 0, 1, 0, undefined, [vector.data[0]]),
     new Map([['fixture', 'local']])

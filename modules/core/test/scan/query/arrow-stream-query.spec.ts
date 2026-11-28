@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {makeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {queryArrowTable} from '@loaders.gl/core/query/arrow-query';
@@ -62,7 +63,7 @@ test('sparse Arrow filters preserve dictionary encoding and batch metadata', () 
     label: dictionary
   });
   const metadata = new Map([['source', 'fixture']]);
-  const batch = new arrow.RecordBatch(source.schema, source.batches[0].data, metadata);
+  const batch = makeArrowRecordBatch(source.schema, source.batches[0].data, metadata);
   const result = filterArrowTable(new arrow.Table(source.schema, [batch]), predicate);
 
   expect(result.batches[0].metadata).toEqual(metadata);

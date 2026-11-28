@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  RecordBatch,
-  type Table as ArrowTable,
-  type RecordBatch as ArrowTableBatch
-} from 'apache-arrow';
+import type {Table as ArrowTable, RecordBatch as ArrowTableBatch} from 'apache-arrow';
 
 import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import {
   convertSchemaToArrow,
   makeArrowMetadataBatch,
+  makeArrowRecordBatch,
   convertArrowToSchema,
   updateNativeArrowTableMetadata
 } from '@loaders.gl/core/schema-utils';
@@ -219,7 +216,7 @@ async function* makeGeoJSONArrowBatchIterator(
           const finalBatch = makeArrowMetadataBatch(convertSchemaToArrow(schema));
           const metadata = new Map(finalBatch.metadata);
           if (batch.jsonpath) metadata.set('jsonpath', String(batch.jsonpath));
-          yield new RecordBatch(finalBatch.schema, finalBatch.data, metadata);
+          yield makeArrowRecordBatch(finalBatch.schema, finalBatch.data, metadata);
         }
       }
       continue;
@@ -269,7 +266,7 @@ async function* makeGeoJSONArrowBatchIterator(
     for (const recordBatch of refinedTable.batches) {
       const metadata = new Map(recordBatch.metadata);
       if (batch.jsonpath) metadata.set('jsonpath', String(batch.jsonpath));
-      yield new RecordBatch(recordBatch.schema, recordBatch.data, metadata);
+      yield makeArrowRecordBatch(recordBatch.schema, recordBatch.data, metadata);
     }
   }
 }

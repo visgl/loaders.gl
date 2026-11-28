@@ -4,7 +4,10 @@
 
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
-import {tightenArrowTableSchemaNullability} from '@loaders.gl/core/schema-utils';
+import {
+  makeArrowRecordBatch,
+  tightenArrowTableSchemaNullability
+} from '@loaders.gl/core/schema-utils';
 test('tightenArrowTableSchemaNullability#tightens nullable fields without nulls', async () => {
   const table = makeTestArrowTable({
     values: ['a', 'b', 'c'],
@@ -37,7 +40,7 @@ test('tightening keeps table and batch metadata snapshots independent', () => {
   const input = makeTestArrowTable({values: ['a'], nullable: true});
   const schema = new arrow.Schema(input.schema.fields, new Map([['stage', 'table']]));
   const batchSchema = new arrow.Schema(input.schema.fields, new Map([['stage', 'batch']]));
-  const batch = new arrow.RecordBatch(
+  const batch = makeArrowRecordBatch(
     batchSchema,
     input.batches[0].data,
     new Map([['partition', 'first']])

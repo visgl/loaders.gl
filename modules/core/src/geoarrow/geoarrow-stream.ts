@@ -9,7 +9,7 @@ import type {
   GeoMetadata,
   GeoParquetGeometryType
 } from '@loaders.gl/core/schema';
-import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {makeArrowMetadataBatch, makeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {
   type GeoArrowGeometryConvertOptions,
   type GeoArrowGeometryTarget,
@@ -68,11 +68,7 @@ export async function* convertGeoArrowBatches(
     for (const convertedBatch of stableTable.batches.length
       ? stableTable.batches
       : [makeArrowMetadataBatch(stableTable.schema)]) {
-      yield new arrow.RecordBatch(
-        convertedBatch.schema,
-        convertedBatch.data,
-        new Map(batch.metadata)
-      );
+      yield makeArrowRecordBatch(convertedBatch.schema, convertedBatch.data, batch.metadata);
     }
   }
 }
