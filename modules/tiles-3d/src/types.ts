@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Vector3} from '@math.gl/core/matrix';
+import type {Vector3} from '@math.gl/core/matrix';
 import type {Plane} from '@math.gl/geometry/culling';
 
 export type BoundingRectangle = {
@@ -38,8 +38,18 @@ export type Viewport = {
   project: (coorinates: number[] | Vector3) => number[];
 };
 
+/** A viewport frustum plane in common space. */
+export type FrustumPlane = {
+  /** Signed distance along the plane normal from the common-space origin. */
+  distance: number;
+  /** Unit normal of the plane. */
+  normal: Vector3;
+};
+
 /** Viewport used for 3D tileset traversal. */
 export type TraversalViewport = Viewport & {
+  /** Returns the six view frustum planes in common space. */
+  getFrustumPlanes(): Record<'left' | 'right' | 'bottom' | 'top' | 'near' | 'far', FrustumPlane>;
   /** Camera direction in common space, when supplied by the viewport. */
   cameraDirection?: number[];
   /** Camera up direction in common space, when supplied by the viewport. */

@@ -7,7 +7,7 @@ import {Vector3} from '@math.gl/core/matrix';
 import {CullingVolume, Plane} from '@math.gl/geometry/culling';
 import {Ellipsoid} from '@math.gl/geospatial/ellipsoid';
 import {eastNorthUpToFixedFrame} from '@math.gl/geospatial/coordinates';
-import type {TraversalViewport, Viewport} from '../../types';
+import type {FrustumPlane, TraversalViewport, Viewport} from '../../types';
 
 export type FrameState = {
   camera: {
@@ -122,9 +122,6 @@ export function getFrameState(
     // Concrete deck.gl viewports do not expose the legacy structural cameraDirection field.
     // The near-plane center is on the view axis, so its world-space direction is equivalent and
     // works for perspective foveation without coupling loaders.gl to deck.gl internals.
-    // getFrustumPlanes is required by traversal but omitted from the minimal structural Viewport
-    // type for compatibility with existing application-side declarations.
-    // @ts-expect-error Runtime geospatial viewports provide getFrustumPlanes.
     const nearPlane = viewport.getFrustumPlanes().near;
     const nearCenterCommon = closestPointOnPlane(nearPlane, viewport.cameraPosition);
     const nearCenterCartesian = worldToCartesian(viewport, nearCenterCommon);
@@ -302,30 +299,26 @@ function getViewportLongitudeLatitude(viewport: TraversalViewport): [number, num
   return [centerLongitude, centerLatitude];
 }
 
-function commonSpacePlanesToWGS84(viewport) {
-  // Extract frustum planes based on current view.
-  const frustumPlanes = viewport.getFrustumPlanes();
+/** Updates the WGS84 Cartesian culling volume from the viewport's common-space frustum. */
+function commonSpacePlanesToWGS84(viewport: TraversalViewport): void {
+  const {left, right, bottom, top, near, far} = viewport.getFrustumPlanes();
 
   // Get the near/far plane centers
-  const nearCenterCommon = closestPointOnPlane(frustumPlanes.near, viewport.cameraPosition);
+  const nearCenterCommon = closestPointOnPlane(near, viewport.cameraPosition);
   const nearCenterCartesian = worldToCartesian(viewport, nearCenterCommon);
   const cameraCartesian = worldToCartesian(viewport, viewport.cameraPosition, scratchPosition);
 
-  let i = 0;
-  cullingVolume.planes[i++].fromPointNormal(
+  cullingVolume.planes[0].fromPointNormal(
     nearCenterCartesian,
     scratchVector.copy(nearCenterCartesian).subtract(cameraCartesian)
   );
 
-  for (const dir in frustumPlanes) {
-    if (dir === 'near') {
-      continue; // eslint-disable-line no-continue
-    }
-    const plane = frustumPlanes[dir];
+  let planeIndex = 1;
+  for (const plane of [left, right, bottom, top, far]) {
     const posCommon = closestPointOnPlane(plane, nearCenterCommon, scratchPosition);
     const cartesianPos = worldToCartesian(viewport, posCommon, scratchPosition);
 
-    cullingVolume.planes[i++].fromPointNormal(
+    cullingVolume.planes[planeIndex++].fromPointNormal(
       cartesianPos,
       // Want the normal to point into the frustum since that's what culling expects
       scratchVector.copy(nearCenterCartesian).subtract(cartesianPos)
@@ -333,8 +326,9 @@ function commonSpacePlanesToWGS84(viewport) {
   }
 }
 
+/** Projects a common-space point onto a plane. */
 function closestPointOnPlane(
-  plane: {distance: number; normal: Vector3},
+  plane: FrustumPlane,
   refPoint: number[] | Vector3,
   out: Vector3 = new Vector3()
 ): Vector3 {
