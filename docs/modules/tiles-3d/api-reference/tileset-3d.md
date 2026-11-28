@@ -436,6 +436,11 @@ Schedules tile selection and content requests for the supplied viewports. With n
 uses the most recent viewports. Import `TraversalViewport` from `@loaders.gl/tiles-3d/tileset`.
 Its `longitude` and `latitude` fields are optional.
 
+`TraversalViewport` requires `getFrustumPlanes()`, even when `cameraDirection` is supplied.
+The method returns the `left`, `right`, `bottom`, `top`, `near`, and `far` planes in common
+space. Each plane has a numeric `distance` and a `Vector3` `normal`, matching deck.gl's
+viewport API.
+
 ### I3S content options
 
 `Tileset3DProps.i3s` forwards format options to I3S content requests. A dedicated conversion
