@@ -65,6 +65,50 @@ test('JSON table source projects Blob rows and observes cancellation', async () 
   expect(batch.numRows).toBe(1);
 });
 
+test('JSON table source streams declared columns and cancels input at the limit', async () => {
+  const encoder = new TextEncoder();
+  const chunks = ['[[1,2],', '[3,4]]'];
+  const pull = vi.fn((controller: ReadableStreamDefaultController<Uint8Array>) => {
+    const chunk = chunks.shift();
+    if (chunk === undefined) controller.close();
+    else controller.enqueue(encoder.encode(chunk));
+  });
+  const cancel = vi.fn();
+  const fetch = vi.fn(
+    async () => new Response(new ReadableStream({pull, cancel}, {highWaterMark: 0}))
+  );
+  const source = new JSONTableSource('https://example.test/points.json', {
+    core: {fetch},
+    json: {
+      schema: {
+        fields: [
+          {name: 'longitude', type: 'float64', nullable: false},
+          {name: 'latitude', type: 'float64', nullable: false}
+        ],
+        metadata: {}
+      }
+    }
+  });
+
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.capabilities.table).toMatchObject({
+    projection: 'residual',
+    predicate: 'residual',
+    limit: 'pushdown',
+    streaming: true
+  });
+  expect(metadata.columns.map(column => column.name)).toEqual(['longitude', 'latitude']);
+  expect(fetch).not.toHaveBeenCalled();
+
+  const rows = [];
+  for await (const batch of source.read({columns: ['latitude'], limit: 1})) {
+    rows.push(...batch.toArray().map(row => row.toJSON()));
+  }
+  expect(rows).toEqual([{latitude: 2}]);
+  expect(pull).toHaveBeenCalledTimes(1);
+  expect(cancel).toHaveBeenCalledTimes(1);
+});
+
 test('JSONTableLoader source matching preserves parser order for JSON URLs', async () => {
   const fetch = vi.fn(
     async () => new Response('[{"value":1}]', {headers: {'Content-Type': 'application/json'}})
