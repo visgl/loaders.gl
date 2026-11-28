@@ -61,3 +61,25 @@ test('CSVLoader parses data and creates a source after preload', async () => {
   expect(source).toBeInstanceOf(CSVTableSource);
   expect((await source.getQueryMetadata()).columns).toHaveLength(1);
 });
+
+test.each([
+  'first-batch',
+  'full',
+  undefined
+] as const)('CSV source agrees on metadata and data schema for %s inference', async schemaInference => {
+  const input = new Blob(['value\n1\nlater\n']);
+  const source = new CSVTableSource(input, {
+    core: {batchSize: 1},
+    csv: {header: true, schemaInference}
+  });
+  const metadata = await source.getQueryMetadata();
+  const expected = schemaInference === 'full' ? 'utf8' : 'float64';
+  expect(metadata.schema?.fields[0].type).toBe(expected);
+  expect(metadata.capabilities.table?.streaming).toBe(schemaInference !== 'full');
+  const values = [];
+  for await (const batch of source.read()) {
+    expect(batch.schema?.fields[0].type).toBe(expected);
+    values.push(...batch.data);
+  }
+  expect(values).toEqual([{value: 1}, {value: 'later'}]);
+});

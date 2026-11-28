@@ -3,8 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {expect, test} from 'vitest';
+import {RecordBatch} from 'apache-arrow';
 import {
   parseCSVArrayBufferAsArrow,
+  parseCSVInArrowBatches,
   parseCSVTextAsArrow
 } from '../../src/csv/csv-arrow-table-parser';
 
@@ -105,4 +107,60 @@ test('direct parser rejects incompatible delimiter candidates before safe fallba
     }
   });
   expect(values(guessed, 'b')).toEqual([2]);
+});
+
+test.each([
+  ['first-batch', [1, null]],
+  ['full', ['1', 'later']],
+  [undefined, [1, null]]
+] as const)('CSV Arrow streaming uses %s inference', async (schemaInference, expected) => {
+  const options = {
+    core: {batchSize: 1},
+    csv: {header: true as const, dynamicTyping: true, schemaInference}
+  };
+  const chunks = ['value\n1\n', 'later\n'].map(text => encoder.encode(text));
+  const result = [];
+  for await (const batch of parseCSVInArrowBatches(chunks, options)) {
+    result.push(...values(batch, 'value'));
+  }
+  expect(result).toEqual(expected);
+  const atomic = await parseCSVTextAsArrow('value\n1\nlater', options);
+  expect(values(atomic, 'value')).toEqual(
+    schemaInference === undefined ? ['1', 'later'] : expected
+  );
+});
+
+test('CSV Arrow batches retain progress on runtimes without native batch metadata', async () => {
+  const descriptor = Object.getOwnPropertyDescriptor(RecordBatch.prototype, 'metadata');
+  expect(descriptor).toBeDefined();
+  Reflect.deleteProperty(RecordBatch.prototype, 'metadata');
+  try {
+    const input = [encoder.encode('value\n1\n2\n')];
+    const batches = [];
+    for await (const batch of parseCSVInArrowBatches(input, {
+      core: {batchSize: 1},
+      csv: {header: true, dynamicTyping: true}
+    })) {
+      batches.push(batch);
+    }
+    expect(batches.map(batch => batch.metadata.get('count'))).toEqual(['0', '1']);
+    expect(batches.flatMap(batch => values(batch, 'value'))).toEqual([1, 2]);
+  } finally {
+    Object.defineProperty(RecordBatch.prototype, 'metadata', descriptor!);
+  }
+});
+
+test('full CSV inference includes extra header cells that first appear in later rows', async () => {
+  const input = [encoder.encode('a,b\n1,2\n3,4,late')];
+  const batches = [];
+  for await (const batch of parseCSVInArrowBatches(input, {
+    core: {batchSize: 1},
+    csv: {header: true, dynamicTyping: true, skipEmptyLines: false, schemaInference: 'full'}
+  })) {
+    batches.push(batch);
+  }
+  expect(batches).toHaveLength(1);
+  const extra = batches[0].getChild('__parsed_extra');
+  expect(extra?.get(0)).toBe(null);
+  expect(Array.from(extra!.get(1))).toEqual(['late']);
 });

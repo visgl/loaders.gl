@@ -11,6 +11,9 @@ import {JSONFormat} from './json-format';
 import type {JSONBatch, MetadataBatch} from './json-loader-types';
 import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
 
+import type {TableSchemaInference} from '../lib/table-schema-inference';
+export type {TableSchemaInference} from '../lib/table-schema-inference';
+
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -23,6 +26,8 @@ export type JSONTableLoaderOptions = LoaderOptions & {
   json?: {
     /** Requested table output shape. */
     shape?: 'arrow' | 'object-row-table' | 'array-row-table';
+    /** Records used to infer types when no schema is supplied. Defaults to first-batch for streams. */
+    schemaInference?: TableSchemaInference;
     /** JSON paths identifying arrays that can be streamed as row batches. */
     jsonpaths?: string[];
     /** Optional schema used when converting JSON rows to Arrow. */
