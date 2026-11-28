@@ -17,6 +17,11 @@ import type {
 } from '../../parquetjs/schema/declare';
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumn, materializeRows} from '../../parquetjs/schema/shred';
+import {
+  hasStandardNestedCollection,
+  normalizeLegacyArrowValue,
+  normalizeNestedParquetValue
+} from '../arrow/normalize-parquet-collections';
 import {createNestedArrowVector} from '../arrow/create-nested-arrow-vector';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
 
@@ -291,6 +296,21 @@ function createParquetArrowMetadata(metadata?: SchemaMetadata): Map<string, stri
   return arrowMetadata;
 }
 
+/** Decodes a complete row group with the same direct Arrow paths as the full-file loader. */
+export function convertParquetRowGroupToArrow(
+  schema: Schema,
+  parquetSchema: ParquetSchema,
+  rowGroup: ParquetRowGroup
+): arrow.Table {
+  return convertRowGroupSliceToArrow(
+    createParquetArrowSchema(schema),
+    parquetSchema,
+    rowGroup,
+    0,
+    rowGroup.rowCount
+  );
+}
+
 /** Builds Arrow from one selected row-group range with per-column fallbacks. */
 function convertRowGroupSliceToArrow(
   arrowSchema: arrow.Schema,
@@ -338,7 +358,7 @@ function convertRowGroupSliceToArrow(
     }
 
     let fullColumn = materializeColumn(parquetSchema, rowGroup, field.name);
-    if (parquetField.fields && hasStandardNestedCollection(parquetField)) {
+    if (parquetField.fields && hasStandardNestedCollection(parquetField, field.type)) {
       materializedRows ||= materializeRows(parquetSchema, rowGroup);
       const normalizedValues = materializedRows
         .slice(start, end)
@@ -366,133 +386,6 @@ function convertRowGroupSliceToArrow(
   }
 
   return createArrowTable(arrowSchema, vectors, end - start);
-}
-
-/** Converts absent legacy repeated values to empty lists before invoking Arrow builders. */
-function normalizeLegacyArrowValue(value: unknown, field: arrow.Field): unknown {
-  if (value === undefined || value === null) {
-    return field.type instanceof arrow.List && !field.nullable ? [] : null;
-  }
-  if (field.type instanceof arrow.List && Array.isArray(value)) {
-    return value.map(element => normalizeLegacyArrowValue(element, field.type.children[0]));
-  }
-  if (field.type instanceof arrow.Struct && typeof value === 'object') {
-    return Object.fromEntries(
-      field.type.children.map(child => [
-        child.name,
-        normalizeLegacyArrowValue(Reflect.get(value, child.name), child)
-      ])
-    );
-  }
-  return value;
-}
-
-/** Detects standard collection wrappers that need normalization before Arrow conversion. */
-function hasStandardNestedCollection(field: ParquetField): boolean {
-  if (field.logicalType?.type === 'LIST') {
-    const element = field.fields?.list?.fields?.element;
-    if (!element) return false;
-    // Nested repeated continuation is still handled by the legacy materializer;
-    // only normalize one-level collections here until that path is fully aligned.
-    if (element.logicalType?.type === 'LIST' || element.logicalType?.type === 'MAP') return false;
-    return true;
-  }
-  if (field.logicalType?.type === 'MAP') {
-    return Boolean(field.fields?.key_value?.fields?.key && field.fields.key_value.fields.value);
-  }
-  return Object.values(field.fields || {}).some(hasStandardNestedCollection);
-}
-
-/** Normalizes standard Parquet LIST/MAP wrappers and absent values before Arrow conversion. */
-function normalizeNestedParquetValue(
-  value: unknown,
-  field: ParquetField,
-  arrowType: arrow.DataType
-): unknown {
-  // Materialization omits absent optional fields; Arrow builders recognize null, not undefined.
-  if (value === undefined || value === null) {
-    return null;
-  }
-  if (!field.fields) {
-    return value;
-  }
-
-  if (
-    field.repetitionType === 'REPEATED' &&
-    arrowType instanceof arrow.List &&
-    Array.isArray(value)
-  ) {
-    return value.map(element =>
-      normalizeNestedParquetValue(element, field, arrowType.children[0].type)
-    );
-  }
-
-  if (field.logicalType?.type === 'LIST' && arrowType instanceof arrow.List) {
-    const listField = field.fields.list;
-    const elementField = listField?.fields?.element;
-    if (!listField || !elementField) {
-      return value;
-    }
-    const listValue = value && typeof value === 'object' ? Reflect.get(value, 'list') : undefined;
-    if (!Array.isArray(listValue)) {
-      return [];
-    }
-    return listValue.map(element =>
-      normalizeNestedParquetValue(
-        element && typeof element === 'object' ? Reflect.get(element, 'element') : element,
-        elementField,
-        arrowType.children[0].type
-      )
-    );
-  }
-
-  if (field.logicalType?.type === 'MAP' && arrowType instanceof arrow.Map_) {
-    const entryField = field.fields.key_value;
-    const keyField = entryField?.fields?.key;
-    const valueField = entryField?.fields?.value;
-    if (!entryField || !keyField || !valueField) {
-      const legacyValueField = field.fields.value;
-      return legacyValueField && typeof value === 'object'
-        ? new Map([
-            [
-              Reflect.get(value, 'key'),
-              normalizeNestedParquetValue(
-                Reflect.get(value, 'value'),
-                legacyValueField,
-                arrowType.children[0].type.children[1].type
-              )
-            ]
-          ])
-        : value;
-    }
-    const entries =
-      value && typeof value === 'object' ? Reflect.get(value, 'key_value') : undefined;
-    if (!Array.isArray(entries)) {
-      return new Map();
-    }
-    return new Map(
-      entries.map(entry => [
-        Reflect.get(entry, 'key'),
-        normalizeNestedParquetValue(
-          Reflect.get(entry, 'value'),
-          valueField,
-          arrowType.children[0].type.children[1].type
-        )
-      ])
-    );
-  }
-
-  if (typeof value !== 'object' || Array.isArray(value) || ArrayBuffer.isView(value)) {
-    return value;
-  }
-  const normalized: Record<string, unknown> = {};
-  for (const [name, childField] of Object.entries(field.fields)) {
-    const childType = arrowType.children?.find(child => child.name === name)?.type;
-    normalized[name] = childType
-      ? normalizeNestedParquetValue(Reflect.get(value, name), childField, childType)
-      : Reflect.get(value, name);
-  }
-  return normalized;
 }
 
 /** Creates an exact Arrow Decimal128/256 vector from unscaled Parquet decimal values. */
