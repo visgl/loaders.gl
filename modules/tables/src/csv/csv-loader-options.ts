@@ -16,6 +16,14 @@ export const CSV_LOADER_VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION
 /** Default output shape for CSV parsing. */
 export const DEFAULT_CSV_SHAPE = 'arrow';
 
+/** Internal scan controls applied after CSV schema inference. */
+export type CSVRowScan = {
+  /** Columns needed by the projection or remaining predicate. */
+  columns?: readonly string[];
+  /** Rows skipped before constructing output batches. */
+  offset?: number;
+};
+
 export type CSVLoaderOptions = LoaderOptions & {
   /** Preferred GeoArrow encoding for detected geometry columns. */
   geoarrow?: {encodingPreference?: GeoArrowEncodingPreference};

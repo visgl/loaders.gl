@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {convertParquetRowGroupToArrow} from './parsers/parse-parquet-to-arrow-js';
+import {
+  hasNativeGeoArrowList,
+  materializeParquetArrowColumns
+} from './arrow/materialize-parquet-arrow-columns';
 import {dehydrateArrowTable} from '@math.gl/core/arrow';
 import type {ArrayType} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
@@ -68,9 +73,15 @@ export async function decodeParquetSourceWorkerInput(
       }`
     );
   }
-  const columns = concatenateMaterializedColumns(
-    decodedRowGroups.map(decodedRowGroup => schema.materializeColumns(decodedRowGroup))
-  );
+  const directArrow =
+    !input.predicate && !input.pagePlan && hasNativeGeoArrowList(input.projectedSchema);
+  const columns = directArrow
+    ? {}
+    : concatenateMaterializedColumns(
+        decodedRowGroups.map(decodedRowGroup =>
+          materializeParquetArrowColumns(schema, decodedRowGroup, input.projectedSchema)
+        )
+      );
   const sourceRowIndices = input.pagePlan
     ? input.pagePlan.rowRanges.flatMap(rowRange =>
         Array.from({length: rowRange.end - rowRange.start}, (_, index) => rowRange.start + index)
@@ -86,6 +97,9 @@ export async function decodeParquetSourceWorkerInput(
   const decodeDurationMs = getCurrentTime() - decodeStartTime;
 
   const conversionStartTime = getCurrentTime();
+  const directTable = directArrow
+    ? convertParquetRowGroupToArrow(input.projectedSchema, schema, decodedRowGroups[0])
+    : undefined;
   const batches: ParquetSourceWorkerBatch[] = [];
   const outputColumns = new Set(input.projectedSchema.fields.map(field => field.name));
   const outputRowCount = rowIndices?.length ?? sourceRowCount;
@@ -101,17 +115,18 @@ export async function decodeParquetSourceWorkerInput(
       outputRowOffset + rowCount
     );
     const rowGroupRowOffset = batchRowIndices?.[0] ?? outputRowOffset;
-    const batchColumns = batchLocalRowIndices
-      ? gatherParquetColumns(columns, batchLocalRowIndices, outputColumns)
-      : sliceColumns(columns, outputRowOffset, outputRowOffset + rowCount);
-    const arrowTable = convertTable(
-      {
-        shape: 'columnar-table',
-        schema: input.projectedSchema,
-        data: batchColumns
-      },
-      'arrow'
-    );
+    const arrowTable = directTable
+      ? directTable.slice(outputRowOffset, outputRowOffset + rowCount)
+      : convertTable(
+          {
+            shape: 'columnar-table',
+            schema: input.projectedSchema,
+            data: batchLocalRowIndices
+              ? gatherParquetColumns(columns, batchLocalRowIndices, outputColumns)
+              : sliceColumns(columns, outputRowOffset, outputRowOffset + rowCount)
+          },
+          'arrow'
+        );
     batches.push({
       rowGroupRowOffset,
       rowCount,

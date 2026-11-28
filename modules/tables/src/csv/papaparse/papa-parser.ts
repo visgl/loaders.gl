@@ -27,6 +27,8 @@ export type CSVParserConfig = {
 
   dynamicTyping?: boolean | {};
   dynamicTypingFunction?: Function;
+  /** Skips type conversion for fields omitted by a streaming scan. */
+  shouldTypeField?: (field: string | number) => boolean;
   step?: Function;
   transform?: Function;
   complete?: Function;
@@ -440,7 +442,12 @@ export class ParserHandle {
 
       if (this._config.transform) value = this._config.transform(value, field);
 
-      if (shouldApplyDynamicTyping) value = this.parseDynamic(field, value);
+      if (
+        shouldApplyDynamicTyping &&
+        (value === '' || this._config.shouldTypeField?.(field) !== false)
+      ) {
+        value = this.parseDynamic(field, value);
+      }
 
       if (field === '__parsed_extra') {
         row[field] = row[field] || [];

@@ -26,6 +26,8 @@ export type JSONTableLoaderOptions = LoaderOptions & {
   json?: {
     /** Requested table output shape. */
     shape?: 'arrow' | 'object-row-table' | 'array-row-table';
+    /** Uses worker byte offsets for streamed top-level arrays of object rows. */
+    workerRowOffsets?: boolean;
     /** Records used to infer types when no schema is supplied. Defaults to first-batch for streams. */
     schemaInference?: TableSchemaInference;
     /** JSON paths identifying arrays that can be streamed as row batches. */
@@ -71,6 +73,7 @@ export const JSONTableLoaderDefinition = {
   options: {
     json: {
       shape: 'arrow',
+      workerRowOffsets: false,
       jsonpaths: [],
       schema: undefined,
       arrowConversion: undefined
