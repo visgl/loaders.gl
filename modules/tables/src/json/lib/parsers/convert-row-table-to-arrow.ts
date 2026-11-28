@@ -709,6 +709,25 @@ export function makeJSONArrowExtraCellHandler(options: JSONArrowConversionOption
     );
 }
 
+/** Applies the same value conversion policy used by the Arrow column writer. */
+export function makeJSONArrowPredicateValueReader(
+  field: Schema['fields'][number],
+  options: JSONArrowConversionOptions
+) {
+  const conversion = normalizeArrowConversionOptions(options.arrowConversion);
+  const log = makeConversionLogger(options.log, conversion.logRecoveries);
+  return (fields: ReadonlyMap<string, unknown>): unknown =>
+    normalizeValueForArrow(
+      field,
+      fields.get(field.name),
+      field.name,
+      fields.has(field.name),
+      conversion,
+      log,
+      {allowMissingNullableFields: options.allowMissingNullableFields ?? false}
+    );
+}
+
 /** Writes lexically decoded fields directly into an existing Arrow builder. */
 export function makeJSONArrowFieldAppender(
   builder: ArrowTableBuilder,

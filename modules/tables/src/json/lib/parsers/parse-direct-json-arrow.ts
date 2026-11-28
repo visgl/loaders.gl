@@ -58,6 +58,65 @@ function compileDirectJSONArrowRow(schema: Schema): RegExp | null {
   );
 }
 
+/** Parser-side plan supplied by a JSON table scan. */
+export type JSONArrowScan = {
+  columns?: ReadonlySet<string>;
+  accept?: (fields: ReadonlyMap<string, unknown>) => boolean;
+  prepareInferredPredicate?: (schema: Schema) => JSONArrowScan['accept'];
+  ignoreLateFields?: boolean;
+};
+
+/** Checks a skipped value's JSON grammar without allocating decoded values. */
+function validateSkippedJSON(text: string, start: number, end: number): void {
+  const token = SKIPPED_JSON_TOKEN;
+  token.lastIndex = start;
+  const stack: string[] = [];
+  let expected = 'value';
+  while (true) {
+    const match = token.exec(text);
+    if (!match || token.lastIndex > end) break;
+    const value = match[1];
+    const string = value[0] === '"';
+    const container = value === '[' || value === '{';
+    if (expected === 'value' || (expected === 'array-start' && value !== ']')) {
+      if (container) {
+        stack.push(value === '[' ? ']' : '}');
+        expected = value === '[' ? 'array-start' : 'object-start';
+      } else if (string || /^[-0-9tfn]/.test(value)) {
+        expected = stack.length ? 'separator' : 'end';
+      } else break;
+    } else if ((expected === 'key' || expected === 'object-start') && string) {
+      expected = 'colon';
+    } else if (expected === 'colon' && value === ':') {
+      expected = 'value';
+    } else if (expected === 'separator' && value === ',') {
+      expected = stack.at(-1) === '}' ? 'key' : 'value';
+    } else if (
+      value === stack.at(-1) &&
+      (expected === 'separator' || expected === 'object-start' || expected === 'array-start')
+    ) {
+      stack.pop();
+      expected = stack.length ? 'separator' : 'end';
+    } else break;
+    if (expected === 'end') {
+      SKIPPED_JSON_TRAILING_WHITESPACE.lastIndex = token.lastIndex;
+      if (
+        SKIPPED_JSON_TRAILING_WHITESPACE.exec(text) &&
+        SKIPPED_JSON_TRAILING_WHITESPACE.lastIndex === end
+      )
+        return;
+      break;
+    }
+  }
+  throw new SyntaxError('Invalid JSON value in projected row');
+}
+
+const SKIPPED_JSON_TOKEN = new RegExp(
+  WHITESPACE + '(' + STRING + '|' + NUMBER + '|true|false|null|[{}\\[\\],:])',
+  'y'
+);
+const SKIPPED_JSON_TRAILING_WHITESPACE = new RegExp(WHITESPACE, 'y');
+
 /** Streams JSON fields into Arrow, buffering columns only while inferring the first batch. */
 export async function* parseDirectJSONArrowInBatches(
   input:
@@ -66,9 +125,10 @@ export async function* parseDirectJSONArrowInBatches(
   declaredSchema: Schema | undefined,
   jsonpaths: string[] | undefined,
   batchSize: number | 'auto',
-  options: JSONArrowConversionOptions
+  options: JSONArrowConversionOptions,
+  scan?: JSONArrowScan
 ): AsyncIterable<RecordBatch> {
-  const parser = createJSONArrowParser(declaredSchema, jsonpaths, batchSize, options);
+  const parser = createJSONArrowParser(declaredSchema, jsonpaths, batchSize, options, false, scan);
   for await (const chunk of makeTextDecoderIterator(toArrayBufferIterator(input))) {
     yield* parser.write(chunk);
   }
@@ -79,7 +139,8 @@ export async function* parseDirectJSONArrowInBatches(
 export function parseDirectJSONArrowText(
   text: string,
   declaredSchema: Schema | undefined,
-  options: JSONArrowConversionOptions
+  options: JSONArrowConversionOptions,
+  scan?: JSONArrowScan
 ): Table {
   let rowTable = false;
   if (text.trimStart().startsWith('{')) {
@@ -95,7 +156,8 @@ export function parseDirectJSONArrowText(
     rowTable ? ['$.data'] : undefined,
     'auto',
     options,
-    true
+    true,
+    scan
   );
   return new Table([...parser.write(text), ...parser.finish()]);
 }
@@ -106,12 +168,23 @@ function createJSONArrowParser(
   jsonpaths: string[] | undefined,
   batchSize: number | 'auto',
   options: JSONArrowConversionOptions,
-  wholeFile = false
+  wholeFile = false,
+  scan?: JSONArrowScan
 ) {
   const builderOptions = {viewTypes: options.arrowConversion?.viewTypes};
-  let schema = declaredSchema;
+  const selected = scan?.columns;
+  let accept = scan?.accept;
+  const declaredNames = declaredSchema && new Set(declaredSchema.fields.map(field => field.name));
+  let schema =
+    selected && declaredSchema
+      ? {...declaredSchema, fields: declaredSchema.fields.filter(field => selected.has(field.name))}
+      : declaredSchema;
+  let frozenNames: Set<string> | undefined;
   let builder = schema ? new ArrowTableBuilder(schema, builderOptions) : undefined;
-  let matcher = schema ? compileDirectJSONArrowRow(schema) : null;
+  let matcher =
+    schema && !scan?.accept && !selected && !scan?.ignoreLateFields
+      ? compileDirectJSONArrowRow(schema)
+      : null;
   let decoders = schema?.fields.map(
     field => SCALAR_DECODERS[field.type as keyof typeof SCALAR_DECODERS]
   );
@@ -139,8 +212,11 @@ function createJSONArrowParser(
         schema.metadata = wrapper.schema?.metadata ?? {};
       }
     }
+    accept ??= scan?.prepareInferredPredicate?.(schema);
     builder = new ArrowTableBuilder(schema, builderOptions);
-    matcher = compileDirectJSONArrowRow(schema);
+    if (scan?.ignoreLateFields) frozenNames = new Set(schema.fields.map(field => field.name));
+    if (!accept && !selected && !scan?.ignoreLateFields)
+      matcher = compileDirectJSONArrowRow(schema);
     decoders = schema.fields.map(
       field => SCALAR_DECODERS[field.type as keyof typeof SCALAR_DECODERS]
     );
@@ -153,11 +229,14 @@ function createJSONArrowParser(
       for (const [name, column] of columns) {
         if (row in column) fields.set(name, column[row]);
       }
-      appendInitialFields(fields);
+      if (!accept || accept(fields)) appendInitialFields(fields);
     }
     columns.clear();
     inferredRows = 0;
-    appendFields = makeJSONArrowFieldAppender(builder, schema, options);
+    appendFields = makeJSONArrowFieldAppender(builder, schema, {
+      ...options,
+      allowMissingNullableFields: scan?.ignoreLateFields || options.allowMissingNullableFields
+    });
   }
 
   /** Queues the current batch with the frozen schema. */
@@ -193,6 +272,24 @@ function createJSONArrowParser(
     return nextOffset;
   }
 
+  function shouldSkip(name: string): boolean {
+    return Boolean(
+      (selected && !selected.has(name) && (!declaredNames || declaredNames.has(name))) ||
+        (frozenNames && !frozenNames.has(name))
+    );
+  }
+
+  function consumeField(text: string, name: string, start: number, end: number): void {
+    if (shouldSkip(name)) {
+      validateSkippedJSON(text, start, end);
+      return;
+    }
+    const source = text.slice(start, end);
+    const value: unknown = JSON.parse(source);
+    const raw = (source[0] === '{' || source[0] === '[') && rawJSONFields.has(name);
+    fields.set(name, raw ? source : value);
+  }
+
   const parser = new FastStreamingJSONParser(
     {jsonpaths, metadata: true, strict: true},
     {
@@ -209,13 +306,13 @@ function createJSONArrowParser(
         if (text[0] === '[') {
           if (
             !visitJSONArrayCells(text, (index, start, end) => {
-              const value: unknown = JSON.parse(text.slice(start, end));
               const name = declaredSchema?.fields[index]?.name;
               if (declaredSchema && name === undefined) {
+                validateSkippedJSON(text, start, end);
                 handleExtraCell(index);
                 return;
               }
-              fields.set(name ?? `column${index + 1}`, value);
+              consumeField(text, name ?? `column${index + 1}`, start, end);
             })
           ) {
             throw new SyntaxError('Invalid positional row in streamed JSON array');
@@ -224,21 +321,18 @@ function createJSONArrowParser(
           const value: unknown = JSON.parse(text);
           if (typeof value === 'string') {
             for (let index = 0; index < value.length; index++) {
-              fields.set(String(index), value[index]);
+              if (!shouldSkip(String(index))) fields.set(String(index), value[index]);
             }
           }
         } else if (
           !visitJSONObjectFields(text, (name, start, end) => {
-            const source = text.slice(start, end);
-            const value: unknown = JSON.parse(source);
-            const raw = (source[0] === '{' || source[0] === '[') && rawJSONFields.has(name);
-            fields.set(name, raw ? source : value);
+            consumeField(text, name, start, end);
           })
         ) {
           throw new SyntaxError('Invalid object in streamed JSON array');
         }
         if (appendFields) {
-          appendFields(fields);
+          if (!accept || accept(fields)) appendFields(fields);
         } else {
           const order = orderJSONObjectFieldNames(fields.keys());
           for (const name of order) {
