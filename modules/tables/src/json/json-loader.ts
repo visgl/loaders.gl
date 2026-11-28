@@ -10,8 +10,6 @@ import type {LoaderWithParser} from '@loaders.gl/core/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {convertTableBatchesToArrow} from './lib/parsers/convert-row-table-to-arrow';
-import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
-import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
 import {
   JSONLoaderDefinition,
   type JSONBatch,
@@ -51,23 +49,8 @@ function parseInBatches(
   options?: JSONLoaderOptions
 ): AsyncIterable<TableBatch | RecordBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = {...options, json: {...JSONLoaderWithParser.options.json, ...options?.json}};
-  const parseOptions =
-    jsonOptions.json?.backend === 'fast'
-      ? {parserFactory: getFastStreamingJSONParserFactory()}
-      : undefined;
-  const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, parseOptions);
+  const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions);
   return jsonOptions.json?.table && jsonOptions.json.shape === undefined
     ? convertTableBatchesToArrow<MetadataBatch | JSONBatch>(batches)
     : batches;
 }
-
-/**
- * Returns a factory for the fast streaming JSON parser backend.
- *
- * @returns Parser factory that constructs `FastStreamingJSONParser` instances.
- */
-function getFastStreamingJSONParserFactory(): StreamingJSONParserFactory {
-  return parserOptions => new FastStreamingJSONParser(parserOptions);
-}
-
-export type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader-definition';

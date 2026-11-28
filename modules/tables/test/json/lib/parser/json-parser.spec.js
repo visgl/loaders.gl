@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import JSONParser from '../../../../src/json/lib/json-parser/json-parser';
+import JSONParser from '../../../../../../website/src/alternate-loaders/json/json-parser';
 // tslint:disable:object-literal-sort-keys
 const literalCases = [
   {type: 'null', cases: ['null']},

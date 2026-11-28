@@ -441,7 +441,7 @@ function validateEmptySchemaRowTable(
   }
 }
 
-function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): arrow.Table {
+export function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): arrow.Table {
   const arrowSchema = convertSchemaToArrow(schema);
   const arrowData = new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, []);
   const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowData);
@@ -691,6 +691,95 @@ function toSchemaDataType(type: ArrowLikeDataType): Field['type'] {
     default:
       throw new Error('JSONLoader: unsupported inferred Arrow type');
   }
+}
+
+/** Accumulates the existing JSON type-inference rules from decoded fields. */
+export function makeJSONArrowSchemaInferer(): {
+  addFields(fields: ReadonlyMap<string, unknown>, order: readonly string[]): void;
+  getSchema(): Schema;
+} {
+  let inferred: ArrowLikeField[] = [];
+  return {
+    addFields(fields, order) {
+      const observed = order.map(name => inferValueField(name, fields.get(name)));
+      inferred = mergeStructFields(inferred, observed, 'row');
+    },
+    getSchema() {
+      return {fields: inferred.map(field => toSchemaField(field)), metadata: {}};
+    }
+  };
+}
+
+/** Applies the row conversion policy to cells beyond the declared positional schema. */
+export function makeJSONArrowExtraCellHandler(options: JSONArrowConversionOptions) {
+  const conversion = normalizeArrowConversionOptions(options.arrowConversion);
+  const log = makeConversionLogger(options.log, conversion.logRecoveries);
+  return (index: number) =>
+    handleExtraField(
+      `column${index + 1}`,
+      conversion,
+      log,
+      `JSONLoader: incompatible Arrow schema, unexpected column index ${index}`
+    );
+}
+
+/** Applies the same value conversion policy used by the Arrow column writer. */
+export function makeJSONArrowPredicateValueReader(
+  field: Schema['fields'][number],
+  options: JSONArrowConversionOptions
+) {
+  const conversion = normalizeArrowConversionOptions(options.arrowConversion);
+  const log = makeConversionLogger(options.log, conversion.logRecoveries);
+  return (fields: ReadonlyMap<string, unknown>): unknown =>
+    normalizeValueForArrow(
+      field,
+      fields.get(field.name),
+      field.name,
+      fields.has(field.name),
+      conversion,
+      log,
+      {allowMissingNullableFields: options.allowMissingNullableFields ?? false}
+    );
+}
+
+/** Writes lexically decoded fields directly into an existing Arrow builder. */
+export function makeJSONArrowFieldAppender(
+  builder: ArrowTableBuilder,
+  schema: Schema,
+  options: JSONArrowConversionOptions
+): (fields: ReadonlyMap<string, unknown>) => void {
+  const schemaFieldNames = new Set(schema.fields.map(field => field.name));
+  const conversionOptions = normalizeArrowConversionOptions(options.arrowConversion);
+  const conversionLogger = makeConversionLogger(options.log, conversionOptions.logRecoveries);
+  const normalizationOptions = {
+    allowMissingNullableFields: options.allowMissingNullableFields ?? false
+  };
+  const values = new Array<unknown>(schema.fields.length);
+  return fields => {
+    for (const name of fields.keys()) {
+      if (!schemaFieldNames.has(name)) {
+        handleExtraField(
+          name,
+          conversionOptions,
+          conversionLogger,
+          `JSONLoader: incompatible Arrow schema, unexpected field ${name}`
+        );
+      }
+    }
+    for (let index = 0; index < schema.fields.length; index++) {
+      const field = schema.fields[index];
+      values[index] = normalizeValueForArrow(
+        field,
+        fields.get(field.name),
+        field.name,
+        fields.has(field.name),
+        conversionOptions,
+        conversionLogger,
+        normalizationOptions
+      );
+    }
+    builder.addArrayRow(values);
+  };
 }
 
 /** Writes an object's normalized values to a reusable array in Arrow schema order. */

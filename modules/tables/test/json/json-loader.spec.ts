@@ -7,6 +7,7 @@ import {MemoryLog} from 'probe.gl/log';
 import {parse, load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import type {Schema} from '@loaders.gl/core/schema';
 import {JSONLoader, JSONTableLoader} from '@loaders.gl/tables/json';
+import {convertJSONToArrow} from '@loaders.gl/tables/json/api';
 import {GeoJSONLoader} from '@loaders.gl/tables/geojson/bundled';
 import type {JSONLoaderOptions, JSONTableLoaderOptions} from '@loaders.gl/tables/json';
 import {
@@ -22,19 +23,11 @@ import * as arrow from 'apache-arrow';
 const GEOJSON_PATH = '@loaders.gl/tables/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH =
   '@loaders.gl/tables/json/test/data/kepler-dataset-sf-incidents.json';
-const STREAMING_LOADER_CONFIGS: {
-  name: string;
-  options?: JSONLoaderOptions;
-}[] = [
-  {name: 'JSONLoader'},
-  {name: 'JSONLoader json.backend=fast', options: {json: {backend: 'fast'}}}
+const STREAMING_LOADER_CONFIGS: {name: string; options?: JSONLoaderOptions}[] = [
+  {name: 'JSONLoader'}
 ];
-const TABLE_STREAMING_LOADER_CONFIGS: {
-  name: string;
-  options?: JSONTableLoaderOptions;
-}[] = [
-  {name: 'JSONTableLoader'},
-  {name: 'JSONTableLoader json.backend=fast', options: {json: {backend: 'fast'}}}
+const TABLE_STREAMING_LOADER_CONFIGS: {name: string; options?: JSONTableLoaderOptions}[] = [
+  {name: 'JSONTableLoader'}
 ];
 const NESTED_JSON_TEXT = JSON.stringify({
   meta: {source: 'test'},
@@ -906,6 +899,74 @@ test('JSONTableLoader#parseInBatches(arrow with supplied schema)', async () => {
   }
   expect(rowCount, 'converts all streamed rows').toBe(2);
 });
+test.each([
+  1, 2
+])('JSONTableLoader maps ragged positional rows with batch size %s', async batchSize => {
+  const text = '[[1],[2,3]]';
+  const options: JSONTableLoaderOptions = {
+    core: {batchSize},
+    json: {
+      shape: 'arrow',
+      schema: {
+        fields: [
+          {name: 'longitude', type: 'float64', nullable: false},
+          {name: 'latitude', type: 'float64', nullable: true}
+        ],
+        metadata: {}
+      },
+      arrowConversion: {onMissingField: 'null', logRecoveries: false}
+    }
+  };
+  const whole = BundledJSONTableLoader.parseTextSync?.(text, options) as arrow.Table;
+  expect(whole.schema.names).toEqual(['longitude', 'latitude']);
+  expect(Array.from(whole.getChild('longitude')!)).toEqual([1, 2]);
+  expect(Array.from(whole.getChild('latitude')!)).toEqual([null, 3]);
+
+  const batches: arrow.RecordBatch[] = [];
+  for await (const batch of BundledJSONTableLoader.parseInBatches!(
+    makeChunkedTextIterator(text, 1),
+    options
+  )) {
+    if (batch.numRows) {
+      batches.push(batch);
+    }
+  }
+  expect(batches.map(batch => batch.numRows)).toEqual(batchSize === 1 ? [1, 1] : [2]);
+  const streamed = new arrow.Table(batches);
+  expect(streamed.schema.names).toEqual(whole.schema.names);
+  expect(Array.from(streamed.getChild('longitude')!)).toEqual([1, 2]);
+  expect(Array.from(streamed.getChild('latitude')!)).toEqual([null, 3]);
+});
+
+test('JSONTableLoader preserves positional values during inference and checks the frozen schema', async () => {
+  const text = '[[1],[2,3]]';
+  const options: JSONTableLoaderOptions = {json: {shape: 'arrow'}};
+  async function collect(batchSize: number): Promise<arrow.Table> {
+    const batches: arrow.RecordBatch[] = [];
+    for await (const batch of BundledJSONTableLoader.parseInBatches!(
+      makeChunkedTextIterator(text, 1),
+      {...options, core: {batchSize}}
+    )) {
+      if (batch.numRows) {
+        batches.push(batch);
+      }
+    }
+    return new arrow.Table(batches);
+  }
+
+  const streamed = await collect(2);
+  expect(Array.from(streamed.getChild('column2')!)).toEqual([null, 3]);
+  await expect(collect(1)).rejects.toThrow(/unexpected field column2/);
+
+  const wrapped =
+    '{"shape":"array-row-table","schema":{"fields":[],"metadata":{"source":"test"}},"data":' +
+    text +
+    '}';
+  const whole = BundledJSONTableLoader.parseTextSync?.(wrapped, options) as arrow.Table;
+  expect(whole.schema.metadata.get('source')).toBe('test');
+  expect(Array.from(whole.getChild('column2')!)).toEqual([null, 3]);
+});
+
 test('JSONTableLoader#parseInBatches(fast arrow preserves raw Utf8 JSON fields)', async () => {
   const schema: Schema = {
     fields: [
@@ -921,7 +982,6 @@ test('JSONTableLoader#parseInBatches(fast arrow preserves raw Utf8 JSON fields)'
   const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 3), {
     core: {batchSize: 1},
     json: {
-      backend: 'fast',
       shape: 'arrow',
       jsonpaths: ['$.items'],
       schema,
@@ -961,16 +1021,6 @@ test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsin
       }),
     'sync parsing still rejects object values for Utf8 schema fields'
   ).toThrow(/expected string/);
-  const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 8), {
-    core: {batchSize: 1},
-    json: {shape: 'arrow', jsonpaths: ['$.items'], schema}
-  });
-  await expect(async () => {
-    for await (const _batch of iterator) {
-    }
-  }, 'clarinet streaming still rejects object values for Utf8 schema fields').rejects.toThrow(
-    /expected string/
-  );
 });
 test('NDJSONLoader#parseInBatches(arrow freezes inferred schema)', async () => {
   const iterator = BundledNDJSONLoader.parseInBatches?.(
@@ -1346,7 +1396,23 @@ test('JSON table recovery uses the operation logger and respects explicit suppre
   expect(log.messages).toHaveLength(1);
 });
 
-test('JSONTableLoader writes object rows in schema order and clears missing values', () => {
+test.each([
+  '[{"value":1},{"value":}]',
+  '[{"value":1}',
+  '[{"value":1} {"value":2}]',
+  '[{"value":1},]',
+  '{"rows":[{"value":1}],"tail":}'
+])('default streamed JSON loaders reject malformed input %s', async text => {
+  for (const loader of [BundledJSONLoader, BundledJSONTableLoader]) {
+    await expect(async () => {
+      for await (const _batch of loader.parseInBatches!(makeChunkedTextIterator(text, 8))) {
+        // Drain the stream to validate the closing array and wrapper.
+      }
+    }).rejects.toThrow(SyntaxError);
+  }
+});
+
+test('convertJSONToArrow writes object rows in schema order and clears missing values', () => {
   const schema: Schema = {
     fields: [
       {name: 'label', type: 'utf8', nullable: true},
@@ -1354,11 +1420,27 @@ test('JSONTableLoader writes object rows in schema order and clears missing valu
     ],
     metadata: {}
   };
-  const table = BundledJSONTableLoader.parseTextSync!(
-    '[{"id":1,"label":"first"},{"id":2},{"label":"third","id":3}]',
-    {json: {shape: 'arrow', schema, arrowConversion: {onMissingField: 'null'}}}
-  );
+  const table = convertJSONToArrow([{id: 1, label: 'first'}, {id: 2}, {label: 'third', id: 3}], {
+    schema,
+    arrowConversion: {onMissingField: 'null'}
+  });
   expect(table.schema.fields.map(field => field.name)).toEqual(['label', 'id']);
   expect(Array.from(table.getChild('label')!)).toEqual(['first', null, 'third']);
   expect(Array.from(table.getChild('id')!)).toEqual([1, 2, 3]);
+});
+
+test('JSONTableLoader parses BOM-prefixed Arrow text', () => {
+  const table = BundledJSONTableLoader.parseTextSync!('﻿[{"id":7}]');
+  expect(table.getChild('id')?.get(0)).toBe(7);
+});
+
+test.each([
+  'object-row-table',
+  'array-row-table'
+] as const)('JSONTableLoader preserves schema metadata on an empty %s wrapper', shape => {
+  const table = BundledJSONTableLoader.parseTextSync!(
+    JSON.stringify({shape, data: [], schema: {fields: [], metadata: {source: 'fixture'}}})
+  );
+  expect(table.numRows).toBe(0);
+  expect(table.schema.metadata.get('source')).toBe('fixture');
 });
