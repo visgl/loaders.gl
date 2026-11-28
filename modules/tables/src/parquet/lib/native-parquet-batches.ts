@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {RecordBatch, type Table} from 'apache-arrow';
-import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import type {RecordBatch, Table} from 'apache-arrow';
+import {makeArrowMetadataBatch, makeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import type {
   ParquetDecodedBatch,
   ParquetBatchProvenance,
@@ -16,7 +16,7 @@ const PARQUET_PROVENANCE_KEY = 'loaders.gl.parquetProvenance';
 export function getParquetBatchProvenance(
   batch: RecordBatch
 ): (ParquetBatchProvenance & Partial<ParquetDatasetBatchProvenance>) | undefined {
-  const encoded = batch.metadata.get(PARQUET_PROVENANCE_KEY);
+  const encoded = batch.metadata?.get(PARQUET_PROVENANCE_KEY);
   return encoded === undefined
     ? undefined
     : JSON.parse(encoded, (_key, value) => {
@@ -57,7 +57,7 @@ export async function* streamNativeParquetBatches(
           }
         )
       );
-      yield new RecordBatch(recordBatch.schema, recordBatch.data, metadata);
+      yield makeArrowRecordBatch(recordBatch.schema, recordBatch.data, metadata);
       start += length;
     }
   }

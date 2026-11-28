@@ -8,26 +8,29 @@ import {mergeArrowSchemas, snapshotArrowSchema} from '@math.gl/core/arrow';
 export {mergeArrowSchemas, snapshotArrowSchema};
 
 /** Creates a native batch with a metadata map on Arrow releases that lack one. */
-function makeArrowBatch(schema: arrow.Schema, data?: arrow.RecordBatch['data']): arrow.RecordBatch {
+export function makeArrowRecordBatch(
+  schema: arrow.Schema,
+  data?: arrow.RecordBatch['data'],
+  metadata?: ReadonlyMap<string, string>
+): arrow.RecordBatch {
   const batch = new arrow.RecordBatch(schema, data);
   // Older supported Arrow versions reject the metadata constructor argument.
   if (!batch.metadata) {
     Object.defineProperty(batch, 'metadata', {value: new Map<string, string>()});
+  }
+  for (const [key, value] of metadata ?? []) {
+    batch.metadata.set(key, value);
+  }
+  // Arrow derives Struct length from its children, which are absent in zero-column batches.
+  if (data && !schema.fields.length && batch.numRows !== data.length) {
+    Object.defineProperty(batch, 'data', {value: data});
   }
   return batch;
 }
 
 /** Snapshots a batch's schema and metadata while retaining its data buffers and row count. */
 function snapshotArrowBatch(batch: arrow.RecordBatch, schema: arrow.Schema): arrow.RecordBatch {
-  const snapshot = makeArrowBatch(snapshotArrowSchema(schema), batch.data);
-  for (const [key, value] of batch.metadata ?? []) {
-    snapshot.metadata.set(key, value);
-  }
-  // Arrow reconstructs the Struct length from its columns, which are absent in zero-column batches.
-  if (snapshot.numRows !== batch.numRows) {
-    Object.defineProperty(snapshot, 'data', {value: batch.data});
-  }
-  return snapshot;
+  return makeArrowRecordBatch(snapshotArrowSchema(schema), batch.data, batch.metadata);
 }
 
 /** Applies a table schema snapshot to its batches while retaining batch-local custom metadata. */
@@ -52,7 +55,7 @@ export function updateNativeArrowTableMetadata(
 
 /** Creates a zero-row metadata update retaining the complete declared schema. */
 export function makeArrowMetadataBatch(schema: arrow.Schema): arrow.RecordBatch {
-  return makeArrowBatch(snapshotArrowSchema(schema));
+  return makeArrowRecordBatch(snapshotArrowSchema(schema));
 }
 
 /** Collects Arrow batches, retaining emission snapshots and merging final schema metadata. */

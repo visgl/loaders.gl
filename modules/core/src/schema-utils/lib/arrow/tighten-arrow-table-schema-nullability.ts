@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {makeArrowRecordBatch} from './arrow-metadata';
 
 /** Updates nullable Arrow table fields to non-nullable when their columns contain no null values. */
 export function tightenArrowTableSchemaNullability(table: arrow.Table): arrow.Table {
@@ -11,13 +12,12 @@ export function tightenArrowTableSchemaNullability(table: arrow.Table): arrow.Ta
     return table;
   }
   const schema = tightenApacheArrowSchemaNullability(table.schema, fieldNullability);
-  const batches = table.batches.map(
-    batch =>
-      new arrow.RecordBatch(
-        tightenApacheArrowSchemaNullability(batch.schema, fieldNullability),
-        batch.data,
-        new Map(batch.metadata)
-      )
+  const batches = table.batches.map(batch =>
+    makeArrowRecordBatch(
+      tightenApacheArrowSchemaNullability(batch.schema, fieldNullability),
+      batch.data,
+      batch.metadata
+    )
   );
   return new arrow.Table(schema, batches);
 }

@@ -11,7 +11,11 @@ import {
 import * as arrow from 'apache-arrow';
 import {convertArrowToSchema, isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import type {Field, Schema as TableSchema} from '@loaders.gl/core/schema';
-import {makeArrowMetadataBatch, convertSchemaToArrow} from '@loaders.gl/core/schema-utils';
+import {
+  makeArrowMetadataBatch,
+  makeArrowRecordBatch,
+  convertSchemaToArrow
+} from '@loaders.gl/core/schema-utils';
 import {convertFeaturesToGeoArrowTable} from '@loaders.gl/core/arrow-geometry/feature-table';
 import {convertWKBToGeometry} from '@loaders.gl/core/arrow-geometry/geometry-codecs';
 import {type GeoParquetGeometryType} from '@loaders.gl/core/schema';
@@ -464,7 +468,7 @@ function importDBFRecordBatch(
     length: batch.numRows,
     children
   });
-  return new arrow.RecordBatch(schema, data, new Map(batch.metadata));
+  return makeArrowRecordBatch(schema, data, batch.metadata);
 }
 
 function getQueuedRowCount(queue: arrow.Table[]): number {

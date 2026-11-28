@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {makeArrowRecordBatch} from '@loaders.gl/core/schema-utils';
 import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {projectArrowTable} from '@loaders.gl/core/query/arrow-execution';
@@ -33,8 +34,8 @@ function makeTable(): arrow.Table {
   const schema = new arrow.Schema(fields, new Map([['source', 'fixture']]));
   return new arrow.Table(
     schema,
-    data.batches.map(
-      batch => new arrow.RecordBatch(schema, batch.data, new Map([['batch', 'fixture']]))
+    data.batches.map(batch =>
+      makeArrowRecordBatch(schema, batch.data, new Map([['batch', 'fixture']]))
     )
   );
 }

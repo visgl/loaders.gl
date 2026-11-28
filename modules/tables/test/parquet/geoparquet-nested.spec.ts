@@ -7,6 +7,7 @@ import type {DataType, ObjectRowTable} from '@loaders.gl/core/schema';
 import {GeoParquetLoader} from '@loaders.gl/tables/parquet';
 import {ParquetSource, ParquetWriter} from '@loaders.gl/tables/parquet/bundled';
 import {expect, test} from 'vitest';
+import {getParquetBatchProvenance} from '../../src/parquet/lib/native-parquet-batches';
 
 const pointType: DataType = {
   type: 'struct',
@@ -84,6 +85,10 @@ test.each([
         expect(batch.schema.fields.find(field => field.name === 'geometry')?.metadata.get('ARROW:extension:name')).toBe(
           `geoarrow.${encoding}`
         );
+        expect(getParquetBatchProvenance(batch)).toMatchObject({
+          rowCount: batch.numRows,
+          rowOffset: sourceGeometries.length
+        });
         sourceGeometries.push(
           ...JSON.parse(JSON.stringify(batch.getChild('geometry')?.toArray()))
         );

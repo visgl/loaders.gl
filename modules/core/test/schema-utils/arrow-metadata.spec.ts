@@ -6,6 +6,7 @@ import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {
+  makeArrowRecordBatch,
   makeArrowTableFromBatches,
   isArrowRecordBatch,
   convertTableToArrow,
@@ -40,7 +41,7 @@ function makeBatch(value: number, metadata: Record<string, string>): arrow.Recor
     true,
     new Map(Object.entries(metadata))
   );
-  return new arrow.RecordBatch(
+  return makeArrowRecordBatch(
     new arrow.Schema([field], new Map(Object.entries(metadata))),
     source.batches[0].data,
     new Map([['local', String(value)]])
@@ -209,4 +210,17 @@ test('native record batch detection accepts older unbranded Arrow batches', () =
   Object.defineProperty(batch, Symbol.for('apache-arrow/RecordBatch'), {value: undefined});
   expect(isArrowRecordBatch(batch)).toBe(true);
   expect(isArrowRecordBatch(table)).toBe(false);
+});
+
+test('makeArrowRecordBatch preserves zero-column row counts and copies batch metadata', () => {
+  const schema = new arrow.Schema([]);
+  const data = arrow.makeData({type: new arrow.Struct([]), length: 3, children: []});
+  const metadata = new Map([['source', 'initial']]);
+  const batch = makeArrowRecordBatch(schema, data, metadata);
+
+  expect(batch.numRows).toBe(3);
+  expect(batch.data).toBe(data);
+  expect(batch.schema.metadata.has('source')).toBe(false);
+  metadata.set('source', 'updated');
+  expect(batch.metadata.get('source')).toBe('initial');
 });
