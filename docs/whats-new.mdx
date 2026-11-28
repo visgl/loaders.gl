@@ -25,6 +25,7 @@ loaders.gl 5 organizes loaders, writers, and sources by data family. Install a p
 and import the format you use. See the [Upgrade Guide](./upgrade-guide.md#upgrading-to-v50)
 for stable v4 migrations.
 
+- **CSV export.** [CSVWriter](./modules/tables/csv/api-reference/csv-writer.md) supports opt-in, precision-preserving ISO timestamp output. Table encoding helpers accept native Arrow tables with inferred writer types.
 - **Cloud and table data.** [Table sources](./modules/tables/README.md) support column and
   row selection across Parquet, Arrow, and lakehouse formats. [Core queries](./modules/core/query/README.md)
   push supported filters and projections to the source. [SQL](./modules/sql/README.md)

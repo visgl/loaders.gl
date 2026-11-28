@@ -9,6 +9,8 @@ import {
   getTableNumCols,
   convertArrowToSchema
 } from '@loaders.gl/core/schema-utils';
+import {DataType, type Vector, type Timestamp} from 'apache-arrow';
+import {formatArrowTimestamps} from './format-arrow-timestamps';
 import type {CSVWriterOptions} from '../../csv-writer-types';
 
 type EncodableData = string | null;
@@ -32,15 +34,36 @@ export function encodeTableAsCSV(
     return useDisplayNames && typeof displayName === 'string' ? displayName : f.name;
   });
   const formattedData: EncodableData[][] = [columnNames];
+  // Native row access converts timestamp integers to numbers, losing nanosecond
+  // precision. Iterate timestamp storage only when ISO formatting is requested.
+  const timestampColumns =
+    native && options.csv?.timestampFormat === 'iso'
+      ? Array.from({length: columnCount}, (_, index) => {
+          const column = table.getChildAt(index);
+          return column && DataType.isTimestamp(column.type)
+            ? formatArrowTimestamps(column as Vector<Timestamp>)
+            : undefined;
+        })
+      : [];
 
-  for (const inputRow of native ? table : makeArrayRowIterator(table)) {
-    const row = Array.isArray(inputRow) ? inputRow : inputRow?.toArray() || [];
-    const formattedRow: EncodableData[] = [];
-    for (let columnIndex = 0; columnIndex < columnCount; ++columnIndex) {
-      const value = row[columnIndex];
-      formattedRow[columnIndex] = preformatFieldValue(value);
+  if (native) {
+    const columns = Array.from({length: columnCount}, (_, index) => table.getChildAt(index));
+    for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
+      formattedData.push(
+        columns.map((column, columnIndex) => {
+          const timestamp = timestampColumns[columnIndex];
+          return timestamp
+            ? (timestamp.next().value ?? null)
+            : preformatFieldValue(column?.get(rowIndex));
+        })
+      );
     }
-    formattedData.push(formattedRow);
+  } else {
+    for (const row of makeArrayRowIterator(table)) {
+      formattedData.push(
+        Array.from({length: columnCount}, (_, columnIndex) => preformatFieldValue(row[columnIndex]))
+      );
+    }
   }
 
   // We represent missing values as '', leaving the option for the app to explicity represent 'null'.
