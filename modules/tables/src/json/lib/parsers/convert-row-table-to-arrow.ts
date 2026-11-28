@@ -679,6 +679,44 @@ function toSchemaDataType(type: ArrowLikeDataType): Field['type'] {
   }
 }
 
+/** Writes lexically decoded fields directly into an existing Arrow builder. */
+export function makeJSONArrowFieldAppender(
+  builder: ArrowTableBuilder,
+  schema: Schema,
+  log?: any
+): (fields: ReadonlyMap<string, unknown>) => void {
+  const schemaFieldNames = new Set(schema.fields.map(field => field.name));
+  const conversionOptions = DEFAULT_ARROW_CONVERSION_OPTIONS;
+  const conversionLogger = makeConversionLogger(log, conversionOptions.logRecoveries);
+  const normalizationOptions = {allowMissingNullableFields: false};
+  const values = new Array<unknown>(schema.fields.length);
+  return fields => {
+    for (const name of fields.keys()) {
+      if (!schemaFieldNames.has(name)) {
+        handleExtraField(
+          name,
+          conversionOptions,
+          conversionLogger,
+          `JSONLoader: incompatible Arrow schema, unexpected field ${name}`
+        );
+      }
+    }
+    for (let index = 0; index < schema.fields.length; index++) {
+      const field = schema.fields[index];
+      values[index] = normalizeValueForArrow(
+        field,
+        fields.get(field.name),
+        field.name,
+        fields.has(field.name),
+        conversionOptions,
+        conversionLogger,
+        normalizationOptions
+      );
+    }
+    builder.addArrayRow(values);
+  };
+}
+
 /** Normalizes one object row against the active Arrow schema. */
 function normalizeObjectRowForArrow(
   row: {[columnName: string]: unknown},

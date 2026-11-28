@@ -82,3 +82,39 @@ test('Empty JSON Arrow input preserves an explicit schema', async () => {
   expect(table?.schema?.metadata.get('declared')).toBe('yes');
   expect(table?.numRows).toBe(0);
 });
+
+test('Fast JSON Arrow writes scalar fields directly across chunk and field-order boundaries', async () => {
+  const parts = [
+    '{"label":"prefix","rows":[{"id":1,"name":"o',
+    'ne"},{"name":"tw\\u006f","id":2},{"id":3,"name":null}],"tail":true}'
+  ];
+  const options = {
+    json: {
+      shape: 'arrow' as const,
+      backend: 'fast' as const,
+      jsonpaths: ['$.rows'],
+      schema: {
+        fields: [
+          {name: 'id', type: 'float64' as const, nullable: false},
+          {name: 'name', type: 'utf8' as const, nullable: true}
+        ],
+        metadata: {}
+      }
+    },
+    core: {batchSize: 2}
+  };
+  const batches: RecordBatch[] = [];
+  for await (const batch of JSONTableLoaderWithParser.parseInBatches(chunks(parts), options)) {
+    if (!(batch instanceof RecordBatch)) throw new Error('Expected a native Arrow record batch');
+    batches.push(batch);
+  }
+  expect(batches.map(batch => batch.numRows)).toEqual([2, 1]);
+  const table = await makeArrowTableFromBatches(batches);
+  expect(Array.from(table!.getChild('id')!)).toEqual([1, 2, 3]);
+  expect(Array.from(table!.getChild('name')!)).toEqual(['one', 'two', null]);
+  expect(JSON.parse(table!.schema.metadata.get('loaders.gl.containerJson')!)).toEqual({
+    label: 'prefix',
+    rows: [],
+    tail: true
+  });
+});

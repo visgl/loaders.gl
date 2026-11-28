@@ -31,6 +31,14 @@ type StringContext = {
   keyText: string;
 };
 
+/** Lets a consumer decode a row directly from the text scanner. */
+export type FastJSONElementConsumer = {
+  /** Returns the next offset after a consumed element, or the same offset on a miss. */
+  match(source: string, offset: number): number;
+  /** Consumes a complete element, including an element split across input chunks. */
+  consume(text: string): void;
+};
+
 /**
  * Streaming JSON parser optimized for extracting one matching array from the input.
  */
@@ -62,7 +70,10 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
 
   private fullText = '';
 
-  constructor(options: StreamingJSONParserOptions = {}) {
+  constructor(
+    options: StreamingJSONParserOptions = {},
+    private readonly elementConsumer?: FastJSONElementConsumer
+  ) {
     this.allowedJsonPaths = (options.jsonpaths || []).map(jsonpath => new JSONPath(jsonpath).path);
     this.trackMetadata = Boolean(options.metadata);
     this.rawJsonUtf8Fields = new Set(options.rawJsonUtf8Fields || []);
@@ -421,6 +432,12 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
           continue;
         }
 
+        const nextOffset = this.elementConsumer?.match(this.streamBuffer, index) ?? index;
+        if (nextOffset > index) {
+          index = nextOffset;
+          continue;
+        }
+
         if (character === '"') {
           this.streamElementType = 'string';
           this.streamElementBuffer = '"';
@@ -512,6 +529,12 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
    */
   private emitStreamElement(): void {
     if (!this.streamElementBuffer) {
+      this.resetStreamElement();
+      return;
+    }
+
+    if (this.elementConsumer) {
+      this.elementConsumer.consume(this.streamElementBuffer);
       this.resetStreamElement();
       return;
     }
@@ -691,6 +714,33 @@ function rewriteRawJsonUtf8ObjectFields(jsonText: string, rawJsonUtf8Fields: Set
   }
   rewrittenText += jsonText.slice(sourceIndex);
   return rewrittenText;
+}
+
+/** Visits source spans for the fields of a complete JSON object. */
+export function visitJSONObjectFields(
+  text: string,
+  visit: (name: string, start: number, end: number) => void
+): boolean {
+  let offset = skipWhitespace(text, 0);
+  if (text[offset++] !== '{') return false;
+  offset = skipWhitespace(text, offset);
+  if (text[offset] === '}') return skipWhitespace(text, offset + 1) === text.length;
+  while (offset < text.length && text[offset] === '"') {
+    const keyEnd = findJSONStringEnd(text, offset);
+    if (keyEnd === null) return false;
+    const name = JSON.parse(text.slice(offset, keyEnd));
+    offset = skipWhitespace(text, keyEnd);
+    if (text[offset] !== ':') return false;
+    const start = skipWhitespace(text, offset + 1);
+    const end = findJSONValueEnd(text, start);
+    if (end === null || end === start) return false;
+    visit(name, start, end);
+    offset = skipWhitespace(text, end);
+    if (text[offset] === '}') return skipWhitespace(text, offset + 1) === text.length;
+    if (text[offset] !== ',') return false;
+    offset = skipWhitespace(text, offset + 1);
+  }
+  return false;
 }
 
 /**
