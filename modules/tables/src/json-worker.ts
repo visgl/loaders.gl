@@ -2,44 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {createLoaderWorker, type LoaderWithParser} from '@loaders.gl/core/loader-utils';
+import {createLoaderWorker} from '@loaders.gl/core/loader-utils';
 import {JSONLoaderWithParser} from './json/json-loader';
-import {JSONTableLoaderWithParser} from './json/json-table-loader';
-import {NDJSONLoaderWithParser} from './json/ndjson-loader';
+import {selectJSONWorkerLoader} from './json/lib/select-json-worker-loader';
 
-/** Selects the requested JSON-family parser in the shared worker bundle. */
-function selectLoader(options: Record<string, unknown>): LoaderWithParser {
-  let loader: LoaderWithParser;
-  switch (options._workerLoaderId) {
-    case undefined:
-    case 'json':
-      loader = JSONLoaderWithParser;
-      break;
-    case 'json-table':
-      loader = JSONTableLoaderWithParser;
-      break;
-    case 'ndjson':
-      loader = NDJSONLoaderWithParser;
-      break;
-    default:
-      throw new Error(`JSON worker does not support loader ${options._workerLoaderId}`);
-  }
-  return {
-    ...loader,
-    /** Reports decoded rows while the selected parser retains its incremental state. */
-    async *parseInBatches(input, parserOptions, context) {
-      let completed = 0;
-      context?.reportProgress?.({phase: 'decode', completed, unit: 'rows'});
-      for await (const batch of loader.parseInBatches!(input, parserOptions, context)) {
-        const rowCount = batch.batchType === 'data' ? batch.length : batch.numRows;
-        if (typeof rowCount === 'number') {
-          completed += rowCount;
-          context?.reportProgress?.({phase: 'decode', completed, unit: 'rows'});
-        }
-        yield batch;
-      }
-    }
-  };
-}
-
-createLoaderWorker(JSONLoaderWithParser, selectLoader);
+createLoaderWorker(JSONLoaderWithParser, selectJSONWorkerLoader);

@@ -322,3 +322,75 @@ test.each([false, true])('JSON table batches default to Arrow with worker=%s', a
   expect(batches).toEqual([expect.any(RecordBatch), expect.any(RecordBatch)]);
   expect(batches.map(batch => batch.getChild('id').get(0))).toEqual([1, 2]);
 });
+
+test('JSONTable worker transfers original row bytes and offsets across split UTF-8', async () => {
+  const expected = [
+    {id: 1, text: '雪😀 " [ ] { } \\', nested: [{value: 'a,b'}]},
+    {id: 2, text: 'second'},
+    {id: 3, text: 'third'}
+  ];
+  const transports: unknown[] = [];
+  const loader = {
+    ...JSONTableLoader,
+    async preload() {
+      return {
+        ...JSONTableLoaderWithParser,
+        deserializeWorkerBatch(result: unknown) {
+          transports.push(result);
+          return JSONTableLoaderWithParser.deserializeWorkerBatch(result);
+        }
+      };
+    }
+  };
+  const input = encoder.encode('\uFEFF ' + JSON.stringify(expected, null, 1));
+  const chunks = Array.from(input, byte => Uint8Array.of(byte));
+  const batches = await collectBatches(
+    await parseInBatches(chunks, loader, {
+      core: {worker: true, batchSize: 2},
+      json: {shape: 'object-row-table', workerRowOffsets: true}
+    })
+  );
+  expect(batches.map(batch => batch.data)).toEqual([expected.slice(0, 2), expected.slice(2)]);
+  expect(batches.map(batch => batch.count)).toEqual([0, 1]);
+  expect(transports).toMatchObject([
+    {transport: 'json-row-offsets', length: 2},
+    {transport: 'json-row-offsets', length: 1}
+  ]);
+});
+
+test('JSONTable worker offset parsing yields the first row and releases blocked input', async () => {
+  let pulls = 0;
+  let closed = false;
+  const input = (async function* () {
+    try {
+      pulls++;
+      yield encoder.encode('[{"id":1},');
+      pulls++;
+      yield encoder.encode('{"id":2}]');
+    } finally {
+      closed = true;
+    }
+  })();
+  const batches = await parseInBatches(input, JSONTableLoader, {
+    core: {worker: true, batchSize: 1},
+    json: {shape: 'object-row-table', workerRowOffsets: true}
+  });
+  const iterator = batches[Symbol.asyncIterator]();
+  expect((await iterator.next()).value.data).toEqual([{id: 1}]);
+  expect(pulls).toBe(1);
+  await iterator.return?.();
+  await vi.waitFor(() => expect(closed).toBe(true));
+  expect(pulls).toBe(1);
+});
+
+test.each([
+  '[{"id":1},]',
+  '[{"id":falsee}]',
+  '[{"id":1}'
+])('JSONTable worker offset parsing rejects malformed input %s', async text => {
+  const batches = await parseInBatches([encoder.encode(text)], JSONTableLoader, {
+    core: {worker: true, batchSize: 1},
+    json: {shape: 'object-row-table', workerRowOffsets: true}
+  });
+  await expect(collectBatches(batches)).rejects.toThrow();
+});

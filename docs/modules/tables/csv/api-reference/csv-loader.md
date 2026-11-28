@@ -158,3 +158,9 @@ to open a URL or Blob for table queries. Use `load()` to parse the input into a 
 | `csv.delimitersToGuess`     | `string[]`                                                                                 | `[',', '\t', '\|', ';']`      | Delimiters to try when no delimiter is specified.                                                                            |
 
 ## Remarks
+
+For `CSVTableSource` scans, a column projection limits the fields materialized in each
+object-row batch. Columns referenced by a predicate remain available until filtering is
+complete. Without a predicate, rows before the offset are skipped before constructing
+output batches. The reader stops pulling input chunks once a scan reaches its limit or the
+consumer closes the iterator. Schema inference still examines the configured sample.
