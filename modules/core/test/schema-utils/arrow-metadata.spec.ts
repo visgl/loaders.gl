@@ -219,7 +219,7 @@ test('makeArrowRecordBatch preserves zero-column row counts and copies batch met
   const batch = makeArrowRecordBatch(schema, data, metadata);
 
   expect(batch.numRows).toBe(3);
-  expect(batch.data).toBe(data);
+  expect(batch.numCols).toBe(0);
   expect(batch.schema.metadata.has('source')).toBe(false);
   metadata.set('source', 'updated');
   expect(batch.metadata.get('source')).toBe('initial');
