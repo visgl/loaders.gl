@@ -133,3 +133,40 @@ test('Fast JSON Arrow infers ordered columns from the whole first batch', async 
   expect(Array.from(table!.getChild('2')!)).toEqual([2, 4, 6]);
   expect(Array.from(table!.getChild('label')!)).toEqual([null, 'later', 'last']);
 });
+
+test('full schema inference applies later JSON fields to all streaming batches', async () => {
+  const input = chunks(['[{"id":1},', '{"id":2,"label":"late"}]']);
+  const batches: RecordBatch[] = [];
+  for await (const batch of JSONTableLoaderWithParser.parseInBatches(input, {
+    core: {batchSize: 1},
+    json: {schemaInference: 'full'}
+  })) {
+    if (batch instanceof RecordBatch && batch.numRows) batches.push(batch);
+  }
+  expect(batches.map(batch => batch.schema.names)).toEqual([
+    ['id', 'label'],
+    ['id', 'label']
+  ]);
+  expect(batches.map(batch => batch.getChild('label')?.get(0))).toEqual([null, 'late']);
+});
+
+test('whole-file JSON can opt into the streaming schema sample', () => {
+  const input = '[{"id":1},{"id":2,"label":"late"}]';
+  const wholeFile = JSONTableLoaderWithParser.parseTextSync(input);
+  expect(wholeFile.schema?.fields.map(field => field.name)).toEqual(['id', 'label']);
+  const sampled = JSONTableLoaderWithParser.parseTextSync(input, {
+    core: {batchSize: 1},
+    json: {schemaInference: 'first-batch', arrowConversion: {onExtraField: 'drop'}}
+  });
+  expect(sampled.schema?.fields.map(field => field.name)).toEqual(['id']);
+});
+
+test('whole-file sampling preserves schema metadata after the row array', () => {
+  const input =
+    '{"shape":"object-row-table","data":[{"id":1},{"id":2}],"schema":{"fields":[],"metadata":{"source":"fixture"}}}';
+  const table = JSONTableLoaderWithParser.parseTextSync(input, {
+    core: {batchSize: 1},
+    json: {schemaInference: 'first-batch'}
+  });
+  expect(table.schema?.metadata.get('source')).toBe('fixture');
+});

@@ -11,7 +11,7 @@ export {GeoJSONFormat} from './json-format';
 export {NDJSONFormat} from './json-format';
 export {NDGeoJSONFormat} from './json-format';
 export type {JSONLoaderOptions, MetadataBatch, JSONBatch} from './json-loader-definition';
-export type {JSONTableLoaderOptions} from './json-table-loader-definition';
+export type {JSONTableLoaderOptions, TableSchemaInference} from './json-table-loader-definition';
 export type {JSONTableSource, JSONTableSourceOptions} from './json-table-source';
 export type {NDJSONLoaderOptions, NDJSONShape} from './ndjson-loader-definition';
 export type {NDGeoJSONLoaderOptions} from './ndgeojson-loader-types';

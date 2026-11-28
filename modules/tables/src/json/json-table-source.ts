@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {RecordBatch, Table} from 'apache-arrow';
-import {makeArrowMetadataBatch} from '@loaders.gl/core/schema-utils';
+import {makeArrowMetadataBatch, makeArrowTableFromBatches} from '@loaders.gl/core/schema-utils';
 import {
   compileColumnarPredicate,
   createScanQueryMetadata,
@@ -28,14 +28,13 @@ import {convertArrowToSchema} from '@loaders.gl/core/schema-utils';
 import type {Schema} from '@loaders.gl/core/schema';
 import type {JSONArrowScan} from './lib/parsers/parse-direct-json-arrow';
 import type {JSONArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
+import {getTableSchemaInferenceRows} from '../lib/table-schema-inference';
 import type {JSONTableLoaderOptions} from './json-table-loader-types';
 
 /** JSON parser options for a source that always scans Arrow batches. */
 export type JSONTableSourceOptions = DataSourceOptions & {
-  json?: Omit<NonNullable<JSONTableLoaderOptions['json']>, 'shape'> & {
-    /** Infer from the full document by default, or freeze after the first 1024 rows. */
-    schemaInference?: 'full' | 'first-batch';
-  };
+  /** JSON parser options shared with JSONTableLoader. */
+  json?: Omit<NonNullable<JSONTableLoaderOptions['json']>, 'shape'>;
 };
 
 /** Reads a JSON row array from a URL or Blob and scans the result as Arrow batches. */
@@ -63,24 +62,42 @@ export class JSONTableSource
     options.signal?.throwIfAborted();
     const json = this.options.json;
     const declaredSchema = json?.schema;
-    const streaming = Boolean(declaredSchema || json?.schemaInference === 'first-batch');
+    const streaming = Boolean(declaredSchema || json?.schemaInference !== 'full');
     let schema: Schema;
     if (declaredSchema) {
       const {normalizeJSONArrowSchema} = await import('./lib/parsers/convert-row-table-to-arrow');
       schema = normalizeJSONArrowSchema(declaredSchema);
+    } else if (this.table) {
+      schema = convertArrowToSchema(this.table.schema);
     } else if (streaming) {
+      /** Source revision used to reject a stale table after a refresh. */
+      const revision = this.revision;
+      /** Number of records needed to return metadata before EOF. */
+      const inferenceRows = getTableSchemaInferenceRows(
+        'first-batch',
+        this.options.core?.batchSize
+      );
+      /** Batches emitted at EOF for a source shorter than the sample. */
+      const completeBatches: RecordBatch[] = [];
       const {parseDirectJSONArrowInBatches} = await import('./lib/parsers/parse-direct-json-arrow');
       schema = {fields: [], metadata: {}};
       for await (const batch of parseDirectJSONArrowInBatches(
         this.readBytes(options.signal),
         undefined,
         json?.jsonpaths,
-        1024,
+        inferenceRows,
         this.getConversionOptions(),
         {ignoreLateFields: true}
       )) {
         schema = convertArrowToSchema(batch.schema);
-        break;
+        // A full sample can arrive before EOF. Short samples are only emitted at EOF.
+        if (batch.numRows >= inferenceRows) break;
+        completeBatches.push(batch);
+      }
+      if (completeBatches.length) {
+        /** The short source can be reused for scans without fetching it again. */
+        const completeTable = await makeArrowTableFromBatches(completeBatches);
+        if (this.revision === revision && completeTable) this.table ??= completeTable;
       }
     } else {
       schema = convertArrowToSchema((await this.loadTable(options.signal)).schema);
@@ -134,7 +151,7 @@ export class JSONTableSource
           ? getColumnarPredicatePaths(options.predicate).map(([name]) => name)
           : [])
       ]);
-    const inference = !schema && json?.schemaInference === 'first-batch';
+    const inference = !schema && json?.schemaInference !== 'full';
     let inferredPredicatePushed = false;
     const scan: JSONArrowScan = {
       columns,
@@ -156,13 +173,15 @@ export class JSONTableSource
     };
     for await (const batch of executeTableScanBatches<Table>(
       async function* (signal, onByteLength) {
-        if (schema || inference) {
+        if (inference && source.table) {
+          yield source.table;
+        } else if (schema || inference) {
           const {Table: ArrowTable} = await import('apache-arrow');
           const {parseDirectJSONArrowInBatches} = await import(
             './lib/parsers/parse-direct-json-arrow'
           );
           const batchSize = Math.min(
-            1024,
+            getTableSchemaInferenceRows('first-batch', source.options.core?.batchSize),
             !inference && !residual ? (options.offset ?? 0) + (options.limit ?? Infinity) : Infinity
           );
           for await (const batch of parseDirectJSONArrowInBatches(

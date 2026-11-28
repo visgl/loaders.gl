@@ -6,6 +6,9 @@ import type {LoaderOptions} from '@loaders.gl/core/loader-utils';
 import type {GeoArrowEncodingPreference} from '@loaders.gl/core/schema';
 import type {ArrowViewTypeMode} from '@loaders.gl/core/schema-utils';
 
+import type {TableSchemaInference} from '../lib/table-schema-inference';
+export type {TableSchemaInference} from '../lib/table-schema-inference';
+
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 export const CSV_LOADER_VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -19,6 +22,8 @@ export type CSVLoaderOptions = LoaderOptions & {
   csv?: {
     /** Selects row-table, columnar-table, or native Arrow output (`'arrow'`). */
     shape?: 'arrow' | 'array-row-table' | 'object-row-table' | 'columnar-table';
+    /** Records used to infer types when no schema is supplied. Defaults to first-batch for streams. */
+    schemaInference?: TableSchemaInference;
     /** optimizes memory usage but increases parsing time. */
     optimizeMemoryUsage?: boolean;
     columnPrefix?: string;
