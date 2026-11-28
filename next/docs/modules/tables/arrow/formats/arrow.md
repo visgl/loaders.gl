@@ -294,3 +294,5 @@ Predicate columns may be omitted from the final projection. The predicate is eva
 ## Related Formats[​](#related-formats "Direct link to Related Formats")
 
 [GeoArrow](https://loaders.gl/next/docs/modules/tables/arrow/formats/geoarrow.md) is not a separate file format. It defines geospatial conventions for Arrow extension metadata and geometry column layout.
+
+For Arrow IPC files supplied as a `Blob`, `ArrowTableSource` discovers the schema from file metadata and reads record batches on demand. A scan with an offset and no predicate skips complete batch bodies before the offset. The reader applies any remaining offset within the first overlapping batch and stops reading when the scan reaches its limit. IPC streams use sequential decoding.
