@@ -332,6 +332,7 @@ export {DataSourceManager} from './lib/sources/data-source-manager';
 export {
   bindColumnarPredicateParameters,
   copyColumnarPredicate,
+  compileColumnarPredicate,
   filterColumnarRowIndices,
   gatherColumnarColumns,
   getColumnarPredicateColumns,

@@ -31,12 +31,21 @@ type StringContext = {
   keyText: string;
 };
 
+/** Lets a consumer decode a row directly from the text scanner. */
+export type FastJSONElementConsumer = {
+  /** Returns the next offset after a consumed element, or the same offset on a miss. */
+  match(source: string, offset: number): number;
+  /** Consumes a complete element, including an element split across input chunks. */
+  consume(text: string): void;
+};
+
 /**
  * Streaming JSON parser optimized for extracting one matching array from the input.
  */
 export default class FastStreamingJSONParser implements StreamingJSONParserLike {
   private readonly allowedJsonPaths: string[][];
   private readonly trackMetadata: boolean;
+  private readonly strict: boolean;
   /** Row-level fields that keep nested object or array JSON source as Utf8 text. */
   private readonly rawJsonUtf8Fields: Set<string>;
 
@@ -59,12 +68,17 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   private streamEscape = false;
   private streamUnicodeDigitsRemaining = 0;
   private targetArrayClosed = false;
+  private expecting: 'first-or-end' | 'element' | 'separator' = 'first-or-end';
 
   private fullText = '';
 
-  constructor(options: StreamingJSONParserOptions = {}) {
+  constructor(
+    options: StreamingJSONParserOptions & {strict?: boolean} = {},
+    private readonly elementConsumer?: FastJSONElementConsumer
+  ) {
     this.allowedJsonPaths = (options.jsonpaths || []).map(jsonpath => new JSONPath(jsonpath).path);
-    this.trackMetadata = Boolean(options.metadata);
+    this.strict = Boolean(options.strict);
+    this.trackMetadata = Boolean(options.metadata || this.strict);
     this.rawJsonUtf8Fields = new Set(options.rawJsonUtf8Fields || []);
   }
 
@@ -72,7 +86,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   write(chunk: string): unknown[] {
     const chunkStartOffset = this.fullText.length;
 
-    if (this.trackMetadata) {
+    if (this.trackMetadata && this.mode !== 'stream') {
       this.fullText += chunk;
     }
 
@@ -101,24 +115,28 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   close(): void {
     if (this.mode === 'stream') {
       this.parseStreamBuffer();
+      if (this.strict && !this.targetArrayClosed) {
+        throw new SyntaxError('Unexpected end of streamed JSON array');
+      }
     }
 
-    if (!this.trackMetadata || this.streamingJsonPath) {
+    if (!this.trackMetadata) {
       return;
     }
 
-    try {
+    if (this.strict) {
       this.finalResult = JSON.parse(this.fullText);
-    } catch {
-      this.finalResult = this.partialResult;
+    } else {
+      try {
+        this.finalResult = JSON.parse(this.fullText);
+      } catch {
+        this.finalResult = this.partialResult;
+      }
     }
   }
 
   /** @inheritdoc */
   getPartialResult(): unknown {
-    if (this.streamingJsonPath) {
-      return this.partialResult;
-    }
     return this.finalResult ?? this.partialResult;
   }
 
@@ -208,7 +226,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
               index++;
               continue;
             }
-            if (frame.currentKey) {
+            if (frame.currentKey !== null) {
               const streamStartIndex = this.handleSeekValueStart(
                 [...frame.path, frame.currentKey],
                 character,
@@ -410,14 +428,38 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       const character = this.streamBuffer[index];
 
       if (this.streamElementType === 'none') {
-        if (isWhitespace(character) || character === ',') {
+        if (isWhitespace(character)) {
+          index++;
+          continue;
+        }
+        if (character === ',') {
+          if (this.strict && this.expecting !== 'separator') {
+            throw new SyntaxError('Unexpected comma in streamed JSON array');
+          }
+          this.expecting = 'element';
           index++;
           continue;
         }
         if (character === ']') {
+          if (this.strict && this.expecting === 'element') {
+            throw new SyntaxError('Unexpected trailing comma in streamed JSON array');
+          }
           this.targetArrayClosed = true;
           this.mode = 'after';
           index++;
+          if (this.trackMetadata) {
+            this.fullText += this.streamBuffer.slice(index);
+          }
+          continue;
+        }
+
+        if (this.strict && this.expecting === 'separator') {
+          throw new SyntaxError('Expected a comma between streamed JSON rows');
+        }
+        const nextOffset = this.elementConsumer?.match(this.streamBuffer, index) ?? index;
+        if (nextOffset > index) {
+          this.expecting = 'separator';
+          index = nextOffset;
           continue;
         }
 
@@ -516,12 +558,22 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       return;
     }
 
-    try {
-      this.emittedRows.push(parseStreamElement(this.streamElementBuffer, this.rawJsonUtf8Fields));
-    } catch {
-      // Ignore incomplete elements until more data arrives.
+    this.expecting = 'separator';
+    if (this.elementConsumer) {
+      this.elementConsumer.consume(this.streamElementBuffer);
+      this.resetStreamElement();
+      return;
     }
 
+    if (this.strict) {
+      this.emittedRows.push(parseStreamElement(this.streamElementBuffer, this.rawJsonUtf8Fields));
+    } else {
+      try {
+        this.emittedRows.push(parseStreamElement(this.streamElementBuffer, this.rawJsonUtf8Fields));
+      } catch {
+        // Preserve the reference parser's tolerant behavior.
+      }
+    }
     this.resetStreamElement();
   }
 
@@ -545,12 +597,14 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       return;
     }
 
+    const prefix = this.fullText.slice(0, targetArrayStartOffset);
+    // Keep only the wrapper for final metadata. The streamed row array is never retained here.
+    this.fullText = `${prefix}[]`;
     if (!this.streamingJsonPath || this.streamingJsonPath.path.length === 1) {
       this.partialResult = [];
       return;
     }
 
-    const prefix = this.fullText.slice(0, targetArrayStartOffset);
     const suffix = this.seekFrames
       .slice()
       .reverse()
@@ -558,7 +612,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       .join('');
 
     try {
-      this.partialResult = JSON.parse(`${prefix}[]${suffix}`);
+      this.partialResult = JSON.parse(`${this.fullText}${suffix}`);
     } catch {
       this.partialResult = null;
     }
@@ -692,6 +746,56 @@ function rewriteRawJsonUtf8ObjectFields(jsonText: string, rawJsonUtf8Fields: Set
   return rewrittenText;
 }
 
+/** Visits source spans for the fields of a complete JSON object. */
+export function visitJSONObjectFields(
+  text: string,
+  visit: (name: string, start: number, end: number) => void
+): boolean {
+  let offset = skipWhitespace(text, 0);
+  if (text[offset++] !== '{') return false;
+  offset = skipWhitespace(text, offset);
+  if (text[offset] === '}') return skipWhitespace(text, offset + 1) === text.length;
+  while (offset < text.length && text[offset] === '"') {
+    const keyEnd = findJSONStringEnd(text, offset);
+    if (keyEnd === null) return false;
+    const name = JSON.parse(text.slice(offset, keyEnd));
+    offset = skipWhitespace(text, keyEnd);
+    if (text[offset] !== ':') return false;
+    const start = skipWhitespace(text, offset + 1);
+    const end = findJSONValueEnd(text, start);
+    if (end === null || end === start) return false;
+    visit(name, start, end);
+    offset = skipWhitespace(text, end);
+    if (text[offset] === '}') return skipWhitespace(text, offset + 1) === text.length;
+    if (text[offset] !== ',') return false;
+    offset = skipWhitespace(text, offset + 1);
+  }
+  return false;
+}
+
+/** Visits each top-level array cell by index and source offsets without materializing the row. */
+export function visitJSONArrayCells(
+  text: string,
+  visit: (index: number, start: number, end: number) => void
+): boolean {
+  let start = skipWhitespace(text, 0);
+  if (text[start++] !== '[') return false;
+  start = skipWhitespace(text, start);
+  if (text[start] === ']') return skipWhitespace(text, start + 1) === text.length;
+
+  let index = 0;
+  while (start < text.length) {
+    const end = findJSONValueEnd(text, start);
+    if (end === null || end === start) return false;
+    visit(index++, start, end);
+    const delimiter = skipWhitespace(text, end);
+    if (text[delimiter] === ']') return skipWhitespace(text, delimiter + 1) === text.length;
+    if (text[delimiter] !== ',') return false;
+    start = skipWhitespace(text, delimiter + 1);
+  }
+  return false;
+}
+
 /**
  * Returns the first non-whitespace offset at or after the supplied index.
  *
@@ -724,7 +828,12 @@ function findJSONValueEnd(jsonText: string, valueStartIndex: number): number | n
   }
 
   let index = valueStartIndex;
-  while (index < jsonText.length && jsonText[index] !== ',' && jsonText[index] !== '}') {
+  while (
+    index < jsonText.length &&
+    jsonText[index] !== ',' &&
+    jsonText[index] !== '}' &&
+    jsonText[index] !== ']'
+  ) {
     index++;
   }
   return index < jsonText.length ? index : null;

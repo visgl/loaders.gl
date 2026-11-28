@@ -12,6 +12,7 @@ import type {ArrayType} from '@loaders.gl/core/schema';
 export {
   bindColumnarPredicateParameters,
   copyColumnarPredicate,
+  compileColumnarPredicate,
   getColumnarPredicateColumns,
   getColumnarPredicateParameterNames,
   getColumnarPredicatePath,
