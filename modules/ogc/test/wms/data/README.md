@@ -23,6 +23,9 @@ OGC license: https://www.ogc.org/license
 
 ## WMS
 
+- get-capabilities `inherited-crs.xml` is hand-written. A root layer lists EPSG:4326 and
+  EPSG:3857, one child layer adds EPSG:25832, and one child layer lists no CRS. It tests the
+  WMS 1.3.0 inheritance of CRS and BoundingBox values (Table 7).
 - get-capabilities `analyses.xml`, `dmsp.xml`, `forecasts.xml`, `obs.xml`, `wwa.xml` were copied from from https://github.com/w8r/wms-capabilities under OpenLayers license:
 
 ## OpenLayers license

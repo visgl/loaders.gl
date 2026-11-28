@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hand-written, trimmed WMS 1.3.0 capabilities. See ../../README.md. -->
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" version="1.3.0">
+  <Service><Name>WMS</Name><Title>Inherited CRS test service</Title></Service>
+  <Capability>
+    <Request><GetMap><Format>image/png</Format></GetMap></Request>
+    <Layer>
+      <Title>Root</Title>
+      <CRS>EPSG:4326</CRS>
+      <CRS>EPSG:3857</CRS>
+      <BoundingBox CRS="EPSG:4326" minx="47" miny="5" maxx="55" maxy="15"/>
+      <BoundingBox CRS="EPSG:3857" minx="556597" miny="5942074" maxx="1669792" maxy="7361866"/>
+      <Layer>
+        <Name>parcels</Name>
+        <Title>Parcels</Title>
+        <CRS>EPSG:25832</CRS>
+        <CRS>EPSG:3857</CRS>
+        <BoundingBox CRS="EPSG:25832" minx="280000" miny="5200000" maxx="920000" maxy="6100000"/>
+        <BoundingBox CRS="EPSG:3857" minx="600000" miny="6000000" maxx="1600000" maxy="7300000"/>
+      </Layer>
+      <Layer>
+        <Name>roads</Name>
+        <Title>Roads</Title>
+      </Layer>
+    </Layer>
+  </Capability>
+</WMS_Capabilities>

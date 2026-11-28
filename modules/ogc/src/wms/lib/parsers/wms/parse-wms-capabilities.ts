@@ -402,6 +402,30 @@ function extractDimension(xmlDimension: any): WMSDimension {
   return dimension;
 }
 
+/** Returns the parent CRS list followed by the CRSs that the layer adds, without duplicates. */
+function mergeInheritedCRS(
+  parentCRS: CRSIdentifier[],
+  layerCRS: CRSIdentifier[] | undefined
+): CRSIdentifier[] {
+  return Array.from(new Set([...parentCRS, ...(layerCRS || [])]));
+}
+
+/**
+ * Returns the parent bounding boxes with each one that the layer declares for the same CRS
+ * replaced, followed by the layer bounding boxes for other CRSs.
+ */
+function mergeInheritedBoundingBoxes(
+  parentBoundingBoxes: WMSBoundingBox[],
+  layerBoundingBoxes: WMSBoundingBox[] | undefined
+): WMSBoundingBox[] {
+  const layerBoxes = layerBoundingBoxes || [];
+  const merged = parentBoundingBoxes.map(
+    parentBox => layerBoxes.find(layerBox => layerBox.crs === parentBox.crs) || parentBox
+  );
+  const parentCRS = new Set(parentBoundingBoxes.map(parentBox => parentBox.crs));
+  return [...merged, ...layerBoxes.filter(layerBox => !parentCRS.has(layerBox.crs))];
+}
+
 /** Traverse layers and inject missing props from parents */
 // eslint-disable-next-line complexity
 function addInheritedLayerProps(layer: WMSLayer, parent: WMSLayer | null): void {
@@ -409,12 +433,14 @@ function addInheritedLayerProps(layer: WMSLayer, parent: WMSLayer | null): void 
     layer.geographicBoundingBox = [...parent.geographicBoundingBox];
   }
 
-  if (parent?.crs && !layer.crs) {
-    layer.crs = [...parent.crs];
+  // WMS 1.3.0 Table 7 (layer inheritance): a layer adds CRSs to the parent CRS list.
+  if (parent?.crs) {
+    layer.crs = mergeInheritedCRS(parent.crs, layer.crs);
   }
 
-  if (parent?.boundingBoxes && !layer.boundingBoxes) {
-    layer.boundingBoxes = [...parent.boundingBoxes];
+  // WMS 1.3.0 Table 7: a layer BoundingBox replaces the parent one for the same CRS.
+  if (parent?.boundingBoxes) {
+    layer.boundingBoxes = mergeInheritedBoundingBoxes(parent.boundingBoxes, layer.boundingBoxes);
   }
 
   if (parent?.dimensions && !layer.dimensions) {

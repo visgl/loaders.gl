@@ -52,3 +52,33 @@ test.skip('WMSCapabilitiesLoader#ad-hoc-test', async () => {
   expect(capabilities.version, 'version').toBe('1.1.1');
   expect(capabilities.layers[0].layers?.[2]?.name, 'contents').toBe('eez');
 });
+
+test('WMSCapabilitiesLoader#inherited-crs.xml merges parent and child CRS lists', async () => {
+  const capabilities = await load(
+    '@loaders.gl/ogc/wms/test/data/wms/get-capabilities/inherited-crs.xml',
+    WMSCapabilitiesLoader,
+    {wms: {inheritedLayerProps: true}}
+  );
+  const [root] = capabilities.layers;
+  const [parcels, roads] = root.layers || [];
+  expect(root.crs).toEqual(['EPSG:4326', 'EPSG:3857']);
+  // WMS 1.3.0 Table 7: a child inherits the parent CRS list and can add more. No duplicates.
+  expect(parcels.crs).toEqual(['EPSG:4326', 'EPSG:3857', 'EPSG:25832']);
+  expect(roads.crs).toEqual(['EPSG:4326', 'EPSG:3857']);
+  // A child BoundingBox replaces the parent BoundingBox for the same CRS only.
+  expect(parcels.boundingBoxes?.map(boundingBox => boundingBox.crs)).toEqual([
+    'EPSG:4326',
+    'EPSG:3857',
+    'EPSG:25832'
+  ]);
+  expect(
+    parcels.boundingBoxes?.find(boundingBox => boundingBox.crs === 'EPSG:3857')?.boundingBox
+  ).toEqual([
+    [600000, 6000000],
+    [1600000, 7300000]
+  ]);
+  expect(roads.boundingBoxes?.map(boundingBox => boundingBox.crs)).toEqual([
+    'EPSG:4326',
+    'EPSG:3857'
+  ]);
+});
