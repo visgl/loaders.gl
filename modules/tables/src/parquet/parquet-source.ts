@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {convertParquetRowGroupToArrow} from './lib/parsers/parse-parquet-to-arrow-js';
+import {
+  hasNativeGeoArrowList,
+  materializeParquetArrowColumns
+} from './lib/arrow/materialize-parquet-arrow-columns';
 import type {RecordBatch, Table} from 'apache-arrow';
 import {streamNativeParquetBatches} from './lib/native-parquet-batches';
 export {getParquetBatchProvenance} from './lib/native-parquet-batches';
@@ -194,6 +199,8 @@ type ParquetRowGroupReadResult = {
   rowIndices?: number[];
   /** Caller-thread columns when worker decoding is unavailable or disabled. */
   columns?: Record<string, ArrayType>;
+  /** Caller-thread Arrow table decoded directly from Parquet levels. */
+  arrowTable?: Table;
   /** Directly transferable Arrow batches when worker decoding is enabled. */
   workerResult?: ParquetSourceWorkerResult;
 };
@@ -630,7 +637,8 @@ export class ParquetSource
           columns: materializedColumns,
           rowCount,
           rowIndices,
-          workerResult
+          workerResult,
+          arrowTable: decodedArrowTable
         } = settledRead.result;
         if (workerResult) {
           for (const workerBatch of workerResult.batches) {
@@ -693,21 +701,29 @@ export class ParquetSource
             ? rowIndices!.slice(outputRowOffset, outputRowOffset + batchRowCount)
             : undefined;
           const rowGroupRowOffset = batchRowIndices?.[0] ?? outputRowOffset;
-          const batchColumns = sliceColumns(
-            materializedColumns!,
-            outputRowOffset,
-            outputRowOffset + batchRowCount
-          );
           const conversionStartTime = getCurrentTime();
-          const batch = createParquetBatch(
-            initialization.metadata,
-            projectedSchema,
-            rowGroupIndex,
-            rowGroupRowOffset,
-            batchColumns,
-            batchRowCount,
-            batchRowIndices
-          );
+          const batch = decodedArrowTable
+            ? createParquetBatchFromArrow(
+                initialization.metadata,
+                rowGroupIndex,
+                rowGroupRowOffset,
+                decodedArrowTable.slice(outputRowOffset, outputRowOffset + batchRowCount),
+                batchRowCount,
+                batchRowIndices
+              )
+            : createParquetBatch(
+                initialization.metadata,
+                projectedSchema,
+                rowGroupIndex,
+                rowGroupRowOffset,
+                sliceColumns(
+                  materializedColumns!,
+                  outputRowOffset,
+                  outputRowOffset + batchRowCount
+                ),
+                batchRowCount,
+                batchRowIndices
+              );
           const conversionDurationMs = getCurrentTime() - conversionStartTime;
           this.recordTelemetry(
             'arrow-conversion',
@@ -1127,9 +1143,34 @@ export class ParquetSource
           )
         ];
     throwIfAborted(signal);
+    if (!predicate && hasNativeGeoArrowList(projectedSchema)) {
+      const decodeDurationMs = getCurrentTime() - decodeStartTime;
+      this.recordTelemetry(
+        'decode',
+        {decodeDurationMs, rowGroupsDecoded: 1},
+        {rowGroupIndex, durationMs: decodeDurationMs}
+      );
+      const conversionStartTime = getCurrentTime();
+      const arrowTable = convertParquetRowGroupToArrow(
+        projectedSchema,
+        initialization.parquetSchema,
+        decodedRowGroups[0]
+      );
+      const arrowConversionDurationMs = getCurrentTime() - conversionStartTime;
+      this.recordTelemetry(
+        'arrow-conversion',
+        {arrowConversionDurationMs},
+        {rowGroupIndex, durationMs: arrowConversionDurationMs}
+      );
+      return {rowGroupIndex, arrowTable, rowCount: arrowTable.numRows};
+    }
     const columns = concatenateMaterializedColumns(
       decodedRowGroups.map(decodedRowGroup =>
-        initialization.parquetSchema.materializeColumns(decodedRowGroup)
+        materializeParquetArrowColumns(
+          initialization.parquetSchema,
+          decodedRowGroup,
+          projectedSchema
+        )
       )
     );
     const sourceRowIndices = pagePlan
@@ -1325,6 +1366,17 @@ export class ParquetSource
           selectedRowIndices,
           batchSize
         )
+      };
+    }
+    if (projectedResult.arrowTable) {
+      return {
+        rowGroupIndex,
+        rowCount: selectedRowIndices.length,
+        rowIndices: selectedRowIndices,
+        arrowTable: new IndexedArrowTable(
+          projectedResult.arrowTable,
+          selectedRowIndices
+        ).materializeArrowTable()
       };
     }
     return {
