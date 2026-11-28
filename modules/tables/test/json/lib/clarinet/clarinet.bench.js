@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-import {_ClarinetParser} from '@loaders.gl/tables/json/api';
-import StreamingJSONParser from '../../../../src/json/lib/json-parser/streaming-json-parser';
+import ClarinetParser from '../../../../../../website/src/alternate-loaders/json/clarinet/clarinet';
+import StreamingJSONParser from '../../../../../../website/src/alternate-loaders/json/streaming-json-parser';
 import FastStreamingJSONParser from '../../../../src/json/lib/json-parser/fast-streaming-json-parser';
 
 const loadJSON = async url => {
@@ -27,7 +27,7 @@ export default function clarinetBench(bench) {
   bench.group('Clarinet internals - JSON parsing from string');
 
   bench.add('ClarinetParser', {multiplier: STRING.length, unit: 'bytes'}, () => {
-    const parser = new _ClarinetParser();
+    const parser = new ClarinetParser();
     parser.write(STRING);
   });
 

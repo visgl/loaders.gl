@@ -4,8 +4,8 @@
 
 // @ts-nocheck
 
-import ClarinetParser, {ClarinetParserOptions} from '../clarinet/clarinet';
-import JSONPath from '../jsonpath/jsonpath';
+import ClarinetParser, {ClarinetParserOptions} from './clarinet/clarinet';
+import {_JSONPath as JSONPath} from '@loaders.gl/tables/json/api';
 
 // JSONParser builds a JSON object using the events emitted by the Clarinet parser
 

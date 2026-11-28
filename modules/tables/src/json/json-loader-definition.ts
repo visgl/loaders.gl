@@ -28,8 +28,6 @@ export type JSONBatch = Batch & {
 export type JSONLoaderOptions = LoaderOptions & {
   /** JSON parser options. */
   json?: {
-    /** Selects the streaming JSON parser backend. */
-    backend?: 'clarinet' | 'fast';
     /** Explicit row output. Batched table mode defaults to Arrow when shape is omitted. */
     shape?: 'object-row-table' | 'array-row-table';
     /** Whether non-streaming JSON should be interpreted as table rows. */
@@ -54,7 +52,6 @@ export const JSONLoaderDefinition = {
   workerInBatches: true,
   options: {
     json: {
-      backend: 'clarinet',
       shape: undefined,
       table: false,
       jsonpaths: []

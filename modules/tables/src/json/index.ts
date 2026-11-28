@@ -31,14 +31,11 @@ export type {GeoJSONLoaderOptions} from './geojson-loader-definition';
 export {GeoJSONWriter, type GeoJSONWriterOptions} from './geojson-writer';
 
 export {default as _JSONPath} from './lib/jsonpath/jsonpath';
-export {default as _ClarinetParser} from './lib/clarinet/clarinet';
 export {default as _FastStreamingJSONParser} from './lib/json-parser/fast-streaming-json-parser';
 
 export {rebuildJsonObject as _rebuildJsonObject} from './lib/parsers/parse-json-in-batches';
 
 export type {MetadataBatch, JSONBatch} from './json-loader-definition';
-
-export {FastJSONLoader} from './fast-json-loader';
 
 export {JSONLoaderWithParser} from '../json-loader';
 
