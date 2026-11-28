@@ -48,9 +48,12 @@ test('GeoJSON final Arrow batch refines trailing CRS and container metadata', as
   expect(table?.numRows).toBe(1);
 });
 
-test('JSON Arrow streaming retains a trailing container without emitting legacy envelopes', async () => {
-  const parts = ['{"rows":[{"value":1}', '],"title":"final"}'];
-  const options = {json: {shape: 'arrow' as const}, core: {batchSize: 1}};
+test.each([
+  'clarinet',
+  'fast'
+] as const)('JSON Arrow streaming (%s) retains a trailing container without emitting legacy envelopes', async backend => {
+  const parts = ['{"rows":[{"value":1}', '],"title":', '"final"}'];
+  const options = {json: {shape: 'arrow' as const, backend}, core: {batchSize: 1}};
   const batches = [];
   for await (const batch of JSONTableLoaderWithParser.parseInBatches(chunks(parts), options))
     batches.push(batch);

@@ -192,7 +192,7 @@ test.each([
   expect(batches.at(-1)).toEqual(callerBatches.at(-1));
   expect(batches.at(-1)).toMatchObject({
     jsonpath: '$.rows',
-    container: {label: 'before', ...(backend === 'clarinet' ? {tail: true} : {})}
+    container: {label: 'before', tail: true}
   });
 });
 

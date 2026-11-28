@@ -72,7 +72,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
   write(chunk: string): unknown[] {
     const chunkStartOffset = this.fullText.length;
 
-    if (this.trackMetadata) {
+    if (this.trackMetadata && this.mode !== 'stream') {
       this.fullText += chunk;
     }
 
@@ -103,7 +103,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       this.parseStreamBuffer();
     }
 
-    if (!this.trackMetadata || this.streamingJsonPath) {
+    if (!this.trackMetadata) {
       return;
     }
 
@@ -116,9 +116,6 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
 
   /** @inheritdoc */
   getPartialResult(): unknown {
-    if (this.streamingJsonPath) {
-      return this.partialResult;
-    }
     return this.finalResult ?? this.partialResult;
   }
 
@@ -418,6 +415,9 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
           this.targetArrayClosed = true;
           this.mode = 'after';
           index++;
+          if (this.trackMetadata) {
+            this.fullText += this.streamBuffer.slice(index);
+          }
           continue;
         }
 
@@ -521,7 +521,6 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
     } catch {
       // Ignore incomplete elements until more data arrives.
     }
-
     this.resetStreamElement();
   }
 
@@ -545,12 +544,14 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       return;
     }
 
+    const prefix = this.fullText.slice(0, targetArrayStartOffset);
+    // Keep only the wrapper for final metadata. The streamed row array is never retained here.
+    this.fullText = `${prefix}[]`;
     if (!this.streamingJsonPath || this.streamingJsonPath.path.length === 1) {
       this.partialResult = [];
       return;
     }
 
-    const prefix = this.fullText.slice(0, targetArrayStartOffset);
     const suffix = this.seekFrames
       .slice()
       .reverse()
@@ -558,7 +559,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
       .join('');
 
     try {
-      this.partialResult = JSON.parse(`${prefix}[]${suffix}`);
+      this.partialResult = JSON.parse(`${this.fullText}${suffix}`);
     } catch {
       this.partialResult = null;
     }
