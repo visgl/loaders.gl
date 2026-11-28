@@ -213,8 +213,6 @@ export class WMSImageSource extends DataSource<string, WMSLoaderOptions> impleme
    * addition to the built-in latitude-first and northing-first CRSs. Default: ['EPSG:4326']
    */
   flipCRS: CRSIdentifier[];
-  /** WMS 1.3.0 BBOX axis order that overrides the built-in table and `flipCRS`. */
-  readonly axisOrder?: ServiceCRSAxisOrder;
 
   /** Default static WMS parameters */
   wmsParameters: Required<WMSParameters>;
@@ -233,7 +231,6 @@ export class WMSImageSource extends DataSource<string, WMSLoaderOptions> impleme
 
     this.substituteCRS84 = options.wms?.substituteCRS84 ?? false;
     this.flipCRS = ['EPSG:4326'];
-    this.axisOrder = options.wms?.axisOrder;
 
     this.wmsParameters = {
       layers: undefined!,
@@ -641,7 +638,8 @@ export class WMSImageSource extends DataSource<string, WMSLoaderOptions> impleme
 
   /** Returns the WMS 1.3.0 axis order of a CRS: the option, then `flipCRS`, then the built-in table. */
   protected _getAxisOrder(crs: CRSIdentifier | undefined): ServiceCRSAxisOrder {
-    if (this.axisOrder) return this.axisOrder;
+    const axisOrder = this.options.wms?.axisOrder;
+    if (axisOrder) return axisOrder;
     if (this.flipCRS.some(flipCRS => areServiceCRSEquivalent(flipCRS, crs))) return 'yx';
     return getServiceCRSAxisOrder(crs);
   }

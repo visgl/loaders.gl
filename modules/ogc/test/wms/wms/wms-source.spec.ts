@@ -390,3 +390,20 @@ test('WMS 1.3.0 substituteCRS84 replaces EPSG:4326 spellings and keeps x first',
   expect(url.searchParams.get('CRS')).toBe('CRS:84');
   expect(url.searchParams.get('BBOX')).toBe('5,47,15,55');
 });
+
+test('WMS reads the axisOrder option after setProps', () => {
+  const source = WMSLoader.createDataSourceSync(WMS_SERVICE_URL, {});
+  const getBounds = () =>
+    new URL(
+      source.getMapURL({
+        layers: ['x'],
+        crs: 'EPSG:4326',
+        bbox: [5, 47, 15, 55],
+        width: 1,
+        height: 1
+      })
+    ).searchParams.get('BBOX');
+  expect(getBounds()).toBe('47,5,55,15');
+  source.setProps({wms: {axisOrder: 'xy'}});
+  expect(getBounds()).toBe('5,47,15,55');
+});
