@@ -118,3 +118,22 @@ test('Fast JSON Arrow writes scalar fields directly across chunk and field-order
     tail: true
   });
 });
+
+test('Fast JSON Arrow infers ordered columns from the whole first batch', async () => {
+  const parts = ['[{"2":2,"1":1},{"1":3,"2":4,"label":"later"},', '{"1":5,"2":6,"label":"last"}]'];
+  const options = {
+    json: {shape: 'arrow' as const, backend: 'fast' as const},
+    core: {batchSize: 2}
+  };
+  const batches: RecordBatch[] = [];
+  for await (const batch of JSONTableLoaderWithParser.parseInBatches(chunks(parts), options)) {
+    if (!(batch instanceof RecordBatch)) throw new Error('Expected a native Arrow record batch');
+    batches.push(batch);
+  }
+  expect(batches.map(batch => batch.numRows)).toEqual([2, 1]);
+  const table = await makeArrowTableFromBatches(batches);
+  expect(table!.schema.fields.map(field => field.name)).toEqual(['1', '2', 'label']);
+  expect(Array.from(table!.getChild('1')!)).toEqual([1, 3, 5]);
+  expect(Array.from(table!.getChild('2')!)).toEqual([2, 4, 6]);
+  expect(Array.from(table!.getChild('label')!)).toEqual([null, 'later', 'last']);
+});

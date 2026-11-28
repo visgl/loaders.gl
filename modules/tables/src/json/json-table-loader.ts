@@ -8,10 +8,7 @@ import {getLoaderLog} from '@loaders.gl/core/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/core/schema';
 import {convertTable} from '@loaders.gl/core/schema-utils';
 import {updateNativeArrowTableMetadata, isArrowRecordBatch} from '@loaders.gl/core/schema-utils';
-import {
-  compileDirectJSONArrowRow,
-  parseDirectJSONArrowInBatches
-} from './lib/parsers/parse-direct-json-arrow';
+import {parseDirectJSONArrowInBatches} from './lib/parsers/parse-direct-json-arrow';
 import {getJSONContainerMetadata} from './lib/parsers/json-container-metadata';
 
 import {
@@ -126,18 +123,13 @@ function parseInBatches(
       : undefined;
   validateJSONTableArrowOptions(jsonOptions);
   const json = jsonOptions.json;
-  if (json?.shape === 'arrow' && json.backend === 'fast' && json.schema && !json.arrowConversion) {
-    const schema = normalizeJSONArrowSchema(json.schema);
-    const matcher = compileDirectJSONArrowRow(schema);
-    if (matcher) {
-      return parseDirectJSONArrowInBatches(
-        asyncIterator,
-        schema,
-        matcher,
-        json.jsonpaths,
-        jsonOptions.core?.batchSize ?? 'auto'
-      );
-    }
+  if (json?.shape === 'arrow' && json.backend === 'fast' && !json.arrowConversion) {
+    return parseDirectJSONArrowInBatches(
+      asyncIterator,
+      json.schema ? normalizeJSONArrowSchema(json.schema) : undefined,
+      json.jsonpaths,
+      jsonOptions.core?.batchSize ?? 'auto'
+    );
   }
 
   const rowBatches = parseJSONInBatches(

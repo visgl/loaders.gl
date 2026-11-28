@@ -9,7 +9,11 @@ import {ArrowTableBuilder, updateNativeArrowTableMetadata} from '@loaders.gl/cor
 import FastStreamingJSONParser, {
   visitJSONObjectFields
 } from '../json-parser/fast-streaming-json-parser';
-import {makeJSONArrowFieldAppender} from './convert-row-table-to-arrow';
+import {
+  makeEmptyFieldArrowTable,
+  makeJSONArrowFieldAppender,
+  makeJSONArrowSchemaInferer
+} from './convert-row-table-to-arrow';
 import {getJSONContainerMetadata} from './json-container-metadata';
 
 const WHITESPACE = String.raw`[\x20\t\n\r]*`;
@@ -24,7 +28,7 @@ const SCALAR_DECODERS = {
 };
 
 /** Compiles the common ordered scalar object shape without allocating decoded row objects. */
-export function compileDirectJSONArrowRow(schema: Schema): RegExp | null {
+function compileDirectJSONArrowRow(schema: Schema): RegExp | null {
   if (
     !schema.fields.length ||
     new Set(schema.fields.map(field => field.name)).size !== schema.fields.length
@@ -51,44 +55,87 @@ export function compileDirectJSONArrowRow(schema: Schema): RegExp | null {
   );
 }
 
-/** Streams ordered scalar objects straight into Arrow builders, using row conversion on a miss. */
+/** Streams JSON fields into Arrow, buffering columns only while inferring the first batch. */
 export async function* parseDirectJSONArrowInBatches(
   input:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
-  schema: Schema,
-  matcher: RegExp,
+  declaredSchema: Schema | undefined,
   jsonpaths: string[] | undefined,
   batchSize: number | 'auto'
 ): AsyncIterable<RecordBatch> {
-  const builder = new ArrowTableBuilder(schema);
-  const decoders = schema.fields.map(
+  let schema = declaredSchema;
+  let builder = schema ? new ArrowTableBuilder(schema) : undefined;
+  let matcher = schema ? compileDirectJSONArrowRow(schema) : null;
+  let decoders = schema?.fields.map(
     field => SCALAR_DECODERS[field.type as keyof typeof SCALAR_DECODERS]
   );
+  let appendFields = builder && schema ? makeJSONArrowFieldAppender(builder, schema) : undefined;
+  const inferer = makeJSONArrowSchemaInferer();
+  const columns = new Map<string, unknown[]>();
+  let inferredRows = 0;
+  let batchFieldNames: string[] | undefined;
   const rawJSONFields = new Set(
-    schema.fields.filter(field => field.type === 'utf8').map(field => field.name)
+    declaredSchema?.fields.filter(field => field.type === 'utf8').map(field => field.name)
   );
   const buffered: RecordBatch[] = [];
   const fields = new Map<string, unknown>();
-  const appendFields = makeJSONArrowFieldAppender(builder, schema);
 
-  const flush = () => {
-    const batch = builder.flushBatch();
+  /** Freezes the inferred schema and appends the buffered columns to their Arrow builders. */
+  function finishInference(): void {
+    schema = inferer.getSchema();
+    builder = new ArrowTableBuilder(schema);
+    matcher = compileDirectJSONArrowRow(schema);
+    decoders = schema.fields.map(
+      field => SCALAR_DECODERS[field.type as keyof typeof SCALAR_DECODERS]
+    );
+    const appendInitialFields = makeJSONArrowFieldAppender(builder, schema, true);
+    for (let row = 0; row < inferredRows; row++) {
+      fields.clear();
+      for (const [name, column] of columns) {
+        if (row in column) fields.set(name, column[row]);
+      }
+      appendInitialFields(fields);
+    }
+    columns.clear();
+    inferredRows = 0;
+    appendFields = makeJSONArrowFieldAppender(builder, schema);
+  }
+
+  /** Queues the current batch with the frozen schema. */
+  function flush(): void {
+    if (!builder && inferredRows) finishInference();
+    if (!builder?.length || !schema) return;
+    const batch = schema.fields.length
+      ? builder.flushBatch()
+      : makeEmptyFieldArrowTable(schema, builder.length).batches[0];
     if (batch) buffered.push(batch);
-  };
-  const match = (source: string, offset: number): number => {
+    builder.length = 0;
+    batchFieldNames = undefined;
+  }
+
+  /** Emits a complete batch when the configured row limit is reached. */
+  function flushOnRowLimit(): void {
+    if (typeof batchSize === 'number' && (builder?.length ?? inferredRows) >= batchSize) flush();
+  }
+
+  /** Appends an ordered scalar object straight from a compiled source match. */
+  function match(source: string, offset: number): number {
+    if (!matcher || !builder || !schema || !decoders) return offset;
     matcher.lastIndex = offset;
     const tokens = matcher.exec(source);
     if (!tokens) return offset;
     const nextOffset = matcher.lastIndex;
-    for (let index = 0; index < decoders.length; index++) {
+    batchFieldNames ??= schema.fields.map(field => field.name);
+    for (let index = 0; index < schema.fields.length; index++) {
       const token = tokens[index + 1];
       builder.arrowBuilders[index].append(token === 'null' ? null : decoders[index](token));
     }
     builder.length++;
-    if (typeof batchSize === 'number' && builder.length >= batchSize) flush();
+    flushOnRowLimit();
     return nextOffset;
-  };
+  }
+
   const parser = new FastStreamingJSONParser(
     {jsonpaths, metadata: true},
     {
@@ -99,7 +146,10 @@ export async function* parseDirectJSONArrowInBatches(
         try {
           if (text[0] === '[') {
             const values: unknown[] = JSON.parse(text);
-            for (const [index, value] of values.entries()) fields.set(`column${index + 1}`, value);
+            batchFieldNames ??= values.map((_value, index) => `column${index + 1}`);
+            for (let index = 0; index < batchFieldNames.length; index++) {
+              fields.set(batchFieldNames[index], values[index]);
+            }
           } else if (text[0] !== '{') {
             const value: unknown = JSON.parse(text);
             if (typeof value === 'string') {
@@ -119,8 +169,21 @@ export async function* parseDirectJSONArrowInBatches(
         } catch {
           return;
         }
-        appendFields(fields);
-        if (typeof batchSize === 'number' && builder.length >= batchSize) flush();
+        batchFieldNames ??= orderJSONObjectFieldNames(fields.keys());
+        if (appendFields) {
+          appendFields(fields);
+        } else {
+          const order = orderJSONObjectFieldNames(fields.keys());
+          for (const name of order) {
+            const value = fields.get(name);
+            const column = columns.get(name) ?? [];
+            column[inferredRows] = value;
+            columns.set(name, column);
+          }
+          inferer.addFields(fields, order);
+          inferredRows++;
+        }
+        flushOnRowLimit();
       }
     }
   );
@@ -150,6 +213,23 @@ export async function* parseDirectJSONArrowInBatches(
   const path = parser.getStreamingJsonPathAsString() ?? undefined;
   const metadata = getJSONContainerMetadata(parser.getPartialResult(), path);
   if (lastMetadata !== JSON.stringify(metadata)) {
-    yield* updateNativeArrowTableMetadata(builder.finishTable(), metadata).batches;
+    const finalBuilder = builder ?? new ArrowTableBuilder({fields: [], metadata: {}});
+    yield* updateNativeArrowTableMetadata(finalBuilder.finishTable(), metadata).batches;
   }
+}
+
+/** Matches JavaScript's own-property enumeration order for integer field names. */
+function orderJSONObjectFieldNames(names: Iterable<string>): string[] {
+  const integerNames: string[] = [];
+  const otherNames: string[] = [];
+  for (const name of names) {
+    const index = Number(name);
+    if (index >= 0 && index < 4294967295 && Number.isInteger(index) && String(index) === name) {
+      integerNames.push(name);
+    } else {
+      otherNames.push(name);
+    }
+  }
+  integerNames.sort((left, right) => Number(left) - Number(right));
+  return integerNames.concat(otherNames);
 }

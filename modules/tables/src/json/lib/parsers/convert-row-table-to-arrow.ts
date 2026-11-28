@@ -427,7 +427,7 @@ function validateEmptySchemaRowTable(
   }
 }
 
-function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): arrow.Table {
+export function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): arrow.Table {
   const arrowSchema = convertSchemaToArrow(schema);
   const arrowData = new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, []);
   const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowData);
@@ -679,16 +679,33 @@ function toSchemaDataType(type: ArrowLikeDataType): Field['type'] {
   }
 }
 
+/** Accumulates the existing JSON type-inference rules from decoded fields. */
+export function makeJSONArrowSchemaInferer(): {
+  addFields(fields: ReadonlyMap<string, unknown>, order: readonly string[]): void;
+  getSchema(): Schema;
+} {
+  let inferred: ArrowLikeField[] = [];
+  return {
+    addFields(fields, order) {
+      const observed = order.map(name => inferValueField(name, fields.get(name)));
+      inferred = mergeStructFields(inferred, observed, 'row');
+    },
+    getSchema() {
+      return {fields: inferred.map(field => toSchemaField(field)), metadata: {}};
+    }
+  };
+}
+
 /** Writes lexically decoded fields directly into an existing Arrow builder. */
 export function makeJSONArrowFieldAppender(
   builder: ArrowTableBuilder,
   schema: Schema,
-  log?: any
+  allowMissingNullableFields = false
 ): (fields: ReadonlyMap<string, unknown>) => void {
   const schemaFieldNames = new Set(schema.fields.map(field => field.name));
   const conversionOptions = DEFAULT_ARROW_CONVERSION_OPTIONS;
-  const conversionLogger = makeConversionLogger(log, conversionOptions.logRecoveries);
-  const normalizationOptions = {allowMissingNullableFields: false};
+  const conversionLogger = makeConversionLogger(undefined, conversionOptions.logRecoveries);
+  const normalizationOptions = {allowMissingNullableFields};
   const values = new Array<unknown>(schema.fields.length);
   return fields => {
     for (const name of fields.keys()) {
