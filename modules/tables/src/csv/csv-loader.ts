@@ -322,7 +322,7 @@ function parseCSVInBatches(
     complete(results) {
       try {
         if (!schema && headerRow && pendingRows.length) {
-          initializeCSVBatchSchema(headerRow, getBatchShape());
+          initializeCSVBatchSchema(headerRow, getBatchShape(), geometryDetectionFinalized);
         }
         const bytesUsed = results.meta.cursor;
         // Ensure any final (partial) batch gets emitted
@@ -345,7 +345,11 @@ function parseCSVInBatches(
   return asyncQueue;
 
   /** Infers the schema once and emits any rows buffered for inference. */
-  function initializeCSVBatchSchema(columns: string[], shape: CSVBatchShape): void {
+  function initializeCSVBatchSchema(
+    columns: string[],
+    shape: CSVBatchShape,
+    emitFullBatches = true
+  ): void {
     if (csvOptions.detectGeometryColumns) {
       detectedGeometryColumns = detectGeometryColumns(
         columns,
@@ -363,12 +367,18 @@ function parseCSVInBatches(
     );
     isFirstRow = false;
     for (const [index, row] of normalizedRows.entries()) {
-      addCSVBatchRow(row, shape, pendingRows[index].bytesUsed);
+      addCSVBatchRow(row, shape, pendingRows[index].bytesUsed, emitFullBatches);
     }
     pendingRows.length = 0;
   }
 
-  function addCSVBatchRow(rowToAdd: unknown[], shape: CSVBatchShape, bytesUsed: number): void {
+  /** Adds a row and emits a full batch, except while completing an unfinished geometry sample. */
+  function addCSVBatchRow(
+    rowToAdd: unknown[],
+    shape: CSVBatchShape,
+    bytesUsed: number,
+    emitFullBatch = true
+  ): void {
     let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;
     if (shape === 'object-row-table' && headerRow && rowToAdd.length > headerRow.length) {
       batchRow = convertToPapaObjectRow(rowToAdd, headerRow);
@@ -383,7 +393,7 @@ function parseCSVInBatches(
 
     try {
       tableBatchBuilder.addRow(batchRow);
-      const batch = tableBatchBuilder && tableBatchBuilder.getFullBatch({bytesUsed});
+      const batch = emitFullBatch && tableBatchBuilder.getFullBatch({bytesUsed});
       if (batch) {
         asyncQueue.enqueue(batch);
       }

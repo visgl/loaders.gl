@@ -1,6 +1,6 @@
 # RFC: Schema inference for dynamically typed table loaders
 
-**Status**: Draft
+**Status**: Implemented for CSV and JSON table inference
 
 JSONTableSource proposes a choice between full-document inference and bounded first-batch inference in [#4667](https://github.com/visgl/loaders.gl/pull/4667). CSV presents the same tradeoff, but its entry points currently sample different amounts of input. Whole-file Arrow parsing can inspect the full table, streaming Arrow freezes types from its first batch, and CSV source metadata reads the first schema emitted by the row parser, which normally infers from one record.
 

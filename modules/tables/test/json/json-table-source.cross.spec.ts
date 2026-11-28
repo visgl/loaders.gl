@@ -241,3 +241,19 @@ test('JSON source default inference returns schema before EOF and cancels the me
   expect(pull).toHaveBeenCalledTimes(1);
   expect(cancel).toHaveBeenCalledTimes(1);
 });
+
+test.each([
+  'first-batch',
+  'full'
+] as const)('JSON source respects row-array paths in %s inference', async schemaInference => {
+  const data = new Blob(['{"other":[{"unrelated":0}],"rows":[{"id":1}]}']);
+  const options = {json: {schemaInference, jsonpaths: ['$.rows']}};
+  const source = new JSONTableSource(data, options);
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.columns.map(column => column.name)).toEqual(['id']);
+  const rows = [];
+  for await (const batch of new JSONTableSource(data, options).read({columns: ['id']})) {
+    rows.push(...batch.toArray().map(row => row.toJSON()));
+  }
+  expect(rows).toEqual([{id: 1}]);
+});

@@ -18,7 +18,7 @@ Writeups of directions in major areas of interest
 | [**Category Improvements**](vNext/category-improvements-rfc.md)       | @ibgreen | **Draft** | Improve category concept                                    |
 | [**MIME type support**](vNext/mime-type-support-rfc.md)               | @ibgreen | **Draft** | Support for MIME types                                      |
 | [**JSON**](vNext/json-support-rfc.md)                                 | @ibgreen | **Draft** | Core support for JSON formats                               |
-| [**Table Schema Inference**](vNext/table-schema-inference-rfc.md) | @ibgreen | **Draft** | Full and first-batch inference for dynamically typed tables |
+| [**Table Schema Inference**](vNext/table-schema-inference-rfc.md) | @ibgreen | **Implemented** | Full and first-batch inference for dynamically typed tables |
 | [**File System**](vNext/file-system-rfc.md)                           | @ibgreen | **Draft** | `fetch`-ing from "virtual file systems" (Zip, Dropbox, ...) |
 | [**Loader Lookup By Name**](vNext/loader-lookup-by-name-rfc.md)       | @ibgreen | **Draft** | Loader lookup among pre-registered loaders                  |
 | [**Loader Auto-Registration**](vNext/loader-auto-registration-rfc.md) | @ibgreen | **Draft** | Loader auto registration at import                          |

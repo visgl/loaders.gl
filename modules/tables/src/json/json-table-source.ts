@@ -199,7 +199,7 @@ export class JSONTableSource
           yield parseDirectJSONArrowText(
             new TextDecoder().decode(bytes),
             undefined,
-            conversion,
+            {...conversion, jsonpaths: json?.jsonpaths},
             scan
           );
         } else {

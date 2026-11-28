@@ -153,10 +153,15 @@ export async function* parseDirectJSONArrowInBatches(
 export function parseDirectJSONArrowText(
   text: string,
   declaredSchema: Schema | undefined,
-  options: JSONArrowConversionOptions,
-  scan?: JSONArrowScan,
-  inference: TableSchemaInference = 'full',
-  batchSize?: number | 'auto'
+  options: JSONArrowConversionOptions & {
+    /** Array paths to use when selecting rows from a document. */
+    jsonpaths?: string[];
+    /** Records used to infer columns when no schema is supplied. */
+    schemaInference?: TableSchemaInference;
+    /** Optional logical output batch size that caps the first-batch sample. */
+    batchSize?: number | 'auto';
+  },
+  scan?: JSONArrowScan
 ): Table {
   let rowTable = false;
   if (text.trimStart().startsWith('{')) {
@@ -169,9 +174,9 @@ export function parseDirectJSONArrowText(
   }
   const parser = createJSONArrowParser(
     declaredSchema,
-    rowTable ? ['$.data'] : undefined,
+    options.jsonpaths?.length ? options.jsonpaths : rowTable ? ['$.data'] : undefined,
     'auto',
-    getTableSchemaInferenceRows(inference, batchSize),
+    getTableSchemaInferenceRows(options.schemaInference ?? 'full', options.batchSize),
     options,
     true,
     scan
