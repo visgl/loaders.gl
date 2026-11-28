@@ -29,6 +29,11 @@
         <CRS>EPSG:3035</CRS>
         <BoundingBox CRS="urn:ogc:def:crs:EPSG::3857" minx="650000" miny="6100000" maxx="1500000" maxy="7200000"/>
       </Layer>
+      <Layer>
+        <Name>rivers</Name>
+        <Title>Rivers</Title>
+        <CRS>EPSG:25833</CRS>
+      </Layer>
     </Layer>
   </Capability>
 </WMS_Capabilities>

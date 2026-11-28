@@ -260,8 +260,9 @@ function extractLayer(xmlLayer: any): WMSLayer {
   };
 
   // WMS 1.3.0 changes SRS to CRS
-  const crs = xmlLayer?.CRS || xmlLayer?.SRS;
-  if (crs && Array.isArray(crs) && crs.every(_ => typeof _ === 'string')) {
+  // One <CRS> element parses as a string, more than one as an array.
+  const crs = getXMLStringArray(xmlLayer?.CRS || xmlLayer?.SRS);
+  if (crs.length > 0) {
     layer.crs = crs;
   }
 

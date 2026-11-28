@@ -83,6 +83,17 @@ test('WMSCapabilitiesLoader#inherited-crs.xml merges parent and child CRS lists'
   ]);
 });
 
+test('WMSCapabilitiesLoader#inherited-crs.xml keeps a single child CRS', async () => {
+  const capabilities = await load(
+    '@loaders.gl/ogc/wms/test/data/wms/get-capabilities/inherited-crs.xml',
+    WMSCapabilitiesLoader,
+    {wms: {inheritedLayerProps: true}}
+  );
+  const rivers = capabilities.layers[0].layers?.find(layer => layer.name === 'rivers');
+  // One <CRS> element parses as a string, not as an array. It must still be added.
+  expect(rivers?.crs).toEqual(['EPSG:4326', 'EPSG:3857', 'EPSG:25833']);
+});
+
 test('WMSCapabilitiesLoader#inherited-crs.xml compares CRS spellings when it merges', async () => {
   const capabilities = await load(
     '@loaders.gl/ogc/wms/test/data/wms/get-capabilities/inherited-crs.xml',
