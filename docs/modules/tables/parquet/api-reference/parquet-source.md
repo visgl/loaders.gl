@@ -240,8 +240,9 @@ version validation.
 When a predicate references columns omitted from the output projection, the worker path performs
 the same filter-first late materialization as the caller-thread path: predicate columns are decoded
 and evaluated first, and projected column ranges are fetched and gathered only for row groups with
-matches. The final Arrow table is transferred through the Arrow table utilities and retains exact
-row-group indexes and provenance.
+matches. With compatible offset indexes, the exact matching row positions also select which
+projected data pages to fetch. The final Arrow table retains exact row-group indexes and
+provenance.
 
 Rows fall back to caller-thread decoding when workers are disabled or unavailable. Nested columns
 retain their composite values while primitive and logical columns flow through the columnar path.
