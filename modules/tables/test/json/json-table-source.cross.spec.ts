@@ -283,3 +283,18 @@ test.each([
       .next()
   ).rejects.toThrow('incompatible Arrow field at other');
 });
+
+test('JSON source streaming inference selects data after a serialized table schema', async () => {
+  const input = JSON.stringify({
+    shape: 'object-row-table',
+    schema: {fields: [{name: 'id', type: 'float64'}], metadata: {source: 'fixture'}},
+    data: [{id: 7}]
+  });
+  const source = new JSONTableSource(new Blob([input]));
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.columns.map(column => column.name)).toEqual(['id']);
+  expect(metadata.schema.metadata.source).toBe('fixture');
+  const rows = [];
+  for await (const batch of source.read()) rows.push(...batch.toArray().map(row => row.toJSON()));
+  expect(rows).toEqual([{id: 7}]);
+});
