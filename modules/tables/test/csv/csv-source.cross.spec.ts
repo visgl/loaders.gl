@@ -125,3 +125,19 @@ test('CSVSource stops pulling CSV bytes when the requested row window is complet
   expect(pulls).toBe(1);
   expect(cancelled).toBe(true);
 });
+
+test('CSVSource skips nonmatching row-window positions before building batches', async () => {
+  const source = new CSVTableSource(new Blob(['value\n1\n2\n3\n']), {
+    core: {batchSize: 1}
+  });
+  let rowsRead = 0;
+  const batches = await Array.fromAsync(
+    source.read({
+      offset: 2,
+      limit: 1,
+      onQueryComplete: summary => (rowsRead = summary.rowsRead ?? 0)
+    })
+  );
+  expect(batches.flatMap(batch => batch.data)).toEqual([{value: 3}]);
+  expect(rowsRead).toBe(1);
+});

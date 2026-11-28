@@ -22,7 +22,7 @@ import {
 } from '@loaders.gl/core/schema-utils';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
-import {DEFAULT_CSV_SHAPE} from './csv-loader-options';
+import {DEFAULT_CSV_SHAPE, type CSVRowScan} from './csv-loader-options';
 import {
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
@@ -66,11 +66,11 @@ export const CSVLoaderWithParser = {
     asyncIterator,
     options?: CSVLoaderOptions,
     _context?: unknown,
-    scanColumns?: readonly string[]
+    scan?: CSVRowScan
   ) =>
     getCSVShape(options) === 'arrow'
       ? parseCSVInArrowBatches(asyncIterator, options)
-      : parseCSVInBatches(asyncIterator, options, scanColumns),
+      : parseCSVInBatches(asyncIterator, options, scan),
   serializeWorkerResult: serializeCSVWorkerResult,
   deserializeWorkerResult: deserializeCSVWorkerResult,
   serializeWorkerBatch: serializeCSVWorkerBatch,
@@ -210,7 +210,7 @@ async function* parseCSVInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: CSVLoaderOptions,
-  scanColumns?: readonly string[]
+  scan?: CSVRowScan
 ): AsyncIterable<TableBatch> {
   // Papaparse does not support standard batch size handling
   // TODO - investigate papaparse chunks mode
@@ -231,7 +231,8 @@ async function* parseCSVInBatches(
 
   const readyBatches: TableBatch[] = [];
   const selectedColumns =
-    scanColumns && !scanColumns.includes('__parsed_extra') ? new Set(scanColumns) : undefined;
+    scan?.columns && !scan.columns.includes('__parsed_extra') ? new Set(scan.columns) : undefined;
+  let skipRows = scan?.offset ?? 0;
   let selectedIndices: number[] | undefined;
   let selectedIndexSet: ReadonlySet<number> | undefined;
 
@@ -401,6 +402,10 @@ async function* parseCSVInBatches(
     bytesUsed: number,
     emitFullBatch = true
   ): void {
+    if (skipRows > 0) {
+      skipRows--;
+      return;
+    }
     let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;
     if (selectedIndices) {
       batchRow = selectedIndices.map(index => rowToAdd[index]);

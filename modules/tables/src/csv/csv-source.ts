@@ -14,7 +14,7 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import type {CSVLoaderOptions} from './csv-loader-options';
+import type {CSVLoaderOptions, CSVRowScan} from './csv-loader-options';
 
 const CSV_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
@@ -63,9 +63,16 @@ export class CSVTableSource
       ? getColumnarPredicateColumns(options.predicate)
       : [];
     const columns = options.columns && [...new Set([...options.columns, ...predicateColumns])];
+    const offset =
+      !options.predicate &&
+      options.offset !== undefined &&
+      options.offset > 0 &&
+      Number.isSafeInteger(options.offset)
+        ? options.offset
+        : undefined;
     yield* executeTableScanBatches(
-      (signal, onByteLength) => this.parseBatches(signal, onByteLength, columns),
-      options
+      (signal, onByteLength) => this.parseBatches(signal, onByteLength, {columns, offset}),
+      offset ? {...options, offset: undefined} : options
     );
   }
 
@@ -107,7 +114,7 @@ export class CSVTableSource
   private async *parseBatches(
     signal?: AbortSignal,
     onByteLength?: (byteLength: number) => void,
-    columns?: readonly string[]
+    scan?: CSVRowScan
   ): AsyncIterable<TableBatch> {
     if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
     const chunks =
@@ -119,7 +126,7 @@ export class CSVTableSource
       chunks,
       {...this.options, csv: {...this.options.csv, shape: 'object-row-table'}},
       undefined,
-      columns
+      scan
     ) as AsyncIterable<TableBatch>;
   }
 }
