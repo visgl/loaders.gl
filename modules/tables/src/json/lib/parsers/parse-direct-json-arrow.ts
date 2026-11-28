@@ -331,7 +331,7 @@ function createJSONArrowParser(
   }
 
   const parser = new FastStreamingJSONParser(
-    {jsonpaths, metadata: true, strict: true},
+    {jsonpaths, metadata: true, strict: true, preferRowTableData: !wholeFile},
     {
       match,
       consume(text) {
@@ -389,11 +389,19 @@ function createJSONArrowParser(
     }
   );
 
+  /** Combines serialized row-table schema metadata with the wrapper snapshot. */
+  function getBatchMetadata(path: string | undefined): Record<string, string> {
+    return {
+      ...(declaredSchema ? {} : getRowTableSchemaMetadata()),
+      ...getJSONContainerMetadata(parser.getPartialResult(), path)
+    };
+  }
+
   let lastMetadata: string | undefined;
   /** Applies the current wrapper metadata to buffered Arrow batches. */
   function* emitBufferedBatches(): Iterable<RecordBatch> {
     const path = parser.getStreamingJsonPathAsString() ?? undefined;
-    const metadata = getJSONContainerMetadata(parser.getPartialResult(), path);
+    const metadata = getBatchMetadata(path);
     for (const buffer of buffered) {
       const batch = updateNativeArrowTableMetadata(new Table(buffer), metadata).batches[0];
       if (path) batch.metadata.set('jsonpath', path);
@@ -422,7 +430,7 @@ function createJSONArrowParser(
       }
       flush();
       yield* emitBufferedBatches();
-      const metadata = getJSONContainerMetadata(parser.getPartialResult(), path);
+      const metadata = getBatchMetadata(path);
       if (lastMetadata !== JSON.stringify(metadata)) {
         const finalBuilder =
           builder ??
