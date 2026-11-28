@@ -78,7 +78,11 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
     return parseDirectJSONArrowText(
       text,
       json.schema ? normalizeJSONArrowSchema(json.schema) : undefined,
-      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)}
+      {
+        arrowConversion: json.arrowConversion,
+        log: getLoaderLog(jsonOptions),
+        jsonpaths: json.jsonpaths
+      }
     );
   }
   const table = getJSONRowTable(parseJSONSync(text, getRawJSONOptions(jsonOptions)));

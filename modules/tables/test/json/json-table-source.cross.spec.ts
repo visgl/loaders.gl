@@ -223,3 +223,45 @@ test('createDataSource prefers the explicit MIME type to a JSON filename', async
   });
   expect(source).toBeInstanceOf(CSVTableSource);
 });
+
+test.each([
+  'first-batch',
+  'full'
+] as const)('JSON source respects row-array paths in %s inference', async schemaInference => {
+  const data = new Blob(['{"other":[{"unrelated":0}],"rows":[{"id":1}]}']);
+  const options = {json: {schemaInference, jsonpaths: ['$.rows']}};
+  const source = new JSONTableSource(data, options);
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.columns.map(column => column.name)).toEqual(['id']);
+  const rows = [];
+  for await (const batch of new JSONTableSource(data, options).read({columns: ['id']})) {
+    rows.push(...batch.toArray().map(row => row.toJSON()));
+  }
+  expect(rows).toEqual([{id: 1}]);
+});
+
+test.each([
+  {property: 'other'},
+  {parameter: 'threshold'}
+])('JSON source sends non-literal predicate operands to the residual executor', async operand => {
+  const source = new JSONTableSource(new Blob(['[{"value":1,"other":false}]']), {
+    json: {
+      schema: {
+        fields: [
+          {name: 'value', type: 'float64', nullable: false},
+          {name: 'other', type: 'utf8', nullable: false}
+        ],
+        metadata: {}
+      }
+    }
+  });
+  // The residual path constructs and validates the Arrow row before comparing operands.
+  await expect(
+    source
+      .read({
+        predicate: {op: '=', args: [{property: 'value'}, operand]}
+      })
+      [Symbol.asyncIterator]()
+      .next()
+  ).rejects.toThrow('incompatible Arrow field at other');
+});
