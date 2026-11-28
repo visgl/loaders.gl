@@ -226,7 +226,7 @@ export default class FastStreamingJSONParser implements StreamingJSONParserLike 
               index++;
               continue;
             }
-            if (frame.currentKey) {
+            if (frame.currentKey !== null) {
               const streamStartIndex = this.handleSeekValueStart(
                 [...frame.path, frame.currentKey],
                 character,

@@ -56,6 +56,13 @@ const ROOT_ARRAY_JSON = JSON.stringify([
 const STRING_ARRAY_JSON = JSON.stringify(['alpha', 'emoji 😀', 'line\nbreak', 'escaped "quote"']);
 const RAW_UTF8_ROW_JSON =
   '[{"metadata": { "nested" : [1, {"escaped":"\\u2603"}] }, "tags": [ "alpha" , {"value":2} ], "label":"line\\nbreak"}]';
+test('FastStreamingJSONParser finds a row array under an empty property name', () => {
+  const text = '{"":[{"id":1}],"label":"rows"}';
+  const result = collectParserOutput(FastStreamingJSONParser, text, 1);
+  expect(result.rows).toEqual([{id: 1}]);
+  expect(result.finalResult).toEqual({'': [], label: 'rows'});
+});
+
 test('FastStreamingJSONParser matches current parser for $.features across chunk sizes', () => {
   for (const chunkSize of [1, 2, 3, 5, 13]) {
     const expected = collectParserOutput(StreamingJSONParser, FEATURE_COLLECTION_JSON, chunkSize, [
