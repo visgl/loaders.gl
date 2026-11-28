@@ -83,3 +83,61 @@ test.each([
   }
   expect(values).toEqual([{value: 1}, {value: 'later'}]);
 });
+
+test('CSVSource projects predicate dependencies before applying the row window', async () => {
+  const source = new CSVTableSource(new Blob(['value,name,unused\n1,a,x\n2,b,y\n3,c,z\n']), {
+    core: {batchSize: 1}
+  });
+  const batches = await Array.fromAsync(
+    source.read({
+      columns: ['name'],
+      predicate: {op: '>', args: [{property: 'value'}, 1]},
+      offset: 1,
+      limit: 1
+    })
+  );
+  expect(batches.flatMap(batch => batch.data)).toEqual([{name: 'c'}]);
+  expect(batches.at(-1)?.schema?.fields.map(field => field.name)).toEqual(['name']);
+});
+
+test('CSVSource stops pulling CSV bytes when the requested row window is complete', async () => {
+  let pulls = 0;
+  let cancelled = false;
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>(
+    {
+      pull(controller) {
+        pulls++;
+        controller.enqueue(encoder.encode(pulls === 1 ? 'name,value\na,1\n' : 'b,2\n'));
+      },
+      cancel() {
+        cancelled = true;
+      }
+    },
+    {highWaterMark: 0}
+  );
+  const source = new CSVTableSource('https://example.test/input.csv', {
+    core: {batchSize: 1, fetch: async () => new Response(stream)}
+  });
+
+  const batches = await Array.fromAsync(source.read({columns: ['value'], limit: 1}));
+  expect(batches.flatMap(batch => batch.data)).toEqual([{value: 1}]);
+  expect(pulls).toBe(1);
+  expect(cancelled).toBe(true);
+});
+
+test('CSVSource skips nonmatching row-window positions before building batches', async () => {
+  const source = new CSVTableSource(new Blob(['value\n1\n2\n3\n']), {
+    core: {batchSize: 1}
+  });
+  let rowsRead = 0;
+  const batches = await Array.fromAsync(
+    source.read({
+      offset: 2,
+      limit: 1,
+      onQueryComplete: summary => (rowsRead = summary.rowsRead ?? 0)
+    })
+  );
+  expect(batches.flatMap(batch => batch.data)).toEqual([{value: 3}]);
+  expect(rowsRead).toBe(1);
+});

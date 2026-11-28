@@ -1,7 +1,8 @@
 import {
   createScanQueryMetadata,
   executeTableScanBatches,
-  explainTableQuery
+  explainTableQuery,
+  getColumnarPredicateColumns
 } from '@loaders.gl/core/loader-utils';
 import type {
   CoreAPI,
@@ -13,7 +14,7 @@ import type {
 } from '@loaders.gl/core/loader-utils';
 import type {TableBatch} from '@loaders.gl/core/schema';
 import {DataSource} from '@loaders.gl/core/loader-utils';
-import type {CSVLoaderOptions} from './csv-loader-options';
+import type {CSVLoaderOptions, CSVRowScan} from './csv-loader-options';
 
 const CSV_TABLE_QUERY_CAPABILITIES = Object.freeze({
   predicate: 'residual',
@@ -58,9 +59,20 @@ export class CSVTableSource
 
   /** Streams CSV batches, enforcing a global limit when requested. */
   async *read(options: TableScanReadOptions = {}): AsyncIterable<TableBatch> {
+    const predicateColumns = options.predicate
+      ? getColumnarPredicateColumns(options.predicate)
+      : [];
+    const columns = options.columns && [...new Set([...options.columns, ...predicateColumns])];
+    const offset =
+      !options.predicate &&
+      options.offset !== undefined &&
+      options.offset > 0 &&
+      Number.isSafeInteger(options.offset)
+        ? options.offset
+        : undefined;
     yield* executeTableScanBatches(
-      (signal, onByteLength) => this.parseBatches(signal, onByteLength),
-      options
+      (signal, onByteLength) => this.parseBatches(signal, onByteLength, {columns, offset}),
+      offset ? {...options, offset: undefined} : options
     );
   }
 
@@ -101,7 +113,8 @@ export class CSVTableSource
 
   private async *parseBatches(
     signal?: AbortSignal,
-    onByteLength?: (byteLength: number) => void
+    onByteLength?: (byteLength: number) => void,
+    scan?: CSVRowScan
   ): AsyncIterable<TableBatch> {
     if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
     const chunks =
@@ -109,10 +122,12 @@ export class CSVTableSource
         ? readStreamChunks(this.data.stream(), signal, onByteLength)
         : readResponseChunks(await this.fetch(this.url, {signal}), signal, onByteLength);
     const {CSVLoaderWithParser} = await import('./csv-loader');
-    yield* CSVLoaderWithParser.parseInBatches(chunks, {
-      ...this.options,
-      csv: {...this.options.csv, shape: 'object-row-table'}
-    }) as AsyncIterable<TableBatch>;
+    yield* CSVLoaderWithParser.parseInBatches(
+      chunks,
+      {...this.options, csv: {...this.options.csv, shape: 'object-row-table'}},
+      undefined,
+      scan
+    ) as AsyncIterable<TableBatch>;
   }
 }
 
