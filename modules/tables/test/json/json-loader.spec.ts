@@ -1345,3 +1345,20 @@ test('JSON table recovery uses the operation logger and respects explicit suppre
   await parse(input, JSONTableLoader, {json, core: {worker: false, log: null, log}});
   expect(log.messages).toHaveLength(1);
 });
+
+test('JSONTableLoader writes object rows in schema order and clears missing values', () => {
+  const schema: Schema = {
+    fields: [
+      {name: 'label', type: 'utf8', nullable: true},
+      {name: 'id', type: 'float64', nullable: false}
+    ],
+    metadata: {}
+  };
+  const table = BundledJSONTableLoader.parseTextSync!(
+    '[{"id":1,"label":"first"},{"id":2},{"label":"third","id":3}]',
+    {json: {shape: 'arrow', schema, arrowConversion: {onMissingField: 'null'}}}
+  );
+  expect(table.schema.fields.map(field => field.name)).toEqual(['label', 'id']);
+  expect(Array.from(table.getChild('label')!)).toEqual(['first', null, 'third']);
+  expect(Array.from(table.getChild('id')!)).toEqual([1, 2, 3]);
+});
