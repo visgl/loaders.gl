@@ -2,8 +2,10 @@
 
 ## WMTS
 
-- `get-capabilities-response.xml` OGC example data taken from
-  http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response.xml
+- `get-capabilities-response.xml` is adapted from the OGC WMTS 1.0.0 example
+  http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response.xml.
+  Local change: the upstream XML comments are removed. The `TopLeftCorner` values use the
+  upstream order (`-180 84`, longitude first for the CRS84 matrix set).
 - `ogc-schema-example.xml` is adapted from the OGC WMTS 1.0.0 example
   http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response_RESTful.xml.
   Local changes: the `ows:Get` hrefs are `http://cite.deegree.org/1.0.0`, the second operation
