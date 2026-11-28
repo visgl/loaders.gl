@@ -10,12 +10,14 @@ import {
   Writer,
   WriterOptions,
   WriterOptionsType,
+  WriterDataType,
   WriterWithEncoder
 } from '@loaders.gl/core/loader-utils';
 import type {Table} from '@loaders.gl/core/schema';
 
+/** Encode the data accepted by a table writer, including native Arrow tables. */
 export async function encodeTable<WriterT extends Writer = Writer>(
-  data: Table,
+  data: WriterDataType<WriterT>,
   writerDefinition: WriterT,
   options?: WriterOptionsType<WriterT>
 ): Promise<ArrayBuffer> {
@@ -34,7 +36,7 @@ export async function encodeTable<WriterT extends Writer = Writer>(
   if (writer.encodeInBatches) {
     // Create an iterator representing the data
     // TODO - Assumes this is a table
-    const batches = encodeTableInBatches(data, writer, options);
+    const batches = encodeWriterTableInBatches(data, writer, options);
 
     // Concatenate the output
     const chunks: ArrayBuffer[] = [];
@@ -47,8 +49,9 @@ export async function encodeTable<WriterT extends Writer = Writer>(
   throw new Error('Writer could not encode data');
 }
 
+/** Encode a table as text using the writer's inferred input and options types. */
 export async function encodeTableAsText<WriterT extends Writer = Writer>(
-  data: Table,
+  data: WriterDataType<WriterT>,
   writerDefinition: WriterT,
   options?: WriterOptionsType<WriterT>
 ): Promise<string> {
@@ -58,9 +61,12 @@ export async function encodeTableAsText<WriterT extends Writer = Writer>(
   if (writer.text && writer.encodeText) {
     return await writer.encodeText(data, options);
   }
+  if (writer.text && writer.encodeTextSync) {
+    return writer.encodeTextSync(data, options);
+  }
 
   if (writer.text) {
-    const arrayBuffer = await encodeTable(data, writer, options);
+    const arrayBuffer = await encodeTable<Writer>(data, writer, options);
     return new TextDecoder().decode(arrayBuffer);
   }
   throw new Error(`Writer ${writer.name} could not encode data as text`);
@@ -84,7 +90,7 @@ export function encodeTableInBatches<WriterT extends Writer = Writer>(
 
 /** Encodes table batches using the resolved writer's batch method. */
 function encodeWriterTableInBatches(
-  data: Table,
+  data: unknown,
   writer: Writer & Partial<WriterWithEncoder>,
   options?: WriterOptions
 ): AsyncIterable<ArrayBuffer> {
