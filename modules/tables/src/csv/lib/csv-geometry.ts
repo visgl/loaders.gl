@@ -370,6 +370,7 @@ function deduceCSVColumnType(
   columnName: string,
   columnIndex: number
 ): DataType {
+  /** First non-null type, which widens to text if a different sampled type appears. */
   let inferredType: DataType = 'null';
   for (const row of rows) {
     const value = Array.isArray(row)

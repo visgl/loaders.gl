@@ -70,11 +70,14 @@ export class JSONTableSource
     } else if (this.table) {
       schema = convertArrowToSchema(this.table.schema);
     } else if (streaming) {
+      /** Source revision used to reject a stale table after a refresh. */
       const revision = this.revision;
+      /** Number of records needed to return metadata before EOF. */
       const inferenceRows = getTableSchemaInferenceRows(
         'first-batch',
         this.options.core?.batchSize
       );
+      /** Batches emitted at EOF for a source shorter than the sample. */
       const completeBatches: RecordBatch[] = [];
       const {parseDirectJSONArrowInBatches} = await import('./lib/parsers/parse-direct-json-arrow');
       schema = {fields: [], metadata: {}};
@@ -92,6 +95,7 @@ export class JSONTableSource
         completeBatches.push(batch);
       }
       if (completeBatches.length) {
+        /** The short source can be reused for scans without fetching it again. */
         const completeTable = await makeArrowTableFromBatches(completeBatches);
         if (this.revision === revision && completeTable) this.table ??= completeTable;
       }

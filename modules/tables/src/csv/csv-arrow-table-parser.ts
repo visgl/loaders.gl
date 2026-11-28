@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrayRowTable, ObjectRowTable, Schema, TableBatch} from '@loaders.gl/core/schema';
-import {createArrowUtf8Reader} from '@math.gl/core/arrow';
+import {
+  createArrowUtf8Reader,
+  createRecordBatchWithMetadata,
+  getRecordBatchMetadata
+} from '@math.gl/core/arrow';
 import {parseUTF8Boolean, parseUTF8Number} from '@math.gl/core/utf8';
 import {
   ArrowTableBuilder,
@@ -212,7 +216,18 @@ export function parseCSVInArrowBatches(
       normalizedOptions.geoarrow?.encodingPreference || csvOptions.geoarrow?.encodingPreference
     );
   }
-  const rawArrowCSVOptions = createRawArrowTableCSVOptions(normalizedOptions);
+  /** Explicit output batch size, with auto resolved to the bounded default. */
+  const requestedBatchSize = normalizedOptions.core?.batchSize;
+  const rawArrowCSVOptions = createRawArrowTableCSVOptions({
+    ...normalizedOptions,
+    core: {
+      ...normalizedOptions.core,
+      batchSize:
+        typeof requestedBatchSize === 'number'
+          ? requestedBatchSize
+          : getTableSchemaInferenceRows('first-batch')
+    }
+  });
 
   const rawArrowBatchIterator = parseRawArrowCSVInBatches(asyncIterator, rawArrowCSVOptions);
 
@@ -300,7 +315,9 @@ function convertCSVToTypedArrowTable(
   options: ArrowTableCSVOptions,
   batchSize?: number | 'auto'
 ): arrow.Table {
+  /** Number of records that contribute to the atomic table schema. */
   const inferenceRows = getTableSchemaInferenceRows(options.schemaInference ?? 'full', batchSize);
+  /** Freeze prefix-inferred types before converting rows beyond the sample. */
   const frozenColumnDataTypes =
     inferenceRows < table.numRows ? inferCSVArrowTypes(table.slice(0, inferenceRows)) : undefined;
   return convertRawArrowTableToTypedArrowTable(table, {
@@ -329,12 +346,16 @@ async function* makeTypedArrowBatchIterator(
     return;
   }
 
+  /** Required sample size, or infinity when inference waits for EOF. */
   const inferenceRows = getTableSchemaInferenceRows(
     csvOptions.schemaInference ?? 'first-batch',
     batchSize
   );
+  /** Raw batches retained until the inference sample is complete. */
   const pending: arrow.RecordBatch[] = [];
+  /** Number of logical records in the retained batches. */
   let pendingRows = 0;
+  /** Frozen column types shared by the retained batches and all later batches. */
   let columnTypes: TypedColumnDataType[] | undefined;
 
   for await (const batch of rawArrowBatchIterator) {
@@ -365,9 +386,19 @@ async function* makeTypedArrowBatchIterator(
       frozenColumnDataTypes: types,
       viewTypes: csvOptions.viewTypes
     });
+    /** Progress and other metadata attached to the input batch. */
+    const sourceMetadata = getRecordBatchMetadata(rawBatch);
     for (const batch of typedArrowTable.batches) {
-      for (const [key, value] of rawBatch.metadata ?? []) batch.metadata.set(key, value);
-      yield batch;
+      /** The typed batch's metadata map, when supplied by the Arrow runtime. */
+      const typedMetadata = getRecordBatchMetadata(batch);
+      if (typedMetadata) {
+        for (const [key, value] of sourceMetadata ?? []) typedMetadata.set(key, value);
+        yield batch;
+      } else if (sourceMetadata?.size) {
+        yield createRecordBatchWithMetadata(batch.schema, batch.data, new Map(sourceMetadata));
+      } else {
+        yield batch;
+      }
     }
   }
 }

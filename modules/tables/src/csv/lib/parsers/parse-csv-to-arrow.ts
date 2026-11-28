@@ -14,6 +14,7 @@ import {
   deserializeArrowType
 } from '@loaders.gl/core/schema-utils';
 import * as arrow from 'apache-arrow';
+import {createRecordBatchWithMetadata, getRecordBatchMetadata} from '@math.gl/core/arrow';
 
 import type {CSVLoaderOptions} from '../../csv-loader-options';
 import {CSV_LOADER_OPTIONS} from '../../csv-loader-options';
@@ -277,7 +278,7 @@ export function parseRawArrowCSVInBatches(
 
   const csvOptions = createRawArrowCSVOptions(options);
 
-  if (shouldUsePapaCompatibleSkipEmptyLines(csvOptions)) {
+  if (csvOptions.schemaInference === 'full' && shouldUsePapaCompatibleSkipEmptyLines(csvOptions)) {
     return parseRawArrowCSVInSingleBatch(asyncIterator, options, csvOptions);
   }
 
@@ -290,6 +291,14 @@ export function parseRawArrowCSVInBatches(
   let arrowTableBuilder: ArrowTableBuilder | null = null;
   let headerRow: string[] | null = null;
   let isFirstRow: boolean = true;
+  /** Full inference discovers header overflow cells through EOF. */
+  const sampleSize = csvOptions.schemaInference === 'full' ? Infinity : batchSize;
+  /** Records retained until the raw output can freeze its column shape. */
+  const sampleRows: string[][] = [];
+  /** Distinguishes a parsed header from generated positional names. */
+  let hasHeader = false;
+  /** Whether the sample contains Papa-compatible cells beyond the header. */
+  let hasParsedExtra = false;
   let rowCountInCurrentBatch: number = 0;
   let emittedBatchCount: number = 0;
 
@@ -324,6 +333,7 @@ export function parseRawArrowCSVInBatches(
             ? isHeaderRow(row, Boolean(csvOptions.dynamicTyping))
             : Boolean(csvOptions.header);
         if (isHeader) {
+          hasHeader = true;
           headerRow = row.map(createDuplicateColumnTransformer());
           return;
         }
@@ -334,23 +344,24 @@ export function parseRawArrowCSVInBatches(
         if (!headerRow) {
           headerRow = generateHeader(csvOptions.columnPrefix || 'column', row.length);
         }
-        const schema = createUtf8Schema(headerRow);
-        arrowTableBuilder = new ArrowTableBuilder(schema, {viewTypes: csvOptions.viewTypes});
       }
 
       if (csvOptions.optimizeMemoryUsage) {
         row = JSON.parse(JSON.stringify(row));
       }
 
-      arrowTableBuilder?.addArrayRow(row);
-      rowCountInCurrentBatch++;
+      if (!arrowTableBuilder) {
+        sampleRows.push(row);
+        if (sampleRows.length < sampleSize) return;
+        prepareSample();
+      } else {
+        addRecord(row);
+      }
 
       if (rowCountInCurrentBatch >= batchSize) {
         const batch = arrowTableBuilder?.flushBatch();
         if (batch) {
-          batch.metadata.set('count', String(emittedBatchCount));
-          batch.metadata.set('bytesUsed', String(results.meta.cursor));
-          asyncQueue.enqueue(batch);
+          asyncQueue.enqueue(setCSVBatchProgress(batch, emittedBatchCount, results.meta.cursor));
           emittedBatchCount++;
           rowCountInCurrentBatch = 0;
         }
@@ -359,11 +370,10 @@ export function parseRawArrowCSVInBatches(
 
     complete(results) {
       try {
+        if (!arrowTableBuilder && sampleRows.length) prepareSample();
         const batch = rowCountInCurrentBatch > 0 ? arrowTableBuilder?.finishBatch() : null;
         if (batch) {
-          batch.metadata.set('count', String(emittedBatchCount));
-          batch.metadata.set('bytesUsed', String(results.meta.cursor));
-          asyncQueue.enqueue(batch);
+          asyncQueue.enqueue(setCSVBatchProgress(batch, emittedBatchCount, results.meta.cursor));
         } else if (emittedBatchCount === 0) {
           const schema = convertSchemaToArrow(createUtf8Schema(headerRow || []), {
             viewTypes: csvOptions.viewTypes
@@ -381,6 +391,43 @@ export function parseRawArrowCSVInBatches(
   Papa.parse(toArrayBufferIterator(asyncIterator), config, AsyncIteratorStreamer);
 
   return asyncQueue;
+
+  /** Freezes raw column names and replays the first batch of records. */
+  function prepareSample(): void {
+    const columns = headerRow ?? [];
+    const schema = createUtf8Schema(columns);
+    hasParsedExtra =
+      hasHeader &&
+      !columns.includes('__parsed_extra') &&
+      sampleRows.some(row => row.length > columns.length);
+    if (hasParsedExtra) {
+      schema.fields.push({
+        name: '__parsed_extra',
+        type: {type: 'list', children: [{name: 'item', type: 'utf8', nullable: true}]},
+        nullable: true
+      });
+    }
+    arrowTableBuilder = new ArrowTableBuilder(schema, {viewTypes: csvOptions.viewTypes});
+    for (const row of sampleRows) addRecord(row);
+    sampleRows.length = 0;
+  }
+
+  /** Adds a raw record with a nullable list for sampled cells beyond the header. */
+  function addRecord(row: string[]): void {
+    if (hasParsedExtra) {
+      const width = headerRow!.length;
+      const fields: unknown[] = row.slice(0, width);
+      fields.length = width;
+      const extra = row
+        .slice(width)
+        .map(value => (csvOptions.dynamicTyping && value === '' ? null : value));
+      fields.push(extra.length ? extra : null);
+      arrowTableBuilder!.addArrayRow(fields);
+    } else {
+      arrowTableBuilder!.addArrayRow(row);
+    }
+    rowCountInCurrentBatch++;
+  }
 }
 
 /** Parses chunked input through the atomic byte path when the caller did not request batching. */
@@ -403,10 +450,25 @@ async function* parseRawArrowCSVInSingleBatch(
     ? arrowTable.batches
     : [makeArrowMetadataBatch(arrowTable.schema)];
   for (const [index, batch] of batches.entries()) {
-    batch.metadata.set('count', String(index));
-    batch.metadata.set('bytesUsed', String(arrayBuffer.byteLength));
-    yield batch;
+    yield setCSVBatchProgress(batch, index, arrayBuffer.byteLength);
   }
+}
+
+/** Records CSV progress on runtimes with and without native batch metadata. */
+function setCSVBatchProgress(
+  batch: arrow.RecordBatch,
+  count: number,
+  bytesUsed: number
+): arrow.RecordBatch {
+  /** Native or previously attached metadata for this batch. */
+  const existingMetadata = getRecordBatchMetadata(batch);
+  /** Independent progress metadata for Arrow versions without a native map. */
+  const metadata = existingMetadata ?? new Map<string, string>();
+  metadata.set('count', String(count));
+  metadata.set('bytesUsed', String(bytesUsed));
+  return existingMetadata
+    ? batch
+    : createRecordBatchWithMetadata(batch.schema, batch.data, metadata);
 }
 
 /** Returns the normalized batch size from core options or legacy top-level options. */

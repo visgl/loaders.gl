@@ -133,6 +133,7 @@ export async function* parseDirectJSONArrowInBatches(
   scan?: JSONArrowScan,
   inference: TableSchemaInference = 'first-batch'
 ): AsyncIterable<RecordBatch> {
+  /** Number of rows to buffer for schema inference, independent of output flushes. */
   const inferenceRows = getTableSchemaInferenceRows(inference, batchSize);
   const parser = createJSONArrowParser(
     declaredSchema,
@@ -165,6 +166,7 @@ export function parseDirectJSONArrowText(
 ): Table {
   const document = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   let rowTable = false;
+  /** Location of schema metadata in a serialized row table, regardless of field order. */
   let wrapperSchemaRange: [number, number] | undefined;
   if (document.trimStart().startsWith('{')) {
     visitJSONObjectFields(document, (name, start, end) => {
@@ -176,7 +178,7 @@ export function parseDirectJSONArrowText(
       }
     });
   }
-  // Whole-file sampling can freeze types before a trailing row-table schema is read.
+  /** Wrapper schema metadata available before a whole-file sample freezes its types. */
   const wrapperMetadata: Schema['metadata'] | undefined =
     rowTable && !declaredSchema && options.schemaInference === 'first-batch' && wrapperSchemaRange
       ? (JSON.parse(document.slice(...wrapperSchemaRange)) as Schema | null)?.metadata
