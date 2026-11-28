@@ -92,6 +92,10 @@ import {CSVLoader} from '@loaders.gl/tables/csv';
 const data = await parse(csvText, CSVLoader);
 ```
 
+### Browser worker[​](#browser-worker "Direct link to Browser worker")
+
+The CSV loader resolves its browser worker relative to the loader module. A bundler that supports module worker URLs in dependencies, such as Vite 8, can emit the worker automatically. If Vite 7 dependency optimization rewrites the worker URL incorrectly, add `@loaders.gl/tables/csv` to `optimizeDeps.exclude`. If your toolchain cannot relocate the worker URL, serve `@loaders.gl/tables/csv-worker.js` as a static asset and pass its served URL in `csv.workerUrl`.
+
 ### Header Detection[​](#header-detection "Direct link to Header Detection")
 
 A complication with the CSV format is that CSV files can come with or without an initial header line. While `CSVLoader` attempts to detect if the first line is a header, this can fail. If you know the file shape, use `options.csv.header` to specify how to handle the first line.
@@ -119,6 +123,8 @@ When `csv.shape: 'arrow'` is selected, `CSVLoader` returns a native Apache Arrow
 ### Type Inference[​](#type-inference "Direct link to Type Inference")
 
 `csv.dynamicTyping` controls inference of numeric, boolean, and date values. Set it explicitly to `false` to preserve text as Arrow `Utf8` columns, or to `true` to infer typed columns. The loader's public default is `true`.
+
+With dynamic typing enabled, CSV streaming and CSVTableSource default to `csv.schemaInference: 'first-batch'`. They sample up to 1,024 data records, capped by a smaller explicit `core.batchSize`. Set `csv.schemaInference: 'full'` to include late records before emitting data. Whole-file parsing defaults to full inference. Mixed sampled value types widen to text. After an Arrow column's type freezes, incompatible late values are converted according to that type, or stored as null when they cannot be converted. Row-table output preserves parsed cell values. Streaming Arrow output uses the column names and width established by its header or first record. Extra cells in the first batch can add a `__parsed_extra` column. Use full inference if extra cells only appear later.
 
 ```
 import {load} from '@loaders.gl/core';
@@ -182,3 +188,5 @@ Pass `CSVLoader` to [`createDataSource()`](https://loaders.gl/docs/modules/core/
 | `csv.delimitersToGuess`       | `string[]`                                                               | `[',', '\t', '\|', ';']` | Delimiters to try when no delimiter is specified.                                                                                            |
 
 ## Remarks[​](#remarks "Direct link to Remarks")
+
+For `CSVTableSource` scans, a column projection limits the fields materialized in each object-row batch. Columns referenced by a predicate remain available until filtering is complete. Without a predicate, rows before the offset are skipped before constructing output batches. The reader stops pulling input chunks once a scan reaches its limit or the consumer closes the iterator. Schema inference still examines the configured sample.

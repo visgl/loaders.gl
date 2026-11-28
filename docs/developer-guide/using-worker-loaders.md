@@ -116,6 +116,10 @@ Detailed guide
 
 The detailed guide covers worker processing, parallel loading, reuse, transfer semantics, custom scripts, composite loaders, and debugging.
 
+## Bundling browser workers[​](#bundling-browser-workers "Direct link to Bundling browser workers")
+
+Loaders with built-in browser worker factories reference standalone worker scripts with static module-relative URLs. Bundlers such as Vite 8, webpack 5, and Parcel can use these references to emit worker assets. If your bundler leaves these URLs unchanged, serve the packaged worker script as a static asset and set the loader's `workerUrl` option where supported.
+
 ## Processing data on workers[​](#processing-data-on-workers "Direct link to Processing data on workers")
 
 The `processOnWorker` function in `@loaders.gl/core/worker-utils` is used with worker objects exported by modules like `@loaders.gl/compression` and `@loaders.gl/crypto` to move processing-intensive tasks to workers.

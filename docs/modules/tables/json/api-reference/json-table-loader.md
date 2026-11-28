@@ -167,11 +167,37 @@ const table = await query(
 
 Use `createDataSource(input, [JSONTableLoader, CSVLoader])` to select a source from multiple loaders. JSON is identified by a `.json` filename or a Blob with the `application/json` MIME type. Pass `JSONTableLoader` directly for an unnamed Blob without a MIME type when the input is known to be JSON.
 
-The source downloads and decodes the entire JSON document before applying filters, projections, or limits.
+For a direct scan, pass `columns` to `JSONTableSource.read()` to decode only the requested columns and any columns used by the predicate. Simple comparisons, membership tests, and null checks on top-level Float64 and Boolean columns can filter rows before Arrow construction. Other predicates run on Arrow batches.
+
+The source defaults to `json.schemaInference: 'first-batch'`. It infers from up to 1,024 rows and excludes fields that first appear later. Set `json.schemaInference: 'full'` to include fields that appear later in the document. A supplied `json.schema` takes precedence over either inference mode.
+
+```
+import {JSONTableSource} from '@loaders.gl/tables/json/bundled';
+
+
+
+const source = new JSONTableSource(url, {
+
+  json: {schemaInference: 'full'}
+
+});
+
+
+
+for await (const batch of source.read({columns: ['column1'], limit: 100})) {
+
+  console.log(batch.numRows);
+
+}
+```
+
+A source with a supplied schema or first-batch inference can stop reading once it returns the requested number of rows. Unrestricted SQL schema discovery with full inference still reads and caches the full table.
 
 ## Streaming[​](#streaming "Direct link to Streaming")
 
 For larger JSON files, `JSONTableLoader` streams rows from one array. Set `json.jsonpaths` when the row array is embedded in a larger document.
+
+For Arrow output without a supplied schema, streaming freezes the schema after up to 1,024 rows, or the smaller explicit `core.batchSize`. Later fields and incompatible values follow `json.arrowConversion`. Set `json.schemaInference: 'full'` to infer from every row before emitting data. Whole-file parsing defaults to full inference.
 
 ```
 import {JSONTableLoader} from '@loaders.gl/tables/json';
@@ -187,13 +213,12 @@ const batches = await loadInBatches('rows.json', JSONTableLoader, {
 });
 ```
 
-Arrow batches are native `RecordBatch` objects with a fixed column structure. A supplied `json.schema` determines that structure; otherwise it is inferred from the first nonempty batch. Each batch retains a metadata snapshot. Container properties accumulate in `schema.metadata.get('loaders.gl.containerJson')`, and a zero-row final batch carries any trailing refinements. Empty inputs retain their declared schema. The selected JSON path is available in `batch.metadata.get('jsonpath')`.
+The streaming parser writes JSON fields into Arrow column builders. Arrow batches are native `RecordBatch` objects with a fixed column structure. A supplied `json.schema` determines that structure; otherwise it is inferred from the first nonempty batch. Each batch retains a metadata snapshot. Container properties accumulate in `schema.metadata.get('loaders.gl.containerJson')`, and a zero-row final batch carries any trailing refinements. Empty inputs retain their declared schema. The selected JSON path is available in `batch.metadata.get('jsonpath')`.
 
 ## Options[​](#options "Direct link to Options")
 
 | Option                           | Type                                                 | Default                                                                                                                      | Description                                                                                                              |
 | -------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `json.backend`                   | `'clarinet' \| 'fast'`                               | `'clarinet'`                                                                                                                 | Selects the streaming parser backend.                                                                                    |
 | `json.shape`                     | `'arrow' \| 'object-row-table' \| 'array-row-table'` | `'arrow'`                                                                                                                    | Selects the requested table output shape.                                                                                |
 | `json.schema`                    | `Schema \| arrow.Schema`                             | `undefined`                                                                                                                  | Optional schema used when `json.shape` is `'arrow'`.                                                                     |
 | `json.arrowConversion`           | `object`                                             | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}` | Optional Arrow conversion policy.                                                                                        |
@@ -206,3 +231,17 @@ Arrow batches are native `RecordBatch` objects with a fixed column structure. A 
 This loader supports stateful worker batch parsing with `core.worker: true`, cancellation via `signal`, and decoded-row progress via `onProgress`. See [JSON worker batches](https://loaders.gl/docs/modules/tables/json.md#parsing-batches-in-workers) for streaming behavior, schemas, backpressure, and Node/custom-worker options.
 
 Arrow tables return as directly transferred column buffers. Row tables and container metadata return as binary JSON frames decoded on the caller, preserving heterogeneous values without Arrow coercion. Decoded row objects are never structured-cloned across the worker boundary.
+
+Streaming a top-level array of objects can opt into `json.workerRowOffsets: true` with the object-row shape. The worker scans for row boundaries and returns the original bytes with their offsets. The caller parses those bytes into the usual object-row batches. Chunk boundaries can split rows and UTF-8 characters, and the worker releases input fragments as their rows are emitted.
+
+```
+const batches = await loadInBatches(url, JSONTableLoader, {
+
+  core: {worker: true, batchSize: 2048},
+
+  json: {shape: 'object-row-table', workerRowOffsets: true}
+
+});
+```
+
+Use the default transport for nested row arrays, positional rows, or container metadata. The offset option has no effect on whole-file parsing, Arrow output, or caller-side parsing.
