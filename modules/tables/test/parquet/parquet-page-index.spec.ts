@@ -131,6 +131,114 @@ describe('Parquet page-index pruning', () => {
     await source.close();
   });
 
+  test.each([false, true])(
+    'reads only output pages with exact predicate matches (worker=%s)',
+    async worker => {
+      const source = createRemoteSource(pageIndexFixture, {core: {worker}});
+      const metadata = await source.getMetadata();
+      const before = source.getTelemetry().requestedBytes;
+      const selectedRows = [100, 101, SELECTED_ROW_START + 2];
+      try {
+        const batches = await collectBatches(
+          source.read({
+            columns: ['payload'],
+            predicate: {op: 'in', args: [{property: 'id'}, selectedRows]}
+          })
+        );
+        expect(getBatchValues(batches, 'payload')).toEqual(
+          selectedRows.map(row => `payload-${row}-${'-'.repeat(20)}`)
+        );
+        expect(
+          JSON.parse(batches[0].metadata.get('loaders.gl.parquetProvenance')!).rowGroupRowIndices
+        ).toEqual(selectedRows);
+        expect(source.getTelemetry().requestedBytes - before).toBeLessThan(
+          getColumnMetadata(metadata, 'payload').compressedByteLength / 2
+        );
+      } finally {
+        await source.close();
+      }
+    }
+  );
+
+  test('falls back to the whole projected chunk when its offset index is unreadable', async () => {
+    const originalSource = createRemoteSource(pageIndexFixture, {core: {worker: false}});
+    const {offsetIndexOffset, offsetIndexByteLength, compressedByteLength} = getColumnMetadata(
+      await originalSource.getMetadata(),
+      'payload'
+    );
+    await originalSource.close();
+    expect(offsetIndexOffset).toBeGreaterThan(0);
+    expect(offsetIndexByteLength).toBeGreaterThan(0);
+    const fixture = pageIndexFixture.slice(0);
+    new Uint8Array(fixture).fill(0xff, offsetIndexOffset!, offsetIndexOffset! + offsetIndexByteLength!);
+
+    const source = createRemoteSource(fixture, {core: {worker: false}});
+    try {
+      await source.getMetadata();
+      const before = source.getTelemetry().requestedBytes;
+      const batches = await collectBatches(
+        source.read({
+          columns: ['payload'],
+          predicate: {op: '=', args: [{property: 'id'}, SELECTED_ROW_START]}
+        })
+      );
+      expect(getBatchValues(batches, 'payload')).toEqual([
+        `payload-${SELECTED_ROW_START}-${'-'.repeat(20)}`
+      ]);
+      expect(source.getTelemetry().requestedBytes - before).toBeGreaterThanOrEqual(
+        compressedByteLength
+      );
+    } finally {
+      await source.close();
+    }
+  });
+
+  test('preserves native GeoArrow geometry across disjoint projected page ranges', async () => {
+    const wasm = await loadWasm();
+    const coordinate = new arrow.Struct([
+      new arrow.Field('x', new arrow.Float64(), false),
+      new arrow.Field('y', new arrow.Float64(), false)
+    ]);
+    const linestring = new arrow.List(new arrow.Field('element', coordinate, false));
+    const coordinates = Array.from({length: 64}, (_, index) => [
+      {x: index, y: index + 1},
+      {x: index + 1, y: index + 2}
+    ]);
+    const table = arrow.tableFromArrays({
+      id: Int32Array.from({length: coordinates.length}, (_, index) => index),
+      geometry: arrow.vectorFromArray(coordinates, linestring)
+    });
+    const writerProperties = new wasm.WriterPropertiesBuilder()
+      .setStatisticsEnabled(wasm.EnabledStatistics.Page)
+      .setWriteBatchSize(8)
+      .setDataPageSizeLimit(64)
+      .setDictionaryEnabled(false)
+      .setKeyValueMetadata(new Map([['geo', JSON.stringify({
+        version: '1.1.0',
+        primary_column: 'geometry',
+        columns: {geometry: {encoding: 'linestring', geometry_types: ['LineString']}}
+      })]]))
+      .build();
+    const fixture = wasm.writeParquet(
+      wasm.Table.fromIPCStream(arrow.tableToIPC(table)),
+      writerProperties
+    ).slice().buffer;
+    const selectedRows = [1, 62];
+    const source = createRemoteSource(fixture, {core: {worker: false}});
+    try {
+      const batches = await collectBatches(source.read({
+        columns: ['geometry'],
+        predicate: {op: 'in', args: [{property: 'id'}, selectedRows]}
+      }));
+      expect(JSON.parse(JSON.stringify(getBatchValues(batches, 'geometry')))).toEqual(
+        selectedRows.map(index => coordinates[index])
+      );
+      expect(source.getTelemetry().pageIndexesRead).toBeGreaterThanOrEqual(4);
+    } finally {
+      await source.close();
+    }
+  });
+
   test('exposes page-index and byte-range decisions in the physical scan plan', async () => {
     const source = createRemoteSource(pageIndexFixture, {core: {worker: false}});
     const plan = await source.getScanPlan({
