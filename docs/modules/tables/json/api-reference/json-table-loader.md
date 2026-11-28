@@ -197,3 +197,19 @@ for streaming behavior, schemas, backpressure, and Node/custom-worker options.
 Arrow tables return as directly transferred column buffers. Row tables and container metadata return as
 binary JSON frames decoded on the caller, preserving heterogeneous values without Arrow coercion.
 Decoded row objects are never structured-cloned across the worker boundary.
+
+Streaming a top-level array of objects can opt into `json.workerRowOffsets: true` with the
+object-row shape. The worker scans for row boundaries and returns the original bytes with
+their offsets. The caller parses those bytes into the usual object-row batches. Chunk
+boundaries can split rows and UTF-8 characters, and the worker releases input fragments
+as their rows are emitted.
+
+```typescript
+const batches = await loadInBatches(url, JSONTableLoader, {
+  core: {worker: true, batchSize: 2048},
+  json: {shape: 'object-row-table', workerRowOffsets: true}
+});
+```
+
+Use the default transport for nested row arrays, positional rows, or container metadata.
+The offset option has no effect on whole-file parsing, Arrow output, or caller-side parsing.
