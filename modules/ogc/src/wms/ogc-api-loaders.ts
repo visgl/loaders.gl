@@ -23,7 +23,10 @@ import type {GeoJSONTable, Schema} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/core/arrow-geometry/legacy-binary';
 import {getServiceCRSAxisOrder, type ServiceCRSAxisOrder} from './crs-utils';
-import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
+import type {
+  OGCTileMatrixSet,
+  OGCTileMatrixSetOptions
+} from './lib/parsers/ogc-api/tile-matrix-set';
 import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
 import type {OGCTileMatrixLimits} from './lib/parsers/ogc-api/tile-matrix-limits';
 import {
@@ -66,8 +69,9 @@ export type OGCAPILoaderOptions = DataSourceOptions & {
     /** Opt-in bounded pagination for getFeatures(); omitted keeps the single-page behavior. */
     pagination?: FeaturePaginationOptions;
     /**
-     * Features `bbox` axis order for every `bbox-crs`. Overrides the built-in table of
-     * latitude-first and northing-first EPSG CRSs (see `getServiceCRSAxisOrder`).
+     * Axis order for every CRS: of the Features `bbox` for its `bbox-crs`, and of the Tiles
+     * `pointOfOrigin`. Overrides the built-in table of latitude-first and northing-first EPSG CRSs
+     * (see `getServiceCRSAxisOrder`), and for Tiles also the declared `orderedAxes`.
      */
     axisOrder?: ServiceCRSAxisOrder;
   };
@@ -295,6 +299,8 @@ export class OGCAPITilesSource
     tileMatrixSetLimits: OGCTileMatrixLimits[] | undefined;
     /** Unit conversion used by this request. */
     metersPerUnit: number | null | undefined;
+    /** Axis order override used by this request. */
+    axisOrder: ServiceCRSAxisOrder | undefined;
     /** Template the matrix set is discovered from; undefined when it is configured or not discovered. */
     tileTemplate: string | undefined;
     /** Shared in-flight or fulfilled matrix request. */
@@ -365,10 +371,11 @@ export class OGCAPITilesSource
     if (cache && isSameTileGridKey(cache, key)) {
       return cache.promise;
     }
-    const {tileMatrixSet, tileMatrixSetLimits, metersPerUnit, tileTemplate} = key;
+    const {tileMatrixSet, tileMatrixSetLimits, metersPerUnit, axisOrder, tileTemplate} = key;
+    const gridOptions = {metersPerUnit, axisOrder};
     const promise = tileMatrixSet
-      ? this.loadTileGrid(tileMatrixSet, metersPerUnit, tileMatrixSetLimits)
-      : this.discoverTileGrid(tileTemplate, metersPerUnit, tileMatrixSetLimits).catch(error => {
+      ? this.loadTileGrid(tileMatrixSet, gridOptions, tileMatrixSetLimits)
+      : this.discoverTileGrid(tileTemplate, gridOptions, tileMatrixSetLimits).catch(error => {
           throw new Error(
             `OGC API Tiles could not discover the tile matrix set: ${(error as Error)?.message}`,
             {cause: error}
@@ -392,13 +399,20 @@ export class OGCAPITilesSource
    * discovered from it: a configured matrix set or `discoverTileMatrixSet: false` disables discovery.
    */
   private getTileGridKey() {
-    const {tileMatrixSet, tileMatrixSetLimits, metersPerUnit, tileTemplate, discoverTileMatrixSet} =
-      this.options['ogc-api'] || {};
+    const {
+      tileMatrixSet,
+      tileMatrixSetLimits,
+      metersPerUnit,
+      axisOrder,
+      tileTemplate,
+      discoverTileMatrixSet
+    } = this.options['ogc-api'] || {};
     const discover = !tileMatrixSet && discoverTileMatrixSet !== false;
     return {
       tileMatrixSet,
       tileMatrixSetLimits,
       metersPerUnit,
+      axisOrder,
       tileTemplate: discover ? tileTemplate : undefined
     };
   }
@@ -419,7 +433,7 @@ export class OGCAPITilesSource
    */
   private async discoverTileGrid(
     tileTemplate: string | undefined,
-    metersPerUnit: number | null | undefined,
+    gridOptions: OGCTileMatrixSetOptions,
     configuredLimits: OGCTileMatrixLimits[] | undefined
   ): Promise<TileGrid | undefined> {
     // Find the tileset path before resolving, since URL parsing may percent-encode the braces.
@@ -430,7 +444,7 @@ export class OGCAPITilesSource
     const tileMatrixSetUrl = await this.getTileMatrixSetURL(tileset, tilesetUrl);
     const document = (await this.fetchJSON(tileMatrixSetUrl)) as OGCTileMatrixSet;
     return applyTileMatrixLimits(
-      convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit}),
+      convertOGCTileMatrixSetToTileGrid(document, gridOptions),
       configuredLimits === undefined ? tileset.tileMatrixSetLimits : configuredLimits
     );
   }
@@ -466,7 +480,8 @@ export class OGCAPITilesSource
     if (tileMatrixSet && typeof tileMatrixSet !== 'string') {
       return applyTileMatrixLimits(
         convertOGCTileMatrixSetToTileGrid(tileMatrixSet, {
-          metersPerUnit: this.options['ogc-api']?.metersPerUnit
+          metersPerUnit: this.options['ogc-api']?.metersPerUnit,
+          axisOrder: this.options['ogc-api']?.axisOrder
         }),
         this.options['ogc-api']?.tileMatrixSetLimits
       );
@@ -479,7 +494,7 @@ export class OGCAPITilesSource
   /** Converts a tile matrix set, fetching it first when given as a URL. */
   private async loadTileGrid(
     tileMatrixSet: OGCTileMatrixSet | string | undefined,
-    metersPerUnit: number | null | undefined,
+    gridOptions: OGCTileMatrixSetOptions,
     limits: OGCTileMatrixLimits[] | undefined
   ): Promise<TileGrid | undefined> {
     if (!tileMatrixSet) return undefined;
@@ -487,10 +502,7 @@ export class OGCAPITilesSource
       typeof tileMatrixSet === 'string'
         ? ((await this.fetchJSON(resolveLink(tileMatrixSet, this.url))) as OGCTileMatrixSet)
         : tileMatrixSet;
-    return applyTileMatrixLimits(
-      convertOGCTileMatrixSetToTileGrid(document, {metersPerUnit}),
-      limits
-    );
+    return applyTileMatrixLimits(convertOGCTileMatrixSetToTileGrid(document, gridOptions), limits);
   }
 
   /** Fetches raw bytes for one tile from an advertised template. */
@@ -668,12 +680,14 @@ function isSameTileGridKey(
     tileMatrixSet: unknown;
     tileMatrixSetLimits: unknown;
     metersPerUnit: unknown;
+    axisOrder: unknown;
     tileTemplate: unknown;
   },
   requestedKey: {
     tileMatrixSet: unknown;
     tileMatrixSetLimits: unknown;
     metersPerUnit: unknown;
+    axisOrder: unknown;
     tileTemplate: unknown;
   }
 ): boolean {
@@ -681,6 +695,7 @@ function isSameTileGridKey(
     cachedKey.tileMatrixSet === requestedKey.tileMatrixSet &&
     cachedKey.tileMatrixSetLimits === requestedKey.tileMatrixSetLimits &&
     cachedKey.metersPerUnit === requestedKey.metersPerUnit &&
+    cachedKey.axisOrder === requestedKey.axisOrder &&
     cachedKey.tileTemplate === requestedKey.tileTemplate
   );
 }
