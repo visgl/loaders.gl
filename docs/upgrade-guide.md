@@ -28,6 +28,16 @@ The `@loaders.gl/images/gl-extensions` subpath was removed. Texture levels still
 the numeric WebGL `format` when available. Use the level’s `textureFormat` for renderer
 capability checks, or use WebGL context and extension constants for numeric comparisons.
 
+`@loaders.gl/ogc` now sends latitude or northing first for more CRSs. Before, only the exact
+string `EPSG:4326` was flipped. Now the WMS 1.3.0 `BBOX`, the WMTS `TopLeftCorner`, the WFS
+1.1.0/2.0.0 `BBOX` and the OGC API Features `bbox` use the authority axis order of a built-in
+table of EPSG CRSs. The table has geographic CRSs such as EPSG:4258 and EPSG:4269, and projected
+CRSs with northing first such as EPSG:3035 and EPSG:3006. Lower-case codes, EPSG URNs, EPSG URIs
+and versioned EPSG identifiers also use the table. If your code swapped the coordinates for one of
+these CRSs before it called the source, remove that swap. To keep the old order, set
+`axisOrder: 'xy'` in the `wms`, `wmts`, `wfs` or `'ogc-api'` options. `normalizeServiceCRS` now
+returns `IAU:<code>` and `ESRI:<code>` for IAU and ESRI URNs, not `EPSG:<code>`.
+
 Remove `json.backend` from JSON loading options. `JSONLoader` and `JSONTableLoader` use one
 streaming parser. Replace imports of the experimental `FastJSONLoader` with `JSONLoader`.
 The previous backends are retained as website comparison loaders.

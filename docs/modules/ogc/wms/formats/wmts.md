@@ -141,9 +141,12 @@ whose levels can be passed to the `@math.gl/geospatial` tile-matrix utilities su
 tile size and matrix size that pass `validateTileMatrix()`; the grid-wide fields are then derived
 from its first level. `tileGrid.matrices` keeps each level as advertised, which may be incomplete.
 
-A scale denominator becomes a resolution only when the CRS unit is known. EPSG:4326, CRS:84, and
-Web Mercator are built in; for any other CRS, supply the unit length. Origins follow the same axis
-rule as `tileGrid.origin`: only EPSG:4326 corners are swapped to XY.
+A scale denominator becomes a resolution only when the CRS unit is known. CRS84 (in all its
+spellings), the built-in EPSG geographic CRSs such as EPSG:4326 and EPSG:4258, and Web Mercator are
+built in; for any other CRS, supply the unit length. Origins follow the same axis rule as
+`tileGrid.origin`: corners of latitude-first and northing-first CRSs, such as EPSG:4326 and
+EPSG:3035, are swapped to XY. Set `wmts.axisOrder` to override the built-in table. See
+[CRS and tile-grid intelligence](../api-reference/crs-and-tile-grids.md).
 
 ```ts
 import {getTileBounds} from '@math.gl/geospatial/tiles';

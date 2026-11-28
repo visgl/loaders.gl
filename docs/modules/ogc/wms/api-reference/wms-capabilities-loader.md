@@ -201,7 +201,7 @@ export type parseWMSCapabilitiesOptions = {
 
 | Option                     | Type      | Default | Description                                                                                 |
 | -------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------- |
-| `wms.inheritedLayerProps?` | `boolean` | `false` | Adds inherited layer information from parent layers to sub layers                           |
+| `wms.inheritedLayerProps?` | `boolean` | `false` | Adds inherited layer information from parent layers to sub layers. A sub layer adds its `crs` values to the parent list, and its `boundingBoxes` replace the parent box for the same CRS only. |
 | `wms.includeRawData?`      | `boolean` | `false` | Include the "raw" JSON (parsed but untyped, unprocessed XML). May contain additional fields |
 | `wms.includeXMLText?`      | `boolean` | `false` | Include the original XML document text. May contain additional information.                 |
 
