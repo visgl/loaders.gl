@@ -133,3 +133,23 @@ test('Arrow IPC file offset skips entire batch bodies and slices the first match
   expect(transferred).toBeLessThan(bytes.byteLength / 2);
   expect(await Array.fromAsync(source.read({offset: 4100}))).toEqual([]);
 });
+
+test('Arrow IPC file schema and a small limit avoid reading the complete Blob', async () => {
+  const first = arrow.tableFromArrays({value: Int32Array.of(1, 2, 3)});
+  const second = arrow.tableFromArrays({value: new Int32Array(4096).fill(4)});
+  const bytes = arrow.tableToIPC(first.concat(second), 'file');
+  let bytesRead = 0;
+  class MeasuredBlob extends Blob {
+    override slice(start?: number, end?: number, contentType?: string): Blob {
+      const slice = super.slice(start, end, contentType);
+      bytesRead += slice.size;
+      return slice;
+    }
+  }
+  const source = new ArrowTableSource(new MeasuredBlob([bytes]));
+  expect((await source.getQueryMetadata()).columns.map(column => column.name)).toEqual(['value']);
+  expect(bytesRead).toBeLessThan(bytes.byteLength / 2);
+  const batches = await Array.fromAsync(source.read({limit: 1}));
+  expect(batches[0].getChild('value')?.get(0)).toBe(1);
+  expect(bytesRead).toBeLessThan(bytes.byteLength / 2);
+});

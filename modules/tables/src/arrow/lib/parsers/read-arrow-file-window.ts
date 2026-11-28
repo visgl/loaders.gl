@@ -12,13 +12,17 @@ export async function isArrowIPCFile(blob: Blob): Promise<boolean> {
   return prefix.length === 6 && prefix.every((byte, index) => byte === 'ARROW1'.charCodeAt(index));
 }
 
-/** Reads a seekable IPC file while omitting bodies of batches preceding the row offset. */
-export async function* readArrowFileWindow(
+/** Opens a Blob with Arrow's random-access reader. */
+async function openArrowFile(
   blob: Blob,
-  offset: number,
   signal?: AbortSignal,
   onByteLength?: (byteLength: number) => void
-): AsyncIterable<Table> {
+): Promise<{
+  /** Reader that owns the random-access adapter. */
+  reader: Awaited<ReturnType<typeof RecordBatchReader.from>>;
+  /** Absolute reads for batch metadata that does not need decoding. */
+  readRange: (position: number, length: number) => Promise<Uint8Array>;
+}> {
   signal?.throwIfAborted();
   registerArrowCompressionCodecs();
   await preloadArrowCompressionDecoders();
@@ -52,8 +56,34 @@ export async function* readArrowFileWindow(
   const reader = await RecordBatchReader.from(
     handle as unknown as Parameters<typeof RecordBatchReader.from>[0]
   );
+  return {reader, readRange};
+}
+
+/** Discovers the seekable file's schema without reading record-batch bodies. */
+export async function readArrowFileSchema(blob: Blob, signal?: AbortSignal) {
+  const {reader} = await openArrowFile(blob, signal);
   try {
     await reader.open();
+    return reader.schema;
+  } finally {
+    await reader.cancel();
+  }
+}
+
+/** Reads a seekable IPC file while omitting bodies of batches preceding the row offset. */
+export async function* readArrowFileWindow(
+  blob: Blob,
+  offset: number,
+  signal?: AbortSignal,
+  onByteLength?: (byteLength: number) => void
+): AsyncIterable<Table> {
+  const {reader, readRange} = await openArrowFile(blob, signal, onByteLength);
+  try {
+    await reader.open();
+    if (!reader.numRecordBatches && offset === 0) {
+      yield new Table(reader.schema);
+      return;
+    }
     for (let index = 0; index < reader.numRecordBatches; index++) {
       if (offset) {
         const block = reader.footer?.getRecordBatch(index);
