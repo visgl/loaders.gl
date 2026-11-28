@@ -12,8 +12,8 @@ import {preProcessFile} from 'typescript';
 const REPOSITORY_ROOT = process.cwd();
 // The eager bundle includes the upstream SQL predicate grammar and physical Arrow row gatherer.
 const MAXIMUM_EAGER_SCAN_BUNDLE_BYTES = 324 * 1024;
-// The complete bundle includes math.gl 5.0.4 lookup joins and fixed-size array casts.
-const MAXIMUM_COMPLETE_SCAN_BUNDLE_BYTES = 405 * 1024;
+// The complete bundle includes math.gl 5.0.5 lazy SQL and Arrow expression chunks.
+const MAXIMUM_COMPLETE_SCAN_BUNDLE_BYTES = 406 * 1024;
 const MAXIMUM_PREDICATE_ONLY_BUNDLE_BYTES = 40 * 1024;
 
 test('implementations and tests do not import removed utility entrypoints', () => {

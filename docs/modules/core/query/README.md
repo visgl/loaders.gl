@@ -314,6 +314,13 @@ and row order; selected aliases replace only field names. Projection-only limits
 Arrow slice views. Sparse residual filters use math.gl's Arrow row gatherer to copy
 physical buffers without decoding nested or dictionary-encoded columns.
 
+### Relational SQL over Arrow tables
+
+Use `queryArrowSQL(sql, tables)` from `@loaders.gl/core/query/arrow-query` for
+synchronous relational SQL over a map of named, in-memory Arrow tables. It supports
+`HAVING`, semi and anti joins, computed grouping keys, and ordering by expressions or
+aggregates outside the SELECT list.
+
 ### Streaming linear Arrow queries
 
 Import `queryArrowTableInBatches` from `@loaders.gl/core/query/arrow-query`. It consumes and yields native Arrow RecordBatches

@@ -430,11 +430,11 @@
     "build-compatibility-entry": "esbuild dist/index.js --bundle --packages=external --external:@loaders.gl/core/* --platform=node --format=cjs --outfile=dist/index.cjs"
   },
   "dependencies": {
-    "@math.gl/core": "^5.0.4",
-    "@math.gl/geometry": "^5.0.4",
-    "@math.gl/geospatial": "^5.0.4",
-    "@math.gl/sql": "^5.0.4",
-    "@math.gl/tasks": "^5.0.4",
+    "@math.gl/core": "^5.0.5",
+    "@math.gl/geometry": "^5.0.5",
+    "@math.gl/geospatial": "^5.0.5",
+    "@math.gl/sql": "^5.0.5",
+    "@math.gl/tasks": "^5.0.5",
     "@types/geojson": "^7946.0.7",
     "apache-arrow": ">= 17.0.0",
     "probe.gl": "^5.0.0",
