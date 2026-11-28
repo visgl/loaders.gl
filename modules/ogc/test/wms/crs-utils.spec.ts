@@ -117,6 +117,32 @@ describe('service CRS identifier semantics', () => {
     expect(areServiceCRSEquivalent(102100, 'EPSG:3857')).toBe(true);
   });
 
+  // Expected axis order and unit of every code in the built-in table, from the EPSG registry.
+  test.each([
+    ...[
+      4148, 4167, 4171, 4230, 4258, 4267, 4269, 4277, 4283, 4314, 4326, 4490, 4612, 4617, 4619,
+      4674, 6318, 6668, 7844
+    ].map(code => [code, METERS_PER_DEGREE] as const),
+    ...[2193, 3006, 3034, 2180, 3035, 31466, 31467, 31468, 31469].map(
+      code => [code, undefined] as const
+    )
+  ])('table code EPSG:%i is y first', (code, metersPerUnit) => {
+    expect(getServiceCRSAxisOrder(`EPSG:${code}`)).toBe('yx');
+    expect(getServiceCRSAxisOrder(`urn:ogc:def:crs:EPSG::${code}`)).toBe('yx');
+    const unit = getServiceCRSMetersPerUnit(`EPSG:${code}`);
+    if (metersPerUnit === undefined) {
+      expect(unit).toBeUndefined();
+    } else {
+      expect(unit).toBeCloseTo(metersPerUnit);
+    }
+  });
+
+  test('a URN version must be numbers and dots', () => {
+    expect(getServiceCRSAxisOrder('urn:ogc:def:crs:EPSG:abc:4326')).toBe('xy');
+    expect(getServiceCRSMetersPerUnit('urn:ogc:def:crs:EPSG:abc:4326')).toBeUndefined();
+    expect(getServiceCRSAxisOrder('http://www.opengis.net/def/crs/EPSG/abc/4326')).toBe('xy');
+  });
+
   test('the caller axis order wins over the built-in table', () => {
     expect(getServiceCRSAxisOrder('EPSG:4326', {axisOrder: 'xy'})).toBe('xy');
     expect(getServiceCRSAxisOrder('EPSG:25832', {axisOrder: 'yx'})).toBe('yx');

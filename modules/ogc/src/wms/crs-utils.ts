@@ -47,7 +47,7 @@ const WEB_MERCATOR_EPSG_CODES = new Set([3857, 3785]);
 const LATITUDE_FIRST_EPSG_CODES: ReadonlyMap<number, string> = new Map([
   [4148, 'Hartebeesthoek94'],
   [4167, 'NZGD2000'],
-  [4171, 'RGF93 v1'],
+  [4171, 'ETRS89-FRA [RGF93 v1]'],
   [4230, 'ED50'],
   [4258, 'ETRS89'],
   [4267, 'NAD27'],
@@ -59,10 +59,10 @@ const LATITUDE_FIRST_EPSG_CODES: ReadonlyMap<number, string> = new Map([
   [4490, 'China Geodetic Coordinate System 2000'],
   [4612, 'JGD2000'],
   [4617, 'NAD83(CSRS)'],
-  [4619, 'SWEREF99'],
+  [4619, 'ETRS89-SWE [SWEREF 99]'],
   [4674, 'SIRGAS 2000'],
   [6318, 'NAD83(2011)'],
-  [6668, 'JGD2011'],
+  [6668, 'JGD2024'],
   [7844, 'GDA2020']
 ]);
 
@@ -74,10 +74,10 @@ const LATITUDE_FIRST_EPSG_CODES: ReadonlyMap<number, string> = new Map([
 const NORTHING_FIRST_EPSG_CODES: ReadonlyMap<number, string> = new Map([
   // Coordinate system EPSG:4500: northing (N), easting (E).
   [2193, 'NZGD2000 / New Zealand Transverse Mercator 2000'],
-  [3006, 'SWEREF99 TM'],
+  [3006, 'ETRS89-SWE [SWEREF 99 TM]'],
   [3034, 'ETRS89-extended / LCC Europe'],
   // Coordinate system EPSG:4531: northing (x), easting (y).
-  [2180, 'ETRS89 / Poland CS92'],
+  [2180, 'ETRS89 / PL-1992'],
   // Coordinate system EPSG:4532: northing (Y), easting (X).
   [3035, 'ETRS89-extended / LAEA Europe'],
   // Coordinate system EPSG:4530: northing (X), easting (Y).
@@ -98,10 +98,13 @@ const WMS_CRS_CODES: ReadonlyMap<string, string> = new Map([
 const AUTHORITY_CODE = /^[A-Z][A-Z0-9_-]*:[A-Z0-9_.-]+$/;
 /** An EPSG URN without a version field, as in the pre-standard `urn:x-ogc:def:crs:EPSG:4326`. */
 const LEGACY_EPSG_URN = /^urn:ogc:def:crs:EPSG:(\d+)$/i;
-/** A versioned EPSG URN. The version can contain colons: `urn:ogc:def:crs:EPSG:6.18:3:4326`. */
-const VERSIONED_EPSG_URN = /^urn:(?:x-)?ogc:def:crs:EPSG:(.+):(\d+)$/i;
+/**
+ * A versioned EPSG URN. The version is numbers and dots, and can contain colons:
+ * `urn:ogc:def:crs:EPSG:6.18:3:4326`.
+ */
+const VERSIONED_EPSG_URN = /^urn:(?:x-)?ogc:def:crs:EPSG:([\d.]+(?::[\d.]+)*):(\d+)$/i;
 /** A versioned EPSG URI: `http://www.opengis.net/def/crs/EPSG/9.9/4326`. */
-const VERSIONED_EPSG_URI = /^https?:\/\/www\.opengis\.net\/def\/crs\/EPSG\/([^/]+)\/(\d+)\/?$/i;
+const VERSIONED_EPSG_URI = /^https?:\/\/www\.opengis\.net\/def\/crs\/EPSG\/([\d.]+)\/(\d+)\/?$/i;
 /** An unversioned EPSG path on another host: `https://example.com/def/crs/EPSG/0/3857`. */
 const EPSG_PATH = /\/EPSG\/(?:0\/)?(\d+)\/?$/i;
 
@@ -174,8 +177,10 @@ export function selectServiceCRS(
  * Returns the authority axis order that a CRS uses on the service wire.
  *
  * WMS 1.3.0, WMTS, WFS 1.1/2.0 and OGC API `bbox-crs` use the axis order of the CRS authority.
- * Application bounding boxes and decoded geometry remain canonical `xy` (x/easting or longitude
- * first); callers use this result only when constructing protocol-specific request coordinates.
+ * Application bounding boxes stay canonical `xy` (x/easting or longitude first); callers use this
+ * result only when constructing protocol-specific request coordinates and reading tile-grid
+ * origins. Decoded response geometry is not swapped: for example, WFS GML coordinates are
+ * returned in the order of the response.
  *
  * The result is `yx` for a small built-in table of EPSG geographic 2D CRSs (latitude first, for
  * example EPSG:4326 and EPSG:4258) and EPSG projected CRSs with northing first (for example
