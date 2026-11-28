@@ -78,7 +78,10 @@ function parseTextSync(text: string, options?: JSONTableLoaderOptions) {
     return parseDirectJSONArrowText(
       text,
       json.schema ? normalizeJSONArrowSchema(json.schema) : undefined,
-      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)}
+      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)},
+      undefined,
+      json.schemaInference,
+      jsonOptions.core?.batchSize
     );
   }
   const table = getJSONRowTable(parseJSONSync(text, getRawJSONOptions(jsonOptions)));
@@ -114,7 +117,9 @@ function parseInBatches(
       json.schema ? normalizeJSONArrowSchema(json.schema) : undefined,
       json.jsonpaths,
       jsonOptions.core?.batchSize ?? 'auto',
-      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)}
+      {arrowConversion: json.arrowConversion, log: getLoaderLog(jsonOptions)},
+      undefined,
+      json.schemaInference
     );
   }
 

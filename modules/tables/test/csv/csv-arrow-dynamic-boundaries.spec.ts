@@ -5,6 +5,7 @@
 import {expect, test} from 'vitest';
 import {
   parseCSVArrayBufferAsArrow,
+  parseCSVInArrowBatches,
   parseCSVTextAsArrow
 } from '../../src/csv/csv-arrow-table-parser';
 
@@ -105,4 +106,25 @@ test('direct parser rejects incompatible delimiter candidates before safe fallba
     }
   });
   expect(values(guessed, 'b')).toEqual([2]);
+});
+
+test.each([
+  ['first-batch', [1, null]],
+  ['full', ['1', 'later']],
+  [undefined, [1, null]]
+] as const)('CSV Arrow streaming uses %s inference', async (schemaInference, expected) => {
+  const options = {
+    core: {batchSize: 1},
+    csv: {header: true as const, dynamicTyping: true, schemaInference}
+  };
+  const chunks = ['value\n1\n', 'later\n'].map(text => encoder.encode(text));
+  const result = [];
+  for await (const batch of parseCSVInArrowBatches(chunks, options)) {
+    result.push(...values(batch, 'value'));
+  }
+  expect(result).toEqual(expected);
+  const atomic = await parseCSVTextAsArrow('value\n1\nlater', options);
+  expect(values(atomic, 'value')).toEqual(
+    schemaInference === undefined ? ['1', 'later'] : expected
+  );
 });

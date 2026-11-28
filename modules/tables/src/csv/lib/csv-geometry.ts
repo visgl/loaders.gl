@@ -370,6 +370,7 @@ function deduceCSVColumnType(
   columnName: string,
   columnIndex: number
 ): DataType {
+  let inferredType: DataType = 'null';
   for (const row of rows) {
     const value = Array.isArray(row)
       ? row[columnIndex]
@@ -377,12 +378,12 @@ function deduceCSVColumnType(
         ? (row as Record<string, unknown>)[columnName]
         : null;
     const fieldType = deduceCSVValueType(value);
-    if (fieldType !== 'null') {
-      return fieldType;
-    }
+    if (fieldType === 'null') continue;
+    if (inferredType !== 'null' && inferredType !== fieldType) return 'utf8';
+    inferredType = fieldType;
   }
 
-  return headerRow[columnIndex] === columnName ? 'utf8' : 'null';
+  return inferredType === 'null' && headerRow[columnIndex] === columnName ? 'utf8' : inferredType;
 }
 
 /** Infers the schema data type for one CSV value. */

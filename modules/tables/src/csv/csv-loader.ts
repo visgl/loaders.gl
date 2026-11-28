@@ -38,6 +38,7 @@ import {
   normalizeGeometryObjectRow,
   shouldFinalizeGeometryDetection
 } from './lib/csv-geometry';
+import {getTableSchemaInferenceRows} from '../lib/table-schema-inference';
 import {CSVLoaderDefinition, type CSVLoaderOptions} from './csv-loader-definition';
 import {
   deserializeCSVWorkerBatch,
@@ -152,10 +153,16 @@ function parseCSVTextSync(
     default:
       throw new Error(shape);
   }
+  const inferenceRows = getTableSchemaInferenceRows(
+    csvOptions.schemaInference ?? 'full',
+    options?.core?.batchSize
+  );
   const detectedGeometryColumns = csvOptions.detectGeometryColumns
     ? detectGeometryColumns(
         headerRow,
-        rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow))),
+        rows
+          .slice(0, inferenceRows)
+          .map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow))),
         csvOptions.geometryEncoding
       )
     : [];
@@ -173,7 +180,11 @@ function parseCSVTextSync(
           };
   }
 
-  table.schema = deduceCSVSchemaFromRows(table.data, headerRow, detectedGeometryColumns);
+  table.schema = deduceCSVSchemaFromRows(
+    table.data.slice(0, inferenceRows),
+    headerRow,
+    detectedGeometryColumns
+  );
   return table;
 }
 
@@ -198,8 +209,11 @@ function parseCSVInBatches(
   // Papaparse does not support standard batch size handling
   // TODO - investigate papaparse chunks mode
   options = {...options};
-  if (options?.core?.batchSize === 'auto') {
-    options.core = {...options.core, batchSize: 4000};
+  if (options.core?.batchSize === undefined || options.core.batchSize === 'auto') {
+    options.core = {
+      ...options.core,
+      batchSize: getTableSchemaInferenceRows('first-batch')
+    };
   }
 
   // Apps can call the parse method directly, we so apply default options here
@@ -215,7 +229,13 @@ function parseCSVInBatches(
   let headerRow: string[] | null = null;
   let tableBatchBuilder: TableBatchBuilder | null = null;
   let schema: Schema | null = null;
-  let sniffedRows: unknown[][] = [];
+  const inferenceRows = csvOptions.dynamicTyping
+    ? getTableSchemaInferenceRows(
+        csvOptions.schemaInference ?? 'first-batch',
+        options.core?.batchSize
+      )
+    : 1;
+  const pendingRows: {row: unknown[]; bytesUsed: number}[] = [];
   let detectedGeometryColumns = [] as ReturnType<typeof detectGeometryColumns>;
   let geometryDetectionFinalized = !csvOptions.detectGeometryColumns;
 
@@ -279,46 +299,19 @@ function parseCSVInBatches(
 
       const shape = getBatchShape();
 
-      if (!geometryDetectionFinalized && headerRow) {
-        sniffedRows.push(row);
-        geometryDetectionFinalized = shouldFinalizeGeometryDetection(
-          headerRow,
-          sniffedRows,
-          MAX_GEOMETRY_SNIFF_ROWS
-        );
-        if (geometryDetectionFinalized) {
-          detectedGeometryColumns = detectGeometryColumns(
+      if (!schema && headerRow) {
+        pendingRows.push({row, bytesUsed});
+        if (!geometryDetectionFinalized) {
+          geometryDetectionFinalized = shouldFinalizeGeometryDetection(
             headerRow,
-            sniffedRows,
-            csvOptions.geometryEncoding
+            pendingRows.map(pending => pending.row),
+            MAX_GEOMETRY_SNIFF_ROWS
           );
-          const normalizedSniffedRows = sniffedRows.map(sniffedRow =>
-            normalizeGeometryArrayRow(sniffedRow, detectedGeometryColumns)
-          );
-          schema = deduceCSVSchemaFromRows(
-            normalizedSniffedRows,
-            headerRow,
-            detectedGeometryColumns
-          );
-          isFirstRow = false;
-          for (const normalizedSniffedRow of normalizedSniffedRows) {
-            addCSVBatchRow(normalizedSniffedRow, shape, bytesUsed);
-          }
-          sniffedRows = [];
+        }
+        if (geometryDetectionFinalized && pendingRows.length >= inferenceRows) {
+          initializeCSVBatchSchema(headerRow, shape);
         }
         return;
-      }
-
-      if (isFirstRow) {
-        if (!headerRow) {
-          return;
-        }
-        schema = deduceCSVSchemaFromRows(
-          [normalizeGeometryArrayRow(row, detectedGeometryColumns)],
-          headerRow,
-          detectedGeometryColumns
-        );
-        isFirstRow = false;
       }
 
       const normalizedRow = normalizeGeometryArrayRow(row, detectedGeometryColumns);
@@ -328,34 +321,8 @@ function parseCSVInBatches(
     // complete is called when all rows have been read
     complete(results) {
       try {
-        if (!geometryDetectionFinalized && headerRow) {
-          detectedGeometryColumns = detectGeometryColumns(
-            headerRow,
-            sniffedRows,
-            csvOptions.geometryEncoding
-          );
-          const normalizedSniffedRows = sniffedRows.map(row =>
-            normalizeGeometryArrayRow(row, detectedGeometryColumns)
-          );
-          schema = deduceCSVSchemaFromRows(
-            normalizedSniffedRows,
-            headerRow,
-            detectedGeometryColumns
-          );
-          const shape = getBatchShape();
-          tableBatchBuilder =
-            tableBatchBuilder ||
-            new TableBatchBuilder(schema, {
-              ...(options?.core || {}),
-              shape
-            });
-          for (const normalizedSniffedRow of normalizedSniffedRows) {
-            const batchRow =
-              shape === 'object-row-table' && normalizedSniffedRow.length > headerRow.length
-                ? convertToPapaObjectRow(normalizedSniffedRow, headerRow)
-                : normalizedSniffedRow;
-            tableBatchBuilder.addRow(batchRow);
-          }
+        if (!schema && headerRow && pendingRows.length) {
+          initializeCSVBatchSchema(headerRow, getBatchShape());
         }
         const bytesUsed = results.meta.cursor;
         // Ensure any final (partial) batch gets emitted
@@ -376,6 +343,30 @@ function parseCSVInBatches(
   // TODO - Does it matter if we return asyncIterable or asyncIterator
   // return asyncQueue[Symbol.asyncIterator]();
   return asyncQueue;
+
+  /** Infers the schema once and emits any rows buffered for inference. */
+  function initializeCSVBatchSchema(columns: string[], shape: CSVBatchShape): void {
+    if (csvOptions.detectGeometryColumns) {
+      detectedGeometryColumns = detectGeometryColumns(
+        columns,
+        pendingRows.slice(0, MAX_GEOMETRY_SNIFF_ROWS).map(pending => pending.row),
+        csvOptions.geometryEncoding
+      );
+    }
+    const normalizedRows = pendingRows.map(pending =>
+      normalizeGeometryArrayRow(pending.row, detectedGeometryColumns)
+    );
+    schema = deduceCSVSchemaFromRows(
+      normalizedRows.slice(0, inferenceRows),
+      columns,
+      detectedGeometryColumns
+    );
+    isFirstRow = false;
+    for (const [index, row] of normalizedRows.entries()) {
+      addCSVBatchRow(row, shape, pendingRows[index].bytesUsed);
+    }
+    pendingRows.length = 0;
+  }
 
   function addCSVBatchRow(rowToAdd: unknown[], shape: CSVBatchShape, bytesUsed: number): void {
     let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;

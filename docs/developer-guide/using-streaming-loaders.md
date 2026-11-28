@@ -93,15 +93,15 @@ for await (const batch of batches) {
 
 ## Schema inference for table batches
 
-CSV and JSON inputs may arrive without a declared schema. A streaming table loader can infer
-column names and types from an initial sample and keep that schema for later batches. This lets
-the loader return early results, but the sample may miss a JSON field or a CSV value whose type
-only appears later. Check the format documentation for how those values are handled.
+Streaming CSV tables and JSON Arrow tables use first-batch inference by default. This examines
+up to 1,024 records, or fewer if you request a smaller `core.batchSize`. CSV and JSON table sources
+use the same policy for schema discovery and scans. A field or value type that appears only later
+can be absent from the inferred schema.
 
-For heterogeneous inputs, use full-input inference where the loader or source offers it.
-Full inference reads to the end before it can report a final schema, even if the API returns
-an async iterator. Supply an explicit schema where supported when you need early results and
-already know the column names and types.
+Set `csv.schemaInference: 'full'` or `json.schemaInference: 'full'` for heterogeneous inputs. Full
+inference reads to the end before yielding the first data batch. Whole-file parses default to full
+inference. Supply an explicit JSON schema if you know the column names and types and need early
+results.
 
 A download chunk is a group of bytes. A table batch is a group of parsed rows. A quoted CSV
 cell or a JSON object can span several chunks, so neither chunk size nor output batch size

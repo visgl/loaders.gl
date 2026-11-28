@@ -52,7 +52,7 @@ test('JSON table source projects Blob rows and observes cancellation', async () 
   const metadata = await source.getQueryMetadata();
   expect(metadata.capabilities.table).toMatchObject({
     projection: 'pushdown+residual',
-    streaming: false
+    streaming: true
   });
 
   const batches = [];
@@ -167,7 +167,8 @@ test('JSON table source still validates the syntax of skipped fields', async () 
 
 test.each([
   'full',
-  'first-batch'
+  'first-batch',
+  undefined
 ] as const)('JSON table source uses %s inference for projected columns', async schemaInference => {
   const data = Array.from({length: 1025}, (_, id) =>
     id < 1024 ? {id, ignored: true} : {id, late: 5, ignored: {a: 1}}
@@ -222,4 +223,21 @@ test('createDataSource prefers the explicit MIME type to a JSON filename', async
     core: {mimeType: 'text/csv'}
   });
   expect(source).toBeInstanceOf(CSVTableSource);
+});
+
+test('JSON source default inference returns schema before EOF and cancels the metadata read', async () => {
+  const pull = vi.fn((controller: ReadableStreamDefaultController<Uint8Array>) => {
+    controller.enqueue(new TextEncoder().encode('[{"id":1},'));
+  });
+  const cancel = vi.fn();
+  const fetch = vi.fn(
+    async () => new Response(new ReadableStream({pull, cancel}, {highWaterMark: 0}))
+  );
+  const source = new JSONTableSource('https://example.test/rows.json', {
+    core: {fetch, batchSize: 1}
+  });
+  const metadata = await source.getQueryMetadata();
+  expect(metadata.columns.map(column => column.name)).toEqual(['id']);
+  expect(pull).toHaveBeenCalledTimes(1);
+  expect(cancel).toHaveBeenCalledTimes(1);
 });

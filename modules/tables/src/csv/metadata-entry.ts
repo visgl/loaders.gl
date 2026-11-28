@@ -6,6 +6,7 @@ export {CSVLoader} from './csv-loader-types';
 export {CSVFormat} from './csv-format';
 export type {
   CSVLoaderOptions,
+  TableSchemaInference,
   CSV_LOADER_VERSION,
   DEFAULT_CSV_SHAPE,
   CSV_LOADER_OPTIONS

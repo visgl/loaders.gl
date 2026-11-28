@@ -20,7 +20,7 @@ const heterogeneousJSON = {json: {schemaInference: 'full'}} as const;
 | `full` | All logical records before projection, filtering, offset, and limit | After inference reaches the end of the input |
 | `first-batch` | A bounded prefix of logical records before projection, filtering, offset, and limit | As soon as the prefix is complete, or at EOF for shorter inputs |
 
-Use a deterministic prefix, initially up to 1,024 records, consistent with the JSON source proposal. Count parsed records after format-level normalization. For CSV, exclude the header and skipped comments and blank lines. The same file should infer the same schema regardless of byte chunk boundaries, worker use, or the output batch size. A supplied schema takes precedence when the format accepts one. CSV with dynamic typing disabled retains text storage.
+Use a deterministic prefix, initially up to 1,024 records, consistent with the JSON source proposal. Count parsed records after format-level normalization. For CSV, exclude the header and skipped comments and blank lines. A smaller explicit output batch size also caps the sample. With the same options, byte chunk boundaries and worker execution do not affect inference. A supplied schema takes precedence when the format accepts one. CSV with dynamic typing disabled retains text storage.
 
 First-batch inference freezes column types once. Later values follow the format's documented conversion rules. A loader must document how it represents incompatible values and additional fields. Source metadata discovery and data reads must use the same inference policy so consumers can prepare a query against the schema they will read.
 
