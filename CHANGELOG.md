@@ -2,6 +2,16 @@
 
 ## v5.0
 
+### v5.0.3
+
+- Fix packaged browser worker URLs in bundlers (#4662).
+- Preserve Arrow timestamp precision in CSV ISO exports and push CSV source projections into streaming parsing (#4664, #4670).
+- Require `getFrustumPlanes` on 3D Tiles traversal viewports (#4663).
+- Fix Apache Arrow 17 compatibility, parse JSON directly into Arrow, reuse row normalization storage, and stream worker object rows as byte offsets (#4665–#4667, #4669).
+- Infer streaming CSV and JSON schemas from the first batch by default (#4668).
+- Decode native GeoArrow lists directly in Parquet and read only projected pages at exact match positions (#4673, #4672).
+- Use Arrow IPC file offsets for range reads and expose relational Arrow SQL through math.gl 5.0.5 (#4671, #4674).
+
 ### v5.0.2
 
 - Move eager Arrow helpers off the query entry point (#4650).

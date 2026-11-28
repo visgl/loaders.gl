@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/ogc",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "OGC web service clients and STAC catalog sources",
   "license": "MIT",
   "type": "module",
@@ -132,9 +132,9 @@
     "apache-arrow": ">= 17.0.0"
   },
   "dependencies": {
-    "@loaders.gl/documents": "5.0.2",
-    "@loaders.gl/images": "5.0.2",
-    "@loaders.gl/raster": "5.0.2",
+    "@loaders.gl/documents": "5.0.3",
+    "@loaders.gl/images": "5.0.3",
+    "@loaders.gl/raster": "5.0.3",
     "@math.gl/geospatial": "^5.0.5",
     "lerc": "^4.2.0"
   },
