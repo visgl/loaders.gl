@@ -181,3 +181,23 @@ test('native Arrow batch iteration retains identity and metadata when splitting'
   expect(split.map(part => part.metadata.get('source'))).toEqual(['original', 'original']);
   expect(() => [...makeArrowRecordBatchIterator(table, {batchSize: 0})]).toThrow(RangeError);
 });
+
+test('schema updates supply batch metadata when the Arrow runtime has no metadata accessor', () => {
+  const table = arrow.tableFromArrays({id: new Int32Array([1, 2])});
+  const batch = table.batches[0];
+  const metadataAccessor = Object.getOwnPropertyDescriptor(arrow.RecordBatch.prototype, 'metadata');
+  expect(metadataAccessor).toBeDefined();
+  batch.metadata.set('source', 'original');
+  Object.defineProperty(batch, 'metadata', {value: batch.metadata});
+  Reflect.deleteProperty(arrow.RecordBatch.prototype, 'metadata');
+  try {
+    const snapshot = updateArrowTableSchema(table, table.schema).batches[0];
+    expect(snapshot).toBeInstanceOf(arrow.RecordBatch);
+    expect(Array.from(snapshot.getChild('id')!)).toEqual([1, 2]);
+    expect(snapshot.metadata.get('source')).toBe('original');
+    snapshot.metadata.set('source', 'snapshot');
+    expect(batch.metadata.get('source')).toBe('original');
+  } finally {
+    Object.defineProperty(arrow.RecordBatch.prototype, 'metadata', metadataAccessor!);
+  }
+});
