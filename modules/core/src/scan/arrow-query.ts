@@ -5,6 +5,8 @@
 export {ARROW_TABLE_QUERY_CAPABILITIES, explainArrowTableQuery} from './plan-arrow-table-query';
 export {queryArrowTable} from './query-arrow-table';
 export {queryArrowTableInBatches} from './query-arrow-table-in-batches';
+export {queryArrowSQL, type ArrowSQLQueryOptions} from '@math.gl/sql/query';
+
 export {getSQLPredicateColumnNames, planTableQuery} from './table-query';
 
 export type {

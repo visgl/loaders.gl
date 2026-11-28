@@ -135,7 +135,7 @@
     "@loaders.gl/documents": "5.0.2",
     "@loaders.gl/images": "5.0.2",
     "@loaders.gl/raster": "5.0.2",
-    "@math.gl/geospatial": "^5.0.4",
+    "@math.gl/geospatial": "^5.0.5",
     "lerc": "^4.2.0"
   },
   "browser": {

@@ -273,8 +273,8 @@
   "dependencies": {
     "@loaders.gl/archives": "5.0.2",
     "@loaders.gl/documents": "5.0.2",
-    "@math.gl/core": "^5.0.4",
-    "@math.gl/geospatial": "^5.0.4",
+    "@math.gl/core": "^5.0.5",
+    "@math.gl/geospatial": "^5.0.5",
     "@types/sql.js": "^1.4.5",
     "apache-arrow": ">= 17.0.0"
   },
