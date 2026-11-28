@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT AND Apache-2.0
 // Copyright vis.gl contributors
 
-import {assert, beforeAll, expect, test} from 'vitest';
-import {getFrameState, type Tile3D} from '@loaders.gl/tiles-3d/tileset';
+import {assert, beforeAll, expect, expectTypeOf, test} from 'vitest';
+import {getFrameState, type Tile3D, type TraversalViewport} from '@loaders.gl/tiles-3d/tileset';
 import {getProjectedRadius} from '../../../src/tileset-3d/helpers/i3s-lod';
 import {
   limitSelectedTiles,
@@ -32,6 +32,11 @@ const expected = {
   frameNumber: 1,
   sseDenominator: 2 / 3
 };
+
+test('TraversalViewport requires getFrustumPlanes', () => {
+  expectTypeOf<Omit<TraversalViewport, 'getFrustumPlanes'>>().not.toExtend<TraversalViewport>();
+});
+
 test('getFrameState', () => {
   const viewport = new WebMercatorViewport({
     width: 793,
