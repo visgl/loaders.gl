@@ -4,6 +4,14 @@
 
 - `get-capabilities-response.xml` OGC example data taken from
   http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response.xml
+- `ogc-schema-example.xml` is the OGC WMTS 1.0.0 "World example Web Map Tile Service"
+  GetCapabilities example (OGC example data; the exact source URL was not recorded). Its
+  `WholeWorld_CRS_84` matrix set uses the `urn:ogc:def:crs:OGC:1.3:CRS84` URN and the
+  GlobalCRS84Pixel scale set (matrix `2g` is 2 degrees per pixel). One mismatched close tag (`</ows:Post>` for `<ows:Get>`) was corrected
+  so that the document is well-formed XML.
+- `epsg-3035-laea-europe.xml` is hand-written and trimmed to two matrices. It has the shape of a
+  WMTS for the INSPIRE ETRS89-extended / LAEA Europe grid (EPSG:3035, axes northing, easting), so
+  its `TopLeftCorner` is written N E. The values are synthetic (4000 and 2000 m per pixel).
 
 OGC license: https://www.ogc.org/license
 

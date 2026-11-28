@@ -320,3 +320,73 @@ test('WMS rejects excessive images before fetch and discards canceled image deco
   await expect(source.getMap({...parameters, width: 1, height: 1})).rejects.toThrow('dimensions');
   expect(closedImages).toBe(2);
 });
+
+test.each([
+  // WMS 1.3.0 uses the CRS authority axis order.
+  ['1.3.0', 'EPSG:4326', 'CRS', 'EPSG:4326', '47,5,55,15'],
+  ['1.3.0', 'epsg:4326', 'CRS', 'epsg:4326', '47,5,55,15'],
+  ['1.3.0', 'urn:ogc:def:crs:EPSG::4326', 'CRS', 'urn:ogc:def:crs:EPSG::4326', '47,5,55,15'],
+  ['1.3.0', 'EPSG:4258', 'CRS', 'EPSG:4258', '47,5,55,15'],
+  ['1.3.0', 'EPSG:3035', 'CRS', 'EPSG:3035', '47,5,55,15'],
+  ['1.3.0', 'CRS:84', 'CRS', 'CRS:84', '5,47,15,55'],
+  ['1.3.0', 'urn:ogc:def:crs:OGC:1.3:CRS84', 'CRS', 'urn:ogc:def:crs:OGC:1.3:CRS84', '5,47,15,55'],
+  ['1.3.0', 'EPSG:25832', 'CRS', 'EPSG:25832', '5,47,15,55'],
+  ['1.3.0', 'urn:ogc:def:crs:IAU::30100', 'CRS', 'urn:ogc:def:crs:IAU::30100', '5,47,15,55'],
+  // WMS 1.1.1 always uses x (longitude or easting) first.
+  ['1.1.1', 'EPSG:4326', 'SRS', 'EPSG:4326', '5,47,15,55'],
+  ['1.1.1', 'EPSG:4258', 'SRS', 'EPSG:4258', '5,47,15,55'],
+  ['1.1.1', 'EPSG:3035', 'SRS', 'EPSG:3035', '5,47,15,55'],
+  ['1.1.1', 'urn:ogc:def:crs:EPSG::4326', 'SRS', 'urn:ogc:def:crs:EPSG::4326', '5,47,15,55']
+] as const)('WMS %s %s GetMap and GetFeatureInfo send the service BBOX axis order', (version, crs, crsKey, expectedCRS, expectedBounds) => {
+  const source = WMSLoader.createDataSourceSync(WMS_SERVICE_URL, {
+    wms: {wmsParameters: {version}}
+  });
+  const bbox: [number, number, number, number] = [5, 47, 15, 55];
+  const mapURL = new URL(source.getMapURL({layers: ['x'], crs, bbox, width: 256, height: 256}));
+  expect(mapURL.searchParams.get(crsKey)).toBe(expectedCRS);
+  expect(mapURL.searchParams.get('BBOX')).toBe(expectedBounds);
+  const featureInfoURL = new URL(
+    source.getFeatureInfoURL({
+      layers: ['x'],
+      query_layers: ['x'],
+      crs,
+      bbox,
+      width: 256,
+      height: 256,
+      x: 1,
+      y: 2
+    })
+  );
+  expect(featureInfoURL.searchParams.get('BBOX')).toBe(expectedBounds);
+});
+
+test('WMS 1.3.0 axisOrder option overrides the built-in axis order', () => {
+  const bbox: [number, number, number, number] = [5, 47, 15, 55];
+  const xySource = WMSLoader.createDataSourceSync(WMS_SERVICE_URL, {wms: {axisOrder: 'xy'}});
+  expect(
+    new URL(
+      xySource.getMapURL({layers: ['x'], crs: 'EPSG:4326', bbox, width: 1, height: 1})
+    ).searchParams.get('BBOX')
+  ).toBe('5,47,15,55');
+  const yxSource = WMSLoader.createDataSourceSync(WMS_SERVICE_URL, {wms: {axisOrder: 'yx'}});
+  expect(
+    new URL(
+      yxSource.getMapURL({layers: ['x'], crs: 'EPSG:25832', bbox, width: 1, height: 1})
+    ).searchParams.get('BBOX')
+  ).toBe('47,5,55,15');
+});
+
+test('WMS 1.3.0 substituteCRS84 replaces EPSG:4326 spellings and keeps x first', () => {
+  const source = WMSLoader.createDataSourceSync(WMS_SERVICE_URL, {wms: {substituteCRS84: true}});
+  const url = new URL(
+    source.getMapURL({
+      layers: ['x'],
+      crs: 'urn:ogc:def:crs:EPSG::4326',
+      bbox: [5, 47, 15, 55],
+      width: 1,
+      height: 1
+    })
+  );
+  expect(url.searchParams.get('CRS')).toBe('CRS:84');
+  expect(url.searchParams.get('BBOX')).toBe('5,47,15,55');
+});

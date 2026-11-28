@@ -99,7 +99,7 @@ export type {
 } from './lib/parsers/ogc-api/tile-matrix-set';
 export type {OGCTileMatrixLimits} from './lib/parsers/ogc-api/tile-matrix-limits';
 export {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
-export type {ServiceCRS} from './crs-utils';
+export type {ServiceCRS, ServiceCRSAxisOrder, ServiceCRSAxisOrderOptions} from './crs-utils';
 export {
   normalizeServiceCRS,
   areServiceCRSEquivalent,

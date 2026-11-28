@@ -22,7 +22,7 @@ import {DataSource} from '@loaders.gl/core/loader-utils';
 import type {GeoJSONTable, Schema} from '@loaders.gl/core/schema';
 import {convertFeaturesToWKBArrowTable} from '@loaders.gl/core/arrow-geometry/feature-collection-to-arrow';
 import {convertGeojsonToBinaryFeatureCollection} from '@loaders.gl/core/arrow-geometry/legacy-binary';
-import {getServiceCRSAxisOrder} from './crs-utils';
+import {getServiceCRSAxisOrder, type ServiceCRSAxisOrder} from './crs-utils';
 import type {OGCTileMatrixSet} from './lib/parsers/ogc-api/tile-matrix-set';
 import {convertOGCTileMatrixSetToTileGrid} from './lib/parsers/ogc-api/tile-matrix-set';
 import type {OGCTileMatrixLimits} from './lib/parsers/ogc-api/tile-matrix-limits';
@@ -65,6 +65,11 @@ export type OGCAPILoaderOptions = DataSourceOptions & {
     metersPerUnit?: number | null;
     /** Opt-in bounded pagination for getFeatures(); omitted keeps the single-page behavior. */
     pagination?: FeaturePaginationOptions;
+    /**
+     * Features `bbox` axis order for every `bbox-crs`. Overrides the built-in table of
+     * latitude-first and northing-first EPSG CRSs (see `getServiceCRSAxisOrder`).
+     */
+    axisOrder?: ServiceCRSAxisOrder;
   };
 };
 
@@ -208,7 +213,11 @@ export class OGCAPIFeaturesSource
       ? `${url.pathname.replace(/\/$/, '')}/items`
       : `${url.pathname.replace(/\/$/, '')}/collections/${encodeURIComponent(collectionId)}/items`;
     const requestCrs = parameters.requestCrs || parameters.crs;
-    url.searchParams.set('bbox', flattenBoundingBox(parameters.boundingBox, requestCrs).join(','));
+    const axisOrder = this.options['ogc-api']?.axisOrder;
+    url.searchParams.set(
+      'bbox',
+      flattenBoundingBox(parameters.boundingBox, requestCrs, axisOrder).join(',')
+    );
     if (parameters.crs) url.searchParams.set('crs', parameters.crs);
     if (requestCrs) url.searchParams.set('bbox-crs', requestCrs);
     return url.toString();
@@ -679,10 +688,11 @@ function isSameTileGridKey(
 /** Converts the loaders.gl nested bounding box into the OGC comma-separated form. */
 function flattenBoundingBox(
   boundingBox: GetFeaturesParameters['boundingBox'],
-  requestCrs?: GetFeaturesParameters['requestCrs']
+  requestCrs?: GetFeaturesParameters['requestCrs'],
+  axisOrder?: ServiceCRSAxisOrder
 ): number[] {
   const values = [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]];
-  if (getServiceCRSAxisOrder(requestCrs) === 'yx') {
+  if (getServiceCRSAxisOrder(requestCrs, {axisOrder}) === 'yx') {
     return [values[1], values[0], values[3], values[2]];
   }
   return values;

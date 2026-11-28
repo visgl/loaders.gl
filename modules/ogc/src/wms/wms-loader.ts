@@ -28,6 +28,12 @@ import {WMSLayerDescriptionLoaderWithParser} from './wip/wms-layer-description-l
 import type {WMSErrorLoaderOptions} from './wms-error-loader';
 import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
+import {
+  areServiceCRSEquivalent,
+  getServiceCRSAxisOrder,
+  normalizeServiceCRS,
+  type ServiceCRSAxisOrder
+} from './crs-utils';
 
 /** Properties for creating a enw WMS service */
 export type WMSLoaderOptions = DataSourceOptions &
@@ -41,6 +47,11 @@ export type WMSLoaderOptions = DataSourceOptions &
       // TODO - move parameters inside WMS scope
       /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
       substituteCRS84?: boolean;
+      /**
+       * WMS 1.3.0 BBOX axis order for every CRS. Overrides the built-in table of latitude-first
+       * and northing-first EPSG CRSs (see `getServiceCRSAxisOrder`). WMS 1.1.1 is always `xy`.
+       */
+      axisOrder?: ServiceCRSAxisOrder;
       /** Default WMS parameters. If not provided here, must be provided in the various request */
       wmsParameters?: WMSParameters;
       /** Any additional service specific parameters */
@@ -197,8 +208,13 @@ export type WMSGetLegendGraphicParameters = {
 export class WMSImageSource extends DataSource<string, WMSLoaderOptions> implements ImageSource {
   /** In WMS 1.3.0, replaces references to EPSG:4326 with CRS:84. But not always supported. Default: false */
   substituteCRS84: boolean;
-  /** In WMS 1.3.0, flips x,y (lng, lat) coordinates for the supplied coordinate systems. Default: ['ESPG:4326'] */
+  /**
+   * In WMS 1.3.0, flips x,y (lng, lat) coordinates for the supplied coordinate systems, in
+   * addition to the built-in latitude-first and northing-first CRSs. Default: ['EPSG:4326']
+   */
   flipCRS: CRSIdentifier[];
+  /** WMS 1.3.0 BBOX axis order that overrides the built-in table and `flipCRS`. */
+  readonly axisOrder?: ServiceCRSAxisOrder;
 
   /** Default static WMS parameters */
   wmsParameters: Required<WMSParameters>;
@@ -217,6 +233,7 @@ export class WMSImageSource extends DataSource<string, WMSLoaderOptions> impleme
 
     this.substituteCRS84 = options.wms?.substituteCRS84 ?? false;
     this.flipCRS = ['EPSG:4326'];
+    this.axisOrder = options.wms?.axisOrder;
 
     this.wmsParameters = {
       layers: undefined!,
@@ -550,7 +567,7 @@ export class WMSImageSource extends DataSource<string, WMSLoaderOptions> impleme
         // CRS was called SRS before WMS 1.3.0
         if (wmsParameters.version !== '1.3.0') {
           key = 'srs';
-        } else if (this.substituteCRS84 && value === 'EPSG:4326') {
+        } else if (this.substituteCRS84 && normalizeServiceCRS(value as string) === 'EPSG:4326') {
           /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
           // Substitute by value
           value = 'CRS:84';
@@ -609,16 +626,24 @@ export class WMSImageSource extends DataSource<string, WMSLoaderOptions> impleme
       return null;
     }
 
+    const crs = wmsParameters.crs;
     const flipCoordinates =
       // Only affects WMS 1.3.0
       wmsParameters.version === '1.3.0' &&
-      // Flip if we are dealing with a CRS that was flipped in 1.3.0
-      this.flipCRS.includes(wmsParameters.crs || '') &&
+      // Flip if the CRS uses a y-first (latitude or northing) authority axis order
+      this._getAxisOrder(crs) === 'yx' &&
       // Don't flip if we are substituting EPSG:4326 with CRS:84
-      !(this.substituteCRS84 && wmsParameters.crs === 'EPSG:4326');
+      !(this.substituteCRS84 && normalizeServiceCRS(crs) === 'EPSG:4326');
 
     const bbox = bboxValue as [number, number, number, number];
     return flipCoordinates ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
+  }
+
+  /** Returns the WMS 1.3.0 axis order of a CRS: the option, then `flipCRS`, then the built-in table. */
+  protected _getAxisOrder(crs: CRSIdentifier | undefined): ServiceCRSAxisOrder {
+    if (this.axisOrder) return this.axisOrder;
+    if (this.flipCRS.some(flipCRS => areServiceCRSEquivalent(flipCRS, crs))) return 'yx';
+    return getServiceCRSAxisOrder(crs);
   }
 
   /** Fetches an array buffer and checks the response (boilerplate reduction) */

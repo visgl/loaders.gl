@@ -54,7 +54,7 @@
                 <ows:Value>KVP</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
-          </ows:Post>
+          </ows:Get>
         </ows:HTTP>
       </ows:DCP>
     </ows:Operation>

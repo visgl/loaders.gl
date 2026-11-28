@@ -69,6 +69,8 @@ export type {
 export type {OGCTileMatrixLimits} from './lib/parsers/ogc-api/tile-matrix-limits';
 export type {
   ServiceCRS,
+  ServiceCRSAxisOrder,
+  ServiceCRSAxisOrderOptions,
   normalizeServiceCRS,
   areServiceCRSEquivalent,
   selectServiceCRS,

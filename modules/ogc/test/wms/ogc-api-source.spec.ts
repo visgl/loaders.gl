@@ -147,3 +147,48 @@ test('OGC API Features forwards cancellation and preserves paging completion met
   });
   expect(table).toMatchObject({numberMatched: 0, links: [{rel: 'self', href: 'items'}]});
 });
+
+test.each([
+  ['http://www.opengis.net/def/crs/EPSG/0/4258', '47%2C5%2C55%2C15'],
+  ['http://www.opengis.net/def/crs/EPSG/9.9/4326', '47%2C5%2C55%2C15'],
+  ['http://www.opengis.net/def/crs/OGC/1.3/CRS84', '5%2C47%2C15%2C55'],
+  ['http://www.opengis.net/def/crs/IAU/0/30100', '5%2C47%2C15%2C55']
+])('OGCAPIFeaturesSource#getFeatures sends bbox-crs %s in its axis order', async (requestCrs, bbox) => {
+  const source = OGCAPIFeaturesLoader.createDataSourceSync(OGC_API_URL, {
+    'ogc-api': {collectionId: 'roads'}
+  });
+  let requestURL = '';
+  source.fetch = async url => {
+    requestURL = String(url);
+    return new Response(JSON.stringify({type: 'FeatureCollection', features: []}));
+  };
+  await source.getFeatures({
+    layers: 'roads',
+    boundingBox: [
+      [5, 47],
+      [15, 55]
+    ],
+    requestCrs
+  });
+  expect(requestURL).toContain(`bbox=${bbox}&`);
+});
+
+test('OGCAPIFeaturesSource axisOrder option overrides the built-in axis order', async () => {
+  const source = OGCAPIFeaturesLoader.createDataSourceSync(OGC_API_URL, {
+    'ogc-api': {collectionId: 'roads', axisOrder: 'xy'}
+  });
+  let requestURL = '';
+  source.fetch = async url => {
+    requestURL = String(url);
+    return new Response(JSON.stringify({type: 'FeatureCollection', features: []}));
+  };
+  await source.getFeatures({
+    layers: 'roads',
+    boundingBox: [
+      [5, 47],
+      [15, 55]
+    ],
+    requestCrs: 'EPSG:4326'
+  });
+  expect(requestURL).toContain('bbox=5%2C47%2C15%2C55&');
+});

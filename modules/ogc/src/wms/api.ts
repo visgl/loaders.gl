@@ -59,7 +59,7 @@ export type {
   OGCTileMatrixSetOptions
 } from './lib/parsers/ogc-api/tile-matrix-set';
 export type {OGCTileMatrixLimits} from './lib/parsers/ogc-api/tile-matrix-limits';
-export type {ServiceCRS} from './crs-utils';
+export type {ServiceCRS, ServiceCRSAxisOrder, ServiceCRSAxisOrderOptions} from './crs-utils';
 export type {FeaturePaginationOptions} from './feature-pagination';
 export type {WFSVersion, WFSGetFeatureParameters, WFSLoaderOptions} from './wfs-loader';
 export type {WFSFeatureType} from './lib/parsers/wfs/parse-wfs-capabilities';
