@@ -2,8 +2,21 @@
 
 ## WMTS
 
-- `get-capabilities-response.xml` OGC example data taken from
-  http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response.xml
+- `get-capabilities-response.xml` is adapted from the OGC WMTS 1.0.0 example
+  http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response.xml.
+  Local change: the upstream XML comments are removed. The `TopLeftCorner` values use the
+  upstream order (`-180 84`, longitude first for the CRS84 matrix set).
+- `ogc-schema-example.xml` is adapted from the OGC WMTS 1.0.0 example
+  http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response_RESTful.xml.
+  Local changes: the `ows:Get` hrefs are `http://cite.deegree.org/1.0.0`, the second operation
+  uses `ows:Post`, and the service abstract is shorter. The upstream file closes `<ows:Get>` with
+  `</ows:Get>`; the local copy had `</ows:Post>`, which is now corrected to match upstream, so the
+  document is well-formed XML. Its `WholeWorld_CRS_84` matrix set uses the
+  `urn:ogc:def:crs:OGC:1.3:CRS84` URN and the GlobalCRS84Pixel scale set (matrix `2g` is
+  2 degrees per pixel).
+- `epsg-3035-laea-europe.xml` is hand-written with synthetic values, trimmed to two matrices. It
+  uses the ETRS89-extended / LAEA Europe CRS (EPSG:3035, axes northing, easting), so its
+  `TopLeftCorner` is written N E. The resolutions are 4000 and 2000 m per pixel.
 
 OGC license: https://www.ogc.org/license
 
@@ -15,6 +28,10 @@ OGC license: https://www.ogc.org/license
 
 ## WMS
 
+- get-capabilities `inherited-crs.xml` is hand-written. A root layer lists EPSG:4326 and
+  EPSG:3857, one child layer adds EPSG:25832, and one child layer lists no CRS. One child layer
+  spells EPSG:3857 as a URN and adds EPSG:3035. It tests the
+  WMS 1.3.0 inheritance of CRS and BoundingBox values (Table 7).
 - get-capabilities `analyses.xml`, `dmsp.xml`, `forecasts.xml`, `obs.xml`, `wwa.xml` were copied from from https://github.com/w8r/wms-capabilities under OpenLayers license:
 
 ## OpenLayers license

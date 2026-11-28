@@ -26,7 +26,12 @@ import type {
   WMTSLayer
 } from './lib/parsers/wmts/parse-wmts-capabilities';
 import {parseWMTSCapabilities} from './lib/parsers/wmts/parse-wmts-capabilities';
-import {areServiceCRSEquivalent, getServiceCRSAxisOrder, type ServiceCRS} from './crs-utils';
+import {
+  areServiceCRSEquivalent,
+  getServiceCRSAxisOrder,
+  type ServiceCRS,
+  type ServiceCRSAxisOrder
+} from './crs-utils';
 import {
   createTileGrid,
   createTileGridMatrix,
@@ -66,10 +71,15 @@ export type WMTSLoaderOptions = DataSourceOptions &
       crs?: ServiceCRS;
       /**
        * Length of one CRS unit in meters, used to convert scale denominators to resolutions for
-       * CRSs whose unit is not built in, such as UTM (`1`). EPSG:4326, CRS:84 and Web Mercator
-       * always use their own units, whichever matrix set is selected.
+       * CRSs whose unit is not built in, such as UTM (`1`). CRS84, the built-in EPSG geographic
+       * CRSs and Web Mercator always use their own units, whichever matrix set is selected.
        */
       metersPerUnit?: number | null;
+      /**
+       * Axis order of `TopLeftCorner` for every CRS. Overrides the built-in table of
+       * latitude-first and northing-first EPSG CRSs (see `getServiceCRSAxisOrder`).
+       */
+      axisOrder?: ServiceCRSAxisOrder;
     };
   };
 
@@ -176,7 +186,8 @@ export class WMTSImageTileSource
    */
   private _getTileGrid(layer: WMTSLayer | undefined): TileGrid | undefined {
     const matrixSet = this._getTileMatrixSet(layer);
-    const grid = toTileGrid(matrixSet, this.options.wmts?.metersPerUnit);
+    const wmts = this.options.wmts;
+    const grid = toTileGrid(matrixSet, wmts?.metersPerUnit, wmts?.axisOrder);
     if (!grid) return undefined;
     const limits = layer?.tileMatrixSetLinks.find(
       link => link.tileMatrixSet === matrixSet?.identifier
@@ -490,14 +501,15 @@ export class WMTSImageTileSource
 /** Converts a WMTS matrix set into the shared tile-grid metadata shape. */
 function toTileGrid(
   tileMatrixSet: WMTSTileMatrixSet | undefined,
-  metersPerUnit?: number | null
+  metersPerUnit?: number | null,
+  axisOrder?: ServiceCRSAxisOrder
 ): TileGrid | undefined {
   if (!tileMatrixSet) return undefined;
   // Also checked here, since `setProps()` can change the option after construction.
   validateMetersPerUnit(metersPerUnit, 'WMTS');
   const crs = tileMatrixSet.supportedCRS;
   const unitMeters = getMetersPerUnit(crs, metersPerUnit);
-  const swapAxes = getServiceCRSAxisOrder(crs) === 'yx';
+  const swapAxes = getServiceCRSAxisOrder(crs, {axisOrder}) === 'yx';
   return createTileGrid(
     crs,
     tileMatrixSet.matrices.map(matrix => toTileGridMatrix(matrix, swapAxes, unitMeters))

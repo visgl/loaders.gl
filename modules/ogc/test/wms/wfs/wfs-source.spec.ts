@@ -511,3 +511,32 @@ test('WFS GeoJSON preserves count and paging metadata for completeness-aware loa
     links: [{rel: 'self', href: 'wfs'}]
   });
 });
+
+test.each([
+  ['2.0.0', 'urn:ogc:def:crs:EPSG::4258', '47,5,55,15'],
+  ['2.0.0', 'urn:ogc:def:crs:EPSG:6.3:4326', '47,5,55,15'],
+  ['2.0.0', 'urn:ogc:def:crs:EPSG::3035', '47,5,55,15'],
+  ['2.0.0', 'http://www.opengis.net/gml/srs/epsg.xml#4326', '5,47,15,55'],
+  ['2.0.0', 'urn:ogc:def:crs:IAU::30100', '5,47,15,55'],
+  ['1.1.0', 'EPSG:4258', '47,5,55,15'],
+  ['1.0.0', 'EPSG:4258', '5,47,15,55']
+] as const)('WFS %s srsName %s sends the authority BBOX axis order', (version, srsName, expected) => {
+  const source = WFSLoader.createDataSourceSync(WFS_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({version, typeName: 'roads', bbox: [5, 47, 15, 55], srsName})
+  );
+  expect(featuresUrl.searchParams.get('BBOX')).toBe(expected);
+});
+
+test('WFS axisOrder option overrides the built-in axis order', () => {
+  const source = WFSLoader.createDataSourceSync(WFS_URL, {wfs: {axisOrder: 'xy'}});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      version: '2.0.0',
+      typeName: 'roads',
+      bbox: [5, 47, 15, 55],
+      srsName: 'EPSG:4326'
+    })
+  );
+  expect(featuresUrl.searchParams.get('BBOX')).toBe('5,47,15,55');
+});

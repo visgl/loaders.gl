@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hand-written WMTS 1.0.0 capabilities with synthetic values. See ../README.md. -->
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" version="1.0.0">
+  <ows:ServiceIdentification>
+    <ows:Title>LAEA Europe test service</ows:Title>
+    <ows:ServiceType>OGC WMTS</ows:ServiceType>
+    <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+  </ows:ServiceIdentification>
+  <Contents>
+    <Layer>
+      <ows:Title>Land cover</ows:Title>
+      <ows:Identifier>landcover</ows:Identifier>
+      <Style isDefault="true"><ows:Identifier>default</ows:Identifier></Style>
+      <Format>image/png</Format>
+      <TileMatrixSetLink><TileMatrixSet>LAEA_Europe</TileMatrixSet></TileMatrixSetLink>
+      <ResourceURL format="image/png" resourceType="tile" template="https://example.com/wmts/landcover/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png"/>
+    </Layer>
+    <TileMatrixSet>
+      <ows:Identifier>LAEA_Europe</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::3035</ows:SupportedCRS>
+      <!-- EPSG:3035 axes are northing (Y), easting (X): the corner is written N E. -->
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>14285714.285714285</ScaleDenominator>
+        <TopLeftCorner>5500000 2000000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>5</MatrixWidth>
+        <MatrixHeight>5</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>1</ows:Identifier>
+        <ScaleDenominator>7142857.142857143</ScaleDenominator>
+        <TopLeftCorner>5500000 2000000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>10</MatrixWidth>
+        <MatrixHeight>10</MatrixHeight>
+      </TileMatrix>
+    </TileMatrixSet>
+  </Contents>
+</Capabilities>

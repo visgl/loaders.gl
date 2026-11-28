@@ -4,7 +4,7 @@
 
 import type {TileGrid, TileGridMatrix} from '@loaders.gl/core/loader-utils';
 import {validateTileGrid} from '@loaders.gl/core/loader-utils/tile-grid';
-import {getServiceCRSAxisOrder} from '../../../crs-utils';
+import {getServiceCRSAxisOrder, type ServiceCRSAxisOrder} from '../../../crs-utils';
 import {
   createTileGrid,
   createTileGridMatrix,
@@ -63,9 +63,14 @@ export type OGCTileMatrixSet = {
 export type OGCTileMatrixSetOptions = {
   /**
    * Length of one CRS unit in meters, used to convert scale denominators of matrices without a
-   * `cellSize`. EPSG:4326, CRS:84 and Web Mercator use their built-in units.
+   * `cellSize`. CRS84, the built-in EPSG geographic CRSs and Web Mercator use their built-in units.
    */
   metersPerUnit?: number | null;
+  /**
+   * Axis order of `pointOfOrigin`. When set, it overrides the declared `orderedAxes` and the
+   * built-in table of latitude-first and northing-first EPSG CRSs (see `getServiceCRSAxisOrder`).
+   */
+  axisOrder?: ServiceCRSAxisOrder;
 };
 
 /**
@@ -83,7 +88,7 @@ export function convertOGCTileMatrixSetToTileGrid(
   validateMetersPerUnit(options.metersPerUnit, 'OGC TileMatrixSet');
   const crs = getCRSIdentifier(tileMatrixSet.crs);
   const metersPerUnit = getMetersPerUnit(crs, options.metersPerUnit);
-  const swapAxes = getAxisOrder(tileMatrixSet.orderedAxes, crs) === 'yx';
+  const swapAxes = (options.axisOrder || getAxisOrder(tileMatrixSet.orderedAxes, crs)) === 'yx';
   const matrices = tileMatrixSet.tileMatrices.map(matrix =>
     toTileGridMatrix(matrix, swapAxes, metersPerUnit)
   );
@@ -157,9 +162,13 @@ const Y_FIRST_AXIS_NAME =
 /**
  * Returns the axis order of `pointOfOrigin`. Declared `orderedAxes` win: a first axis naming
  * latitude, northing, southing or Y means the point is written Y first. Otherwise the shared
- * service rule applies.
+ * service rule applies: `yx` for the built-in table of latitude-first and northing-first EPSG
+ * CRSs, such as EPSG:4326, EPSG:4258 and EPSG:3035.
  */
-function getAxisOrder(orderedAxes: string[] | undefined, crs: string | undefined): 'xy' | 'yx' {
+function getAxisOrder(
+  orderedAxes: string[] | undefined,
+  crs: string | undefined
+): ServiceCRSAxisOrder {
   const firstAxis = orderedAxes?.[0];
   if (typeof firstAxis === 'string') {
     return Y_FIRST_AXIS_NAME.test(firstAxis.trim()) ? 'yx' : 'xy';

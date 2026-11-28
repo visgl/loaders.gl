@@ -26,7 +26,7 @@ import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 import {parseGML} from './lib/parsers/gml/parse-gml';
 import type {GMLFeatureCollection, GMLPropertyType} from './lib/parsers/gml/parse-gml';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
-import {getServiceCRSAxisOrder, normalizeServiceCRS} from './crs-utils';
+import {getServiceCRSAxisOrder, normalizeServiceCRS, type ServiceCRSAxisOrder} from './crs-utils';
 import type {FeaturePaginationOptions, FeaturePage} from './feature-pagination';
 import {
   addNextLinkHeader,
@@ -46,6 +46,11 @@ export type WFSLoaderOptions = DataSourceOptions &
       pagination?: FeaturePaginationOptions;
       /** In WFS 2.0.0, replaces references to EPSG:4326 with CRS:84. */
       substituteCRS84?: boolean;
+      /**
+       * WFS 1.1.0 and 2.0.0 BBOX axis order for every CRS. Overrides the built-in table of
+       * latitude-first and northing-first EPSG CRSs (see `getServiceCRSAxisOrder`).
+       */
+      axisOrder?: ServiceCRSAxisOrder;
       /** Default WFS parameters. If not provided here, must be provided in the various request */
       wfsParameters?: WFSParameters;
       /** Any additional service specific parameters */
@@ -784,12 +789,12 @@ export class WFSVectorSource extends DataSource<string, WFSLoaderOptions> implem
       return null;
     }
 
-    const normalizedCRS = normalizeServiceCRS(
-      bboxValue.length === 5 ? String(bboxValue[4]) : wfsParameters.srsName || wfsParameters.crs
-    );
+    const crs =
+      bboxValue.length === 5 ? String(bboxValue[4]) : wfsParameters.srsName || wfsParameters.crs;
+    const normalizedCRS = normalizeServiceCRS(crs);
     const flipCoordinates =
       (wfsParameters.version === '1.1.0' || wfsParameters.version === '2.0.0') &&
-      getServiceCRSAxisOrder(normalizedCRS) === 'yx' &&
+      getServiceCRSAxisOrder(crs, {axisOrder: this.options.wfs?.axisOrder}) === 'yx' &&
       !(this.options.wfs?.substituteCRS84 && normalizedCRS === 'EPSG:4326');
 
     const bbox = bboxValue as

@@ -2,7 +2,11 @@
 
 OGC service adapters are developed by vis.gl contributors against the OGC service specifications. [deep-strict-equal.ts](./src/wms/lib/parsers/gml/deep-strict-equal.ts) retains Thomas Robinson's 2009 MIT notice and full terms for adapted assertion comparison code.
 
-OpenLayers-origin fixtures are credited in the repository test data. Those fixtures are separate from production runtime code. math.gl and lerc are separately installed dependencies.
+OpenLayers-origin fixtures are credited in the repository test data. The WMTS fixtures
+`get-capabilities-response.xml` and `ogc-schema-example.xml` are adapted OGC example documents from
+`http://schemas.opengis.net/wmts/1.0/examples/`, used as test data under the OGC license
+(https://www.ogc.org/license); their sources and local changes are recorded in
+`test/wms/data/README.md`. Those fixtures are separate from production runtime code. math.gl and lerc are separately installed dependencies.
 
 derhuerst’s parse-gml-polygon supplies adapted [GML polygon parsing](./src/wms/lib/parsers/gml/parse-gml.ts): [ISC terms](./third-party-licenses/parse-gml-polygon-LICENSE).
 

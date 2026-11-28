@@ -117,7 +117,13 @@ Creates a `WMSImageSource` instance. Prefer `createDataSource` to inject the cor
 constructor(url: string, options: WMSLoaderOptions, coreApi?: CoreAPI)
 ```
 
-Put `substituteCRS84`, `wmsParameters`, and `vendorParameters` under `options.wms`.
+Put `substituteCRS84`, `axisOrder`, `wmsParameters`, and `vendorParameters` under `options.wms`.
+
+In WMS 1.3.0, the `BBOX` of GetMap and GetFeatureInfo uses the axis order of the CRS. The source
+sends latitude or northing first for the CRSs in the built-in table (for example EPSG:4326,
+EPSG:4258 and EPSG:3035), in all their spellings. Set `wms.axisOrder` to `'xy'` or `'yx'` to
+override the table. WMS 1.1.1 always sends x first. See
+[CRS and tile-grid intelligence](./crs-and-tile-grids.md).
 Shared fetch and worker controls belong under `options.core`.
 
 ### getCapabilities()

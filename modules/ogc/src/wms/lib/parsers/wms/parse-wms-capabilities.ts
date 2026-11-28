@@ -11,6 +11,7 @@ import {
 } from '../xml/parse-xml-helpers';
 import {parseXMLTextSync} from '../xml/parse-xml-text';
 import type {CRSIdentifier} from '@math.gl/geospatial/crs';
+import {normalizeServiceCRS} from '../../../crs-utils';
 
 /** All capabilities of a WMS service - response to a WMS `GetCapabilities` data structure extracted from XML */
 export type WMSCapabilities = {
@@ -259,8 +260,9 @@ function extractLayer(xmlLayer: any): WMSLayer {
   };
 
   // WMS 1.3.0 changes SRS to CRS
-  const crs = xmlLayer?.CRS || xmlLayer?.SRS;
-  if (crs && Array.isArray(crs) && crs.every(_ => typeof _ === 'string')) {
+  // One <CRS> element parses as a string, more than one as an array.
+  const crs = getXMLStringArray(xmlLayer?.CRS || xmlLayer?.SRS);
+  if (crs.length > 0) {
     layer.crs = crs;
   }
 
@@ -402,6 +404,45 @@ function extractDimension(xmlDimension: any): WMSDimension {
   return dimension;
 }
 
+/** Returns the parent CRS list followed by the CRSs that the layer adds, without duplicates. */
+function mergeInheritedCRS(
+  parentCRS: CRSIdentifier[],
+  layerCRS: CRSIdentifier[] | undefined
+): CRSIdentifier[] {
+  const merged = [...parentCRS];
+  const keys = new Set(parentCRS.map(getCRSKey));
+  for (const crs of layerCRS || []) {
+    const key = getCRSKey(crs);
+    if (!keys.has(key)) {
+      keys.add(key);
+      merged.push(crs);
+    }
+  }
+  return merged;
+}
+
+/**
+ * Returns the parent bounding boxes with each one that the layer declares for the same CRS
+ * replaced, followed by the layer bounding boxes for other CRSs.
+ */
+function mergeInheritedBoundingBoxes(
+  parentBoundingBoxes: WMSBoundingBox[],
+  layerBoundingBoxes: WMSBoundingBox[] | undefined
+): WMSBoundingBox[] {
+  const layerBoxes = layerBoundingBoxes || [];
+  const merged = parentBoundingBoxes.map(
+    parentBox =>
+      layerBoxes.find(layerBox => getCRSKey(layerBox.crs) === getCRSKey(parentBox.crs)) || parentBox
+  );
+  const parentCRS = new Set(parentBoundingBoxes.map(parentBox => getCRSKey(parentBox.crs)));
+  return [...merged, ...layerBoxes.filter(layerBox => !parentCRS.has(getCRSKey(layerBox.crs)))];
+}
+
+/** Returns the key that identifies one CRS in its different service spellings. */
+function getCRSKey(crs: CRSIdentifier): string {
+  return normalizeServiceCRS(crs) ?? crs;
+}
+
 /** Traverse layers and inject missing props from parents */
 // eslint-disable-next-line complexity
 function addInheritedLayerProps(layer: WMSLayer, parent: WMSLayer | null): void {
@@ -409,12 +450,14 @@ function addInheritedLayerProps(layer: WMSLayer, parent: WMSLayer | null): void 
     layer.geographicBoundingBox = [...parent.geographicBoundingBox];
   }
 
-  if (parent?.crs && !layer.crs) {
-    layer.crs = [...parent.crs];
+  // WMS 1.3.0 Table 7 (layer inheritance): a layer adds CRSs to the parent CRS list.
+  if (parent?.crs) {
+    layer.crs = mergeInheritedCRS(parent.crs, layer.crs);
   }
 
-  if (parent?.boundingBoxes && !layer.boundingBoxes) {
-    layer.boundingBoxes = [...parent.boundingBoxes];
+  // WMS 1.3.0 Table 7: a layer BoundingBox replaces the parent one for the same CRS.
+  if (parent?.boundingBoxes) {
+    layer.boundingBoxes = mergeInheritedBoundingBoxes(parent.boundingBoxes, layer.boundingBoxes);
   }
 
   if (parent?.dimensions && !layer.dimensions) {

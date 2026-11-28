@@ -455,3 +455,59 @@ test('requires URL-configured matrix metadata before resolving a numeric zoom', 
     'https://example.com/tiles/coarse/2/1'
   );
 });
+
+test.each([
+  // Without orderedAxes, the built-in table gives the authority axis order of the CRS.
+  ['http://www.opengis.net/def/crs/EPSG/0/3035', [5500000, 2000000], [2000000, 5500000]],
+  ['http://www.opengis.net/def/crs/EPSG/0/4258', [72, -35], [-35, 72]],
+  ['http://www.opengis.net/def/crs/EPSG/0/25832', [-46000, 9000000], [-46000, 9000000]],
+  ['http://www.opengis.net/def/crs/OGC/1.3/CRS84', [-180, 90], [-180, 90]]
+])('convertOGCTileMatrixSetToTileGrid without orderedAxes reads %s origins', (crs, point, xy) => {
+  const tileGrid = convertOGCTileMatrixSetToTileGrid({
+    crs,
+    tileMatrices: [{id: '0', cellSize: 1, pointOfOrigin: point}]
+  });
+  expect(tileGrid.matrices?.[0].origin).toEqual(xy);
+});
+
+test('convertOGCTileMatrixSetToTileGrid axisOrder overrides orderedAxes and the table', () => {
+  const convert = (orderedAxes: string[] | undefined, axisOrder: 'xy' | 'yx') =>
+    convertOGCTileMatrixSetToTileGrid(
+      {
+        crs: 'http://www.opengis.net/def/crs/EPSG/0/3035',
+        orderedAxes,
+        tileMatrices: [{id: '0', cellSize: 1, pointOfOrigin: [5500000, 2000000]}]
+      },
+      {axisOrder}
+    ).matrices?.[0].origin;
+  expect(convert(undefined, 'xy')).toEqual([5500000, 2000000]);
+  expect(convert(['Y', 'X'], 'xy')).toEqual([5500000, 2000000]);
+  expect(convert(['E', 'N'], 'yx')).toEqual([2000000, 5500000]);
+});
+
+test('OGCAPITilesSource passes the axisOrder option to the tile grid', async () => {
+  const tileMatrixSet: OGCTileMatrixSet = {
+    crs: 'http://www.opengis.net/def/crs/EPSG/0/3035',
+    tileMatrices: [
+      {
+        id: '0',
+        cellSize: 4000,
+        pointOfOrigin: [5500000, 2000000],
+        tileWidth: 256,
+        tileHeight: 256,
+        matrixWidth: 5,
+        matrixHeight: 5
+      }
+    ]
+  };
+  const source = OGCAPITilesLoader.createDataSourceSync('https://example.com/ogcapi', {
+    'ogc-api': {tileMatrixSet}
+  });
+  const fetchLandingPage = async () => new Response(JSON.stringify({title: 'Demo API'}));
+  source.fetch = fetchLandingPage;
+  expect((await source.getMetadata()).tileGrid?.origin).toEqual([2000000, 5500000]);
+  source.setProps({'ogc-api': {axisOrder: 'xy'}});
+  // setProps() replaces the fetch function.
+  source.fetch = fetchLandingPage;
+  expect((await source.getMetadata()).tileGrid?.origin).toEqual([5500000, 2000000]);
+});
