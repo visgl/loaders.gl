@@ -7,6 +7,7 @@ import * as arrow from 'apache-arrow';
 import {getTransferList} from '@loaders.gl/core/worker-utils';
 import {
   makeArrowTableFromBatches,
+  isArrowRecordBatch,
   convertTableToArrow,
   makeArrowRecordBatchIterator,
   mergeArrowSchemas,
@@ -200,4 +201,12 @@ test('schema updates supply batch metadata when the Arrow runtime has no metadat
   } finally {
     Object.defineProperty(arrow.RecordBatch.prototype, 'metadata', metadataAccessor!);
   }
+});
+
+test('native record batch detection accepts older unbranded Arrow batches', () => {
+  const table = arrow.tableFromArrays({id: new Int32Array([1, 2])});
+  const batch = table.batches[0];
+  Object.defineProperty(batch, Symbol.for('apache-arrow/RecordBatch'), {value: undefined});
+  expect(isArrowRecordBatch(batch)).toBe(true);
+  expect(isArrowRecordBatch(table)).toBe(false);
 });

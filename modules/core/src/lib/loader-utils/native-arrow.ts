@@ -75,9 +75,19 @@ export function isArrowTable(value: unknown): value is arrow.Table {
 
 /** Identifies native record batches across Arrow package instances. */
 export function isArrowRecordBatch(value: unknown): value is arrow.RecordBatch {
-  return Boolean(
-    value &&
-      typeof value === 'object' &&
-      (value as Record<symbol, unknown>)[Symbol.for('apache-arrow/RecordBatch')] === true
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  if ((value as Record<symbol, unknown>)[Symbol.for('apache-arrow/RecordBatch')] === true) {
+    return true;
+  }
+  // Earlier Arrow releases do not brand their record batches with the shared symbol.
+  const batch = value as Partial<arrow.RecordBatch>;
+  return (
+    typeof batch.numRows === 'number' &&
+    Array.isArray(batch.schema?.fields) &&
+    Array.isArray(batch.data?.children) &&
+    typeof batch.get === 'function' &&
+    typeof batch.getChild === 'function'
   );
 }
